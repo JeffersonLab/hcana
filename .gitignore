@@ -1,0 +1,14 @@
+# ignore patterns
+
+# Auto generated files
+HallCDict.cxx
+HallCDict.h
+HallCDict.o
+hcana
+
+# Patterns
+*.[oad]
+*~
+*.so
+\#.*\#
+

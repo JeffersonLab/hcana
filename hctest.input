@@ -1,0 +1,23 @@
+begin parm constants
+#include "hctest_include.input"
+  proton = 938.272   ; <- Comment character
+  neutron = 939.57 
+  pion = 139.57
+  pizero = 134.97
+  ; The following fills an array
+  offsets = 0.34, 5.7, 0.1, -.4   ; Wire Chamber offsets
+            0.0, .1356, -1.3, 8.6
+  ; array fills may take multiple lines
+  integerarray = 3 ; Example integer array
+   5, 64, 4,2 ,3,4, 543 , 543 , 3
+  anotherarray = 1,2,3,4
+      5.6, 3.4  ; Example real array
+  thmin = -50
+  thmax = 50
+  phimin = -40
+  phimax = 40
+  ; Lines from begin to end are called a block
+  hbook_filename = 'gaw.hist' ; String
+  report_filename = 'gaw.report'
+end parm constants
+
