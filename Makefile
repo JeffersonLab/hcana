@@ -125,9 +125,10 @@ DISTFILE      = $(PKG).tar.gz
 #------------------------------------------------------------------------------
 OBJ           = $(SRC:.cxx=.o)
 RCHDR	      = $(SRC:.cxx=.h) src/THcGlobals.h
-HDR           = $(SRC:.cxx=.h)
+HDR           = $(SRC:.cxx=.h) 
 DEP           = $(SRC:.cxx=.d) src/main.d
 OBJS          = $(OBJ) $(USERDICT).o
+HDR_COMPILEDATA = $(ANALYZER)/src/ha_compiledata.h
 
 all:		$(USERLIB) hcana
 
@@ -137,12 +138,22 @@ LIBDC        := $(LIBDIR)/libdc.so
 LIBSCALER    := $(LIBDIR)/libscaler.so
 HALLALIBS    := -L$(LIBDIR) -lHallA -ldc -lscaler
 
+src/THcInterface.d:  $(HDR_COMPILEDATA)
+
 hcana:		src/main.o $(LIBDC) $(LIBSCALER) $(LIBHALLA) $(USERLIB)
 		$(LD) $(LDFLAGS) $< $(HALLALIBS) -L. -lHallC $(GLIBS) -o $@
 
 $(USERLIB):	$(HDR) $(OBJS)
 		$(LD) $(LDFLAGS) $(SOFLAGS) -o $@ $(OBJS)
 		@echo "$@ done"
+
+$(HDR_COMPILEDATA): $(ANALYZER)/Makefile
+		@echo "Building Podd"		
+		@cd $(ANALYZER) ; make
+
+$(LIBHALLA): $(ANALYZER)/Makefile
+		@echo "Building Podd"		
+		@cd $(ANALYZER) ; make
 
 $(USERDICT).cxx: $(RCHDR) $(HDR) $(LINKDEF)
 	@echo "Generating dictionary $(USERDICT)..."
