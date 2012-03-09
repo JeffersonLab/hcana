@@ -12,3 +12,5 @@ hcana
 *.so
 \#.*\#
 
+# Working directory
+work
