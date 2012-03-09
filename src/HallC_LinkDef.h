@@ -9,5 +9,6 @@
 #pragma link C++ class THcInterface+;
 #pragma link C++ class THcParmList+;
 #pragma link C++ class THcCrateMap+;
+#pragma link C++ class THcCodaDecoder+;
 
 #endif
