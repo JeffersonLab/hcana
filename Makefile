@@ -8,7 +8,8 @@
 # there must be a corresponding header file (*.h).
 
 
-SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx
+SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
+	src/THcHodoscopeHit.cxx
 
 # Name of your package. 
 # The shared library that will be built will get the name lib$(PACKAGE).so
