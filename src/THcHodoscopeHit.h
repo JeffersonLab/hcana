@@ -1,16 +1,22 @@
 #ifndef ROOT_THcHodoscopeHit
 #define ROOT_THcHodoscopeHit
 
+// Should we have a generic hit object that we inherit from?  (A template,
+// whatever that is?)  
+
 #include "TObject.h"
 
 class THcHodoscopeHit : public TObject {
 
  public:
- THcHodoscopeHit(Int_t plane, Int_t counter) :
-  fPlane(plane), fCounter(counter), fADC_pos(-1), fADC_net(-1),
-    fTDC_pos(-1), fTDC_net(-1) {}
 
-  virtual ~THcHodosscopeHit() {}
+  THcHodoscopeHit(Int_t plane, Int_t counter) :
+  fPlane(plane), fCounter(counter), fADC_pos(-1), fADC_neg(-1),
+    fTDC_pos(-1), fTDC_neg(-1) {}
+  virtual ~THcHodoscopeHit() {}
+
+  void SetData(Int_t signal, Int_t data);
+  Int_t GetData(Int_t signal);
 
   Int_t fPlane;
   Int_t fCounter;
@@ -24,7 +30,7 @@ class THcHodoscopeHit : public TObject {
 
  private:
 
-  ClassDef(THaHodoscopeHit, 0);
+  ClassDef(THcHodoscopeHit, 0);	// Hodoscope hit class
 };  
 
 #endif
