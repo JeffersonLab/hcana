@@ -2,7 +2,7 @@
 
 //////////////////////////////////////////////////////////////////////////
 //
-// THcRawHistList
+// THcRawHitList
 //
 // Class to build raw hit lists from data
 //
@@ -12,7 +12,7 @@
 
 using namespace std;
 
-THcRawHitList::THcRawHitList(const char* classname, Int_t size=1000, Int_t detctorid) {
+THcRawHitList::THcRawHitList(const char* classname, Int_t detectorid, Int_t size=1000) {
   fHits = new TClonesArray(classname, size);
   fDetectorid = detectorid;
 }
@@ -27,4 +27,4 @@ void THcRawHitList::Clear( Option_t*)
 }
 
 //////////////////////////////////////////////////////////////////////////
-ClassImp(THcRawHistList)
+ClassImp(THcRawHitList)

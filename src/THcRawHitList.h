@@ -8,12 +8,15 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TClonesArray.h"
+#include "THcRawHit.h"
+#include <cassert>
 
 class THcRawHitList {
 
  public:
 
-  
+  THcRawHitList(const char* classname, Int_t detectorid, Int_t size);
+  virtual ~THcRawHitList();
 
   TClonesArray* fHits;
   Int_t fMaxhit;
@@ -30,7 +33,7 @@ class THcRawHitList {
   { assert(i >=0 && i<GetNHits() );
     return (THcRawHit*)fHits->UncheckedAt(i);}
 
-
+  void Clear( Option_t*);
 
  private:
   ClassDef(THcRawHitList, 0); // Raw hit class

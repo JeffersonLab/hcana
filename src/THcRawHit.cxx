@@ -10,6 +10,9 @@
 
 #include "THcRawHit.h"
 
+THcRawHit::~THcRawHit()
+{}
+
 ClassImp(THcRawHit)
 
 //_____________________________________________________________________________
