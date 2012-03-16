@@ -13,8 +13,10 @@ class THaVDCUVTrack;
 class THcRawHit : public TObject {
 
 public:
-  THcRawHit() {}
-  THcRawHit( const THcRawHit& rhs ) : TObject(rhs) {}
+ THcRawHit(Int_t plane, Int_t counter) :
+  fPlane(plane), fCounter(counter) {}
+
+ THcRawHit( const THcRawHit& rhs ) : TObject(rhs) {}
   THcRawHit& operator=( const THcRawHit& rhs )
   { TObject::operator=(rhs); return *this; }
 

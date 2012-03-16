@@ -10,8 +10,8 @@ class THcHodoscopeHit : public THcRawHit {
 
  public:
 
-  THcHodoscopeHit(Int_t plane, Int_t counter) :
-  fPlane(plane), fCounter(counter), fADC_pos(-1), fADC_neg(-1),
+ THcHodoscopeHit(Int_t plane, Int_t counter) : THcRawHit(plane, counter)
+    fADC_pos(-1), fADC_neg(-1),
     fTDC_pos(-1), fTDC_neg(-1) {}
   virtual ~THcHodoscopeHit() {}
 
