@@ -38,6 +38,24 @@ Int_t THcHodoscopeHit::GetData(Int_t signal) {
   return(-1); // Actually should throw exception
 }
 
+//_____________________________________________________________________________
+THcHodoscopeHit& THcHodoscopeHit::operator=( const THcHodoscopeHit& rhs )
+{
+  // Assignment operator.
+
+  THcRawHit::operator=(rhs);
+  if ( this != &rhs ) {
+    fPlane = rhs.fPlane;
+    fCounter = rhs.fCounter;
+    fADC_pos = rhs.fADC_pos;
+    fADC_neg = rhs.fADC_neg;
+    fTDC_pos = rhs.fTDC_pos;
+    fTDC_neg = rhs.fTDC_neg;
+  }
+  return *this;
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 ClassImp(THcHodoscopeHit)
 

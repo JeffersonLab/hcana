@@ -4,9 +4,9 @@
 // Should we have a generic hit object that we inherit from?  (A template,
 // whatever that is?)  
 
-#include "TObject.h"
+#include "THcRawHit.h"
 
-class THcHodoscopeHit : public TObject {
+class THcHodoscopeHit : public THcRawHit {
 
  public:
 
@@ -17,9 +17,6 @@ class THcHodoscopeHit : public TObject {
 
   void SetData(Int_t signal, Int_t data);
   Int_t GetData(Int_t signal);
-
-  Int_t fPlane;
-  Int_t fCounter;
 
   Int_t fADC_pos;
   Int_t fADC_neg;
