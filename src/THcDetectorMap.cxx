@@ -17,7 +17,7 @@ using namespace std;
 
 ClassImp(THcDetectorMap)
 
-THcDetectorMap::Load(const char *fname)
+void THcDetectorMap::Load(const char *fname)
 {
 }
 
