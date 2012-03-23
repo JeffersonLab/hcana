@@ -21,6 +21,13 @@ THcRawHitList::~THcRawHitList() {
   delete fHits;
 }
 
+Int_t THcRawHitList::Fill(const THaEvData& evdata, const THcDetectorMap& dmap)
+{
+  // Zero out hit list
+  // Interate over list of channels belonging to detector, retrieving
+  // data that belongs to the detector
+}
+
 void THcRawHitList::Clear( Option_t*)
 {
   fHits->Clear();

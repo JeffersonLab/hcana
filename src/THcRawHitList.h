@@ -9,6 +9,8 @@
 
 #include "TClonesArray.h"
 #include "THcRawHit.h"
+#include "THcDetectorMap.h"
+#include "THaEvData.h"
 #include <cassert>
 
 class THcRawHitList {
@@ -18,9 +20,12 @@ class THcRawHitList {
   THcRawHitList(const char* classname, Int_t detectorid, Int_t size);
   virtual ~THcRawHitList();
 
+  Int_t Fill(const THaEvData& evdata, const THcDetectorMap& dmap);
+  // Should detector map be a member variable too?
+
+
   TClonesArray* fHits;
   Int_t fMaxhit;
-  Int_t fDetectorid;
 
   Int_t          GetNHits()     const { return fHits->GetLast()+1; }
   TClonesArray*  GetHits()      const { return fHits; }
@@ -34,6 +39,9 @@ class THcRawHitList {
     return (THcRawHit*)fHits->UncheckedAt(i);}
 
   void Clear( Option_t*);
+
+ protected:
+  Int_t fDetectorid;
 
  private:
   ClassDef(THcRawHitList, 0); // Raw hit class

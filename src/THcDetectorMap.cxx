@@ -9,9 +9,18 @@
 // Will need method to retrieve all map entries for a given
 // detector id.
 //
+// Not sure we will keep this class, but still need the parsing of the map file
+//
 //////////////////////////////////////////////////////////////////////////
 
 #include "THcDetectorMap.h"
+
+#include "TObjArray.h"
+#include "TObjString.h"
+
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
 
 using namespace std;
 
@@ -32,7 +41,7 @@ void THcDetectorMap::Load(const char *fname)
   ifstream ifile;
 
   ifile.open(fname);
-  if(!ifile.is_open) {
+  if(!ifile.is_open()) {
     Error(here, "error opening detector map file %s",fname);
     return;			// Need a success/failure argument?
   }
@@ -45,33 +54,74 @@ void THcDetectorMap::Load(const char *fname)
   Int_t detector=0;
   Int_t slot=0;
 
+  string::size_type start, pos=0;
+
+  char varname[100];
+
   while(getline(ifile,line)) {
     // BLank line or comment
     if(line.empty()
        || (start = line.find_first_not_of( whtspc )) == string::npos
        || IsComment(line, start) )
       continue;
-  }
-  // Get rid of trailing comments and leading and trailing whitespace
-  cout << "MAPA: " << line << endl;
-  while ((pos = line.find_first_of("!", pos+1)) != string::npos) {
-    if(IsComment(line, pos)) {
-      line.erase(pos);
-      break;
+
+    //    cout << "MAPA: " << line << endl;
+
+    // Remove comment from line
+    while ((pos = line.find_first_of("!", pos+1)) != string::npos) {
+      if(IsComment(line, pos)) {
+	line.erase(pos);
+	break;
+      }
     }
-  }
-  cout << "MAPB: " << line << endl;
+
+    // Get rid of all white space
+    while((pos=line.find_first_of(whtspc)) != string::npos) {
+      line.erase(pos,1);
+    }
+
+    //    cout << "MAPB: " << line << endl;
 
   // Decide if line is ROC/NSUBADD/MASK/BSUB/DETECTOR/SLOT = something
   // or chan, plane, counter[, signal]
 
   
-  if((pos=line.find_first_of("=")) != string::npos) { // Setting parameter
-    char varname[100];
-    
-    
-  } else {			// Assume channel definition
-
+    if((pos=line.find_first_of("=")) != string::npos) { // Setting parameter
+      strcpy(varname, (line.substr(0,pos)).c_str());
+      Int_t valuestartpos = pos+1;
+      Int_t value = atoi(line.substr(valuestartpos).c_str());
+      // Some if statements
+      if(strcasecmp(varname,"detector")==0) {
+	detector = value;
+      } else if (strcasecmp(varname,"roc")==0) {
+	roc = value;
+      } else if (strcasecmp(varname,"nsubadd")==0) {
+	nsubadd = value;
+      } else if (strcasecmp(varname,"mask")==0) {
+	mask = value;
+      } else if (strcasecmp(varname,"bsub")==0) {
+	bsub = value;
+      } else if (strcasecmp(varname,"slot")==0) {
+	slot = value;
+      }
+    } else {			// Assume channel definition
+      TString values(line.c_str());
+      TObjArray *vararr = values.Tokenize(",");
+      Int_t nvals = vararr->GetLast()+1;
+      if(nvals<2 || nvals>4) {
+	cout << "Map file: Invalid value count: " << line << endl;
+	continue;
+      }
+      Int_t channel = ((TObjString*)vararr->At(0))->GetString().Atoi();
+      Int_t plane = ((TObjString*)vararr->At(1))->GetString().Atoi();
+      Int_t counter = ((TObjString*)vararr->At(2))->GetString().Atoi();
+      Int_t signal = 0;
+      if(nvals==4) {
+	signal= ((TObjString*)vararr->At(3))->GetString().Atoi();
+      }
+      cout << channel << " " << plane << " " << counter << " " << signal << endl;
+      
+    }
   }
 
 }
