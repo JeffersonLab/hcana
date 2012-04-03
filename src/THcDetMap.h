@@ -1,10 +1,10 @@
 
-#ifndef ROOT_THaDetMap
-#define ROOT_THaDetMap
+#ifndef ROOT_THcDetMap
+#define ROOT_THcDetMap
 
 //////////////////////////////////////////////////////////////////////////
 //
-// THaDetMap
+// THcDetMap
 //
 // Standard detector map.
 // The detector map defines the hardware channels that correspond to a
@@ -23,7 +23,7 @@
 #include "Rtypes.h"
 #include <vector>
 
-class THaDetMap {
+class THcDetMap {
 
 protected:
   static const UInt_t kADCBit = BIT(31);
@@ -38,6 +38,8 @@ public:
     UShort_t lo;
     UShort_t hi;
     UInt_t   first;  // logical number of first channel
+    UInt_t   plane;  // Plane of detector
+    UInt_t   signal; // Signal type (ADC/TDC/Left/Right)
     UInt_t   model;  // model number of module (for ADC/TDC identification).
     Int_t    refchan;    // for pipeline TDCs: reference channel number
     Int_t    refindex;   // for pipeline TDCs: index into reference channel map
@@ -72,10 +74,10 @@ public:
     kFillRefChan         = BIT(13)    // Parse the reference channel
   };
 
-  THaDetMap();
-  THaDetMap( const THaDetMap& );
-  THaDetMap& operator=( const THaDetMap& );
-  virtual ~THaDetMap();
+  THcDetMap();
+  THcDetMap( const THcDetMap& );
+  THcDetMap& operator=( const THcDetMap& );
+  virtual ~THcDetMap();
   
   virtual Int_t     AddModule( UShort_t crate, UShort_t slot, 
 			       UShort_t chan_lo, UShort_t chan_hi,
@@ -115,44 +117,44 @@ protected:
   
   Module*      uGetModule( UShort_t i ) const { return fMap+i; }
 
-  ClassDef(THaDetMap,0)   //The standard detector map
+  ClassDef(THcDetMap,0)   //The standard detector map
 };
 
-inline THaDetMap::Module* THaDetMap::GetModule( UShort_t i ) const {
+inline THcDetMap::Module* THcDetMap::GetModule( UShort_t i ) const {
   return i<fNmodules ? uGetModule(i) : NULL; 
 }
 
-inline Bool_t THaDetMap::IsADC(Module* d) {
+inline Bool_t THcDetMap::IsADC(Module* d) {
   if( !d ) return kFALSE;
   return d->IsADC();
 }
 
-inline Bool_t THaDetMap::IsTDC(Module* d) {
+inline Bool_t THcDetMap::IsTDC(Module* d) {
   if( !d ) return kFALSE;
   return d->IsTDC();
 }
 
-inline UInt_t THaDetMap::GetModel(Module* d) {
+inline UInt_t THcDetMap::GetModel(Module* d) {
   if( !d ) return 0;
   return d->GetModel();
 }
 
-inline Bool_t THaDetMap::IsADC( UShort_t i ) const {
+inline Bool_t THcDetMap::IsADC( UShort_t i ) const {
   if( i >= fNmodules ) return kFALSE;
   return uGetModule(i)->IsADC();
 }
 
-inline Bool_t THaDetMap::IsTDC( UShort_t i ) const {
+inline Bool_t THcDetMap::IsTDC( UShort_t i ) const {
   if( i >= fNmodules ) return kFALSE;
   return uGetModule(i)->IsTDC();
 }
 
-inline UInt_t THaDetMap::GetModel( UShort_t i ) const {
+inline UInt_t THcDetMap::GetModel( UShort_t i ) const {
   if( i >= fNmodules ) return 0;
   return uGetModule(i)->GetModel();
 }
 
-inline Int_t THaDetMap::GetNchan( UShort_t i ) const {
+inline Int_t THcDetMap::GetNchan( UShort_t i ) const {
   // Return the number of channels of the i-th module
   if( i >= fNmodules ) return 0;
   return uGetModule(i)->GetNchan();

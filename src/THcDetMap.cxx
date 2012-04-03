@@ -2,13 +2,13 @@
 
 //////////////////////////////////////////////////////////////////////////
 //
-// THaDetMap
+// THcDetMap
 //
 // The standard detector map for a Hall A detector.
 //
 //////////////////////////////////////////////////////////////////////////
 
-#include "THaDetMap.h"
+#include "THcDetMap.h"
 #include <iostream>
 #include <iomanip>
 #include <cstring>
@@ -16,7 +16,7 @@
 
 using namespace std;
 
-const int THaDetMap::kDetMapSize;
+const int THcDetMap::kDetMapSize;
 
 // FIXME: load from db_cratemap
 struct ModuleType {
@@ -42,7 +42,7 @@ static const ModuleType module_list[] = {
 };
 
 //_____________________________________________________________________________
-void THaDetMap::Module::SetModel( UInt_t m )
+void THcDetMap::Module::SetModel( UInt_t m )
 {
   model = m & kModelMask;
   const ModuleType* md = module_list;
@@ -52,19 +52,19 @@ void THaDetMap::Module::SetModel( UInt_t m )
 }
 
 //_____________________________________________________________________________
-void THaDetMap::Module::SetResolution( Double_t res )
+void THcDetMap::Module::SetResolution( Double_t res )
 {
   resolution = res;
 }
 
 //_____________________________________________________________________________
-THaDetMap::THaDetMap() : fNmodules(0), fMap(0), fMaplength(0)
+THcDetMap::THcDetMap() : fNmodules(0), fMap(0), fMaplength(0)
 {
   // Default constructor. Creates an empty detector map.
 }
 
 //_____________________________________________________________________________
-THaDetMap::THaDetMap( const THaDetMap& rhs )
+THcDetMap::THcDetMap( const THcDetMap& rhs )
 {
   // Copy constructor
 
@@ -77,9 +77,9 @@ THaDetMap::THaDetMap( const THaDetMap& rhs )
 }
 
 //_____________________________________________________________________________
-THaDetMap& THaDetMap::operator=( const THaDetMap& rhs )
+THcDetMap& THcDetMap::operator=( const THcDetMap& rhs )
 {
-  // THaDetMap assignment operator
+  // THcDetMap assignment operator
 
   if ( this != &rhs ) {
     if ( fMaplength != rhs.fMaplength ) {
@@ -95,7 +95,7 @@ THaDetMap& THaDetMap::operator=( const THaDetMap& rhs )
 }
 
 //_____________________________________________________________________________
-THaDetMap::~THaDetMap()
+THcDetMap::~THcDetMap()
 {
   // Destructor
 
@@ -103,7 +103,7 @@ THaDetMap::~THaDetMap()
 }
 
 //_____________________________________________________________________________
-Int_t THaDetMap::AddModule( UShort_t crate, UShort_t slot, 
+Int_t THcDetMap::AddModule( UShort_t crate, UShort_t slot, 
 			    UShort_t chan_lo, UShort_t chan_hi,
 			    UInt_t first, UInt_t model, Int_t refindex,
 			    Int_t refchan )
@@ -156,7 +156,7 @@ Int_t THaDetMap::AddModule( UShort_t crate, UShort_t slot,
 }
 
 //_____________________________________________________________________________
-THaDetMap::Module* THaDetMap::Find( UShort_t crate, UShort_t slot,
+THcDetMap::Module* THcDetMap::Find( UShort_t crate, UShort_t slot,
 				    UShort_t chan )
 {
   // Return the module containing crate, slot, and channel chan.
@@ -178,7 +178,7 @@ THaDetMap::Module* THaDetMap::Find( UShort_t crate, UShort_t slot,
 }
 
 //_____________________________________________________________________________
-Int_t THaDetMap::Fill( const vector<Int_t>& values, UInt_t flags )
+Int_t THcDetMap::Fill( const vector<Int_t>& values, UInt_t flags )
 {
   // Fill the map with 'values'. Depending on 'flags', the values vector
   // is interpreted as a 4-, 5-, 6- or 7-tuple:
@@ -266,7 +266,7 @@ Int_t THaDetMap::Fill( const vector<Int_t>& values, UInt_t flags )
 }
 
 //_____________________________________________________________________________
-Int_t THaDetMap::GetTotNumChan() const
+Int_t THcDetMap::GetTotNumChan() const
 {
   // Get sum of the number of channels of all modules in the map. This is 
   // typically the total number of hardware channels used by the detector.
@@ -280,7 +280,7 @@ Int_t THaDetMap::GetTotNumChan() const
 
 
 //_____________________________________________________________________________
-void THaDetMap::GetMinMaxChan( Int_t& min, Int_t& max, ECountMode mode ) const
+void THcDetMap::GetMinMaxChan( Int_t& min, Int_t& max, ECountMode mode ) const
 {
   // Put the minimum and maximum logical or reference channel numbers 
   // into min and max. If refidx is true, check refindex, else check logical
@@ -302,7 +302,7 @@ void THaDetMap::GetMinMaxChan( Int_t& min, Int_t& max, ECountMode mode ) const
 
 
 //_____________________________________________________________________________
-void THaDetMap::Print( Option_t* ) const
+void THcDetMap::Print( Option_t* ) const
 {
   // Print the contents of the map
 
@@ -328,7 +328,7 @@ void THaDetMap::Print( Option_t* ) const
 }
 
 //_____________________________________________________________________________
-void THaDetMap::Reset()
+void THcDetMap::Reset()
 {
   // Clear() the map and reset the array size to zero, freeing memory.
 
@@ -343,8 +343,8 @@ static int compare_modules( const void* p1, const void* p2 )
 {
   // Helper function for sort
 
-  const THaDetMap::Module* lhs = static_cast<const THaDetMap::Module*>(p1);
-  const THaDetMap::Module* rhs = static_cast<const THaDetMap::Module*>(p2);
+  const THcDetMap::Module* lhs = static_cast<const THcDetMap::Module*>(p1);
+  const THcDetMap::Module* rhs = static_cast<const THcDetMap::Module*>(p2);
   
   if( lhs->crate < rhs->crate )  return -1;
   if( lhs->crate > rhs->crate )  return  1;
@@ -356,7 +356,7 @@ static int compare_modules( const void* p1, const void* p2 )
 }
 
 //_____________________________________________________________________________
-void THaDetMap::Sort()
+void THcDetMap::Sort()
 {
   // Sort the map by crate/slot/low channel
   
@@ -366,5 +366,5 @@ void THaDetMap::Sort()
 }
 
 //_____________________________________________________________________________
-ClassImp(THaDetMap)
+ClassImp(THcDetMap)
 
