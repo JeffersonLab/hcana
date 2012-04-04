@@ -10,21 +10,19 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-#include "ThcDetectorBase.h"
-#include "THcDetMap.h"
+#include "THcDetectorBase.h"
+#include "THaEvData.h"
+#include "THaDetMap.h"
+#include "TClonesArray.h"
 
 using namespace std;
 
 THcDetectorBase::THcDetectorBase( const char* name,
 				  const char* description ) :
-  THaAnalysisObject(name, description), fNelem(0)
+  THaDetectorBase(name, description)
 {
-  // Normal constructor. Creates an empty detector map.
-  // Later can use THaDetectorBase if signal and plane info
-  // is added to the THaDetMap in podd.
+  // Normal constructor.
 
-  fSize[0] = fSize[1] = fSize[2] = 0.0;
-  fDetMap = new THcDetMap;
   fRawHitList = NULL;
 
 }
@@ -32,17 +30,19 @@ THcDetectorBase::THcDetectorBase( const char* name,
 THcDetectorBase::THcDetectorBase() : THaDetectorBase() {
 }
 
-THcDetectorBase::~THcDetectorBase() : ~THaDetectorBase() {
+THcDetectorBase::~THcDetectorBase() {
+  // Destructor
 }
 
-THcDetectorBase::InitHitlist(const char *hitclass, Int_T maxhits) {
+void THcDetectorBase::InitHitlist(const char *hitclass, Int_t maxhits) {
   // Probably called by ReadDatabase
   fRawHitList = new TClonesArray(hitclass, maxhits);
+  fNMaxRawHits = maxhits;
+  fNRawHits = 0;
 }
    
 
-THcDetectorBase::Decode( THaEvData& evdata )
-{
+Int_t THcDetectorBase::Decode( const THaEvData& evdata ) {
   THcRawHit* rawhit;
   fRawHitList->Clear("C");
   
@@ -62,13 +62,21 @@ THcDetectorBase::Decode( THaEvData& evdata )
       Int_t counter = d->reverse ? d->first + d->hi - chan : d->first + chan - d->lo;
 	
       // Allow for multiple hits
-      Int_t nHits = evData.GetNumHits(d->crate, d->slot, chan);
+
+      // Search hit list for plane and counter
+      for (Int_t hit = 0; hit < n 
+
       // Get the data. Scintillators are assumed to have only single hit (hit=0)
+      Int_t nMHits = evData.GetNumHits(d->crate, d->slot, chan);
+      for (Int_t mhit = 0; mhit < nMHits; mhit++) {
+	Int_t data = evdata.GetData( d->crate, d->slot, chan, mhit);
 
-      
 
-      for (Int_t hit = 0; hit < nHits; hit++) {
-	Int_t data = evdata.GetData( d->crate, d->slot, chan, hit);
+
+
+ THcRawHit*       GetHit(Int_t i) const
+  { assert(i >=0 && i<GetNHits() );
+    return (THcRawHit*)fHits->UncheckedAt(i);}
 
 
   while( raw data) {
