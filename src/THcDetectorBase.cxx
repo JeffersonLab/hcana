@@ -37,15 +37,20 @@ THcDetectorBase::~THcDetectorBase() {
 void THcDetectorBase::InitHitlist(const char *hitclass, Int_t maxhits) {
   // Probably called by ReadDatabase
   fRawHitList = new TClonesArray(hitclass, maxhits);
+  fRawHitClass = fRawHitList->GetClass();
   fNMaxRawHits = maxhits;
   fNRawHits = 0;
+  for(Int_t i=0;i<maxhits;i++) {
+    fRawHitList->New(i);
+  }
 }
    
 
 Int_t THcDetectorBase::Decode( const THaEvData& evdata ) {
   THcRawHit* rawhit;
   fRawHitList->Clear("C");
-  
+  fNRawHits = 0;
+
   for ( Int_t i=0; i < fDetMap->GetSize(); i++ ) {
     THaDetMap::Module* d = fDetMap->GetModule(i);
 
@@ -61,36 +66,36 @@ Int_t THcDetectorBase::Decode( const THaEvData& evdata ) {
       Int_t signal = d->signal;
       Int_t counter = d->reverse ? d->first + d->hi - chan : d->first + chan - d->lo;
 	
-      // Allow for multiple hits
-
       // Search hit list for plane and counter
-      for (Int_t hit = 0; hit < n 
-
-      // Get the data. Scintillators are assumed to have only single hit (hit=0)
-      Int_t nMHits = evData.GetNumHits(d->crate, d->slot, chan);
+      // We could do sorting 
+      Int_t thishit = 0;
+      while(thishit < fNRawHits) {
+	rawhit = (THcRawHit*) (*fRawHitList)[thishit];
+	if (plane == rawhit->fPlane
+	    && counter == rawhit->fCounter) {
+	  break;
+	}
+	thishit++;
+      }
+      if(thishit == fNRawHits) {
+	fNRawHits++;
+	rawhit = (THcRawHit*) (*fRawHitList)[thishit];
+	rawhit->fPlane = plane;
+	rawhit->fCounter = counter;
+      }
+	
+      // Get the data from this channel
+      // Allow for multiple hits
+      Int_t nMHits = evdata.GetNumHits(d->crate, d->slot, chan);
       for (Int_t mhit = 0; mhit < nMHits; mhit++) {
 	Int_t data = evdata.GetData( d->crate, d->slot, chan, mhit);
-
-
-
-
- THcRawHit*       GetHit(Int_t i) const
-  { assert(i >=0 && i<GetNHits() );
-    return (THcRawHit*)fHits->UncheckedAt(i);}
-
-
-  while( raw data) {
-    // Get a data word
-    // Get plane, counter, signal
-    // Search list for that plane counter
-    // if(plane,counter hit doesn't exist) {
-    //   rawhit = fRawHitList[i];
-    // } else {
-    //   rawhit = static_cast(THcRawHit*>( fRawHitClass->New() );
-    // }
-    // rawhit->AddSignal(isignal) = datavalue;
+	rawhit->SetData(signal,data);
+      }
+    }
   }
-}
+  fRawHitList->Sort(fNRawHits);
 
+  return fNRawHits;		// Does anything care what is returned
+}
 
 ClassImp(THcDetectorBase)

@@ -36,7 +36,7 @@ class THcDetectorBase : public THaDetectorBase {
   Int_t         fNRawHits;
   Int_t         fNMaxRawHits;
   TClonesArray* fRawHitList; // List of raw hits
-  TClass* fRawHitCLass;		  // Class of raw hit object to use
+  TClass* fRawHitClass;		  // Class of raw hit object to use
 
  protected:
 
