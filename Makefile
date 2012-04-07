@@ -9,8 +9,8 @@
 
 
 SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
-	src/THcHodoscopeHit.cxx src/THcRawHit.cxx src/THcRawHitList.cxx \
-	src/THcDetectorMap.cxx
+	src/THcHodoscopeHit.cxx src/THcRawHit.cxx \
+	src/THcDetectorBase.cxx
 
 # Name of your package. 
 # The shared library that will be built will get the name lib$(PACKAGE).so
