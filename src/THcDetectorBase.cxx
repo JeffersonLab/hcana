@@ -5,12 +5,6 @@
 // THcDetectorBase
 //
 // Add hitlist to the Hall A detector base
-<<<<<<< HEAD
-//
-//////////////////////////////////////////////////////////////////////////
-
-#include "ThcDetectorBase.h"
-=======
 // May not need to inherit from THaDetectorBase since we may end up
 // replacing most of the methods
 //
@@ -20,7 +14,6 @@
 #include "THaEvData.h"
 #include "THaDetMap.h"
 #include "TClonesArray.h"
->>>>>>> d715b6024d14d1acc253ad0eef3926e5d9f69035
 
 using namespace std;
 
@@ -28,21 +21,15 @@ THcDetectorBase::THcDetectorBase( const char* name,
 				  const char* description ) :
   THaDetectorBase(name, description)
 {
-<<<<<<< HEAD
-=======
   // Normal constructor.
 
   fRawHitList = NULL;
 
->>>>>>> d715b6024d14d1acc253ad0eef3926e5d9f69035
 }
 
 THcDetectorBase::THcDetectorBase() : THaDetectorBase() {
 }
 
-<<<<<<< HEAD
-THcDetectorBase::~THcDetectorBase() : ~THaDetectorBase() {
-=======
 THcDetectorBase::~THcDetectorBase() {
   // Destructor
 }
@@ -109,7 +96,6 @@ Int_t THcDetectorBase::Decode( const THaEvData& evdata ) {
   fRawHitList->Sort(fNRawHits);
 
   return fNRawHits;		// Does anything care what is returned
->>>>>>> d715b6024d14d1acc253ad0eef3926e5d9f69035
 }
 
 ClassImp(THcDetectorBase)

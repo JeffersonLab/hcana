@@ -2,14 +2,11 @@
 #define ROOT_THcDetectorBase
 
 #include "THaDetectorBase.h"
-<<<<<<< HEAD
-=======
 #include "THcRawHit.h"
 #include "TClonesArray.h"
 
 
 using namespace std;
->>>>>>> d715b6024d14d1acc253ad0eef3926e5d9f69035
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -17,24 +14,12 @@ using namespace std;
 //
 //////////////////////////////////////////////////////////////////////////
 
-<<<<<<< HEAD
-=======
 //class THaDetMap;
 
->>>>>>> d715b6024d14d1acc253ad0eef3926e5d9f69035
 class THcDetectorBase : public THaDetectorBase {
 
  public:
 
-<<<<<<< HEAD
-  virtual ~THaDetectorBase();
-
-  THaDetectorBase(); // only for ROOT I/O
-
- protected:
-
-  ClassDef(ThcDetectorBase,0)
-=======
   virtual ~THcDetectorBase();
 
   THcDetectorBase(); // only for ROOT I/O
@@ -56,6 +41,5 @@ class THcDetectorBase : public THaDetectorBase {
  protected:
 
   ClassDef(THcDetectorBase,0)
->>>>>>> d715b6024d14d1acc253ad0eef3926e5d9f69035
 };
 #endif
