@@ -28,7 +28,7 @@ using namespace std;
 //_____________________________________________________________________________
 THcHodoscope::THcHodoscope( const char* name, const char* description,
 				  THaApparatus* apparatus ) :
-  THaNonTrackingDetector(name,description,apparatus)
+  THcNonTrackingDetector(name,description,apparatus)
 {
   // Constructor
   fTWalkPar = 0;
@@ -38,7 +38,7 @@ THcHodoscope::THcHodoscope( const char* name, const char* description,
 
 //_____________________________________________________________________________
 THcHodoscope::THcHodoscope( ) :
-  THaNonTrackingDetector()
+  THcNonTrackingDetector()
 {
   // Constructor
   fTWalkPar = NULL;
@@ -55,7 +55,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 {
   // Extra initialization for scintillators: set up DataDest map
 
-  if( THaNonTrackingDetector::Init( date ) )
+  if( THcNonTrackingDetector::Init( date ) )
     return fStatus;
 
   const DataDest tmp[NDEST] = {
@@ -477,69 +477,11 @@ void THcHodoscope::ClearEvent()
 //_____________________________________________________________________________
 Int_t THcHodoscope::Decode( const THaEvData& evdata )
 {
-  // Decode scintillator data, correct TDC times and ADC amplitudes, and copy
-  // the data to the local data members.
-  // This implementation makes the following assumptions about the detector map:
-  // - The first half of the map entries corresponds to ADCs, 
-  //   the second half, to TDCs.
-  // - The first fNelem detector channels correspond to the PMTs on the
-  //   right hand side, the next fNelem channels, to the left hand side.
-  //   (Thus channel numbering for each module must be consecutive.)
 
-  ClearEvent();
+  // Get the hitlist (fRawHitList) for this event
+  Int_t nhits = THcDetectorBase::Decode(evdata);
 
-  // Loop over all modules defined for Scintillator 1 detector
-
-  for( Int_t i = 0; i < fDetMap->GetSize(); i++ ) {
-    THaDetMap::Module* d = fDetMap->GetModule( i );
-    bool adc = ( d->model ? fDetMap->IsADC(d) : (i < fDetMap->GetSize()/2) );
-
-    // Loop over all channels that have a hit.
-    for( Int_t j = 0; j < evdata.GetNumChan( d->crate, d->slot ); j++) {
-
-      Int_t chan = evdata.GetNextChan( d->crate, d->slot, j );
-      if( chan < d->lo || chan > d->hi ) continue;     // Not one of my channels
-
-      // Get the data. Scintillators are assumed to have only single hit (hit=0)
-      Int_t data = evdata.GetData( d->crate, d->slot, chan, 0 );
-
-      // Get the detector channel number, starting at 0
-      Int_t k = d->first + chan - d->lo - 1;   
-
-#ifdef WITH_DEBUG      
-      if( k<0 || k>NDEST*fNelem ) {
-	// Indicates bad database
-	Warning( Here("Decode()"), "Illegal detector channel: %d", k );
-	continue;
-      }
-//        cout << "adc,j,k = " <<adc<<","<<j<< ","<<k<< endl;
-#endif
-      // Copy the data to the local variables.
-      DataDest* dest = fDataDest + k/fNelem;
-      k = k % fNelem;
-      if( adc ) {
-	dest->adc[k]   = static_cast<Double_t>( data );
-	dest->adc_p[k] = data - dest->ped[k];
-	dest->adc_c[k] = dest->adc_p[k] * dest->gain[k];
-	(*dest->nahit)++;
-      } else {
-	dest->tdc[k]   = static_cast<Double_t>( data );
-	dest->tdc_c[k] = (data - dest->offset[k])*fTdc2T;
-	(*dest->nthit)++;
-      }
-    }
-  }
-  if ( fDebug > 3 ) {
-    printf("\n\nEvent %d   Trigger %d Scintillator %s\n:",
-	   evdata.GetEvNum(), evdata.GetEvType(), GetPrefix() );
-    printf("   paddle  Left(TDC    ADC   ADC_p)   Right(TDC   ADC   ADC_p)\n");
-    for ( int i=0; i<fNelem; i++ ) {
-      printf("     %2d     %5.0f    %5.0f  %5.0f     %5.0f    %5.0f  %5.0f\n",
-	     i+1,fLT[i],fLA[i],fLA_p[i],fRT[i],fRA[i],fRA_p[i]);
-    }
-  }
-  
-  return fLTNhit+fRTNhit;
+  return nhits;
 }
 
 //_____________________________________________________________________________

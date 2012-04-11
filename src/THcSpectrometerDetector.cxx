@@ -2,41 +2,41 @@
 
 //////////////////////////////////////////////////////////////////////////
 //
-// THaSpectrometerDetector
+// THcSpectrometerDetector
 //
 //////////////////////////////////////////////////////////////////////////
 
-#include "THaSpectrometerDetector.h"
+#include "THcSpectrometerDetector.h"
 #include "THaTrack.h"
 #include "TMath.h"
 
-ClassImp(THaSpectrometerDetector)
+ClassImp(THcSpectrometerDetector)
 
 //______________________________________________________________________________
-THaSpectrometerDetector::THaSpectrometerDetector( const char* name, 
+THcSpectrometerDetector::THcSpectrometerDetector( const char* name, 
 						  const char* description,
 						  THaApparatus* apparatus )
-  : THaDetector(name,description,apparatus)
+  : THcDetector(name,description,apparatus)
 {
   // Constructor
 
 }
 
 //______________________________________________________________________________
-THaSpectrometerDetector::THaSpectrometerDetector( )
+THcSpectrometerDetector::THcSpectrometerDetector( )
 {
   // Constructor for ROOT I/O only
 }
 
 //______________________________________________________________________________
-THaSpectrometerDetector::~THaSpectrometerDetector()
+THcSpectrometerDetector::~THcSpectrometerDetector()
 {
   // Destructor
 
 }
 
 //_____________________________________________________________________________
-void THaSpectrometerDetector::DefineAxes(Double_t rotation_angle)
+void THcSpectrometerDetector::DefineAxes(Double_t rotation_angle)
 {
   // define variables used for calculating intercepts of tracks
   // with the detector
@@ -50,7 +50,7 @@ void THaSpectrometerDetector::DefineAxes(Double_t rotation_angle)
 }
 
 //_____________________________________________________________________________
-bool THaSpectrometerDetector::CalcTrackIntercept(THaTrack* theTrack, 
+bool THcSpectrometerDetector::CalcTrackIntercept(THaTrack* theTrack, 
 					 Double_t& t, Double_t& xcross, 
 					 Double_t& ycross)
 {
@@ -75,21 +75,21 @@ bool THaSpectrometerDetector::CalcTrackIntercept(THaTrack* theTrack,
 }
 
 //_____________________________________________________________________________
-bool THaSpectrometerDetector::CheckIntercept(THaTrack *track)
+bool THcSpectrometerDetector::CheckIntercept(THaTrack *track)
 {
   Double_t x, y, t;
   return CalcTrackIntercept(track, t, x, y);
 }
 
 //_____________________________________________________________________________
-bool THaSpectrometerDetector::CalcInterceptCoords(THaTrack* track, Double_t& x, Double_t& y)
+bool THcSpectrometerDetector::CalcInterceptCoords(THaTrack* track, Double_t& x, Double_t& y)
 {
   Double_t t;
   return CalcTrackIntercept(track, t, x, y);
 }
 
 //_____________________________________________________________________________
-bool THaSpectrometerDetector::CalcPathLen(THaTrack* track, Double_t& t)
+bool THcSpectrometerDetector::CalcPathLen(THaTrack* track, Double_t& t)
 {
   Double_t x, y;
   return CalcTrackIntercept(track, t, x, y);

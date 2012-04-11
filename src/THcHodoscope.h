@@ -1,23 +1,23 @@
-#ifndef ROOT_THaHodoscope
-#define ROOT_THaHodoscope
+#ifndef ROOT_THcHodoscope
+#define ROOT_THcHodoscope
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// THaHodoscope                                                           //
+// THcHodoscope                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TClonesArray.h"
-#include "THaNonTrackingDetector.h"
+#include "THcNonTrackingDetector.h"
 
 class THaScCalib;
 
-class THaHodoscope : public THaNonTrackingDetector {
+class THcHodoscope : public THcNonTrackingDetector {
 
 public:
-  THaHodoscope( const char* name, const char* description = "",
+  THcHodoscope( const char* name, const char* description = "",
 		   THaApparatus* a = NULL );
-  virtual ~THaHodoscope();
+  virtual ~THcHodoscope();
 
   virtual Int_t      Decode( const THaEvData& );
   virtual EStatus    Init( const TDatime& run_time );
@@ -38,7 +38,7 @@ public:
   
   friend class THaScCalib;
 
-  THaHodoscope();  // for ROOT I/O
+  THcHodoscope();  // for ROOT I/O
 protected:
 
   // Calibration
@@ -119,7 +119,7 @@ protected:
   virtual  Double_t TimeWalkCorrection(const Int_t& paddle,
 					   const ESide side);
 
-  ClassDef(THaHodoscope,0)   // Generic scintillator class
+  ClassDef(THcHodoscope,0)   // Generic hodoscope class
 };
 
 ////////////////////////////////////////////////////////////////////////////////

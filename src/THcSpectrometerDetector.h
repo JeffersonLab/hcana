@@ -1,9 +1,9 @@
-#ifndef ROOT_THaSpectrometerDetector
-#define ROOT_THaSpectrometerDetector
+#ifndef ROOT_THcSpectrometerDetector
+#define ROOT_THcSpectrometerDetector
 
 //////////////////////////////////////////////////////////////////////////
 //
-// THaSpectrometerDetector
+// THcSpectrometerDetector
 //
 // Abstract base class for a generic spectrometer detector. 
 //
@@ -12,14 +12,14 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-#include "THaDetector.h"
+#include "THcDetector.h"
 
 class THaTrack;
 
-class THaSpectrometerDetector : public THaDetector {
+class THcSpectrometerDetector : public THcDetector {
   
 public:
-  virtual ~THaSpectrometerDetector();
+  virtual ~THcSpectrometerDetector();
   
   virtual Bool_t   IsTracking() = 0;
   virtual Bool_t   IsPid()      = 0;
@@ -29,7 +29,7 @@ public:
 					Double_t& x, Double_t& y );
           bool     CalcPathLen( THaTrack* track, Double_t& t );
 
-  THaSpectrometerDetector();       // for ROOT I/O only
+  THcSpectrometerDetector();       // for ROOT I/O only
 
 protected:
 
@@ -44,10 +44,10 @@ protected:
 				    Double_t& ycross, Double_t& xcross);
 
   //Only derived classes may construct me
-  THaSpectrometerDetector( const char* name, const char* description,
+  THcSpectrometerDetector( const char* name, const char* description,
 			   THaApparatus* a = NULL );
 
-  ClassDef(THaSpectrometerDetector,1)   //ABC for a spectrometer detector
+  ClassDef(THcSpectrometerDetector,0)   //ABC for a spectrometer detector
 };
 
 #endif

@@ -1,9 +1,9 @@
-#ifndef ROOT_THaNonTrackingDetector
-#define ROOT_THaNonTrackingDetector
+#ifndef ROOT_THcNonTrackingDetector
+#define ROOT_THcNonTrackingDetector
 
 //////////////////////////////////////////////////////////////////////////
 //
-// THaNonTrackingDetector.h
+// THcNonTrackingDetector.h
 //
 // Abstract base class for a generic non-tracking spectrometer detector. 
 //
@@ -12,16 +12,16 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-#include "THaSpectrometerDetector.h"
+#include "THcSpectrometerDetector.h"
 
 class TClonesArray;
 
-class THaNonTrackingDetector : public THaSpectrometerDetector {
+class THcNonTrackingDetector : public THcSpectrometerDetector {
   
 public:
-  THaNonTrackingDetector(); // only for ROOT I/O
+  THcNonTrackingDetector(); // only for ROOT I/O
 
-  virtual ~THaNonTrackingDetector();
+  virtual ~THcNonTrackingDetector();
   
   virtual Int_t    CoarseProcess( TClonesArray& tracks ) = 0;
   virtual Int_t    FineProcess( TClonesArray& tracks )  = 0;
@@ -32,10 +32,10 @@ protected:
 
   //Only derived classes may construct me for real
 
-  THaNonTrackingDetector( const char* name, const char* description,
+  THcNonTrackingDetector( const char* name, const char* description,
 			  THaApparatus* a = NULL);
 
-  ClassDef(THaNonTrackingDetector,1)  //ABC for a non-tracking spectrometer detector
+  ClassDef(THcNonTrackingDetector,0)  //ABC for a non-tracking spectrometer detector
 };
 
 #endif

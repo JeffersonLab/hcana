@@ -2,34 +2,34 @@
 
 //////////////////////////////////////////////////////////////////////////
 //
-// THaNonTrackingDetector
+// THcNonTrackingDetector
 //
 //////////////////////////////////////////////////////////////////////////
 
-#include "THaNonTrackingDetector.h"
+#include "THcNonTrackingDetector.h"
 
-ClassImp(THaNonTrackingDetector)
+ClassImp(THcNonTrackingDetector)
 
 //______________________________________________________________________________
-THaNonTrackingDetector::THaNonTrackingDetector( const char* name, 
+THcNonTrackingDetector::THcNonTrackingDetector( const char* name, 
 						const char* description,
 						THaApparatus* apparatus )
-  : THaSpectrometerDetector(name,description,apparatus)
+  : THcSpectrometerDetector(name,description,apparatus)
 {
   // Normal constructor with name and description
 
 }
 
 //______________________________________________________________________________
-THaNonTrackingDetector::THaNonTrackingDetector( )
-  : THaSpectrometerDetector( )
+THcNonTrackingDetector::THcNonTrackingDetector( )
+  : THcSpectrometerDetector( )
 {
   // for ROOT I/O only
 
 }
 
 //______________________________________________________________________________
-THaNonTrackingDetector::~THaNonTrackingDetector()
+THcNonTrackingDetector::~THcNonTrackingDetector()
 {
   // Destructor
 
