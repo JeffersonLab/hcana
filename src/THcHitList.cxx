@@ -11,6 +11,8 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "THcHitList.h"
+#include "THaEvData.h"
+#include "THaDetMap.h"
 #include "TClonesArray.h"
 
 using namespace std;
