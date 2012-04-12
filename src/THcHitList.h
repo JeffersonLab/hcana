@@ -1,7 +1,6 @@
-#ifndef ROOT_THcDetectorBase
-#define ROOT_THcDetectorBase
+#ifndef ROOT_THcHitList
+#define ROOT_THcHitList
 
-#include "THaDetectorBase.h"
 #include "THcRawHit.h"
 #include "TClonesArray.h"
 
@@ -10,20 +9,20 @@ using namespace std;
 
 //////////////////////////////////////////////////////////////////////////
 //
-// THcDetectorBase
+// THcHitList
 //
 //////////////////////////////////////////////////////////////////////////
 
 //class THaDetMap;
 
-class THcDetectorBase : public THaDetectorBase {
+class THcHitList {
 
  public:
 
-  virtual ~THcDetectorBase();
+  virtual ~THcHitList();
 
-  THcDetectorBase(); // only for ROOT I/O
-  THcDetectorBase( const char* name, const char* description );
+  THcHitList(); // only for ROOT I/O
+  THcHitList( const char* name, const char* description );
 
 
   virtual Int_t Decode( const THaEvData& );
@@ -40,6 +39,6 @@ class THcDetectorBase : public THaDetectorBase {
 
  protected:
 
-  ClassDef(THcDetectorBase,0)
+  ClassDef(THcHitList,0)
 };
 #endif

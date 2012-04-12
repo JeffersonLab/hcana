@@ -2,7 +2,7 @@
 
 //////////////////////////////////////////////////////////////////////////
 //
-// THcDetectorBase
+// THcHitList
 //
 // Add hitlist to the Hall A detector base
 // May not need to inherit from THaDetectorBase since we may end up
@@ -10,16 +10,14 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
-#include "THcDetectorBase.h"
+#include "THcHitList.h"
 #include "THaEvData.h"
 #include "THaDetMap.h"
 #include "TClonesArray.h"
 
 using namespace std;
 
-THcDetectorBase::THcDetectorBase( const char* name,
-				  const char* description ) :
-  THaDetectorBase(name, description)
+THcHitList::THcHitList() 
 {
   // Normal constructor.
 
@@ -27,14 +25,14 @@ THcDetectorBase::THcDetectorBase( const char* name,
 
 }
 
-THcDetectorBase::THcDetectorBase() : THaDetectorBase() {
+THcHitList::THcHitList() {
 }
 
-THcDetectorBase::~THcDetectorBase() {
+THcHitList::~THcHitList() {
   // Destructor
 }
 
-void THcDetectorBase::InitHitlist(const char *hitclass, Int_t maxhits) {
+void THcHitList::InitHitlist(const char *hitclass, Int_t maxhits) {
   // Probably called by ReadDatabase
   fRawHitList = new TClonesArray(hitclass, maxhits);
   fRawHitClass = fRawHitList->GetClass();
@@ -46,7 +44,7 @@ void THcDetectorBase::InitHitlist(const char *hitclass, Int_t maxhits) {
 }
    
 
-Int_t THcDetectorBase::Decode( const THaEvData& evdata ) {
+Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
   THcRawHit* rawhit;
   fRawHitList->Clear("C");
   fNRawHits = 0;
@@ -98,4 +96,4 @@ Int_t THcDetectorBase::Decode( const THaEvData& evdata ) {
   return fNRawHits;		// Does anything care what is returned
 }
 
-ClassImp(THcDetectorBase)
+ClassImp(THcHitList)
