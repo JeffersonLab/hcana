@@ -32,6 +32,12 @@ inline static bool IsComment( const string& s, string::size_type pos )
 	   (s[pos] == '!') );
 }
 
+virtual Int_t THcDetectorMap::FillMap(THaDetMap *detmap, string *detectorname) {
+  Int_t detectorid=3;  // Get this from detectorname
+  
+  // Loop through the list looking for all hardware channels that
+  //  are detectorid.  Sort and try to minimize AddModule calls
+}
 
 void THcDetectorMap::Load(const char *fname)
 {

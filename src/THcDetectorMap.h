@@ -17,6 +17,15 @@ class THcDetectorMap : public TObject {
   
   virtual void Load(const char *fname);
 
+  // Member variables needed
+  // List of detector IDs.
+  // Hardware to logical detector mapping for each detector
+  // Mapping between detector names and numbers
+  // Hardwire, but later configure
+  struct Detector {
+    UInt_t did; 	// Numberical Detector ID
+    TList* 
+
  protected:
 
   ClassDef(THcDetectorMap,0);

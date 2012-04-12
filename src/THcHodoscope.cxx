@@ -68,6 +68,11 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   // maximum number of hits after setting up the detector map
 
   THcHitList::InitHitList(fDetMap, "THcHodoscopeHit", 100);
+  if( gHcDetectorMap->FillMap("detectorname",fDetMap) < 0 ) {
+      Error( Here(here), "Error filling detectormap for %s.", 
+	     "detectorname");
+      return kInitError;
+  }
 
   return fStatus = kOK;
 }
