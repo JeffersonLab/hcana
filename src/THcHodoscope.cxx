@@ -28,7 +28,7 @@ using namespace std;
 //_____________________________________________________________________________
 THcHodoscope::THcHodoscope( const char* name, const char* description,
 				  THaApparatus* apparatus ) :
-  THcNonTrackingDetector(name,description,apparatus)
+  THaNonTrackingDetector(name,description,apparatus)
 {
   // Constructor
   fTWalkPar = 0;
@@ -38,7 +38,7 @@ THcHodoscope::THcHodoscope( const char* name, const char* description,
 
 //_____________________________________________________________________________
 THcHodoscope::THcHodoscope( ) :
-  THcNonTrackingDetector()
+  THaNonTrackingDetector()
 {
   // Constructor
   fTWalkPar = NULL;
@@ -55,7 +55,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 {
   // Extra initialization for scintillators: set up DataDest map
 
-  if( THcNonTrackingDetector::Init( date ) )
+  if( THaNonTrackingDetector::Init( date ) )
     return fStatus;
 
   const DataDest tmp[NDEST] = {
@@ -63,6 +63,11 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
     { &fLTNhit, &fLANhit, fLT, fLT_c, fLA, fLA_p, fLA_c, fLOff, fLPed, fLGain }
   };
   memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
+
+  // Should probably put this in ReadDatabase as we will know the
+  // maximum number of hits after setting up the detector map
+
+  THcHitList::InitHitList(fDetMap, "THcHodoscopeHit", 100);
 
   return fStatus = kOK;
 }

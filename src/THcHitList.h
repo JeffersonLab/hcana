@@ -23,9 +23,7 @@ class THcHitList {
 
   virtual ~THcHitList();
 
-  THcHitList(); // only for ROOT I/O
-  THcHitList( const char* name, const char* description );
-
+  THcHitList();
 
   virtual Int_t DecodeToHitList( const THaEvData& );
   void          InitHitList(THaDetMap* detmap,
@@ -40,7 +38,7 @@ class THcHitList {
   TClonesArray* fRawHitList; // List of raw hits
   TClass* fRawHitClass;		  // Class of raw hit object to use
 
-  THaDetMap*    fDetMap;
+  THaDetMap*    fdMap;
 
  protected:
 

@@ -11,9 +11,6 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "THcHitList.h"
-#include "THaEvData.h"
-#include "THaDetMap.h"
-#include "TClonesArray.h"
 
 using namespace std;
 
@@ -40,7 +37,7 @@ void THcHitList::InitHitList(THaDetMap* detmap,
     fRawHitList->New(i);
   }
   
-  fDetMap = detmap;
+  fdMap = detmap;
 }
 
 Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
@@ -48,8 +45,8 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
   fRawHitList->Clear("C");
   fNRawHits = 0;
 
-  for ( Int_t i=0; i < fDetMap->GetSize(); i++ ) {
-    THaDetMap::Module* d = fDetMap->GetModule(i);
+  for ( Int_t i=0; i < fdMap->GetSize(); i++ ) {
+    THaDetMap::Module* d = fdMap->GetModule(i);
 
     // Loop over all channels that have a hit.
     for ( Int_t j=0; j < evdata.GetNumChan( d->crate, d->slot); j++) {

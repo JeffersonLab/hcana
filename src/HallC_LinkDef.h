@@ -13,5 +13,6 @@
 #pragma link C++ class THcHodoscopeHit+;
 #pragma link C++ class THcHitList+;
 #pragma link C++ class THcHodoscope+;
+#pragma link C++ class THcDetectorMap+;
 
 #endif
