@@ -8,11 +8,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TClonesArray.h"
-#include "THcNonTrackingDetector.h"
+#include "THaNonTrackingDetector.h"
+#include "THcHitList.h"
 
 class THaScCalib;
 
-class THcHodoscope : public THcNonTrackingDetector {
+class THcHodoscope : public THaNonTrackingDetector, public THcHitList {
 
 public:
   THcHodoscope( const char* name, const char* description = "",

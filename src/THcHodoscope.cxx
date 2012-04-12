@@ -479,7 +479,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 {
 
   // Get the hitlist (fRawHitList) for this event
-  Int_t nhits = THcDetectorBase::Decode(evdata);
+  Int_t nhits = THcHitList::DecodeToHitList(evdata);
 
   return nhits;
 }
