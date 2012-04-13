@@ -8,23 +8,46 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
+#include "THaDetMap.h"
+#include <list>
 
 class THcDetectorMap : public TObject {
 
  public:
-  THcDetectorMap() {}
-  virtual ~THcDetectorMap() {}
+  THcDetectorMap();
+  virtual ~THcDetectorMap();
   
   virtual void Load(const char *fname);
+  virtual Int_t FillMap(THaDetMap* detmap, const char* detectorname);
 
-  // Member variables needed
-  // List of detector IDs.
-  // Hardware to logical detector mapping for each detector
-  // Mapping between detector names and numbers
-  // Hardwire, but later configure
-  struct Detector {
-    UInt_t did; 	// Numberical Detector ID
-    TList* 
+  Int_t fNchans;  // Number of hardware channels
+
+  struct Channel { // Mapping for one hardware channel
+    Int_t roc;
+    Int_t slot;
+    Int_t channel;
+    Int_t did;
+    Int_t plane;
+    Int_t counter;
+    Int_t signal;
+  };
+  Channel fTable[10000]; // Big ugly cache of the map file
+
+  struct ChaninMod {
+    Int_t channel;
+    Int_t plane;
+    Int_t counter;
+    Int_t signal;
+  };
+  struct ModChanList {
+    Int_t roc;
+    Int_t slot;
+    std::list<ChaninMod> clist;
+      
+  };
+  std::list<ModChanList> mlist;
+
+  bool compare(const ChaninMod *first, const ChaninMod *second);
 
  protected:
 

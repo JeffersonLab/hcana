@@ -32,11 +32,70 @@ inline static bool IsComment( const string& s, string::size_type pos )
 	   (s[pos] == '!') );
 }
 
-virtual Int_t THcDetectorMap::FillMap(THaDetMap *detmap, string *detectorname) {
-  Int_t detectorid=3;  // Get this from detectorname
-  
-  // Loop through the list looking for all hardware channels that
-  //  are detectorid.  Sort and try to minimize AddModule calls
+//_____________________________________________________________________________
+THcDetectorMap::THcDetectorMap() : fNchans(0)
+{
+}
+
+//_____________________________________________________________________________
+THcDetectorMap::~THcDetectorMap()
+{
+}
+
+//bool THcDetectorMap::compare(const ChaninMod *first, const ChaninMod *second) {
+//      return((first->channel < second->channel)? true: false);
+//}
+struct Functor
+{
+  bool operator() (const THcDetectorMap::ChaninMod &first, const THcDetectorMap::ChaninMod &second)
+  { return((first.channel < second.channel)? true: false);}
+};
+//_____________________________________________________________________________
+Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
+// Should probably return a status
+{
+  list<ModChanList>::iterator imod;
+  ChaninMod Achan;
+  ModChanList Amod;
+
+  // Need one array of uniq crate/slot combos
+
+  // Translate detector name into and ID
+  Int_t did=3;  // Get this from detectorname
+  mlist.clear();
+
+  for(Int_t ich=0;ich<fNchans;ich++) {
+    if(fTable[ich].did == did) {
+      Int_t roc=fTable[ich].roc;
+      Int_t slot=fTable[ich].slot;
+      for(imod=mlist.begin(); imod!= mlist.end(); ++imod) {
+	Achan.channel = fTable[ich].channel;
+	Achan.plane = fTable[ich].plane;
+	Achan.counter = fTable[ich].counter;
+	Achan.signal = fTable[ich].signal;
+	if((*imod).roc == roc && (*imod).slot == slot) {
+	  (*imod).clist.push_back(Achan);
+	}
+      }
+      if(imod == mlist.end()) {
+	Amod.roc = roc;
+	Amod.slot = slot;
+	Amod.clist.clear();
+	Amod.clist.push_back(Achan);
+	mlist.push_back(Amod);
+      }
+    }
+  }
+  if(mlist.size() <= 0) {
+    return(-1);
+  }
+  Functor f;
+  for(imod=mlist.begin(); imod!= mlist.end(); ++imod) {
+    list<ChaninMod> *clistp = &((*imod).clist);
+    clistp->sort(f);//Sort by channel
+  }
+    
+  return(0);
 }
 
 void THcDetectorMap::Load(const char *fname)
@@ -59,6 +118,8 @@ void THcDetectorMap::Load(const char *fname)
   Int_t bsub=0;
   Int_t detector=0;
   Int_t slot=0;
+
+  fNchans = 0;
 
   string::size_type start, pos=0;
 
@@ -126,7 +187,16 @@ void THcDetectorMap::Load(const char *fname)
 	signal= ((TObjString*)vararr->At(3))->GetString().Atoi();
       }
       cout << channel << " " << plane << " " << counter << " " << signal << endl;
-      
+
+      fTable[fNchans].roc=roc;
+      fTable[fNchans].roc=slot;
+      fTable[fNchans].channel=channel;
+      fTable[fNchans].did=detector;
+      fTable[fNchans].plane=plane;
+      fTable[fNchans].counter=counter;
+      fTable[fNchans].signal=signal;
+
+      fNchans++;
     }
   }
 

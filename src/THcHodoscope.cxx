@@ -53,6 +53,7 @@ THcHodoscope::THcHodoscope( ) :
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 {
+  static const char* const here = "Init()";
   // Extra initialization for scintillators: set up DataDest map
 
   if( THaNonTrackingDetector::Init( date ) )

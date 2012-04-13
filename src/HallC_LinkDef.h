@@ -5,6 +5,7 @@
 #pragma link off all functions;
 
 #pragma link C++ global gHcParms;
+#pragma link C++ global gHcDetectorMap;
 
 #pragma link C++ class THcInterface+;
 #pragma link C++ class THcParmList+;
