@@ -10,6 +10,8 @@
 #include "THcHodoscope.h"
 #include "THaEvData.h"
 #include "THaDetMap.h"
+#include "THcDetectorMap.h"
+#include "THcGlobals.h"
 #include "VarDef.h"
 #include "VarType.h"
 #include "THaTrack.h"
@@ -69,7 +71,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   // maximum number of hits after setting up the detector map
 
   THcHitList::InitHitList(fDetMap, "THcHodoscopeHit", 100);
-  if( gHcDetectorMap->FillMap("detectorname",fDetMap) < 0 ) {
+  if( gHcDetectorMap->FillMap(fDetMap, "detectorname") < 0 ) {
       Error( Here(here), "Error filling detectormap for %s.", 
 	     "detectorname");
       return kInitError;

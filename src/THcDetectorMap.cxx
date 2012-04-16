@@ -42,9 +42,9 @@ THcDetectorMap::~THcDetectorMap()
 {
 }
 
-//bool THcDetectorMap::compare(const ChaninMod *first, const ChaninMod *second) {
-//      return((first->channel < second->channel)? true: false);
-//}
+bool THcDetectorMap::compare(const ChaninMod *first, const ChaninMod *second) {
+      return((first->channel < second->channel)? true: false);
+}
 struct Functor
 {
   bool operator() (const THcDetectorMap::ChaninMod &first, const THcDetectorMap::ChaninMod &second)
