@@ -55,26 +55,33 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
 // Should probably return a status
 {
   list<ModChanList>::iterator imod;
+  list<ChaninMod>::iterator ichan;
   ChaninMod Achan;
   ModChanList Amod;
 
   // Need one array of uniq crate/slot combos
 
   // Translate detector name into and ID
-  Int_t did=3;  // Get this from detectorname
+  Int_t did=1;  // Get this from detectorname
   mlist.clear();
 
+  cout << "fNchans=" << fNchans << endl;
   for(Int_t ich=0;ich<fNchans;ich++) {
     if(fTable[ich].did == did) {
       Int_t roc=fTable[ich].roc;
       Int_t slot=fTable[ich].slot;
+      cout << "ROC=" << fTable[ich].roc << "  SLOT=" << fTable[ich].slot
+	   << " CHANNEL=" << fTable[ich].channel << endl;
+      Achan.channel = fTable[ich].channel;
+      Achan.plane = fTable[ich].plane;
+      Achan.counter = fTable[ich].counter;
+      Achan.signal = fTable[ich].signal;
       for(imod=mlist.begin(); imod!= mlist.end(); ++imod) {
-	Achan.channel = fTable[ich].channel;
-	Achan.plane = fTable[ich].plane;
-	Achan.counter = fTable[ich].counter;
-	Achan.signal = fTable[ich].signal;
 	if((*imod).roc == roc && (*imod).slot == slot) {
+	  //	  cout << "Pushing chan " << Achan.channel << " to " << roc
+	  //	       << " " << slot << endl;
 	  (*imod).clist.push_back(Achan);
+	  break;
 	}
       }
       if(imod == mlist.end()) {
@@ -83,6 +90,8 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
 	Amod.clist.clear();
 	Amod.clist.push_back(Achan);
 	mlist.push_back(Amod);
+	// 	cout << "New module  " << Achan.channel << " to " << roc
+	//	     << " " << slot << endl;
       }
     }
   }
@@ -91,10 +100,56 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
   }
   Functor f;
   for(imod=mlist.begin(); imod!= mlist.end(); ++imod) {
+    cout << "Slot " << (*imod).slot << endl;
     list<ChaninMod> *clistp = &((*imod).clist);
     clistp->sort(f);//Sort by channel
   }
-    
+  // Copy the information to the Hall A style detector map
+  // grouping consecutive channels that are all the same plane
+  // and signal type
+  UInt_t model=0;		// Need some way to look this up
+  for(imod=mlist.begin(); imod!= mlist.end(); ++imod) {
+    UShort_t roc = (*imod).roc;
+    UShort_t slot = (*imod).slot;
+    cout << "Slot " << slot << endl;
+    list<ChaninMod> *clistp = &((*imod).clist);
+    Int_t first_chan = -1;
+    Int_t last_chan = -1;
+    Int_t last_plane = -1;
+    Int_t last_signal = -1;
+    Int_t first_counter = -1;
+    Int_t last_counter = -1;
+    for(ichan=clistp->begin(); ichan!=clistp->end(); ++ichan) {
+      Int_t this_chan = (*ichan).channel;
+      Int_t this_counter = (*ichan).counter;
+      Int_t this_signal = (*ichan).signal;
+      Int_t this_plane = (*ichan).plane;
+      if(last_chan+1!=this_chan || last_counter+1 != this_counter 
+	 || last_plane != this_plane || last_signal!=this_signal) {
+	if(last_chan >= 0) {
+	  if(ichan != clistp->begin()) {
+	    detmap->AddModule((UShort_t)roc, (UShort_t)slot,
+			      (UShort_t)first_chan, (UShort_t)last_chan, 
+			      (UInt_t) first_counter, model, (Int_t) 0,
+			      (Int_t) -1, (UInt_t)last_plane, (UInt_t)last_signal);
+	  }
+	  first_chan = this_chan;
+	  first_counter = this_counter;
+	}
+	last_chan = this_chan;
+	last_counter = this_counter;
+	last_plane = this_plane;
+	last_signal = this_signal;
+      }
+      cout << "  Channel " << (*ichan).channel << " " <<
+	(*ichan).plane << " " <<  (*ichan).counter << endl;
+    }
+    detmap->AddModule((UShort_t)roc, (UShort_t)slot,
+		      (UShort_t)first_chan, (UShort_t)last_chan, 
+		      (UInt_t) first_counter, model, (Int_t) 0,
+		      (Int_t) -1, (UInt_t)last_plane, (UInt_t)last_signal);
+  }
+  
   return(0);
 }
 
@@ -186,10 +241,14 @@ void THcDetectorMap::Load(const char *fname)
       if(nvals==4) {
 	signal= ((TObjString*)vararr->At(3))->GetString().Atoi();
       }
-      cout << channel << " " << plane << " " << counter << " " << signal << endl;
+
+      if(detector==2) {
+	cout << detector << " " << roc << " " << slot << " " << channel <<
+	  " " << plane << " " << counter << " " << signal << endl;
+      }
 
       fTable[fNchans].roc=roc;
-      fTable[fNchans].roc=slot;
+      fTable[fNchans].slot=slot;
       fTable[fNchans].channel=channel;
       fTable[fNchans].did=detector;
       fTable[fNchans].plane=plane;
