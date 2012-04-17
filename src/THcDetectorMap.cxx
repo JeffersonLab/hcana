@@ -43,6 +43,8 @@ THcDetectorMap::~THcDetectorMap()
 }
 
 bool THcDetectorMap::compare(const ChaninMod *first, const ChaninMod *second) {
+  // This one not used, but we get a link error if we don't include
+  // a compare method
       return((first->channel < second->channel)? true: false);
 }
 struct Functor
@@ -59,19 +61,38 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
   ChaninMod Achan;
   ModChanList Amod;
 
-  // Need one array of uniq crate/slot combos
-
   // Translate detector name into and ID
-  Int_t did=1;  // Get this from detectorname
-  mlist.clear();
+  // For now just long if then else.  Could get it from the comments
+  // at the beginning of the map file.
+  Int_t did;
+  if(strcasecmp(detectorname,"HDC")==0) {
+    did = 1;
+  } else if (strcasecmp(detectorname,"HSCIN")==0) {
+    did = 2;
+  } else if (strcasecmp(detectorname,"HCER")==0) {
+    did = 3;
+  } else if (strcasecmp(detectorname,"HCAL")==0) {
+    did = 4;
+  } else if (strcasecmp(detectorname,"HMISC")==0) {
+    did = 5;
+  } else if (strcasecmp(detectorname,"GMISC")==0) {
+    did = 6;
+  } else if (strcasecmp(detectorname,"HAERO")==0) {
+    did = 7;
+  } else {
+    did = 0;
+  }
+  // Start SHMS with S?  What about SOS?
 
-  cout << "fNchans=" << fNchans << endl;
+  mlist.clear();
+  //  cout << "fNchans=" << fNchans << endl;
   for(Int_t ich=0;ich<fNchans;ich++) {
     if(fTable[ich].did == did) {
       Int_t roc=fTable[ich].roc;
       Int_t slot=fTable[ich].slot;
-      cout << "ROC=" << fTable[ich].roc << "  SLOT=" << fTable[ich].slot
-	   << " CHANNEL=" << fTable[ich].channel << endl;
+      Int_t model=fTable[ich].model;
+      //      cout << "ROC=" << fTable[ich].roc << "  SLOT=" << fTable[ich].slot
+      //	   << " CHANNEL=" << fTable[ich].channel << endl;
       Achan.channel = fTable[ich].channel;
       Achan.plane = fTable[ich].plane;
       Achan.counter = fTable[ich].counter;
@@ -87,6 +108,7 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
       if(imod == mlist.end()) {
 	Amod.roc = roc;
 	Amod.slot = slot;
+	Amod.model = model;
 	Amod.clist.clear();
 	Amod.clist.push_back(Achan);
 	mlist.push_back(Amod);
@@ -100,18 +122,18 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
   }
   Functor f;
   for(imod=mlist.begin(); imod!= mlist.end(); ++imod) {
-    cout << "Slot " << (*imod).slot << endl;
+    //    cout << "Slot " << (*imod).slot << endl;
     list<ChaninMod> *clistp = &((*imod).clist);
     clistp->sort(f);//Sort by channel
   }
   // Copy the information to the Hall A style detector map
   // grouping consecutive channels that are all the same plane
   // and signal type
-  UInt_t model=0;		// Need some way to look this up
   for(imod=mlist.begin(); imod!= mlist.end(); ++imod) {
     UShort_t roc = (*imod).roc;
     UShort_t slot = (*imod).slot;
-    cout << "Slot " << slot << endl;
+    UInt_t model=(*imod).model;
+    //    cout << "Slot " << slot << endl;
     list<ChaninMod> *clistp = &((*imod).clist);
     Int_t first_chan = -1;
     Int_t last_chan = -1;
@@ -128,21 +150,23 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
 	 || last_plane != this_plane || last_signal!=this_signal) {
 	if(last_chan >= 0) {
 	  if(ichan != clistp->begin()) {
+	    //	    cout << "AddModule " << slot << " " << first_chan << 
+	    //  " " << last_chan << " " << first_counter << endl;
 	    detmap->AddModule((UShort_t)roc, (UShort_t)slot,
 			      (UShort_t)first_chan, (UShort_t)last_chan, 
 			      (UInt_t) first_counter, model, (Int_t) 0,
 			      (Int_t) -1, (UInt_t)last_plane, (UInt_t)last_signal);
 	  }
-	  first_chan = this_chan;
-	  first_counter = this_counter;
 	}
-	last_chan = this_chan;
-	last_counter = this_counter;
-	last_plane = this_plane;
-	last_signal = this_signal;
+	first_chan = this_chan;
+	first_counter = this_counter;
       }
-      cout << "  Channel " << (*ichan).channel << " " <<
-	(*ichan).plane << " " <<  (*ichan).counter << endl;
+      last_chan = this_chan;
+      last_counter = this_counter;
+      last_plane = this_plane;
+      last_signal = this_signal;
+      //      cout << "  Channel " << (*ichan).channel << " " <<
+      //	(*ichan).plane << " " <<  (*ichan).counter << endl;
     }
     detmap->AddModule((UShort_t)roc, (UShort_t)slot,
 		      (UShort_t)first_chan, (UShort_t)last_chan, 
@@ -173,6 +197,7 @@ void THcDetectorMap::Load(const char *fname)
   Int_t bsub=0;
   Int_t detector=0;
   Int_t slot=0;
+  Int_t model=0;
 
   fNchans = 0;
 
@@ -226,12 +251,27 @@ void THcDetectorMap::Load(const char *fname)
       } else if (strcasecmp(varname,"slot")==0) {
 	slot = value;
       }
+      if(nsubadd == 96) {
+	model = 1877;
+      } else if (nsubadd == 64) {
+	if(bsub == 16) {
+	  model = 1872;
+	} else if(bsub == 17) {
+	  model = 1881;
+	} else {
+	  model = 0;
+	}
+      } else {
+	model = 0;
+      }
     } else {			// Assume channel definition
       TString values(line.c_str());
       TObjArray *vararr = values.Tokenize(",");
       Int_t nvals = vararr->GetLast()+1;
-      if(nvals<2 || nvals>4) {
-	cout << "Map file: Invalid value count: " << line << endl;
+      if(nvals<3 || nvals>4) {
+	if(nvals > 1) {	// Silent for help, noecho, nodebug, override
+	  cout << "Map file: Invalid value count: " << line << endl;
+	}
 	continue;
       }
       Int_t channel = ((TObjString*)vararr->At(0))->GetString().Atoi();
@@ -242,11 +282,6 @@ void THcDetectorMap::Load(const char *fname)
 	signal= ((TObjString*)vararr->At(3))->GetString().Atoi();
       }
 
-      if(detector==2) {
-	cout << detector << " " << roc << " " << slot << " " << channel <<
-	  " " << plane << " " << counter << " " << signal << endl;
-      }
-
       fTable[fNchans].roc=roc;
       fTable[fNchans].slot=slot;
       fTable[fNchans].channel=channel;
@@ -254,6 +289,7 @@ void THcDetectorMap::Load(const char *fname)
       fTable[fNchans].plane=plane;
       fTable[fNchans].counter=counter;
       fTable[fNchans].signal=signal;
+      fTable[fNchans].model=model;
 
       fNchans++;
     }

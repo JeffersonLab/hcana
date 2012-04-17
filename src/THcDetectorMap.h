@@ -30,6 +30,7 @@ class THcDetectorMap : public TObject {
     Int_t plane;
     Int_t counter;
     Int_t signal;
+    Int_t model;
   };
   Channel fTable[10000]; // Big ugly cache of the map file
 
@@ -42,6 +43,7 @@ class THcDetectorMap : public TObject {
   struct ModChanList {
     Int_t roc;
     Int_t slot;
+    Int_t model;
     std::list<ChaninMod> clist;
       
   };
