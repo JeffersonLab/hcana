@@ -14,6 +14,7 @@
 #include "THaDetMap.h"
 #include "THcDetectorMap.h"
 #include "THcGlobals.h"
+#include "THcParmList.h"
 #include "VarDef.h"
 #include "VarType.h"
 #include "THaTrack.h"
@@ -89,7 +90,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   // Read data from database 
   // Pull values from the THcParmList instead of reading a database
-  // file like Hall A does
+  // file like Hall A does.
 
   //  DBRequest list[] = {
   //    { "TDC_offsetsL", fLOff, kDouble, fNelem },
@@ -108,6 +109,58 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   //    { "Atten",     &fAttenuation },
   //    { 0 }
   //  };
+
+  // We will probably want to add some kind of method to gHcParms to allow
+  // bulk retrieval of parameters of interest.
+
+  fNPlanes = 4;			// Hardwire for now
+
+  fNPaddle = new Int_t [4];
+
+  fNPaddle[0] = *(Int_t *)gHcParms->Find("hscin_1x_nr")->GetValuePointer();
+  fNPaddle[1] = *(Int_t *)gHcParms->Find("hscin_1y_nr")->GetValuePointer();
+  fNPaddle[2] = *(Int_t *)gHcParms->Find("hscin_2x_nr")->GetValuePointer();
+  fNPaddle[3] = *(Int_t *)gHcParms->Find("hscin_2y_nr")->GetValuePointer();
+
+  fSpacing = new Double_t [4];
+  fSpacing[0] = gHcParms->Find("hscin_1x_spacing")->GetValue(0);
+  fSpacing[1] = gHcParms->Find("hscin_1y_spacing")->GetValue(0);
+  fSpacing[2] = gHcParms->Find("hscin_2x_spacing")->GetValue(0);
+  fSpacing[3] = gHcParms->Find("hscin_2y_spacing")->GetValue(0);
+
+  fCenter = new Double_t* [4];
+  Double_t* p;
+  Int_t iplane;
+
+  iplane = 0;
+  p = (Double_t *)gHcParms->Find("hscin_1x_center")->GetValuePointer();
+  fCenter[iplane] = new Double_t [fNPaddle[iplane]];
+  for(Int_t i=0;i<fNPaddle[0];i++) {
+    fCenter[iplane][i] = p[i];
+  }
+
+  iplane = 1;
+  p = (Double_t *)gHcParms->Find("hscin_1y_center")->GetValuePointer();
+  fCenter[iplane] = new Double_t [fNPaddle[iplane]];
+  for(Int_t i=0;i<fNPaddle[0];i++) {
+    fCenter[iplane][i] = p[i];
+  }
+
+  iplane = 2;
+  p = (Double_t *)gHcParms->Find("hscin_2x_center")->GetValuePointer();
+  fCenter[iplane] = new Double_t [fNPaddle[iplane]];
+  for(Int_t i=0;i<fNPaddle[0];i++) {
+    fCenter[iplane][i] = p[i];
+  }
+
+  iplane = 3;
+  p = (Double_t *)gHcParms->Find("hscin_2y_center")->GetValuePointer();
+  fCenter[iplane] = new Double_t [fNPaddle[iplane]];
+  for(Int_t i=0;i<fNPaddle[0];i++) {
+    fCenter[iplane][i] = p[i];
+  }
+
+  fIsInit = true;
 
   return kOK;
 }
@@ -175,6 +228,10 @@ THcHodoscope::~THcHodoscope()
 void THcHodoscope::DeleteArrays()
 {
   // Delete member arrays. Used by destructor.
+
+  delete [] fNPaddle;  fNPaddle = NULL;
+  delete [] fSpacing;  fSpacing = NULL;
+  delete [] fCenter;   fCenter = NULL; // This 2D. What is correct way to delete?
 
   //  delete [] fRA_c;    fRA_c    = NULL;
   //  delete [] fRA_p;    fRA_p    = NULL;
