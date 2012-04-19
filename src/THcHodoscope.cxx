@@ -276,6 +276,13 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = THcHitList::DecodeToHitList(evdata);
 
+  // fRawHitList is TClones array of THcHodoscopeHit objects
+  for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
+    THcHodoscopeHit* hit = (THcHodoscopeHit *) fRawHitList->At(ihit);
+    cout << ihit << ": " << hit->fADC_pos << " " << hit->fADC_neg << " " 
+	 <<  hit->fTDC_pos << " " <<  hit->fTDC_pos << endl;
+  }
+
   return nhits;
 }
 

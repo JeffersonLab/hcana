@@ -10,6 +10,7 @@
 #include "TClonesArray.h"
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
+#include "THcHodoscopeHit.h"
 
 class THaScCalib;
 
