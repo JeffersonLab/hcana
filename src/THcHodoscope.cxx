@@ -113,6 +113,9 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   // We will probably want to add some kind of method to gHcParms to allow
   // bulk retrieval of parameters of interest.
 
+  // Will need to determine which spectrometer in order to construct
+  // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
+
   fNPlanes = 4;			// Hardwire for now
 
   fNPaddle = new Int_t [4];
@@ -135,30 +138,42 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   iplane = 0;
   p = (Double_t *)gHcParms->Find("hscin_1x_center")->GetValuePointer();
   fCenter[iplane] = new Double_t [fNPaddle[iplane]];
-  for(Int_t i=0;i<fNPaddle[0];i++) {
+  cout << iplane;
+  for(Int_t i=0;i<fNPaddle[iplane];i++) {
     fCenter[iplane][i] = p[i];
+    cout << " " << fCenter[iplane][i];
   }
+  cout << endl;
 
   iplane = 1;
   p = (Double_t *)gHcParms->Find("hscin_1y_center")->GetValuePointer();
   fCenter[iplane] = new Double_t [fNPaddle[iplane]];
-  for(Int_t i=0;i<fNPaddle[0];i++) {
+  cout << iplane;
+  for(Int_t i=0;i<fNPaddle[iplane];i++) {
     fCenter[iplane][i] = p[i];
+    cout << " " << fCenter[iplane][i];
   }
+  cout << endl;
 
   iplane = 2;
   p = (Double_t *)gHcParms->Find("hscin_2x_center")->GetValuePointer();
   fCenter[iplane] = new Double_t [fNPaddle[iplane]];
-  for(Int_t i=0;i<fNPaddle[0];i++) {
+  cout << iplane;
+  for(Int_t i=0;i<fNPaddle[iplane];i++) {
     fCenter[iplane][i] = p[i];
+    cout << " " << fCenter[iplane][i];
   }
+  cout << endl;
 
   iplane = 3;
   p = (Double_t *)gHcParms->Find("hscin_2y_center")->GetValuePointer();
   fCenter[iplane] = new Double_t [fNPaddle[iplane]];
-  for(Int_t i=0;i<fNPaddle[0];i++) {
+  cout << iplane;
+  for(Int_t i=0;i<fNPaddle[iplane];i++) {
     fCenter[iplane][i] = p[i];
+    cout << " " << fCenter[iplane][i];
   }
+  cout << endl;
 
   fIsInit = true;
 
@@ -207,6 +222,7 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
   //    { 0 }
   //  };
   //  return DefineVarsFromList( vars, mode );
+  return kOK;
 }
 
 //_____________________________________________________________________________
