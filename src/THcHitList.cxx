@@ -29,12 +29,13 @@ THcHitList::~THcHitList() {
 void THcHitList::InitHitList(THaDetMap* detmap,
 				  const char *hitclass, Int_t maxhits) {
   // Probably called by ReadDatabase
+
   fRawHitList = new TClonesArray(hitclass, maxhits);
   fRawHitClass = fRawHitList->GetClass();
   fNMaxRawHits = maxhits;
   fNRawHits = 0;
   for(Int_t i=0;i<maxhits;i++) {
-    fRawHitList->New(i);
+    fRawHitList->ConstructedAt(i);
   }
   
   fdMap = detmap;
@@ -42,6 +43,7 @@ void THcHitList::InitHitList(THaDetMap* detmap,
 
 Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
   THcRawHit* rawhit;
+  cout << " Clearing TClonesArray " << endl;
   fRawHitList->Clear("C");
   fNRawHits = 0;
 

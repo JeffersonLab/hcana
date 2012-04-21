@@ -10,6 +10,11 @@
 
 #include "THcRawHit.h"
 
+THcRawHit::THcRawHit()
+{
+  // Constructor
+}
+
 THcRawHit::~THcRawHit()
 {}
 
