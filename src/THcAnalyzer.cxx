@@ -43,8 +43,6 @@ using namespace std;
 THcAnalyzer::THcAnalyzer()
 {
 
-  THaAnalyzer();
- 
 }
 
 //_____________________________________________________________________________
@@ -52,13 +50,6 @@ THcAnalyzer::~THcAnalyzer()
 {
   // Destructor. 
 
-  Close();
-  delete fPostProcess;  //deletes PostProcess objects
-  delete fBench;
-  delete [] fStages;
-  delete [] fCounters;
-  if( fgAnalyzer == this )
-    fgAnalyzer = NULL;
 }
 
 //_____________________________________________________________________________
