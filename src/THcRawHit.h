@@ -10,19 +10,17 @@
 
 class THcRawHit : public TObject {
 
-public:
-
- THcRawHit(Int_t plane, Int_t counter) :
-  fPlane(plane), fCounter(counter) {}
-  
+ public:
   THcRawHit();
-  
- THcRawHit( const THcRawHit& rhs ) : TObject(rhs) {}
-
-  THcRawHit& operator=( const THcRawHit& rhs )
-    { TObject::operator=(rhs); return *this; }
-
   virtual ~THcRawHit();
+
+  THcRawHit(Int_t plane, Int_t counter);
+  
+  // THcRawHit( const THcRawHit& rhs ) : TObject(rhs) {}
+
+  //  THcRawHit& operator=( const THcRawHit& rhs )
+  //    { TObject::operator=(rhs); return *this; }
+
 
   virtual void Clear( Option_t* opt="" )=0;
 
@@ -41,7 +39,7 @@ public:
 
 protected:
 
-  ClassDef(THcRawHit,0)      // Track ID abstract base class
+  ClassDef(THcRawHit,0)
 };
 
 #endif

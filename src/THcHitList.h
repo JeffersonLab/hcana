@@ -5,6 +5,7 @@
 #include "THaDetMap.h"
 #include "THaEvData.h"
 #include "TClonesArray.h"
+#include "TObject.h"
 
 
 using namespace std;

@@ -70,7 +70,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   // Will need to determine which apparatus it belongs to and use the
   // appropriate detector ID in the FillMap call
   if( gHcDetectorMap->FillMap(fDetMap, "HSCIN") < 0 ) {
-      Error( Here(here), "Error filling detectormap for %s.", 
+    Error( Here(here), "Error filling detectormap for %s.", 
 	     "detectorname");
       return kInitError;
   }
