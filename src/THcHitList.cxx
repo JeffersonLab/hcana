@@ -43,7 +43,7 @@ void THcHitList::InitHitList(THaDetMap* detmap,
 
 Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
   THcRawHit* rawhit;
-  cout << " Clearing TClonesArray " << endl;
+  // cout << " Clearing TClonesArray " << endl;
   fRawHitList->Clear("C");
   fNRawHits = 0;
 
@@ -51,6 +51,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
     THaDetMap::Module* d = fdMap->GetModule(i);
 
     // Loop over all channels that have a hit.
+    //    cout << "Crate/Slot: " << d->crate << "/" << d->slot << endl;
     for ( Int_t j=0; j < evdata.GetNumChan( d->crate, d->slot); j++) {
       
       Int_t chan = evdata.GetNextChan( d->crate, d->slot, j );
@@ -61,7 +62,8 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
       Int_t plane = d->plane;
       Int_t signal = d->signal;
       Int_t counter = d->reverse ? d->first + d->hi - chan : d->first + chan - d->lo;
-	
+      //cout << d->crate << " " << d->slot << " " << chan << " " << plane << " "
+      // << counter << " " << signal << endl;
       // Search hit list for plane and counter
       // We could do sorting 
       Int_t thishit = 0;
@@ -69,13 +71,15 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	rawhit = (THcRawHit*) (*fRawHitList)[thishit];
 	if (plane == rawhit->fPlane
 	    && counter == rawhit->fCounter) {
+	  // cout << "Found as " << thishit << "/" << fNRawHits << endl;
 	  break;
 	}
 	thishit++;
       }
+
       if(thishit == fNRawHits) {
-	fNRawHits++;
 	rawhit = (THcRawHit*) (*fRawHitList)[thishit];
+	fNRawHits++;
 	rawhit->fPlane = plane;
 	rawhit->fCounter = counter;
       }
@@ -85,6 +89,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
       Int_t nMHits = evdata.GetNumHits(d->crate, d->slot, chan);
       for (Int_t mhit = 0; mhit < nMHits; mhit++) {
 	Int_t data = evdata.GetData( d->crate, d->slot, chan, mhit);
+	// cout << "Signal " << signal << "=" << data << endl;
 	rawhit->SetData(signal,data);
       }
     }

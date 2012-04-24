@@ -14,26 +14,26 @@ using namespace std;
 
 
 void THcHodoscopeHit::SetData(Int_t signal, Int_t data) {
-  if(signal==1) {
+  if(signal==0) {
     fADC_pos = data;
-  } else if (signal==2) {
+  } else if (signal==1) {
     fADC_neg = data;
-  } else if(signal==3) {
-    fADC_pos = data;
-  } else if (signal==4) {
-    fADC_neg = data;
+  } else if(signal==2) {
+    fTDC_pos = data;
+  } else if (signal==3) {
+    fTDC_neg = data;
   }
 }
 
 Int_t THcHodoscopeHit::GetData(Int_t signal) {
-  if(signal==1) {
+  if(signal==0) {
     return(fADC_pos);
-  } else if (signal==2) {
+  } else if (signal==1) {
     return(fADC_neg);
-  } else if(signal==3) {
-    return(fADC_pos);
-  } else if (signal==4) {
-    return(fADC_neg);
+  } else if(signal==2) {
+    return(fTDC_pos);
+  } else if (signal==3) {
+    return(fTDC_neg);
   }
   return(-1); // Actually should throw exception
 }

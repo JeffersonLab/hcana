@@ -138,6 +138,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   iplane = 0;
   p = (Double_t *)gHcParms->Find("hscin_1x_center")->GetValuePointer();
   fCenter[iplane] = new Double_t [fNPaddle[iplane]];
+  // Print out some parameters just to demonstrate that it works
   cout << iplane;
   for(Int_t i=0;i<fNPaddle[iplane];i++) {
     fCenter[iplane][i] = p[i];
@@ -295,9 +296,11 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   // fRawHitList is TClones array of THcHodoscopeHit objects
   for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
     THcHodoscopeHit* hit = (THcHodoscopeHit *) fRawHitList->At(ihit);
-    cout << ihit << ": " << hit->fADC_pos << " " << hit->fADC_neg << " " 
-	 <<  hit->fTDC_pos << " " <<  hit->fTDC_pos << endl;
+    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
+	 << hit->fADC_pos << " " << hit->fADC_neg << " "  <<  hit->fTDC_pos
+	 << " " <<  hit->fTDC_neg << endl;
   }
+  cout << endl;
 
   return nhits;
 }

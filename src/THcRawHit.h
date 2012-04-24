@@ -37,7 +37,7 @@ public:
 
  private:
 
-  ClassDef(THcRawHit,2)      // Track ID abstract base class
+  ClassDef(THcRawHit,0)      // Track ID abstract base class
 };
 
 #endif
