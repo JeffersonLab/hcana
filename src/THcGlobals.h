@@ -6,8 +6,9 @@
 #include "DllImport.h"
 #endif
 
-// Global Analyzer variables. Defined in THaInterface implementation file.
+// Global Analyzer variables. Defined in THcInterface implementation file.
 
 R__EXTERN class THcParmList*  gHcParms;      //List of global symbolic variables
+R__EXTERN class THcDetectorMap*  gHcDetectorMap;   //Cached map file
 
 #endif

@@ -20,6 +20,7 @@
 #include "TInterpreter.h"
 #include "THaVarList.h"
 #include "THcParmList.h"
+#include "THcDetectorMap.h"
 #include "THaCutList.h"
 #include "THaCodaDecoder.h"
 #include "THaGlobals.h"
@@ -48,6 +49,7 @@ THaDB*       gHaDB       = NULL;  // Database system to use
 THaTextvars* gHaTextvars = NULL;  // Text variable definitions
 
 THcParmList* gHcParms     = NULL;  // List of symbolic analyzer variables
+THcDetectorMap* gHcDetectorMap = NULL; // Global (Hall C style) detector map
 
 THcInterface* THcInterface::fgAint = NULL;  // Pointer to this interface
 
@@ -161,6 +163,7 @@ THcInterface::~THcInterface()
     delete gHaCuts;         gHaCuts=0;
 
     delete gHcParms;        gHcParms=0;
+    delete gHcDetectorMap;   gHcDetectorMap=0;
 
     fgAint = NULL;
   }

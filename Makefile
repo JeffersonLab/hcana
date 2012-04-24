@@ -8,8 +8,10 @@
 # there must be a corresponding header file (*.h).
 
 
-SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcCrateMap.cxx \
-	src/THcCodaDecoder.cxx
+SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
+	src/THcHodoscopeHit.cxx src/THcRawHit.cxx \
+	src/THcHitList.cxx src/THcDetectorMap.cxx src/THcHodoscope.cxx \
+	src/THcHallCSpectrometer.cxx
 
 # Name of your package. 
 # The shared library that will be built will get the name lib$(PACKAGE).so
@@ -164,7 +166,7 @@ install:	all
 	cp -p $(USERLIB) $(HOME)/cue/SRC/ana
 
 clean:
-		rm -f *.o *~ $(USERLIB) $(USERDICT).*
+		rm -f src/*.o *~ $(USERLIB) $(USERDICT).*
 
 realclean:	clean
 		rm -f *.d
