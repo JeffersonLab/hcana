@@ -10,18 +10,8 @@
 
 #include "THcRawHit.h"
 
-THcRawHit::THcRawHit()
-{
-  // Constructor
-}
-
-THcRawHit::THcRawHit(Int_t plane, Int_t counter) : 
-  fPlane(plane), fCounter(counter)
-{
-}
-
-THcRawHit::~THcRawHit()
-{}
+//THcRawHit::~THcRawHit()
+//{}
 
 ClassImp(THcRawHit)
 

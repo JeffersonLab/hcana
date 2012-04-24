@@ -10,19 +10,17 @@
 
 class THcRawHit : public TObject {
 
- public:
-  THcRawHit();
-  virtual ~THcRawHit();
+public:
+ THcRawHit(Int_t plane=0, Int_t counter=0) :
+  fPlane(plane), fCounter(counter) {};
+ THcRawHit( const THcRawHit& rhs ) : TObject(rhs) {}
+  THcRawHit& operator=( const THcRawHit& rhs )
+    { TObject::operator=(rhs); return *this; };
 
-  THcRawHit(Int_t plane, Int_t counter);
-  
-  // THcRawHit( const THcRawHit& rhs ) : TObject(rhs) {}
+  virtual ~THcRawHit() {}
 
-  //  THcRawHit& operator=( const THcRawHit& rhs )
-  //    { TObject::operator=(rhs); return *this; }
-
-
-  virtual void Clear( Option_t* opt="" )=0;
+  // This line causes problem
+  //  virtual void Clear( Option_t* opt="" )=0;
 
   //  virtual Bool_t  operator==( const THcRawHit& ) = 0;
   //  virtual Bool_t  operator!=( const THcRawHit& ) = 0;
@@ -37,9 +35,9 @@ class THcRawHit : public TObject {
   Int_t fPlane;
   Int_t fCounter;
 
-protected:
+ private:
 
-  ClassDef(THcRawHit,0)
+  ClassDef(THcRawHit,2)      // Track ID abstract base class
 };
 
 #endif

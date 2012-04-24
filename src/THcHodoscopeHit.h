@@ -7,7 +7,7 @@ class THcHodoscopeHit : public THcRawHit {
 
  public:
 
- THcHodoscopeHit(Int_t plane, Int_t counter) : THcRawHit(plane, counter), 
+ THcHodoscopeHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
     fADC_pos(-1), fADC_neg(-1),
     fTDC_pos(-1), fTDC_neg(-1) {
   }
@@ -15,7 +15,7 @@ class THcHodoscopeHit : public THcRawHit {
   virtual ~THcHodoscopeHit() {}
 
   virtual void Clear( Option_t* opt="" )
-  { fADC_pos = -1; fADC_neg = -1; fTDC_pos = -1; fTDC_neg = -1; }
+    { fADC_pos = -1; fADC_neg = -1; fTDC_pos = -1; fTDC_neg = -1; }
 
   void SetData(Int_t signal, Int_t data);
   Int_t GetData(Int_t signal);
@@ -32,7 +32,7 @@ class THcHodoscopeHit : public THcRawHit {
 
  private:
 
-  ClassDef(THcHodoscopeHit, 0)	// Hodoscope hit class
+  ClassDef(THcHodoscopeHit, 0);	// Hodoscope hit class
 };  
 
 #endif
