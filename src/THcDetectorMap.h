@@ -49,6 +49,13 @@ class THcDetectorMap : public TObject {
   };
   std::list<ModChanList> mlist;
 
+  struct IDMap {
+    char* name;
+    Int_t id;
+  };
+  IDMap fIDMap[50];
+  Int_t fNIDs;			/* Number of detector IDs */
+
   bool compare(const ChaninMod *first, const ChaninMod *second);
 
  protected:
