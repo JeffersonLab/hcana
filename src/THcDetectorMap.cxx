@@ -33,7 +33,7 @@ inline static bool IsComment( const string& s, string::size_type pos )
 }
 
 //_____________________________________________________________________________
-THcDetectorMap::THcDetectorMap() : fNchans(0)
+THcDetectorMap::THcDetectorMap() : fNchans(0), fNIDs(0)
 {
 }
 
@@ -64,25 +64,18 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
   // Translate detector name into and ID
   // For now just long if then else.  Could get it from the comments
   // at the beginning of the map file.
-  Int_t did;
-  if(strcasecmp(detectorname,"HDC")==0) {
-    did = 1;
-  } else if (strcasecmp(detectorname,"HSCIN")==0) {
-    did = 2;
-  } else if (strcasecmp(detectorname,"HCER")==0) {
-    did = 3;
-  } else if (strcasecmp(detectorname,"HCAL")==0) {
-    did = 4;
-  } else if (strcasecmp(detectorname,"HMISC")==0) {
-    did = 5;
-  } else if (strcasecmp(detectorname,"GMISC")==0) {
-    did = 6;
-  } else if (strcasecmp(detectorname,"HAERO")==0) {
-    did = 7;
-  } else {
+  Int_t did=-1;
+  for(Int_t i=0; i < fNIDs; i++) {
+    if(strcasecmp(detectorname,fIDMap[i].name) == 0) {
+      did = fIDMap[i].id;
+      break;
+    }
+  }
+  if(did < 0) {
+    cout << "FillMap Error: No detector ID registered for " << detectorname << endl;
+    cout << "     Using detector id of 0" << endl;
     did = 0;
   }
-  // Start SHMS with S?  What about SOS?
 
   mlist.clear();
   //  cout << "fNchans=" << fNchans << endl;
@@ -207,10 +200,24 @@ void THcDetectorMap::Load(const char *fname)
 
   while(getline(ifile,line)) {
     // BLank line or comment
-    if(line.empty()
-       || (start = line.find_first_not_of( whtspc )) == string::npos
-       || IsComment(line, start) )
+    if(line.empty()) continue;
+    if((start = line.find_first_not_of( whtspc )) == string::npos) continue;
+    if(IsComment(line, start)) { // Check for ID assignments
+      // Get rid of all white space
+      while((pos=line.find_first_of(whtspc)) != string::npos) {
+	line.erase(pos,1);
+      }
+      line.erase(0,1);	// Erase "!"
+      if(! ((pos=line.find("_ID=")) == string::npos)) {
+	fIDMap[fNIDs].name = new char [pos+1];
+	strncpy(fIDMap[fNIDs].name,line.c_str(),pos);
+	fIDMap[fNIDs].name[pos] = '\0';
+	start = (pos += 4); // Move to after "="
+	while(isdigit(line.at(pos++)));
+	fIDMap[fNIDs++].id = atoi(line.substr(start,pos).c_str());
+      }
       continue;
+    }
 
     //    cout << "MAPA: " << line << endl;
 
@@ -294,6 +301,12 @@ void THcDetectorMap::Load(const char *fname)
       fNchans++;
     }
   }
+  cout << endl << "   Detector ID Map" << endl << endl;
+  for(Int_t i=0; i < fNIDs; i++) {
+    cout << i << " ";
+    cout << fIDMap[i].name << " " << fIDMap[i].id << endl;
+  }
+  cout << endl;
 
 }
 

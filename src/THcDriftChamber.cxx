@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// THcHodoscope                                                              //
+// THcDriftChamber                                                              //
 //                                                                           //
 // Class for a generic hodoscope consisting of multiple                      //
 // planes with multiple paddles with phototubes on both ends.                //
@@ -9,7 +9,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "THcHodoscope.h"
+#include "THcDriftChamber.h"
 #include "THaEvData.h"
 #include "THaDetMap.h"
 #include "THcDetectorMap.h"
@@ -31,7 +31,7 @@
 using namespace std;
 
 //_____________________________________________________________________________
-THcHodoscope::THcHodoscope( const char* name, const char* description,
+THcDriftChamber::THcDriftChamber( const char* name, const char* description,
 				  THaApparatus* apparatus ) :
   THaNonTrackingDetector(name,description,apparatus)
 {
@@ -41,14 +41,14 @@ THcHodoscope::THcHodoscope( const char* name, const char* description,
 }
 
 //_____________________________________________________________________________
-THcHodoscope::THcHodoscope( ) :
+THcDriftChamber::THcDriftChamber( ) :
   THaNonTrackingDetector()
 {
   // Constructor
 }
 
 //_____________________________________________________________________________
-THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
+THaAnalysisObject::EStatus THcDriftChamber::Init( const TDatime& date )
 {
   static const char* const here = "Init()";
 
@@ -65,11 +65,11 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
 
-  THcHitList::InitHitList(fDetMap, "THcHodoscopeHit", 100);
+  THcHitList::InitHitList(fDetMap, "THcDCHit", 1000);
 
   // Will need to determine which apparatus it belongs to and use the
   // appropriate detector ID in the FillMap call
-  if( gHcDetectorMap->FillMap(fDetMap, "HSCIN") < 0 ) {
+  if( gHcDetectorMap->FillMap(fDetMap, "HDC") < 0 ) {
     Error( Here(here), "Error filling detectormap for %s.", 
 	     "HSCIN");
       return kInitError;
@@ -79,7 +79,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 }
 
 //_____________________________________________________________________________
-Int_t THcHodoscope::ReadDatabase( const TDatime& date )
+Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
 {
   // Read this detector's parameters from the database file 'fi'.
   // This function is called by THaDetectorBase::Init() once at the
@@ -116,65 +116,13 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   // Will need to determine which spectrometer in order to construct
   // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
 
-  fNPlanes = 4;			// Hardwire for now
+  fNPlanes = *(Int_t *)gHcParms->Find("hdc_num_planes")->GetValuePointer();
 
-  fNPaddle = new Int_t [4];
-
-  fNPaddle[0] = *(Int_t *)gHcParms->Find("hscin_1x_nr")->GetValuePointer();
-  fNPaddle[1] = *(Int_t *)gHcParms->Find("hscin_1y_nr")->GetValuePointer();
-  fNPaddle[2] = *(Int_t *)gHcParms->Find("hscin_2x_nr")->GetValuePointer();
-  fNPaddle[3] = *(Int_t *)gHcParms->Find("hscin_2y_nr")->GetValuePointer();
-
-  fSpacing = new Double_t [4];
-  fSpacing[0] = gHcParms->Find("hscin_1x_spacing")->GetValue(0);
-  fSpacing[1] = gHcParms->Find("hscin_1y_spacing")->GetValue(0);
-  fSpacing[2] = gHcParms->Find("hscin_2x_spacing")->GetValue(0);
-  fSpacing[3] = gHcParms->Find("hscin_2y_spacing")->GetValue(0);
-
-  fCenter = new Double_t* [4];
-  Double_t* p;
-  Int_t iplane;
-
-  iplane = 0;
-  p = (Double_t *)gHcParms->Find("hscin_1x_center")->GetValuePointer();
-  fCenter[iplane] = new Double_t [fNPaddle[iplane]];
-  // Print out some parameters just to demonstrate that it works
-  cout << iplane;
-  for(Int_t i=0;i<fNPaddle[iplane];i++) {
-    fCenter[iplane][i] = p[i];
-    cout << " " << fCenter[iplane][i];
+  fNWires = new Int_t [fNPlanes];
+  Int_t* p= (Int_t *)gHcParms->Find("hdc_nrwire")->GetValuePointer();
+  for(Int_t i=0;i<fNPlanes;i++) {
+    fNWires[i] = p[i];
   }
-  cout << endl;
-
-  iplane = 1;
-  p = (Double_t *)gHcParms->Find("hscin_1y_center")->GetValuePointer();
-  fCenter[iplane] = new Double_t [fNPaddle[iplane]];
-  cout << iplane;
-  for(Int_t i=0;i<fNPaddle[iplane];i++) {
-    fCenter[iplane][i] = p[i];
-    cout << " " << fCenter[iplane][i];
-  }
-  cout << endl;
-
-  iplane = 2;
-  p = (Double_t *)gHcParms->Find("hscin_2x_center")->GetValuePointer();
-  fCenter[iplane] = new Double_t [fNPaddle[iplane]];
-  cout << iplane;
-  for(Int_t i=0;i<fNPaddle[iplane];i++) {
-    fCenter[iplane][i] = p[i];
-    cout << " " << fCenter[iplane][i];
-  }
-  cout << endl;
-
-  iplane = 3;
-  p = (Double_t *)gHcParms->Find("hscin_2y_center")->GetValuePointer();
-  fCenter[iplane] = new Double_t [fNPaddle[iplane]];
-  cout << iplane;
-  for(Int_t i=0;i<fNPaddle[iplane];i++) {
-    fCenter[iplane][i] = p[i];
-    cout << " " << fCenter[iplane][i];
-  }
-  cout << endl;
 
   fIsInit = true;
 
@@ -182,7 +130,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 }
 
 //_____________________________________________________________________________
-Int_t THcHodoscope::DefineVariables( EMode mode )
+Int_t THcDriftChamber::DefineVariables( EMode mode )
 {
   // Initialize global variables and lookup table for decoder
 
@@ -227,7 +175,7 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
 }
 
 //_____________________________________________________________________________
-THcHodoscope::~THcHodoscope()
+THcDriftChamber::~THcDriftChamber()
 {
   // Destructor. Remove variables from global list.
 
@@ -242,13 +190,13 @@ THcHodoscope::~THcHodoscope()
 }
 
 //_____________________________________________________________________________
-void THcHodoscope::DeleteArrays()
+void THcDriftChamber::DeleteArrays()
 {
   // Delete member arrays. Used by destructor.
 
-  delete [] fNPaddle;  fNPaddle = NULL;
-  delete [] fSpacing;  fSpacing = NULL;
-  delete [] fCenter;   fCenter = NULL; // This 2D. What is correct way to delete?
+  delete [] fNWires;  fNWires = NULL;
+  //  delete [] fSpacing;  fSpacing = NULL;
+  //  delete [] fCenter;   fCenter = NULL; // This 2D. What is correct way to delete?
 
   //  delete [] fRA_c;    fRA_c    = NULL;
   //  delete [] fRA_p;    fRA_p    = NULL;
@@ -279,7 +227,7 @@ void THcHodoscope::DeleteArrays()
 
 //_____________________________________________________________________________
 inline 
-void THcHodoscope::ClearEvent()
+void THcDriftChamber::ClearEvent()
 {
   // Reset per-event data.
 
@@ -287,18 +235,21 @@ void THcHodoscope::ClearEvent()
 }
 
 //_____________________________________________________________________________
-Int_t THcHodoscope::Decode( const THaEvData& evdata )
+Int_t THcDriftChamber::Decode( const THaEvData& evdata )
 {
 
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = THcHitList::DecodeToHitList(evdata);
 
-  // fRawHitList is TClones array of THcHodoscopeHit objects
+  // fRawHitList is TClones array of THcDCHit objects
   for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
-    THcHodoscopeHit* hit = (THcHodoscopeHit *) fRawHitList->At(ihit);
+    THcDCHit* hit = (THcDCHit *) fRawHitList->At(ihit);
     cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
-	 << hit->fADC_pos << " " << hit->fADC_neg << " "  <<  hit->fTDC_pos
-	 << " " <<  hit->fTDC_neg << endl;
+	 << endl;
+    for(Int_t imhit = 0; imhit < hit->fNHits; imhit++) {
+      cout << "                     " << imhit << " " << hit->fTDC[imhit]
+	   << endl;
+    }
   }
   cout << endl;
 
@@ -306,20 +257,13 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 }
 
 //_____________________________________________________________________________
-Int_t THcHodoscope::ApplyCorrections( void )
+Int_t THcDriftChamber::ApplyCorrections( void )
 {
   return(0);
 }
 
 //_____________________________________________________________________________
-Double_t THcHodoscope::TimeWalkCorrection(const Int_t& paddle,
-					     const ESide side)
-{
-  return(0.0);
-}
-
-//_____________________________________________________________________________
-Int_t THcHodoscope::CoarseProcess( TClonesArray& /* tracks */ )
+Int_t THcDriftChamber::CoarseProcess( TClonesArray& /* tracks */ )
 {
   // Calculation of coordinates of particle track cross point with scint
   // plane in the detector coordinate system. For this, parameters of track 
@@ -335,7 +279,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& /* tracks */ )
 }
 
 //_____________________________________________________________________________
-Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
+Int_t THcDriftChamber::FineProcess( TClonesArray& tracks )
 {
   // Reconstruct coordinates of particle track cross point with scintillator
   // plane, and copy the data into the following local data structure:
@@ -349,5 +293,5 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   return 0;
 }
 
-ClassImp(THcHodoscope)
+ClassImp(THcDriftChamber)
 ////////////////////////////////////////////////////////////////////////////////

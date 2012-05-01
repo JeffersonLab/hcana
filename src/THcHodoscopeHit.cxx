@@ -38,6 +38,7 @@ Int_t THcHodoscopeHit::GetData(Int_t signal) {
   return(-1); // Actually should throw exception
 }
 
+#if 0
 Int_t THcHodoscopeHit::Compare(const TObject* obj) const
 {
   // Compare to sort by plane and counter
@@ -57,6 +58,7 @@ Int_t THcHodoscopeHit::Compare(const TObject* obj) const
     else return 1;
   }
 }
+#endif
 //_____________________________________________________________________________
 THcHodoscopeHit& THcHodoscopeHit::operator=( const THcHodoscopeHit& rhs )
 {
