@@ -29,8 +29,10 @@ public:
   virtual Int_t GetData(Int_t signal) {return 0;};
 
   // Derived objects must be sortable and supply Compare method
-  virtual Bool_t  IsSortable () const {return kFALSE; }
-  virtual Int_t   Compare(const TObject* obj) const {return 0;}
+  //  virtual Bool_t  IsSortable () const {return kFALSE; }
+  //  virtual Int_t   Compare(const TObject* obj) const {return 0;}
+  virtual Bool_t  IsSortable () const {return kTRUE; }
+  virtual Int_t   Compare(const TObject* obj) const;
 
   Int_t fPlane;
   Int_t fCounter;
