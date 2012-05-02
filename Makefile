@@ -151,11 +151,7 @@ $(USERLIB):	$(HDR) $(OBJS)
 		$(LD) $(LDFLAGS) $(SOFLAGS) -o $@ $(OBJS)
 		@echo "$@ done"
 
-$(HDR_COMPILEDATA): $(ANALYZER)/Makefile
-		@echo "Building Podd"		
-		@cd $(ANALYZER) ; make
-
-$(LIBHALLA): $(ANALYZER)/Makefile
+$(HDR_COMPILEDATA) $(LIBHALLA) $(LIBDC) $(LIBSCALER): $(ANALYZER)/Makefile
 		@echo "Building Podd"		
 		@cd $(ANALYZER) ; make
 
