@@ -55,6 +55,19 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   if( THaNonTrackingDetector::Init( date ) )
     return fStatus;
 
+  // Construct the planes
+  fPlane = new THcScintillatorPlane* [fNPlanes];
+  for(Int_t ip=0; ip<fNPlanes; ip++) {
+    // Create a name and description
+    // Is it going to be a problem that I create these object in init?
+    // I could actually do it in the constructor, since the parameters
+    // will already have been read.  Then I don't have to manually call
+    // ReadDatabase for each plane
+    GetTitle()
+    fPlane[ip] = THcScintillatorPlane( name, description); 
+  }
+
+
   // Replace with what we need for Hall C
   //  const DataDest tmp[NDEST] = {
   //    { &fRTNhit, &fRANhit, fRT, fRT_c, fRA, fRA_p, fRA_c, fROff, fRPed, fRGain },
@@ -190,6 +203,12 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
 
   // Register variables in global list
+
+  //  RVarDef vars[] = {
+    //    hpostdc1 HMS s1x+ TDC hits
+    //    hnegtdc1 HMS s1x+ TDC hits
+    //...
+    //    hnegtdc4 HMS s2y- TDC hits
 
   //  RVarDef vars[] = {
   //    { "nlthit", "Number of Left paddles TDC times",  "fLTNhit" },

@@ -3,7 +3,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// THcHodoscope                                                           //
+// THcHodoscope                                                              //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -11,6 +11,7 @@
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
 #include "THcHodoscopeHit.h"
+#include "THcScintillatorPlane.h"
 
 class THaScCalib;
 
@@ -49,7 +50,7 @@ protected:
   Double_t* fSpacing;		// Paddle spacing in cm
   Double_t** fCenter;           // Center position of each paddle
 
-
+  THcScintillatorPlane** fPlane; // List of plane objects
 
   TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
                               // and estimated match to TOF paddle
