@@ -43,6 +43,14 @@ THcHodoscope::THcHodoscope( const char* name, const char* description,
   Setup(name, description);
 
 }
+
+//_____________________________________________________________________________
+THcHodoscope::THcHodoscope( ) :
+  THaNonTrackingDetector()
+{
+  // Constructor
+}
+
 //_____________________________________________________________________________
 void THcHodoscope::Setup(const char* name, const char* description)
 {
@@ -78,18 +86,25 @@ void THcHodoscope::Setup(const char* name, const char* description)
     strcat(subname, fPlaneNames[i]);
 
     strcpy(desc, description);
-    strcpy(desc, " Hodoscope Plane ");
-    strcpy(desc, fPlaneNames[i]);
+    strcat(desc, " Hodoscope Plane ");
+    strcat(desc, fPlaneNames[i]);
 
     fPlanes[i] = new THcScintillatorPlane(subname, desc); 
+    cout << "Created Scintillator Plane " << subname << ", " << desc << endl;
   }
 }
 
 //_____________________________________________________________________________
-THcHodoscope::THcHodoscope( ) :
-  THaNonTrackingDetector()
+void THcHodoscope::SetApparatus( THaApparatus* app )
 {
-  // Constructor
+  // Set the apparatus of this detector as well as the subdetectors
+
+  cout << "In THcHodoscope::SetApparatus" << endl;
+  THaDetector::SetApparatus( app );
+  for(Int_t i=0;i < fNPlanes;i++) {
+    fPlanes[i]->SetApparatus( app );
+  }
+  return;
 }
 
 //_____________________________________________________________________________
@@ -97,8 +112,18 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 {
   static const char* const here = "Init()";
 
-  if( THaNonTrackingDetector::Init( date ) )
-    return fStatus;
+  cout << "THcHodoscope::Init " << GetName() << endl;
+
+  EStatus status;
+  // This triggers call of ReadDatabase and DefineVariables
+  if( status = THaNonTrackingDetector::Init( date ) )
+    return fStatus=status;
+
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    if(status = fPlanes[ip]->Init( date )) {
+      return fStatus=status;
+    }
+  }
 
   // Replace with what we need for Hall C
   //  const DataDest tmp[NDEST] = {
@@ -160,6 +185,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   // Will need to determine which spectrometer in order to construct
   // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
+
+  cout << "THcHodoscope::ReadDatabase called " << GetName() << endl;
 
   fNPlanes = 4;			// Hardwire for now
 
@@ -230,6 +257,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 Int_t THcHodoscope::DefineVariables( EMode mode )
 {
   // Initialize global variables and lookup table for decoder
+
+  cout << "THcHodoscope::DefineVariables called " << GetName() << endl;
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
@@ -343,6 +372,12 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = THcHitList::DecodeToHitList(evdata);
+
+  // Let each plane get its hits
+  Int_t nexthit = 0;
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    //    nexthit = fPlanes[ip]->Fill(fRawHitList, nhits, nexthit);
+  }
 
   // fRawHitList is TClones array of THcHodoscopeHit objects
   for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {

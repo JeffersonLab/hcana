@@ -24,6 +24,9 @@ public:
 
   virtual Int_t      Decode( const THaEvData& );
   virtual EStatus    Init( const TDatime& run_time );
+  
+  void SetApparatus( THaApparatus* );
+
   virtual Int_t      CoarseProcess( TClonesArray& tracks );
   virtual Int_t      FineProcess( TClonesArray& tracks );
   

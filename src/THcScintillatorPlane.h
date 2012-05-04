@@ -22,7 +22,7 @@ class THcScintillatorPlane : public THaNonTrackingDetector {
   virtual ~THcScintillatorPlane();
 
   virtual Int_t Decode( const THaEvData& );
-
+  virtual EStatus Init( const TDatime& run_time );
 
   virtual Int_t CoarseProcess( TClonesArray& tracks );
   virtual Int_t FineProcess( TClonesArray& tracks );
@@ -30,6 +30,9 @@ class THcScintillatorPlane : public THaNonTrackingDetector {
   virtual Bool_t   IsPid()      { return kFALSE; }
 
  protected:
+
+  virtual Int_t  ReadDatabase( const TDatime& date );
+  virtual Int_t  DefineVariables( EMode mode = kDefine );
 
   ClassDef(THcScintillatorPlane,0)
 };
