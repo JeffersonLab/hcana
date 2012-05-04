@@ -26,3 +26,22 @@ THcScintillatorPlane::~THcScintillatorPlane()
   // Destructor
 
 }
+//_____________________________________________________________________________
+Int_t THcScintillatorPlane::Decode( const THaEvData& evdata )
+{
+  return 0;
+}
+//_____________________________________________________________________________
+Int_t THcScintillatorPlane::CoarseProcess( TClonesArray& tracks )
+{
+ 
+  //  HitCount();
+
+ return 0;
+}
+
+//_____________________________________________________________________________
+Int_t THcScintillatorPlane::FineProcess( TClonesArray& tracks )
+{
+  return 0;
+}

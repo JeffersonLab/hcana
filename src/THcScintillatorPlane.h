@@ -17,13 +17,15 @@
 class THcScintillatorPlane : public THaNonTrackingDetector {
   
  public:
-  virtual ~THcScintillatorPlane();
-
   THcScintillatorPlane( const char* name, const char* description,
 			  THaApparatus* a = NULL);
+  virtual ~THcScintillatorPlane();
 
-  virtual Int_t CoarseProcess( TClonesArray& tracks ) = 0;
-  virtual Int_t    FineProcess( TClonesArray& tracks )  = 0;
+  virtual Int_t Decode( const THaEvData& );
+
+
+  virtual Int_t CoarseProcess( TClonesArray& tracks );
+  virtual Int_t FineProcess( TClonesArray& tracks );
           Bool_t   IsTracking() { return kFALSE; }
   virtual Bool_t   IsPid()      { return kFALSE; }
 

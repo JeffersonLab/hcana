@@ -37,7 +37,52 @@ THcHodoscope::THcHodoscope( const char* name, const char* description,
 {
   // Constructor
 
-  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
+  //fTrackProj = new TClonesArray( "THaTrackProj", 5 );
+  // Construct the planes
+
+  Setup(name, description);
+
+}
+//_____________________________________________________________________________
+void THcHodoscope::Setup(const char* name, const char* description)
+{
+
+  static const char* const here = "Setup()";
+  static const char* const message = 
+    "Must construct %s detector with valid name! Object construction failed.";
+
+  // Base class constructor failed?
+  if( IsZombie()) return;
+
+  fNPlanes = 4;	// Eventually get # planes and plane names from a DB
+  fPlaneNames = new char* [fNPlanes];
+  for(Int_t i=0;i<fNPlanes;i++) {fPlaneNames[i] = new char[3];}
+  strcpy(fPlaneNames[0],"1x");
+  strcpy(fPlaneNames[1],"1y");
+  strcpy(fPlaneNames[2],"2x");
+  strcpy(fPlaneNames[3],"2y");
+
+  size_t nlen = strlen(name);
+  size_t slen = 0;
+  for(Int_t i=0;i < fNPlanes;i++)
+    {slen = TMath::Max(slen,strlen(fPlaneNames[i]));}
+  size_t len = nlen+slen+1;
+
+  // Probably shouldn't assume that description is defined
+  char* desc = new char[strlen(description)+50+slen];
+  char* subname = new char[len+1];
+  fPlanes = new THcScintillatorPlane* [fNPlanes];
+  for(Int_t i=0;i < fNPlanes;i++) {
+    strcpy(subname, name);
+    strcat(subname, ".");
+    strcat(subname, fPlaneNames[i]);
+
+    strcpy(desc, description);
+    strcpy(desc, " Hodoscope Plane ");
+    strcpy(desc, fPlaneNames[i]);
+
+    fPlanes[i] = new THcScintillatorPlane(subname, desc); 
+  }
 }
 
 //_____________________________________________________________________________
@@ -54,19 +99,6 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 
   if( THaNonTrackingDetector::Init( date ) )
     return fStatus;
-
-  // Construct the planes
-  fPlane = new THcScintillatorPlane* [fNPlanes];
-  for(Int_t ip=0; ip<fNPlanes; ip++) {
-    // Create a name and description
-    // Is it going to be a problem that I create these object in init?
-    // I could actually do it in the constructor, since the parameters
-    // will already have been read.  Then I don't have to manually call
-    // ReadDatabase for each plane
-    GetTitle()
-    fPlane[ip] = THcScintillatorPlane( name, description); 
-  }
-
 
   // Replace with what we need for Hall C
   //  const DataDest tmp[NDEST] = {
@@ -131,20 +163,20 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   fNPlanes = 4;			// Hardwire for now
 
-  fNPaddle = new Int_t [4];
+  fNPaddle = new Int_t [fNPlanes];
 
   fNPaddle[0] = *(Int_t *)gHcParms->Find("hscin_1x_nr")->GetValuePointer();
   fNPaddle[1] = *(Int_t *)gHcParms->Find("hscin_1y_nr")->GetValuePointer();
   fNPaddle[2] = *(Int_t *)gHcParms->Find("hscin_2x_nr")->GetValuePointer();
   fNPaddle[3] = *(Int_t *)gHcParms->Find("hscin_2y_nr")->GetValuePointer();
 
-  fSpacing = new Double_t [4];
+  fSpacing = new Double_t [fNPlanes];
   fSpacing[0] = gHcParms->Find("hscin_1x_spacing")->GetValue(0);
   fSpacing[1] = gHcParms->Find("hscin_1y_spacing")->GetValue(0);
   fSpacing[2] = gHcParms->Find("hscin_2x_spacing")->GetValue(0);
   fSpacing[3] = gHcParms->Find("hscin_2y_spacing")->GetValue(0);
 
-  fCenter = new Double_t* [4];
+  fCenter = new Double_t* [fNPlanes];
   Double_t* p;
   Int_t iplane;
 

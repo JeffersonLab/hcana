@@ -46,11 +46,12 @@ protected:
 
   // Potential Hall C parameters.  Mostly here for demonstration
   Int_t fNPlanes;
+  char** fPlaneNames;
   Int_t* fNPaddle;		// Number of paddles per plane
   Double_t* fSpacing;		// Paddle spacing in cm
   Double_t** fCenter;           // Center position of each paddle
 
-  THcScintillatorPlane** fPlane; // List of plane objects
+  THcScintillatorPlane** fPlanes; // List of plane objects
 
   TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
                               // and estimated match to TOF paddle
@@ -80,6 +81,8 @@ protected:
   
   virtual  Double_t TimeWalkCorrection(const Int_t& paddle,
 					   const ESide side);
+
+  void Setup(const char* name, const char* description);
 
   ClassDef(THcHodoscope,0)   // Generic hodoscope class
 };
