@@ -12,13 +12,15 @@
 // 
 //////////////////////////////////////////////////////////////////////////////
 
-#include "THaNonTrackingDetector.h"
+#include "THaSubDetector.h"
 
-class THcScintillatorPlane : public THaNonTrackingDetector {
+class THaEvData;
+
+class THcScintillatorPlane : public THaSubDetector {
   
  public:
   THcScintillatorPlane( const char* name, const char* description,
-			  THaApparatus* a = NULL);
+			  THaDetectorBase* parent = NULL);
   virtual ~THcScintillatorPlane();
 
   virtual Int_t Decode( const THaEvData& );

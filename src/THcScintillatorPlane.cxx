@@ -20,8 +20,8 @@ ClassImp(THcScintillatorPlane)
 //______________________________________________________________________________
 THcScintillatorPlane::THcScintillatorPlane( const char* name, 
 		    const char* description,
-		    THaApparatus* apparatus )
-  : THaNonTrackingDetector(name,description,apparatus)
+		    THaDetectorBase* parent )
+  : THaSubDetector(name,description,parent)
 {
   // Normal constructor with name and description
 
@@ -39,8 +39,16 @@ THaAnalysisObject::EStatus THcScintillatorPlane::Init( const TDatime& date )
 
   cout << "THcScintillatorPlane::Init called " << GetName() << endl;
 
-  if( THaNonTrackingDetector::Init( date ) ) 
-    return fStatus;
+  if( IsZombie())
+    return fStatus = kInitError;
+
+  // How to get information for parent
+  //  if( GetParent() )
+  //    fOrigin = GetParent()->GetOrigin();
+
+  EStatus status;
+  if( status=THaSubDetector::Init( date ) )
+    return fStatus = status;
 
   //  const DataDest tmp[NDEST] = {
   //    { &fLTNhit, &fLANhit, fLT, fLA },
@@ -55,6 +63,10 @@ THaAnalysisObject::EStatus THcScintillatorPlane::Init( const TDatime& date )
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 {
+
+  // See what file it looks for
+  FILE* file = OpenFile( date );
+  
   static const char* const here = "ReadDatabase()";
   const int LEN = 200;
   char buf[LEN];

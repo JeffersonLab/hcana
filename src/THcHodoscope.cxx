@@ -89,11 +89,12 @@ void THcHodoscope::Setup(const char* name, const char* description)
     strcat(desc, " Hodoscope Plane ");
     strcat(desc, fPlaneNames[i]);
 
-    fPlanes[i] = new THcScintillatorPlane(subname, desc); 
+    fPlanes[i] = new THcScintillatorPlane(subname, desc, this); 
     cout << "Created Scintillator Plane " << subname << ", " << desc << endl;
   }
 }
 
+#if 0
 //_____________________________________________________________________________
 void THcHodoscope::SetApparatus( THaApparatus* app )
 {
@@ -106,6 +107,7 @@ void THcHodoscope::SetApparatus( THaApparatus* app )
   }
   return;
 }
+#endif
 
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
