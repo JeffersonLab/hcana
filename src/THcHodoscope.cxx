@@ -81,16 +81,12 @@ void THcHodoscope::Setup(const char* name, const char* description)
   char* subname = new char[len+1];
   fPlanes = new THcScintillatorPlane* [fNPlanes];
   for(Int_t i=0;i < fNPlanes;i++) {
-    strcpy(subname, name);
-    strcat(subname, ".");
-    strcat(subname, fPlaneNames[i]);
-
     strcpy(desc, description);
-    strcat(desc, " Hodoscope Plane ");
+    strcat(desc, " Plane ");
     strcat(desc, fPlaneNames[i]);
 
-    fPlanes[i] = new THcScintillatorPlane(subname, desc, this); 
-    cout << "Created Scintillator Plane " << subname << ", " << desc << endl;
+    fPlanes[i] = new THcScintillatorPlane(fPlaneNames[i], desc, this); 
+    cout << "Created Scintillator Plane " << fPlaneNames[i] << ", " << desc << endl;
   }
 }
 

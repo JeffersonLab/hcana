@@ -65,7 +65,6 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 {
 
   // See what file it looks for
-  FILE* file = OpenFile( date );
   
   static const char* const here = "ReadDatabase()";
   const int LEN = 200;
