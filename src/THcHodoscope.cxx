@@ -114,7 +114,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 
   EStatus status;
   // This triggers call of ReadDatabase and DefineVariables
-  if( status = THaNonTrackingDetector::Init( date ) )
+  if( (status = THaNonTrackingDetector::Init( date )) )
     return fStatus=status;
 
   for(Int_t ip=0;ip<fNPlanes;ip++) {
@@ -357,11 +357,12 @@ void THcHodoscope::DeleteArrays()
 
 //_____________________________________________________________________________
 inline 
-void THcHodoscope::ClearEvent()
+void THcHodoscope::Clear( Option_t* opt)
 {
   // Reset per-event data.
-
-  fTrackProj->Clear();
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    fPlanes[ip]->Clear(opt);
+  }
 }
 
 //_____________________________________________________________________________

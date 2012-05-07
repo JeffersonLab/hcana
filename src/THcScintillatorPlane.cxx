@@ -7,6 +7,10 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "THcScintillatorPlane.h"
+#include "TClonesArray.h"
+#include "THcSignalHit.h"
+#include "THcGlobals.h"
+#include "THcParmList.h"
 
 #include <cstring>
 #include <cstdio>
@@ -24,13 +28,20 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   : THaSubDetector(name,description,parent)
 {
   // Normal constructor with name and description
-
+  fPosTDCHits = new TClonesArray("THcSignalHit",16);
+  fNegTDCHits = new TClonesArray("THcSignalHit",16);
+  fPosADCHits = new TClonesArray("THcSignalHit",16);
+  fNegADCHits = new TClonesArray("THcSignalHit",16);
 }
 
 //______________________________________________________________________________
 THcScintillatorPlane::~THcScintillatorPlane()
 {
   // Destructor
+  delete fPosTDCHits;
+  delete fNegTDCHits;
+  delete fPosADCHits;
+  delete fNegADCHits;
 
 }
 THaAnalysisObject::EStatus THcScintillatorPlane::Init( const TDatime& date )
@@ -47,14 +58,8 @@ THaAnalysisObject::EStatus THcScintillatorPlane::Init( const TDatime& date )
   //    fOrigin = GetParent()->GetOrigin();
 
   EStatus status;
-  if( status=THaSubDetector::Init( date ) )
+  if( (status=THaSubDetector::Init( date )) )
     return fStatus = status;
-
-  //  const DataDest tmp[NDEST] = {
-  //    { &fLTNhit, &fLANhit, fLT, fLA },
-  //    { &fRTNhit, &fRANhit, fRT, fRA }
-  //  };
-  //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
 
   return fStatus = kOK;
 
@@ -67,11 +72,32 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   // See what file it looks for
   
   static const char* const here = "ReadDatabase()";
-  const int LEN = 200;
-  char buf[LEN];
-  Int_t nelem;
+  char prefix[2];
+  char parname[100];
+  
+  prefix[0]=tolower(GetParent()->GetPrefix()[0]);
+  prefix[1]='\0';
 
-  cout << "THcScintillatorPlane::ReadDatabase called " << GetName() << endl;
+  strcpy(parname,prefix);
+  strcat(parname,"scin_");
+  strcat(parname,GetName());
+  Int_t plen=strlen(parname);
+
+  strcat(parname,"_nr");
+  cout << " Getting value of " << parname << endl;
+  fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+
+  parname[plen]='\0';
+  strcat(parname,"_spacing");
+
+  fSpacing =  gHcParms->Find(parname)->GetValue(0);
+  
+  // First letter of GetParent()->GetPrefix() tells us what prefix to
+  // use on parameter names.  
+
+
+  //  Find the number of elements
+  
   // Think we will make special methods to pass most
   // How generic do we want to make this class?  
   // The way we get parameter data is going to be pretty specific to
@@ -97,12 +123,38 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
 
   // Register variables in global list
-  return kOK;
+  RVarDef vars[] = {
+    {"postdchits", "List of Positive TDC hits", 
+     "fPosTDCHits.THcSignalHit.GetPaddle()"},
+    {"negtdchits", "List of Negative TDC hits", 
+     "fNegTDCHits.THcSignalHit.GetPaddle()"},
+    {"posadchits", "List of Positive ADC hits", 
+     "fPosADCHits.THcSignalHit.GetPaddle()"},
+    {"negadchits", "List of Negative ADC hits", 
+     "fNegADCHits.THcSignalHit.GetPaddle()"},
+    { 0 }
+  };
+
+  return DefineVarsFromList( vars, mode );
+}
+
+//_____________________________________________________________________________
+void THcScintillatorPlane::Clear( Option_t* )
+{
+  cout << " Calling THcScintillatorPlane::Clear " << GetName() << endl;
+  // Clears the hit lists
+  fPosTDCHits->Clear();
+  fNegTDCHits->Clear();
+  fPosADCHits->Clear();
+  fNegADCHits->Clear();
 }
 
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::Decode( const THaEvData& evdata )
 {
+  // Doesn't actually get called.  Use Fill method instead
+  cout << " Calling THcScintillatorPlane::Decode " << GetName() << endl;
+
   return 0;
 }
 //_____________________________________________________________________________

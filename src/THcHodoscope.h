@@ -22,6 +22,7 @@ public:
 		   THaApparatus* a = NULL );
   virtual ~THcHodoscope();
 
+  virtual void  Clear( Option_t* opt="" );
   virtual Int_t      Decode( const THaEvData& );
   virtual EStatus    Init( const TDatime& run_time );
   
