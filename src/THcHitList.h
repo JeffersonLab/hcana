@@ -30,6 +30,8 @@ class THcHitList {
   void          InitHitList(THaDetMap* detmap,
 			    const char *hitclass, Int_t maxhits);
 
+  TClonesArray* GetHitList() const {return fRawHitList; }
+
   Int_t         fNRawHits;
   Int_t         fNMaxRawHits;
   TClonesArray* fRawHitList; // List of raw hits

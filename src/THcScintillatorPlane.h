@@ -22,7 +22,7 @@ class THcScintillatorPlane : public THaSubDetector {
   
  public:
   THcScintillatorPlane( const char* name, const char* description,
-			  THaDetectorBase* parent = NULL);
+			Int_t planenum, THaDetectorBase* parent = NULL);
   virtual ~THcScintillatorPlane();
 
   virtual void    Clear( Option_t* opt="" );
@@ -34,7 +34,11 @@ class THcScintillatorPlane : public THaSubDetector {
           Bool_t   IsTracking() { return kFALSE; }
   virtual Bool_t   IsPid()      { return kFALSE; }
 
+  virtual Int_t ProcessHits(TClonesArray* rawhits, Int_t nexthit);
+
   Double_t fSpacing;
+
+  TClonesArray* fParentHitList;
 
  protected:
 
@@ -42,6 +46,8 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* fNegTDCHits;
   TClonesArray* fPosADCHits;
   TClonesArray* fNegADCHits;
+
+  Int_t fPlaneNum;
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );

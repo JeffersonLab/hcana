@@ -20,6 +20,9 @@ class THcSignalHit : public TObject {
   Int_t GetPaddleNumber() {return fPaddleNumber;}
   Double_t GetData() {return fData;}
 
+  virtual void Set(Int_t paddle, Int_t data)
+  { fPaddleNumber=paddle; fData=data; }
+
  private:
   Int_t fPaddleNumber;
   Double_t fData;

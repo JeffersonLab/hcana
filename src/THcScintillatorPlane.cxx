@@ -11,6 +11,8 @@
 #include "THcSignalHit.h"
 #include "THcGlobals.h"
 #include "THcParmList.h"
+#include "THcHitList.h"
+#include "THcHodoscope.h"
 
 #include <cstring>
 #include <cstdio>
@@ -23,8 +25,9 @@ ClassImp(THcScintillatorPlane)
 
 //______________________________________________________________________________
 THcScintillatorPlane::THcScintillatorPlane( const char* name, 
-		    const char* description,
-		    THaDetectorBase* parent )
+					    const char* description,
+					    const Int_t planenum,
+					    THaDetectorBase* parent )
   : THaSubDetector(name,description,parent)
 {
   // Normal constructor with name and description
@@ -32,6 +35,7 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fNegTDCHits = new TClonesArray("THcSignalHit",16);
   fPosADCHits = new TClonesArray("THcSignalHit",16);
   fNegADCHits = new TClonesArray("THcSignalHit",16);
+  fPlaneNum = planenum;
 }
 
 //______________________________________________________________________________
@@ -60,6 +64,11 @@ THaAnalysisObject::EStatus THcScintillatorPlane::Init( const TDatime& date )
   EStatus status;
   if( (status=THaSubDetector::Init( date )) )
     return fStatus = status;
+
+  // Get the Hodoscope hitlist
+  // Can't seem to cast to THcHitList.  What to do if we want to use
+  // THcScintillatorPlane as a subdetector to other than THcHodoscope?
+  //  fParentHitList = static_cast<THcHodoscope*>(GetParent())->GetHitList();
 
   return fStatus = kOK;
 
@@ -125,13 +134,13 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
   // Register variables in global list
   RVarDef vars[] = {
     {"postdchits", "List of Positive TDC hits", 
-     "fPosTDCHits.THcSignalHit.GetPaddle()"},
+     "fPosTDCHits.THcSignalHit.GetPaddleNumber()"},
     {"negtdchits", "List of Negative TDC hits", 
-     "fNegTDCHits.THcSignalHit.GetPaddle()"},
+     "fNegTDCHits.THcSignalHit.GetPaddleNumber()"},
     {"posadchits", "List of Positive ADC hits", 
-     "fPosADCHits.THcSignalHit.GetPaddle()"},
+     "fPosADCHits.THcSignalHit.GetPaddleNumber()"},
     {"negadchits", "List of Negative ADC hits", 
-     "fNegADCHits.THcSignalHit.GetPaddle()"},
+     "fNegADCHits.THcSignalHit.GetPaddleNumber()"},
     { 0 }
   };
 
@@ -141,7 +150,7 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 //_____________________________________________________________________________
 void THcScintillatorPlane::Clear( Option_t* )
 {
-  cout << " Calling THcScintillatorPlane::Clear " << GetName() << endl;
+  //cout << " Calling THcScintillatorPlane::Clear " << GetName() << endl;
   // Clears the hit lists
   fPosTDCHits->Clear();
   fNegTDCHits->Clear();
@@ -171,3 +180,55 @@ Int_t THcScintillatorPlane::FineProcess( TClonesArray& tracks )
 {
   return 0;
 }
+Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
+{
+  // Extract the data for this plane from hit list
+  // Assumes that the hit list is sorted by plane, so we stop when the
+  // plane doesn't agree and return the index for the next hit.
+
+  Int_t nPosTDCHits=0;
+  Int_t nNegTDCHits=0;
+  Int_t nPosADCHits=0;
+  Int_t nNegADCHits=0;
+  fPosTDCHits->Clear();
+  fNegTDCHits->Clear();
+  fPosADCHits->Clear();
+  fNegADCHits->Clear();
+
+  Int_t nrawhits = rawhits->GetLast()+1;
+  // cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
+
+  Int_t ihit = nexthit;
+  while(ihit < nrawhits) {
+    THcHodoscopeHit* hit = (THcHodoscopeHit *) rawhits->At(ihit);
+    if(hit->fPlane > fPlaneNum) {
+      break;
+    }
+
+    if(hit->fTDC_pos >  0) {
+      THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
+      sighit->Set(hit->fCounter, hit->fTDC_pos);
+    }
+
+    if(hit->fTDC_neg >  0) {
+      THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
+      sighit->Set(hit->fCounter, hit->fTDC_neg);
+    }
+
+    if(hit->fADC_pos >  0) {
+      THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
+      sighit->Set(hit->fCounter, hit->fADC_pos);
+    }
+
+    if(hit->fADC_neg >  0) {
+      THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
+      sighit->Set(hit->fCounter, hit->fADC_neg);
+    }
+    ihit++;
+  }
+  return(ihit);
+}
+
+    
+  
+  
