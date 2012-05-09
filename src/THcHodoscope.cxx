@@ -37,7 +37,11 @@ THcHodoscope::THcHodoscope( const char* name, const char* description,
 {
   // Constructor
 
-  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
+  //fTrackProj = new TClonesArray( "THaTrackProj", 5 );
+  // Construct the planes
+
+  Setup(name, description);
+
 }
 
 //_____________________________________________________________________________
@@ -48,12 +52,82 @@ THcHodoscope::THcHodoscope( ) :
 }
 
 //_____________________________________________________________________________
+void THcHodoscope::Setup(const char* name, const char* description)
+{
+
+  static const char* const here = "Setup()";
+  static const char* const message = 
+    "Must construct %s detector with valid name! Object construction failed.";
+
+  // Base class constructor failed?
+  if( IsZombie()) return;
+
+  fNPlanes = 4;	// Eventually get # planes and plane names from a DB
+  fPlaneNames = new char* [fNPlanes];
+  for(Int_t i=0;i<fNPlanes;i++) {fPlaneNames[i] = new char[3];}
+  strcpy(fPlaneNames[0],"1x");
+  strcpy(fPlaneNames[1],"1y");
+  strcpy(fPlaneNames[2],"2x");
+  strcpy(fPlaneNames[3],"2y");
+
+  size_t nlen = strlen(name);
+  size_t slen = 0;
+  for(Int_t i=0;i < fNPlanes;i++)
+    {slen = TMath::Max(slen,strlen(fPlaneNames[i]));}
+  size_t len = nlen+slen+1;
+
+  // Probably shouldn't assume that description is defined
+  char* desc = new char[strlen(description)+50+slen];
+  fPlanes = new THcScintillatorPlane* [fNPlanes];
+  for(Int_t i=0;i < fNPlanes;i++) {
+    strcpy(desc, description);
+    strcat(desc, " Plane ");
+    strcat(desc, fPlaneNames[i]);
+
+    fPlanes[i] = new THcScintillatorPlane(fPlaneNames[i], desc, i+1, this); 
+    cout << "Created Scintillator Plane " << fPlaneNames[i] << ", " << desc << endl;
+  }
+}
+
+#if 0
+//_____________________________________________________________________________
+void THcHodoscope::SetApparatus( THaApparatus* app )
+{
+  // Set the apparatus of this detector as well as the subdetectors
+
+  cout << "In THcHodoscope::SetApparatus" << endl;
+  THaDetector::SetApparatus( app );
+  for(Int_t i=0;i < fNPlanes;i++) {
+    fPlanes[i]->SetApparatus( app );
+  }
+  return;
+}
+#endif
+
+//_____________________________________________________________________________
 THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 {
   static const char* const here = "Init()";
 
-  if( THaNonTrackingDetector::Init( date ) )
-    return fStatus;
+  cout << "THcHodoscope::Init " << GetName() << endl;
+
+  // Should probably put this in ReadDatabase as we will know the
+  // maximum number of hits after setting up the detector map
+  // But it needs to happen before the sub detectors are initialized
+  // so that they can get the pointer to the hitlist.
+
+  THcHitList::InitHitList(fDetMap, "THcHodoscopeHit", 100);
+
+  EStatus status;
+  // This triggers call of ReadDatabase and DefineVariables
+  if( (status = THaNonTrackingDetector::Init( date )) )
+    return fStatus=status;
+
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    if((status = fPlanes[ip]->Init( date ))) {
+      return fStatus=status;
+    }
+  }
 
   // Replace with what we need for Hall C
   //  const DataDest tmp[NDEST] = {
@@ -61,11 +135,6 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   //    { &fLTNhit, &fLANhit, fLT, fLT_c, fLA, fLA_p, fLA_c, fLOff, fLPed, fLGain }
   //  };
   //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
-
-  // Should probably put this in ReadDatabase as we will know the
-  // maximum number of hits after setting up the detector map
-
-  THcHitList::InitHitList(fDetMap, "THcHodoscopeHit", 100);
 
   // Will need to determine which apparatus it belongs to and use the
   // appropriate detector ID in the FillMap call
@@ -116,22 +185,24 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   // Will need to determine which spectrometer in order to construct
   // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
 
+  cout << "THcHodoscope::ReadDatabase called " << GetName() << endl;
+
   fNPlanes = 4;			// Hardwire for now
 
-  fNPaddle = new Int_t [4];
+  fNPaddle = new Int_t [fNPlanes];
 
   fNPaddle[0] = *(Int_t *)gHcParms->Find("hscin_1x_nr")->GetValuePointer();
   fNPaddle[1] = *(Int_t *)gHcParms->Find("hscin_1y_nr")->GetValuePointer();
   fNPaddle[2] = *(Int_t *)gHcParms->Find("hscin_2x_nr")->GetValuePointer();
   fNPaddle[3] = *(Int_t *)gHcParms->Find("hscin_2y_nr")->GetValuePointer();
 
-  fSpacing = new Double_t [4];
+  fSpacing = new Double_t [fNPlanes];
   fSpacing[0] = gHcParms->Find("hscin_1x_spacing")->GetValue(0);
   fSpacing[1] = gHcParms->Find("hscin_1y_spacing")->GetValue(0);
   fSpacing[2] = gHcParms->Find("hscin_2x_spacing")->GetValue(0);
   fSpacing[3] = gHcParms->Find("hscin_2y_spacing")->GetValue(0);
 
-  fCenter = new Double_t* [4];
+  fCenter = new Double_t* [fNPlanes];
   Double_t* p;
   Int_t iplane;
 
@@ -186,10 +257,18 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
 {
   // Initialize global variables and lookup table for decoder
 
+  cout << "THcHodoscope::DefineVariables called " << GetName() << endl;
+
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
 
   // Register variables in global list
+
+  //  RVarDef vars[] = {
+    //    hpostdc1 HMS s1x+ TDC hits
+    //    hnegtdc1 HMS s1x+ TDC hits
+    //...
+    //    hnegtdc4 HMS s2y- TDC hits
 
   //  RVarDef vars[] = {
   //    { "nlthit", "Number of Left paddles TDC times",  "fLTNhit" },
@@ -279,11 +358,12 @@ void THcHodoscope::DeleteArrays()
 
 //_____________________________________________________________________________
 inline 
-void THcHodoscope::ClearEvent()
+void THcHodoscope::Clear( Option_t* opt)
 {
   // Reset per-event data.
-
-  fTrackProj->Clear();
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    fPlanes[ip]->Clear(opt);
+  }
 }
 
 //_____________________________________________________________________________
@@ -293,7 +373,14 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = THcHitList::DecodeToHitList(evdata);
 
+  // Let each plane get its hits
+  Int_t nexthit = 0;
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
+  }
+
   // fRawHitList is TClones array of THcHodoscopeHit objects
+#if 0
   for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
     THcHodoscopeHit* hit = (THcHodoscopeHit *) fRawHitList->At(ihit);
     cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
@@ -301,6 +388,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 	 << " " <<  hit->fTDC_neg << endl;
   }
   cout << endl;
+#endif
 
   return nhits;
 }
