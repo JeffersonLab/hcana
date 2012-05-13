@@ -1,0 +1,42 @@
+# Hall C Crate map
+==== Crate 1 type fastbus
+# slot  model   clear   header  mask    nchan   ndata
+  1     1881    1       0x0     0x0     64      64
+  3     1881    1       0x0     0x0     64      64
+  5     1881    1       0x0     0x0     64      64
+  7     1881    1       0x0     0x0     64      64
+  9     1881    1       0x0     0x0     64      64
+ 11     1881    1       0x0     0x0     64      64
+ 13     1881    1       0x0     0x0     64      64
+ 18     1875    1       0x0     0x0     64      64
+ 19     1875    1       0x0     0x0     64      64
+ 21     1875    1       0x0     0x0     64      64
+ 23     1875    1       0x0     0x0     64      64
+==== Crate 2 type fastbus
+# slot  model   clear   header  mask    nchan   ndata
+  2     1877    1       0x0     0x0     64      256
+  3     1877    1       0x0     0x0     64      256
+  8     1877    1       0x0     0x0     64      256
+ 15     1877    1       0x0     0x0     64      256
+ 16     1877    1       0x0     0x0     64      256
+ 18     1877    1       0x0     0x0     64      256
+ 19     1877    1       0x0     0x0     64      256
+ 21     1877    1       0x0     0x0     64      256
+ 22     1877    1       0x0     0x0     64      256
+==== Crate 3 type fastbus
+# slot  model   clear   header  mask    nchan   ndata
+  1     1881    1       0x0     0x0     64      64
+  3     1881    1       0x0     0x0     64      64
+  5     1881    1       0x0     0x0     64      64
+  7     1881    1       0x0     0x0     64      64
+  9     1881    1       0x0     0x0     64      64
+ 18     1875    1       0x0     0x0     64      64
+ 22     1875    1       0x0     0x0     64      64
+==== Crate 4 type fastbus
+# slot  model   clear   header  mask    nchan   ndata
+  1     1877    1       0x0     0x0     64      256
+  2     1877    1       0x0     0x0     64      256
+  4     1877    1       0x0     0x0     64      256
+  5     1877    1       0x0     0x0     64      256
+  8     1877    1       0x0     0x0     64      256
+ 11     1877    1       0x0     0x0     64      256

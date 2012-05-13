@@ -1,0 +1,28 @@
+; 1996 values(?)
+;     sluc_pos_gain   =  .004219, .002490, .001626, .002978
+;			.005263, .002075, .002805, .004673 
+;     sluc_neg_gain   =	.000576, .002301, .003378, .002370
+;			.004545, .002786, .002494, .003676
+
+; These come from Tang.  They were done assuming that the peak
+; corresponded to 12 p.e.  The factor of 0.5 converts this to 6 p.e.
+; which is a better value for the correct beta of the particles.
+; The two which are 0.5/200. are ones with basically no signal,
+; due to incorrect timing of the ADC signal.
+;      sluc_pos_gain = 0.5/138., 0.5/150., 0.5/200., 0.5/118.,
+;                      0.5/130., 0.5/107., 0.5/200., 0.5/142.
+;      sluc_neg_gain = 0.5/117., 0.5/133., 0.5/115., 0.5/154.,
+;                      0.5/136., 0.5/156., 0.5/120., 0.5/122.
+
+; New values. after HV modifications to the PMTs.
+      sluc_pos_gain = 4.00E-3, 3.90E-3, 3.95E-3, 3.94E-3
+                      4.09E-3, 4.24E-3, 4.10E-3, 4.03E-3
+      sluc_neg_gain = 4.00E-3, 4.33E-3, 3.99E-3, 3.89E-3
+                      4.02E-3, 4.25E-3, 4.20E-3, 4.01E-3
+
+
+; the following are upper limits for acceptable pedestal data
+; if zero then the pedestal will not be determined and not subtracted
+    sluc_pos_ped_limit = 1500.,1500.,1500.,1500.,1500.,1500.,1500.,1500.
+
+    sluc_neg_ped_limit = 1500.,1500.,1500.,1500.,1500.,1500.,1500.,1500.

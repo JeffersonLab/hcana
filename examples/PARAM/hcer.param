@@ -1,0 +1,40 @@
+hcer_width = 50, 50
+;hcer_adc_to_npe = 1/140., 1/100.
+;hcer_adc_to_npe = 1/124.4, 1/119.
+; DJM AUG 7, 2003 calibration based on run 47022, picking off spe
+; making no bogus Poissonian assumptions 
+;hcer_adc_to_npe = 1/111., 1/90.
+; JS 6.19.4 calibration from run 48795 (cosmics).  fit spe
+;hcer_adc_to_npe = 1/66., 1/89.
+; JS 6.19.4 calibration from run 48800 (electrons).  fit spe
+;hcer_adc_to_npe = 1/67., 1/98.
+; JS 6.19.4 calibration from run 48800 (electrons).  fit spe
+;        hcer_adc: 1       2
+;            tube: bot     top
+;hcer_adc_to_npe = 1/76., 1/106.
+; JS 7.9.4 calibration from run 49472 (cosmics).  fit spe
+;        hcer_adc: 1       2
+;            tube: bot     top
+;hcer_adc_to_npe = 1/93., 1/120.
+; DJG June 21 2007: Quick and dirty online calibration.
+hcer_adc_to_npe = 1/149.6, 1/166.0.
+
+hcer_chi2max = 50.
+hcer_beta_min = 0.8
+hcer_beta_max = 1.2
+hcer_et_min = 0.95
+hcer_et_max = 5.0
+hcer_mirror_zpos = 230
+; hcer_region: 8 values for each region (1 per mirror + sum)
+; central x,y,dx,dy values and x,y,dx,dy half widths.
+hcer_region =   30,  -30,   0,
+                 0,    0,   0,
+                 0,    0,   0,
+                 0,    0,   0,
+                20,   20,  60,
+                30,   30,  30,
+                .1,   .1,  .1,
+                .1,   .1,  .1
+
+hcer_ped_limit =  1000,1000
+	       

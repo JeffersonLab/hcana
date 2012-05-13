@@ -1,0 +1,183 @@
+; Number of planes installed in HMS detector setup
+      hdc_num_planes = 12
+; Number of chambers installed in HMS detector setup
+      hdc_num_chambers = 2
+; Names of each wire plane
+;
+; Z positions of various planes in HMS chambers
+; hdc_n_zpos is the surveyed Z position of the center of chamber n.
+      hdc_1_zpos = (-40.611-11.312+0.003)
+      hdc_2_zpos = (+40.611-11.312-0.008)
+      
+      hdc_zpos   = hdc_1_zpos - 3.6000
+                   hdc_1_zpos - 1.8000
+                   hdc_1_zpos - 0.0000
+                   hdc_1_zpos + 1.8000
+                   hdc_1_zpos + 3.6000
+                   hdc_1_zpos + 5.4000
+                   hdc_2_zpos - 3.6000
+                   hdc_2_zpos - 1.8000
+                   hdc_2_zpos - 0.0000
+                   hdc_2_zpos + 1.8000
+                   hdc_2_zpos + 3.6000
+                   hdc_2_zpos + 5.4000
+; Angle alpha of wires in wire chamber planes
+        hdc_alpha_angle =  (90. - 0.071)*raddeg
+                           (0.0 - 0.071)*raddeg
+                           (74.925 - 0.071)*raddeg
+                           (105.075 - 0.071)*raddeg
+                           (0.0 - 0.071)*raddeg
+                           (90.0 - 0.071)*raddeg
+                           (89.90814 - 0.153)*raddeg
+                           (0.01611 - 0.153)*raddeg
+                           (74.85 - 0.153)*raddeg
+                           (105.05 - 0.153)*raddeg
+                           (0.01611 - 0.153)*raddeg
+                           (89.90814 - 0.153)*raddeg
+;        hdc_alpha_angle = ( 90.1541 - 0.071)*raddeg
+;                          ( -0.0408 - 0.071)*raddeg
+;                          ( 75.1267 - 0.071)*raddeg
+;                          (105.1267 - 0.071)*raddeg
+;                          ( -0.0408 - 0.071)*raddeg
+;                          ( 90.1541 - 0.071)*raddeg
+;                          ( 90.1095 - 0.153)*raddeg
+;                          ( -0.0370 - 0.153)*raddeg
+;                          ( 75.0904 - 0.153)*raddeg
+;                          (105.0904 - 0.153)*raddeg
+;                          ( -0.0370 - 0.153)*raddeg
+;                          ( 90.1095 - 0.153)*raddeg
+;
+; Angle beta of wires in wire chamber planes
+      hdc_beta_angle =    -0.041*raddeg
+                          -0.041*raddeg
+                          -0.041*raddeg
+                          -0.041*raddeg
+                          -0.041*raddeg
+                          -0.041*raddeg
+                          +0.054*raddeg
+                          +0.054*raddeg
+                          +0.054*raddeg
+                          +0.054*raddeg
+                          +0.054*raddeg
+                          +0.054*raddeg
+; Angle gamma of wires in wire chamber planes
+      hdc_gamma_angle =   +0.0376*raddeg
+                          +0.0376*raddeg
+                          +0.0376*raddeg
+                          +0.0376*raddeg
+                          +0.0376*raddeg
+                          +0.0376*raddeg
+                          -0.145*raddeg
+                          -0.145*raddeg
+                          -0.145*raddeg
+                          -0.145*raddeg
+                          -0.145*raddeg
+                          -0.145*raddeg
+; Pitch
+      hdc_pitch = 1.000252
+                  1.000252
+                  1.000252
+                  1.000252
+                  1.000252
+                  1.000252
+                  1.000252
+                  1.000252
+                  1.000252
+                  1.000252
+                  1.000252
+                  1.000252
+; Number of wires per plane
+      hdc_nrwire = 113
+                    52
+                   107
+                   107
+                    52
+                   113
+                   113
+                    52
+                   107
+                   107
+                    52
+                   113
+; X,Y position of center of wire chamber
+; increasing dc2 coordinates decreases dpos histograms.
+; new values according to henk and rolf
+      hdc_xcenter = (1.670 - 0.0155 - 0.020)
+                    (2.758 - 0.0155 + 0.040)
+;      hdc_xcenter = (1.670 - 0.0155)
+;                    (2.758 - 0.0155)
+;      hdc_xcenter = 1.670 + 0.15 + 0.0155
+;                    2.758 + 0.16 + 0.0155
+;  Y CENTER CHANGED TO MATCH OPTICS DATA(offset of 1.1 cm in y)
+; new values included according to henk and rolf
+      hdc_ycenter = (1.443 - 0.1699 - 0.0279 - 0.04)
+                    (2.753 - 0.1699 + 0.0279 + 0.04)
+;      hdc_ycenter = (1.443 - 0.1699 - 0.0279 - 0.035)
+;                    (2.753 - 0.1699 + 0.0279 + 0.035)
+;      hdc_ycenter = (1.443 - 0.1699 - 0.0279)
+;                    (2.753 - 0.1699 + 0.0279)
+
+;      hdc_ycenter = 0.343 + 1.1 - 0.12 + 0.1699 + 0.0279
+;                    1.653 + 1.1 - 0.22 + 0.1699 - 0.0279
+;      hdc_ycenter = 0.343  THESE ARE THE ORIGINAL Y CENTERS FROM SURVEY DATA
+;                    1.653
+;      hdc_xcenter = 0.0
+;                    1.22
+;      hdc_ycenter = 0.0
+;                    1.24
+
+; Wire number of center of wire chamber
+; assume 1st wire of 1st dc of a set is closest to edge where counting starts
+       hdc_central_wire = 57.257, 26.240, 54.001, 53.999, 26.760 , 56.743
+                          57.244, 26.242, 53.998, 54.002, 26.758 , 56.756
+
+;       hdc_central_wire = 57.25, 26.245, 54.0, 54.0, 26.755 , 56.75
+;                          57.24, 26.245, 54.0, 54.0, 26.755 , 56.76
+;       hdc_central_wire = 57.25, 26.25, 54.0, 54.0, 26.75 , 56.75
+;                          57.24, 26.25, 54.0, 54.0, 26.75 , 56.76
+; hdc_chamber_planes    array giving the chamber number for each plane
+      hdc_chamber_planes = 1
+                           1
+                           1
+                           1
+                           1
+                           1
+                           2
+                           2
+                           2
+                           2
+                           2
+                           2
+; The hms readout numbers some planes in reverse order.
+; The following array is a flag on the order number.
+; If hdc_wire_counting(plane) = 0
+;  the wire center is at (wire - hdc_central_wire) * pitch
+; If hdc_wire_counting(plane) = 1
+;  the wire center is at ( hdc_nrwire + 1 - wire - hdc_central_wire) * pitch
+        hdc_wire_counting = 1
+                            1
+                            0
+                            1
+                            0
+                            0
+                            1
+                            1
+                            0
+                            1
+                            0
+                            0
+; The velocity correction is the distance from the center of the wire divided
+; by the velocity of propagation times hdc_drifttime_sign(pln).  +/-1
+; for disc. card at +/- coord. (i.e. top = -x direction, so top readout is +1)
+       hdc_drifttime_sign = -1
+                            -1
+                            -1
+                            -1
+                            -1
+                            -1
+                            -1
+                            -1
+                            -1
+                            -1
+                            -1
+                            -1

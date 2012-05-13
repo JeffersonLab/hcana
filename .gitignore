@@ -12,5 +12,9 @@ hcana
 *.so
 \#.*\#
 
+# Examples directory
+examples/*.root
+examples/*.log.*
+
 # Working directory
 work

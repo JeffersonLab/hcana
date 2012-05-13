@@ -1,0 +1,23 @@
+# See $ANALYZER/examples/output_example.def for examples
+#
+block H.hod.*
+
+# TDC hits per paddle
+TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.postdchits 16 0.5 16.5
+TH1F hnegtdc1 'HMS s1x- TDC hits' H.hod.1x.negtdchits 16 0.5 16.5
+TH1F hpostdc2 'HMS s1y+ TDC hits' H.hod.1y.postdchits 10 0.5 10.5
+TH1F hnegtdc2 'HMS s1y- TDC hits' H.hod.1y.negtdchits 10 0.5 10.5
+TH1F hpostdc3 'HMS s2x+ TDC hits' H.hod.2x.postdchits 16 0.5 16.5
+TH1F hnegtdc3 'HMS s2x- TDC hits' H.hod.2x.negtdchits 16 0.5 16.5
+TH1F hpostdc4 'HMS s2y+ TDC hits' H.hod.2y.postdchits 10 0.5 10.5
+TH1F hnegtdc4 'HMS s2y- TDC hits' H.hod.2y.negtdchits 10 0.5 10.5
+
+# ADC hits per paddle
+TH1F hposadc1 'HMS s1x+ ADC hits' H.hod.1x.posadchits 16 0.5 16.5
+TH1F hnegadc1 'HMS s1x- ADC hits' H.hod.1x.negadchits 16 0.5 16.5
+TH1F hposadc2 'HMS s1y+ ADC hits' H.hod.1y.posadchits 10 0.5 10.5
+TH1F hnegadc2 'HMS s1y- ADC hits' H.hod.1y.negadchits 10 0.5 10.5
+TH1F hposadc3 'HMS s2x+ ADC hits' H.hod.2x.posadchits 16 0.5 16.5
+TH1F hnegadc3 'HMS s2x- ADC hits' H.hod.2x.negadchits 16 0.5 16.5
+TH1F hposadc4 'HMS s2y+ ADC hits' H.hod.2y.posadchits 10 0.5 10.5
+TH1F hnegadc4 'HMS s2y- ADC hits' H.hod.2y.negadchits 10 0.5 10.5
