@@ -20,5 +20,7 @@
 #pragma link C++ class THcHallCSpectrometer+;
 #pragma link C++ class THcScintillatorPlane+;
 #pragma link C++ class THcSignalHit+;
+#pragma link C++ class THcShowerHit+;
+#pragma link C++ class THcShower+;
 
 #endif

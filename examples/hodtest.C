@@ -17,6 +17,7 @@
 
   // Add hodoscope
   HMS->AddDetector( new THcHodoscope("hod", "Hodoscope" ));
+  HMS->AddDetector( new THcShower("Cal", "Shower" ));
   //  HMS->AddDetector( new THcDriftChamber("dc", "Drift Chambers" ));
 
   // Set up the analyzer - we use the standard one,
