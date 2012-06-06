@@ -47,6 +47,11 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* fPosADCHits;
   TClonesArray* fNegADCHits;
 
+  TClass* fPosTDCHitsClass;
+  TClass* fNegTDCHitsClass;
+  TClass* fPosADCHitsClass;
+  TClass* fNegADCHitsClass;
+
   Int_t fPlaneNum;
 
   virtual Int_t  ReadDatabase( const TDatime& date );
