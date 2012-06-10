@@ -2,6 +2,7 @@
 #
 block H.hod.*
 
+
 # TDC hits per paddle
 TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.postdchits 16 0.5 16.5
 TH1F hnegtdc1 'HMS s1x- TDC hits' H.hod.1x.negtdchits 16 0.5 16.5
@@ -21,3 +22,12 @@ TH1F hposadc3 'HMS s2x+ ADC hits' H.hod.2x.posadchits 16 0.5 16.5
 TH1F hnegadc3 'HMS s2x- ADC hits' H.hod.2x.negadchits 16 0.5 16.5
 TH1F hposadc4 'HMS s2y+ ADC hits' H.hod.2y.posadchits 10 0.5 10.5
 TH1F hnegadc4 'HMS s2y- ADC hits' H.hod.2y.negadchits 10 0.5 10.5
+
+block H.Cal.*
+# ADC hits per Calorimeter layer
+TH1F chposadc1 'HMS Cal 1z+ ADC hits' H.Cal.1z.posadchits 13 0.5 13.5
+TH1F chnegadc1 'HMS Cal 1z- ADC hits' H.Cal.1z.negadchits 13 0.5 13.5
+TH1F chposadc2 'HMS Cal 2z+ ADC hits' H.Cal.2z.posadchits 13 0.5 13.5
+TH1F chnegadc2 'HMS Cal 2z- ADC hits' H.Cal.2z.negadchits 13 0.5 13.5
+TH1F chposadc3 'HMS Cal 3z+ ADC hits' H.Cal.3z.posadchits 13 0.5 13.5
+TH1F chposadc4 'HMS Cal 4z+ ADC hits' H.Cal.4z.posadchits 13 0.5 13.5

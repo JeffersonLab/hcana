@@ -36,7 +36,7 @@ THcShower::THcShower( const char* name, const char* description,
   THaNonTrackingDetector(name,description,apparatus)
 {
   // Constructor
-
+  Setup(name, description);
 //  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
 }
 
@@ -47,10 +47,50 @@ THcShower::THcShower( ) :
   // Constructor
 }
 
+void THcShower::Setup(const char* name, const char* description)
+{
+
+  static const char* const here = "Setup()";
+  static const char* const message = 
+    "Must construct %s detector with valid name! Object construction failed.";
+
+  // Base class constructor failed?
+  if( IsZombie()) return;
+
+  fNLayers = 4;	// Eventually get # layers and layer names from a DB
+  fLayerNames = new char* [fNLayers];
+  for(Int_t i=0;i<fNLayers;i++) {fLayerNames[i] = new char[3];}
+  strcpy(fLayerNames[0],"1z");
+  strcpy(fLayerNames[1],"2z");
+  strcpy(fLayerNames[2],"3z");
+  strcpy(fLayerNames[3],"4z");
+
+  size_t nlen = strlen(name);
+  size_t slen = 0;
+  for(Int_t i=0;i < fNLayers;i++)
+    {slen = TMath::Max(slen,strlen(fLayerNames[i]));}
+  size_t len = nlen+slen+1;
+
+  // Probably shouldn't assume that description is defined
+  char* desc = new char[strlen(description)+50+slen];
+  fPlanes = new THcShowerPlane* [fNLayers];
+  for(Int_t i=0;i < fNLayers;i++) {
+    strcpy(desc, description);
+    strcat(desc, " Plane ");
+    strcat(desc, fLayerNames[i]);
+
+    fPlanes[i] = new THcShowerPlane(fLayerNames[i], desc, i+1, this); 
+    cout << "Created Shower Plane " << fLayerNames[i] << ", " << desc << endl;
+  }
+}
+
+
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
 {
   static const char* const here = "Init()";
+
+  cout << "THcHodoscope::Init " << GetName() << endl;
 
   if( THaNonTrackingDetector::Init( date ) )
     return fStatus;
@@ -61,6 +101,15 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
 
   THcHitList::InitHitList(fDetMap, "THcShowerHit", 100);
 
+  EStatus status;
+  if( (status = THaNonTrackingDetector::Init( date )) )
+    return fStatus=status;
+
+  for(Int_t ip=0;ip<fNLayers;ip++) {
+    if((status = fPlanes[ip]->Init( date ))) {
+      return fStatus=status;
+    }
+  }
   // Will need to determine which apparatus it belongs to and use the
   // appropriate detector ID in the FillMap call
   if( gHcDetectorMap->FillMap(fDetMap, "HCAL") < 0 ) {
@@ -86,24 +135,6 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   // Pull values from the THcParmList instead of reading a database
   // file like Hall A does.
 
-  //  DBRequest list[] = {
-  //    { "TDC_offsetsL", fLOff, kDouble, fNelem },
-  //    { "TDC_offsetsR", fROff, kDouble, fNelem },
-  //    { "ADC_pedsL", fLPed, kDouble, fNelem },
-  //    { "ADC_pedsR", fRPed, kDouble, fNelem },
-  //    { "ADC_coefL", fLGain, kDouble, fNelem },
-  //    { "ADC_coefR", fRGain, kDouble, fNelem },
-  //    { "TDC_res",   &fTdc2T },
-  //    { "TransSpd",  &fCn },
-  //    { "AdcMIP",    &fAdcMIP },
-  //    { "NTWalk",    &fNTWalkPar, kInt },
-  //    { "Timewalk",  fTWalkPar, kDouble, 2*fNelem },
-  //    { "ReTimeOff", fTrigOff, kDouble, fNelem },
-  //    { "AvgRes",    &fResolution },
-  //    { "Atten",     &fAttenuation },
-  //    { 0 }
-  //  };
-
   // We will probably want to add some kind of method to gHcParms to allow
   // bulk retrieval of parameters of interest.
 
@@ -112,9 +143,9 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
 cout << "THcShower::ReadDatabase called " << GetName() << endl;
 
-  NLayers = 4;			// Hardwire for now
+  fNLayers = 4;			// Hardwire for now
 
-  BlockThick = new Double_t [NLayers];
+  BlockThick = new Double_t [fNLayers];
 
   BlockThick[0] = *(Double_t *)gHcParms->Find("hcal_1pr_thick")->GetValuePointer();
   BlockThick[1] = *(Double_t *)gHcParms->Find("hcal_2ta_thick")->GetValuePointer();
@@ -123,7 +154,7 @@ cout << "THcShower::ReadDatabase called " << GetName() << endl;
 
 cout << "Block thickness: " << BlockThick[2]  << endl;
 
-fNBlocks = new Int_t [NLayers];
+fNBlocks = new Int_t [fNLayers];
 
   fNBlocks[0] = *(Int_t *)gHcParms->Find("hcal_1pr_nr")->GetValuePointer();
   fNBlocks[1] = *(Int_t *)gHcParms->Find("hcal_2ta_nr")->GetValuePointer();
@@ -132,7 +163,7 @@ fNBlocks = new Int_t [NLayers];
 
   cout << "Number of blocks per layer: " << fNBlocks[2]  << endl;
 
-  fNLayerZPos = new Double_t [NLayers];
+  fNLayerZPos = new Double_t [fNLayers];
 
   fNLayerZPos[0] = *(Double_t *)gHcParms->Find("hcal_1pr_zpos")->GetValuePointer();
   fNLayerZPos[1] = *(Double_t *)gHcParms->Find("hcal_2ta_zpos")->GetValuePointer();
@@ -141,7 +172,7 @@ fNBlocks = new Int_t [NLayers];
 
 cout << "Z Position: " << fNLayerZPos[2]  << endl;
 
-  XPos = new Double_t [2*NLayers];
+  XPos = new Double_t [2*fNLayers];
 
   XPos[0] = *(Double_t *)gHcParms->Find("hcal_1pr_left")->GetValuePointer();
   XPos[1] = *(Double_t *)gHcParms->Find("hcal_1pr_right")->GetValuePointer();
@@ -209,6 +240,8 @@ Int_t THcShower::DefineVariables( EMode mode )
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
+
+  cout << "THcShower::DefineVariables called " << GetName() << endl;
 
   // Register variables in global list
 
@@ -278,7 +311,11 @@ Int_t THcShower::Decode( const THaEvData& evdata )
 
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = THcHitList::DecodeToHitList(evdata);
-
+  Int_t nexthit = 0;
+  for(Int_t ip=0;ip<fNLayers;ip++) {
+    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
+  }
+/*
 //   fRawHitList is TClones array of THcShowerHit objects
   for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
     THcShowerHit* hit = (THcShowerHit *) fRawHitList->At(ihit);
@@ -286,7 +323,7 @@ Int_t THcShower::Decode( const THaEvData& evdata )
 	 << hit->fADC_pos << " " << hit->fADC_neg << " "  << endl;
   }
   cout << endl;
-
+*/
   return nhits;
 }
 
