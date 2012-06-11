@@ -3,7 +3,9 @@
 
   // Load the Hall C style detector map
   gHcDetectorMap=new THcDetectorMap();
-  gHcDetectorMap->Load("july04.map");
+ // gHcDetectorMap->Load("july04.map");
+gHcDetectorMap->Load("jan03.map");
+//gHcDetectorMap->Load("MAPS/jan03_dg_update.map");
 
   gHcParms->Load("PARAM/general.param");
   //
@@ -36,6 +38,7 @@
   // Define the run(s) that we want to analyze.
   // We just set up one, but this could be many.
   THaRun* run = new THaRun( "daq04_50017.log.0" );
+//THaRun* run = new THaRun( "daq03_47851.log.0" );
   run->SetEventRange(2000,100000);
   
   // Define the analysis parameters
