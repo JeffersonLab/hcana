@@ -231,7 +231,7 @@ if(hit->fTDC_neg >  0) {
 	THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
 	sighit->Set(hit->fCounter, hit->fTDC_neg);
 #else
-	TObject* obj = (*fPosTDCHits)[nNegTDCHits++];
+	TObject* obj = (*fNegTDCHits)[nNegTDCHits++];
 	R__ASSERT( obj );
 if(!obj->TestBit (TObject::kNotDeleted))
 	fNegTDCHitsClass->New(obj);
@@ -245,7 +245,7 @@ if(hit->fADC_pos >  0) {
 	THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
 	sighit->Set(hit->fCounter, hit->fADC_pos);
 #else
-	TObject* obj = (*fPosTDCHits)[nPosADCHits++];
+	TObject* obj = (*fPosADCHits)[nPosADCHits++];
 	R__ASSERT( obj );
 if(!obj->TestBit (TObject::kNotDeleted))
 	fPosADCHitsClass->New(obj);
@@ -259,7 +259,7 @@ if(hit->fADC_neg >  0) {
 	THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
 	sighit->Set(hit->fCounter, hit->fADC_neg);
 #else
-	TObject* obj = (*fPosTDCHits)[nNegADCHits++];
+	TObject* obj = (*fNegADCHits)[nNegADCHits++];
 	R__ASSERT( obj );
 if(!obj->TestBit (TObject::kNotDeleted))
 	fNegADCHitsClass->New(obj);
