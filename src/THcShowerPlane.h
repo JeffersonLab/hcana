@@ -1,5 +1,5 @@
 #ifndef ROOT_THcShowerPlane
-#define ROOT_THcShowerPlane
+#define ROOT_THcShowerPlane 
 
 //////////////////////////////////////////////////////////////////////////////
 //                         

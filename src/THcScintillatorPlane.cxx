@@ -230,6 +230,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
       THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
 #else
+
       TObject* obj = (*fPosTDCHits)[nNegTDCHits++];
       R__ASSERT( obj );
       if(!obj->TestBit (TObject::kNotDeleted))
