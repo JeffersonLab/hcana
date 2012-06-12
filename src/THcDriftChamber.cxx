@@ -31,18 +31,69 @@
 using namespace std;
 
 //_____________________________________________________________________________
-THcDriftChamber::THcDriftChamber( const char* name, const char* description,
+THcDriftChamber::THcDriftChamber(
+ const char* name, const char* description,
 				  THaApparatus* apparatus ) :
-  THaNonTrackingDetector(name,description,apparatus)
+  THaTrackingDetector(name,description,apparatus)
 {
   // Constructor
 
-  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
+  //  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
+
+}
+
+//_____________________________________________________________________________
+void THcDriftChamber::Setup(const char* name, const char* description)
+{
+
+  char prefix[2];
+  char parname[100];
+
+  THaApparatus *app = GetApparatus();
+  if(app) {
+    cout << app->GetName() << endl;
+  } else {
+    cout << "No apparatus found" << endl;
+  }
+
+  prefix[0]=tolower(app->GetName()[0]);
+  prefix[1]='\0';
+
+  strcpy(parname,prefix);
+  strcat(parname,name); 	// Append "dc"
+  Int_t plen=strlen(parname);
+  cout << "parname=" << parname << endl;
+
+  // Get number of planes and number wires for each plane
+  strcat(parname,"_num_planes");
+  fNPlanes = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+
+  parname[plen] = '\0';
+  strcat(parname,"_num_chambers");
+  fNChambers = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+
+  fPlaneNames = new char* [fNPlanes];
+
+  char *desc = new char[strlen(description)+100];
+  fPlanes = new THcDriftChamberPlane* [fNPlanes];
+
+  for(Int_t i=0;i<fNPlanes;i++) {
+    fPlaneNames[i] = new char[5];
+    sprintf(fPlaneNames[i],"%d",i+1);
+    strcpy(desc, description);
+    strcat(desc, " Plane ");
+    strcat(desc, fPlaneNames[i]);
+
+    fPlanes[i] = new THcDriftChamberPlane(fPlaneNames[i], desc, i+1, this);
+    cout << "Created Drift Chamber Plane " << fPlaneNames[i] << ", " << desc << endl;
+
+  }
+    
 }
 
 //_____________________________________________________________________________
 THcDriftChamber::THcDriftChamber( ) :
-  THaNonTrackingDetector()
+  THaTrackingDetector()
 {
   // Constructor
 }
@@ -52,8 +103,22 @@ THaAnalysisObject::EStatus THcDriftChamber::Init( const TDatime& date )
 {
   static const char* const here = "Init()";
 
-  if( THaNonTrackingDetector::Init( date ) )
-    return fStatus;
+  Setup(GetName(), GetTitle());	// Create the subdetectors here
+  
+  // Should probably put this in ReadDatabase as we will know the
+  // maximum number of hits after setting up the detector map
+  THcHitList::InitHitList(fDetMap, "THcDCHit", 1000);
+
+  EStatus status;
+  // This triggers call of ReadDatabase and DefineVariables
+  if( (status = THaTrackingDetector::Init( date )) )
+    return fStatus=status;
+
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    if((status = fPlanes[ip]->Init( date ))) {
+      return fStatus=status;
+    }
+  }
 
   // Replace with what we need for Hall C
   //  const DataDest tmp[NDEST] = {
@@ -62,16 +127,18 @@ THaAnalysisObject::EStatus THcDriftChamber::Init( const TDatime& date )
   //  };
   //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
 
-  // Should probably put this in ReadDatabase as we will know the
-  // maximum number of hits after setting up the detector map
-
-  THcHitList::InitHitList(fDetMap, "THcDCHit", 1000);
-
   // Will need to determine which apparatus it belongs to and use the
   // appropriate detector ID in the FillMap call
-  if( gHcDetectorMap->FillMap(fDetMap, "HDC") < 0 ) {
+  char EngineDID[4];
+
+  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
+  EngineDID[1] = 'D';
+  EngineDID[2] = 'C';
+  EngineDID[3] = '\0';
+  
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
     Error( Here(here), "Error filling detectormap for %s.", 
-	     "HSCIN");
+	     EngineDID);
       return kInitError;
   }
 
@@ -87,28 +154,12 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   // 'date' contains the date/time of the run being analyzed.
 
   //  static const char* const here = "ReadDatabase()";
+  char prefix[2];
+  char parname[100];
 
   // Read data from database 
   // Pull values from the THcParmList instead of reading a database
   // file like Hall A does.
-
-  //  DBRequest list[] = {
-  //    { "TDC_offsetsL", fLOff, kDouble, fNelem },
-  //    { "TDC_offsetsR", fROff, kDouble, fNelem },
-  //    { "ADC_pedsL", fLPed, kDouble, fNelem },
-  //    { "ADC_pedsR", fRPed, kDouble, fNelem },
-  //    { "ADC_coefL", fLGain, kDouble, fNelem },
-  //    { "ADC_coefR", fRGain, kDouble, fNelem },
-  //    { "TDC_res",   &fTdc2T },
-  //    { "TransSpd",  &fCn },
-  //    { "AdcMIP",    &fAdcMIP },
-  //    { "NTWalk",    &fNTWalkPar, kInt },
-  //    { "Timewalk",  fTWalkPar, kDouble, 2*fNelem },
-  //    { "ReTimeOff", fTrigOff, kDouble, fNelem },
-  //    { "AvgRes",    &fResolution },
-  //    { "Atten",     &fAttenuation },
-  //    { 0 }
-  //  };
 
   // We will probably want to add some kind of method to gHcParms to allow
   // bulk retrieval of parameters of interest.
@@ -116,10 +167,23 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   // Will need to determine which spectrometer in order to construct
   // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
 
-  fNPlanes = *(Int_t *)gHcParms->Find("hdc_num_planes")->GetValuePointer();
+  prefix[0]=tolower(GetApparatus()->GetName()[0]);
 
+  prefix[1]='\0';
+
+  strcpy(parname,prefix);
+  strcat(parname,"dc");
+  Int_t plen=strlen(parname);
+
+  // Get number of planes and number wires for each plane
+  strcat(parname,"_num_planes");
+  fNPlanes = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+
+  parname[plen]='\0';
+  strcat(parname,"_nrwire");
+  
   fNWires = new Int_t [fNPlanes];
-  Int_t* p= (Int_t *)gHcParms->Find("hdc_nrwire")->GetValuePointer();
+  Int_t* p= (Int_t *)gHcParms->Find(parname)->GetValuePointer();
   for(Int_t i=0;i<fNPlanes;i++) {
     fNWires[i] = p[i];
   }
@@ -241,17 +305,25 @@ Int_t THcDriftChamber::Decode( const THaEvData& evdata )
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = THcHitList::DecodeToHitList(evdata);
 
+  // Let each plane get its hits
+  Int_t nexthit = 0;
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
+  }
+
+#if 0
   // fRawHitList is TClones array of THcDCHit objects
   for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
     THcDCHit* hit = (THcDCHit *) fRawHitList->At(ihit);
-    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
-	 << endl;
+    //    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
+    //	 << endl;
     for(Int_t imhit = 0; imhit < hit->fNHits; imhit++) {
-      cout << "                     " << imhit << " " << hit->fTDC[imhit]
-	   << endl;
+      //      cout << "                     " << imhit << " " << hit->fTDC[imhit]
+      //	   << endl;
     }
   }
-  cout << endl;
+  //  cout << endl;
+#endif
 
   return nhits;
 }
@@ -263,7 +335,7 @@ Int_t THcDriftChamber::ApplyCorrections( void )
 }
 
 //_____________________________________________________________________________
-Int_t THcDriftChamber::CoarseProcess( TClonesArray& /* tracks */ )
+Int_t THcDriftChamber::CoarseTrack( TClonesArray& /* tracks */ )
 {
   // Calculation of coordinates of particle track cross point with scint
   // plane in the detector coordinate system. For this, parameters of track 
@@ -279,7 +351,7 @@ Int_t THcDriftChamber::CoarseProcess( TClonesArray& /* tracks */ )
 }
 
 //_____________________________________________________________________________
-Int_t THcDriftChamber::FineProcess( TClonesArray& tracks )
+Int_t THcDriftChamber::FineTrack( TClonesArray& tracks )
 {
   // Reconstruct coordinates of particle track cross point with scintillator
   // plane, and copy the data into the following local data structure:

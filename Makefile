@@ -9,12 +9,16 @@
 
 
 SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
-	src/THcHodoscopeHit.cxx src/THcRawHit.cxx \
+	src/THcHallCSpectrometer.cxx \
+	src/THcDetectorMap.cxx \
+	src/THcRawHit.cxx src/THcHitList.cxx \
+	src/THcSignalHit.cxx \
+	src/THcHodoscope.cxx src/THcScintillatorPlane.cxx \
+	src/THcHodoscopeHit.cxx \
+	src/THcDriftChamber.cxx src/THcDriftChamberPlane.cxx \
 	src/THcDCHit.cxx \
-	src/THcHitList.cxx src/THcDetectorMap.cxx src/THcHodoscope.cxx \
-	src/THcHallCSpectrometer.cxx src/THcDriftChamber.cxx \
-	src/THcScintillatorPlane.cxx src/THcSignalHit.cxx \
-	src/THcShower.cxx src/THcShowerHit.cxx src/THcShowerPlane.cxx  
+	src/THcShower.cxx src/THcShowerPlane.cxx \
+	src/THcShowerHit.cxx 
 
 # Name of your package. 
 # The shared library that will be built will get the name lib$(PACKAGE).so

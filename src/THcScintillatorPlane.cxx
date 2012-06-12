@@ -36,10 +36,12 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fNegTDCHits = new TClonesArray("THcSignalHit",16);
   fPosADCHits = new TClonesArray("THcSignalHit",16);
   fNegADCHits = new TClonesArray("THcSignalHit",16);
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,32,0)
   fPosTDCHitsClass = fPosTDCHits->GetClass();
   fNegTDCHitsClass = fNegTDCHits->GetClass();
   fPosADCHitsClass = fPosADCHits->GetClass();
   fNegADCHitsClass = fNegADCHits->GetClass();
+#endif
   fPlaneNum = planenum;
 }
 
@@ -211,62 +213,58 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
 
 
-if(hit->fTDC_pos >  0) {
+    if(hit->fTDC_pos >  0) {
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
-	THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
-	sighit->Set(hit->fCounter, hit->fTDC_pos);
+      THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
 #else
-TObject* obj = (*fPosTDCHits)[nPosTDCHits++];
-R__ASSERT( obj );
-if(!obj->TestBit (TObject::kNotDeleted))
-fPosTDCHitsClass->New(obj);
-THcSignalHit *sighit = (THcSignalHit*)obj;
+      TObject* obj = (*fPosTDCHits)[nPosTDCHits++];
+      R__ASSERT( obj );
+      if(!obj->TestBit (TObject::kNotDeleted))
+	fPosTDCHitsClass->New(obj);
+      THcSignalHit *sighit = (THcSignalHit*)obj;
 #endif
-   sighit->Set(hit->fCounter, hit->fTDC_pos);
-}
+      sighit->Set(hit->fCounter, hit->fTDC_pos);
+    }
 
-
-if(hit->fTDC_neg >  0) {
+    if(hit->fTDC_neg >  0) {
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
-	THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
-	sighit->Set(hit->fCounter, hit->fTDC_neg);
+      THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
 #else
-	TObject* obj = (*fNegTDCHits)[nNegTDCHits++];
-	R__ASSERT( obj );
-if(!obj->TestBit (TObject::kNotDeleted))
+
+      TObject* obj = (*fPosTDCHits)[nNegTDCHits++];
+      R__ASSERT( obj );
+      if(!obj->TestBit (TObject::kNotDeleted))
 	fNegTDCHitsClass->New(obj);
-	THcSignalHit *sighit = (THcSignalHit*)obj;
+      THcSignalHit *sighit = (THcSignalHit*)obj;
 #endif
-   sighit->Set(hit->fCounter, hit->fTDC_neg);
-}
+      sighit->Set(hit->fCounter, hit->fTDC_neg);
+    }
 
-if(hit->fADC_pos >  0) {
+    if(hit->fADC_pos >  0) {
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
-	THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
-	sighit->Set(hit->fCounter, hit->fADC_pos);
+      THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
 #else
-	TObject* obj = (*fPosADCHits)[nPosADCHits++];
-	R__ASSERT( obj );
-if(!obj->TestBit (TObject::kNotDeleted))
+      TObject* obj = (*fPosTDCHits)[nPosADCHits++];
+      R__ASSERT( obj );
+      if(!obj->TestBit (TObject::kNotDeleted))
 	fPosADCHitsClass->New(obj);
-	THcSignalHit *sighit = (THcSignalHit*)obj;
+      THcSignalHit *sighit = (THcSignalHit*)obj;
 #endif
-   sighit->Set(hit->fCounter, hit->fADC_pos);
-}
+      sighit->Set(hit->fCounter, hit->fADC_pos);
+    }
 
-if(hit->fADC_neg >  0) {
+    if(hit->fADC_neg >  0) {
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
-	THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
-	sighit->Set(hit->fCounter, hit->fADC_neg);
+      THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
 #else
-	TObject* obj = (*fNegADCHits)[nNegADCHits++];
-	R__ASSERT( obj );
-if(!obj->TestBit (TObject::kNotDeleted))
+      TObject* obj = (*fPosTDCHits)[nNegADCHits++];
+      R__ASSERT( obj );
+      if(!obj->TestBit (TObject::kNotDeleted))
 	fNegADCHitsClass->New(obj);
-	THcSignalHit *sighit = (THcSignalHit*)obj;
+      THcSignalHit *sighit = (THcSignalHit*)obj;
 #endif
-   sighit->Set(hit->fCounter, hit->fADC_neg);
-}
+      sighit->Set(hit->fCounter, hit->fADC_neg);
+    }
 
     ihit++;
   }

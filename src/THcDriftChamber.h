@@ -7,14 +7,15 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "TClonesArray.h"
-#include "THaNonTrackingDetector.h"
+#include "THaTrackingDetector.h"
 #include "THcHitList.h"
 #include "THcDCHit.h"
+#include "THcDriftChamberPlane.h"
 
-class THaScCalib;
+//class THaScCalib;
+class TClonesArray;
 
-class THcDriftChamber : public THaNonTrackingDetector, public THcHitList {
+class THcDriftChamber : public THaTrackingDetector, public THcHitList {
 
 public:
   THcDriftChamber( const char* name, const char* description = "",
@@ -23,8 +24,8 @@ public:
 
   virtual Int_t      Decode( const THaEvData& );
   virtual EStatus    Init( const TDatime& run_time );
-  virtual Int_t      CoarseProcess( TClonesArray& tracks );
-  virtual Int_t      FineProcess( TClonesArray& tracks );
+  virtual Int_t      CoarseTrack( TClonesArray& tracks );
+  virtual Int_t      FineTrack( TClonesArray& tracks );
   
   virtual Int_t      ApplyCorrections( void );
 
@@ -33,7 +34,7 @@ public:
   Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
   
-  friend class THaScCalib;
+  //  friend class THaScCalib;
 
   THcDriftChamber();  // for ROOT I/O
 protected:
@@ -45,7 +46,11 @@ protected:
 
   // Potential Hall C parameters.  Mostly here for demonstration
   Int_t fNPlanes;
+  char** fPlaneNames;
+  Int_t fNChambers;
   Int_t* fNWires;		// Number of wires per plane
+
+  THcDriftChamberPlane** fPlanes; // List of plane objects
 
   TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
                               // and estimated match to TOF paddle
@@ -71,7 +76,9 @@ protected:
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
 
-  ClassDef(THcDriftChamber,0)   // Generic hodoscope class
+  void Setup(const char* name, const char* description);
+
+  ClassDef(THcDriftChamber,0)   // Drift Chamber class
 };
 
 ////////////////////////////////////////////////////////////////////////////////
