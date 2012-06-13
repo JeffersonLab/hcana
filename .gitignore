@@ -10,7 +10,7 @@ hcana
 *.[oad]
 *~
 *.so
-\#.*\#
+\#*\#
 
 # Examples directory
 examples/*.root
