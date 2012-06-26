@@ -3,7 +3,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// THcHodoscope                                                              //
+// THcShower                                                                 //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +11,7 @@
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
 #include "THcShowerHit.h"
-#include "THcScintillatorPlane.h"
+#include "THcShowerPlane.h"
 
 class THaScCalib;
 
@@ -45,15 +45,15 @@ protected:
 
 
   // Potential Hall C parameters.  Mostly here for demonstration
-  char** LayerNames;
-  Int_t NLayers;
+  char** fLayerNames;
+  Int_t fNLayers;
   Double_t* fNLayerZPos;		// Z position of front of shower counter layers
   Double_t* BlockThick;		// Thickness of shower counter blocks, blocks
   Int_t* fNBlocks;           // Number of shower counter blocks per layer
   Double_t** YPos;		//X,Y positions of shower counter blocks
   Double_t* XPos;
 
-  THcScintillatorPlane** fPlane; // List of plane objects
+  THcShowerPlane** fPlanes; // List of plane objects
 
   TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
                               // and estimated match to TOF paddle
@@ -83,6 +83,8 @@ protected:
   
   virtual  Double_t TimeWalkCorrection(const Int_t& paddle,
 					   const ESide side);
+
+void Setup(const char* name, const char* description);
 
   ClassDef(THcShower,0)   // Generic hodoscope class
 };
