@@ -18,12 +18,12 @@
   // Add hodoscope
   HMS->AddDetector( new THcHodoscope("hod", "Hodoscope" ));
   HMS->AddDetector( new THcShower("Cal", "Shower" ));
-  //  HMS->AddDetector( new THcDriftChamber("dc", "Drift Chambers" ));
+  HMS->AddDetector( new THcDriftChamber("dc", "Drift Chambers" ));
 
   // Set up the analyzer - we use the standard one,
   // but this could be an experiment-specific one as well.
   // The Analyzer controls the reading of the data, executes
-  // tests/cuts, loops over Apparatus's and PhysicsModules,
+  // tests/cuts, loops over Acpparatus's and PhysicsModules,
   // and executes the output routines.
   THcAnalyzer* analyzer = new THcAnalyzer;
   
