@@ -40,8 +40,6 @@ THcHodoscope::THcHodoscope( const char* name, const char* description,
   //fTrackProj = new TClonesArray( "THaTrackProj", 5 );
   // Construct the planes
 
-  Setup(name, description);
-
 }
 
 //_____________________________________________________________________________
@@ -59,25 +57,23 @@ void THcHodoscope::Setup(const char* name, const char* description)
   static const char* const message = 
     "Must construct %s detector with valid name! Object construction failed.";
 
+  cout << "In THcHodoscope::Init()" << endl;
   // Base class constructor failed?
   if( IsZombie()) return;
 
-  fNPlanes = 4;	// Eventually get # planes and plane names from a DB
+  fNPlanes = 4;  // Should get this from parameters
+
   fPlaneNames = new char* [fNPlanes];
   for(Int_t i=0;i<fNPlanes;i++) {fPlaneNames[i] = new char[3];}
-  strcpy(fPlaneNames[0],"1x");
+  // Should get the plane names from parameters.  
+  strcpy(fPlaneNames[0],"1x");  
   strcpy(fPlaneNames[1],"1y");
   strcpy(fPlaneNames[2],"2x");
   strcpy(fPlaneNames[3],"2y");
 
-  size_t nlen = strlen(name);
-  size_t slen = 0;
-  for(Int_t i=0;i < fNPlanes;i++)
-    {slen = TMath::Max(slen,strlen(fPlaneNames[i]));}
-  size_t len = nlen+slen+1;
-
+  cout << "fNPlanes = " << fNPlanes << endl;
   // Probably shouldn't assume that description is defined
-  char* desc = new char[strlen(description)+50+slen];
+  char* desc = new char[strlen(description)+50];
   fPlanes = new THcScintillatorPlane* [fNPlanes];
   for(Int_t i=0;i < fNPlanes;i++) {
     strcpy(desc, description);
@@ -108,8 +104,8 @@ void THcHodoscope::SetApparatus( THaApparatus* app )
 THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 {
   static const char* const here = "Init()";
-
-  cout << "THcHodoscope::Init " << GetName() << endl;
+  cout << "In THcHodoscope::Init()" << endl;
+  Setup(GetName(), GetTitle());
 
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
@@ -156,96 +152,56 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   // 'date' contains the date/time of the run being analyzed.
 
   //  static const char* const here = "ReadDatabase()";
+  char prefix[2];
+  char parname[100];
 
   // Read data from database 
   // Pull values from the THcParmList instead of reading a database
   // file like Hall A does.
 
-  //  DBRequest list[] = {
-  //    { "TDC_offsetsL", fLOff, kDouble, fNelem },
-  //    { "TDC_offsetsR", fROff, kDouble, fNelem },
-  //    { "ADC_pedsL", fLPed, kDouble, fNelem },
-  //    { "ADC_pedsR", fRPed, kDouble, fNelem },
-  //    { "ADC_coefL", fLGain, kDouble, fNelem },
-  //    { "ADC_coefR", fRGain, kDouble, fNelem },
-  //    { "TDC_res",   &fTdc2T },
-  //    { "TransSpd",  &fCn },
-  //    { "AdcMIP",    &fAdcMIP },
-  //    { "NTWalk",    &fNTWalkPar, kInt },
-  //    { "Timewalk",  fTWalkPar, kDouble, 2*fNelem },
-  //    { "ReTimeOff", fTrigOff, kDouble, fNelem },
-  //    { "AvgRes",    &fResolution },
-  //    { "Atten",     &fAttenuation },
-  //    { 0 }
-  //  };
-
-  // We will probably want to add some kind of method to gHcParms to allow
-  // bulk retrieval of parameters of interest.
-
   // Will need to determine which spectrometer in order to construct
   // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
 
-  cout << "THcHodoscope::ReadDatabase called " << GetName() << endl;
+  prefix[0]=tolower(GetApparatus()->GetName()[0]);
 
-  fNPlanes = 4;			// Hardwire for now
+  prefix[1]='\0';
+
+  strcpy(parname,prefix);
+  strcat(parname,"scin_");
+  Int_t plen=strlen(parname);
 
   fNPaddle = new Int_t [fNPlanes];
 
-  fNPaddle[0] = *(Int_t *)gHcParms->Find("hscin_1x_nr")->GetValuePointer();
-  fNPaddle[1] = *(Int_t *)gHcParms->Find("hscin_1y_nr")->GetValuePointer();
-  fNPaddle[2] = *(Int_t *)gHcParms->Find("hscin_2x_nr")->GetValuePointer();
-  fNPaddle[3] = *(Int_t *)gHcParms->Find("hscin_2y_nr")->GetValuePointer();
+  for(Int_t i=0;i<fNPlanes;i++) {
+    parname[plen] = '\0';
+    strcat(parname,fPlaneNames[i]);
+    strcat(parname,"_nr");
+    fNPaddle[i] = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+    cout << parname << " " << fNPaddle[i] << endl;
+  }
 
   fSpacing = new Double_t [fNPlanes];
-  fSpacing[0] = gHcParms->Find("hscin_1x_spacing")->GetValue(0);
-  fSpacing[1] = gHcParms->Find("hscin_1y_spacing")->GetValue(0);
-  fSpacing[2] = gHcParms->Find("hscin_2x_spacing")->GetValue(0);
-  fSpacing[3] = gHcParms->Find("hscin_2y_spacing")->GetValue(0);
+  for(Int_t i=0;i<fNPlanes;i++) {
+    parname[plen] = '\0';
+    strcat(parname,fPlaneNames[i]);
+    strcat(parname,"_spacing");
+    fSpacing[i] = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+  }
 
   fCenter = new Double_t* [fNPlanes];
-  Double_t* p;
-  Int_t iplane;
-
-  iplane = 0;
-  p = (Double_t *)gHcParms->Find("hscin_1x_center")->GetValuePointer();
-  fCenter[iplane] = new Double_t [fNPaddle[iplane]];
-  // Print out some parameters just to demonstrate that it works
-  cout << iplane;
-  for(Int_t i=0;i<fNPaddle[iplane];i++) {
-    fCenter[iplane][i] = p[i];
-    cout << " " << fCenter[iplane][i];
+  for(Int_t i=0;i<fNPlanes;i++) {
+    parname[plen] = '\0';
+    strcat(parname,fPlaneNames[i]);
+    strcat(parname,"_center");
+    Double_t* p = (Double_t *)gHcParms->Find(parname)->GetValuePointer();
+    fCenter[i] = new Double_t [fNPaddle[i]];
+    cout << parname;
+    for(Int_t ipad=0;ipad<fNPaddle[i];ipad++) {
+      fCenter[i][ipad] = p[ipad];
+      cout << " " << fCenter[i][ipad];
+    }
+    cout << endl;
   }
-  cout << endl;
-
-  iplane = 1;
-  p = (Double_t *)gHcParms->Find("hscin_1y_center")->GetValuePointer();
-  fCenter[iplane] = new Double_t [fNPaddle[iplane]];
-  cout << iplane;
-  for(Int_t i=0;i<fNPaddle[iplane];i++) {
-    fCenter[iplane][i] = p[i];
-    cout << " " << fCenter[iplane][i];
-  }
-  cout << endl;
-
-  iplane = 2;
-  p = (Double_t *)gHcParms->Find("hscin_2x_center")->GetValuePointer();
-  fCenter[iplane] = new Double_t [fNPaddle[iplane]];
-  cout << iplane;
-  for(Int_t i=0;i<fNPaddle[iplane];i++) {
-    fCenter[iplane][i] = p[i];
-    cout << " " << fCenter[iplane][i];
-  }
-  cout << endl;
-
-  iplane = 3;
-  p = (Double_t *)gHcParms->Find("hscin_2y_center")->GetValuePointer();
-  fCenter[iplane] = new Double_t [fNPaddle[iplane]];
-  cout << iplane;
-  for(Int_t i=0;i<fNPaddle[iplane];i++) {
-    fCenter[iplane][i] = p[i];
-    cout << " " << fCenter[iplane][i];
-  }
-  cout << endl;
 
   fIsInit = true;
 
