@@ -26,10 +26,23 @@ TH1F hposadc4 'HMS s2y+ ADC hits' H.hod.2y.posadchits 10 0.5 10.5
 TH1F hnegadc4 'HMS s2y- ADC hits' H.hod.2y.negadchits 10 0.5 10.5
 
 # ADC hits per Calorimeter layer
-TH1F chposadc1 'HMS Cal 1z+ ADC hits' H.Cal.1z.posadchits 13 0.5 13.5
-TH1F chnegadc1 'HMS Cal 1z- ADC hits' H.Cal.1z.negadchits 13 0.5 13.5
-TH1F chposadc2 'HMS Cal 2z+ ADC hits' H.Cal.2z.posadchits 13 0.5 13.5
-TH1F chnegadc2 'HMS Cal 2z- ADC hits' H.Cal.2z.negadchits 13 0.5 13.5
-TH1F chposadc3 'HMS Cal 3z+ ADC hits' H.Cal.3z.posadchits 13 0.5 13.5
-TH1F chposadc4 'HMS Cal 4z+ ADC hits' H.Cal.4z.posadchits 13 0.5 13.5
+TH1F chposadc1 'HMS Cal A+ ADC hits' H.Cal.1z.posadchits 13 0.5 13.5
+TH1F chnegadc1 'HMS Cal A- ADC hits' H.Cal.1z.negadchits 13 0.5 13.5
+TH1F chposadc2 'HMS Cal B+ ADC hits' H.Cal.2z.posadchits 13 0.5 13.5
+TH1F chnegadc2 'HMS Cal B- ADC hits' H.Cal.2z.negadchits 13 0.5 13.5
+TH1F chposadc3 'HMS Cal C+ ADC hits' H.Cal.3z.posadchits 13 0.5 13.5
+TH1F chposadc4 'HMS Cal D+ ADC hits' H.Cal.4z.posadchits 13 0.5 13.5
 
+TH1F calposadc1 'HMS Cal ADC1' H.Cal.1z.posadc1 150 -50 400
+# TH1F calposadc2 'HMS Cal ADC2' H.Cal.2z.posadc1 150 -50 400
+# TH1F chposadc 'HMS Cal ADC3' H.Cal.1z.posadc3 150 -50 400
+# TH1F chposadc 'HMS Cal ADC4' H.Cal.1z.posadc4 150 -50 400
+# TH1F chposadc 'HMS Cal ADC5' H.Cal.1z.posadc5 150 -50 400
+# TH1F chposadc 'HMS Cal ADC6' H.Cal.1z.posadc6 150 -50 400
+# TH1F chposadc 'HMS Cal ADC7' H.Cal.1z.posadc7 150 -50 400
+# TH1F chposadc 'HMS Cal ADC8' H.Cal.1z.posadc8 150 -50 400
+# TH1F chposadc 'HMS Cal ADC9' H.Cal.1z.posadc9 150 -50 400
+# TH1F chposadc 'HMS Cal ADC10' H.Cal.1z.posadc10 150 -50 400
+# TH1F chposadc 'HMS Cal ADC11' H.Cal.1z.posadc11 150 -50 400
+# TH1F chposadc 'HMS Cal ADC12' H.Cal.1z.posadc12 150 -50 400
+# TH1F chposadc 'HMS Cal ADC13' H.Cal.1z.posadc13 150 -50 400

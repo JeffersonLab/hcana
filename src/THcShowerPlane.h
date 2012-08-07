@@ -15,6 +15,10 @@
 #include "THaSubDetector.h"
 #include "TClonesArray.h"
 
+#include <iostream>
+
+#include <fstream>
+
 class THaEvData;
 class THaSignalHit;
 
@@ -42,11 +46,22 @@ class THcShowerPlane : public THaSubDetector {
 
  protected:
 
+
+//  TClonesArray* fPosADC1[13];
+
+
+  Float_t*   fA;         // [fNelem] Array of ADC amplitudes of blocks
+TClonesArray* fPosADC1;
+TClonesArray* fPosADC[13];
+
   TClonesArray* fPosADCHits;
   TClonesArray* fNegADCHits;
 
   TClass* fPosADCHitsClass;
   TClass* fNegADCHitsClass;
+  TClass* fPosADC1Class;
+
+  FILE* CalADC1File;
 
   Int_t fLayerNum;
 

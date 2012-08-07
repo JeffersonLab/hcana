@@ -39,8 +39,8 @@ gHcDetectorMap->Load("jan03.map");
   // We just set up one, but this could be many.
   THaRun* run = new THaRun( "daq04_50017.log.0" );
 //THaRun* run = new THaRun( "daq03_47851.log.0" );
-  run->SetEventRange(2000,100000);
-  
+  run->SetEventRange(1054,100000);
+
   // Define the analysis parameters
   analyzer->SetEvent( event );
   analyzer->SetOutFile( "hodtest.root" );

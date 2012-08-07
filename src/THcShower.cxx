@@ -90,7 +90,7 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
 {
   static const char* const here = "Init()";
 
-  cout << "THcHodoscope::Init " << GetName() << endl;
+  cout << "THcShower::Init " << GetName() << endl;
 
   if( THaNonTrackingDetector::Init( date ) )
     return fStatus;

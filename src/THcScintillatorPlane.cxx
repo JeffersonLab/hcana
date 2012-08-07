@@ -231,7 +231,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
 #else
 
-      TObject* obj = (*fPosTDCHits)[nNegTDCHits++];
+      TObject* obj = (*fNegTDCHits)[nNegTDCHits++];
       R__ASSERT( obj );
       if(!obj->TestBit (TObject::kNotDeleted))
 	fNegTDCHitsClass->New(obj);
@@ -244,7 +244,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
       THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
 #else
-      TObject* obj = (*fPosTDCHits)[nPosADCHits++];
+      TObject* obj = (*fPosADCHits)[nPosADCHits++];
       R__ASSERT( obj );
       if(!obj->TestBit (TObject::kNotDeleted))
 	fPosADCHitsClass->New(obj);
@@ -257,7 +257,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
       THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
 #else
-      TObject* obj = (*fPosTDCHits)[nNegADCHits++];
+      TObject* obj = (*fNegADCHits)[nNegADCHits++];
       R__ASSERT( obj );
       if(!obj->TestBit (TObject::kNotDeleted))
 	fNegADCHitsClass->New(obj);
