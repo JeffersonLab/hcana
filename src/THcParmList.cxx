@@ -37,7 +37,7 @@ inline static bool IsComment( const string& s, string::size_type pos )
 	   (s[pos] == '#' || s[pos] == ';' || s.substr(pos,2) == "//") );
 }
 
-void THcParmList::Load( const char* fname )
+void THcParmList::Load( const char* fname, Int_t RunNumber )
 {
 
   static const char* const here   = "THcParmList::LoadFromFile";
@@ -60,8 +60,16 @@ void THcParmList::Load( const char* fname )
   string line;
   Int_t nlines_read = 0, nparameters_read = 0;
   char varname[100];
+  Int_t InRunRange;
 
   varname[0] = '\0';
+
+  if(RunNumber > 0) {
+    InRunRange = 0;		// Wait until run number range matching RunNumber is found
+    cout << "Reading Parameters for run " << RunNumber << endl;
+  } else {
+    InRunRange = 1;		// Interpret all lines
+  }
 
   while(nfiles) {
     string current_comment("");
@@ -97,7 +105,6 @@ void THcParmList::Load( const char* fname )
       }
       continue;
     }
-
 
     // Blank line or comment?
     if( line.empty()
@@ -169,6 +176,29 @@ void THcParmList::Load( const char* fname )
     // cout << "Stripped line: |" << line << "|" << endl;
 
     // Need to do something to bug out if line is empty
+
+    // If in Engine database mode, check if line is a number range AAAA-BBBB
+    if(RunNumber>0) {
+      if(line.find_first_not_of("0123456789-")==string::npos) { // Interpret as runnum range
+	if( (pos=line.find_first_of("-")) != string::npos) {
+	  Int_t RangeStart=atoi(line.substr(0,pos).c_str());
+	  Int_t RangeEnd=atoi(line.substr(pos+1,string::npos).c_str());
+	  if(RunNumber >= RangeStart && RunNumber <= RangeEnd) {
+	    InRunRange = 1;
+	  } else {
+	    InRunRange = 0;
+	  }
+	} else {		// A single number.  Run 
+	  if(atoi(line.c_str()) == RunNumber) {
+	    InRunRange = 1;
+	  } else {
+	    InRunRange = 0;
+	  }
+	}
+      }
+    }
+
+    if(!InRunRange) continue;
 
     // Interpret left of = as var name
     Int_t valuestartpos=0;  // Stays zero if no = found

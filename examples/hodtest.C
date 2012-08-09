@@ -1,17 +1,27 @@
 
 {
 
-  // Load the Hall C style detector map
-  gHcDetectorMap=new THcDetectorMap();
- // gHcDetectorMap->Load("july04.map");
-gHcDetectorMap->Load("jan03.map");
-//gHcDetectorMap->Load("MAPS/jan03_dg_update.map");
-
-  gHcParms->Load("PARAM/general.param");
   //
   //  Steering script to test hodoscope decoding
   //
   
+  Int_t RunNumber=50017;
+  char* RunFileNamePattern="daq04_%d.log.0";
+  
+  gHcParms->Define("gen_run_number", "Run Number", RunNumber);
+  gHcParms->AddString("g_ctp_database_filename", "DBASE/test.database");
+  
+  gHcParms->Load(gHcParms->GetString("g_ctp_database_filename"), RunNumber);
+
+  // g_ctp_parm_filename and g_decode_map_filename should now be defined
+
+  gHcParms->Load(gHcParms->GetString("g_ctp_parm_filename"));
+
+  // Load the Hall C style detector map
+
+  gHcDetectorMap=new THcDetectorMap();
+  gHcDetectorMap->Load(gHcParms->GetString("g_decode_map_filename"));
+
   // Set up the equipment to be analyzed.
   
   THaApparatus* HMS = new THcHallCSpectrometer("H","HMS");
@@ -37,8 +47,12 @@ gHcDetectorMap->Load("jan03.map");
   
   // Define the run(s) that we want to analyze.
   // We just set up one, but this could be many.
-  THaRun* run = new THaRun( "daq04_50017.log.0" );
-//THaRun* run = new THaRun( "daq03_47851.log.0" );
+  char RunFileName[100];
+  sprintf(RunFileName,RunFileNamePattern,RunNumber);
+  THaRun* run = new THaRun(RunFileName);
+
+  // Eventually need to learn to skip over, or properly analyze
+  // the pedestal events
   run->SetEventRange(1054,100000);
 
   // Define the analysis parameters

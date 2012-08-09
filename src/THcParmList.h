@@ -19,7 +19,7 @@ public:
   THcParmList();
   virtual ~THcParmList() { Clear(); delete TextList; }
 
-  virtual void Load( const char *fname);
+  virtual void Load( const char *fname, Int_t RunNumber=0);
 
   virtual void PrintFull(Option_t *opt="") const;
 
