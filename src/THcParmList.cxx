@@ -26,6 +26,11 @@ using namespace std;
 
 ClassImp(THcParmList)
 
+THcParmList::THcParmList() : THaVarList()
+{
+  TextList = new THaTextvars;
+}
+
 inline static bool IsComment( const string& s, string::size_type pos )
 {
   return ( pos != string::npos && pos < s.length() &&
@@ -132,16 +137,37 @@ void THcParmList::Load( const char* fname )
       cout << "Skipping: " << line << endl;
       continue;
     }
-    // Ignore string assingments
-    if(line.find_first_of("\"'")!=string::npos) {
-      cout << "Skipping string assignment: " << line << endl;
-      continue;
-    }
 
-    // Get rid of all white space
-    while((pos=line.find_first_of(whtspc)) != string::npos) {
-      line.erase(pos,1);
+    // Get rid of all white space not in quotes
+    // Step through one char at a time 
+    pos = 0;
+    int inquote=0;
+    char quotechar=' ';
+    // cout << "Unstripped line: |" << line << "|" << endl;
+    while(pos<line.length()) {
+      if(inquote) {
+	if(line[pos++] == quotechar) { // Possibly end of quoted string
+	  if(line[pos] == quotechar) { // Protected quote
+	    pos++;		// Skip the protected quote
+	  } else {		// End of quoted string
+	    inquote = 0;
+	    quotechar = ' ';
+	    pos++;
+	  }
+	}
+      } else {
+	if(line[pos] == ' ' || line[pos] == '\t') {
+	  line.erase(pos,1);
+	} else if(line[pos] == '"' || line[pos] == '\'') {
+	  quotechar = line[pos++];\
+	  inquote = 1;
+	} else {
+	  pos++;
+	}
+      }
     }
+    // cout << "Stripped line: |" << line << "|" << endl;
+
     // Need to do something to bug out if line is empty
 
     // Interpret left of = as var name
@@ -153,6 +179,31 @@ void THcParmList::Load( const char* fname )
       valuestartpos = pos+1;
     }
 
+    // If first char after = is a quote, then this is a string assignment
+    if(line[valuestartpos] == '"' || line[valuestartpos] == '\'') {
+      quotechar = line[valuestartpos++];
+      // Scan until end of line or terminating quote
+      //      valuestartpos++;
+      pos = valuestartpos;
+      while(pos<line.length()) {
+	if(line[pos++] == quotechar) { // Possibly end of quoted string
+	  if(line[pos] == quotechar) { // Protected quote
+	    pos++;
+	  } else {
+	    pos--;
+	    break;
+	  }
+	}
+      }
+      if(TextList) {
+	// Should check that a numerical assignment doesn't exist, but for
+	// now, the same variable name can be used for strings and numbers
+	string varnames(varname);
+	AddString(varnames, line.substr(valuestartpos,pos-valuestartpos));
+      }
+      continue;
+    }
+      
     TString values((line.substr(valuestartpos)).c_str());
     TObjArray *vararr = values.Tokenize(",");
     Int_t nvals = vararr->GetLast()+1;
@@ -175,7 +226,7 @@ void THcParmList::Load( const char* fname )
 
     if(valuestartpos==0) {	// We are adding to an existing array
       // Copy out the array and delete the variable to be recreated
-      THaVar* existingvar=Find(varname);
+      THaVar* existingvar=Find(varname); 
       if(existingvar) {
 	string existingcomment;
 	existingcomment.assign(existingvar->GetTitle());
@@ -259,4 +310,10 @@ void THcParmList::Load( const char* fname )
   return;
 
 }
-//
+
+//_____________________________________________________________________________
+void THcParmList::PrintFull( Option_t* option ) const
+{
+  THaVarList::PrintFull(option);
+  TextList->Print();
+}

@@ -8,15 +8,35 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "THaVarList.h"
+#include "THaTextvars.h"
+
+using namespace std;
 
 class THcParmList : public THaVarList {
 
 public:
  
-  THcParmList() : THaVarList() {}
-  virtual ~THcParmList() { Clear(); }
+  THcParmList();
+  virtual ~THcParmList() { Clear(); delete TextList; }
 
   virtual void Load( const char *fname);
+
+  virtual void PrintFull(Option_t *opt="") const;
+
+  const char* GetString(const std::string& name) const {
+    return(TextList->Get(name, 0));
+  }
+
+  Int_t AddString(const std::string& name, const std::string& value) {
+    return(TextList->Add(name, value));
+  }
+  void RemoveString(const std::string& name) {
+    TextList->Remove(name);
+  }
+
+private:
+
+  THaTextvars* TextList;
 
 protected:
 
