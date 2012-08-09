@@ -13,6 +13,7 @@
 #include "THcParmList.h"
 #include "THcHitList.h"
 #include "THcDriftChamber.h"
+#include "TClass.h"
 
 #include <cstring>
 #include <cstdio>
@@ -32,6 +33,9 @@ THcDriftChamberPlane::THcDriftChamberPlane( const char* name,
 {
   // Normal constructor with name and description
   fTDCHits = new TClonesArray("THcSignalHit",100);
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,32,0)
+  fTDCHitsClass = fTDCHits->GetClass();
+#endif
   fPlaneNum = planenum;
 }
 
