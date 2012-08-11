@@ -32,7 +32,7 @@ while(<>) {
     } elsif ($line=/^\s*slot=\s*(\d*)/i) {
 	$slot = $1;
 	$modtype = 0;
-    } elsif ($line=/^\s*(\d)\s*,\s*(\d)\s*,\s*(\d)/) {
+    } elsif ($line=/^\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)/) {
 	if($modtype == 0) {	# Slot not yet registered
 	    if($nsubadd == 96) {
 		$modtype = 1877;

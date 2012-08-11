@@ -1,7 +1,7 @@
 # ENGINE style parameter vs. run number database
 50017
 g_ctp_parm_filename="PARAM/general.param"
-g_decode_map_filename="jan03.map"
+g_decode_map_filename="MAPS/july04.map"
 47000-48000
 g_ctp_parm_filename="PARAM/general.param"
-g_decode_map_filename="jan03.map"
+g_decode_map_filename="MAPS/jan03.map"
