@@ -17,13 +17,17 @@
 
   gHcParms->Load(gHcParms->GetString("g_ctp_parm_filename"));
 
-  // Load the Hall C style detector map
+  // Generate db_cratemap to correspond to map file contents
+  char command[100];
+  sprintf(command,"./make_cratemap.pl < %s > db_cratemap.dat",gHcParms->GetString("g_decode_map_filename"));
+  system(command);
 
+  // Load the Hall C style detector map
   gHcDetectorMap=new THcDetectorMap();
   gHcDetectorMap->Load(gHcParms->GetString("g_decode_map_filename"));
 
   // Set up the equipment to be analyzed.
-  
+
   THaApparatus* HMS = new THcHallCSpectrometer("H","HMS");
   gHaApps->Add( HMS );
 
