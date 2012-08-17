@@ -57,7 +57,8 @@
 
   // Eventually need to learn to skip over, or properly analyze
   // the pedestal events
-  run->SetEventRange(1054,100000);
+  run->SetEventRange(1,1000000);//  Physics Event number, does not
+                                // include scaler or control events
 
   // Define the analysis parameters
   analyzer->SetEvent( event );

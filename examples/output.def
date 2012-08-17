@@ -3,37 +3,39 @@
 block H.dc.*
 block H.hod.*
 block H.Cal.*
+block g.evtyp
 
+cut evhms g.evtyp==1 || g.evtyp==3
 
 # TDC hits per paddle
-TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.postdchits 16 0.5 16.5
-TH1F hnegtdc1 'HMS s1x- TDC hits' H.hod.1x.negtdchits 16 0.5 16.5
-TH1F hpostdc2 'HMS s1y+ TDC hits' H.hod.1y.postdchits 10 0.5 10.5
-TH1F hnegtdc2 'HMS s1y- TDC hits' H.hod.1y.negtdchits 10 0.5 10.5
-TH1F hpostdc3 'HMS s2x+ TDC hits' H.hod.2x.postdchits 16 0.5 16.5
-TH1F hnegtdc3 'HMS s2x- TDC hits' H.hod.2x.negtdchits 16 0.5 16.5
-TH1F hpostdc4 'HMS s2y+ TDC hits' H.hod.2y.postdchits 10 0.5 10.5
-TH1F hnegtdc4 'HMS s2y- TDC hits' H.hod.2y.negtdchits 10 0.5 10.5
+TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.postdchits 16 0.5 16.5 evhms
+TH1F hnegtdc1 'HMS s1x- TDC hits' H.hod.1x.negtdchits 16 0.5 16.5 evhms
+TH1F hpostdc2 'HMS s1y+ TDC hits' H.hod.1y.postdchits 10 0.5 10.5 evhms
+TH1F hnegtdc2 'HMS s1y- TDC hits' H.hod.1y.negtdchits 10 0.5 10.5 evhms
+TH1F hpostdc3 'HMS s2x+ TDC hits' H.hod.2x.postdchits 16 0.5 16.5 evhms
+TH1F hnegtdc3 'HMS s2x- TDC hits' H.hod.2x.negtdchits 16 0.5 16.5 evhms
+TH1F hpostdc4 'HMS s2y+ TDC hits' H.hod.2y.postdchits 10 0.5 10.5 evhms
+TH1F hnegtdc4 'HMS s2y- TDC hits' H.hod.2y.negtdchits 10 0.5 10.5 evhms
 
 # ADC hits per paddle
-TH1F hposadc1 'HMS s1x+ ADC hits' H.hod.1x.posadchits 16 0.5 16.5
-TH1F hnegadc1 'HMS s1x- ADC hits' H.hod.1x.negadchits 16 0.5 16.5
-TH1F hposadc2 'HMS s1y+ ADC hits' H.hod.1y.posadchits 10 0.5 10.5
-TH1F hnegadc2 'HMS s1y- ADC hits' H.hod.1y.negadchits 10 0.5 10.5
-TH1F hposadc3 'HMS s2x+ ADC hits' H.hod.2x.posadchits 16 0.5 16.5
-TH1F hnegadc3 'HMS s2x- ADC hits' H.hod.2x.negadchits 16 0.5 16.5
-TH1F hposadc4 'HMS s2y+ ADC hits' H.hod.2y.posadchits 10 0.5 10.5
-TH1F hnegadc4 'HMS s2y- ADC hits' H.hod.2y.negadchits 10 0.5 10.5
+TH1F hposadc1 'HMS s1x+ ADC hits' H.hod.1x.posadchits 16 0.5 16.5 evhms
+TH1F hnegadc1 'HMS s1x- ADC hits' H.hod.1x.negadchits 16 0.5 16.5 evhms
+TH1F hposadc2 'HMS s1y+ ADC hits' H.hod.1y.posadchits 10 0.5 10.5 evhms
+TH1F hnegadc2 'HMS s1y- ADC hits' H.hod.1y.negadchits 10 0.5 10.5 evhms
+TH1F hposadc3 'HMS s2x+ ADC hits' H.hod.2x.posadchits 16 0.5 16.5 evhms
+TH1F hnegadc3 'HMS s2x- ADC hits' H.hod.2x.negadchits 16 0.5 16.5 evhms
+TH1F hposadc4 'HMS s2y+ ADC hits' H.hod.2y.posadchits 10 0.5 10.5 evhms
+TH1F hnegadc4 'HMS s2y- ADC hits' H.hod.2y.negadchits 10 0.5 10.5 evhms
 
 # ADC hits per Calorimeter layer
-TH1F chposadc1 'HMS Cal A+ ADC hits' H.Cal.1z.posadchits 13 0.5 13.5
-TH1F chnegadc1 'HMS Cal A- ADC hits' H.Cal.1z.negadchits 13 0.5 13.5
-TH1F chposadc2 'HMS Cal B+ ADC hits' H.Cal.2z.posadchits 13 0.5 13.5
-TH1F chnegadc2 'HMS Cal B- ADC hits' H.Cal.2z.negadchits 13 0.5 13.5
-TH1F chposadc3 'HMS Cal C+ ADC hits' H.Cal.3z.posadchits 13 0.5 13.5
-TH1F chposadc4 'HMS Cal D+ ADC hits' H.Cal.4z.posadchits 13 0.5 13.5
+TH1F chposadc1 'HMS Cal A+ ADC hits' H.Cal.1z.posadchits 13 0.5 13.5 evhms
+TH1F chnegadc1 'HMS Cal A- ADC hits' H.Cal.1z.negadchits 13 0.5 13.5 evhms
+TH1F chposadc2 'HMS Cal B+ ADC hits' H.Cal.2z.posadchits 13 0.5 13.5 evhms
+TH1F chnegadc2 'HMS Cal B- ADC hits' H.Cal.2z.negadchits 13 0.5 13.5 evhms
+TH1F chposadc3 'HMS Cal C+ ADC hits' H.Cal.3z.posadchits 13 0.5 13.5 evhms
+TH1F chposadc4 'HMS Cal D+ ADC hits' H.Cal.4z.posadchits 13 0.5 13.5 evhms
 
-TH1F calposadc1 'HMS Cal ADC1' H.Cal.1z.posadc1 150 -50 400
+TH1F calposadc1 'HMS Cal ADC1' H.Cal.1z.posadc1 150 -50 400 evhms
 # TH1F calposadc2 'HMS Cal ADC2' H.Cal.2z.posadc1 150 -50 400
 # TH1F chposadc 'HMS Cal ADC3' H.Cal.1z.posadc3 150 -50 400
 # TH1F chposadc 'HMS Cal ADC4' H.Cal.1z.posadc4 150 -50 400
@@ -52,15 +54,15 @@ TH1F calposadc1 'HMS Cal ADC1' H.Cal.1z.posadc1 150 -50 400
 
 # Can we use variables for the constants.  In CTP we used hdc_nwire(i)
 #
-TH1F hdc1x1_wm 'HDC 1X1 Wiremap' H.dc.1.tdchits 113 0.5 113.5
-TH1F hdc1y1_wm 'HDC 1Y1 Wiremap' H.dc.2.tdchits 52 0.5 52.5
-TH1F hdc1u1_wm 'HDC 1U1 Wiremap' H.dc.3.tdchits 107 0.5 107.5
-TH1F hdc1v1_wm 'HDC 1V1 Wiremap' H.dc.4.tdchits 107 0.5 107.5
-TH1F hdc1y2_wm 'HDC 1Y2 Wiremap' H.dc.5.tdchits 52 0.5 52.5
-TH1F hdc1x2_wm 'HDC 1X2 Wiremap' H.dc.6.tdchits 113 0.5 113.5
-TH1F hdc2x1_wm 'HDC 2X1 Wiremap' H.dc.7.tdchits 113 0.5 113.5
-TH1F hdc2y1_wm 'HDC 2Y1 Wiremap' H.dc.8.tdchits 52 0.5 52.5
-TH1F hdc2u1_wm 'HDC 2U1 Wiremap' H.dc.9.tdchits 107 0.5 107.5
-TH1F hdc2v1_wm 'HDC 2V1 Wiremap' H.dc.10.tdchits 107 0.5 107.5
-TH1F hdc2y2_wm 'HDC 2Y2 Wiremap' H.dc.11.tdchits 52 0.5 52.5
-TH1F hdc2x2_wm 'HDC 2X2 Wiremap' H.dc.12.tdchits 113 0.5 113.5
+TH1F hdc1x1_wm 'HDC 1X1 Wiremap' H.dc.1.tdchits 113 0.5 113.5 evhms
+TH1F hdc1y1_wm 'HDC 1Y1 Wiremap' H.dc.2.tdchits 52 0.5 52.5 evhms
+TH1F hdc1u1_wm 'HDC 1U1 Wiremap' H.dc.3.tdchits 107 0.5 107.5 evhms
+TH1F hdc1v1_wm 'HDC 1V1 Wiremap' H.dc.4.tdchits 107 0.5 107.5 evhms
+TH1F hdc1y2_wm 'HDC 1Y2 Wiremap' H.dc.5.tdchits 52 0.5 52.5 evhms
+TH1F hdc1x2_wm 'HDC 1X2 Wiremap' H.dc.6.tdchits 113 0.5 113.5 evhms
+TH1F hdc2x1_wm 'HDC 2X1 Wiremap' H.dc.7.tdchits 113 0.5 113.5 evhms
+TH1F hdc2y1_wm 'HDC 2Y1 Wiremap' H.dc.8.tdchits 52 0.5 52.5 evhms
+TH1F hdc2u1_wm 'HDC 2U1 Wiremap' H.dc.9.tdchits 107 0.5 107.5 evhms
+TH1F hdc2v1_wm 'HDC 2V1 Wiremap' H.dc.10.tdchits 107 0.5 107.5 evhms
+TH1F hdc2y2_wm 'HDC 2Y2 Wiremap' H.dc.11.tdchits 52 0.5 52.5 evhms
+TH1F hdc2x2_wm 'HDC 2X2 Wiremap' H.dc.12.tdchits 113 0.5 113.5 evhms
