@@ -271,9 +271,18 @@ CalADC1File = fopen("adc1_new.dat", "a");
     }
 
 if(hit->fCounter == 1){
+#if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
 THcSignalHit *sighit1 = (THcSignalHit*) fPosADC1->ConstructedAt(nPosADCHits++);
+
+#else
+	TObject* obj = (*fPosADC1)[nPosADCHits++];
+	R__ASSERT( obj );
+        if(!obj->TestBit (TObject::kNotDeleted))
+	fPosADCHitsClass->New(obj);
+	THcSignalHit *sighit1 = (THcSignalHit*)obj;
+#endif
 //THcSignalHit *sighit1 = (THcSignalHit*) fA[1]->ConstructedAt(nPosADCHits++);
-sighit1->Set(hit->fADC_pos - 470.7,1);
+ sighit1->Set(1,(Int_t)(hit->fADC_pos - 470.7));
 //fprintf(CalADC1File, "%d\n", hit->fADC_pos);
 }
 
