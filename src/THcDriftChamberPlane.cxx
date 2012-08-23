@@ -162,7 +162,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       if(!obj->TestBit (TObject::kNotDeleted))
 	fTDCHitsClass->New(obj);
       THcSignalHit *sighit = (THcSignalHit*)obj;
-#endif  
+#endif
       sighit->Set(hit->fCounter, hit->fTDC[0]);
     }
     ihit++;

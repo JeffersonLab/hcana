@@ -54,7 +54,7 @@ void THcHitList::InitHitList(THaDetMap* detmap,
 Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
   THcRawHit* rawhit;
   // cout << " Clearing TClonesArray " << endl;
-  fRawHitList->Clear("C");
+  fRawHitList->Clear( );
   fNRawHits = 0;
 
   for ( Int_t i=0; i < fdMap->GetSize(); i++ ) {
@@ -89,6 +89,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 
       if(thishit == fNRawHits) {
 	rawhit = (THcRawHit*) (*fRawHitList)[thishit];
+	rawhit->Clear();	// Blank out hit contents
 	fNRawHits++;
 	rawhit->fPlane = plane;
 	rawhit->fCounter = counter;

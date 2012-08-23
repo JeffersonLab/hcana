@@ -39,6 +39,7 @@ THcDriftChamber::THcDriftChamber(
   // Constructor
 
   //  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
+  fNPlanes = 0;			// No planes until we make them
 
 }
 

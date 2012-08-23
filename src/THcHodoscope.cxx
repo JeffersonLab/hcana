@@ -39,6 +39,7 @@ THcHodoscope::THcHodoscope( const char* name, const char* description,
 
   //fTrackProj = new TClonesArray( "THaTrackProj", 5 );
   // Construct the planes
+  fNPlanes = 0;			// No planes until we make them
 
 }
 
@@ -57,7 +58,7 @@ void THcHodoscope::Setup(const char* name, const char* description)
   static const char* const message = 
     "Must construct %s detector with valid name! Object construction failed.";
 
-  cout << "In THcHodoscope::Init()" << endl;
+  cout << "In THcHodoscope::Setup()" << endl;
   // Base class constructor failed?
   if( IsZombie()) return;
 
