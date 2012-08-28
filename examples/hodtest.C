@@ -64,7 +64,7 @@
   analyzer->SetEvent( event );
   analyzer->SetOutFile( "hodtest.root" );
   analyzer->SetOdefFile("output.def");
-  //  analyzer->SetCutFile("cuts_example.def");        // optional
+  analyzer->SetCutFile("hodtest_cuts.def");        // optional
   
   // File to record cuts accounting information
   //  analyzer->SetSummaryFile("summary_example.log"); // optional

@@ -13,6 +13,8 @@
 #include "THaEvData.h"
 #include "THaDetMap.h"
 #include "THcDetectorMap.h"
+#include "THaGlobals.h"
+#include "THaCutList.h"
 #include "THcGlobals.h"
 #include "THcParmList.h"
 #include "VarDef.h"
@@ -329,6 +331,21 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = THcHitList::DecodeToHitList(evdata);
+
+  if(gHaCuts->Result("Pedestal_event")) {
+    Int_t nexthit = 0;
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
+      nexthit = fPlanes[ip]->AccumulatePedestals(fRawHitList, nexthit);
+    }
+    fAnalyzePedestals = 1;	// Analyze pedestals first normal events
+    return(0);
+  }
+  if(fAnalyzePedestals) {
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
+      fPlanes[ip]->CalculatePedestals();
+    }
+    fAnalyzePedestals = 0;	// Don't analyze pedestals next event
+  }
 
   // Let each plane get its hits
   Int_t nexthit = 0;

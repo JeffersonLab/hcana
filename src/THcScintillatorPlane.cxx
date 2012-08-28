@@ -87,7 +87,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 
   // See what file it looks for
   
-  static const char* const here = "ReadDatabase()";
+  //  static const char* const here = "ReadDatabase()";
   char prefix[2];
   char parname[100];
   
@@ -124,7 +124,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 
 
   // Create arrays to hold results here
-
+  InitializePedestals();
 
   return kOK;
 }
@@ -187,6 +187,8 @@ Int_t THcScintillatorPlane::FineProcess( TClonesArray& tracks )
 {
   return 0;
 }
+
+//_____________________________________________________________________________
 Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 {
   // Extract the data for this plane from hit list
@@ -271,6 +273,98 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   return(ihit);
 }
 
+//_____________________________________________________________________________
+Int_t THcScintillatorPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
+{
+  // Extract the data for this plane from hit list, accumulating into
+  // arrays for calculating pedestals.
+
+  Int_t nrawhits = rawhits->GetLast()+1;
+  // cout << "THcScintillatorPlane::AcculatePedestals " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
+
+  Int_t ihit = nexthit;
+  while(ihit < nrawhits) {
+    THcHodoscopeHit* hit = (THcHodoscopeHit *) rawhits->At(ihit);
+    if(hit->fPlane > fPlaneNum) {
+      break;
+    }
+    Int_t element = hit->fCounter - 1; // Should check if in range
+    Int_t adcpos = hit->fADC_pos;
+    Int_t adcneg = hit->fADC_neg;
+
+    if(adcpos <= fPosPedLimit[element]) {
+      fPosPedSum[element] += adcpos;
+      fPosPedSum2[element] += adcpos*adcpos;
+      fPosPedCount[element]++;
+      if(fPosPedCount[element] == fMinPeds/5) {
+	fPosPedLimit[element] = 100 + fPosPedSum[element]/fPosPedCount[element];
+      }
+    }
+    if(adcneg <= fNegPedLimit[element]) {
+      fNegPedSum[element] += adcneg;
+      fNegPedSum2[element] += adcneg*adcneg;
+      fNegPedCount[element]++;
+      if(fNegPedCount[element] == fMinPeds/5) {
+	fNegPedLimit[element] = 100 + fNegPedSum[element]/fNegPedCount[element];
+      }
+    }
+    ihit++;
+  }
+
+  fNPedestalEvents++;
+
+  return(ihit);
+}
+
+//_____________________________________________________________________________
+void THcScintillatorPlane::CalculatePedestals( )
+{
+  // Use the accumulated pedestal data to calculate pedestals
+  // Later add check to see if pedestals have drifted ("Danger Will Robinson!")
+  //  cout << "Plane: " << fPlaneNum << endl;
+  for(Int_t i=0; i<fNelem;i++) {
     
+    // Positive tubes
+    fPosPed[i] = ((Double_t) fPosPedSum[i]) / TMath::Max(1, fPosPedCount[i]);
+    fPosThresh[i] = fPosPed[i] + 15;
+
+    // Negative tubes
+    fNegPed[i] = ((Double_t) fNegPedSum[i]) / TMath::Max(1, fNegPedCount[i]);
+    fNegThresh[i] = fNegPed[i] + 15;
+
+    //    cout << i+1 << " " << fPosPed[i] << " " << fNegPed[i] << endl;
+  }
+  //  cout << " " << endl;
   
-  
+}
+
+//_____________________________________________________________________________
+void THcScintillatorPlane::InitializePedestals( )
+{
+  fNPedestalEvents = 0;
+  fMinPeds = 500; 		// In engine, this is set in parameter file
+  fPosPedSum = new Int_t [fNelem];
+  fPosPedSum2 = new Int_t [fNelem];
+  fPosPedLimit = new Int_t [fNelem];
+  fPosPedCount = new Int_t [fNelem];
+  fNegPedSum = new Int_t [fNelem];
+  fNegPedSum2 = new Int_t [fNelem];
+  fNegPedLimit = new Int_t [fNelem];
+  fNegPedCount = new Int_t [fNelem];
+
+  fPosPed = new Double_t [fNelem];
+  fNegPed = new Double_t [fNelem];
+  fPosThresh = new Double_t [fNelem];
+  fNegThresh = new Double_t [fNelem];
+  for(Int_t i=0;i<fNelem;i++) {
+    fPosPedSum[i] = 0;
+    fPosPedSum2[i] = 0;
+    fPosPedLimit[i] = 1000;	// In engine, this are set in parameter file
+    fPosPedCount[i] = 0;
+    fNegPedSum[i] = 0;
+    fNegPedSum2[i] = 0;
+    fNegPedLimit[i] = 1000;	// In engine, this are set in parameter file
+    fNegPedCount[i] = 0;
+  }
+}
+

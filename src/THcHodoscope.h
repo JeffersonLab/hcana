@@ -41,6 +41,8 @@ public:
   THcHodoscope();  // for ROOT I/O
 protected:
 
+  Int_t fAnalyzePedestals;
+
   // Calibration
 
   // Per-event data

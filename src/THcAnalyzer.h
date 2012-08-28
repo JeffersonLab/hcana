@@ -16,7 +16,11 @@ public:
   THcAnalyzer();
   virtual ~THcAnalyzer();
 
+  void SetPedestalEvtype( Int_t evtype ) { fPedestalEvtype = evtype; }
+
 protected:
+
+  Int_t fPedestalEvtype;
     
 private:
   //  THcAnalyzer( const THcAnalyzer& );
