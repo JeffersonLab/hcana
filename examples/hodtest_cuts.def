@@ -7,5 +7,5 @@ Pedestal_event    g.evtyp==4
 RawDecode_master  1
 
 Block: Decode
-Decode_master     !xPedestal_event
+Decode_master     !Pedestal_event
 
