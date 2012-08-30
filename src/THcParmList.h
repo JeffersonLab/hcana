@@ -7,6 +7,7 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
+#include "THaDB.h"
 #include "THaVarList.h"
 #include "THaTextvars.h"
 
@@ -33,6 +34,8 @@ public:
   void RemoveString(const std::string& name) {
     TextList->Remove(name);
   }
+
+  Int_t LoadParmValues(const DBRequest* list); // assign values to the variables in list
 
 private:
 

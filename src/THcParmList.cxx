@@ -8,6 +8,7 @@
 
 #define INCLUDESTR "#include"
 
+#include "THaDB.h"
 #include "TObjArray.h"
 #include "TObjString.h"
 
@@ -23,6 +24,7 @@
 #include <cstdlib>
 
 using namespace std;
+Int_t  fDebug   = 1;  // Keep this at one while we're working on the code    
 
 ClassImp(THcParmList)
 
@@ -339,6 +341,71 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 
   return;
 
+}
+//_____________________________________________________________________________
+Int_t THcParmList::LoadParmValues(const DBRequest* list)
+{
+  // Load a number of entries from the database.
+  // For array entries, the number of elements to be read in
+  // must be given, and the memory already allocated
+  // NOTE: initial code taken wholesale from THaDBFile. 
+  // GN 2012
+  
+  const DBRequest *ti = list;
+  Int_t cnt=0;
+  Int_t this_cnt=0;
+
+  while ( ti && ti->name ) {
+    ///    cout <<"Now at "<<ti->name<<endl;
+    if (ti->nelem>1) {
+      // it is an array, use the appropriate interface
+      switch (ti->type) {
+      case (kDouble) :
+	//	this_cnt = GetArray(system,ti->name,static_cast<Double_t*>(ti->var),
+	//		    ti->expected,date);
+	break;
+      case (kInt) :
+	//	this_cnt = GetArray(system,ti->name,static_cast<Int_t*>(ti->var),
+	//ti->expected,date);
+      break;
+    default:
+	Error("THcParmList","Invalid type to read %s",ti->name);
+	break;
+      }
+
+    } else {
+      switch (ti->type) {
+      case (kDouble) :
+	if (this->Find(ti->name)) {
+	  *static_cast<Double_t*>(ti->var)=*(Double_t *)this->Find(ti->name)->GetValuePointer();
+	} else {
+	  cout << "*** ERROR!!! Could not find " << ti->name << " in the list of variables! ***" << endl;
+	}
+	this_cnt=1;
+
+	break;
+      case (kInt) :
+	if (this->Find(ti->name)) {
+	  *static_cast<Int_t*>(ti->var)=*(Int_t *)this->Find(ti->name)->GetValuePointer();
+	} else {
+	  cout << "*** ERROR!!! Could not find " << ti->name << " in the list of variables! ***" << endl;
+	}
+	this_cnt=1;
+	break;
+      default:
+	Error("THcParmList","Invalid type to read %s",ti->name);
+	break;
+      }
+    }
+    if (this_cnt<=0) {
+      if ( !ti->optional ) {
+	Fatal("THcParmList","Could not find %s in database!",ti->name);
+      }
+    }
+    cnt += this_cnt;
+    ti++;
+  }
+  return cnt;
 }
 
 //_____________________________________________________________________________

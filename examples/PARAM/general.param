@@ -22,3 +22,4 @@ raddeg=3.14159265/180
 #include "PARAM/sdc.pos"
 #include "PARAM/shodo.pos"
 #include "PARAM/scal.pos"
+#include "PARAM/hhodo.param"

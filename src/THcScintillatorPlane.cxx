@@ -214,7 +214,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       break;
     }
 
-
+    // TDC positive hit
     if(hit->fTDC_pos >  0) {
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
       THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
@@ -228,6 +228,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       sighit->Set(hit->fCounter, hit->fTDC_pos);
     }
 
+    // TDC negative hit
     if(hit->fTDC_neg >  0) {
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
       THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
@@ -242,7 +243,9 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       sighit->Set(hit->fCounter, hit->fTDC_neg);
     }
 
+    // ADC positive hit
     if(hit->fADC_pos >  0) {
+      //     cout <<"adc pos hit!!\n";
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
       THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
 #else
@@ -255,7 +258,9 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       sighit->Set(hit->fCounter, hit->fADC_pos);
     }
 
-    if(hit->fADC_neg >  0) {
+    // ADC negative hit
+    if(hit->fADC_neg >  0) {   
+      // cout <<"adc neg hit!!\n";
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
       THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
 #else

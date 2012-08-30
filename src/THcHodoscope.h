@@ -50,6 +50,14 @@ protected:
 
   // Potential Hall C parameters.  Mostly here for demonstration
   Int_t fNPlanes;
+  Double_t fStartTimeCenter, fStartTimeSlop, fScinTdcToTime;
+  Double_t fTofTolerance;
+  Int_t fScinTdcMin, fScinTdcMax; // min and max TDC values
+  Double_t* fHodoSlop;
+  Double_t** fHodoVelLight;
+  Double_t** fHodoPosSigma;
+  Double_t** fHodoNegSigma;
+
   char** fPlaneNames;
   Int_t* fNPaddle;		// Number of paddles per plane
   Double_t* fSpacing;		// Paddle spacing in cm
@@ -80,7 +88,11 @@ protected:
   void           DeleteArrays();
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
-
+  Double_t DefineDoubleVariable(const char* fName);
+  Int_t    DefineIntVariable(const char* fName);
+  void DefineArray(const char* fName, const Int_t index, Double_t *myArray);
+  void DefineArray(const char* fName, char** Suffix, const Int_t index, Double_t *myArray);
+  void DefineArray(const char* fName, char** Suffix, const Int_t index, Int_t *myArray);
   enum ESide { kLeft = 0, kRight = 1 };
   
   virtual  Double_t TimeWalkCorrection(const Int_t& paddle,

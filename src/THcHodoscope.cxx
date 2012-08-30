@@ -64,6 +64,7 @@ void THcHodoscope::Setup(const char* name, const char* description)
   // Base class constructor failed?
   if( IsZombie()) return;
 
+  fDebug   = 1;  // Keep this at one while we're working on the code    
   fNPlanes = 4;  // Should get this from parameters
 
   fPlaneNames = new char* [fNPlanes];
@@ -145,6 +146,124 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 
   return fStatus = kOK;
 }
+//_____________________________________________________________________________
+Double_t THcHodoscope::DefineDoubleVariable(const char* fName)
+{
+  // Define a variale of type double by looking it up in the THcParmList
+  char prefix[2];
+  char parname[100];
+  Double_t tmpvar=-1e6;
+  prefix[0]=tolower(GetApparatus()->GetName()[0]);
+  prefix[1]='\0';
+  strcpy(parname,prefix);
+  strcat(parname,fName);
+  if (gHcParms->Find(parname)) {
+    tmpvar=*(Double_t *)gHcParms->Find(parname)->GetValuePointer();
+    if (fDebug>=1)  cout << parname << " "<< tmpvar << endl;
+  } else {
+    cout << "*** ERROR!!! Could not find " << parname << " in the list of variables! ***" << endl;
+  }
+  return tmpvar;
+}
+
+//_____________________________________________________________________________
+Int_t THcHodoscope::DefineIntVariable(const char* fName)
+{
+  // Define a variale of type int by looking it up in the THcParmList
+  char prefix[2];
+  char parname[100];
+  Int_t tmpvar=-100000;
+  prefix[0]=tolower(GetApparatus()->GetName()[0]);
+  prefix[1]='\0';
+  strcpy(parname,prefix);
+  strcat(parname,fName);
+  if (gHcParms->Find(parname)) {
+    tmpvar=*(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+    if (fDebug>=1)  cout << parname << " "<< tmpvar << endl;
+  } else {
+    cout << "*** ERROR!!! Could not find " << parname << " in the list of variables! ***" << endl;
+  }
+  return tmpvar;
+}
+
+//_____________________________________________________________________________
+void THcHodoscope::DefineArray(const char* fName, const Int_t index, Double_t *myArray)
+{
+  char prefix[2];
+  char parname[100];
+  //  Int_t tmpvar=-100000;
+   prefix[0]=tolower(GetApparatus()->GetName()[0]);
+  prefix[1]='\0';
+  strcpy(parname,prefix);
+  strcat(parname,fName);
+  if (gHcParms->Find(parname)) {
+    if (fDebug >=1) cout <<parname;
+    Double_t* p = (Double_t *)gHcParms->Find(parname)->GetValuePointer();
+    for(Int_t i=0;i<index;i++) {
+      myArray[i] = p[i];
+      if (fDebug>=1)    cout << " " << myArray[i];
+    }
+    if (fDebug>=1)  cout << endl;
+
+  }
+  else {
+    cout <<" Could not find "<<parname<<" in the DataBase!!!\n";
+  }
+}
+
+//_____________________________________________________________________________
+void THcHodoscope::DefineArray(const char* fName, char** Suffix, const Int_t index, Double_t *myArray)
+{
+  // Try to read an array made up of what used to be (in the f77 days) a number of variables
+  // example: hscin_1x_center, hscin_1y_center, hscin_2x_center, hscin_2y_center will become scin_center
+  //
+  char prefix[2];
+  char parname[100],parname2[100];
+  //  
+  prefix[0]=tolower(GetApparatus()->GetName()[0]);
+  prefix[1]='\0';
+  strcpy(parname,prefix);
+  strcat(parname,fName);
+  for(Int_t i=0;i<index;i++) {
+    strcpy(parname2,Form(parname,Suffix[i]));
+    if (gHcParms->Find(parname2)) {
+      if (fDebug >=1) cout <<parname2;
+      myArray[i] = *(Double_t *)gHcParms->Find(parname2)->GetValuePointer();
+      if (fDebug>=1)    cout << " " << myArray[i];
+    }
+    if (fDebug>=1)  cout << endl;
+    else {
+      cout <<" Could not find "<<parname2<<" in the DataBase!!!\n";
+    }
+  }
+}
+
+//_____________________________________________________________________________
+void THcHodoscope::DefineArray(const char* fName, char** Suffix, const Int_t index, Int_t *myArray)
+{
+  // Try to read an array made up of what used to be (in the f77 days) a number of variables
+  // example: hscin_1x_center, hscin_1y_center, hscin_2x_center, hscin_2y_center will become scin_center
+  //
+  char prefix[2];
+  char parname[100],parname2[100];
+  //  
+  prefix[0]=tolower(GetApparatus()->GetName()[0]);
+  prefix[1]='\0';
+  strcpy(parname,prefix);
+  strcat(parname,fName);
+  for(Int_t i=0;i<index;i++) {
+    strcpy(parname2,Form(parname,Suffix[i]));
+    if (gHcParms->Find(parname2)) {
+      if (fDebug >=1) cout <<parname2;
+      myArray[i] = *(Int_t *)gHcParms->Find(parname2)->GetValuePointer();
+      if (fDebug>=1)    cout << " " << myArray[i];
+    }
+    if (fDebug>=1)  cout << endl;
+    else {
+      cout <<" Could not find "<<parname2<<" in the DataBase!!!\n";
+    }
+  }
+}
 
 //_____________________________________________________________________________
 Int_t THcHodoscope::ReadDatabase( const TDatime& date )
@@ -166,30 +285,28 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
 
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
-
+  //
   prefix[1]='\0';
-
   strcpy(parname,prefix);
   strcat(parname,"scin_");
   Int_t plen=strlen(parname);
 
   fNPaddle = new Int_t [fNPlanes];
+  DefineArray("scin_%s_nr",fPlaneNames,fNPlanes,&fNPaddle[0]);
 
+  if (fDebug>=1) cout <<"Testing scin_nr ";
   for(Int_t i=0;i<fNPlanes;i++) {
-    parname[plen] = '\0';
-    strcat(parname,fPlaneNames[i]);
-    strcat(parname,"_nr");
-    fNPaddle[i] = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
-    cout << parname << " " << fNPaddle[i] << endl;
+    if (fDebug>=1)  cout << " "<<fNPaddle[i];
   }
+  if (fDebug>=1) cout <<endl;
 
   fSpacing = new Double_t [fNPlanes];
+  DefineArray("scin_%s_spacing",fPlaneNames,fNPlanes,&fSpacing[0]);
+  if (fDebug>=1) cout <<"Testing scin_spacing ";
   for(Int_t i=0;i<fNPlanes;i++) {
-    parname[plen] = '\0';
-    strcat(parname,fPlaneNames[i]);
-    strcat(parname,"_spacing");
-    fSpacing[i] = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+    if (fDebug>=1)    cout << " " << fSpacing[i];
   }
+  if (fDebug>=1)  cout << endl;
 
   fCenter = new Double_t* [fNPlanes];
   for(Int_t i=0;i<fNPlanes;i++) {
@@ -201,9 +318,80 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     cout << parname;
     for(Int_t ipad=0;ipad<fNPaddle[i];ipad++) {
       fCenter[i][ipad] = p[ipad];
-      cout << " " << fCenter[i][ipad];
+      if (fDebug>=1)    cout << " " << fCenter[i][ipad];
     }
-    cout << endl;
+    if (fDebug>=1)  cout << endl;
+  }
+
+
+  // GN added
+  // reading variables from *hodo.param
+  prefix[1]='\0';
+
+
+  DBRequest list[]={
+    {Form("%sstart_time_center",prefix),&fStartTimeCenter, kDouble},
+    {Form("%sstart_time_slop",prefix) , &fStartTimeSlop, kDouble},
+    {Form("%sscin_tdc_to_time",prefix), &fScinTdcToTime, kDouble},
+    {Form("%sscin_tdc_min",prefix), &fScinTdcMin, kDouble},
+    {Form("%sscin_tdc_max",prefix), &fScinTdcMax, kDouble},
+    {Form("%stof_tolerance",prefix), &fTofTolerance, kDouble},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list);
+  cout <<"******* Testing *** "<<fStartTimeCenter<<" "<<fStartTimeSlop;
+  cout <<" "<<fScinTdcToTime;
+  cout <<" "<<fScinTdcMin;
+  cout <<" "<<fScinTdcMax;
+  cout <<" "<<fTofTolerance;
+  cout <<endl<<endl;
+  //  fStartTimeCenter=DefineDoubleVariable("start_time_center");
+  //  fStartTimeSlop=DefineDoubleVariable("start_time_slop");
+  //fScinTdcToTime=DefineDoubleVariable("scin_tdc_to_time");
+  //fScinTdcMin=DefineIntVariable("scin_tdc_min");
+  //fScinTdcMax=DefineIntVariable("scin_tdc_max");
+  //fTofTolerance=DefineDoubleVariable("tof_tolerance");
+  fHodoSlop = new Double_t [fNPlanes];
+  DefineArray("hodo_slop",fNPlanes, &fHodoSlop[0]);
+  /*  if (fDebug>=1) {
+    cout <<"testing hodo_slop ";
+    for(Int_t i=0;i<fNPlanes;i++) {
+      if (fDebug>=1)    cout << " " << fHodoSlop[i];
+    }
+    if (fDebug>=1)  cout << endl;
+   }
+  */
+ 
+  /* try to read *hodo_vel_light
+     NOTE: for HMS these were assigned as a 4x16 array (so we need to pad the planes 
+     that have less than 16 paddles per
+  */
+  Int_t max_paddles=fNPaddle[0];
+  for (Int_t i=1;i<fNPlanes;i++) {
+    max_paddles=(max_paddles > fNPaddle[i])? max_paddles : fNPaddle[i];
+  }
+  cout <<"maxpaddles = "<<max_paddles<<endl;
+  fHodoVelLight = new Double_t* [max_paddles];
+  prefix[1]='\0';
+  strcpy(parname,prefix);
+  strcat(parname,"hodo_vel_light");
+  Int_t k=0;
+  if (gHcParms->Find(parname)) {
+    Double_t* p = (Double_t *)gHcParms->Find(parname)->GetValuePointer();
+    cout <<parname<<" ";
+    for(Int_t i=0;i<max_paddles;i++) {
+      fHodoVelLight[i] = new Double_t [fNPlanes];
+      for(Int_t j=0;j<fNPlanes;j++) {
+	//	cout <<"i = "<<i<<" j = "<<j;
+	fHodoVelLight[i][j] = p[k];
+	k++;
+	if (fDebug>=1)    cout << " " << fHodoVelLight[i][j]<<endl;
+      }
+      if (fDebug>=1)  cout << endl;
+    }
+  }
+  else {
+    cout <<"Could not find "<<parname<<" in the DataBase!!!\n";
   }
 
   fIsInit = true;
