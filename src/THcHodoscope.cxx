@@ -330,15 +330,15 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
 
   DBRequest list[]={
-    {Form("%sstart_time_center",prefix),&fStartTimeCenter, kDouble},
-    {Form("%sstart_time_slop",prefix) , &fStartTimeSlop, kDouble},
-    {Form("%sscin_tdc_to_time",prefix), &fScinTdcToTime, kDouble},
-    {Form("%sscin_tdc_min",prefix), &fScinTdcMin, kDouble},
-    {Form("%sscin_tdc_max",prefix), &fScinTdcMax, kDouble},
-    {Form("%stof_tolerance",prefix), &fTofTolerance, kDouble},
+    {"start_time_center", &fStartTimeCenter, kDouble},
+    {"start_time_slop", &fStartTimeSlop, kDouble},
+    {"scin_tdc_to_time", &fScinTdcToTime, kDouble},
+    {"scin_tdc_min", &fScinTdcMin, kDouble},
+    {"scin_tdc_max", &fScinTdcMax, kDouble},
+    {"tof_tolerance", &fTofTolerance, kDouble},
     {0}
   };
-  gHcParms->LoadParmValues((DBRequest*)&list);
+  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   cout <<"******* Testing *** "<<fStartTimeCenter<<" "<<fStartTimeSlop;
   cout <<" "<<fScinTdcToTime;
   cout <<" "<<fScinTdcMin;

@@ -35,7 +35,7 @@ public:
     TextList->Remove(name);
   }
 
-  Int_t LoadParmValues(const DBRequest* list); // assign values to the variables in list
+  Int_t LoadParmValues(const DBRequest* list, const char* prefix=""); // assign values to the variables in list
 
 private:
 

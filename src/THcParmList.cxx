@@ -343,7 +343,7 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 
 }
 //_____________________________________________________________________________
-Int_t THcParmList::LoadParmValues(const DBRequest* list)
+Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
 {
   // Load a number of entries from the database.
   // For array entries, the number of elements to be read in
@@ -355,10 +355,14 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list)
   Int_t cnt=0;
   Int_t this_cnt=0;
 
+  if( !prefix ) prefix = "";
+
   while ( ti && ti->name ) {
+    string keystr(prefix); keystr.append(ti->name);
+    const char* key = keystr.c_str();
     ///    cout <<"Now at "<<ti->name<<endl;
     if (ti->nelem>1) {
-      // it is an array, use the appropriate interface
+      // it is an array, use the appropriateinterface
       switch (ti->type) {
       case (kDouble) :
 	//	this_cnt = GetArray(system,ti->name,static_cast<Double_t*>(ti->var),
@@ -369,37 +373,37 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list)
 	//ti->expected,date);
       break;
     default:
-	Error("THcParmList","Invalid type to read %s",ti->name);
+	Error("THcParmList","Invalid type to read %s",key);
 	break;
       }
 
     } else {
       switch (ti->type) {
       case (kDouble) :
-	if (this->Find(ti->name)) {
-	  *static_cast<Double_t*>(ti->var)=*(Double_t *)this->Find(ti->name)->GetValuePointer();
+	if (this->Find(key)) {
+	  *static_cast<Double_t*>(ti->var)=*(Double_t *)this->Find(key)->GetValuePointer();
 	} else {
-	  cout << "*** ERROR!!! Could not find " << ti->name << " in the list of variables! ***" << endl;
+	  cout << "*** ERROR!!! Could not find " << key << " in the list of variables! ***" << endl;
 	}
 	this_cnt=1;
 
 	break;
       case (kInt) :
-	if (this->Find(ti->name)) {
-	  *static_cast<Int_t*>(ti->var)=*(Int_t *)this->Find(ti->name)->GetValuePointer();
+	if (this->Find(key)) {
+	  *static_cast<Int_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();
 	} else {
-	  cout << "*** ERROR!!! Could not find " << ti->name << " in the list of variables! ***" << endl;
+	  cout << "*** ERROR!!! Could not find " << key << " in the list of variables! ***" << endl;
 	}
 	this_cnt=1;
 	break;
       default:
-	Error("THcParmList","Invalid type to read %s",ti->name);
+	Error("THcParmList","Invalid type to read %s",key);
 	break;
       }
     }
     if (this_cnt<=0) {
       if ( !ti->optional ) {
-	Fatal("THcParmList","Could not find %s in database!",ti->name);
+	Fatal("THcParmList","Could not find %s in database!",key);
       }
     }
     cnt += this_cnt;
