@@ -37,9 +37,15 @@ public:
 
   Int_t LoadParmValues(const DBRequest* list, const char* prefix=""); // assign values to the variables in list
 
+  Int_t GetArray(const char* attr, Int_t* array, Int_t size);
+  Int_t GetArray(const char* attr, Double_t* array, Int_t size);
+
 private:
 
   THaTextvars* TextList;
+
+  template<class T>
+    Int_t ReadArray(const char* attrC, T* array, Int_t size);
 
 protected:
 

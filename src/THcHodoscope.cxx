@@ -292,27 +292,53 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   Int_t plen=strlen(parname);
 
   fNPaddle = new Int_t [fNPlanes];
-  DefineArray("scin_%s_nr",fPlaneNames,fNPlanes,&fNPaddle[0]);
-
-  if (fDebug>=1) cout <<"Testing scin_nr ";
-  for(Int_t i=0;i<fNPlanes;i++) {
-    if (fDebug>=1)  cout << " "<<fNPaddle[i];
-  }
-  if (fDebug>=1) cout <<endl;
-
   fSpacing = new Double_t [fNPlanes];
-  DefineArray("scin_%s_spacing",fPlaneNames,fNPlanes,&fSpacing[0]);
-  if (fDebug>=1) cout <<"Testing scin_spacing ";
-  for(Int_t i=0;i<fNPlanes;i++) {
-    if (fDebug>=1)    cout << " " << fSpacing[i];
-  }
-  if (fDebug>=1)  cout << endl;
+  fCenter = new Double_t* [fNPlanes];
 
+  // An alternate way to get these variables
+  // Can add Xscin_P_center when LoadParmValues supports arrays
+  
+  prefix[0]=tolower(GetApparatus()->GetName()[0]);
+  //
+  prefix[1]='\0';
+
+  for(Int_t i=0;i<fNPlanes;i++) {
+    
+    DBRequest list[]={
+      {Form("scin_%s_nr",fPlaneNames[i]), &fNPaddle[i], kInt},
+      {0}
+    };
+    gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  }
+
+  for(Int_t i=0;i<fNPlanes;i++) {
+    fCenter[i] = new Double_t[fNPaddle[i]];
+    DBRequest list[]={
+      {Form("scin_%s_spacing",fPlaneNames[i]), &fSpacing[i], kDouble},
+      {Form("scin_%s_center",fPlaneNames[i]), fCenter[i], kDouble, fNPaddle[i]},
+      {0}
+    };
+    gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  }
+
+  if(fDebug>=1) {
+    cout << "Plane: " << " nr spacing" << endl;
+    for(Int_t i=0;i<fNPlanes;i++) {
+      cout << fPlaneNames[i] << "      " << fNPaddle[i] << "  " << fSpacing[i] <<endl;
+      for(Int_t ip=0;ip<fNPaddle[i];ip++) {
+	cout << " " << fCenter[i][ip];
+      }
+      cout <<  endl;
+    }
+  }
+
+#if 0
   fCenter = new Double_t* [fNPlanes];
   for(Int_t i=0;i<fNPlanes;i++) {
     parname[plen] = '\0';
     strcat(parname,fPlaneNames[i]);
     strcat(parname,"_center");
+    cout << parname << endl;
     Double_t* p = (Double_t *)gHcParms->Find(parname)->GetValuePointer();
     fCenter[i] = new Double_t [fNPaddle[i]];
     cout << parname;
@@ -322,8 +348,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     }
     if (fDebug>=1)  cout << endl;
   }
-
-
+#endif
   // GN added
   // reading variables from *hodo.param
   prefix[1]='\0';

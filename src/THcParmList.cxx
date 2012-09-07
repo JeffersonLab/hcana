@@ -365,12 +365,10 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
       // it is an array, use the appropriateinterface
       switch (ti->type) {
       case (kDouble) :
-	//	this_cnt = GetArray(system,ti->name,static_cast<Double_t*>(ti->var),
-	//		    ti->expected,date);
+	this_cnt = GetArray(key,static_cast<Double_t*>(ti->var),ti->nelem);
 	break;
       case (kInt) :
-	//	this_cnt = GetArray(system,ti->name,static_cast<Int_t*>(ti->var),
-	//ti->expected,date);
+	this_cnt = GetArray(key,static_cast<Int_t*>(ti->var),ti->nelem);
       break;
     default:
 	Error("THcParmList","Invalid type to read %s",key);
@@ -410,6 +408,54 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
     ti++;
   }
   return cnt;
+}
+
+//  READING AN ARRAY INTO A C-style ARRAY
+//_____________________________________________________________________________
+Int_t THcParmList::GetArray(const char* attr, Int_t* array, Int_t size)
+{
+  // Read in a set of Int_t's in to a C-style array.
+  
+  return ReadArray(attr,array,size);
+}
+//_____________________________________________________________________________
+Int_t THcParmList::GetArray(const char* attr, Double_t* array, Int_t size)
+{
+  // Read in a set of Double_t's in to a vector.
+  
+  return ReadArray(attr,array,size);
+}
+
+//_____________________________________________________________________________
+template<class T>
+Int_t THcParmList::ReadArray(const char* attrC, T* array, Int_t size)
+{
+  // Copy values from parameter store to array
+  // No resizing is done, so only 'size' elements may be stored.
+
+  Int_t cnt=0;
+
+  THaVar *var = Find(attrC);
+  if(!var) return(cnt);
+  VarType ty = var->GetType();
+  if( ty != kInt && ty != kDouble) {
+    cout << "*** ERROR: " << attrC << " has unsupported type " << ty << endl;
+    return(cnt);
+  }
+  Int_t sz = var->GetLen();
+  const void *vp = var->GetValuePointer();
+  if(size != sz) {
+    cout << "*** WARNING: requested " << size << " elements of " << attrC <<
+      " which has length " << sz << endl;
+  }
+  if(size<sz) sz = size;
+  for(cnt=0;cnt<sz;cnt++) {
+    if(ty == kInt) {
+      array[cnt] = ((Int_t*)vp)[cnt];
+    } else
+      array[cnt] = ((Double_t*)vp)[cnt];
+  }
+  return(cnt);
 }
 
 //_____________________________________________________________________________
