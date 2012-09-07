@@ -60,18 +60,15 @@ void THcDriftChamber::Setup(const char* name, const char* description)
   prefix[0]=tolower(app->GetName()[0]);
   prefix[1]='\0';
 
-  strcpy(parname,prefix);
-  strcat(parname,name); 	// Append "dc"
-  Int_t plen=strlen(parname);
-  cout << "parname=" << parname << endl;
+  DBRequest list[]={
+    {"dc_num_planes",&fNPlanes, kInt},
+    {"dc_num_chambers",&fNChambers, kDouble},
+    {0}
+  };
 
-  // Get number of planes and number wires for each plane
-  strcat(parname,"_num_planes");
-  fNPlanes = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
-
-  parname[plen] = '\0';
-  strcat(parname,"_num_chambers");
-  fNChambers = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  
+  cout << "Drift Chambers: " <<  fNPlanes << " planes in " << fNChambers << " chambers" << endl;
 
   fPlaneNames = new char* [fNPlanes];
 
@@ -172,22 +169,18 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
 
   prefix[1]='\0';
 
-  strcpy(parname,prefix);
-  strcat(parname,"dc");
-  Int_t plen=strlen(parname);
-
-  // Get number of planes and number wires for each plane
-  strcat(parname,"_num_planes");
-  fNPlanes = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
-
-  parname[plen]='\0';
-  strcat(parname,"_nrwire");
-  
   fNWires = new Int_t [fNPlanes];
-  Int_t* p= (Int_t *)gHcParms->Find(parname)->GetValuePointer();
+  DBRequest list[]={
+    {"dc_nrwire",fNWires, kInt, fNPlanes},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+
+  cout << "Plane counts:";
   for(Int_t i=0;i<fNPlanes;i++) {
-    fNWires[i] = p[i];
+    cout << " " << fNWires[i];
   }
+  cout << endl;
 
   fIsInit = true;
 
