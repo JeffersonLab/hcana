@@ -14,6 +14,7 @@
 #include "THaDetMap.h"
 #include "THcDetectorMap.h"
 #include "THcGlobals.h"
+#include "THaCutList.h"
 #include "THcParmList.h"
 #include "VarDef.h"
 #include "VarType.h"
@@ -298,19 +299,40 @@ void THcShower::DeleteArrays()
 
 //_____________________________________________________________________________
 inline 
-void THcShower::ClearEvent()
+void THcShower::Clear(Option_t* opt)
 {
-  // Reset per-event data.
-
-  fTrackProj->Clear();
+//   Reset per-event data.
+  for(Int_t ip=0;ip<fNLayers;ip++) {
+    fPlanes[ip]->Clear(opt);
+  }
+ // fTrackProj->Clear();
 }
 
 //_____________________________________________________________________________
 Int_t THcShower::Decode( const THaEvData& evdata )
 {
-
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = THcHitList::DecodeToHitList(evdata);
+
+if(gHaCuts->Result("Pedestal_event")) {
+    Int_t nexthit = 0;
+    for(Int_t ip=0;ip<fNLayers;ip++) {
+      nexthit = fPlanes[ip]->AccumulatePedestals(fRawHitList, nexthit);
+//cout << "nexthit = " << nexthit << endl;
+    }
+    fAnalyzePedestals = 1;	// Analyze pedestals first normal events
+    return(0);
+  }
+
+   if(fAnalyzePedestals) {
+     for(Int_t ip=0;ip<fNLayers;ip++) {
+       fPlanes[ip]->CalculatePedestals();
+     }
+     fAnalyzePedestals = 0;	// Don't analyze pedestals next event
+   }
+
+
+
   Int_t nexthit = 0;
   for(Int_t ip=0;ip<fNLayers;ip++) {
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);

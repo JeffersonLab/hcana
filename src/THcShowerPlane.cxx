@@ -14,6 +14,7 @@
 #include "THcHitList.h"
 #include "THcShower.h"
 #include "TClass.h"
+#include "math.h"
 
 #include <cstring>
 #include <cstdio>
@@ -35,9 +36,10 @@ THcShowerPlane::THcShowerPlane( const char* name,
   // Normal constructor with name and description
   fPosADCHits = new TClonesArray("THcSignalHit",13);
   fNegADCHits = new TClonesArray("THcSignalHit",13);
+#if ROOT_VERSION_CODE < ROOT_VERSION(5,32,0)
   fPosADCHitsClass = fPosADCHits->GetClass();
   fNegADCHitsClass = fNegADCHits->GetClass();
-
+#endif
   fPosADC1 = new TClonesArray("THcSignalHit",13);
   fPosADCHitsClass = fPosADC1->GetClass();
 
@@ -94,7 +96,8 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   strcat(parname,"_nr");
   cout << " Getting value of SHOWER!!!" << parname << endl;
-//   fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+fNelem = 13;
+ //  fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
 // 
 //   parname[plen]='\0';
 //   strcat(parname,"_spacing");
@@ -109,7 +112,7 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   
   // Create arrays to hold results here
 
-
+ InitializePedestals();
   return kOK;
 }
 //_____________________________________________________________________________
@@ -264,8 +267,12 @@ CalADC1File = fopen("adc1_new.dat", "a");
   Int_t nrawhits = rawhits->GetLast()+1;
 
   Int_t ihit = nexthit;
+ //cout << "nrawhits =  " << nrawhits << endl;
+ //cout << "nexthit =  " << nexthit << endl;
   while(ihit < nrawhits) {
     THcShowerHit* hit = (THcShowerHit *) rawhits->At(ihit);
+
+//cout << "fplane =  " << hit->fPlane << " Num = " << fLayerNum << endl;
     if(hit->fPlane > fLayerNum) {
       break;
     }
@@ -286,7 +293,8 @@ THcSignalHit *sighit1 = (THcSignalHit*) fPosADC1->ConstructedAt(nPosADCHits++);
 //fprintf(CalADC1File, "%d\n", hit->fADC_pos);
 }
 
-double thresh_pos = hcal_new_threshold_pos[hit->fCounter + 13*(hit->fPlane -1) -1];
+double thresh_pos = fPosThresh[hit->fCounter -1];
+//double thresh_pos = hcal_new_threshold_pos[hit->fCounter + 13*(hit->fPlane -1) -1];
 if(hit->fADC_pos >  thresh_pos) {
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
 	THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
@@ -302,7 +310,8 @@ if(!obj->TestBit (TObject::kNotDeleted))
    sighit->Set(hit->fCounter, hit->fADC_pos);
 }
 
-double thresh_neg = hcal_new_threshold_neg[hit->fCounter + 13*(hit->fPlane -1) -1];
+double thresh_neg = fNegThresh[hit->fCounter -1];
+//double thresh_neg = hcal_new_threshold_neg[hit->fCounter + 13*(hit->fPlane -1) -1];
 if(hit->fADC_neg >  thresh_neg) {
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
 	THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
@@ -322,8 +331,106 @@ if(!obj->TestBit (TObject::kNotDeleted))
 fclose(CalADC1File);
   return(ihit);
 }
+//_____________________________________________________________________________
+Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
+{
+  // Extract the data for this plane from hit list, accumulating into
+  // arrays for calculating pedestals.
+
+  Int_t nrawhits = rawhits->GetLast()+1;
+ //  cout << "THcScintillatorPlane::AcculatePedestals " << fLayerNum << " " << nexthit << "/" << nrawhits << endl;
+  Int_t ihit = nexthit;
+  while(ihit < nrawhits) {
+    THcShowerHit* hit = (THcShowerHit *) rawhits->At(ihit);
+//cout << "fPlane =  " << hit->fPlane << " Limit = " << fPlaneNum << endl;
+    if(hit->fPlane > fLayerNum) {
+      break;
+    }
+    Int_t element = hit->fCounter - 1; // Should check if in range
+    Int_t adcpos = hit->fADC_pos;
+    Int_t adcneg = hit->fADC_neg;
+
+    if(adcpos <= fPosPedLimit[element]) {
+      fPosPedSum[element] += adcpos;
+      fPosPedSum2[element] += adcpos*adcpos;
+      fPosPedCount[element]++;
+      if(fPosPedCount[element] == fMinPeds/5) {
+	fPosPedLimit[element] = 100 + fPosPedSum[element]/fPosPedCount[element];
+      }
+    }
+    if(adcneg <= fNegPedLimit[element]) {
+      fNegPedSum[element] += adcneg;
+      fNegPedSum2[element] += adcneg*adcneg;
+      fNegPedCount[element]++;
+      if(fNegPedCount[element] == fMinPeds/5) {
+	fNegPedLimit[element] = 100 + fNegPedSum[element]/fNegPedCount[element];
+      }
+    }
+    ihit++;
+  }
+
+  fNPedestalEvents++;
+
+  return(ihit);
+}
 
     
+ //_____________________________________________________________________________
+void THcShowerPlane::CalculatePedestals( )
+{
+  // Use the accumulated pedestal data to calculate pedestals
+  // Later add check to see if pedestals have drifted ("Danger Will Robinson!")
+
+  for(Int_t i=0; i<fNelem;i++) {
+    
+    // Positive tubes
+    fPosPed[i] = ((Double_t) fPosPedSum[i]) / TMath::Max(1, fPosPedCount[i]);
+    fPosSig[i] = sqrt((fPosPedSum2[i] - 2.*fPosPed[i]*fPosPedSum[i])/TMath::Max(1, fPosPedCount[i]) + fPosPed[i]*fPosPed[i]);
+  //  fPosThresh[i] = fPosPed[i] + 15;
+     fPosThresh[i] = fPosPed[i] + TMath::Min(50., TMath::Max(10., 3.*fPosSig[i]));
+
+    // Negative tubes
+    fNegPed[i] = ((Double_t) fNegPedSum[i]) / TMath::Max(1, fNegPedCount[i]);
+    fNegSig[i] = sqrt((fNegPedSum2[i] - 2.*fNegPed[i]*fNegPedSum[i])/TMath::Max(1, fNegPedCount[i]) + fNegPed[i]*fNegPed[i]);
+  //  fNegThresh[i] = fNegPed[i] + 15;
+   fNegThresh[i] = fNegPed[i] + TMath::Min(50., TMath::Max(10., 3.*fNegSig[i]));
+
+    //    cout << i+1 << " " << 3.*fPosSig[i] << " " << 3.*fNegSig[i] << endl;
+  }
+  //  cout << " " << endl;
   
+}
+
+//_____________________________________________________________________________
+void THcShowerPlane::InitializePedestals( )
+{
+  fNPedestalEvents = 0;
+  fMinPeds = 500; 		// In engine, this is set in parameter file
+  fPosPedSum = new Int_t [fNelem];
+  fPosPedSum2 = new Int_t [fNelem];
+  fPosPedLimit = new Int_t [fNelem];
+  fPosPedCount = new Int_t [fNelem];
+  fNegPedSum = new Int_t [fNelem];
+  fNegPedSum2 = new Int_t [fNelem];
+  fNegPedLimit = new Int_t [fNelem];
+  fNegPedCount = new Int_t [fNelem];
+
+  fPosSig = new Double_t [fNelem];
+  fNegSig = new Double_t [fNelem];
+  fPosPed = new Double_t [fNelem];
+  fNegPed = new Double_t [fNelem];
+  fPosThresh = new Double_t [fNelem];
+  fNegThresh = new Double_t [fNelem];
+  for(Int_t i=0;i<fNelem;i++) {
+    fPosPedSum[i] = 0;
+    fPosPedSum2[i] = 0;
+    fPosPedLimit[i] = 1000;	// In engine, this are set in parameter file
+    fPosPedCount[i] = 0;
+    fNegPedSum[i] = 0;
+    fNegPedSum2[i] = 0;
+    fNegPedLimit[i] = 1000;	// In engine, this are set in parameter file
+    fNegPedCount[i] = 0;
+  }
+} 
   
 
