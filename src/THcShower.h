@@ -21,7 +21,7 @@ public:
   THcShower( const char* name, const char* description = "",
 		   THaApparatus* a = NULL );
   virtual ~THcShower();
-
+  virtual void 	     Clear( Option_t* opt="" );
   virtual Int_t      Decode( const THaEvData& );
   virtual EStatus    Init( const TDatime& run_time );
   virtual Int_t      CoarseProcess( TClonesArray& tracks );
@@ -38,7 +38,7 @@ public:
 
   THcShower();  // for ROOT I/O
 protected:
-
+  Int_t fAnalyzePedestals;
   // Calibration
 
   // Per-event data
