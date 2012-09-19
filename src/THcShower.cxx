@@ -37,7 +37,6 @@ THcShower::THcShower( const char* name, const char* description,
   THaNonTrackingDetector(name,description,apparatus)
 {
   // Constructor
-  Setup(name, description);
 //  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
 }
 
@@ -60,11 +59,12 @@ void THcShower::Setup(const char* name, const char* description)
 
   fNLayers = 4;	// Eventually get # layers and layer names from a DB
   fLayerNames = new char* [fNLayers];
-  for(Int_t i=0;i<fNLayers;i++) {fLayerNames[i] = new char[3];}
-  strcpy(fLayerNames[0],"1z");
-  strcpy(fLayerNames[1],"2z");
-  strcpy(fLayerNames[2],"3z");
-  strcpy(fLayerNames[3],"4z");
+  for(Int_t i=0;i<fNLayers;i++) {fLayerNames[i] = new char[4];}
+  // Use layer names to help construct parameter names
+  strcpy(fLayerNames[0],"1pr");
+  strcpy(fLayerNames[1],"2ta");
+  strcpy(fLayerNames[2],"3ta");
+  strcpy(fLayerNames[3],"4ta");
 
   size_t nlen = strlen(name);
   size_t slen = 0;
@@ -92,10 +92,7 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
   static const char* const here = "Init()";
 
   cout << "THcShower::Init " << GetName() << endl;
-
-  if( THaNonTrackingDetector::Init( date ) )
-    return fStatus;
-
+  Setup(GetName(), GetTitle());
 
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
@@ -131,6 +128,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   // 'date' contains the date/time of the run being analyzed.
 
   //  static const char* const here = "ReadDatabase()";
+  char prefix[2];
 
   // Read data from database 
   // Pull values from the THcParmList instead of reading a database
@@ -142,89 +140,47 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   // Will need to determine which spectrometer in order to construct
   // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
 
-cout << "THcShower::ReadDatabase called " << GetName() << endl;
+  cout << "THcShower::ReadDatabase called " << GetName() << endl;
 
-  fNLayers = 4;			// Hardwire for now
+  prefix[0]=tolower(GetApparatus()->GetName()[0]);
+  prefix[1]='\0';
 
   BlockThick = new Double_t [fNLayers];
-
-  BlockThick[0] = *(Double_t *)gHcParms->Find("hcal_1pr_thick")->GetValuePointer();
-  BlockThick[1] = *(Double_t *)gHcParms->Find("hcal_2ta_thick")->GetValuePointer();
-  BlockThick[2] = *(Double_t *)gHcParms->Find("hcal_3ta_thick")->GetValuePointer();
-  BlockThick[3] = *(Double_t *)gHcParms->Find("hcal_4ta_thick")->GetValuePointer();
-
-cout << "Block thickness: " << BlockThick[2]  << endl;
-
-fNBlocks = new Int_t [fNLayers];
-
-  fNBlocks[0] = *(Int_t *)gHcParms->Find("hcal_1pr_nr")->GetValuePointer();
-  fNBlocks[1] = *(Int_t *)gHcParms->Find("hcal_2ta_nr")->GetValuePointer();
-  fNBlocks[2] = *(Int_t *)gHcParms->Find("hcal_3ta_nr")->GetValuePointer();
-  fNBlocks[3] = *(Int_t *)gHcParms->Find("hcal_4ta_nr")->GetValuePointer();
-
-  cout << "Number of blocks per layer: " << fNBlocks[2]  << endl;
-
+  fNBlocks = new Int_t [fNLayers];
   fNLayerZPos = new Double_t [fNLayers];
-
-  fNLayerZPos[0] = *(Double_t *)gHcParms->Find("hcal_1pr_zpos")->GetValuePointer();
-  fNLayerZPos[1] = *(Double_t *)gHcParms->Find("hcal_2ta_zpos")->GetValuePointer();
-  fNLayerZPos[2] = *(Double_t *)gHcParms->Find("hcal_3ta_zpos")->GetValuePointer();
-  fNLayerZPos[3] = *(Double_t *)gHcParms->Find("hcal_4ta_zpos")->GetValuePointer();
-
-cout << "Z Position: " << fNLayerZPos[2]  << endl;
-
   XPos = new Double_t [2*fNLayers];
 
-  XPos[0] = *(Double_t *)gHcParms->Find("hcal_1pr_left")->GetValuePointer();
-  XPos[1] = *(Double_t *)gHcParms->Find("hcal_1pr_right")->GetValuePointer();
-  XPos[2] = *(Double_t *)gHcParms->Find("hcal_2ta_left")->GetValuePointer();
-  XPos[3] = *(Double_t *)gHcParms->Find("hcal_2ta_right")->GetValuePointer();
-  XPos[4] = *(Double_t *)gHcParms->Find("hcal_3ta_left")->GetValuePointer();
-  XPos[5] = *(Double_t *)gHcParms->Find("hcal_3ta_right")->GetValuePointer();
-  XPos[6] = *(Double_t *)gHcParms->Find("hcal_4ta_left")->GetValuePointer();
-  XPos[7] = *(Double_t *)gHcParms->Find("hcal_4ta_right")->GetValuePointer();
-
-cout << "X Positions: " << XPos[0]  << ", " << XPos[1] << endl;
-
-  YPos = new Double_t* [4];
-  cout << "Y Positions:";
-
-  Double_t* p;
-  Int_t ilayer;
-
-  ilayer = 0; 
-  p = (Double_t *)gHcParms->Find("hcal_1pr_top")->GetValuePointer();
-  YPos[ilayer] = new Double_t [fNBlocks[ilayer]];
-  // Print out some parameters just to demonstrate that it works
-  
-  for(Int_t i=0;i<fNBlocks[ilayer];i++) {
-    YPos[ilayer][i] = p[i];
-    cout << " " << YPos[ilayer][i];
+  for(Int_t i=0;i<fNLayers;i++) {
+    DBRequest list[]={
+      {Form("cal_%s_thick",fLayerNames[i]), &BlockThick[i], kDouble},
+      {Form("cal_%s_nr",fLayerNames[i]), &fNBlocks[i], kInt},
+      {Form("cal_%s_zpos",fLayerNames[i]), &fNLayerZPos[i], kDouble},
+      {Form("cal_%s_left",fLayerNames[i]), &XPos[2*i], kDouble},
+      {Form("cal_%s_right",fLayerNames[i]), &XPos[2*i+1], kDouble},
+      {0}
+    };
+    gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
-  cout << endl;
-
-  ilayer = 1; 
-  p = (Double_t *)gHcParms->Find("hcal_2ta_top")->GetValuePointer();
-  YPos[ilayer] = new Double_t [fNBlocks[ilayer]];
-  
-   for(Int_t i=0;i<fNBlocks[ilayer];i++) {
-    YPos[ilayer][i] = p[i];
+  YPos = new Double_t* [fNLayers];
+  for(Int_t i=0;i<fNLayers;i++) {
+    YPos[i] = new Double_t [fNBlocks[i]];
+    DBRequest list[]={
+      {Form("cal_%s_top",fLayerNames[i]),YPos[i], kDouble, fNBlocks[i]},
+      {0}
+    };
+    gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
- 
-  ilayer = 2; 
-  p = (Double_t *)gHcParms->Find("hcal_3ta_top")->GetValuePointer();
-  YPos[ilayer] = new Double_t [fNBlocks[ilayer]];
-
-  for(Int_t i=0;i<fNBlocks[ilayer];i++) {
-    YPos[ilayer][i] = p[i];
-  }
-
-  ilayer = 3; 
-  p = (Double_t *)gHcParms->Find("hcal_4ta_top")->GetValuePointer();
-  YPos[ilayer] = new Double_t [fNBlocks[ilayer]];
-
-  for(Int_t i=0;i<fNBlocks[ilayer];i++) {
-    YPos[ilayer][i] = p[i];
+  for(Int_t i=0;i<fNLayers;i++) {
+    cout << "Plane " << fLayerNames[i] << ":" << endl;
+    cout << "    Block thickness: " << BlockThick[i] << endl;
+    cout << "    NBlocks        : " << fNBlocks[i] << endl;
+    cout << "    Z Position     : " << fNLayerZPos[i] << endl;
+    cout << "    X Positions    : " << XPos[2*i] << ", " << XPos[2*i+1] << endl;
+    cout << "    Y Positions    :";
+    for(Int_t j=0; j<fNBlocks[i]; j++) {
+      cout << " " << YPos[i][j];
+    }
+    cout << endl;
   }
 
   fIsInit = true;
