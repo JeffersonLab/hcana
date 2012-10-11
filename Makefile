@@ -65,6 +65,7 @@ endif
 ROOTCFLAGS   := $(shell root-config --cflags)
 ROOTLIBS     := $(shell root-config --libs)
 ROOTGLIBS    := $(shell root-config --glibs)
+ROOTBIN      := $(shell root-config --bindir)
 
 INCLUDES      = $(ROOTCFLAGS) $(addprefix -I, $(INCDIRS) )
 #INCLUDES      = $(ROOTCFLAGS) $(addprefix -I, $(INCDIRS) ) -I$(shell pwd)
@@ -163,7 +164,7 @@ $(HDR_COMPILEDATA) $(LIBHALLA) $(LIBDC) $(LIBSCALER): $(ANALYZER)/Makefile
 
 $(USERDICT).cxx: $(RCHDR) $(HDR) $(LINKDEF)
 	@echo "Generating dictionary $(USERDICT)..."
-	$(ROOTSYS)/bin/rootcint -f $@ -c $(INCLUDES) $^
+	$(ROOTBIN)/rootcint -f $@ -c $(INCLUDES) $^
 
 install:	all
 	cp -p $(USERLIB) $(HOME)/cue/SRC/ana
