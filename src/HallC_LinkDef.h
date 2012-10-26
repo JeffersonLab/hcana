@@ -24,7 +24,7 @@
 #pragma link C++ class THcShower+;
 #pragma link C++ class THcShowerPlane+;
 #pragma link C++ class THcShowerHit+;
-#pragma link C++ class THcAerogel;
-#pragma link C++ class THcAerogelHit;
+#pragma link C++ class THcAerogel+;
+#pragma link C++ class THcAerogelHit+;
 
 #endif

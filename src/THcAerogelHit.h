@@ -1,9 +1,9 @@
 #ifndef ROOT_THcAerogelHit
 #define ROOT_THcAerogelHit
 
-#include "THcShowerHit.h"
+#include "THcHodoscopeHit.h"
 
-class THcAerogelHit : public THcShowerHit {
+class THcAerogelHit : public THcHodoscopeHit {
 
  public:
  

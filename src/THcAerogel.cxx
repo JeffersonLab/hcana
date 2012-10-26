@@ -47,6 +47,23 @@ THcAerogel::THcAerogel( ) :
   // Constructor
 }
 
+//_____________________________________________________________________________
+void THcAerogel::Setup(const char* name, const char* description)
+{
+
+
+  // Do we need this for the Aerogel?  It is just one plane.
+
+  //  static const char* const here = "Setup()";
+  //  static const char* const message = 
+  //    "Must construct %s detector with valid name! Object construction failed.";
+
+  cout << "In THcAerogel::Setup()" << endl;
+  // Base class constructor failed?
+  if( IsZombie()) return;
+
+  fDebug   = 1;  // Keep this at one while we're working on the code    
+}
 
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
@@ -58,23 +75,17 @@ THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
 
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
-
   THcHitList::InitHitList(fDetMap, "THcAerogelHit", 100);
 
   EStatus status;
   if( (status = THaNonTrackingDetector::Init( date )) )
     return fStatus=status;
 
-  for(Int_t ip=0;ip<fNLayers;ip++) {
-    if((status = fPlanes[ip]->Init( date ))) {
-      return fStatus=status;
-    }
-  }
   // Will need to determine which apparatus it belongs to and use the
   // appropriate detector ID in the FillMap call
-  if( gHcDetectorMap->FillMap(fDetMap, "HCAL") < 0 ) {
+  if( gHcDetectorMap->FillMap(fDetMap, "HAERO") < 0 ) {
     Error( Here(here), "Error filling detectormap for %s.", 
-	     "HCAL");
+	     "HAERO");
       return kInitError;
   }
 
@@ -82,14 +93,74 @@ THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
 }
 
 //_____________________________________________________________________________
+Int_t THcAerogel::ReadDatabase( const TDatime& date )
+{
+  // This function is called by THaDetectorBase::Init() once at the beginning
+  // of the analysis.
+
+  char prefix[2];
+  // Pull values from THcParmList instead
+
+  prefix[0]=tolower(GetApparatus()->GetName()[0]);
+  prefix[1]='\0';
+
+  fNelem = 8;// Number of tube pairs  // The ENGINE style parameter files don't define
+                                // this.  Probably need an additional parameter file
+                                // that contains these fixed parameters.
+
+  fPosGain = new Double_t[fNelem];
+  fNegGain = new Double_t[fNelem];
+  fPosPedLimit = new Int_t[fNelem];
+  fNegPedLimit = new Int_t[fNelem];
+
+  DBRequest list[]={
+    {"aero_pos_gain", fPosGain, kDouble},
+    {"aero_neg_gain", fPosGain, kDouble},
+    {"aero_pos_ped_limit", fPosPedLimit, kInt},
+    {"aero_neg_ped_limit", fNegPedLimit, kInt},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+
+  fIsInit = true;
+
+  // Create arrays to hold pedestal results
+  InitializePedestals();
+
+  return kOK;
+}
+
+//_____________________________________________________________________________
+Int_t THcAerogel::DefineVariables( EMode mode )
+{
+  // Initialize global variables for histogramming and tree
+
+  cout << "THcAerogel::DefineVariables called " << GetName() << endl;
+
+  if( mode == kDefine && fIsSetup ) return kOK;
+  fIsSetup = ( mode == kDefine );
+  
+  // Register variables in global list
+  RVarDef vars[] = {
+    {"postdchits", "List of Positive TDC hits", 
+     "fPosTDCHits.THcSignalHit.GetPaddleNumber()"},
+    {"negtdchits", "List of Negative TDC hits", 
+     "fNegTDCHits.THcSignalHit.GetPaddleNumber()"},
+    {"posadchits", "List of Positive ADC hits", 
+     "fPosADCHits.THcSignalHit.GetPaddleNumber()"},
+    {"negadchits", "List of Negative ADC hits", 
+     "fNegADCHits.THcSignalHit.GetPaddleNumber()"},
+    { 0 }
+  };
+
+  return DefineVarsFromList( vars, mode );
+}
+//_____________________________________________________________________________
 inline 
 void THcAerogel::Clear(Option_t* opt)
 {
-//   Reset per-event data.
-  for(Int_t ip=0;ip<fNLayers;ip++) {
-    fPlanes[ip]->Clear(opt);
-  }
- // fTrackProj->Clear();
+  // Reset per-event data.
+  // fTrackProj->Clear();
 }
 
 //_____________________________________________________________________________
@@ -98,38 +169,21 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = THcHitList::DecodeToHitList(evdata);
 
-if(gHaCuts->Result("Pedestal_event")) {
-    Int_t nexthit = 0;
-    for(Int_t ip=0;ip<fNLayers;ip++) {
-      nexthit = fPlanes[ip]->AccumulatePedestals(fRawHitList, nexthit);
-//cout << "nexthit = " << nexthit << endl;
-    }
+  if(gHaCuts->Result("Pedestal_event")) {
+
+    AccumulatePedestals(fRawHitList);
+
     fAnalyzePedestals = 1;	// Analyze pedestals first normal events
     return(0);
   }
 
-   if(fAnalyzePedestals) {
-     for(Int_t ip=0;ip<fNLayers;ip++) {
-       fPlanes[ip]->CalculatePedestals();
-     }
-     fAnalyzePedestals = 0;	// Don't analyze pedestals next event
-   }
-
-
-
-  Int_t nexthit = 0;
-  for(Int_t ip=0;ip<fNLayers;ip++) {
-    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
+  if(fAnalyzePedestals) {
+     
+    CalculatePedestals();
+   
+    fAnalyzePedestals = 0;	// Don't analyze pedestals next event
   }
-/*
-//   fRawHitList is TClones array of THcAerogelHit objects
-  for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
-    THcAerogelHit* hit = (THcAerogelHit *) fRawHitList->At(ihit);
-    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
-	 << hit->fADC_pos << " " << hit->fADC_neg << " "  << endl;
-  }
-  cout << endl;
-*/
+
   return nhits;
 }
 
@@ -155,6 +209,96 @@ Int_t THcAerogel::FineProcess( TClonesArray& tracks )
   return 0;
 }
 
+//_____________________________________________________________________________
+void THcAerogel::InitializePedestals( )
+{
+  fNPedestalEvents = 0;
+  fMinPeds = 500; 		// In engine, this is set in parameter file
+  fPosPedSum = new Int_t [fNelem];
+  fPosPedSum2 = new Int_t [fNelem];
+  fPosPedLimit = new Int_t [fNelem];
+  fPosPedCount = new Int_t [fNelem];
+  fNegPedSum = new Int_t [fNelem];
+  fNegPedSum2 = new Int_t [fNelem];
+  fNegPedLimit = new Int_t [fNelem];
+  fNegPedCount = new Int_t [fNelem];
+
+  fPosPed = new Double_t [fNelem];
+  fNegPed = new Double_t [fNelem];
+  fPosThresh = new Double_t [fNelem];
+  fNegThresh = new Double_t [fNelem];
+  for(Int_t i=0;i<fNelem;i++) {
+    fPosPedSum[i] = 0;
+    fPosPedSum2[i] = 0;
+    fPosPedLimit[i] = 1000;	// In engine, this are set in parameter file
+    fPosPedCount[i] = 0;
+    fNegPedSum[i] = 0;
+    fNegPedSum2[i] = 0;
+    fNegPedLimit[i] = 1000;	// In engine, this are set in parameter file
+    fNegPedCount[i] = 0;
+  }
+}
+
+//_____________________________________________________________________________
+void THcAerogel::AccumulatePedestals(TClonesArray* rawhits)
+{
+  // Extract data from the hit list, accumulating into arrays for
+  // calculating pedestals
+
+  Int_t nrawhits = rawhits->GetLast()+1;
+
+  Int_t ihit = 0;
+  while(ihit < nrawhits) {
+    THcAerogelHit* hit = (THcAerogelHit *) rawhits->At(ihit);
+
+    Int_t element = hit->fCounter - 1;
+    Int_t adcpos = hit->fADC_pos;
+    Int_t adcneg = hit->fADC_pos;
+    if(adcpos <= fPosPedLimit[element]) {
+      fPosPedSum[element] += adcpos;
+      fPosPedSum2[element] += adcpos*adcpos;
+      fPosPedCount[element]++;
+      if(fPosPedCount[element] == fMinPeds/5) {
+	fPosPedLimit[element] = 100 + fPosPedSum[element]/fPosPedCount[element];
+      }
+    }
+    if(adcneg <= fNegPedLimit[element]) {
+      fNegPedSum[element] += adcneg;
+      fNegPedSum2[element] += adcneg*adcneg;
+      fNegPedCount[element]++;
+      if(fNegPedCount[element] == fMinPeds/5) {
+	fNegPedLimit[element] = 100 + fNegPedSum[element]/fNegPedCount[element];
+      }
+    }
+    ihit++;
+  }
+
+  fNPedestalEvents++;
+
+  return;
+}
+
+//_____________________________________________________________________________
+void THcAerogel::CalculatePedestals( )
+{
+  // Use the accumulated pedestal data to calculate pedestals
+  // Later add check to see if pedestals have drifted ("Danger Will Robinson!")
+  //  cout << "Plane: " << fPlaneNum << endl;
+  for(Int_t i=0; i<fNelem;i++) {
+    
+    // Positive tubes
+    fPosPed[i] = ((Double_t) fPosPedSum[i]) / TMath::Max(1, fPosPedCount[i]);
+    fPosThresh[i] = fPosPed[i] + 15;
+
+    // Negative tubes
+    fNegPed[i] = ((Double_t) fNegPedSum[i]) / TMath::Max(1, fNegPedCount[i]);
+    fNegThresh[i] = fNegPed[i] + 15;
+
+    //    cout << i+1 << " " << fPosPed[i] << " " << fNegPed[i] << endl;
+  }
+  //  cout << " " << endl;
+  
+}
 
 
 ClassImp(THcAerogel)
