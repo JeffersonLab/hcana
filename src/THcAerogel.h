@@ -41,6 +41,13 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   Double_t* fPosGain;
   Double_t* fNegGain;
 
+  // Hits
+  TClonesArray* fPosTDCHits;
+  TClonesArray* fNegTDCHits;
+  TClonesArray* fPosADCHits;
+  TClonesArray* fNegADCHits;
+
+  // Pedestals
   Int_t fNPedestalEvents;
   Int_t fMinPeds;
   Int_t *fPosPedSum;		/* Accumulators for pedestals */

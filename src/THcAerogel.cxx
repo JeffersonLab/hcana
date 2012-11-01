@@ -10,12 +10,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "THcAerogel.h"
+#include "TClonesArray.h"
+#include "THcSignalHit.h"
 #include "THaEvData.h"
 #include "THaDetMap.h"
 #include "THcDetectorMap.h"
 #include "THcGlobals.h"
 #include "THaCutList.h"
 #include "THcParmList.h"
+#include "THcHitList.h"
 #include "VarDef.h"
 #include "VarType.h"
 #include "THaTrack.h"
@@ -36,7 +39,12 @@ THcAerogel::THcAerogel( const char* name, const char* description,
 				  THaApparatus* apparatus ) :
   THaNonTrackingDetector(name,description,apparatus)
 {
-  // Constructor
+  // Normal constructor with name and description
+  fPosTDCHits = new TClonesArray("THcSignalHit",16);
+  fNegTDCHits = new TClonesArray("THcSignalHit",16);
+  fPosADCHits = new TClonesArray("THcSignalHit",16);
+  fNegADCHits = new TClonesArray("THcSignalHit",16);
+
 //  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
 }
 
@@ -48,30 +56,11 @@ THcAerogel::THcAerogel( ) :
 }
 
 //_____________________________________________________________________________
-void THcAerogel::Setup(const char* name, const char* description)
-{
-
-
-  // Do we need this for the Aerogel?  It is just one plane.
-
-  //  static const char* const here = "Setup()";
-  //  static const char* const message = 
-  //    "Must construct %s detector with valid name! Object construction failed.";
-
-  cout << "In THcAerogel::Setup()" << endl;
-  // Base class constructor failed?
-  if( IsZombie()) return;
-
-  fDebug   = 1;  // Keep this at one while we're working on the code    
-}
-
-//_____________________________________________________________________________
 THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
 {
   static const char* const here = "Init()";
 
   cout << "THcAerogel::Init " << GetName() << endl;
-  Setup(GetName(), GetTitle());
 
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
@@ -159,8 +148,11 @@ Int_t THcAerogel::DefineVariables( EMode mode )
 inline 
 void THcAerogel::Clear(Option_t* opt)
 {
-  // Reset per-event data.
-  // fTrackProj->Clear();
+  // Clears the hit lists
+  fPosTDCHits->Clear();
+  fNegTDCHits->Clear();
+  fPosADCHits->Clear();
+  fNegADCHits->Clear();
 }
 
 //_____________________________________________________________________________
@@ -184,7 +176,47 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
     fAnalyzePedestals = 0;	// Don't analyze pedestals next event
   }
 
-  return nhits;
+  Int_t nPosTDCHits=0;
+  Int_t nNegTDCHits=0;
+  Int_t nPosADCHits=0;
+  Int_t nNegADCHits=0;
+  fPosTDCHits->Clear();
+  fNegTDCHits->Clear();
+  fPosADCHits->Clear();
+  fNegADCHits->Clear();
+
+
+  Int_t ihit = 0;
+  while(ihit < nhits) {
+    THcAerogelHit* hit = (THcAerogelHit *) fRawHitList->At(ihit);
+    
+   // TDC positive hit
+    if(hit->fTDC_pos >  0) {
+      THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
+      sighit->Set(hit->fCounter, hit->fTDC_pos);
+    }
+
+    // TDC negative hit
+    if(hit->fTDC_neg >  0) {
+      THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
+      sighit->Set(hit->fCounter, hit->fTDC_neg);
+    }
+
+    // ADC positive hit
+    if(hit->fADC_pos >  0) {
+      THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
+      sighit->Set(hit->fCounter, hit->fADC_pos);
+    }
+
+    // ADC negative hit
+    if(hit->fADC_neg >  0) {   
+      THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
+      sighit->Set(hit->fCounter, hit->fADC_neg);
+    }
+
+    ihit++;
+  }
+  return ihit;
 }
 
 //_____________________________________________________________________________

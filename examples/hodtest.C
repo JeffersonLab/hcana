@@ -35,6 +35,7 @@
   HMS->AddDetector( new THcHodoscope("hod", "Hodoscope" ));
   HMS->AddDetector( new THcShower("Cal", "Shower" ));
   HMS->AddDetector( new THcDriftChamber("dc", "Drift Chambers" ));
+  HMS->AddDetector( new THcAerogel("aero", "Aerogel Cerenkov" ));
 
   // Set up the analyzer - we use the standard one,
   // but this could be an experiment-specific one as well.
