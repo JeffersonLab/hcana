@@ -59,10 +59,6 @@ TClonesArray* fPosADC[13];
   TClonesArray* fPosADCHits;
   TClonesArray* fNegADCHits;
 
-  TClass* fPosADCHitsClass;
-  TClass* fNegADCHitsClass;
-  TClass* fPosADC1Class;
-
   FILE* CalADC1File;
 
   Int_t fLayerNum;

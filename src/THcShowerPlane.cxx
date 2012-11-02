@@ -36,12 +36,7 @@ THcShowerPlane::THcShowerPlane( const char* name,
   // Normal constructor with name and description
   fPosADCHits = new TClonesArray("THcSignalHit",13);
   fNegADCHits = new TClonesArray("THcSignalHit",13);
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,32,0)
-  fPosADCHitsClass = fPosADCHits->GetClass();
-  fNegADCHitsClass = fNegADCHits->GetClass();
-#endif
   fPosADC1 = new TClonesArray("THcSignalHit",13);
-  fPosADCHitsClass = fPosADC1->GetClass();
 
   fLayerNum = layernum;
 }
@@ -278,16 +273,8 @@ CalADC1File = fopen("adc1_new.dat", "a");
     }
 
 if(hit->fCounter == 1){
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
 THcSignalHit *sighit1 = (THcSignalHit*) fPosADC1->ConstructedAt(nPosADCHits++);
 
-#else
-	TObject* obj = (*fPosADC1)[nPosADCHits++];
-	R__ASSERT( obj );
-        if(!obj->TestBit (TObject::kNotDeleted))
-	fPosADCHitsClass->New(obj);
-	THcSignalHit *sighit1 = (THcSignalHit*)obj;
-#endif
 //THcSignalHit *sighit1 = (THcSignalHit*) fA[1]->ConstructedAt(nPosADCHits++);
  sighit1->Set(1,(Int_t)(hit->fADC_pos - 470.7));
 //fprintf(CalADC1File, "%d\n", hit->fADC_pos);
@@ -296,16 +283,7 @@ THcSignalHit *sighit1 = (THcSignalHit*) fPosADC1->ConstructedAt(nPosADCHits++);
 double thresh_pos = fPosThresh[hit->fCounter -1];
 //double thresh_pos = hcal_new_threshold_pos[hit->fCounter + 13*(hit->fPlane -1) -1];
 if(hit->fADC_pos >  thresh_pos) {
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
 	THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
-
-#else
-	TObject* obj = (*fPosADCHits)[nPosADCHits++];
-	R__ASSERT( obj );
-if(!obj->TestBit (TObject::kNotDeleted))
-	fPosADCHitsClass->New(obj);
-	THcSignalHit *sighit = (THcSignalHit*)obj;
-#endif
 
    sighit->Set(hit->fCounter, hit->fADC_pos);
 }
@@ -313,16 +291,7 @@ if(!obj->TestBit (TObject::kNotDeleted))
 double thresh_neg = fNegThresh[hit->fCounter -1];
 //double thresh_neg = hcal_new_threshold_neg[hit->fCounter + 13*(hit->fPlane -1) -1];
 if(hit->fADC_neg >  thresh_neg) {
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
 	THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
-	sighit->Set(hit->fCounter, hit->fADC_neg);
-#else
-	TObject* obj = (*fNegADCHits)[nNegADCHits++];
-	R__ASSERT( obj );
-if(!obj->TestBit (TObject::kNotDeleted))
-	fNegADCHitsClass->New(obj);
-	THcSignalHit *sighit = (THcSignalHit*)obj;
-#endif
    sighit->Set(hit->fCounter, hit->fADC_neg);
 }
 
