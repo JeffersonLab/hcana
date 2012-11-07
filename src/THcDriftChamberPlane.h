@@ -44,8 +44,6 @@ class THcDriftChamberPlane : public THaSubDetector {
 
   TClonesArray* fTDCHits;
 
-  TClass* fTDCHitsClass;
-
   Int_t fPlaneNum;
 
   virtual Int_t  ReadDatabase( const TDatime& date );

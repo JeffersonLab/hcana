@@ -33,9 +33,6 @@ THcDriftChamberPlane::THcDriftChamberPlane( const char* name,
 {
   // Normal constructor with name and description
   fTDCHits = new TClonesArray("THcSignalHit",100);
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,32,0)
-  fTDCHitsClass = fTDCHits->GetClass();
-#endif
   fPlaneNum = planenum;
 }
 
@@ -154,15 +151,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
     // Just put in the first hit for now
     if(hit->fNHits > 0) {	// Should always be the case
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)      
       THcSignalHit *sighit = (THcSignalHit*) fTDCHits->ConstructedAt(nTDCHits++);
-#else
-      TObject* obj = (*fTDCHits)[nTDCHits++];
-      R__ASSERT( obj );
-      if(!obj->TestBit (TObject::kNotDeleted))
-	fTDCHitsClass->New(obj);
-      THcSignalHit *sighit = (THcSignalHit*)obj;
-#endif
       sighit->Set(hit->fCounter, hit->fTDC[0]);
     }
     ihit++;

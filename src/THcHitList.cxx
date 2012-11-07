@@ -37,15 +37,7 @@ void THcHitList::InitHitList(THaDetMap* detmap,
   fNMaxRawHits = maxhits;
   fNRawHits = 0;
   for(Int_t i=0;i<maxhits;i++) {
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
     fRawHitList->ConstructedAt(i);
-#else
-  // The essence of the ConstructedAt code explictly
-    TObject* obj = (*fRawHitList)[i];
-    R__ASSERT( obj );  // should never happen ...
-    if( !obj->TestBit(TObject::kNotDeleted) )
-      fRawHitClass->New(obj);
-#endif
   }
   
   fdMap = detmap;

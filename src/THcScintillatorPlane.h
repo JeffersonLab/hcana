@@ -49,11 +49,6 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* fPosADCHits;
   TClonesArray* fNegADCHits;
 
-  TClass* fPosTDCHitsClass;
-  TClass* fNegTDCHitsClass;
-  TClass* fPosADCHitsClass;
-  TClass* fNegADCHitsClass;
-  
   Int_t fPlaneNum;		/* Which plane am I 1-4 */
   Int_t fNelem;			/* Need since we don't inherit from 
 				 detector base class */

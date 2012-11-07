@@ -57,6 +57,16 @@ endif
 INCDIRS  = $(wildcard $(addprefix $(ANALYZER)/, include src hana_decode hana_scaler)), $(shell pwd)/src
 
 #------------------------------------------------------------------------------
+# Check that root version is new enough (>= 5.32) by requiring
+# root-config --svn-revision to be >= 43166
+
+GOODROOTVERSION := $(shell expr `root-config --svn-revision` \>= 43166)
+
+ifneq ($(GOODROOTVERSION),1)
+  $(error ROOT version 5.32 or later required)
+endif
+
+#------------------------------------------------------------------------------
 # Do not change anything  below here unless you know what you are doing
 
 ifeq ($(strip $(INCDIRS)),)

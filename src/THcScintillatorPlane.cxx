@@ -36,12 +36,6 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fNegTDCHits = new TClonesArray("THcSignalHit",16);
   fPosADCHits = new TClonesArray("THcSignalHit",16);
   fNegADCHits = new TClonesArray("THcSignalHit",16);
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,32,0)
-  fPosTDCHitsClass = fPosTDCHits->GetClass();
-  fNegTDCHitsClass = fNegTDCHits->GetClass();
-  fPosADCHitsClass = fPosADCHits->GetClass();
-  fNegADCHitsClass = fNegADCHits->GetClass();
-#endif
   fPlaneNum = planenum;
 }
 
@@ -216,60 +210,27 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     // TDC positive hit
     if(hit->fTDC_pos >  0) {
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
       THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
-#else
-      TObject* obj = (*fPosTDCHits)[nPosTDCHits++];
-      R__ASSERT( obj );
-      if(!obj->TestBit (TObject::kNotDeleted))
-	fPosTDCHitsClass->New(obj);
-      THcSignalHit *sighit = (THcSignalHit*)obj;
-#endif
       sighit->Set(hit->fCounter, hit->fTDC_pos);
     }
 
     // TDC negative hit
     if(hit->fTDC_neg >  0) {
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
       THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
-#else
-
-      TObject* obj = (*fNegTDCHits)[nNegTDCHits++];
-      R__ASSERT( obj );
-      if(!obj->TestBit (TObject::kNotDeleted))
-	fNegTDCHitsClass->New(obj);
-      THcSignalHit *sighit = (THcSignalHit*)obj;
-#endif
       sighit->Set(hit->fCounter, hit->fTDC_neg);
     }
 
     // ADC positive hit
     if(hit->fADC_pos >  0) {
       //     cout <<"adc pos hit!!\n";
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
       THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
-#else
-      TObject* obj = (*fPosADCHits)[nPosADCHits++];
-      R__ASSERT( obj );
-      if(!obj->TestBit (TObject::kNotDeleted))
-	fPosADCHitsClass->New(obj);
-      THcSignalHit *sighit = (THcSignalHit*)obj;
-#endif
       sighit->Set(hit->fCounter, hit->fADC_pos);
     }
 
     // ADC negative hit
     if(hit->fADC_neg >  0) {   
       // cout <<"adc neg hit!!\n";
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
       THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
-#else
-      TObject* obj = (*fNegADCHits)[nNegADCHits++];
-      R__ASSERT( obj );
-      if(!obj->TestBit (TObject::kNotDeleted))
-	fNegADCHitsClass->New(obj);
-      THcSignalHit *sighit = (THcSignalHit*)obj;
-#endif
       sighit->Set(hit->fCounter, hit->fADC_neg);
     }
 
