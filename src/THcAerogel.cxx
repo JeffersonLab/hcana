@@ -101,12 +101,16 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fNegGain = new Double_t[fNelem];
   fPosPedLimit = new Int_t[fNelem];
   fNegPedLimit = new Int_t[fNelem];
+  fPosPedMean = new Double_t[fNelem];
+  fNegPedMean = new Double_t[fNelem];
 
   DBRequest list[]={
     {"aero_pos_gain", fPosGain, kDouble},
     {"aero_neg_gain", fPosGain, kDouble},
     {"aero_pos_ped_limit", fPosPedLimit, kInt},
     {"aero_neg_ped_limit", fNegPedLimit, kInt},
+    {"aero_pos_ped_mean", fPosPedMean, kDouble},
+    {"aero_neg_ped_mean", fNegPedMean, kDouble},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
@@ -130,6 +134,10 @@ Int_t THcAerogel::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
   
   // Register variables in global list
+
+  // Do we need to put the number of pos/neg TDC/ADC hits into the variables?
+  // No.  They show up in tree as Ndata.H.aero.postdchits for example
+
   RVarDef vars[] = {
     {"postdchits", "List of Positive TDC hits", 
      "fPosTDCHits.THcSignalHit.GetPaddleNumber()"},
@@ -139,6 +147,14 @@ Int_t THcAerogel::DefineVariables( EMode mode )
      "fPosADCHits.THcSignalHit.GetPaddleNumber()"},
     {"negadchits", "List of Negative ADC hits", 
      "fNegADCHits.THcSignalHit.GetPaddleNumber()"},
+    {"pos_npe","PEs Positive Tube","fPosNpe"},
+    {"neg_npe","PEs PE Negative Tube","fNegNpe"},
+    {"pos_npe_sum", "Total Positive Tube PEs", "fPosNpeSum"},
+    {"neg_npe_sum", "Total Negative Tube PEs", "fNegNpeSum"},
+    {"npe_sum", "Total PEs", ""},
+    {"ntdc_pos_hits", "Number of Positive Tube Hits", "fNTDCPosHits"},
+    {"ntdc_neg_hits", "Number of Negative Tube Hits", "fNTDCNegHits"},
+    {"ngood_hits", "Total number of good hits", "fNGoodHits"},
     { 0 }
   };
 
@@ -148,18 +164,39 @@ Int_t THcAerogel::DefineVariables( EMode mode )
 inline 
 void THcAerogel::Clear(Option_t* opt)
 {
-  // Clears the hit lists
+  // Clear the hit lists
   fPosTDCHits->Clear();
   fNegTDCHits->Clear();
   fPosADCHits->Clear();
   fNegADCHits->Clear();
+
+  // Clear Aerogel variables  from h_aero.f
+  
+  fNhits = 0;	     // Don't really need to do this.  (Be sure this called before Decode)
+
+  fPosNpeSum = 0.0;
+  fNegNpeSum = 0.0;
+  fNpeSum = 0.0;
+ 
+  fNGoodHits = 0;
+    
+  fNADCPosHits = 0;
+  fNADCNegHits = 0;
+  fNTDCPosHits = 0;
+  fNTDCNegHits = 0;
+
+  for(Int_t itube = 0;itube < fNelem;itube++) {
+    fPosNpe[itube] = 0.0;
+    fNegNpe[itube] = 0.0;
+  }
+
 }
 
 //_____________________________________________________________________________
 Int_t THcAerogel::Decode( const THaEvData& evdata )
 {
   // Get the Hall C style hitlist (fRawHitList) for this event
-  Int_t nhits = THcHitList::DecodeToHitList(evdata);
+  fNhits = THcHitList::DecodeToHitList(evdata);
 
   if(gHaCuts->Result("Pedestal_event")) {
 
@@ -176,18 +213,13 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
     fAnalyzePedestals = 0;	// Don't analyze pedestals next event
   }
 
+
+  Int_t ihit = 0;
   Int_t nPosTDCHits=0;
   Int_t nNegTDCHits=0;
   Int_t nPosADCHits=0;
   Int_t nNegADCHits=0;
-  fPosTDCHits->Clear();
-  fNegTDCHits->Clear();
-  fPosADCHits->Clear();
-  fNegADCHits->Clear();
-
-
-  Int_t ihit = 0;
-  while(ihit < nhits) {
+  while(ihit < fNhits) {
     THcAerogelHit* hit = (THcAerogelHit *) fRawHitList->At(ihit);
     
    // TDC positive hit
@@ -229,6 +261,94 @@ Int_t THcAerogel::ApplyCorrections( void )
 Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
 {
   
+  for(Int_t ihit=0; ihit < fNhits; ihit++) {
+    THcAerogelHit* hit = (THcAerogelHit *) fRawHitList->At(ihit);
+
+    // Pedestal subtraction and gain adjustment
+
+    // An ADC value of less than zero occurs when that particular
+    // channel has been sparsified away and has not been read. 
+    // The NPE for that tube will be assigned zero by this code.
+    // An ADC value of greater than 8192 occurs when the ADC overflows on
+    // an input that is too large. Tubes with this characteristic will
+    // be assigned NPE = 100.0.
+
+    Int_t npmt = hit->fCounter - 1;
+
+    if(hit->fADC_pos < 8000) {
+      fPosNpe[npmt] = fPosGain[npmt]*(hit->fADC_pos - fPosPedMean[npmt]);
+    } else {
+      fPosNpe[npmt] = 100.0;
+    }
+
+    if(hit->fADC_neg < 8000) {
+      fNegNpe[npmt] = fNegGain[npmt]*(hit->fADC_neg - fNegPedMean[npmt]);
+    } else {
+      fNegNpe[npmt] = 100.0;
+    }
+
+    fPosNpeSum += fPosNpe[npmt];
+    fNegNpeSum += fNegNpe[npmt];
+
+    // Sum positive and negative hits to fill tot_good_hits
+    if(fPosNpe[npmt] > 0.3) {
+      fNADCPosHits++;
+      fNGoodHits++;
+    }
+    if(fNegNpe[npmt] > 0.3) {
+      fNADCNegHits++;
+      fNGoodHits++;
+    }
+    if(hit->fTDC_pos > 0 && hit->fTDC_pos < 8000) {
+      fNTDCPosHits++;
+    }
+    if(hit->fTDC_neg > 0 && hit->fTDC_neg < 8000) {
+      fNTDCNegHits++;
+    }      
+
+    // Fill raw adc variables with actual tubve values
+    // mainly for diagnostic purposes
+    
+
+
+  }
+      
+  if(fPosNpeSum > 0.5 || fNegNpeSum > 0.5) {
+    fNpeSum = fPosNpeSum + fNegNpeSum;
+  } else {
+    fNpeSum = 0.0;
+  }
+
+  // If total hits are 0, then give a noticable ridiculous NPE
+  if(fNhits < 1) {
+    fNpeSum = 0.0;
+  }
+
+  // The following code is in the fortran.  It probably doesn't work
+  // right because the arrays are not cleared first and the aero_ep,
+  // aero_en, ... lines make no sense.
+
+  //* Next, fill the rawadc variables with the actual tube values
+  //*       mainly for diagnostic purposes.
+  //
+  //      do ihit=1,haero_tot_hits
+  //
+  //         npmt=haero_pair_num(ihit)
+  //
+  //         haero_rawadc_pos(npmt)=haero_adc_pos(ihit)
+  //         aero_ep(npmt)=haero_rawadc_pos(ihit)        
+  //
+  //         haero_rawadc_neg(npmt)=haero_adc_neg(ihit)
+  //         aero_en(npmt)=haero_rawadc_neg(ihit)
+  //
+  //         haero_rawtdc_neg(npmt)=haero_tdc_neg(ihit)
+  //         aero_tn(npmt)= haero_tdc_neg(ihit)
+  //
+  //         haero_rawtdc_pos(npmt)=haero_tdc_pos(ihit)
+  //         aero_tp(npmt)= haero_tdc_pos(ihit)
+  //
+  //      enddo
+
   ApplyCorrections();
 
   return 0;
@@ -269,6 +389,9 @@ void THcAerogel::InitializePedestals( )
     fNegPedLimit[i] = 1000;	// In engine, this are set in parameter file
     fNegPedCount[i] = 0;
   }
+
+  fPosNpe = new Double_t [fNelem];
+  fNegNpe = new Double_t [fNelem];
 }
 
 //_____________________________________________________________________________
@@ -327,11 +450,36 @@ void THcAerogel::CalculatePedestals( )
     fNegThresh[i] = fNegPed[i] + 15;
 
     //    cout << i+1 << " " << fPosPed[i] << " " << fNegPed[i] << endl;
+
+    // Just a copy for now, but allow the possibility that fXXXPedMean is set
+    // in a parameter file and only overwritten if there is a sufficient number of
+    // pedestal events.  (So that pedestals are sensible even if the pedestal events were
+    // not acquired.)
+    if(fMinPeds > 0) {
+      if(fPosPedCount[i] > fMinPeds) {
+	fPosPedMean[i] = fPosPed[i];
+      }
+      if(fNegPedCount[i] > fMinPeds) {
+	fNegPedMean[i] = fNegPed[i];
+      }
+    }
   }
   //  cout << " " << endl;
   
 }
+void THcAerogel::Print( const Option_t* opt) const {
+  THaNonTrackingDetector::Print(opt);
 
+  // Print out the pedestals
+
+  cout << endl;
+  cout << "Aerogel Pedestals" << endl;
+  cout << "No.   Neg    Pos" << endl;
+  for(Int_t i=0; i<fNelem; i++){
+    cout << " " << i << "    " << fNegPed[i] << "    " << fPosPed[i] << endl;
+  }
+  cout << endl;
+}
 
 ClassImp(THcAerogel)
 ////////////////////////////////////////////////////////////////////////////////

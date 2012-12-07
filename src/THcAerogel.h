@@ -27,11 +27,12 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   virtual Int_t      CoarseProcess( TClonesArray& tracks );
   virtual Int_t      FineProcess( TClonesArray& tracks );
 
-  
   virtual void AccumulatePedestals(TClonesArray* rawhits);
   virtual void CalculatePedestals();
 
   virtual Int_t      ApplyCorrections( void );
+
+  virtual void Print(const Option_t* opt) const;
 
   THcAerogel();  // for ROOT I/O		
  protected:
@@ -40,6 +41,20 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   // Parameters
   Double_t* fPosGain;
   Double_t* fNegGain;
+
+  // Event information
+  Int_t fNhits;
+  Double_t fPosNpeSum;
+  Double_t fNegNpeSum;
+  Double_t fNpeSum;
+  Int_t fNGoodHits;
+  Int_t fNADCPosHits;
+  Int_t fNADCNegHits;
+  Int_t fNTDCPosHits;
+  Int_t fNTDCNegHits;
+
+  Double_t* fPosNpe;
+  Double_t* fNegNpe;
 
   // Hits
   TClonesArray* fPosTDCHits;
@@ -66,6 +81,9 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   Double_t *fNegSig;
   Double_t *fNegThresh;
 
+  Double_t *fPosPedMean; 	/* Can be supplied in parameters and then */
+  Double_t *fNegPedMean;	/* be overwritten from ped analysis */
+  
   void Setup(const char* name, const char* description);
   virtual void  InitializePedestals( );
 
