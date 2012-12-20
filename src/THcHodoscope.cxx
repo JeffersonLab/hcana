@@ -29,6 +29,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -65,17 +66,26 @@ void THcHodoscope::Setup(const char* name, const char* description)
   if( IsZombie()) return;
 
   fDebug   = 1;  // Keep this at one while we're working on the code    
-  fNPlanes = 4;  // Should get this from parameters
+  // reading the number of planes from a param list! Still kludgy but it works
+  system("rm tmp.txt; cat PARAM/hhodo.param |grep hhodo_slop|wc -w>tmp.txt");
+  ifstream tmpfile;
+  tmpfile.open("tmp.txt");
+  tmpfile >> fNPlanes;
+  tmpfile.close();
+  fNPlanes = fNPlanes-2;
+  cout << "fNPlanes = " << fNPlanes << endl;
+  //  fNPlanes = 4;  // Should get this from parameters -> Now we do! GN
 
+  // Plane names
   fPlaneNames = new char* [fNPlanes];
   for(Int_t i=0;i<fNPlanes;i++) {fPlaneNames[i] = new char[3];}
   // Should get the plane names from parameters.  
+  // could try this: grep _zpos PARAM/hhodo.pos | sed 's/\_/\ /g' | awk '{print $2}'
   strcpy(fPlaneNames[0],"1x");  
   strcpy(fPlaneNames[1],"1y");
   strcpy(fPlaneNames[2],"2x");
   strcpy(fPlaneNames[3],"2y");
 
-  cout << "fNPlanes = " << fNPlanes << endl;
   // Probably shouldn't assume that description is defined
   char* desc = new char[strlen(description)+50];
   fPlanes = new THcScintillatorPlane* [fNPlanes];
@@ -83,8 +93,8 @@ void THcHodoscope::Setup(const char* name, const char* description)
     strcpy(desc, description);
     strcat(desc, " Plane ");
     strcat(desc, fPlaneNames[i]);
-
-    fPlanes[i] = new THcScintillatorPlane(fPlaneNames[i], desc, i+1, this); 
+    fPlanes[i] = new THcScintillatorPlane(fPlaneNames[i], desc, i+1,fNPlanes, this); 
+    //fPlanes[i] = new THcScintillatorPlane(fPlaneNames[i], desc, i+1, this); 
     cout << "Created Scintillator Plane " << fPlaneNames[i] << ", " << desc << endl;
   }
 }
@@ -292,8 +302,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   Int_t plen=strlen(parname);
 
   fNPaddle = new Int_t [fNPlanes];
-  fSpacing = new Double_t [fNPlanes];
-  fCenter = new Double_t* [fNPlanes];
+  //  fSpacing = new Double_t [fNPlanes];
+  //fCenter = new Double_t* [fNPlanes];
 
   // An alternate way to get these variables
   // Can add Xscin_P_center when LoadParmValues supports arrays
@@ -311,27 +321,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   }
 
-  for(Int_t i=0;i<fNPlanes;i++) {
-    fCenter[i] = new Double_t[fNPaddle[i]];
-    DBRequest list[]={
-      {Form("scin_%s_spacing",fPlaneNames[i]), &fSpacing[i], kDouble},
-      {Form("scin_%s_center",fPlaneNames[i]), fCenter[i], kDouble, fNPaddle[i]},
-      {0}
-    };
-    gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-  }
-
-  if(fDebug>=1) {
-    cout << "Plane: " << " nr spacing" << endl;
-    for(Int_t i=0;i<fNPlanes;i++) {
-      cout << fPlaneNames[i] << "      " << fNPaddle[i] << "  " << fSpacing[i] <<endl;
-      for(Int_t ip=0;ip<fNPaddle[i];ip++) {
-	cout << " " << fCenter[i][ip];
-      }
-      cout <<  endl;
-    }
-  }
-
+/*
 #if 0
   fCenter = new Double_t* [fNPlanes];
   for(Int_t i=0;i<fNPlanes;i++) {
@@ -349,11 +339,37 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     if (fDebug>=1)  cout << endl;
   }
 #endif
+*/
   // GN added
   // reading variables from *hodo.param
+  fMaxScinPerPlane=fNPaddle[0];
+  for (Int_t i=1;i<fNPlanes;i++) {
+    fMaxScinPerPlane=(fMaxScinPerPlane > fNPaddle[i])? fMaxScinPerPlane : fNPaddle[i];
+  }
+// need this for "padded arrays" i.e. 4x16 lists of parameters (GN)
+  fMaxHodoScin=fMaxScinPerPlane*fNPlanes; 
+  if (fDebug>=1)  cout <<"fMaxScinPerPlane = "<<fMaxScinPerPlane<<" fMaxHodoScin = "<<fMaxHodoScin<<endl;
+
+  Double_t fHodoVelLight[fMaxHodoScin];
+  Double_t fHodoPosSigma[fMaxHodoScin];
+  Double_t fHodoNegSigma[fMaxHodoScin];
+  Double_t fHodoPosMinPh[fMaxHodoScin];
+  Double_t fHodoNegMinPh[fMaxHodoScin];
+  Double_t fHodoPosPhcCoeff[fMaxHodoScin];
+  Double_t fHodoNegPhcCoeff[fMaxHodoScin];
+  Double_t fHodoPosTimeOffset[fMaxHodoScin];
+  Double_t fHodoNegTimeOffset[fMaxHodoScin];
+  Int_t fHodoPosPedLimit[fMaxHodoScin];
+  Int_t fHodoNegPedLimit[fMaxHodoScin];
+  Int_t fTofUsingInvAdc;
+  Double_t fHodoPosInvAdcOffset[fMaxHodoScin];
+  Double_t fHodoNegInvAdcOffset[fMaxHodoScin];
+  Double_t fHodoPosInvAdcLinear[fMaxHodoScin];
+  Double_t fHodoNegInvAdcLinear[fMaxHodoScin];
+  Double_t fHodoPosInvAdcAdc[fMaxHodoScin];
+  Double_t fHodoNegInvAdcAdc[fMaxHodoScin];
+
   prefix[1]='\0';
-
-
   DBRequest list[]={
     {"start_time_center", &fStartTimeCenter, kDouble},
     {"start_time_slop", &fStartTimeSlop, kDouble},
@@ -361,66 +377,47 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"scin_tdc_min", &fScinTdcMin, kDouble},
     {"scin_tdc_max", &fScinTdcMax, kDouble},
     {"tof_tolerance", &fTofTolerance, kDouble},
+    {"pathlength_central", &fPathLengthCentral, kDouble},
+    {"hodo_vel_light",&fHodoVelLight[0],kDouble,fMaxHodoScin},
+    {"hodo_pos_sigma",&fHodoPosSigma[0],kDouble,fMaxHodoScin},
+    {"hodo_neg_sigma",&fHodoNegSigma[0],kDouble,fMaxHodoScin},
+    {"hodo_pos_minph",&fHodoPosMinPh[0],kDouble,fMaxHodoScin},
+    {"hodo_neg_minph",&fHodoNegMinPh[0],kDouble,fMaxHodoScin},
+    {"hodo_pos_phc_coeff",&fHodoPosPhcCoeff[0],kDouble,fMaxHodoScin},
+    {"hodo_neg_phc_coeff",&fHodoNegPhcCoeff[0],kDouble,fMaxHodoScin},
+    {"hodo_pos_time_offset",&fHodoPosTimeOffset[0],kDouble,fMaxHodoScin},
+    {"hodo_neg_time_offset",&fHodoNegTimeOffset[0],kDouble,fMaxHodoScin},
+    {"hodo_pos_ped_limit",&fHodoPosPedLimit[0],kInt,fMaxHodoScin},
+    {"hodo_neg_ped_limit",&fHodoNegPedLimit[0],kInt,fMaxHodoScin},
+    {"tofusinginvadc",&fTofUsingInvAdc,kInt},
+    {"hodo_pos_invadc_offset",&fHodoPosInvAdcOffset[0],kDouble,fMaxHodoScin},
+    {"hodo_neg_invadc_offset",&fHodoNegInvAdcOffset[0],kDouble,fMaxHodoScin},
+    {"hodo_pos_invadc_linear",&fHodoPosInvAdcLinear[0],kDouble,fMaxHodoScin},
+    {"hodo_neg_invadc_linear",&fHodoNegInvAdcLinear[0],kDouble,fMaxHodoScin},
+    {"hodo_pos_invadc_adc",&fHodoPosInvAdcAdc[0],kDouble,fMaxHodoScin},
+    {"hodo_neg_invadc_adc",&fHodoNegInvAdcAdc[0],kDouble,fMaxHodoScin},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-  cout <<"******* Testing *** "<<fStartTimeCenter<<" "<<fStartTimeSlop;
-  cout <<" "<<fScinTdcToTime;
-  cout <<" "<<fScinTdcMin;
-  cout <<" "<<fScinTdcMax;
-  cout <<" "<<fTofTolerance;
-  cout <<endl<<endl;
-  //  fStartTimeCenter=DefineDoubleVariable("start_time_center");
-  //  fStartTimeSlop=DefineDoubleVariable("start_time_slop");
-  //fScinTdcToTime=DefineDoubleVariable("scin_tdc_to_time");
-  //fScinTdcMin=DefineIntVariable("scin_tdc_min");
-  //fScinTdcMax=DefineIntVariable("scin_tdc_max");
-  //fTofTolerance=DefineDoubleVariable("tof_tolerance");
-  fHodoSlop = new Double_t [fNPlanes];
-  DefineArray("hodo_slop",fNPlanes, &fHodoSlop[0]);
-  /*  if (fDebug>=1) {
-    cout <<"testing hodo_slop ";
-    for(Int_t i=0;i<fNPlanes;i++) {
-      if (fDebug>=1)    cout << " " << fHodoSlop[i];
-    }
-    if (fDebug>=1)  cout << endl;
-   }
-  */
- 
-  /* try to read *hodo_vel_light
-     NOTE: for HMS these were assigned as a 4x16 array (so we need to pad the planes 
-     that have less than 16 paddles per
-  */
-  Int_t max_paddles=fNPaddle[0];
-  for (Int_t i=1;i<fNPlanes;i++) {
-    max_paddles=(max_paddles > fNPaddle[i])? max_paddles : fNPaddle[i];
-  }
-  cout <<"maxpaddles = "<<max_paddles<<endl;
-  fHodoVelLight = new Double_t* [max_paddles];
-  prefix[1]='\0';
-  strcpy(parname,prefix);
-  strcat(parname,"hodo_vel_light");
-  Int_t k=0;
-  if (gHcParms->Find(parname)) {
-    Double_t* p = (Double_t *)gHcParms->Find(parname)->GetValuePointer();
-    cout <<parname<<" ";
-    for(Int_t i=0;i<max_paddles;i++) {
-      fHodoVelLight[i] = new Double_t [fNPlanes];
-      for(Int_t j=0;j<fNPlanes;j++) {
-	//	cout <<"i = "<<i<<" j = "<<j;
-	fHodoVelLight[i][j] = p[k];
-	k++;
-	if (fDebug>=1)    cout << " " << fHodoVelLight[i][j]<<endl;
+  if (fDebug >=1) {
+    cout <<"******* Testing Hodoscope Parameter Reading ***\n";
+    cout<<"StarTimeCenter = "<<fStartTimeCenter<<endl;
+    cout<<"StartTimeSlop = "<<fStartTimeSlop<<endl;
+    cout <<"ScintTdcToTime = "<<fScinTdcToTime<<endl;
+    cout <<"TdcMin = "<<fScinTdcMin<<" TdcMax = "<<fScinTdcMax<<endl;
+    cout <<"TofTolerance = "<<fTofTolerance<<endl;
+    cout <<"*** VelLight ***\n";
+    for (int i1=1;i1<=fNPlanes;i1++) {
+      cout<<"Plane "<<i1<<endl;
+      for (int i2=0;i2<fMaxScinPerPlane;i2++) {
+	cout<<fHodoVelLight[GetScinIndex(i1,i2)]<<" ";
       }
-      if (fDebug>=1)  cout << endl;
+      cout <<endl;
     }
+ 
+    cout <<endl<<endl;
   }
-  else {
-    cout <<"Could not find "<<parname<<" in the DataBase!!!\n";
-  }
-
   fIsInit = true;
-
   return kOK;
 }
 
@@ -428,9 +425,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 Int_t THcHodoscope::DefineVariables( EMode mode )
 {
   // Initialize global variables and lookup table for decoder
-
   cout << "THcHodoscope::DefineVariables called " << GetName() << endl;
-
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
 
@@ -497,9 +492,9 @@ void THcHodoscope::DeleteArrays()
 {
   // Delete member arrays. Used by destructor.
 
-  delete [] fNPaddle;  fNPaddle = NULL;
-  delete [] fSpacing;  fSpacing = NULL;
-  delete [] fCenter;   fCenter = NULL; // This 2D. What is correct way to delete?
+  delete [] fNPaddle; fNPaddle = NULL;
+  //  delete [] fSpacing; fSpacing = NULL;
+  //delete [] fCenter;  fCenter = NULL; // This 2D. What is correct way to delete?
 
   //  delete [] fRA_c;    fRA_c    = NULL;
   //  delete [] fRA_p;    fRA_p    = NULL;
@@ -623,6 +618,20 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 
   return 0;
 }
-
+//_____________________________________________________________________________
+Int_t THcHodoscope::GetScinIndex( Int_t nPlane, Int_t nPaddle ) {
+  // Return the index of a scintillator given the plane # and the paddle #
+  // This assumes that planes start counting from 1
+  // and paddles start counting from 0! (not ideal but that's what I have for now)
+  return fNPlanes*nPaddle+nPlane-1;
+}
+//_____________________________________________________________________________
+Int_t THcHodoscope::GetScinIndex( Int_t nSide, Int_t nPlane, Int_t nPaddle ) {
+  return nSide*fMaxHodoScin+fNPlanes*nPaddle+nPlane-1;
+}
+//_____________________________________________________________________________
+Double_t THcHodoscope::GetPathLengthCentral() {
+  return fPathLengthCentral;
+}
 ClassImp(THcHodoscope)
 ////////////////////////////////////////////////////////////////////////////////
