@@ -63,6 +63,7 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
   Int_t nlines_read = 0, nparameters_read = 0;
   char varname[100];
   Int_t InRunRange;
+  Int_t currentindex = 0;
 
   varname[0] = '\0';
 
@@ -204,11 +205,11 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 
     // Interpret left of = as var name
     Int_t valuestartpos=0;  // Stays zero if no = found
-    Int_t existinglength=0;
     Int_t ttype = 0;     // Are any of the values floating point?
     if((pos=line.find_first_of("="))!=string::npos) {
       strcpy(varname, (line.substr(0,pos)).c_str());
       valuestartpos = pos+1;
+      currentindex = 0;
     }
 
     // If first char after = is a quote, then this is a string assignment
@@ -256,20 +257,43 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
       }
     }
 
-    if(valuestartpos==0) {	// We are adding to an existing array
-      // Copy out the array and delete the variable to be recreated
-      THaVar* existingvar=Find(varname); 
-      if(existingvar) {
-	string existingcomment;
-	existingcomment.assign(existingvar->GetTitle());
-	if(!existingcomment.empty()) {
-	  current_comment.assign(existingcomment);
-	}
-	existinglength=existingvar->GetLen();
-	Int_t existingtype=existingvar->GetType();
+    // New pseudo code
+    // currentindex = where next item goes
+    // nvals = number of new items on line
+    // newlength = curentindex+nvals
+
+    // if (variable already exists)   (valuestartpos is 0 or a find succeeded)
+    //       get existinglegnth
+    //       if (existinglength > newlength && type doesn't change) {
+    //            copy nvals values directly into array
+    //       else
+    //            make new longer array of length max(existinglength, newlength)
+    //            copy existinglength values into longer array changing type if needed
+    //            delete old varname
+    //            recreate varname of proper length
+    // else (variable doesn't exist)
+    //      make array of newlength
+    //      create varname
+    //  
+    // There is some code duplication here.  Refactor later
+
+    Int_t newlength = currentindex + nvals;
+    THaVar* existingvar=Find(varname);
+    if(existingvar) {
+      string existingcomment;
+      existingcomment.assign(existingvar->GetTitle());
+      if(!existingcomment.empty()) {
+	current_comment.assign(existingcomment);
+      }
+      Int_t existingtype=existingvar->GetType();
+      Int_t existinglength=existingvar->GetLen();
+      if(newlength > existinglength ||
+	 (existingtype == kInt && ttype > 0)) { // Length or type change needed
+	if(newlength < existinglength) newlength = existinglength;
+	Int_t newtype=-1;
 	if(ttype>0 || existingtype == kDouble) {
-	  ttype = 1;
-	  fp = new Double_t[nvals+existinglength];
+	  newtype = kDouble;
+	  fp = new Double_t[newlength];
 	  if(existingtype == kDouble) {
 	    Double_t* existingp= (Double_t*) existingvar->GetValuePointer();
 	    for(Int_t i=0;i<existinglength;i++) {
@@ -284,7 +308,8 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 	    cout << "Whoops!" << endl;
 	  }
 	} else if(existingtype == kInt) {	// Stays int
-	  ip = new Int_t[nvals+existinglength];
+	  newtype = kInt;
+	  ip = new Int_t[newlength];
 	  Int_t* existingp= (Int_t*) existingvar->GetValuePointer();
 	  for(Int_t i=0;i<existinglength;i++) {
 	    ip[i] = existingp[i];
@@ -292,47 +317,91 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 	} else {
 	  cout << "Whoops!" << endl;
 	}
-	RemoveName(varname);
-      }
-    }
-	
-    if(nvals > 0) {		// It's an array
-      // Type the array floating unless all are ints.  (if any variables
-      // or expressions, go floating)
-      // Allocate the array
-      if(existinglength==0) {
-	if(ttype==0) {
-	  ip = new Int_t[nvals];
-	} else {
-	  fp = new Double_t[nvals];
+	// Now copy new values in
+	for(Int_t i=0;i<nvals;i++) {
+	  TString valstr = ((TObjString *)vararr->At(i))->GetString();
+	  if(newtype == kInt) {
+	    ip[currentindex+i] = valstr.Atoi();
+	  } else {
+	    if(valstr.IsFloat()) {
+	      fp[currentindex+i] = valstr.Atof();
+	    } else {
+	      THaFormula* formula = new THaFormula("temp",valstr.Data()
+						   ,this, 0);
+	      fp[currentindex+i] = formula->Eval();
+	      delete formula;
+	    }
+	  }
 	}
+	currentindex += nvals;
+	// Remove old variable and recreate
+	RemoveName(varname);
+	char *arrayname=new char [strlen(varname)+20];
+	sprintf(arrayname,"%s[%d]",varname,newlength);
+	if(newtype == kInt) {
+	  Define(arrayname, current_comment.c_str(), *ip);
+	} else {
+	  Define(arrayname, current_comment.c_str(), *fp);
+	}
+	delete[] arrayname;
+      } else {
+	// Existing array long enough and of right type, just copy to it.
+	if(ttype == 0 && existingtype == kInt) {
+	  Int_t* existingp= (Int_t*) existingvar->GetValuePointer();
+	  for(Int_t i=0;i<nvals;i++) {
+	    TString valstr = ((TObjString *)vararr->At(i))->GetString();
+	    existingp[currentindex+i] = valstr.Atoi();
+	  }
+	} else {
+	  Double_t* existingp= (Double_t*) existingvar->GetValuePointer();
+	  for(Int_t i=0;i<nvals;i++) {
+	    TString valstr = ((TObjString *)vararr->At(i))->GetString();
+	    if(valstr.IsFloat()) {
+	      existingp[currentindex+i] = valstr.Atof();
+	    } else {
+	      THaFormula* formula = new THaFormula("temp",valstr.Data()
+						   ,this, 0);
+	      existingp[currentindex+i] = formula->Eval();
+	      delete formula;
+	    }
+	  }
+	}
+	currentindex += nvals;
+      }	
+    } else {
+      if(currentindex !=0) {
+	cout << "currentindex=" << currentindex << " shouldn't be!" << endl;
+      }
+      if(ttype==0) {
+	ip = new Int_t[nvals];
+      } else {
+	fp = new Double_t[nvals];
       }
       for(Int_t i=0;i<nvals;i++) {
 	TString valstr = ((TObjString *)vararr->At(i))->GetString();
 	if(ttype==0) {
-	  ip[existinglength+i] = valstr.Atoi();
+	  ip[i] = valstr.Atoi();
 	} else {
 	  if(valstr.IsFloat()) {
-	    fp[existinglength+i] = valstr.Atof();
+	    fp[i] = valstr.Atof();
 	  } else {
 	    THaFormula* formula = new THaFormula("temp",valstr.Data()
 						 ,this, 0);
-	    fp[existinglength+i] = formula->Eval();
+	    fp[i] = formula->Eval();
 	    delete formula;
 	  }
 	}
-	//	cout << i << " " << valstr << endl;;
       }
+      currentindex = nvals;
+      
       char *arrayname=new char [strlen(varname)+20];
-      sprintf(arrayname,"%s[%d]",varname,nvals+existinglength);
+      sprintf(arrayname,"%s[%d]",varname,nvals);
       if(ttype==0) {
 	Define(arrayname, current_comment.c_str(), *ip);
       } else {
 	Define(arrayname, current_comment.c_str(), *fp);
       }
       delete[] arrayname;
-    } else {
-      cout << "nvals is zero??  Maybe continued on next line" << endl;
     }
 
     //    cout << line << endl;
