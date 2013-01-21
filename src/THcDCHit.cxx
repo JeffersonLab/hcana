@@ -1,78 +1,66 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// THcDCHit                                                                  //
+// THcDCHit                                                                 //
 //                                                                           //
-// Class representing for drift chamber wire (or other device with           //
-//   a single multihit TDC channel per detector element                      //
+// Class representing a single hit for the VDC                               //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "THcDCHit.h"
+#include "THcDCTimeToDistConv.h"
 
-using namespace std;
-
-
-void THcDCHit::SetData(Int_t signal, Int_t data) {
-  fTDC[fNHits++] = data;
-}
-
-// Return just the first hit
-Int_t THcDCHit::GetData(Int_t signal) {
-  if(fNHits>0) {
-    return(fTDC[0]);
-  } else {
-    return(-1);
-  }
-}
-
-// Return a requested hit
-Int_t THcDCHit::GetData(Int_t signal, Int_t ihit) {
-  if(ihit >=0 && ihit< fNHits) {
-    return(fTDC[ihit]);
-  } else {
-    return(-1);
-  }
-}
-
-
-Int_t THcDCHit::Compare(const TObject* obj) const
-{
-  // Compare to sort by plane and counter
-  // Should we be able to move this into THcRawHit
-
-  const THcDCHit* hit = dynamic_cast<const THcDCHit*>(obj);
-
-  if(!hit) return -1;
-  Int_t p1 = fPlane;
-  Int_t p2 = hit->fPlane;
-  if(p1 < p2) return -1;
-  else if(p1 > p2) return 1;
-  else {
-    Int_t c1 = fCounter;
-    Int_t c2 = hit->fCounter;
-    if(c1 < c2) return -1;
-    else if (c1 == c2) return 0;
-    else return 1;
-  }
-}
-//_____________________________________________________________________________
-THcDCHit& THcDCHit::operator=( const THcDCHit& rhs )
-{
-  // Assignment operator.
-
-  THcRawHit::operator=(rhs);
-  if ( this != &rhs ) {
-    fPlane = rhs.fPlane;
-    fCounter = rhs.fCounter;
-    fNHits = rhs.fNHits;
-    for(Int_t ihit=0;ihit<fNHits;ihit++) {
-      fTDC[ihit] = rhs.fTDC[ihit];
-    }
-  }
-  return *this;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
 ClassImp(THcDCHit)
 
+const Double_t THcDCHit::kBig = 1.e38; // Arbitrary large value
+
+//_____________________________________________________________________________
+Double_t THcDCHit::ConvertTimeToDist(Double_t slope)
+{
+  // Converts TDC time to drift distance
+  // Takes the (estimated) slope of the track as an argument
+  
+  THcDCTimeToDistConv* ttdConv = (fWire) ? fWire->GetTTDConv() : NULL;
+  
+  if (ttdConv) {
+    // If a time to distance algorithm exists, use it to convert the TDC time 
+    // to the drift distance
+    fDist = ttdConv->ConvertTimeToDist(fTime, slope, &fdDist);
+    return fDist;
+  }
+  
+  Error("ConvertTimeToDist()", "No Time to dist algorithm available");
+  return 0.0;
+
+}
+
+//_____________________________________________________________________________
+Int_t THcDCHit::Compare( const TObject* obj ) const 
+{
+  // Used to sort hits
+  // A hit is "less than" another hit if it occurred on a lower wire number.
+  // Also, for hits on the same wire, the first hit on the wire (the one with
+  // the smallest time) is "less than" one with a higher time.  If the hits
+  // are sorted according to this scheme, they will be in order of increasing
+  // wire number and, for each wire, will be in the order in which they hit
+  // the wire
+
+  if( !obj || IsA() != obj->IsA() || !fWire )
+    return -1;
+
+  const THcDCHit* hit = static_cast<const THcDCHit*>( obj );
+ 
+  Int_t myWireNum = fWire->GetNum();
+  Int_t hitWireNum = hit->GetWire()->GetNum();
+  // Compare wire numbers
+  if (myWireNum < hitWireNum) return -1;
+  if (myWireNum > hitWireNum) return  1;
+  if (myWireNum == hitWireNum) {
+    // If wire numbers are the same, compare times
+    Double_t hitTime = hit->GetTime();
+    if (fTime < hitTime) return -1;
+    if (fTime > hitTime) return  1;
+  }
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////

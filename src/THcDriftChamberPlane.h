@@ -14,9 +14,14 @@
 
 #include "THaSubDetector.h"
 #include "TClonesArray.h"
+#include <cassert>
 
 class THaEvData;
-class THaSignalHit;
+class THcDCWire;
+class THcDCHit;
+class THcDCTimeToDistConv;
+
+/*class THaSignalHit;*/
 
 class THcDriftChamberPlane : public THaSubDetector {
   
@@ -36,18 +41,37 @@ class THcDriftChamberPlane : public THaSubDetector {
 
   virtual Int_t ProcessHits(TClonesArray* rawhits, Int_t nexthit);
 
-  Double_t fSpacing;
-
-  TClonesArray* fParentHitList;
+  // Get and Set functions
+  Int_t        GetNWires()   const { return fWires->GetLast()+1; }
+  THcDCWire*  GetWire(Int_t i) const
+  { assert( i>=1 && i<=GetNWires() );
+    return (THcDCWire*)fWires->UncheckedAt(i-1); }
 
  protected:
 
-  TClonesArray* fTDCHits;
+  TClonesArray* fParentHitList;
+
+  TClonesArray* fHits;
+  TClonesArray* fWires;
 
   Int_t fPlaneNum;
+  Int_t fNChamber;
+  Int_t fNWires;
+  Int_t fWireOrder;
+  Int_t fTdcWinMin;
+  Int_t fTdcWinMax;
+  Double_t fPitch;
+  Double_t fCentralWire;
+  Double_t fPlaneTimeZero;
+
+  Double_t fCenter;
+
+  Double_t fNSperChan;		/* TDC bin size */
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
+
+  THcDCTimeToDistConv* fTTDConv;  // Time-to-distance converter for this plane's wires
 
   ClassDef(THcDriftChamberPlane,0)
 };

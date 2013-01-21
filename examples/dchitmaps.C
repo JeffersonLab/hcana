@@ -1,7 +1,7 @@
  {
   TFile* f = new TFile("hodtest.root");
  
-  TCanvas *c1 = new TCanvas("c1", "Scintillator Hit Maps", 800, 800); 
+  TCanvas *c1 = new TCanvas("c1", "Drift Chamber Hit Maps", 800, 800); 
   c1->Divide(2, 6);
 
   TH1F* h[12];

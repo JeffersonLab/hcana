@@ -7,7 +7,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "THcDriftChamberPlane.h"
-#include "TClonesArray.h"
+#include "THcDCWire.h"
+#include "THcDCHit.h"
+#include "THcDCLookupTTDConv.h"
 #include "THcSignalHit.h"
 #include "THcGlobals.h"
 #include "THcParmList.h"
@@ -32,7 +34,9 @@ THcDriftChamberPlane::THcDriftChamberPlane( const char* name,
   : THaSubDetector(name,description,parent)
 {
   // Normal constructor with name and description
-  fTDCHits = new TClonesArray("THcSignalHit",100);
+  fHits = new TClonesArray("THcDCHit",100);
+  fWires = new TClonesArray("THcDCWire", 100);
+
   fPlaneNum = planenum;
 }
 
@@ -40,7 +44,9 @@ THcDriftChamberPlane::THcDriftChamberPlane( const char* name,
 THcDriftChamberPlane::~THcDriftChamberPlane()
 {
   // Destructor
-  delete fTDCHits;
+  delete fWires;
+  delete fHits;
+  delete fTTDConv;
 
 }
 THaAnalysisObject::EStatus THcDriftChamberPlane::Init( const TDatime& date )
@@ -78,6 +84,36 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   prefix[1]='\0';
 
   // Retrieve parameters we need
+  THcDriftChamber* fParent;
+
+  fParent = (THcDriftChamber*) GetParent();
+  // These are single variables here, but arrays in THcDriftChamber.
+  fNChamber = fParent->GetNChamber(fPlaneNum);
+  fNWires = fParent->GetNWires(fPlaneNum);
+  fWireOrder = fParent->GetWireOrder(fPlaneNum);
+  fPitch = fParent->GetPitch(fPlaneNum);
+  fCentralWire = fParent->GetCentralWire(fPlaneNum);
+  fTdcWinMin = fParent->GetTdcWinMin(fPlaneNum);
+  fTdcWinMax = fParent->GetTdcWinMax(fPlaneNum);
+  fPlaneTimeZero = fParent->GetPlaneTimeZero(fPlaneNum);
+  fCenter = fParent->GetCenter(fPlaneNum);
+
+  fNSperChan = fParent->GetNSperChan();
+
+  cout << fPlaneNum << " " << fNWires << endl;
+
+  fTTDConv = new THcDCLookupTTDConv();// Need to pass the lookup table
+
+  Int_t nWires = fParent->GetNWires(fPlaneNum);
+  // For HMS, wire numbers start with one, but arrays start with zero.
+  // So wire number is index+1
+  for (int i=0; i<nWires; i++) {
+    Double_t pos = fPitch*( (fWireOrder==0?(i+1):fNWires-i) 
+			    - fCentralWire) - fCenter;
+    THcDCWire* wire = new((*fWires)[i])
+      THcDCWire( i+1, pos , 0.0, fTTDConv);
+    //if( something < 0 ) wire->SetFlag(1);
+  }
 
   return kOK;
 }
@@ -94,7 +130,9 @@ Int_t THcDriftChamberPlane::DefineVariables( EMode mode )
   // Register variables in global list
   RVarDef vars[] = {
     {"tdchits", "List of TDC hits", 
-     "fTDCHits.THcSignalHit.GetPaddleNumber()"},
+     "fHits.THcDCHit.GetWireNum()"},
+    {"rawtdc", "Raw TDC Values", 
+     "fHits.THcDCHit.GetRawTime()"},
     { 0 }
   };
 
@@ -106,7 +144,7 @@ void THcDriftChamberPlane::Clear( Option_t* )
 {
   //cout << " Calling THcDriftChamberPlane::Clear " << GetName() << endl;
   // Clears the hit lists
-  fTDCHits->Clear();
+  fHits->Clear();
 }
 
 //_____________________________________________________________________________
@@ -137,22 +175,45 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   // Assumes that the hit list is sorted by plane, so we stop when the
   // plane doesn't agree and return the index for the next hit.
 
-  Int_t nTDCHits=0;
-  fTDCHits->Clear();
+  //Int_t nTDCHits=0;
+  fHits->Clear();
 
   Int_t nrawhits = rawhits->GetLast()+1;
   // cout << "THcDriftChamberPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
 
   Int_t ihit = nexthit;
+  Int_t nextHit = 0;
   while(ihit < nrawhits) {
-    THcDCHit* hit = (THcDCHit *) rawhits->At(ihit);
+    THcRawDCHit* hit = (THcRawDCHit *) rawhits->At(ihit);
     if(hit->fPlane > fPlaneNum) {
       break;
     }
-    // Just put in the first hit for now
-    if(hit->fNHits > 0) {	// Should always be the case
-      THcSignalHit *sighit = (THcSignalHit*) fTDCHits->ConstructedAt(nTDCHits++);
-      sighit->Set(hit->fCounter, hit->fTDC[0]);
+    Int_t wireNum = hit->fCounter;
+    THcDCWire* wire = GetWire(wireNum);
+    Int_t wire_last = -1;
+    for(Int_t mhit=0; mhit<hit->fNHits; mhit++) {
+      /* Sort into early, late and ontime */
+      Int_t rawtdc = hit->fTDC[mhit];
+      if(rawtdc < fTdcWinMin) {
+	// Increment early counter  (Actually late because TDC is backward)
+      } else if (rawtdc > fTdcWinMax) {
+	// Increment late count 
+      } else {
+	// A good hit
+	if(wire_last == wireNum) {
+	  // Increment extra hit counter 
+	  // Are we choosing the correct hit in the case of multiple hits?
+	  // Are we choose the same hit that ENGINE chooses?
+	  // cout << "Extra hit " << fPlaneNum << " " << wireNum << " " << rawtdc << endl;
+	} else {
+	  Double_t time = // -hstart_time (comes from h_trans_scin
+	    - rawtdc*fNSperChan + fPlaneTimeZero;
+	  // How do we get this start time from the hodoscope to here
+	  // (or at least have it ready by coarse process)
+	  new( (*fHits)[nextHit++] ) THcDCHit(wire, rawtdc, time);
+	}
+	wire_last = wireNum;
+      }
     }
     ihit++;
   }

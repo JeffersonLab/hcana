@@ -20,7 +20,11 @@
 #pragma link C++ class THcHodoscopeHit+;
 #pragma link C++ class THcDriftChamber+;
 #pragma link C++ class THcDriftChamberPlane+;
+#pragma link C++ class THcRawDCHit+;
 #pragma link C++ class THcDCHit+;
+#pragma link C++ class THcDCWire+;
+#pragma link C++ class THcDCLookupTTDConv+;
+#pragma link C++ class THcDCTimeToDistConv+;
 #pragma link C++ class THcShower+;
 #pragma link C++ class THcShowerPlane+;
 #pragma link C++ class THcShowerHit+;

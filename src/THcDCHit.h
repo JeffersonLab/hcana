@@ -1,37 +1,60 @@
 #ifndef ROOT_THcDCHit
 #define ROOT_THcDCHit
 
-#include "THcRawHit.h"
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// THcDCHit                                                                 //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 
-#define MAXHITS 16
+#include "TObject.h"
+#include "THcDCWire.h"
+#include <cstdio>
 
-class THcDCHit : public THcRawHit {
+class THcDCHit : public TObject {
 
- public:
-
- THcDCHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
-    fNHits(0) {
-  }
-  THcDCHit& operator=( const THcDCHit& );
+public:
+  THcDCHit( THcDCWire* wire=NULL, Int_t rawtime=0, Double_t time=0.0 ) : 
+    fWire(wire), fRawTime(rawtime), fTime(time), fDist(0.0), ftrDist(kBig) {}
   virtual ~THcDCHit() {}
 
-  virtual void Clear( Option_t* opt="" ) { fNHits=0; }
+  virtual Double_t ConvertTimeToDist(Double_t slope);
+  Int_t  Compare ( const TObject* obj ) const;
+  Bool_t IsSortable () const { return kTRUE; }
+  
+  // Get and Set Functions
+  THcDCWire* GetWire() const { return fWire; }
+  Int_t    GetWireNum() const { return fWire->GetNum(); }
+  Int_t    GetRawTime() const { return fRawTime; }
+  Double_t GetTime()    const { return fTime; }
+  Double_t GetDist()    const { return fDist; }
+  Double_t GetPos()     const { return fWire->GetPos(); } //Position of hit wire
+  Double_t GetdDist()   const { return fdDist; }
 
-  void SetData(Int_t signal, Int_t data);
-  Int_t GetData(Int_t signal);
-  Int_t GetData(Int_t signal, Int_t ihit);
-
-  virtual Bool_t  IsSortable () const {return kTRUE; }
-  virtual Int_t   Compare(const TObject* obj) const;
-
-  Int_t fNHits;
-  Int_t fTDC[MAXHITS];
-
- protected:
-
+  void     SetWire(THcDCWire * wire) { fWire = wire; }
+  void     SetRawTime(Int_t time)     { fRawTime = time; }
+  void     SetTime(Double_t time)     { fTime = time; }
+  void     SetDist(Double_t dist)     { fDist = dist; }
+  void     SetdDist(Double_t ddist)   { fdDist = ddist; }
+  void     SetFitDist(Double_t dist)  { ftrDist = dist; }
+  
+protected:
+  static const Double_t kBig;  //!
+  
+  THcDCWire* fWire;     // Wire on which the hit occurred
+  Int_t       fRawTime;  // TDC value (channels)
+  Double_t    fTime;     // Time corrected for time offset of wire (s)
+  Double_t    fDist;     // (Perpendicular) Drift Distance
+  Double_t    fdDist;    // uncertainty in fDist (for chi2 calc)
+  Double_t    ftrDist;   // (Perpendicular) distance from the track
+  
  private:
+  THcDCHit( const THcDCHit& );
+  THcDCHit& operator=( const THcDCHit& );
+  
+  ClassDef(THcDCHit,2)             // VDCHit class
+};
 
-  ClassDef(THcDCHit, 0);	// DC hit class
-};  
+////////////////////////////////////////////////////////////////////////////////
 
 #endif

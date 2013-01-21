@@ -62,12 +62,14 @@ void THcDriftChamber::Setup(const char* name, const char* description)
 
   DBRequest list[]={
     {"dc_num_planes",&fNPlanes, kInt},
-    {"dc_num_chambers",&fNChambers, kDouble},
+    {"dc_num_chambers",&fNChambers, kInt},
+    {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
+    {"dc_wire_velocity",&fWireVelocity,kDouble},
     {0}
   };
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-  
+
   cout << "Drift Chambers: " <<  fNPlanes << " planes in " << fNChambers << " chambers" << endl;
 
   fPlaneNames = new char* [fNPlanes];
@@ -105,7 +107,7 @@ THaAnalysisObject::EStatus THcDriftChamber::Init( const TDatime& date )
   
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
-  THcHitList::InitHitList(fDetMap, "THcDCHit", 1000);
+  THcHitList::InitHitList(fDetMap, "THcRawDCHit", 1000);
 
   EStatus status;
   // This triggers call of ReadDatabase and DefineVariables
@@ -169,9 +171,48 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
 
   prefix[1]='\0';
 
+  fXCenter = new Double_t [fNChambers];
+  fYCenter = new Double_t [fNChambers];
+
+  fTdcWinMin = new Int_t [fNPlanes];
+  fTdcWinMax = new Int_t [fNPlanes];
+  fCentralTime = new Int_t [fNPlanes];
   fNWires = new Int_t [fNPlanes];
+  fNChamber = new Int_t [fNPlanes]; // Which chamber is this plane
+  fWireOrder = new Int_t [fNPlanes]; // Wire readout order
+  fDriftTimeSign = new Int_t [fNPlanes];
+
+  fZPos = new Double_t [fNPlanes];
+  fAlphaAngle = new Double_t [fNPlanes];
+  fBetaAngle = new Double_t [fNPlanes];
+  fGammaAngle = new Double_t [fNPlanes];
+  fPitch = new Double_t [fNPlanes];
+  fCentralWire = new Double_t [fNPlanes];
+  fPlaneTimeZero = new Double_t [fNPlanes];
+
+
   DBRequest list[]={
-    {"dc_nrwire",fNWires, kInt, fNPlanes},
+    {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
+    {"dc_wire_velocity",&fWireVelocity,kDouble},
+
+    {"dc_xcenter", fXCenter, kDouble, fNChambers},
+    {"dc_ycenter", fYCenter, kDouble, fNChambers},
+
+    {"dc_tdc_min_win", fTdcWinMin, kInt, fNPlanes},
+    {"dc_tdc_max_win", fTdcWinMax, kInt, fNPlanes},
+    {"dc_central_time", fCentralTime, kInt, fNPlanes},
+    {"dc_nrwire", fNWires, kInt, fNPlanes},
+    {"dc_chamber_planes", fNChamber, kInt, fNPlanes},
+    {"dc_wire_counting", fWireOrder, kInt, fNPlanes},
+    {"dc_drifttime_sign", fDriftTimeSign, kInt, fNPlanes},
+
+    {"dc_zpos", fZPos, kDouble, fNPlanes},
+    {"dc_alpha_angle", fAlphaAngle, kDouble, fNPlanes},
+    {"dc_beta_angle", fBetaAngle, kDouble, fNPlanes},
+    {"dc_gamma_angle", fGammaAngle, kDouble, fNPlanes},
+    {"dc_pitch", fPitch, kDouble, fNPlanes},
+    {"dc_central_wire", fCentralWire, kDouble, fNPlanes},
+    {"dc_plane_time_zero", fPlaneTimeZero, kDouble, fNPlanes},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
@@ -306,9 +347,9 @@ Int_t THcDriftChamber::Decode( const THaEvData& evdata )
   }
 
 #if 0
-  // fRawHitList is TClones array of THcDCHit objects
+  // fRawHitList is TClones array of THcRawDCHit objects
   for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
-    THcDCHit* hit = (THcDCHit *) fRawHitList->At(ihit);
+    THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
     //    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
     //	 << endl;
     for(Int_t imhit = 0; imhit < hit->fNHits; imhit++) {
