@@ -37,6 +37,23 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fPosADCHits = new TClonesArray("THcSignalHit",16);
   fNegADCHits = new TClonesArray("THcSignalHit",16);
   fPlaneNum = planenum;
+  fTotPlanes = planenum;
+}
+//______________________________________________________________________________
+THcScintillatorPlane::THcScintillatorPlane( const char* name, 
+					    const char* description,
+					    const Int_t planenum,
+					    const Int_t totplanes,
+					    THaDetectorBase* parent )
+  : THaSubDetector(name,description,parent)
+{
+  // Normal constructor with name and description
+  fPosTDCHits = new TClonesArray("THcSignalHit",16);
+  fNegTDCHits = new TClonesArray("THcSignalHit",16);
+  fPosADCHits = new TClonesArray("THcSignalHit",16);
+  fNegADCHits = new TClonesArray("THcSignalHit",16);
+  fPlaneNum = planenum;
+  fTotPlanes = totplanes;
 }
 
 //______________________________________________________________________________
@@ -88,7 +105,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   prefix[0]=tolower(GetParent()->GetPrefix()[0]);
   prefix[1]='\0';
 
-  strcpy(parname,prefix);
+  /*  strcpy(parname,prefix);
   strcat(parname,"scin_");
   strcat(parname,GetName());
   Int_t plen=strlen(parname);
@@ -101,10 +118,72 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   strcat(parname,"_spacing");
 
   fSpacing =  gHcParms->Find(parname)->GetValue(0);
-  
+  cout <<"fSpacing = "<<fSpacing<<endl;
+  */
+
+  // need this further down so read them first! GN
+  strcpy(parname,prefix);
+  strcat(parname,"scin_");
+  strcat(parname,GetName());
+  Int_t plen=strlen(parname);
+  strcat(parname,"_nr");
+  fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+  //
+  char *tmpleft, *tmpright;
+  if (fPlaneNum==1 || fPlaneNum==3) {
+    tmpleft="left";
+    tmpright="right";
+  } 
+  else {
+    tmpleft="top";
+    tmpright="bot";
+  }
+
+  Double_t tmpdouble[fTotPlanes];
+    DBRequest list[]={
+     {Form("scin_%s_zpos",GetName()), &fZpos, kDouble},
+     {Form("scin_%s_dzpos",GetName()), &fDzpos, kDouble},
+     {Form("scin_%s_size",GetName()), &fSize, kDouble},
+     {Form("scin_%s_spacing",GetName()), &fSpacing, kDouble},
+     {Form("scin_%s_%s",GetName(),tmpleft), &fPosLeft,kDouble},
+     {Form("scin_%s_%s",GetName(),tmpright), &fPosRight,kDouble},
+     {Form("scin_%s_offset",GetName()), &fPosOffset, kDouble},
+     {Form("scin_%s_center",GetName()), &fPosCenter[0],kDouble,fNelem},
+     // this is from Xhodo.param...
+          {"hodo_slop",&tmpdouble[0],kDouble,fTotPlanes},
+     {0}
+    };
+   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+   // fetch the parameter from the temporary list
+   fHodoSlop=tmpdouble[fPlaneNum-1];
+   cout <<" plane num = "<<fPlaneNum<<endl;
+   cout <<" nelem     = "<<fNelem<<endl;
+   cout <<" zpos      = "<<fZpos<<endl;
+   cout <<" dzpos     = "<<fDzpos<<endl;
+   cout <<" spacing   = "<<fSpacing<<endl;
+   cout <<" size      = "<<fSize<<endl;
+   cout <<" hodoslop  = "<<fHodoSlop<<endl;
+   cout <<"PosLeft = "<<fPosLeft<<endl;
+   cout <<"PosRight = "<<fPosRight<<endl;
+   cout <<"PosOffset = "<<fPosOffset<<endl;
+   cout <<"PosCenter[0] = "<<fPosCenter[0]<<endl;
+
+
+  /* for(Int_t i=0;i<fNPlanes;i++) {
+    fCenter[i] = new Double_t[fNPaddle[i]];
+    DBRequest list[]={
+      {Form("scin_%s_spacing",fPlaneNames[i]), &fSpacing[i], kDouble},
+      {Form("scin_%s_center",fPlaneNames[i]), fCenter[i], kDouble, fNPaddle[i]},
+      {0}
+    };
+    gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  }
+  */
+  ///  Int_t tmpint = new Int_t [GetParent()->GetNPlanes()]; 
+  /// cout<<"Nplanes in scintplane!! = "<<fTotPlanes <<endl;
+
   // First letter of GetParent()->GetPrefix() tells us what prefix to
   // use on parameter names.  
-
 
   //  Find the number of elements
   
@@ -333,4 +412,53 @@ void THcScintillatorPlane::InitializePedestals( )
     fNegPedCount[i] = 0;
   }
 }
+//____________________________________________________________________________
+Int_t THcScintillatorPlane::GetNelem() 
+{
+  return fNelem;
+}
+//____________________________________________________________________________
+Double_t THcScintillatorPlane::GetSpacing()
+{
+  return fSpacing;
+}
+//____________________________________________________________________________
+Double_t THcScintillatorPlane::GetSize()
+{
+  return fSize;
+}
+//____________________________________________________________________________
+Double_t THcScintillatorPlane::GetHodoSlop()
+{
+  return fHodoSlop;
+}
+//____________________________________________________________________________
+Double_t THcScintillatorPlane::GetZpos()
+{
+  return fZpos;
+}
+//____________________________________________________________________________
+Double_t THcScintillatorPlane::GetDzpos()
+{
+  return fDzpos;
+}
+//____________________________________________________________________________
+Double_t THcScintillatorPlane::GetPosLeft() {
+  return fPosLeft;
+}
+//____________________________________________________________________________
+Double_t THcScintillatorPlane::GetPosRight() {
+  return fPosRight;
+}
+//____________________________________________________________________________
+Double_t THcScintillatorPlane::GetPosOffset() {
+  return fPosOffset;
+}
+//____________________________________________________________________________
+Double_t THcScintillatorPlane::GetPosCenter(Int_t PaddleNo) {
+  return fPosCenter[PaddleNo];
+}
+//____________________________________________________________________________
+ClassImp(THcScintillatorPlane)
+////////////////////////////////////////////////////////////////////////////////
 

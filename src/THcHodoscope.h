@@ -32,7 +32,10 @@ public:
   virtual Int_t      ApplyCorrections( void );
 
   //  Int_t GetNHits() const { return fNhit; }
-  
+  Int_t GetScinIndex(Int_t nPlane, Int_t nPaddle);
+  Int_t GetScinIndex(Int_t nSide, Int_t nPlane, Int_t nPaddle);
+  Double_t GetPathLengthCentral();
+
   Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
   
@@ -49,19 +52,33 @@ protected:
 
 
   // Potential Hall C parameters.  Mostly here for demonstration
-  Int_t fNPlanes;
+  Int_t fNPlanes,fMaxScinPerPlane,fMaxHodoScin; // number of planes; max number of scin/plane; product of the first two 
   Double_t fStartTimeCenter, fStartTimeSlop, fScinTdcToTime;
   Double_t fTofTolerance;
+  Double_t fPathLengthCentral;
   Int_t fScinTdcMin, fScinTdcMax; // min and max TDC values
-  Double_t* fHodoSlop;
-  Double_t** fHodoVelLight;
-  Double_t** fHodoPosSigma;
-  Double_t** fHodoNegSigma;
-
   char** fPlaneNames;
   Int_t* fNPaddle;		// Number of paddles per plane
-  Double_t* fSpacing;		// Paddle spacing in cm
-  Double_t** fCenter;           // Center position of each paddle
+
+  Double_t* fHodoVelLight;
+  Double_t* fHodoPosSigma;
+  Double_t* fHodoNegSigma;
+
+  Double_t* fHodoPosMinPh;
+  Double_t* fHodoNegMinPh;
+  Double_t* fHodoPosPhcCoeff;
+  Double_t* fHodoNegPhcCoeff;
+  Double_t* fHodoPosTimeOffset;
+  Double_t* fHodoNegTimeOffset;
+  Int_t* fHodoPosPedLimit;
+  Int_t* fHodoNegPedLimit;
+  Int_t fTofUsingInvAdc;
+  Double_t* fHodoPosInvAdcOffset;
+  Double_t* fHodoNegInvAdcOffset;
+  Double_t* fHodoPosInvAdcLinear;
+  Double_t* fHodoNegInvAdcLinear;
+  Double_t* fHodoPosInvAdcAdc;
+  Double_t* fHodoNegInvAdcAdc;
 
   THcScintillatorPlane** fPlanes; // List of plane objects
 

@@ -23,6 +23,8 @@ class THcScintillatorPlane : public THaSubDetector {
  public:
   THcScintillatorPlane( const char* name, const char* description,
 			Int_t planenum, THaDetectorBase* parent = NULL);
+  THcScintillatorPlane( const char* name, const char* description,
+			Int_t planenum, Int_t totplanes, THaDetectorBase* parent = NULL);
   virtual ~THcScintillatorPlane();
 
   virtual void    Clear( Option_t* opt="" );
@@ -38,7 +40,16 @@ class THcScintillatorPlane : public THaSubDetector {
   virtual Int_t AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit);
   virtual void  CalculatePedestals( );
 
-  Double_t fSpacing;
+  Int_t GetNelem(); // return number of paddles in this plane
+  Double_t GetSpacing(); // return the spacing of paddles 
+  Double_t GetSize();    // return paddle size
+  Double_t GetHodoSlop(); // return the hodo slop
+  Double_t GetZpos();   //return the z position
+  Double_t GetDzpos();
+  Double_t GetPosLeft();
+  Double_t GetPosRight();
+  Double_t GetPosOffset();
+  Double_t GetPosCenter(Int_t PaddleNo); // here we're counting from zero!
 
   TClonesArray* fParentHitList;
 
@@ -50,8 +61,20 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* fNegADCHits;
 
   Int_t fPlaneNum;		/* Which plane am I 1-4 */
+  Int_t fTotPlanes;              /* so we can read variables that are not indexed by plane id */
   Int_t fNelem;			/* Need since we don't inherit from 
 				 detector base class */
+  Double_t fSpacing;            /* paddle spacing */
+  Double_t fSize;               /* paddle size */
+  Double_t fZpos;                /* z position */
+  Double_t fDzpos;
+  Double_t fHodoSlop;           /* max allowed slop for this plane */
+  Double_t fPosLeft;            /* NOTE: "left" = "top" for a Y scintillator */
+  Double_t fPosRight;           /* NOTE: "right" = "bottom" for a Y scintillator */
+  Double_t fPosOffset;
+  Double_t fPosCenter[16];         /* array with centers for all scintillators in the plane */
+
+  /* Pedestal Quantities */
   Int_t fNPedestalEvents;	/* Number of pedestal events */
   Int_t fMinPeds;		/* Only analyze/update if num events > */
   Int_t *fPosPedSum;		/* Accumulators for pedestals */
