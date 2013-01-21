@@ -17,6 +17,10 @@
 
   gHcParms->Load(gHcParms->GetString("g_ctp_parm_filename"));
 
+  // Constants not in ENGINE PARAM files that we want to be
+  // configurable
+  gHcParms->Load("PARAM/hcana.param");
+
   // Generate db_cratemap to correspond to map file contents
   char command[100];
   sprintf(command,"./make_cratemap.pl < %s > db_cratemap.dat",gHcParms->GetString("g_decode_map_filename"));

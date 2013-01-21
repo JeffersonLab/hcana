@@ -66,16 +66,19 @@ void THcHodoscope::Setup(const char* name, const char* description)
   if( IsZombie()) return;
 
   fDebug   = 1;  // Keep this at one while we're working on the code    
-  // reading the number of planes from a param list! Still kludgy but it works
-  system("rm tmp.txt; cat PARAM/hhodo.param |grep hhodo_slop|wc -w>tmp.txt");
-  ifstream tmpfile;
-  tmpfile.open("tmp.txt");
-  tmpfile >> fNPlanes;
-  tmpfile.close();
-  fNPlanes = fNPlanes-2;
-  cout << "fNPlanes = " << fNPlanes << endl;
-  //  fNPlanes = 4;  // Should get this from parameters -> Now we do! GN
 
+  char prefix[2];
+
+  prefix[0]=tolower(GetApparatus()->GetName()[0]);
+  prefix[1]='\0';
+
+  DBRequest listextra[]={
+    {"hodo_num_planes", &fNPlanes, kInt},
+    {0}
+  };
+  fNPlanes = 4; 		// Default if not defined
+  gHcParms->LoadParmValues((DBRequest*)&listextra,prefix);
+  
   // Plane names
   fPlaneNames = new char* [fNPlanes];
   for(Int_t i=0;i<fNPlanes;i++) {fPlaneNames[i] = new char[3];}

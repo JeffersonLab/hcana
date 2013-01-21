@@ -87,15 +87,19 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   // This function is called by THaDetectorBase::Init() once at the beginning
   // of the analysis.
 
+  cout << "THcAerogel::ReadDatabase " << GetName() << endl;
+
   char prefix[2];
-  // Pull values from THcParmList instead
 
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
 
-  fNelem = 8;// Number of tube pairs  // The ENGINE style parameter files don't define
-                                // this.  Probably need an additional parameter file
-                                // that contains these fixed parameters.
+  DBRequest listextra[]={
+    {"aero_num_pairs", &fNelem, kInt},
+    {0}
+  };
+  fNelem = 8;			// Default if not defined
+  gHcParms->LoadParmValues((DBRequest*)&listextra,prefix);
 
   fPosGain = new Double_t[fNelem];
   fNegGain = new Double_t[fNelem];

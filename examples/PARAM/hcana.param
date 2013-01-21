@@ -1,0 +1,10 @@
+;
+; Parameters that were built into Fortran analyzer that we want
+; to pass as parameters so that the resulting code can be more generic.
+;
+
+hhodo_num_planes = 4
+
+hshower_num_layers = 4
+
+haero_num_pairs = 8
