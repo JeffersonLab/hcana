@@ -558,7 +558,10 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   // Let each plane get its hits
   Int_t nexthit = 0;
   for(Int_t ip=0;ip<fNPlanes;ip++) {
-    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
+    //    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
+    // GN: select only events that have reasonable TDC values to start with
+    // as per the Engine h_strip_scin.f
+    nexthit = fPlanes[ip]->ProcessHits(fRawHitList,fScinTdcMin,fScinTdcMax,nexthit);
   }
 
   // fRawHitList is TClones array of THcHodoscopeHit objects
@@ -589,7 +592,7 @@ Double_t THcHodoscope::TimeWalkCorrection(const Int_t& paddle,
 }
 
 //_____________________________________________________________________________
-Int_t THcHodoscope::CoarseProcess( TClonesArray& /* tracks */ )
+Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 {
   // Calculation of coordinates of particle track cross point with scint
   // plane in the detector coordinate system. For this, parameters of track 
@@ -598,7 +601,11 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& /* tracks */ )
   // Apply corrections and reconstruct the complete hits.
   //
   //  static const Double_t sqrt2 = TMath::Sqrt(2.);
-  
+  /*  cout <<"**** in THcHodoscope CoarseProcess ********\n";  
+  for(Int_t i=0;i<fNPlanes;i++) {
+    cout<<i<<" ";
+    fPlanes[i]->CoarseProcess(tracks);
+    }*/
   ApplyCorrections();
 
   return 0;
