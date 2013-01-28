@@ -168,7 +168,6 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
    cout <<"PosOffset = "<<fPosOffset<<endl;
    cout <<"PosCenter[0] = "<<fPosCenter[0]<<endl;
 
-
   /* for(Int_t i=0;i<fNPlanes;i++) {
     fCenter[i] = new Double_t[fNPaddle[i]];
     DBRequest list[]={
@@ -250,6 +249,9 @@ Int_t THcScintillatorPlane::Decode( const THaEvData& evdata )
 Int_t THcScintillatorPlane::CoarseProcess( TClonesArray& tracks )
 {
  
+  cout <<"*******************************\n";
+  cout <<"NOW IN THcScintilatorPlane::CoarseProcess!!!!\n";
+  cout <<"*******************************\n";
   //  HitCount();
 
  return 0;
@@ -313,6 +315,64 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       sighit->Set(hit->fCounter, hit->fADC_neg);
     }
 
+    ihit++;
+  }
+  return(ihit);
+}
+
+//_____________________________________________________________________________
+Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Double_t mintdc, Double_t maxtdc,Int_t nexthit)
+{
+  // Extract the data for this plane from hit list
+  // Assumes that the hit list is sorted by plane, so we stop when the
+  // plane doesn't agree and return the index for the next hit.
+  // GN: Select only events that have at least one of their TDC signals in the
+  // right range. 
+  // NOTE: 01/24/2013: Not quite subtracting pedestals for now! Also subtract the pedestals from the adc signal
+
+  Int_t nPosTDCHits=0;
+  Int_t nNegTDCHits=0;
+  Int_t nPosADCHits=0;
+  Int_t nNegADCHits=0;
+  fPosTDCHits->Clear();
+  fNegTDCHits->Clear();
+  fPosADCHits->Clear();
+  fNegADCHits->Clear();
+
+  Int_t nrawhits = rawhits->GetLast()+1;
+  // cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
+
+  Int_t ihit = nexthit;
+  while(ihit < nrawhits) {
+    THcHodoscopeHit* hit = (THcHodoscopeHit *) rawhits->At(ihit);
+    if(hit->fPlane > fPlaneNum) {
+      break;
+    }
+
+    // check TDC values
+    if (((hit->fTDC_pos >= mintdc) && (hit->fTDC_pos <= maxtdc)) ||
+	((hit->fTDC_neg >= mintdc) && (hit->fTDC_neg <= maxtdc))) {
+      //TDC positive hit
+      THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
+      sighit->Set(hit->fCounter, hit->fTDC_pos);
+      // TDC negative hit
+      THcSignalHit *sighit2 = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
+      sighit2->Set(hit->fCounter, hit->fTDC_neg);
+      // ADC positive hit
+      if(hit->fADC_pos >  0) {
+	THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
+	sighit->Set(hit->fCounter, hit->fADC_pos);
+      }
+      // ADC negative hit
+      if(hit->fADC_neg >  0) {   
+	// cout <<"adc neg hit!!\n";
+	THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
+	sighit->Set(hit->fCounter, hit->fADC_neg);
+      }
+      else {
+	cout <<"skipping BAD tdc event\n";
+      }
+    }
     ihit++;
   }
   return(ihit);
