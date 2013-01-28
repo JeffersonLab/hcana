@@ -575,6 +575,8 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   cout << endl;
 #endif
 
+  fStartTime = 500;		// Drift Chamber will need this
+
   return nhits;
 }
 

@@ -32,6 +32,7 @@ public:
   virtual Int_t      ApplyCorrections( void );
 
   //  Int_t GetNHits() const { return fNhit; }
+  Double_t GetStartTime() const { return fStartTime; }
   Int_t GetScinIndex(Int_t nPlane, Int_t nPaddle);
   Int_t GetScinIndex(Int_t nSide, Int_t nPlane, Int_t nPaddle);
   Double_t GetPathLengthCentral();
@@ -50,7 +51,8 @@ protected:
 
   // Per-event data
 
-
+  Double_t fStartTime;
+  
   // Potential Hall C parameters.  Mostly here for demonstration
   Int_t fNPlanes,fMaxScinPerPlane,fMaxHodoScin; // number of planes; max number of scin/plane; product of the first two 
   Double_t fStartTimeCenter, fStartTimeSlop, fScinTdcToTime;

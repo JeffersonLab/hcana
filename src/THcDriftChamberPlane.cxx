@@ -15,6 +15,7 @@
 #include "THcParmList.h"
 #include "THcHitList.h"
 #include "THcDriftChamber.h"
+#include "THcHodoscope.h"
 #include "TClass.h"
 
 #include <cstring>
@@ -115,6 +116,14 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
     //if( something < 0 ) wire->SetFlag(1);
   }
 
+  THaApparatus* app = GetApparatus();
+  const char* nm = "hod";
+  if(  !app || 
+      !(fglHod = dynamic_cast<THcHodoscope*>(app->GetDetector(nm))) ) {
+    Warning(Here(here),"Hodoscope \"%s\" not found. "
+	    "Event-by-event time offsets will NOT be used!!",nm);
+  }
+
   return kOK;
 }
 //_____________________________________________________________________________
@@ -175,6 +184,12 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   // Assumes that the hit list is sorted by plane, so we stop when the
   // plane doesn't agree and return the index for the next hit.
 
+  Double_t StartTime = 0.0;
+  // Would be nice to have a way to determine that the hodoscope decode was
+  // actually called for this event.
+  if( fglHod ) StartTime = fglHod->GetStartTime();
+  cout << "Start time " << StartTime << endl;
+
   //Int_t nTDCHits=0;
   fHits->Clear();
 
@@ -206,7 +221,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	  // Are we choose the same hit that ENGINE chooses?
 	  // cout << "Extra hit " << fPlaneNum << " " << wireNum << " " << rawtdc << endl;
 	} else {
-	  Double_t time = // -hstart_time (comes from h_trans_scin
+	  Double_t time = -StartTime   // (comes from h_trans_scin
 	    - rawtdc*fNSperChan + fPlaneTimeZero;
 	  // How do we get this start time from the hodoscope to here
 	  // (or at least have it ready by coarse process)
