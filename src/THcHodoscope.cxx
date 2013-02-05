@@ -349,26 +349,25 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 // need this for "padded arrays" i.e. 4x16 lists of parameters (GN)
   fMaxHodoScin=fMaxScinPerPlane*fNPlanes; 
   if (fDebug>=1)  cout <<"fMaxScinPerPlane = "<<fMaxScinPerPlane<<" fMaxHodoScin = "<<fMaxHodoScin<<endl;
-
-  Double_t fHodoVelLight[fMaxHodoScin];
-  Double_t fHodoPosSigma[fMaxHodoScin];
-  Double_t fHodoNegSigma[fMaxHodoScin];
-  Double_t fHodoPosMinPh[fMaxHodoScin];
-  Double_t fHodoNegMinPh[fMaxHodoScin];
-  Double_t fHodoPosPhcCoeff[fMaxHodoScin];
-  Double_t fHodoNegPhcCoeff[fMaxHodoScin];
-  Double_t fHodoPosTimeOffset[fMaxHodoScin];
-  Double_t fHodoNegTimeOffset[fMaxHodoScin];
-  Int_t fHodoPosPedLimit[fMaxHodoScin];
-  Int_t fHodoNegPedLimit[fMaxHodoScin];
-  Int_t fTofUsingInvAdc;
-  Double_t fHodoPosInvAdcOffset[fMaxHodoScin];
-  Double_t fHodoNegInvAdcOffset[fMaxHodoScin];
-  Double_t fHodoPosInvAdcLinear[fMaxHodoScin];
-  Double_t fHodoNegInvAdcLinear[fMaxHodoScin];
-  Double_t fHodoPosInvAdcAdc[fMaxHodoScin];
-  Double_t fHodoNegInvAdcAdc[fMaxHodoScin];
-
+  
+  fHodoVelLight=new Double_t [fMaxHodoScin];
+  fHodoPosSigma=new Double_t [fMaxHodoScin];
+  fHodoNegSigma=new Double_t [fMaxHodoScin];
+  fHodoPosMinPh=new Double_t [fMaxHodoScin];
+  fHodoNegMinPh=new Double_t [fMaxHodoScin];
+  fHodoPosPhcCoeff=new Double_t [fMaxHodoScin];
+  fHodoNegPhcCoeff=new Double_t [fMaxHodoScin];
+  fHodoPosTimeOffset=new Double_t [fMaxHodoScin];
+  fHodoNegTimeOffset=new Double_t [fMaxHodoScin];
+  fHodoPosPedLimit=new Int_t [fMaxHodoScin];
+  fHodoNegPedLimit=new Int_t [fMaxHodoScin];
+  fHodoPosInvAdcOffset=new Double_t [fMaxHodoScin];
+  fHodoNegInvAdcOffset=new Double_t [fMaxHodoScin];
+  fHodoPosInvAdcLinear=new Double_t [fMaxHodoScin];
+  fHodoNegInvAdcLinear=new Double_t [fMaxHodoScin];
+  fHodoPosInvAdcAdc=new Double_t [fMaxHodoScin];
+  fHodoNegInvAdcAdc=new Double_t [fMaxHodoScin];
+  
   prefix[1]='\0';
   DBRequest list[]={
     {"start_time_center", &fStartTimeCenter, kDouble},
@@ -407,7 +406,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     cout <<"TdcMin = "<<fScinTdcMin<<" TdcMax = "<<fScinTdcMax<<endl;
     cout <<"TofTolerance = "<<fTofTolerance<<endl;
     cout <<"*** VelLight ***\n";
-    for (int i1=1;i1<=fNPlanes;i1++) {
+    for (int i1=0;i1<fNPlanes;i1++) {
       cout<<"Plane "<<i1<<endl;
       for (int i2=0;i2<fMaxScinPerPlane;i2++) {
 	cout<<fHodoVelLight[GetScinIndex(i1,i2)]<<" ";
@@ -416,6 +415,22 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     }
  
     cout <<endl<<endl;
+    // check fHodoPosPhcCoeff
+    /*
+    cout <<"fHodoPosPhcCoeff = ";
+    for (int i1=0;i1<fMaxHodoScin;i1++) {
+      cout<<this->GetHodoPosPhcCoeff(i1)<<" ";
+    }
+    cout<<endl;
+    */
+  }
+  //
+  if ((fTofTolerance > 0.5) && (fTofTolerance < 10000.)) {
+    cout << "USING "<<fTofTolerance<<" NSEC WINDOW FOR FP NO_TRACK CALCULATIONS.\n";
+  }
+  else {
+    fTofTolerance= 3.0;
+    cout << "*** USING DEFAULT 3 NSEC WINDOW FOR FP NO_TRACK CALCULATIONS!! ***\n";
   }
   fIsInit = true;
   return kOK;
@@ -492,7 +507,24 @@ void THcHodoscope::DeleteArrays()
 {
   // Delete member arrays. Used by destructor.
 
-  delete [] fNPaddle; fNPaddle = NULL;
+  delete [] fNPaddle;             fNPaddle = NULL;
+  delete [] fHodoVelLight;        fHodoVelLight = NULL;
+  delete [] fHodoPosSigma;        fHodoPosSigma = NULL;
+  delete [] fHodoNegSigma;        fHodoNegSigma = NULL;
+  delete [] fHodoPosMinPh;        fHodoPosMinPh = NULL;
+  delete [] fHodoNegMinPh;        fHodoNegMinPh = NULL;
+  delete [] fHodoPosPhcCoeff;     fHodoPosPhcCoeff = NULL;
+  delete [] fHodoNegPhcCoeff;     fHodoNegPhcCoeff = NULL;
+  delete [] fHodoPosTimeOffset;   fHodoPosTimeOffset = NULL;
+  delete [] fHodoNegTimeOffset;   fHodoNegTimeOffset = NULL;
+  delete [] fHodoPosPedLimit;     fHodoPosPedLimit = NULL;
+  delete [] fHodoNegPedLimit;     fHodoNegPedLimit = NULL;
+  delete [] fHodoPosInvAdcOffset; fHodoPosInvAdcOffset = NULL;
+  delete [] fHodoNegInvAdcOffset; fHodoNegInvAdcOffset = NULL;
+  delete [] fHodoPosInvAdcLinear; fHodoPosInvAdcLinear = NULL;
+  delete [] fHodoNegInvAdcLinear; fHodoNegInvAdcLinear = NULL;
+  delete [] fHodoPosInvAdcAdc;    fHodoPosInvAdcAdc = NULL;
+  delete [] fHodoNegInvAdcAdc;    fHodoNegInvAdcAdc = NULL;
   //  delete [] fSpacing; fSpacing = NULL;
   //delete [] fCenter;  fCenter = NULL; // This 2D. What is correct way to delete?
 
@@ -561,7 +593,10 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     //    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
     // GN: select only events that have reasonable TDC values to start with
     // as per the Engine h_strip_scin.f
-    nexthit = fPlanes[ip]->ProcessHits(fRawHitList,fScinTdcMin,fScinTdcMax,nexthit);
+    nexthit = fPlanes[ip]->ProcessHits(fRawHitList,nexthit);
+        if (fPlanes[ip]->GetNScinHits()>0) {
+      fPlanes[ip]->PulseHeightCorrection();
+      }
   }
 
   // fRawHitList is TClones array of THcHodoscopeHit objects
@@ -585,7 +620,6 @@ Int_t THcHodoscope::ApplyCorrections( void )
 {
   return(0);
 }
-
 //_____________________________________________________________________________
 Double_t THcHodoscope::TimeWalkCorrection(const Int_t& paddle,
 					     const ESide side)
@@ -603,7 +637,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
   // Apply corrections and reconstruct the complete hits.
   //
   //  static const Double_t sqrt2 = TMath::Sqrt(2.);
-  /*  cout <<"**** in THcHodoscope CoarseProcess ********\n";  
+  //  cout <<"**** in THcHodoscope CoarseProcess ********\n"; 
+  /*  
   for(Int_t i=0;i<fNPlanes;i++) {
     cout<<i<<" ";
     fPlanes[i]->CoarseProcess(tracks);
@@ -629,10 +664,11 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 }
 //_____________________________________________________________________________
 Int_t THcHodoscope::GetScinIndex( Int_t nPlane, Int_t nPaddle ) {
-  // Return the index of a scintillator given the plane # and the paddle #
-  // This assumes that planes start counting from 1
-  // and paddles start counting from 0! (not ideal but that's what I have for now)
-  return fNPlanes*nPaddle+nPlane-1;
+  // GN: Return the index of a scintillator given the plane # and the paddle #
+  // This assumes that both planes and 
+  // paddles start counting from 0!
+  // Result also counts from 0.
+  return fNPlanes*nPaddle+nPlane;
 }
 //_____________________________________________________________________________
 Int_t THcHodoscope::GetScinIndex( Int_t nSide, Int_t nPlane, Int_t nPaddle ) {
