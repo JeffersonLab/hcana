@@ -5,7 +5,7 @@
 // THcScintillatorPlane
 //
 //////////////////////////////////////////////////////////////////////////
-
+#include "TMath.h"
 #include "THcScintillatorPlane.h"
 #include "TClonesArray.h"
 #include "THcSignalHit.h"
@@ -38,6 +38,7 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fNegADCHits = new TClonesArray("THcSignalHit",16);
   fPlaneNum = planenum;
   fTotPlanes = planenum;
+  fNScinHits = 0;
 }
 //______________________________________________________________________________
 THcScintillatorPlane::THcScintillatorPlane( const char* name, 
@@ -54,6 +55,7 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fNegADCHits = new TClonesArray("THcSignalHit",16);
   fPlaneNum = planenum;
   fTotPlanes = totplanes;
+  fNScinHits = 0;
 }
 
 //______________________________________________________________________________
@@ -129,14 +131,16 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   strcat(parname,"_nr");
   fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
   //
+  // Based on the signs of these quantities in the .pos file the correspondence 
+  // should be bot=>left  and top=>right when comparing x and y-type scintillators
   char *tmpleft, *tmpright;
   if (fPlaneNum==1 || fPlaneNum==3) {
     tmpleft="left";
     tmpright="right";
   } 
   else {
-    tmpleft="top";
-    tmpright="bot";
+    tmpleft="bot";
+    tmpright="top";
   }
 
   Double_t tmpdouble[fTotPlanes];
@@ -168,25 +172,6 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
    cout <<"PosOffset = "<<fPosOffset<<endl;
    cout <<"PosCenter[0] = "<<fPosCenter[0]<<endl;
 
-
-  /* for(Int_t i=0;i<fNPlanes;i++) {
-    fCenter[i] = new Double_t[fNPaddle[i]];
-    DBRequest list[]={
-      {Form("scin_%s_spacing",fPlaneNames[i]), &fSpacing[i], kDouble},
-      {Form("scin_%s_center",fPlaneNames[i]), fCenter[i], kDouble, fNPaddle[i]},
-      {0}
-    };
-    gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-  }
-  */
-  ///  Int_t tmpint = new Int_t [GetParent()->GetNPlanes()]; 
-  /// cout<<"Nplanes in scintplane!! = "<<fTotPlanes <<endl;
-
-  // First letter of GetParent()->GetPrefix() tells us what prefix to
-  // use on parameter names.  
-
-  //  Find the number of elements
-  
   // Think we will make special methods to pass most
   // How generic do we want to make this class?  
   // The way we get parameter data is going to be pretty specific to
@@ -250,6 +235,9 @@ Int_t THcScintillatorPlane::Decode( const THaEvData& evdata )
 Int_t THcScintillatorPlane::CoarseProcess( TClonesArray& tracks )
 {
  
+  cout <<"*******************************\n";
+  cout <<"NOW IN THcScintilatorPlane::CoarseProcess!!!!\n";
+  cout <<"*******************************\n";
   //  HitCount();
 
  return 0;
@@ -260,18 +248,23 @@ Int_t THcScintillatorPlane::FineProcess( TClonesArray& tracks )
 {
   return 0;
 }
-
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 {
   // Extract the data for this plane from hit list
   // Assumes that the hit list is sorted by plane, so we stop when the
   // plane doesn't agree and return the index for the next hit.
+  // GN: Select only events that have at least one of their TDC signals in the
+  // right range. 
+  // Also subtract the pedestals from the adc signal (as per the ENGINE) we're not checking here
+  // if the actual ADC is larger than the pedestal value we subtract!!
 
+  Double_t mintdc, maxtdc;
   Int_t nPosTDCHits=0;
   Int_t nNegTDCHits=0;
   Int_t nPosADCHits=0;
   Int_t nNegADCHits=0;
+  fNScinHits=0;
   fPosTDCHits->Clear();
   fNegTDCHits->Clear();
   fPosADCHits->Clear();
@@ -279,7 +272,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   Int_t nrawhits = rawhits->GetLast()+1;
   // cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
-
+  mintdc=((THcHodoscope *)GetParent())->GetTdcMin();
+  maxtdc=((THcHodoscope *)GetParent())->GetTdcMax();
   Int_t ihit = nexthit;
   while(ihit < nrawhits) {
     THcHodoscopeHit* hit = (THcHodoscopeHit *) rawhits->At(ihit);
@@ -287,37 +281,114 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       break;
     }
 
-    // TDC positive hit
-    if(hit->fTDC_pos >  0) {
+    // check TDC values
+    if (((hit->fTDC_pos >= mintdc) && (hit->fTDC_pos <= maxtdc)) ||
+	((hit->fTDC_neg >= mintdc) && (hit->fTDC_neg <= maxtdc))) {
+
+      //TDC positive hit
       THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
       sighit->Set(hit->fCounter, hit->fTDC_pos);
+      // TDC negative hit
+      THcSignalHit *sighit2 = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
+      sighit2->Set(hit->fCounter, hit->fTDC_neg);
+      // ADC positive hit
+      /// if(hit->fADC_pos >  0) {
+	THcSignalHit *sighit3 = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
+	sighit3->Set(hit->fCounter, hit->fADC_pos-fPosPed[ihit]);
+	///} else {
+	///  cout<<"Skipping ADC_pos "<<hit->fADC_pos<<endl;
+	/// }
+      // ADC negative hit
+	///      if(hit->fADC_neg >  0) {   
+	// cout <<"adc neg hit!!\n";
+	THcSignalHit *sighit4 = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
+	sighit4->Set(hit->fCounter, hit->fADC_neg-fNegPed[ihit]);
+	///} else {
+	///cout<<"Skipping ADC_neg "<<hit->fADC_neg<<endl;
+	///}
+      //      cout <<"test "<<fNHits<<endl;
+      fNScinHits=fNScinHits++;
     }
-
-    // TDC negative hit
-    if(hit->fTDC_neg >  0) {
-      THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
-      sighit->Set(hit->fCounter, hit->fTDC_neg);
+    else {
+      //cout <<"pos TDC "<<hit->fTDC_pos<<" "<<mintdc<<" "<<maxtdc<<endl;
+      //cout <<"neg TDC "<<hit->fTDC_neg<<" "<<mintdc<<" "<<maxtdc<<endl;
+      //cout <<"skipping BAD tdc event\n";
     }
-
-    // ADC positive hit
-    if(hit->fADC_pos >  0) {
-      //     cout <<"adc pos hit!!\n";
-      THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
-      sighit->Set(hit->fCounter, hit->fADC_pos);
-    }
-
-    // ADC negative hit
-    if(hit->fADC_neg >  0) {   
-      // cout <<"adc neg hit!!\n";
-      THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
-      sighit->Set(hit->fCounter, hit->fADC_neg);
-    }
-
     ihit++;
   }
+
   return(ihit);
 }
+//________________________________________________________________________________
 
+Int_t THcScintillatorPlane::PulseHeightCorrection()
+{
+  // Perform pulse height correction of the TDC values as in the original h_trans_scin
+  // see original comments below
+  /*! Calculate all corrected hit times and histogram
+    ! This uses a copy of code below. Results are save in time_pos,neg
+    ! including the z-pos. correction assuming nominal value of betap
+    ! Code is currently hard-wired to look for a peak in the
+    ! range of 0 to 100 nsec, with a group of times that all
+    ! agree withing a time_tolerance of time_tolerance nsec. The normal
+    ! peak position appears to be around 35 nsec (SOS0 or 31 nsec (HMS)
+    ! NOTE: if want to find particles with beta different than
+    !       reference particle, need to make sure this is big enough
+    !       to accomodate difference in TOF for other particles
+    ! Default value in case user hasn't defined something reasonable */
+  Int_t i,j,index,nfound=0;
+  Double_t mintdc, maxtdc,tdctotime;
+  Double_t pos_ph[53],neg_ph[53],postime[53],negtime[53]; // the 53 should go in a param file (was hmax_scin_hits originally)
+  Bool_t keep_pos[53],keep_neg[53]; // are these all really needed?
+  Double_t dist_from_center,scint_center,hit_position,time_pos[100],time_neg[100],hbeta_pcent;
+
+  mintdc=((THcHodoscope *)GetParent())->GetTdcMin();
+  maxtdc=((THcHodoscope *)GetParent())->GetTdcMax();
+  //  hbeta_pcent=(TH((THcHodoscope *)GetParent())->GetParent()
+  // Horrible hack until I find out where to get the central beta from momentum!! GN
+  hbeta_pcent=0.99776;
+  tdctotime=((THcHodoscope *)GetParent())->GetTdcToTime();
+  for (i=0;i<fNScinHits;i++) {
+    if ((((THcSignalHit*) fPosTDCHits->At(i))->GetData()>=mintdc) &&
+	(((THcSignalHit*) fPosTDCHits->At(i))->GetData()<=maxtdc) &&
+	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()>=mintdc) &&
+	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()<=maxtdc)) {
+	  pos_ph[i]=((THcSignalHit*) fPosADCHits->At(i))->GetData();
+	  postime[i]=((THcSignalHit*) fPosTDCHits->At(i))->GetData()*tdctotime;
+	  j=((THcSignalHit*)fPosTDCHits->At(i))->GetPaddleNumber();
+	  index=((THcHodoscope *)GetParent())->GetScinIndex(fPlaneNum-1,j);
+	  postime[i]=postime[i]-((THcHodoscope *)GetParent())->GetHodoPosPhcCoeff(index)*
+	    TMath::Sqrt(TMath::Max(0.,(pos_ph[i]/((THcHodoscope *)GetParent())->GetHodoPosMinPh(index)-1)));
+	  postime[i]=postime[i]-((THcHodoscope *)GetParent())->GetHodoPosTimeOffset(index);
+	  //	  cout <<postime[i]<<endl;
+	  neg_ph[i]=((THcSignalHit*) fNegADCHits->At(i))->GetData();
+	  negtime[i]=((THcSignalHit*) fNegTDCHits->At(i))->GetData()*tdctotime;
+	  j=((THcSignalHit*)fNegTDCHits->At(i))->GetPaddleNumber();
+	  index=((THcHodoscope *)GetParent())->GetScinIndex(fPlaneNum-1,j);
+	  negtime[i]=negtime[i]-((THcHodoscope *)GetParent())->GetHodoNegPhcCoeff(index)*
+	    TMath::Sqrt(TMath::Max(0.,(neg_ph[i]/((THcHodoscope *)GetParent())->GetHodoNegMinPh(index)-1)));
+	  negtime[i]=negtime[i]-((THcHodoscope *)GetParent())->GetHodoNegTimeOffset(index);
+	  //	  cout <<"postime = "<<postime[i]<<" negtime = "<<negtime[i]<<endl;
+	  // Find hit position.  If postime larger, then hit was nearer negative side.
+	  dist_from_center=0.5*(negtime[i]-postime[i])*((THcHodoscope *)GetParent())->GetHodoVelLight(index);
+	  scint_center=0.5*(fPosLeft+fPosRight);
+	  hit_position=scint_center+dist_from_center;
+	  // cout <<fPosLeft<<" "<<fPosRight<<" hit position = "<<hit_position<<" ";	  
+	  hit_position=TMath::Min(hit_position,fPosLeft);
+	  // cout<<hit_position<<" ";
+	  hit_position=TMath::Max(hit_position,fPosRight);
+	  //cout<<hit_position<<endl;
+	  postime[i]=postime[i]-(fPosLeft-hit_position)/((THcHodoscope *)GetParent())->GetHodoVelLight(index);
+	  negtime[i]=negtime[i]-(hit_position-fPosRight)/((THcHodoscope *)GetParent())->GetHodoVelLight(index);
+	  time_pos[i]=postime[i]-(fZpos+(j%2)*fDzpos)/(29.979*hbeta_pcent);
+	  time_neg[i]=negtime[i]-(fZpos+(j%2)*fDzpos)/(29.979*hbeta_pcent);
+	  nfound++;
+	  cout <<"time pos/neg = "<<time_pos[i]<<" "<<time_neg[i]<<endl;
+	  //	  for (int k=0;k<200;k++) {
+    }
+  }
+  return 0;
+}
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 {
@@ -416,6 +487,10 @@ void THcScintillatorPlane::InitializePedestals( )
 Int_t THcScintillatorPlane::GetNelem() 
 {
   return fNelem;
+}//____________________________________________________________________________
+Int_t THcScintillatorPlane::GetNScinHits() 
+{
+  return fNScinHits;
 }
 //____________________________________________________________________________
 Double_t THcScintillatorPlane::GetSpacing()

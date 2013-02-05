@@ -37,10 +37,13 @@ class THcScintillatorPlane : public THaSubDetector {
   virtual Bool_t   IsPid()      { return kFALSE; }
 
   virtual Int_t ProcessHits(TClonesArray* rawhits, Int_t nexthit);
+  virtual Int_t PulseHeightCorrection();
+
   virtual Int_t AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit);
   virtual void  CalculatePedestals( );
 
   Int_t GetNelem(); // return number of paddles in this plane
+  Int_t GetNScinHits(); // return the number of hits in this plane (that pass min/max TDC cuts)
   Double_t GetSpacing(); // return the spacing of paddles 
   Double_t GetSize();    // return paddle size
   Double_t GetHodoSlop(); // return the hodo slop
@@ -61,12 +64,13 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* fNegADCHits;
 
   Int_t fPlaneNum;		/* Which plane am I 1-4 */
-  Int_t fTotPlanes;              /* so we can read variables that are not indexed by plane id */
+  Int_t fTotPlanes;             /* so we can read variables that are not indexed by plane id */
   Int_t fNelem;			/* Need since we don't inherit from 
 				 detector base class */
+  Int_t fNScinHits;                 /* Number of hits in this plane */
   Double_t fSpacing;            /* paddle spacing */
   Double_t fSize;               /* paddle size */
-  Double_t fZpos;                /* z position */
+  Double_t fZpos;               /* z position */
   Double_t fDzpos;
   Double_t fHodoSlop;           /* max allowed slop for this plane */
   Double_t fPosLeft;            /* NOTE: "left" = "top" for a Y scintillator */
@@ -74,6 +78,8 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t fPosOffset;
   Double_t fPosCenter[16];         /* array with centers for all scintillators in the plane */
 
+
+  Double_t fTolerance; /* need this for PulseHeightCorrection */
   /* Pedestal Quantities */
   Int_t fNPedestalEvents;	/* Number of pedestal events */
   Int_t fMinPeds;		/* Only analyze/update if num events > */

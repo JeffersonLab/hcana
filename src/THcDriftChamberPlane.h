@@ -20,6 +20,7 @@ class THaEvData;
 class THcDCWire;
 class THcDCHit;
 class THcDCTimeToDistConv;
+class THcHodoscope;
 
 /*class THaSignalHit;*/
 
@@ -72,6 +73,8 @@ class THcDriftChamberPlane : public THaSubDetector {
   virtual Int_t  DefineVariables( EMode mode = kDefine );
 
   THcDCTimeToDistConv* fTTDConv;  // Time-to-distance converter for this plane's wires
+
+  THcHodoscope* fglHod;		// Hodoscope to get start time
 
   ClassDef(THcDriftChamberPlane,0)
 };
