@@ -16,6 +16,8 @@
 #include "THaVar.h"
 #include "THaFormula.h"
 
+#include "TMath.h"
+
 
 /* #incluce <algorithm> include <fstream> include <cstring> */
 #include <iostream>
@@ -445,10 +447,17 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
       }
 
     } else {
+      VarType ty = this->Find(key)->GetType();
       switch (ti->type) {
       case (kDouble) :
 	if (this->Find(key)) {
-	  *static_cast<Double_t*>(ti->var)=*(Double_t *)this->Find(key)->GetValuePointer();
+	  if(ty == kInt) {
+	    *static_cast<Double_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();	    
+	  } else if (ty == kDouble) {
+	    *static_cast<Double_t*>(ti->var)=*(Double_t *)this->Find(key)->GetValuePointer();
+	  } else {
+	    cout << "*** ERROR!!! Type Mismatch " << key << endl;
+	  }
 	} else {
 	  cout << "*** ERROR!!! Could not find " << key << " in the list of variables! ***" << endl;
 	}
@@ -457,7 +466,14 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
 	break;
       case (kInt) :
 	if (this->Find(key)) {
-	  *static_cast<Int_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();
+	  if(ty == kInt) {
+	    *static_cast<Int_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();
+	  } else if (ty == kDouble) {
+	    *static_cast<Int_t*>(ti->var)=TMath::Nint(*(Double_t *)this->Find(key)->GetValuePointer());
+	    cout << "*** WARNING!!!  Rounded " << key << " to nearest integer " << endl;
+	  } else {
+	    cout << "*** ERROR!!! Type Mismatch " << key << endl;
+	  }
 	} else {
 	  cout << "*** ERROR!!! Could not find " << key << " in the list of variables! ***" << endl;
 	}
