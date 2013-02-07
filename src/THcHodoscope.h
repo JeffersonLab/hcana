@@ -70,7 +70,7 @@ protected:
   Double_t fStartTimeCenter, fStartTimeSlop, fScinTdcToTime;
   Double_t fTofTolerance;
   Double_t fPathLengthCentral;
-  Int_t fScinTdcMin, fScinTdcMax; // min and max TDC values
+  Double_t fScinTdcMin, fScinTdcMax; // min and max TDC values
   char** fPlaneNames;
   Int_t* fNPaddle;		// Number of paddles per plane
 
