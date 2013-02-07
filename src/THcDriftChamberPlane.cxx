@@ -188,7 +188,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   // Would be nice to have a way to determine that the hodoscope decode was
   // actually called for this event.
   if( fglHod ) StartTime = fglHod->GetStartTime();
-  cout << "Start time " << StartTime << endl;
+  //cout << "Start time " << StartTime << endl;
 
   //Int_t nTDCHits=0;
   fHits->Clear();
