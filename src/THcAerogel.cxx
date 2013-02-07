@@ -113,8 +113,8 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_neg_gain", fPosGain, kDouble},
     {"aero_pos_ped_limit", fPosPedLimit, kInt},
     {"aero_neg_ped_limit", fNegPedLimit, kInt},
-    {"aero_pos_ped_mean", fPosPedMean, kDouble},
-    {"aero_neg_ped_mean", fNegPedMean, kDouble},
+    //    {"aero_pos_ped_mean", fPosPedMean, kDouble},
+    //    {"aero_neg_ped_mean", fNegPedMean, kDouble},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
@@ -155,7 +155,7 @@ Int_t THcAerogel::DefineVariables( EMode mode )
     {"neg_npe","PEs PE Negative Tube","fNegNpe"},
     {"pos_npe_sum", "Total Positive Tube PEs", "fPosNpeSum"},
     {"neg_npe_sum", "Total Negative Tube PEs", "fNegNpeSum"},
-    {"npe_sum", "Total PEs", ""},
+    {"npe_sum", "Total PEs", "fNpeSum"},
     {"ntdc_pos_hits", "Number of Positive Tube Hits", "fNTDCPosHits"},
     {"ntdc_neg_hits", "Number of Negative Tube Hits", "fNTDCNegHits"},
     {"ngood_hits", "Total number of good hits", "fNGoodHits"},
