@@ -432,25 +432,25 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
     string keystr(prefix); keystr.append(ti->name);
     const char* key = keystr.c_str();
     ///    cout <<"Now at "<<ti->name<<endl;
-    if (ti->nelem>1) {
-      // it is an array, use the appropriateinterface
-      switch (ti->type) {
-      case (kDouble) :
-	this_cnt = GetArray(key,static_cast<Double_t*>(ti->var),ti->nelem);
-	break;
-      case (kInt) :
-	this_cnt = GetArray(key,static_cast<Int_t*>(ti->var),ti->nelem);
-      break;
-    default:
-	Error("THcParmList","Invalid type to read %s",key);
-	break;
-      }
-
-    } else {
+    if(this->Find(key)) {
       VarType ty = this->Find(key)->GetType();
-      switch (ti->type) {
-      case (kDouble) :
-	if (this->Find(key)) {
+      if (ti->nelem>1) {
+	// it is an array, use the appropriateinterface
+	switch (ti->type) {
+	case (kDouble) :
+	  this_cnt = GetArray(key,static_cast<Double_t*>(ti->var),ti->nelem);
+	  break;
+	case (kInt) :
+	  this_cnt = GetArray(key,static_cast<Int_t*>(ti->var),ti->nelem);
+	  break;
+	default:
+	  Error("THcParmList","Invalid type to read %s",key);
+	  break;
+	}
+
+      } else {
+	switch (ti->type) {
+	case (kDouble) :
 	  if(ty == kInt) {
 	    *static_cast<Double_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();	    
 	  } else if (ty == kDouble) {
@@ -458,14 +458,10 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
 	  } else {
 	    cout << "*** ERROR!!! Type Mismatch " << key << endl;
 	  }
-	} else {
-	  cout << "*** ERROR!!! Could not find " << key << " in the list of variables! ***" << endl;
-	}
-	this_cnt=1;
+	  this_cnt=1;
 
-	break;
-      case (kInt) :
-	if (this->Find(key)) {
+	  break;
+	case (kInt) :
 	  if(ty == kInt) {
 	    *static_cast<Int_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();
 	  } else if (ty == kDouble) {
@@ -474,15 +470,15 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
 	  } else {
 	    cout << "*** ERROR!!! Type Mismatch " << key << endl;
 	  }
-	} else {
-	  cout << "*** ERROR!!! Could not find " << key << " in the list of variables! ***" << endl;
+	  this_cnt=1;
+	  break;
+	default:
+	  Error("THcParmList","Invalid type to read %s",key);
+	  break;
 	}
-	this_cnt=1;
-	break;
-      default:
-	Error("THcParmList","Invalid type to read %s",key);
-	break;
       }
+    } else {
+	    cout << "*** ERROR!!! Could not find " << key << " in the list of variables! ***" << endl;
     }
     if (this_cnt<=0) {
       if ( !ti->optional ) {
