@@ -30,13 +30,24 @@ public:
   virtual Int_t      FineProcess( TClonesArray& tracks );
   
   virtual Int_t      ApplyCorrections( void );
-
   //  Int_t GetNHits() const { return fNhit; }
+  Double_t GetStartTime() const { return fStartTime; }
   Int_t GetScinIndex(Int_t nPlane, Int_t nPaddle);
   Int_t GetScinIndex(Int_t nSide, Int_t nPlane, Int_t nPaddle);
   Double_t GetPathLengthCentral();
-
   Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
+  Double_t GetTdcMin() const {return fScinTdcMin;}
+  Double_t GetTdcMax() const {return fScinTdcMax;}
+  Double_t GetTofTolerance() const {return fTofTolerance;}
+  Double_t GetTdcToTime() const {return fScinTdcToTime;}
+  Double_t GetHodoPosPhcCoeff(Int_t iii) const {return fHodoPosPhcCoeff[iii];}
+  Double_t GetHodoNegPhcCoeff(Int_t iii) const {return fHodoNegPhcCoeff[iii];}
+  Double_t GetHodoPosMinPh(Int_t iii) const {return fHodoPosMinPh[iii];}
+  Double_t GetHodoNegMinPh(Int_t iii) const {return fHodoNegMinPh[iii];}
+  Double_t GetHodoPosTimeOffset(Int_t iii) const {return fHodoPosTimeOffset[iii];}
+  Double_t GetHodoNegTimeOffset(Int_t iii) const {return fHodoNegTimeOffset[iii];}
+  Double_t GetHodoVelLight(Int_t iii) const {return fHodoVelLight[iii];}
+
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
   
   friend class THaScCalib;
@@ -50,6 +61,9 @@ protected:
 
   // Per-event data
 
+  Double_t fStartTime;
+  
+  // Per-event data
 
   // Potential Hall C parameters.  Mostly here for demonstration
   Int_t fNPlanes,fMaxScinPerPlane,fMaxHodoScin; // number of planes; max number of scin/plane; product of the first two 
