@@ -530,11 +530,20 @@ Int_t THcParmList::ReadArray(const char* attrC, T* array, Int_t size)
       " which has length " << sz << endl;
   }
   if(size<sz) sz = size;
+  Int_t donint = 0;
+  if(ty == kDouble && typeid(array[0]) == typeid(Int_t)) {
+    donint = 1;			// Use nint when putting doubles in nint
+    cout << "*** WARNING!!!  Rounded " << attrC << " elements to nearest integer " << endl;
+  }
   for(cnt=0;cnt<sz;cnt++) {
     if(ty == kInt) {
       array[cnt] = ((Int_t*)vp)[cnt];
     } else
-      array[cnt] = ((Double_t*)vp)[cnt];
+      if(donint) {
+	array[cnt] = TMath::Nint(((Double_t*)vp)[cnt]);
+      } else {
+	array[cnt] = ((Double_t*)vp)[cnt];
+      }
   }
   return(cnt);
 }
