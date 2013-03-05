@@ -16,6 +16,8 @@
 #include "THaVar.h"
 #include "THaFormula.h"
 
+#include "TMath.h"
+
 
 /* #incluce <algorithm> include <fstream> include <cstring> */
 #include <iostream>
@@ -430,43 +432,53 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
     string keystr(prefix); keystr.append(ti->name);
     const char* key = keystr.c_str();
     ///    cout <<"Now at "<<ti->name<<endl;
-    if (ti->nelem>1) {
-      // it is an array, use the appropriateinterface
-      switch (ti->type) {
-      case (kDouble) :
-	this_cnt = GetArray(key,static_cast<Double_t*>(ti->var),ti->nelem);
-	break;
-      case (kInt) :
-	this_cnt = GetArray(key,static_cast<Int_t*>(ti->var),ti->nelem);
-      break;
-    default:
-	Error("THcParmList","Invalid type to read %s",key);
-	break;
-      }
+    if(this->Find(key)) {
+      VarType ty = this->Find(key)->GetType();
+      if (ti->nelem>1) {
+	// it is an array, use the appropriateinterface
+	switch (ti->type) {
+	case (kDouble) :
+	  this_cnt = GetArray(key,static_cast<Double_t*>(ti->var),ti->nelem);
+	  break;
+	case (kInt) :
+	  this_cnt = GetArray(key,static_cast<Int_t*>(ti->var),ti->nelem);
+	  break;
+	default:
+	  Error("THcParmList","Invalid type to read %s",key);
+	  break;
+	}
 
+      } else {
+	switch (ti->type) {
+	case (kDouble) :
+	  if(ty == kInt) {
+	    *static_cast<Double_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();	    
+	  } else if (ty == kDouble) {
+	    *static_cast<Double_t*>(ti->var)=*(Double_t *)this->Find(key)->GetValuePointer();
+	  } else {
+	    cout << "*** ERROR!!! Type Mismatch " << key << endl;
+	  }
+	  this_cnt=1;
+
+	  break;
+	case (kInt) :
+	  if(ty == kInt) {
+	    *static_cast<Int_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();
+	  } else if (ty == kDouble) {
+	    *static_cast<Int_t*>(ti->var)=TMath::Nint(*(Double_t *)this->Find(key)->GetValuePointer());
+	    cout << "*** WARNING!!!  Rounded " << key << " to nearest integer " << endl;
+	  } else {
+	    cout << "*** ERROR!!! Type Mismatch " << key << endl;
+	  }
+	  this_cnt=1;
+	  break;
+	default:
+	  Error("THcParmList","Invalid type to read %s",key);
+	  break;
+	}
+      }
     } else {
-      switch (ti->type) {
-      case (kDouble) :
-	if (this->Find(key)) {
-	  *static_cast<Double_t*>(ti->var)=*(Double_t *)this->Find(key)->GetValuePointer();
-	} else {
-	  cout << "*** ERROR!!! Could not find " << key << " in the list of variables! ***" << endl;
-	}
-	this_cnt=1;
-
-	break;
-      case (kInt) :
-	if (this->Find(key)) {
-	  *static_cast<Int_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();
-	} else {
-	  cout << "*** ERROR!!! Could not find " << key << " in the list of variables! ***" << endl;
-	}
-	this_cnt=1;
-	break;
-      default:
-	Error("THcParmList","Invalid type to read %s",key);
-	break;
-      }
+	    cout << "*** ERROR!!! Could not find " << key << " in the list of variables! ***" << endl;
     }
     if (this_cnt<=0) {
       if ( !ti->optional ) {
@@ -518,11 +530,20 @@ Int_t THcParmList::ReadArray(const char* attrC, T* array, Int_t size)
       " which has length " << sz << endl;
   }
   if(size<sz) sz = size;
+  Int_t donint = 0;
+  if(ty == kDouble && typeid(array[0]) == typeid(Int_t)) {
+    donint = 1;			// Use nint when putting doubles in nint
+    cout << "*** WARNING!!!  Rounded " << attrC << " elements to nearest integer " << endl;
+  }
   for(cnt=0;cnt<sz;cnt++) {
     if(ty == kInt) {
       array[cnt] = ((Int_t*)vp)[cnt];
     } else
-      array[cnt] = ((Double_t*)vp)[cnt];
+      if(donint) {
+	array[cnt] = TMath::Nint(((Double_t*)vp)[cnt]);
+      } else {
+	array[cnt] = ((Double_t*)vp)[cnt];
+      }
   }
   return(cnt);
 }
