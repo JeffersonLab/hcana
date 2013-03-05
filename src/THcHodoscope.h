@@ -30,8 +30,8 @@ public:
   virtual Int_t      FineProcess( TClonesArray& tracks );
   
   virtual Int_t      ApplyCorrections( void );
-  //  Int_t GetNHits() const { return fNhit; }
   Double_t GetStartTime() const { return fStartTime; }
+  Bool_t IsStartTimeGood() const {return fGoodStartTime;};
   Int_t GetScinIndex(Int_t nPlane, Int_t nPaddle);
   Int_t GetScinIndex(Int_t nSide, Int_t nPlane, Int_t nPaddle);
   Double_t GetPathLengthCentral();
@@ -60,7 +60,7 @@ protected:
   // Calibration
 
   // Per-event data
-
+  Bool_t fGoodStartTime;
   Double_t fStartTime;
   
   // Per-event data

@@ -43,7 +43,8 @@ THcHodoscope::THcHodoscope( const char* name, const char* description,
   //fTrackProj = new TClonesArray( "THaTrackProj", 5 );
   // Construct the planes
   fNPlanes = 0;			// No planes until we make them
-
+  fStartTime=-1e5;
+  fGoodStartTime=kFALSE;
 }
 
 //_____________________________________________________________________________
@@ -416,7 +417,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
       }
       cout <<endl;
     }
- 
     cout <<endl<<endl;
     // check fHodoPosPhcCoeff
     /*
@@ -592,16 +592,30 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 
   // Let each plane get its hits
   Int_t nexthit = 0;
+  Int_t nfptimes=0;
+
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     //    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
     // GN: select only events that have reasonable TDC values to start with
     // as per the Engine h_strip_scin.f
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList,nexthit);
-        if (fPlanes[ip]->GetNScinHits()>0) {
+    if (fPlanes[ip]->GetNScinHits()>0) {
       fPlanes[ip]->PulseHeightCorrection();
+      ///cout <<"Plane "<<ip<<" number of fpTimes = "<<fPlanes[ip]->GetFpTimeHits()<<endl;
+      for (Int_t ifptimes=0;ifptimes<fPlanes[ip]->GetFpTimeHits();ifptimes++) {
+	fStartTime=fStartTime+fPlanes[ip]->GetFpTime(ifptimes);
+	nfptimes++;
       }
+    }
   }
-
+  if (nfptimes>0) {
+    fStartTime=fStartTime/nfptimes;
+    fGoodStartTime=kTRUE;
+  } else {
+    fGoodStartTime=kFALSE;
+    fStartTime=fStartTimeCenter;
+  }
+  cout <<" stats = "<<fGoodStartTime<<" "<<nfptimes<<" fStartTime = "<<fStartTime<<endl;
   // fRawHitList is TClones array of THcHodoscopeHit objects
 #if 0
   for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
@@ -613,7 +627,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   cout << endl;
 #endif
 
-  fStartTime = 500;		// Drift Chamber will need this
+  ///  fStartTime = 500;		// Drift Chamber will need this
 
   return nhits;
 }

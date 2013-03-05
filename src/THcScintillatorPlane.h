@@ -53,6 +53,8 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t GetPosRight();
   Double_t GetPosOffset();
   Double_t GetPosCenter(Int_t PaddleNo); // here we're counting from zero!
+  Double_t GetFpTime(Int_t index) { return fpTime[index];};
+  Int_t GetFpTimeHits() { return fpTimeHits;};
 
   TClonesArray* fParentHitList;
 
@@ -68,6 +70,7 @@ class THcScintillatorPlane : public THaSubDetector {
   Int_t fNelem;			/* Need since we don't inherit from 
 				 detector base class */
   Int_t fNScinHits;                 /* Number of hits in this plane */
+  Int_t fMaxHits;               /* maximum number of hits to be considered - useful for dimensioning arrays */
   Double_t fSpacing;            /* paddle spacing */
   Double_t fSize;               /* paddle size */
   Double_t fZpos;               /* z position */
@@ -98,7 +101,11 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t *fNegPed;
   Double_t *fNegSig;
   Double_t *fNegThresh;
-  
+
+  //
+  Int_t fpTimeHits; // number of entries in *fpTime
+  Double_t   *fpTime; // array with fpTimes for this scintillator plane
+
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
   virtual void  InitializePedestals( );
