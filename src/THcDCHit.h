@@ -15,10 +15,12 @@ class THcDCHit : public TObject {
 
 public:
   THcDCHit( THcDCWire* wire=NULL, Int_t rawtime=0, Double_t time=0.0 ) : 
-    fWire(wire), fRawTime(rawtime), fTime(time), fDist(0.0), ftrDist(kBig) {}
+    fWire(wire), fRawTime(rawtime), fTime(time), fDist(0.0), ftrDist(kBig) {
+      ConvertTimeToDist();
+    }
   virtual ~THcDCHit() {}
 
-  virtual Double_t ConvertTimeToDist(Double_t slope);
+  virtual Double_t ConvertTimeToDist();
   Int_t  Compare ( const TObject* obj ) const;
   Bool_t IsSortable () const { return kTRUE; }
   

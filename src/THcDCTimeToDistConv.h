@@ -17,8 +17,8 @@ public:
   THcDCTimeToDistConv() {}
   virtual ~THcDCTimeToDistConv();
 
-  virtual Double_t ConvertTimeToDist(Double_t time, Double_t tanTheta,
-				     Double_t *ddist=0) = 0;
+  virtual Double_t ConvertTimeToDist(Double_t time) = 0;
+
 private:
 
   THcDCTimeToDistConv( const THcDCTimeToDistConv& );

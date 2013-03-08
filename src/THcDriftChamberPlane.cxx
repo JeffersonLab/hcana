@@ -80,11 +80,23 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   static const char* const here = "ReadDatabase()";
   char prefix[2];
   char parname[100];
+  Int_t NumDriftMapBins;
+  Double_t DriftMapFirstBin;
+  Double_t DriftMapBinSize;
+  Double_t DriftMap[1000];
   
   prefix[0]=tolower(GetParent()->GetPrefix()[0]);
   prefix[1]='\0';
+  DBRequest list[]={
+    {"driftbins", &NumDriftMapBins, kInt},
+    {"drift1stbin", &DriftMapFirstBin, kDouble},
+    {"driftbinsz", &DriftMapBinSize, kDouble},
+    {Form("wc%sfract",GetName()),DriftMap,kDouble,1000},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
-  // Retrieve parameters we need
+  // Retrieve parameters we need from parent class
   THcDriftChamber* fParent;
 
   fParent = (THcDriftChamber*) GetParent();
@@ -103,7 +115,8 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
 
   cout << fPlaneNum << " " << fNWires << endl;
 
-  fTTDConv = new THcDCLookupTTDConv();// Need to pass the lookup table
+  fTTDConv = new THcDCLookupTTDConv(DriftMapFirstBin,fPitch/2,DriftMapBinSize,
+				    NumDriftMapBins,DriftMap);
 
   Int_t nWires = fParent->GetNWires(fPlaneNum);
   // For HMS, wire numbers start with one, but arrays start with zero.
@@ -142,6 +155,10 @@ Int_t THcDriftChamberPlane::DefineVariables( EMode mode )
      "fHits.THcDCHit.GetWireNum()"},
     {"rawtdc", "Raw TDC Values", 
      "fHits.THcDCHit.GetRawTime()"},
+    {"time","Drift times",
+     "fHits.THcDCHit.GetTime()"},
+    {"dist","Drift distancess",
+     "fHits.THcDCHit.GetDist()"},
     { 0 }
   };
 

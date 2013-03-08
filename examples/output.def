@@ -53,15 +53,15 @@ TH1F calposadc1 'HMS Cal ADC1' H.Cal.1pr.posadc1 150 -50 400
 
 # Can we use variables for the constants.  In CTP we used hdc_nwire(i)
 #
-TH1F hdc1x1_wm 'HDC 1X1 Wiremap' H.dc.1.tdchits 113 0.5 113.5
-TH1F hdc1y1_wm 'HDC 1Y1 Wiremap' H.dc.2.tdchits 52 0.5 52.5
-TH1F hdc1u1_wm 'HDC 1U1 Wiremap' H.dc.3.tdchits 107 0.5 107.5
-TH1F hdc1v1_wm 'HDC 1V1 Wiremap' H.dc.4.tdchits 107 0.5 107.5
-TH1F hdc1y2_wm 'HDC 1Y2 Wiremap' H.dc.5.tdchits 52 0.5 52.5
-TH1F hdc1x2_wm 'HDC 1X2 Wiremap' H.dc.6.tdchits 113 0.5 113.5
-TH1F hdc2x1_wm 'HDC 2X1 Wiremap' H.dc.7.tdchits 113 0.5 113.5
-TH1F hdc2y1_wm 'HDC 2Y1 Wiremap' H.dc.8.tdchits 52 0.5 52.5
-TH1F hdc2u1_wm 'HDC 2U1 Wiremap' H.dc.9.tdchits 107 0.5 107.5
-TH1F hdc2v1_wm 'HDC 2V1 Wiremap' H.dc.10.tdchits 107 0.5 107.5
-TH1F hdc2y2_wm 'HDC 2Y2 Wiremap' H.dc.11.tdchits 52 0.5 52.5
-TH1F hdc2x2_wm 'HDC 2X2 Wiremap' H.dc.12.tdchits 113 0.5 113.5
+TH1F hdc1x1_wm 'HDC 1X1 Wiremap' H.dc.1x1.tdchits 113 0.5 113.5
+TH1F hdc1y1_wm 'HDC 1Y1 Wiremap' H.dc.1y1.tdchits 52 0.5 52.5
+TH1F hdc1u1_wm 'HDC 1U1 Wiremap' H.dc.1u1.tdchits 107 0.5 107.5
+TH1F hdc1v1_wm 'HDC 1V1 Wiremap' H.dc.1v1.tdchits 107 0.5 107.5
+TH1F hdc1y2_wm 'HDC 1Y2 Wiremap' H.dc.1y2.tdchits 52 0.5 52.5
+TH1F hdc1x2_wm 'HDC 1X2 Wiremap' H.dc.1x2.tdchits 113 0.5 113.5
+TH1F hdc2x1_wm 'HDC 2X1 Wiremap' H.dc.2x1.tdchits 113 0.5 113.5
+TH1F hdc2y1_wm 'HDC 2Y1 Wiremap' H.dc.2y1.tdchits 52 0.5 52.5
+TH1F hdc2u1_wm 'HDC 2U1 Wiremap' H.dc.2u1.tdchits 107 0.5 107.5
+TH1F hdc2v1_wm 'HDC 2V1 Wiremap' H.dc.2v1.tdchits 107 0.5 107.5
+TH1F hdc2y2_wm 'HDC 2Y2 Wiremap' H.dc.2y2.tdchits 52 0.5 52.5
+TH1F hdc2x2_wm 'HDC 2X2 Wiremap' H.dc.2x2.tdchits 113 0.5 113.5

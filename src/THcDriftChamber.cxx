@@ -73,13 +73,48 @@ void THcDriftChamber::Setup(const char* name, const char* description)
   cout << "Drift Chambers: " <<  fNPlanes << " planes in " << fNChambers << " chambers" << endl;
 
   fPlaneNames = new char* [fNPlanes];
+  for(Int_t i=0;i<fNPlanes;i++) {fPlaneNames[i] = new char[4];}
 
+  // Big hack needed because the drift map parameters are in parameters with
+  // names like hwc1x1fract.  Need to do some kind of parameter name mapping
+  // or generate the names from the wire angle (alpha)
+  if(prefix[0] == 'h') {
+    strcpy(fPlaneNames[0],"1x1");
+    strcpy(fPlaneNames[1],"1y1");
+    strcpy(fPlaneNames[2],"1u1");
+    strcpy(fPlaneNames[3],"1v1");
+    strcpy(fPlaneNames[4],"1y2");
+    strcpy(fPlaneNames[5],"1x2");
+    strcpy(fPlaneNames[6],"2x1");
+    strcpy(fPlaneNames[7],"2y1");
+    strcpy(fPlaneNames[8],"2u1");
+    strcpy(fPlaneNames[9],"2v1");
+    strcpy(fPlaneNames[10],"2y2");
+    strcpy(fPlaneNames[11],"2x2");
+  } else if (prefix[0] == 's') {
+    strcpy(fPlaneNames[0],"1u1");
+    strcpy(fPlaneNames[1],"1u2");
+    strcpy(fPlaneNames[2],"1x1");
+    strcpy(fPlaneNames[3],"1x2");
+    strcpy(fPlaneNames[4],"1v1");
+    strcpy(fPlaneNames[5],"1v2");
+    strcpy(fPlaneNames[6],"2u1");
+    strcpy(fPlaneNames[7],"2u2");
+    strcpy(fPlaneNames[8],"2x1");
+    strcpy(fPlaneNames[9],"2x2");
+    strcpy(fPlaneNames[10],"2v1");
+    strcpy(fPlaneNames[11],"2v2");
+  } else {
+    cout << "Unknown Spectrometer Prefix '" << prefix << "' Guessing names" << endl;
+    for(Int_t i=0;i<fNPlanes;i++) {
+      sprintf(fPlaneNames[i],"%d",i+1);
+    }
+  }
+    
   char *desc = new char[strlen(description)+100];
   fPlanes = new THcDriftChamberPlane* [fNPlanes];
 
   for(Int_t i=0;i<fNPlanes;i++) {
-    fPlaneNames[i] = new char[5];
-    sprintf(fPlaneNames[i],"%d",i+1);
     strcpy(desc, description);
     strcat(desc, " Plane ");
     strcat(desc, fPlaneNames[i]);

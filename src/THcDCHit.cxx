@@ -14,7 +14,7 @@ ClassImp(THcDCHit)
 const Double_t THcDCHit::kBig = 1.e38; // Arbitrary large value
 
 //_____________________________________________________________________________
-Double_t THcDCHit::ConvertTimeToDist(Double_t slope)
+Double_t THcDCHit::ConvertTimeToDist()
 {
   // Converts TDC time to drift distance
   // Takes the (estimated) slope of the track as an argument
@@ -24,7 +24,7 @@ Double_t THcDCHit::ConvertTimeToDist(Double_t slope)
   if (ttdConv) {
     // If a time to distance algorithm exists, use it to convert the TDC time 
     // to the drift distance
-    fDist = ttdConv->ConvertTimeToDist(fTime, slope, &fdDist);
+    fDist = ttdConv->ConvertTimeToDist(fTime);
     return fDist;
   }
   
