@@ -60,22 +60,21 @@ void THcDriftChamber::Setup(const char* name, const char* description)
   prefix[0]=tolower(app->GetName()[0]);
   prefix[1]='\0';
 
+  string planenamelist;
   DBRequest list[]={
     {"dc_num_planes",&fNPlanes, kInt},
     {"dc_num_chambers",&fNChambers, kInt},
     {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
     {"dc_wire_velocity",&fWireVelocity,kDouble},
+    {"dc_plane_names",&planenamelist, kString},
     {0}
   };
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-
+  cout << planenamelist << endl;
   cout << "Drift Chambers: " <<  fNPlanes << " planes in " << fNChambers << " chambers" << endl;
 
-  // Can't put strings in DBRequest yet
-  string planelistvarname=" dc_plane_names";
-  planelistvarname[0] = prefix[0];
-  vector<string> plane_names = vsplit(gHcParms->GetString(planelistvarname));
+  vector<string> plane_names = vsplit(planenamelist);
 
   if(plane_names.size() != (UInt_t) fNPlanes) {
     cout << "ERROR: Number of planes " << fNPlanes << " doesn't agree with number of plane names " << plane_names.size() << endl;
