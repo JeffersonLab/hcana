@@ -432,6 +432,7 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
     string keystr(prefix); keystr.append(ti->name);
     const char* key = keystr.c_str();
     ///    cout <<"Now at "<<ti->name<<endl;
+    this_cnt = 0;
     if(this->Find(key)) {
       VarType ty = this->Find(key)->GetType();
       if (ti->nelem>1) {
@@ -477,8 +478,18 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
 	  break;
 	}
       }
-    } else {
-	    cout << "*** ERROR!!! Could not find " << key << " in the list of variables! ***" << endl;
+    } else {			// See if it is a text variable
+      const char* value = GetString(key);
+      if(value) {
+	this_cnt = 1;
+	if(ti->type == kString) {
+	  *((string*)ti->var) = string(value);
+	} else if (ti->type == kTString) {
+	  *((TString*)ti->var) = (TString) value;
+	} else {
+	  Error("THcParmList","No conversion for strings: %s",key);
+	}
+      }
     }
     if (this_cnt<=0) {
       if ( !ti->optional ) {
