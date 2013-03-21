@@ -2,7 +2,7 @@
 #
 block H.dc.*
 block H.hod.*
-block H.Cal.*
+block H.cal.*
 block H.aero.*
 block g.evtyp
 
@@ -27,97 +27,97 @@ TH1F hposadc4 'HMS s2y+ ADC hits' H.hod.2y.posadchits 10 0.5 10.5
 TH1F hnegadc4 'HMS s2y- ADC hits' H.hod.2y.negadchits 10 0.5 10.5
 
 # ADC hits per Calorimeter layer
-TH1F chposadc1 'HMS Cal A+ ADC hits' H.Cal.1pr.posadchits 13 0.5 13.5
-TH1F chnegadc1 'HMS Cal A- ADC hits' H.Cal.1pr.negadchits 13 0.5 13.5
-TH1F chposadc2 'HMS Cal B+ ADC hits' H.Cal.2ta.posadchits 13 0.5 13.5
-TH1F chnegadc2 'HMS Cal B- ADC hits' H.Cal.2ta.negadchits 13 0.5 13.5
-TH1F chposadc3 'HMS Cal C+ ADC hits' H.Cal.3ta.posadchits 13 0.5 13.5
-TH1F chposadc4 'HMS Cal D+ ADC hits' H.Cal.4ta.posadchits 13 0.5 13.5
+TH1F chposadc1 'HMS Cal A+ ADC hits' H.cal.1pr.posadchits 13 0.5 13.5
+TH1F chnegadc1 'HMS Cal A- ADC hits' H.cal.1pr.negadchits 13 0.5 13.5
+TH1F chposadc2 'HMS Cal B+ ADC hits' H.cal.2ta.posadchits 13 0.5 13.5
+TH1F chnegadc2 'HMS Cal B- ADC hits' H.cal.2ta.negadchits 13 0.5 13.5
+TH1F chposadc3 'HMS Cal C+ ADC hits' H.cal.3ta.posadchits 13 0.5 13.5
+TH1F chposadc4 'HMS Cal D+ ADC hits' H.cal.4ta.posadchits 13 0.5 13.5
 
 #Calorimeter ADC channels
-TH1F hcaladc_A1p 'HMS Cal ADC A1p - PED' H.Cal.1pr.apos_p[0] 150 50 500
-TH1F hcaladc_A2p 'HMS Cal ADC A2p - PED' H.Cal.1pr.apos_p[1] 150 50 500
-TH1F hcaladc_A3p 'HMS Cal ADC A3p - PED' H.Cal.1pr.apos_p[2] 150 50 500
-TH1F hcaladc_A4p 'HMS Cal ADC A4p - PED' H.Cal.1pr.apos_p[3] 150 50 500
-TH1F hcaladc_A5p 'HMS Cal ADC A5p - PED' H.Cal.1pr.apos_p[4] 150 50 500
-TH1F hcaladc_A6p 'HMS Cal ADC A6p - PED' H.Cal.1pr.apos_p[5] 150 50 500
-TH1F hcaladc_A7p 'HMS Cal ADC A7p - PED' H.Cal.1pr.apos_p[6] 150 50 500
-TH1F hcaladc_A8p 'HMS Cal ADC A8p - PED' H.Cal.1pr.apos_p[7] 150 50 500
-TH1F hcaladc_A9p 'HMS Cal ADC A9p - PED' H.Cal.1pr.apos_p[8] 150 50 500
-TH1F hcaladc_A10p 'HMS Cal ADC A10p - PED' H.Cal.1pr.apos_p[9] 150 50 500
-TH1F hcaladc_A11p 'HMS Cal ADC A11p - PED' H.Cal.1pr.apos_p[10] 150 50 500
-TH1F hcaladc_A12p 'HMS Cal ADC A12p - PED' H.Cal.1pr.apos_p[11] 150 50 500
-TH1F hcaladc_A13p 'HMS Cal ADC A13p - PED' H.Cal.1pr.apos_p[12] 150 50 500
+TH1F hcaladc_A1p 'HMS Cal ADC A1p - PED' H.cal.1pr.apos_p[0] 150 50 500
+TH1F hcaladc_A2p 'HMS Cal ADC A2p - PED' H.cal.1pr.apos_p[1] 150 50 500
+TH1F hcaladc_A3p 'HMS Cal ADC A3p - PED' H.cal.1pr.apos_p[2] 150 50 500
+TH1F hcaladc_A4p 'HMS Cal ADC A4p - PED' H.cal.1pr.apos_p[3] 150 50 500
+TH1F hcaladc_A5p 'HMS Cal ADC A5p - PED' H.cal.1pr.apos_p[4] 150 50 500
+TH1F hcaladc_A6p 'HMS Cal ADC A6p - PED' H.cal.1pr.apos_p[5] 150 50 500
+TH1F hcaladc_A7p 'HMS Cal ADC A7p - PED' H.cal.1pr.apos_p[6] 150 50 500
+TH1F hcaladc_A8p 'HMS Cal ADC A8p - PED' H.cal.1pr.apos_p[7] 150 50 500
+TH1F hcaladc_A9p 'HMS Cal ADC A9p - PED' H.cal.1pr.apos_p[8] 150 50 500
+TH1F hcaladc_A10p 'HMS Cal ADC A10p - PED' H.cal.1pr.apos_p[9] 150 50 500
+TH1F hcaladc_A11p 'HMS Cal ADC A11p - PED' H.cal.1pr.apos_p[10] 150 50 500
+TH1F hcaladc_A12p 'HMS Cal ADC A12p - PED' H.cal.1pr.apos_p[11] 150 50 500
+TH1F hcaladc_A13p 'HMS Cal ADC A13p - PED' H.cal.1pr.apos_p[12] 150 50 500
 
-TH1F hcaladc_B1p 'HMS Cal ADC B1p - PED' H.Cal.2ta.apos_p[0] 150 50 500
-TH1F hcaladc_B2p 'HMS Cal ADC B2p - PED' H.Cal.2ta.apos_p[1] 150 50 500
-TH1F hcaladc_B3p 'HMS Cal ADC B3p - PED' H.Cal.2ta.apos_p[2] 150 50 500
-TH1F hcaladc_B4p 'HMS Cal ADC B4p - PED' H.Cal.2ta.apos_p[3] 150 50 500
-TH1F hcaladc_B5p 'HMS Cal ADC B5p - PED' H.Cal.2ta.apos_p[4] 150 50 500
-TH1F hcaladc_B6p 'HMS Cal ADC B6p - PED' H.Cal.2ta.apos_p[5] 150 50 500
-TH1F hcaladc_B7p 'HMS Cal ADC B7p - PED' H.Cal.2ta.apos_p[6] 150 50 500
-TH1F hcaladc_B8p 'HMS Cal ADC B8p - PED' H.Cal.2ta.apos_p[7] 150 50 500
-TH1F hcaladc_B9p 'HMS Cal ADC B9p - PED' H.Cal.2ta.apos_p[8] 150 50 500
-TH1F hcaladc_B10p 'HMS Cal ADC B10p - PED' H.Cal.2ta.apos_p[9] 150 50 500
-TH1F hcaladc_B11p 'HMS Cal ADC B11p - PED' H.Cal.2ta.apos_p[10] 150 50 500
-TH1F hcaladc_B12p 'HMS Cal ADC B12p - PED' H.Cal.2ta.apos_p[11] 150 50 500
-TH1F hcaladc_B13p 'HMS Cal ADC B13p - PED' H.Cal.2ta.apos_p[12] 150 50 500
+TH1F hcaladc_B1p 'HMS Cal ADC B1p - PED' H.cal.2ta.apos_p[0] 150 50 500
+TH1F hcaladc_B2p 'HMS Cal ADC B2p - PED' H.cal.2ta.apos_p[1] 150 50 500
+TH1F hcaladc_B3p 'HMS Cal ADC B3p - PED' H.cal.2ta.apos_p[2] 150 50 500
+TH1F hcaladc_B4p 'HMS Cal ADC B4p - PED' H.cal.2ta.apos_p[3] 150 50 500
+TH1F hcaladc_B5p 'HMS Cal ADC B5p - PED' H.cal.2ta.apos_p[4] 150 50 500
+TH1F hcaladc_B6p 'HMS Cal ADC B6p - PED' H.cal.2ta.apos_p[5] 150 50 500
+TH1F hcaladc_B7p 'HMS Cal ADC B7p - PED' H.cal.2ta.apos_p[6] 150 50 500
+TH1F hcaladc_B8p 'HMS Cal ADC B8p - PED' H.cal.2ta.apos_p[7] 150 50 500
+TH1F hcaladc_B9p 'HMS Cal ADC B9p - PED' H.cal.2ta.apos_p[8] 150 50 500
+TH1F hcaladc_B10p 'HMS Cal ADC B10p - PED' H.cal.2ta.apos_p[9] 150 50 500
+TH1F hcaladc_B11p 'HMS Cal ADC B11p - PED' H.cal.2ta.apos_p[10] 150 50 500
+TH1F hcaladc_B12p 'HMS Cal ADC B12p - PED' H.cal.2ta.apos_p[11] 150 50 500
+TH1F hcaladc_B13p 'HMS Cal ADC B13p - PED' H.cal.2ta.apos_p[12] 150 50 500
 
-TH1F hcaladc_C1p 'HMS Cal ADC C1p - PED' H.Cal.3ta.apos_p[0] 150 50 500
-TH1F hcaladc_C2p 'HMS Cal ADC C2p - PED' H.Cal.3ta.apos_p[1] 150 50 500
-TH1F hcaladc_C3p 'HMS Cal ADC C3p - PED' H.Cal.3ta.apos_p[2] 150 50 500
-TH1F hcaladc_C4p 'HMS Cal ADC C4p - PED' H.Cal.3ta.apos_p[3] 150 50 500
-TH1F hcaladc_C5p 'HMS Cal ADC C5p - PED' H.Cal.3ta.apos_p[4] 150 50 500
-TH1F hcaladc_C6p 'HMS Cal ADC C6p - PED' H.Cal.3ta.apos_p[5] 150 50 500
-TH1F hcaladc_C7p 'HMS Cal ADC C7p - PED' H.Cal.3ta.apos_p[6] 150 50 500
-TH1F hcaladc_C8p 'HMS Cal ADC C8p - PED' H.Cal.3ta.apos_p[7] 150 50 500
-TH1F hcaladc_C9p 'HMS Cal ADC C9p - PED' H.Cal.3ta.apos_p[8] 150 50 500
-TH1F hcaladc_C10p 'HMS Cal ADC C10p - PED' H.Cal.3ta.apos_p[9] 150 50 500
-TH1F hcaladc_C11p 'HMS Cal ADC C11p - PED' H.Cal.3ta.apos_p[10] 150 50 500
-TH1F hcaladc_C12p 'HMS Cal ADC C12p - PED' H.Cal.3ta.apos_p[11] 150 50 500
-TH1F hcaladc_C13p 'HMS Cal ADC C13p - PED' H.Cal.3ta.apos_p[12] 150 50 500
+TH1F hcaladc_C1p 'HMS Cal ADC C1p - PED' H.cal.3ta.apos_p[0] 150 50 500
+TH1F hcaladc_C2p 'HMS Cal ADC C2p - PED' H.cal.3ta.apos_p[1] 150 50 500
+TH1F hcaladc_C3p 'HMS Cal ADC C3p - PED' H.cal.3ta.apos_p[2] 150 50 500
+TH1F hcaladc_C4p 'HMS Cal ADC C4p - PED' H.cal.3ta.apos_p[3] 150 50 500
+TH1F hcaladc_C5p 'HMS Cal ADC C5p - PED' H.cal.3ta.apos_p[4] 150 50 500
+TH1F hcaladc_C6p 'HMS Cal ADC C6p - PED' H.cal.3ta.apos_p[5] 150 50 500
+TH1F hcaladc_C7p 'HMS Cal ADC C7p - PED' H.cal.3ta.apos_p[6] 150 50 500
+TH1F hcaladc_C8p 'HMS Cal ADC C8p - PED' H.cal.3ta.apos_p[7] 150 50 500
+TH1F hcaladc_C9p 'HMS Cal ADC C9p - PED' H.cal.3ta.apos_p[8] 150 50 500
+TH1F hcaladc_C10p 'HMS Cal ADC C10p - PED' H.cal.3ta.apos_p[9] 150 50 500
+TH1F hcaladc_C11p 'HMS Cal ADC C11p - PED' H.cal.3ta.apos_p[10] 150 50 500
+TH1F hcaladc_C12p 'HMS Cal ADC C12p - PED' H.cal.3ta.apos_p[11] 150 50 500
+TH1F hcaladc_C13p 'HMS Cal ADC C13p - PED' H.cal.3ta.apos_p[12] 150 50 500
 
-TH1F hcaladc_D1p 'HMS Cal ADC D1p - PED' H.Cal.4ta.apos_p[0] 150 50 500
-TH1F hcaladc_D2p 'HMS Cal ADC D2p - PED' H.Cal.4ta.apos_p[1] 150 50 500
-TH1F hcaladc_D3p 'HMS Cal ADC D3p - PED' H.Cal.4ta.apos_p[2] 150 50 500
-TH1F hcaladc_D4p 'HMS Cal ADC D4p - PED' H.Cal.4ta.apos_p[3] 150 50 500
-TH1F hcaladc_D5p 'HMS Cal ADC D5p - PED' H.Cal.4ta.apos_p[4] 150 50 500
-TH1F hcaladc_D6p 'HMS Cal ADC D6p - PED' H.Cal.4ta.apos_p[5] 150 50 500
-TH1F hcaladc_D7p 'HMS Cal ADC D7p - PED' H.Cal.4ta.apos_p[6] 150 50 500
-TH1F hcaladc_D8p 'HMS Cal ADC D8p - PED' H.Cal.4ta.apos_p[7] 150 50 500
-TH1F hcaladc_D9p 'HMS Cal ADC D9p - PED' H.Cal.4ta.apos_p[8] 150 50 500
-TH1F hcaladc_D10p 'HMS Cal ADC D10p - PED' H.Cal.4ta.apos_p[9] 150 50 500
-TH1F hcaladc_D11p 'HMS Cal ADC D11p - PED' H.Cal.4ta.apos_p[10] 150 50 500
-TH1F hcaladc_D12p 'HMS Cal ADC D12p - PED' H.Cal.4ta.apos_p[11] 150 50 500
-TH1F hcaladc_D13p 'HMS Cal ADC D13p - PED' H.Cal.4ta.apos_p[12] 150 50 500
+TH1F hcaladc_D1p 'HMS Cal ADC D1p - PED' H.cal.4ta.apos_p[0] 150 50 500
+TH1F hcaladc_D2p 'HMS Cal ADC D2p - PED' H.cal.4ta.apos_p[1] 150 50 500
+TH1F hcaladc_D3p 'HMS Cal ADC D3p - PED' H.cal.4ta.apos_p[2] 150 50 500
+TH1F hcaladc_D4p 'HMS Cal ADC D4p - PED' H.cal.4ta.apos_p[3] 150 50 500
+TH1F hcaladc_D5p 'HMS Cal ADC D5p - PED' H.cal.4ta.apos_p[4] 150 50 500
+TH1F hcaladc_D6p 'HMS Cal ADC D6p - PED' H.cal.4ta.apos_p[5] 150 50 500
+TH1F hcaladc_D7p 'HMS Cal ADC D7p - PED' H.cal.4ta.apos_p[6] 150 50 500
+TH1F hcaladc_D8p 'HMS Cal ADC D8p - PED' H.cal.4ta.apos_p[7] 150 50 500
+TH1F hcaladc_D9p 'HMS Cal ADC D9p - PED' H.cal.4ta.apos_p[8] 150 50 500
+TH1F hcaladc_D10p 'HMS Cal ADC D10p - PED' H.cal.4ta.apos_p[9] 150 50 500
+TH1F hcaladc_D11p 'HMS Cal ADC D11p - PED' H.cal.4ta.apos_p[10] 150 50 500
+TH1F hcaladc_D12p 'HMS Cal ADC D12p - PED' H.cal.4ta.apos_p[11] 150 50 500
+TH1F hcaladc_D13p 'HMS Cal ADC D13p - PED' H.cal.4ta.apos_p[12] 150 50 500
 
-TH1F hcaladc_A1n 'HMS Cal ADC A1n - PED' H.Cal.1pr.aneg_p[0] 150 50 500
-TH1F hcaladc_A2n 'HMS Cal ADC A2n - PED' H.Cal.1pr.aneg_p[1] 150 50 500
-TH1F hcaladc_A3n 'HMS Cal ADC A3n - PED' H.Cal.1pr.aneg_p[2] 150 50 500
-TH1F hcaladc_A4n 'HMS Cal ADC A4n - PED' H.Cal.1pr.aneg_p[3] 150 50 500
-TH1F hcaladc_A5n 'HMS Cal ADC A5n - PED' H.Cal.1pr.aneg_p[4] 150 50 500
-TH1F hcaladc_A6n 'HMS Cal ADC A6n - PED' H.Cal.1pr.aneg_p[5] 150 50 500
-TH1F hcaladc_A7n 'HMS Cal ADC A7n - PED' H.Cal.1pr.aneg_p[6] 150 50 500
-TH1F hcaladc_A8n 'HMS Cal ADC A8n - PED' H.Cal.1pr.aneg_p[7] 150 50 500
-TH1F hcaladc_A9n 'HMS Cal ADC A9n - PED' H.Cal.1pr.aneg_p[8] 150 50 500
-TH1F hcaladc_A10n 'HMS Cal ADC A10n - PED' H.Cal.1pr.aneg_p[9] 150 50 500
-TH1F hcaladc_A11n 'HMS Cal ADC A11n - PED' H.Cal.1pr.aneg_p[10] 150 50 500
-TH1F hcaladc_A12n 'HMS Cal ADC A12n - PED' H.Cal.1pr.aneg_p[11] 150 50 500
-TH1F hcaladc_A13n 'HMS Cal ADC A13n - PED' H.Cal.1pr.aneg_p[12] 150 50 500
+TH1F hcaladc_A1n 'HMS Cal ADC A1n - PED' H.cal.1pr.aneg_p[0] 150 50 500
+TH1F hcaladc_A2n 'HMS Cal ADC A2n - PED' H.cal.1pr.aneg_p[1] 150 50 500
+TH1F hcaladc_A3n 'HMS Cal ADC A3n - PED' H.cal.1pr.aneg_p[2] 150 50 500
+TH1F hcaladc_A4n 'HMS Cal ADC A4n - PED' H.cal.1pr.aneg_p[3] 150 50 500
+TH1F hcaladc_A5n 'HMS Cal ADC A5n - PED' H.cal.1pr.aneg_p[4] 150 50 500
+TH1F hcaladc_A6n 'HMS Cal ADC A6n - PED' H.cal.1pr.aneg_p[5] 150 50 500
+TH1F hcaladc_A7n 'HMS Cal ADC A7n - PED' H.cal.1pr.aneg_p[6] 150 50 500
+TH1F hcaladc_A8n 'HMS Cal ADC A8n - PED' H.cal.1pr.aneg_p[7] 150 50 500
+TH1F hcaladc_A9n 'HMS Cal ADC A9n - PED' H.cal.1pr.aneg_p[8] 150 50 500
+TH1F hcaladc_A10n 'HMS Cal ADC A10n - PED' H.cal.1pr.aneg_p[9] 150 50 500
+TH1F hcaladc_A11n 'HMS Cal ADC A11n - PED' H.cal.1pr.aneg_p[10] 150 50 500
+TH1F hcaladc_A12n 'HMS Cal ADC A12n - PED' H.cal.1pr.aneg_p[11] 150 50 500
+TH1F hcaladc_A13n 'HMS Cal ADC A13n - PED' H.cal.1pr.aneg_p[12] 150 50 500
 
-TH1F hcaladc_B1n 'HMS Cal ADC B1n - PED' H.Cal.2ta.aneg_p[0] 150 50 500
-TH1F hcaladc_B2n 'HMS Cal ADC B2n - PED' H.Cal.2ta.aneg_p[1] 150 50 500
-TH1F hcaladc_B3n 'HMS Cal ADC B3n - PED' H.Cal.2ta.aneg_p[2] 150 50 500
-TH1F hcaladc_B4n 'HMS Cal ADC B4n - PED' H.Cal.2ta.aneg_p[3] 150 50 500
-TH1F hcaladc_B5n 'HMS Cal ADC B5n - PED' H.Cal.2ta.aneg_p[4] 150 50 500
-TH1F hcaladc_B6n 'HMS Cal ADC B6n - PED' H.Cal.2ta.aneg_p[5] 150 50 500
-TH1F hcaladc_B7n 'HMS Cal ADC B7n - PED' H.Cal.2ta.aneg_p[6] 150 50 500
-TH1F hcaladc_B8n 'HMS Cal ADC B8n - PED' H.Cal.2ta.aneg_p[7] 150 50 500
-TH1F hcaladc_B9n 'HMS Cal ADC B9n - PED' H.Cal.2ta.aneg_p[8] 150 50 500
-TH1F hcaladc_B10n 'HMS Cal ADC B10n - PED' H.Cal.2ta.aneg_p[9] 150 50 500
-TH1F hcaladc_B11n 'HMS Cal ADC B11n - PED' H.Cal.2ta.aneg_p[10] 150 50 500
-TH1F hcaladc_B12n 'HMS Cal ADC B12n - PED' H.Cal.2ta.aneg_p[11] 150 50 500
-TH1F hcaladc_B13n 'HMS Cal ADC B13n - PED' H.Cal.2ta.aneg_p[12] 150 50 500
+TH1F hcaladc_B1n 'HMS Cal ADC B1n - PED' H.cal.2ta.aneg_p[0] 150 50 500
+TH1F hcaladc_B2n 'HMS Cal ADC B2n - PED' H.cal.2ta.aneg_p[1] 150 50 500
+TH1F hcaladc_B3n 'HMS Cal ADC B3n - PED' H.cal.2ta.aneg_p[2] 150 50 500
+TH1F hcaladc_B4n 'HMS Cal ADC B4n - PED' H.cal.2ta.aneg_p[3] 150 50 500
+TH1F hcaladc_B5n 'HMS Cal ADC B5n - PED' H.cal.2ta.aneg_p[4] 150 50 500
+TH1F hcaladc_B6n 'HMS Cal ADC B6n - PED' H.cal.2ta.aneg_p[5] 150 50 500
+TH1F hcaladc_B7n 'HMS Cal ADC B7n - PED' H.cal.2ta.aneg_p[6] 150 50 500
+TH1F hcaladc_B8n 'HMS Cal ADC B8n - PED' H.cal.2ta.aneg_p[7] 150 50 500
+TH1F hcaladc_B9n 'HMS Cal ADC B9n - PED' H.cal.2ta.aneg_p[8] 150 50 500
+TH1F hcaladc_B10n 'HMS Cal ADC B10n - PED' H.cal.2ta.aneg_p[9] 150 50 500
+TH1F hcaladc_B11n 'HMS Cal ADC B11n - PED' H.cal.2ta.aneg_p[10] 150 50 500
+TH1F hcaladc_B12n 'HMS Cal ADC B12n - PED' H.cal.2ta.aneg_p[11] 150 50 500
+TH1F hcaladc_B13n 'HMS Cal ADC B13n - PED' H.cal.2ta.aneg_p[12] 150 50 500
 
 #TH1F hdcrawtdc
 #TH1F hdccuttdc
