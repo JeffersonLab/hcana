@@ -48,24 +48,17 @@ class THcShowerPlane : public THaSubDetector {
 
  protected:
 
-
-//  TClonesArray* fPosADC1[13];
-
-
-  Float_t*   fA;         // [fNelem] Array of ADC amplitudes of blocks
-TClonesArray* fPosADC1;
-TClonesArray* fPosADC[13];
+  Float_t*   fA_Pos;         // [fNelem] Array of ADC amplitudes of blocks
+  Float_t*   fA_Neg;         // [fNelem] Array of ADC amplitudes of blocks
+  Float_t*   fA_Pos_p;	     // [fNelem] Array of pedestal subtracted ADC amplitudes
+  Float_t*   fA_Neg_p;	     // [fNelem] Array of pedestal subtracted ADC amplitudes
 
   TClonesArray* fPosADCHits;
   TClonesArray* fNegADCHits;
 
-  FILE* CalADC1File;
-
   Int_t fLayerNum;
 
-Int_t fPlaneNum;		/* Which plane am I 1-4 */
-  Int_t fNelem;			/* Need since we don't inherit from 
-				 detector base class */
+  Int_t fPlaneNum;		/* Which plane am I 1-4 */
   Int_t fNPedestalEvents;	/* Number of pedestal events */
   Int_t fMinPeds;		/* Only analyze/update if num events > */
   Int_t *fPosPedSum;		/* Accumulators for pedestals */

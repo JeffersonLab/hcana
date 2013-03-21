@@ -615,7 +615,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     fGoodStartTime=kFALSE;
     fStartTime=fStartTimeCenter;
   }
-  cout <<" stats = "<<fGoodStartTime<<" "<<nfptimes<<" fStartTime = "<<fStartTime<<endl;
+  //  cout <<" stats = "<<fGoodStartTime<<" "<<nfptimes<<" fStartTime = "<<fStartTime<<endl;
   // fRawHitList is TClones array of THcHodoscopeHit objects
 #if 0
   for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {

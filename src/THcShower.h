@@ -33,7 +33,8 @@ public:
   
   Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
-  
+
+  Int_t GetNBlocks(Int_t plane) const { return fNBlocks[plane-1];}
   friend class THaScCalib;
 
   THcShower();  // for ROOT I/O
@@ -47,6 +48,7 @@ protected:
   // Potential Hall C parameters.  Mostly here for demonstration
   char** fLayerNames;
   Int_t fNLayers;
+  Int_t fNRows;
   Double_t* fNLayerZPos;		// Z position of front of shower counter layers
   Double_t* BlockThick;		// Thickness of shower counter blocks, blocks
   Int_t* fNBlocks;           // Number of shower counter blocks per layer

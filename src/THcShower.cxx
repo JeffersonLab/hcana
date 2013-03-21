@@ -38,6 +38,7 @@ THcShower::THcShower( const char* name, const char* description,
 {
   // Constructor
 //  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
+  fNLayers = 0;			// No layers until we make them
 }
 
 //_____________________________________________________________________________
@@ -50,31 +51,38 @@ THcShower::THcShower( ) :
 void THcShower::Setup(const char* name, const char* description)
 {
 
-  static const char* const here = "Setup()";
-  static const char* const message = 
-    "Must construct %s detector with valid name! Object construction failed.";
+  char prefix[2];
 
-  // Base class constructor failed?
-  if( IsZombie()) return;
+  prefix[0] = tolower(GetApparatus()->GetName()[0]);
+  prefix[1] = '\0';
 
-  fNLayers = 4;	// Eventually get # layers and layer names from a DB
+  string layernamelist;
+  DBRequest list[]={
+    {"cal_num_layers", &fNLayers, kInt},
+    {"cal_layer_names", &layernamelist, kString},
+    {0}
+  };
+
+  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  cout << layernamelist << endl;
+  cout << "Shower Counter: " << fNLayers << " layers" << endl;
+
+  vector<string> layer_names = vsplit(layernamelist);
+
+  if(layer_names.size() != (UInt_t) fNLayers) {
+    cout << "ERROR: Number of layers " << fNLayers << " doesn't agree with number of layer names " << layer_names.size() << endl;
+    // Should quit.  Is there an official way to quit?
+  }
+
   fLayerNames = new char* [fNLayers];
-  for(Int_t i=0;i<fNLayers;i++) {fLayerNames[i] = new char[4];}
-  // Use layer names to help construct parameter names
-  strcpy(fLayerNames[0],"1pr");
-  strcpy(fLayerNames[1],"2ta");
-  strcpy(fLayerNames[2],"3ta");
-  strcpy(fLayerNames[3],"4ta");
-
-  size_t nlen = strlen(name);
-  size_t slen = 0;
-  for(Int_t i=0;i < fNLayers;i++)
-    {slen = TMath::Max(slen,strlen(fLayerNames[i]));}
-  size_t len = nlen+slen+1;
-
-  // Probably shouldn't assume that description is defined
-  char* desc = new char[strlen(description)+50+slen];
+  for(Int_t i=0;i<fNLayers;i++) {
+    fLayerNames[i] = new char[layer_names[i].length()];
+    strcpy(fLayerNames[i], layer_names[i].c_str());
+  }
+  
+  char *desc = new char[strlen(description)+100];
   fPlanes = new THcShowerPlane* [fNLayers];
+
   for(Int_t i=0;i < fNLayers;i++) {
     strcpy(desc, description);
     strcat(desc, " Plane ");
@@ -108,11 +116,13 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
       return fStatus=status;
     }
   }
-  // Will need to determine which apparatus it belongs to and use the
-  // appropriate detector ID in the FillMap call
-  if( gHcDetectorMap->FillMap(fDetMap, "HCAL") < 0 ) {
+
+  char EngineDID[] = " CAL";
+  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
+
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
     Error( Here(here), "Error filling detectormap for %s.", 
-	     "HCAL");
+	     EngineDID);
       return kInitError;
   }
 
