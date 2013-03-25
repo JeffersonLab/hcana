@@ -56,6 +56,24 @@ THcAerogel::THcAerogel( ) :
 }
 
 //_____________________________________________________________________________
+THcAerogel::~THcAerogel()
+{
+  // Destructor
+  delete [] fA_Pos;
+  delete [] fA_Neg;
+  delete [] fA_Pos_p;
+  delete [] fA_Neg_p;
+  delete [] fT_Pos;
+  delete [] fT_Neg;
+  delete [] fPosGain;
+  delete [] fNegGain;
+  delete [] fPosPedLimit;
+  delete [] fNegPedLimit;
+  delete [] fPosPedMean;
+  delete [] fNegPedMean;
+}
+
+//_____________________________________________________________________________
 THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
 {
   static const char* const here = "Init()";
@@ -100,6 +118,13 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   };
   fNelem = 8;			// Default if not defined
   gHcParms->LoadParmValues((DBRequest*)&listextra,prefix);
+
+  fA_Pos = new Float_t[fNelem];
+  fA_Neg = new Float_t[fNelem];
+  fA_Pos_p = new Float_t[fNelem];
+  fA_Neg_p = new Float_t[fNelem];
+  fT_Pos = new Float_t[fNelem];
+  fT_Neg = new Float_t[fNelem];
 
   fPosGain = new Double_t[fNelem];
   fNegGain = new Double_t[fNelem];
@@ -151,8 +176,14 @@ Int_t THcAerogel::DefineVariables( EMode mode )
      "fPosADCHits.THcSignalHit.GetPaddleNumber()"},
     {"negadchits", "List of Negative ADC hits", 
      "fNegADCHits.THcSignalHit.GetPaddleNumber()"},
+    {"apos",  "Raw Positive ADC Amplitudes",   "fA_Pos"},
+    {"aneg",  "Raw Negative ADC Amplitudes",   "fA_Neg"},
+    {"apos_p",  "Ped-subtracted Positive ADC Amplitudes",   "fA_Pos_p"},
+    {"aneg_p",  "Ped-subtracted Negative ADC Amplitudes",   "fA_Neg_p"},
+    {"tpos",  "Raw Positive TDC",   "fT_Pos"},
+    {"tneg",  "Raw Negative TDC",   "fT_Neg"},
     {"pos_npe","PEs Positive Tube","fPosNpe"},
-    {"neg_npe","PEs PE Negative Tube","fNegNpe"},
+    {"neg_npe","PEs Negative Tube","fNegNpe"},
     {"pos_npe_sum", "Total Positive Tube PEs", "fPosNpeSum"},
     {"neg_npe_sum", "Total Negative Tube PEs", "fNegNpeSum"},
     {"npe_sum", "Total PEs", "fNpeSum"},
@@ -190,6 +221,12 @@ void THcAerogel::Clear(Option_t* opt)
   fNTDCNegHits = 0;
 
   for(Int_t itube = 0;itube < fNelem;itube++) {
+    fA_Pos[itube] = 0;
+    fA_Neg[itube] = 0;
+    fA_Pos_p[itube] = 0;
+    fA_Neg_p[itube] = 0;
+    fT_Pos[itube] = 0;
+    fT_Neg[itube] = 0;
     fPosNpe[itube] = 0.0;
     fNegNpe[itube] = 0.0;
   }
@@ -278,15 +315,22 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
     // be assigned NPE = 100.0.
 
     Int_t npmt = hit->fCounter - 1;
+    // Should probably check that npmt is in range
+    fA_Pos[npmt] = hit->fADC_pos;
+    fA_Neg[npmt] = hit->fADC_neg;
+    fA_Pos_p[npmt] = hit->fADC_pos - fPosPedMean[npmt];
+    fA_Neg_p[npmt] = hit->fADC_neg - fNegPedMean[npmt];
+    fT_Pos[npmt] = hit->fTDC_pos;
+    fT_Neg[npmt] = hit->fTDC_neg;
 
     if(hit->fADC_pos < 8000) {
-      fPosNpe[npmt] = fPosGain[npmt]*(hit->fADC_pos - fPosPedMean[npmt]);
+      fPosNpe[npmt] = fPosGain[npmt]*fA_Pos_p[npmt];
     } else {
       fPosNpe[npmt] = 100.0;
     }
 
     if(hit->fADC_neg < 8000) {
-      fNegNpe[npmt] = fNegGain[npmt]*(hit->fADC_neg - fNegPedMean[npmt]);
+      fNegNpe[npmt] = fNegGain[npmt]*fA_Neg_p[npmt];
     } else {
       fNegNpe[npmt] = 100.0;
     }

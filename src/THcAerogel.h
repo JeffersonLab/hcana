@@ -17,7 +17,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
  public:
   THcAerogel( const char* name, const char* description = "",
 		THaApparatus* a = NULL );
-  virtual ~THcAerogel() {};
+  virtual ~THcAerogel();
   
   virtual void 	     Clear( Option_t* opt="" );
   virtual Int_t      Decode( const THaEvData& );
@@ -44,6 +44,14 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
 
   // Event information
   Int_t fNhits;
+
+  Float_t*   fA_Pos;         // [fNelem] Array of ADC amplitudes
+  Float_t*   fA_Neg;         // [fNelem] Array of ADC amplitudes
+  Float_t*   fA_Pos_p;	     // [fNelem] Array of ped-subtracted ADC amplitudes
+  Float_t*   fA_Neg_p;	     // [fNelem] Array of ped-subtracted ADC amplitudes
+  Float_t*   fT_Pos;         // [fNelem] Array of TDCs
+  Float_t*   fT_Neg;         // [fNelem] Array of TDCs
+
   Double_t fPosNpeSum;
   Double_t fNegNpeSum;
   Double_t fNpeSum;
@@ -53,8 +61,8 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   Int_t fNTDCPosHits;
   Int_t fNTDCNegHits;
 
-  Double_t* fPosNpe;
-  Double_t* fNegNpe;
+  Double_t* fPosNpe;		// [fNelem] # Photoelectrons per positive tube
+  Double_t* fNegNpe;		// [fNelem] # Photoelectrons per negative tube
 
   // Hits
   TClonesArray* fPosTDCHits;
