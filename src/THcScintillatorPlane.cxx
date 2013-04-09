@@ -41,8 +41,7 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fNScinHits = 0; 
   //
   fMaxHits=53;
-  fpTimeHits=0;
-  fpTime = new Double_t [fMaxHits];
+  fpTime = -1.e5;
 }
 //______________________________________________________________________________
 THcScintillatorPlane::THcScintillatorPlane( const char* name, 
@@ -62,8 +61,7 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fNScinHits = 0;
   //
   fMaxHits=53;
-  fpTimeHits=0;
-  fpTime = new Double_t [fMaxHits];
+  fpTime = -1.e5;
 
 }
 
@@ -75,7 +73,6 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete fNegTDCHits;
   delete fPosADCHits;
   delete fNegADCHits;
-  delete fpTime;
 }
 
 //______________________________________________________________________________
@@ -217,6 +214,8 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
      "fPosADCHits.THcSignalHit.GetPaddleNumber()"},
     {"negadchits", "List of Negative ADC hits", 
      "fNegADCHits.THcSignalHit.GetPaddleNumber()"},
+    {"fptime", "Time at focal plane", 
+     "GetFpTime()"},
     { 0 }
   };
 
@@ -280,7 +279,6 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   fNegTDCHits->Clear();
   fPosADCHits->Clear();
   fNegADCHits->Clear();
-
   Int_t nrawhits = rawhits->GetLast()+1;
   // cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
   mintdc=((THcHodoscope *)GetParent())->GetTdcMin();
@@ -295,30 +293,38 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     // check TDC values
     if (((hit->fTDC_pos >= mintdc) && (hit->fTDC_pos <= maxtdc)) ||
 	((hit->fTDC_neg >= mintdc) && (hit->fTDC_neg <= maxtdc))) {
-
+      // GN: careful here: hit->fCounter will return elements starting from 1
+      // if one wants to count from zero (as one should!) we need to take care of this straight away!!
+      //
+      Int_t element=hit->fCounter-1;
+      //**********
+      ///      cout <<"hcana plane = "<<fPlaneNum<<" counter = "<<element<<endl;
+      //**********
       //TDC positive hit
       THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
-      sighit->Set(hit->fCounter, hit->fTDC_pos);
+      sighit->Set(element, hit->fTDC_pos);
       // TDC negative hit
       THcSignalHit *sighit2 = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
-      sighit2->Set(hit->fCounter, hit->fTDC_neg);
+      sighit2->Set(element, hit->fTDC_neg);
       // ADC positive hit
       /// if(hit->fADC_pos >  0) {
-	THcSignalHit *sighit3 = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
-	sighit3->Set(hit->fCounter, hit->fADC_pos-fPosPed[ihit]);
+      THcSignalHit *sighit3 = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
+      sighit3->Set(element, hit->fADC_pos-fPosPed[element]);
+      ///cout <<"hcana raw/ped = "<<hit->fADC_pos<<" "<<fPosPed[element]<<endl;
 	///} else {
 	///  cout<<"Skipping ADC_pos "<<hit->fADC_pos<<endl;
 	/// }
       // ADC negative hit
 	///      if(hit->fADC_neg >  0) {   
 	// cout <<"adc neg hit!!\n";
-	THcSignalHit *sighit4 = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
-	sighit4->Set(hit->fCounter, hit->fADC_neg-fNegPed[ihit]);
+      THcSignalHit *sighit4 = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
+      sighit4->Set(element, hit->fADC_neg-fNegPed[element]);
+      
+      fNScinHits++;
 	///} else {
 	///cout<<"Skipping ADC_neg "<<hit->fADC_neg<<endl;
 	///}
       //      cout <<"test "<<fNHits<<endl;
-      fNScinHits=fNScinHits++;
     }
     else {
       //cout <<"pos TDC "<<hit->fTDC_pos<<" "<<mintdc<<" "<<maxtdc<<endl;
@@ -364,7 +370,7 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
   for (i=0;i<200;i++) {
     timehist[i]=0;
   }
-  for (i=0;i<53;i++) {
+  for (i=0;i<fMaxHits;i++) {
     keep_pos[i]=kFALSE;
     keep_neg[i]=kFALSE;
     two_good_times[i]=kFALSE;
@@ -376,8 +382,8 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
   toftolerance=((THcHodoscope *)GetParent())->GetTofTolerance();
   //  hbeta_pcent=(TH((THcHodoscope *)GetParent())->GetParent()
   // Horrible hack until I find out where to get the central beta from momentum!! GN
-  hbeta_pcent=0.99776;
-
+  hbeta_pcent=1.0;
+  fpTime=-1e5;
   for (i=0;i<fNScinHits;i++) {
     if ((((THcSignalHit*) fPosTDCHits->At(i))->GetData()>=mintdc) &&
 	(((THcSignalHit*) fPosTDCHits->At(i))->GetData()<=maxtdc) &&
@@ -390,6 +396,7 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
 	  postime[i]=postime[i]-((THcHodoscope *)GetParent())->GetHodoPosPhcCoeff(index)*
 	    TMath::Sqrt(TMath::Max(0.,(pos_ph[i]/((THcHodoscope *)GetParent())->GetHodoPosMinPh(index)-1)));
 	  postime[i]=postime[i]-((THcHodoscope *)GetParent())->GetHodoPosTimeOffset(index);
+
 	  neg_ph[i]=((THcSignalHit*) fNegADCHits->At(i))->GetData();
 	  negtime[i]=((THcSignalHit*) fNegTDCHits->At(i))->GetData()*tdctotime;
 	  j=((THcSignalHit*)fNegTDCHits->At(i))->GetPaddleNumber();
@@ -397,6 +404,16 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
 	  negtime[i]=negtime[i]-((THcHodoscope *)GetParent())->GetHodoNegPhcCoeff(index)*
 	    TMath::Sqrt(TMath::Max(0.,(neg_ph[i]/((THcHodoscope *)GetParent())->GetHodoNegMinPh(index)-1)));
 	  negtime[i]=negtime[i]-((THcHodoscope *)GetParent())->GetHodoNegTimeOffset(index);
+
+	  // ***************
+	  ///	  cout <<"hcana i = "<<i<<endl;
+	  ///  cout <<"hcana tdc_pos = "<<((THcSignalHit*) fPosTDCHits->At(i))->GetData()<<endl;
+	  ///cout <<"hcana pos_ph = "<<pos_ph[i]<<endl;
+	  //	  cout <<"hcana pos_phc_coeff = "<<((THcHodoscope *)GetParent())->GetHodoPosPhcCoeff(index)<<endl;
+	  //	  cout <<"hcana postime = "<<postime[i]<<endl;
+	  //cout <<"hcana negtime = "<<negtime[i]<<endl;
+	  //*************
+
 	  // Find hit position.  If postime larger, then hit was nearer negative side.
 	  dist_from_center=0.5*(negtime[i]-postime[i])*((THcHodoscope *)GetParent())->GetHodoVelLight(index);
 	  scint_center=0.5*(fPosLeft+fPosRight);
@@ -405,6 +422,7 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
 	  hit_position=TMath::Max(hit_position,fPosRight);
 	  postime[i]=postime[i]-(fPosLeft-hit_position)/((THcHodoscope *)GetParent())->GetHodoVelLight(index);
 	  negtime[i]=negtime[i]-(hit_position-fPosRight)/((THcHodoscope *)GetParent())->GetHodoVelLight(index);
+
 	  time_pos[i]=postime[i]-(fZpos+(j%2)*fDzpos)/(29.979*hbeta_pcent);
 	  time_neg[i]=negtime[i]-(fZpos+(j%2)*fDzpos)/(29.979*hbeta_pcent);
 	  nfound++;
@@ -421,7 +439,7 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
     }
   }
   // Find the bin with most hits
-  jmax=-1;
+  jmax=0;
   maxhit=0;
   for (i=0;i<200;i++) {
     if (timehist[i]>maxhit) {
@@ -451,7 +469,6 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
       two_good_times[i]=kTRUE;
     }
   } // end of loop that finds tube setting time
-  fpTimeHits=0;
   for (i=0;i<fNScinHits;i++) {
     if (two_good_times[i]) { // both tubes fired
       // correct time for everything except veloc. correction in order
@@ -480,13 +497,15 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
       postime[i]=postime[i]-(fPosLeft-hit_position)/((THcHodoscope *)GetParent())->GetHodoVelLight(index);
       negtime[i]=negtime[i]-(hit_position-fPosRight)/((THcHodoscope *)GetParent())->GetHodoVelLight(index);
       scin_corrected_time[i]=0.5*(postime[i]+negtime[i]);
-      fpTime[i]=scin_corrected_time[i]-(fZpos+(j%2)*fDzpos)/(29.979*hbeta_pcent);
-      ///   cout <<"fptime ["<<i<<"]= "<<fpTime[i]<<endl;
-      fpTimeHits++;
+      fpTime=scin_corrected_time[i]-(fZpos+(j%2)*fDzpos)/(29.979*hbeta_pcent);
+      
+      //cout <<"hcana corr_time = "<<scin_corrected_time[i]<<endl;
+      //cout<<"hcana hbeta_pcent = "<<hbeta_pcent<<endl;
+      //cout<<"hcana zpos = "<<(fZpos+(j%2)*fDzpos)<<endl;
+      //cout <<"hcana fptime = "<<fpTime<<endl;
     }
     else { // only one tube fired
       scin_corrected_time[i]=0.0; // not a very good "flag" but there is the logical two_good_hits...
-      fpTime[i]=0.0; // NOTE: we're not incrementing fpTimeHits. In principle these two lines might be deleted
     }
   }
   // Start time calculation, assume xp=yp=0 radians. project all
@@ -552,7 +571,7 @@ void THcScintillatorPlane::CalculatePedestals( )
     fNegPed[i] = ((Double_t) fNegPedSum[i]) / TMath::Max(1, fNegPedCount[i]);
     fNegThresh[i] = fNegPed[i] + 15;
 
-    //    cout << i+1 << " " << fPosPed[i] << " " << fNegPed[i] << endl;
+    //    cout <<"Pedestals "<< i+1 << " " << fPosPed[i] << " " << fNegPed[i] << endl;
   }
   //  cout << " " << endl;
   

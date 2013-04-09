@@ -9,3 +9,6 @@ RawDecode_master  1
 Block: Decode
 Decode_master     !Pedestal_event
 
+Block: CoarseReconstruct
+RawCoarseReconstruct !Pedestal_event
+
