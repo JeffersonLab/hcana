@@ -141,14 +141,14 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   //
   // Based on the signs of these quantities in the .pos file the correspondence 
   // should be bot=>left  and top=>right when comparing x and y-type scintillators
-  char *tmpleft, *tmpright;
+  char tmpleft[6], tmpright[6];
   if (fPlaneNum==1 || fPlaneNum==3) {
-    tmpleft="left";
-    tmpright="right";
+    strcpy(tmpleft,"left");
+    strcpy(tmpright,"right");
   } 
   else {
-    tmpleft="bot";
-    tmpright="top";
+    strcpy(tmpleft,"bot");
+    strcpy(tmpright,"top");
   }
 
   Double_t tmpdouble[fTotPlanes];
