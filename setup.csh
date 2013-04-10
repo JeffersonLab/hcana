@@ -4,7 +4,7 @@ set called=($_)
 if ("$called" != "") then
   set scriptdir=$called[2]
 else
-  set scriptdir=$0
+  set scriptdir=$1
 endif
 set MYDIR=`dirname $scriptdir`
 set MYDIR=`cd $MYDIR && pwd`    # ensure absolute path
