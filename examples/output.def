@@ -124,7 +124,6 @@ TH1F hcaladc_B13n 'HMS Cal ADC B13n - PED' H.cal.2ta.aneg_p[12] 150 50 500
 
 # Can we use variables for the constants.  In CTP we used hdc_nwire(i)
 #
-<<<<<<< Updated upstream
 TH1F hdc1x1_wm 'HDC 1X1 Wiremap' H.dc.1x1.tdchits 113 0.5 113.5
 TH1F hdc1y1_wm 'HDC 1Y1 Wiremap' H.dc.1y1.tdchits 52 0.5 52.5
 TH1F hdc1u1_wm 'HDC 1U1 Wiremap' H.dc.1u1.tdchits 107 0.5 107.5
@@ -165,24 +164,9 @@ TH1F hdc2v1_dd 'HDC 2V1 Drift Distance' H.dc.2v1.dist 300 -0.1 0.6
 TH1F hdc2y2_dd 'HDC 2Y2 Drift Distance' H.dc.2y2.dist 300 -0.1 0.6
 TH1F hdc2x2_dd 'HDC 2X2 Drift Distance' H.dc.2x2.dist 300 -0.1 0.6
 
-=======
-TH1F hdc1x1_wm 'HDC 1X1 Wiremap' H.dc.1.tdchits 113 0.5 113.5
-TH1F hdc1y1_wm 'HDC 1Y1 Wiremap' H.dc.2.tdchits 52 0.5 52.5
-TH1F hdc1u1_wm 'HDC 1U1 Wiremap' H.dc.3.tdchits 107 0.5 107.5
-TH1F hdc1v1_wm 'HDC 1V1 Wiremap' H.dc.4.tdchits 107 0.5 107.5
-TH1F hdc1y2_wm 'HDC 1Y2 Wiremap' H.dc.5.tdchits 52 0.5 52.5
-TH1F hdc1x2_wm 'HDC 1X2 Wiremap' H.dc.6.tdchits 113 0.5 113.5
-TH1F hdc2x1_wm 'HDC 2X1 Wiremap' H.dc.7.tdchits 113 0.5 113.5
-TH1F hdc2y1_wm 'HDC 2Y1 Wiremap' H.dc.8.tdchits 52 0.5 52.5
-TH1F hdc2u1_wm 'HDC 2U1 Wiremap' H.dc.9.tdchits 107 0.5 107.5
-TH1F hdc2v1_wm 'HDC 2V1 Wiremap' H.dc.10.tdchits 107 0.5 107.5
-TH1F hdc2y2_wm 'HDC 2Y2 Wiremap' H.dc.11.tdchits 52 0.5 52.5
-TH1F hdc2x2_wm 'HDC 2X2 Wiremap' H.dc.12.tdchits 113 0.5 113.5
-
 # Focal Plane times
 TH1F hs1xfptime 'HODO s1x fptime' H.hod.1x.fptime 80 0 80 H.hod.hgoodstarttime
 TH1F hs1yfptime 'HODO s1y fptime' H.hod.1y.fptime 80 0 80 H.hod.hgoodstarttime
 TH1F hs2xfptime 'HODO s2x fptime' H.hod.2x.fptime 80 0 80 H.hod.hgoodstarttime
 TH1F hs2yfptime 'HODO s2y fptime' H.hod.2y.fptime 80 0 80 H.hod.hgoodstarttime
 TH1F starttime  'HODO start time' H.hod.starttime 80 0 80 H.hod.hgoodstarttime
->>>>>>> Stashed changes
