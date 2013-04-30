@@ -15,7 +15,8 @@ SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcSignalHit.cxx \
 	src/THcHodoscope.cxx src/THcScintillatorPlane.cxx \
 	src/THcHodoscopeHit.cxx \
-	src/THcDriftChamber.cxx src/THcDriftChamberPlane.cxx \
+	src/THcDC.cxx src/THcDriftChamberPlane.cxx \
+	src/THcDriftChamber.cxx \
 	src/THcRawDCHit.cxx src/THcDCHit.cxx \
 	src/THcDCWire.cxx \
 	src/THcDCLookupTTDConv.cxx src/THcDCTimeToDistConv.cxx \

@@ -7,52 +7,40 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "THaTrackingDetector.h"
-#include "THcHitList.h"
-#include "THcRawDCHit.h"
+#include "THaSubDetector.h"
 #include "THcDriftChamberPlane.h"
-#include "TMath.h"
+#include "TClonesArray.h"
+
+#define MAX_SPACE_POINTS 50
+#define MAX_HITS_PER_POINT 20
+
+//#include "TMath.h"
 
 //class THaScCalib;
 class TClonesArray;
 
-class THcDriftChamber : public THaTrackingDetector, public THcHitList {
+class THcDriftChamber : public THaSubDetector {
 
 public:
-  THcDriftChamber( const char* name, const char* description = "",
-		   THaApparatus* a = NULL );
+  THcDriftChamber( const char* name, const char* description, Int_t chambernum,
+		   THaDetectorBase* parent = NULL );
   virtual ~THcDriftChamber();
 
-  virtual Int_t      Decode( const THaEvData& );
+  virtual Int_t Decode( const THaEvData& );
   virtual EStatus    Init( const TDatime& run_time );
-  virtual Int_t      CoarseTrack( TClonesArray& tracks );
-  virtual Int_t      FineTrack( TClonesArray& tracks );
   
+  virtual void       AddPlane(THcDriftChamberPlane *plane);
   virtual Int_t      ApplyCorrections( void );
+  virtual void       ProcessHits( void );
+  virtual Int_t      FindSpacePoints( void ) ;
+
+  virtual void   Clear( Option_t* opt="" );
 
   //  Int_t GetNHits() const { return fNhit; }
   
   Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
 
-  Int_t GetNWires(Int_t plane) const { return fNWires[plane-1];}
-  Int_t GetNChamber(Int_t plane) const { return fNChamber[plane-1];}
-  Int_t GetWireOrder(Int_t plane) const { return fWireOrder[plane-1];}
-  Int_t GetPitch(Int_t plane) const { return fPitch[plane-1];}
-  Int_t GetCentralWire(Int_t plane) const { return fCentralWire[plane-1];}
-  Int_t GetTdcWinMin(Int_t plane) const { return fTdcWinMin[plane-1];}
-  Int_t GetTdcWinMax(Int_t plane) const { return fTdcWinMax[plane-1];}
-
-  Double_t GetPlaneTimeZero(Int_t plane) const { return fPlaneTimeZero[plane-1];}
-
-  Double_t GetNSperChan() const { return fNSperChan;}
-
-  Double_t GetCenter(Int_t plane) const {
-    Int_t chamber = GetNChamber(plane)-1;
-    return
-      fXCenter[chamber]*sin(fAlphaAngle[plane-1]) +
-      fYCenter[chamber]*cos(fAlphaAngle[plane-1]);
-  }
   //  friend class THaScCalib;
 
   THcDriftChamber();  // for ROOT I/O
@@ -61,65 +49,58 @@ protected:
   // Calibration
 
   // Per-event data
+  Int_t fNhits;
 
-  // Potential Hall C parameters.  Mostly here for demonstration
-  Int_t fNPlanes;
-  char** fPlaneNames;
-  Int_t fNChambers;
+  Int_t fNPlanes;		// Number of planes in the chamber
 
-  Double_t fNSperChan;		/* TDC bin size */
-  Double_t fWireVelocity;
+  Int_t fChamberNum;
 
-  // Each of these will be dimensioned with the number of chambers
-  Double_t* fXCenter;
-  Double_t* fYCenter;
+  // HMS Specific
+  Int_t YPlaneInd; 		// Index of Yplane for this chamber
+  Int_t YPlanePInd; 		// Index of Yplanep for this chamber
+  Int_t YPlaneNum;		// Absolute plane number of Yplane
+  Int_t YPlanePNum;		// Absolute plane number of Yplanep
 
-  // Each of these will be dimensioned with the number of planes
-  // A THcDriftChamberPlane class object will need to access the value for
-  // its plane number.  Should we have a Get method for each or 
-  Int_t* fTdcWinMin;
-  Int_t* fTdcWinMax;
-  Int_t* fCentralTime;
-  Int_t* fNWires;		// Number of wires per plane
-  Int_t* fNChamber;
-  Int_t* fWireOrder;
-  Int_t* fDriftTimeSign;
+  // Parameters 
+  Int_t fMinHits; 		// Minimum hits required to do something
+  Int_t fMaxHits; 		// Maximum required to do something
+  Int_t fMinCombos;             // Minimum # pairs in a space point
+  Int_t fRemove_Sppt_If_One_YPlane;
 
-  Double_t* fZPos;
-  Double_t* fAlphaAngle;
-  Double_t* fBetaAngle;
-  Double_t* fGammaAngle;
-  Double_t* fPitch;
-  Double_t* fCentralWire;
-  Double_t* fPlaneTimeZero;
+  Double_t fXCenter;
+  Double_t fYCenter;
+  Double_t fSpacePointCriterion;
+  Double_t fSpacePointCriterion2;
 
-  THcDriftChamberPlane** fPlanes; // List of plane objects
+  THcDriftChamberPlane* fPlanes[20]; // List of plane objects
 
   TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
                               // and estimated match to TOF paddle
-  // Useful derived quantities
-  // double tan_angle, sin_angle, cos_angle;
-  
-  //  static const char NDEST = 2;
-  //  struct DataDest {
-  //    Int_t*    nthit;
-  //    Int_t*    nahit;
-  //    Double_t*  tdc;
-  //    Double_t*  tdc_c;
-  //    Double_t*  adc;
-  //    Double_t*  adc_p;
-  //    Double_t*  adc_c;
-  //    Double_t*  offset;
-  //    Double_t*  ped;
-  //    Double_t*  gain;
-  //  } fDataDest[NDEST];     // Lookup table for decoder
-
-  void           ClearEvent();
+  //  void           ClearEvent();
   void           DeleteArrays();
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
 
   void Setup(const char* name, const char* description);
+  Int_t      FindEasySpacePoint(Int_t yplane_hitind, Int_t yplanep_hitind);
+  Int_t      FindHardSpacePoints(void);
+  Int_t      DestroyPoorSpacePoints(void);
+  Int_t      SpacePointMultiWire(void);
+  void       ChooseSingleHit(void);
+  void       SelectSpacePoints(void);
+
+  THcDCHit* fHits[10000];	/* All hits for this chamber */
+  // A simple structure until we figure out what we are doing.
+  struct SpacePoint {
+    Double_t x;
+    Double_t y;
+    Int_t nhits;
+    Int_t ncombos;
+    THcDCHit* hits[MAX_HITS_PER_POINT];
+  };
+  SpacePoint fSpacePoints[MAX_SPACE_POINTS];
+  Int_t fNSpacePoints;
+  Int_t fEasySpacePoint;	/* This event is an easy space point */
 
   ClassDef(THcDriftChamber,0)   // Drift Chamber class
 };

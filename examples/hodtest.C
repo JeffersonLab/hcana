@@ -38,7 +38,7 @@
   // Add hodoscope
   HMS->AddDetector( new THcHodoscope("hod", "Hodoscope" ));
   HMS->AddDetector( new THcShower("cal", "Shower" ));
-  HMS->AddDetector( new THcDriftChamber("dc", "Drift Chambers" ));
+  HMS->AddDetector( new THcDC("dc", "Drift Chambers" ));
   THcAerogel* aerogel = new THcAerogel("aero", "Aerogel Cerenkov" );
   HMS->AddDetector( aerogel );
 

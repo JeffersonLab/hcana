@@ -1,18 +1,17 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// THcDriftChamber                                                              //
+// THcDriftChamber                                                           //
 //                                                                           //
-// Class for a generic hodoscope consisting of multiple                      //
-// planes with multiple paddles with phototubes on both ends.                //
-// This differs from Hall A scintillator class in that it is the whole       //
-// hodoscope array, not just one plane.                                      //
+// Subdetector class to hold a bunch of planes constituting a chamber        //
+// This class will be created by the THcDC class which will also create      //
+// the plane objects.                                                        //
+// The THcDC class will then pass this class a list of the planes.           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "THcDriftChamber.h"
-#include "THaEvData.h"
-#include "THaDetMap.h"
-#include "THcDetectorMap.h"
+#include "THcDC.h"
+#include "THcDCHit.h"
 #include "THcGlobals.h"
 #include "THcParmList.h"
 #include "VarDef.h"
@@ -33,13 +32,15 @@ using namespace std;
 //_____________________________________________________________________________
 THcDriftChamber::THcDriftChamber(
  const char* name, const char* description,
-				  THaApparatus* apparatus ) :
-  THaTrackingDetector(name,description,apparatus)
+ const Int_t chambernum, THaDetectorBase* parent ) :
+  THaSubDetector(name,description,parent)
 {
   // Constructor
 
   //  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
   fNPlanes = 0;			// No planes until we make them
+
+  fChamberNum = chambernum;
 
 }
 
@@ -48,7 +49,6 @@ void THcDriftChamber::Setup(const char* name, const char* description)
 {
 
   char prefix[2];
-  char parname[100];
 
   THaApparatus *app = GetApparatus();
   if(app) {
@@ -60,52 +60,20 @@ void THcDriftChamber::Setup(const char* name, const char* description)
   prefix[0]=tolower(app->GetName()[0]);
   prefix[1]='\0';
 
-  string planenamelist;
-  DBRequest list[]={
-    {"dc_num_planes",&fNPlanes, kInt},
-    {"dc_num_chambers",&fNChambers, kInt},
-    {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
-    {"dc_wire_velocity",&fWireVelocity,kDouble},
-    {"dc_plane_names",&planenamelist, kString},
-    {0}
-  };
-
-  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-  cout << planenamelist << endl;
-  cout << "Drift Chambers: " <<  fNPlanes << " planes in " << fNChambers << " chambers" << endl;
-
-  vector<string> plane_names = vsplit(planenamelist);
-
-  if(plane_names.size() != (UInt_t) fNPlanes) {
-    cout << "ERROR: Number of planes " << fNPlanes << " doesn't agree with number of plane names " << plane_names.size() << endl;
-    // Should quit.  Is there an official way to quit?
-  }
-  fPlaneNames = new char* [fNPlanes];
-  for(Int_t i=0;i<fNPlanes;i++) {
-    fPlaneNames[i] = new char[plane_names[i].length()];
-    strcpy(fPlaneNames[i], plane_names[i].c_str());
-  }
-
-  char *desc = new char[strlen(description)+100];
-  fPlanes = new THcDriftChamberPlane* [fNPlanes];
-
-  for(Int_t i=0;i<fNPlanes;i++) {
-    strcpy(desc, description);
-    strcat(desc, " Plane ");
-    strcat(desc, fPlaneNames[i]);
-
-    fPlanes[i] = new THcDriftChamberPlane(fPlaneNames[i], desc, i+1, this);
-    cout << "Created Drift Chamber Plane " << fPlaneNames[i] << ", " << desc << endl;
-
-  }
-    
 }
 
 //_____________________________________________________________________________
 THcDriftChamber::THcDriftChamber( ) :
-  THaTrackingDetector()
+  THaSubDetector()
 {
   // Constructor
+}
+
+//_____________________________________________________________________________
+Int_t THcDriftChamber::Decode( const THaEvData& evdata )
+{
+  cout << "THcDriftChamber::Decode called" << endl;
+  return 0;
 }
 
 //_____________________________________________________________________________
@@ -113,128 +81,71 @@ THaAnalysisObject::EStatus THcDriftChamber::Init( const TDatime& date )
 {
   static const char* const here = "Init()";
 
-  Setup(GetName(), GetTitle());	// Create the subdetectors here
+  Setup(GetName(), GetTitle());
   
-  // Should probably put this in ReadDatabase as we will know the
-  // maximum number of hits after setting up the detector map
-  THcHitList::InitHitList(fDetMap, "THcRawDCHit", 1000);
-
   EStatus status;
   // This triggers call of ReadDatabase and DefineVariables
-  if( (status = THaTrackingDetector::Init( date )) )
+  if( (status = THaSubDetector::Init( date )) )
     return fStatus=status;
 
-  for(Int_t ip=0;ip<fNPlanes;ip++) {
-    if((status = fPlanes[ip]->Init( date ))) {
-      return fStatus=status;
-    }
-  }
-
-  // Replace with what we need for Hall C
-  //  const DataDest tmp[NDEST] = {
-  //    { &fRTNhit, &fRANhit, fRT, fRT_c, fRA, fRA_p, fRA_c, fROff, fRPed, fRGain },
-  //    { &fLTNhit, &fLANhit, fLT, fLT_c, fLA, fLA_p, fLA_c, fLOff, fLPed, fLGain }
-  //  };
-  //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
-
-  // Will need to determine which apparatus it belongs to and use the
-  // appropriate detector ID in the FillMap call
-  char EngineDID[4];
-
-  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
-  EngineDID[1] = 'D';
-  EngineDID[2] = 'C';
-  EngineDID[3] = '\0';
-  
-  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
-    Error( Here(here), "Error filling detectormap for %s.", 
-	     EngineDID);
-      return kInitError;
-  }
-
   return fStatus = kOK;
+}
+
+void THcDriftChamber::AddPlane(THcDriftChamberPlane *plane)
+{
+  cout << "Added plane " << plane->GetPlaneNum() << " to chamber " << fChamberNum << endl;
+  plane->SetPlaneIndex(fNPlanes);
+  fPlanes[fNPlanes] = plane;
+
+  // HMS Specific
+  // Check if this is a Y Plane
+  if(plane->GetPlaneNum() == YPlaneNum) {
+    YPlaneInd = fNPlanes;
+  } else if (plane->GetPlaneNum() == YPlanePNum) {
+    YPlanePInd = fNPlanes;
+  }
+  fNPlanes++;
+
+  return;
 }
 
 //_____________________________________________________________________________
 Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
 {
-  // Read this detector's parameters from the database file 'fi'.
-  // This function is called by THaDetectorBase::Init() once at the
-  // beginning of the analysis.
-  // 'date' contains the date/time of the run being analyzed.
 
-  //  static const char* const here = "ReadDatabase()";
+  cout << "THcDriftChamber::ReadDatabase()" << endl;
   char prefix[2];
-  char parname[100];
-
-  // Read data from database 
-  // Pull values from the THcParmList instead of reading a database
-  // file like Hall A does.
-
-  // We will probably want to add some kind of method to gHcParms to allow
-  // bulk retrieval of parameters of interest.
-
-  // Will need to determine which spectrometer in order to construct
-  // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
-
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
-
   prefix[1]='\0';
-
-  fXCenter = new Double_t [fNChambers];
-  fYCenter = new Double_t [fNChambers];
-
-  fTdcWinMin = new Int_t [fNPlanes];
-  fTdcWinMax = new Int_t [fNPlanes];
-  fCentralTime = new Int_t [fNPlanes];
-  fNWires = new Int_t [fNPlanes];
-  fNChamber = new Int_t [fNPlanes]; // Which chamber is this plane
-  fWireOrder = new Int_t [fNPlanes]; // Wire readout order
-  fDriftTimeSign = new Int_t [fNPlanes];
-
-  fZPos = new Double_t [fNPlanes];
-  fAlphaAngle = new Double_t [fNPlanes];
-  fBetaAngle = new Double_t [fNPlanes];
-  fGammaAngle = new Double_t [fNPlanes];
-  fPitch = new Double_t [fNPlanes];
-  fCentralWire = new Double_t [fNPlanes];
-  fPlaneTimeZero = new Double_t [fNPlanes];
-
-
   DBRequest list[]={
-    {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
-    {"dc_wire_velocity",&fWireVelocity,kDouble},
-
-    {"dc_xcenter", fXCenter, kDouble, fNChambers},
-    {"dc_ycenter", fYCenter, kDouble, fNChambers},
-
-    {"dc_tdc_min_win", fTdcWinMin, kInt, fNPlanes},
-    {"dc_tdc_max_win", fTdcWinMax, kInt, fNPlanes},
-    {"dc_central_time", fCentralTime, kInt, fNPlanes},
-    {"dc_nrwire", fNWires, kInt, fNPlanes},
-    {"dc_chamber_planes", fNChamber, kInt, fNPlanes},
-    {"dc_wire_counting", fWireOrder, kInt, fNPlanes},
-    {"dc_drifttime_sign", fDriftTimeSign, kInt, fNPlanes},
-
-    {"dc_zpos", fZPos, kDouble, fNPlanes},
-    {"dc_alpha_angle", fAlphaAngle, kDouble, fNPlanes},
-    {"dc_beta_angle", fBetaAngle, kDouble, fNPlanes},
-    {"dc_gamma_angle", fGammaAngle, kDouble, fNPlanes},
-    {"dc_pitch", fPitch, kDouble, fNPlanes},
-    {"dc_central_wire", fCentralWire, kDouble, fNPlanes},
-    {"dc_plane_time_zero", fPlaneTimeZero, kDouble, fNPlanes},
+    {"_remove_sppt_if_one_y_plane",&fRemove_Sppt_If_One_YPlane, kInt},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
-  cout << "Plane counts:";
-  for(Int_t i=0;i<fNPlanes;i++) {
-    cout << " " << fNWires[i];
+  // Get parameters parent knows about
+  THcDC* fParent;
+  fParent = (THcDC*) GetParent();
+  fMinHits = fParent->GetMinHits(fChamberNum);
+  fMaxHits = fParent->GetMaxHits(fChamberNum);
+  fMinCombos = fParent->GetMinCombos(fChamberNum);
+
+  cout << "Chamber " << fChamberNum << "  Min/Max: " << fMinHits << "/" << fMaxHits << endl;
+
+  fSpacePointCriterion = fParent->GetSpacePointCriterion(fChamberNum); 
+  fSpacePointCriterion2 = fSpacePointCriterion*fSpacePointCriterion;
+
+  // HMS Specific
+  // Hard code Y plane numbers.  Should be able to get from wire angle
+  if(fChamberNum == 1) {
+    YPlaneNum = 2;
+    YPlanePNum = 5;
+  } else {
+    YPlaneNum = 8;
+    YPlanePNum = 11;
   }
-  cout << endl;
-
+    
   fIsInit = true;
-
   return kOK;
 }
 
@@ -249,39 +160,568 @@ Int_t THcDriftChamber::DefineVariables( EMode mode )
   // Register variables in global list
 
   //  RVarDef vars[] = {
-  //    { "nlthit", "Number of Left paddles TDC times",  "fLTNhit" },
-  //    { "nrthit", "Number of Right paddles TDC times", "fRTNhit" },
-  //    { "nlahit", "Number of Left paddles ADCs amps",  "fLANhit" },
-  //    { "nrahit", "Number of Right paddles ADCs amps", "fRANhit" },
-  //    { "lt",     "TDC values left side",              "fLT" },
-  //    { "lt_c",   "Corrected times left side",         "fLT_c" },
-  //    { "rt",     "TDC values right side",             "fRT" },
-  //    { "rt_c",   "Corrected times right side",        "fRT_c" },
-  //    { "la",     "ADC values left side",              "fLA" },
-  //    { "la_p",   "Corrected ADC values left side",    "fLA_p" },
-  //    { "la_c",   "Corrected ADC values left side",    "fLA_c" },
-  //    { "ra",     "ADC values right side",             "fRA" },
-  //    { "ra_p",   "Corrected ADC values right side",   "fRA_p" },
-  //    { "ra_c",   "Corrected ADC values right side",   "fRA_c" },
-  //    { "nthit",  "Number of paddles with l&r TDCs",   "fNhit" },
-  //    { "t_pads", "Paddles with l&r coincidence TDCs", "fHitPad" },
-  //    { "y_t",    "y-position from timing (m)",        "fYt" },
-  //    { "y_adc",  "y-position from amplitudes (m)",    "fYa" },
-  //    { "time",   "Time of hit at plane (s)",          "fTime" },
-  //    { "dtime",  "Est. uncertainty of time (s)",      "fdTime" },
-  //    { "dedx",   "dEdX-like deposited in paddle",     "fAmpl" },
-  //    { "troff",  "Trigger offset for paddles",        "fTrigOff"},
-  //    { "trn",    "Number of tracks for hits",         "GetNTracks()" },
-  //    { "trx",    "x-position of track in det plane",  "fTrackProj.THaTrackProj.fX" },
-  //    { "try",    "y-position of track in det plane",  "fTrackProj.THaTrackProj.fY" },
-  //    { "trpath", "TRCS pathlen of track to det plane","fTrackProj.THaTrackProj.fPathl" },
-  //    { "trdx",   "track deviation in x-position (m)", "fTrackProj.THaTrackProj.fdX" },
-  //    { "trpad",  "paddle-hit associated with track",  "fTrackProj.THaTrackProj.fChannel" },
+  //    { "nhit", "Number of DC hits",  "fNhits" },
   //    { 0 }
   //  };
   //  return DefineVarsFromList( vars, mode );
   return kOK;
+
 }
+void THcDriftChamber::ProcessHits( void)
+{
+  // Make a list of hits for whole chamber
+  fNhits = 0;
+
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    TClonesArray* hitsarray = fPlanes[ip]->GetHits();
+    for(Int_t ihit=0;ihit<fPlanes[ip]->GetNHits();ihit++) {
+      fHits[fNhits++] = static_cast<THcDCHit*>(hitsarray->At(ihit));
+    }
+  }
+  //  cout << "ThcDriftChamber::ProcessHits() " << fNhits << " hits" << endl;
+}
+
+
+Int_t THcDriftChamber::FindSpacePoints( void )
+{
+  // Following h_pattern_recognition.f, but just for one chamber
+
+  // Code below is specifically for HMS chambers with Y and Y' planes
+
+  Int_t yplane_hitind=0;
+  Int_t yplanep_hitind=0;
+
+  fNSpacePoints=0;
+  fEasySpacePoint = 0;
+  // Should really build up array of hits
+  if(fNhits >= fMinHits && fNhits < fMaxHits) {
+    /* Has this list of hits already been cut the way it should have at this point? */
+    
+    for(Int_t ihit=0;ihit<fNhits;ihit++) {
+      THcDCHit* thishit = fHits[ihit];
+      Int_t ip=thishit->GetPlaneNum();  // This is the absolute plane mumber
+      if(ip==YPlaneNum) yplane_hitind = ihit;
+      if(ip==YPlanePNum) yplanep_hitind = ihit;
+    }
+    // fPlanes is the array of planes for this chamber.
+    //    cout << fPlanes[YPlaneInd]->GetNHits() << " "
+    //	 << fPlanes[YPlanePInd]->GetNHits() << " " << endl;
+    if (fPlanes[YPlaneInd]->GetNHits() == 1 && fPlanes[YPlanePInd]->GetNHits() == 1) {
+      cout << fHits[yplane_hitind]->GetWireNum() << " "
+	   << fHits[yplane_hitind]->GetPos() << " "
+	   << fHits[yplanep_hitind]->GetWireNum() << " "
+	   << fHits[yplanep_hitind]->GetPos() << " " 
+	   << fSpacePointCriterion << endl;
+    }
+    if(fPlanes[YPlaneInd]->GetNHits() == 1 && fPlanes[YPlanePInd]->GetNHits() == 1
+       && TMath::Abs(fHits[yplane_hitind]->GetPos() - fHits[yplanep_hitind]->GetPos())
+       < fSpacePointCriterion
+       && fNhits <= 6) {	// An easy case, probably one hit per plane
+      fEasySpacePoint = FindEasySpacePoint(yplane_hitind, yplanep_hitind);
+    }
+    if(!fEasySpacePoint) {	// It's not easy
+      FindHardSpacePoints();
+    }
+
+    // We have our space points for this chamber
+    cout << fNSpacePoints << " Space Points found" << endl;
+    if(fNSpacePoints > 0) {
+      if(fRemove_Sppt_If_One_YPlane == 1) {
+	// The routine is specific to HMS
+	Int_t ndest=DestroyPoorSpacePoints();
+	cout << ndest << " Poor space points destroyed" << endl;
+	// Loop over space points and remove those with less than 4 planes
+	// hit and missing hits in Y,Y' planes
+      }
+      if(fNSpacePoints == 0) cout << "DestroyPoorSpacePoints() killed SP" << endl;
+      Int_t nadded=SpacePointMultiWire();
+      if (nadded) cout << nadded << " Space Points added with SpacePointMultiWire()" << endl;
+      ChooseSingleHit();
+      SelectSpacePoints();
+      if(fNSpacePoints == 0) cout << "SelectSpacePoints() killed SP" << endl;
+    }
+    //cout << fNSpacePoints << " Space Points remain" << endl;
+    // Add these space points to the total list of space points for the
+    // the DC package.  Do this in THcDC.cxx.
+#if 0
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
+      Int_t np = fPlanes[ip]->GetPlaneNum(); // Actuall plane number of this plane
+      // (0-11) or (1-12)?
+      TClonesArray* fHits = fPlanes[ip]->GetHits();
+
+      for(Int_t ihit=0;ihit<fNhits;ihit++) { // Looping over all hits in all planes of the chamber
+	THcDCHit* hit = static_cast<THcDCHit*>(fHits->At(ihit));
+	// 
+
+      }
+    }
+#endif
+  }
+  return(fNSpacePoints);
+}
+
+//_____________________________________________________________________________
+// HMS Specific
+Int_t THcDriftChamber::FindEasySpacePoint(Int_t yplane_hitind,Int_t yplanep_hitind)
+{
+  // Simplified HMS find_space_point routing.  It is given all y hits and
+  // checks to see if all x-like hits are close enough together to make
+  // a space point.
+
+  Int_t easy_space_point=0;
+  cout << "Doing Find Easy Space Point" << endl;
+  Double_t yt = (fHits[yplane_hitind]->GetPos() + fHits[yplanep_hitind]->GetPos())/2.0;
+  Double_t xt = 0.0;
+  Int_t num_xhits = 0;
+  Double_t x_pos[MAX_HITS_PER_POINT];
+
+  for(Int_t ihit=0;ihit<fNhits;ihit++) {
+    THcDCHit* thishit = fHits[ihit];
+    if(ihit!=yplane_hitind && ihit!=yplanep_hitind) { // x-like hit
+      // ysp and xsp are from h_generate_geometry
+      x_pos[ihit] = (thishit->GetPos()
+		     -yt*thishit->GetWirePlane()->GetYsp())
+	/thishit->GetWirePlane()->GetXsp();
+      xt += x_pos[ihit];
+      num_xhits++;
+    } else {
+      x_pos[ihit] = 0.0;
+    }
+  }
+  xt = (num_xhits>0?xt/num_xhits:0.0);
+  cout << "xt=" << xt << endl;
+  easy_space_point = 1; // Assume we have an easy space point
+  // Rule it out if x points don't cluster well enough
+  for(Int_t ihit=0;ihit<fNhits;ihit++) {
+    cout << "Hit " << ihit << " " << x_pos[ihit] << " " << xt << endl;
+    if(ihit!=yplane_hitind && ihit!=yplanep_hitind) { // x-like hit
+      if(TMath::Abs(xt-x_pos[ihit]) >= fSpacePointCriterion)
+	{ easy_space_point=0; break;}
+    }
+  }
+  if(easy_space_point) {	// Register the space point
+    cout << "Easy Space Point " << xt << " " << yt << endl;
+    fNSpacePoints = 1;
+    fSpacePoints[0].x = xt;
+    fSpacePoints[0].y = yt;
+    fSpacePoints[0].nhits = fNhits;
+    fSpacePoints[0].ncombos = 0; // No combos
+    for(Int_t ihit=0;ihit<fNhits;ihit++) {
+      THcDCHit* thishit = fHits[ihit];
+      fSpacePoints[0].hits[ihit] = thishit;
+    }
+  }
+  return(easy_space_point);
+}
+
+//_____________________________________________________________________________
+// Generic
+Int_t THcDriftChamber::FindHardSpacePoints()
+{
+  Int_t MAX_NUMBER_PAIRS=1000; // Where does this get set?
+  struct Pair {
+    THcDCHit* hit1;
+    THcDCHit* hit2;
+    Double_t x, y;
+  };
+  Pair pairs[MAX_NUMBER_PAIRS];
+  //	
+  Int_t ntest_points=0;
+  for(Int_t ihit1=0;ihit1<fNhits-1;ihit1++) {
+    THcDCHit* hit1=fHits[ihit1];
+    THcDriftChamberPlane* plane1 = hit1->GetWirePlane();
+    for(Int_t ihit2=ihit1+1;ihit2<fNhits;ihit2++) {
+      if(ntest_points < MAX_NUMBER_PAIRS) {
+	THcDCHit* hit2=fHits[ihit2];
+	THcDriftChamberPlane* plane2 = hit2->GetWirePlane();
+	Double_t determinate = plane1->GetXsp()*plane2->GetYsp()
+	  -plane1->GetYsp()*plane2->GetXsp();
+	if(TMath::Abs(determinate) > 0.3) { // 0.3 is sin(alpha1-alpha2)=sin(17.5)
+	  pairs[ntest_points].hit1 = hit1;
+	  pairs[ntest_points].hit2 = hit2;
+	  pairs[ntest_points].x = (hit1->GetPos()*plane2->GetYsp()
+				   - hit2->GetPos()*plane1->GetYsp())
+	    /determinate;
+	  pairs[ntest_points].y = (hit2->GetPos()*plane1->GetXsp()
+				   - hit1->GetPos()*plane2->GetXsp())
+	    /determinate;
+	  ntest_points++;
+	}
+      }
+    }
+  }
+  Int_t ncombos=0;
+  struct Combo {
+    Pair* pair1;
+    Pair* pair2;
+  };
+  Combo combos[10*MAX_NUMBER_PAIRS];
+  for(Int_t ipair1=0;ipair1<ntest_points-1;ipair1++) {
+    for(Int_t ipair2=ipair1+1;ipair2<ntest_points;ipair2++) {
+      Double_t dist2 = pow(pairs[ipair1].x - pairs[ipair2].x,2)
+	+ pow(pairs[ipair1].y - pairs[ipair2].y,2);
+      if(dist2 <= fSpacePointCriterion2) {
+	combos[ncombos].pair1 = &pairs[ipair1];
+	combos[ncombos].pair2 = &pairs[ipair2];
+	ncombos++;
+      }
+    }
+  }
+  // Loop over all valid combinations and build space points
+  for(Int_t icombo=0;icombo<ncombos;icombo++) {
+    THcDCHit* hits[4];
+    hits[0]=combos[icombo].pair1->hit1;
+    hits[1]=combos[icombo].pair1->hit2;
+    hits[2]=combos[icombo].pair2->hit1;
+    hits[3]=combos[icombo].pair2->hit2;
+    // Get Average Space point xt, yt
+    Double_t xt = combos[icombo].pair1->x + combos[icombo].pair2->x;
+    Double_t yt = combos[icombo].pair1->y + combos[icombo].pair2->y;
+    // Loop over space points
+    if(fNSpacePoints > 0) {
+      Int_t add_flag=1;
+      for(Int_t ispace=0;ispace<fNSpacePoints;ispace++) {
+	if(fSpacePoints[ispace].nhits > 0) {
+	  Double_t sqdist_test = pow(xt - fSpacePoints[ispace].x,2) +
+	    pow(yt - fSpacePoints[ispace].y,2);
+	  // I (who is I) want to be careful if sqdist_test is bvetween 1 and
+	  // 3 fSpacePointCriterion2.  Let me ignore not add a new point the
+	  if(sqdist_test < 3*fSpacePointCriterion2) {
+	    add_flag = 0;	// do not add a new space point
+	  }
+	  if(sqdist_test < fSpacePointCriterion2) {
+	    // This is a real match
+	    // Add the new hits to the existing space point
+	    Int_t iflag[4];
+	    iflag[0]=0;iflag[1]=0;iflag[2]=0;iflag[3]=0;
+	    // Find out which of the four hits in the combo are already
+	    // in the space point under consideration so that we don't
+	    // add duplicate hits to the space point
+	    for(Int_t isp_hit=0;isp_hit<fSpacePoints[ispace].nhits;isp_hit++) {
+	      for(Int_t icm_hit=0;icm_hit<4;icm_hit++) { // Loop over combo hits
+		if(fSpacePoints[ispace].hits[isp_hit]==hits[icm_hit]) {
+		  iflag[icm_hit] = 1;
+		}
+	      }
+	    }
+	    // Remove duplicated pionts in the combo so we don't add
+	    // duplicate hits to the space point
+	    for(Int_t icm1=0;icm1<3;icm1++) {
+	      for(Int_t icm2=icm1+1;icm2<4;icm2++) {
+		if(hits[icm1]==hits[icm2]) {
+		  iflag[icm2] = 1;
+		}
+	      }
+	    }
+	    // Add the unique combo hits to the space point
+	    for(Int_t icm=0;icm<4;icm++) {
+	      if(iflag[icm]==0) {
+		fSpacePoints[ispace].hits[fSpacePoints[ispace].nhits++] = hits[icm];
+	      }
+	      fSpacePoints[ispace].ncombos++;
+	    }
+	  }
+	}
+      }// End of loop over existing space points
+      // Create a new space point if more than 2*space_point_criteria
+      if(fNSpacePoints < MAX_SPACE_POINTS) {
+	if(add_flag) {
+	  fSpacePoints[fNSpacePoints].nhits=2;
+	  fSpacePoints[fNSpacePoints].ncombos=1;
+	  fSpacePoints[fNSpacePoints].hits[0]=hits[0];
+	  fSpacePoints[fNSpacePoints].hits[1]=hits[1];
+	  fSpacePoints[fNSpacePoints].x = xt;
+	  fSpacePoints[fNSpacePoints].y = yt;
+	  if(hits[0] != hits[2] && hits[1] != hits[2]) {
+	    fSpacePoints[fNSpacePoints].hits[fSpacePoints[fNSpacePoints].nhits++] = hits[2];
+	  }
+	  if(hits[0] != hits[3] && hits[1] != hits[3]) {
+	    fSpacePoints[fNSpacePoints].hits[fSpacePoints[fNSpacePoints].nhits++] = hits[3];
+	  }
+	  fNSpacePoints++;
+	}
+      }
+    } else {// Create first space point
+      // This duplicates code above.  Need to see if we can restructure
+      // to avoid
+      fSpacePoints[fNSpacePoints].nhits=2;
+      fSpacePoints[fNSpacePoints].ncombos=1;
+      fSpacePoints[fNSpacePoints].hits[0]=hits[0];
+      fSpacePoints[fNSpacePoints].hits[1]=hits[1];
+      fSpacePoints[fNSpacePoints].x = xt;
+      fSpacePoints[fNSpacePoints].y = yt;
+      if(hits[0] != hits[2] && hits[1] != hits[2]) {
+	fSpacePoints[fNSpacePoints].hits[fSpacePoints[fNSpacePoints].nhits++] = hits[2];
+      }
+      if(hits[0] != hits[3] && hits[1] != hits[3]) {
+	fSpacePoints[fNSpacePoints].hits[fSpacePoints[fNSpacePoints].nhits++] = hits[3];
+      }
+      fNSpacePoints++;
+    }//End check on 0 space points
+  }//End loop over combos
+  return(fNSpacePoints);
+}
+
+//_____________________________________________________________________________
+// HMS Specific?
+Int_t THcDriftChamber::DestroyPoorSpacePoints()
+{
+  Int_t nhitsperplane[fNPlanes];
+
+  Int_t spacepointsgood[fNSpacePoints];
+  Int_t ngood=0;
+
+  for(Int_t i=0;i<fNSpacePoints;i++) {
+    spacepointsgood[i] = 0;
+  }
+  for(Int_t isp=0;isp<fNSpacePoints;isp++) {
+    Int_t nplanes_hit = 0;
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
+      nhitsperplane[ip] = 0;
+    }
+    // Count # hits in each plane for this space point
+    for(Int_t ihit=0;ihit<fSpacePoints[isp].nhits;ihit++) {
+      THcDCHit* hit=fSpacePoints[isp].hits[ihit];
+      // hit_order(hit) = ihit;
+      Int_t ip = hit->GetPlaneIndex();
+      nhitsperplane[ip]++;
+    }
+    // Count # planes that have hits
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
+      if(nhitsperplane[ip] > 0) {
+	nplanes_hit++;
+      }
+    }
+    if(nplanes_hit >= fMinHits && nhitsperplane[YPlaneInd]>0
+       && nhitsperplane[YPlanePInd] > 0) {
+      spacepointsgood[ngood++] = isp; // Build list of good points
+    } else {
+      //      cout << "Missing Y-hit!!";
+    }
+  }
+
+  // Remove the bad space points
+  Int_t nremoved=fNSpacePoints-ngood;
+  fNSpacePoints = ngood;
+  for(Int_t isp=0;isp<fNSpacePoints;isp++) { // New index num ber
+    Int_t osp=spacepointsgood[isp]; // Original index number
+    if(osp > isp) {
+      // Does this work, or do we have to copy each member?
+      // If it doesn't we should overload the = operator
+      fSpacePoints[isp] = fSpacePoints[osp];
+    }
+  }
+  return nremoved;
+}
+    
+//_____________________________________________________________________________
+// HMS Specific?
+  /*
+   Purpose and Methods :  This routine loops over space points and 
+                          looks at all hits in the space
+                          point. If more than 1 hit is in the same 
+                          plane then the space point is cloned with
+                          all combinations of 1 wire per plane.  The 
+                          requirements for cloning are:  1) at least 
+                          4 planes fire, and 2) no more than 6 planes 
+                          have multiple hits.      
+  */
+Int_t THcDriftChamber::SpacePointMultiWire()
+{
+  Int_t nhitsperplane[fNPlanes];
+  THcDCHit* hits_plane[fNPlanes][MAX_HITS_PER_POINT];
+
+  Int_t nsp_check;
+  Int_t nplanes_single;
+
+  Int_t nsp_tot=fNSpacePoints;
+
+  for(Int_t isp=0;isp<fNSpacePoints;isp++) {
+    Int_t nplanes_hit = 0;	// Number of planes with hits
+    Int_t nplanes_mult = 0;	// Number of planes with multiple hits
+    Int_t nsp_new = 1;
+    Int_t newsp_num=0;
+
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
+      nhitsperplane[ip] = 0;
+    }
+    // Sort Space Points hits by plane
+    for(Int_t ihit=0;ihit<fSpacePoints[isp].nhits;ihit++) { // All hits in SP
+      THcDCHit* hit=fSpacePoints[isp].hits[ihit];
+      //      hit_order Make a hash
+      // hash(hit) = ihit;
+      Int_t ip = hit->GetPlaneIndex();
+      hits_plane[ip][nhitsperplane[ip]++] = hit;
+    }
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
+      if(nhitsperplane[ip] > 0) {
+	nplanes_hit++;
+	nsp_new *= nhitsperplane[ip];
+	if(nhitsperplane[ip] > 1) nplanes_mult++;
+      }
+    }
+    --nsp_new;
+    nsp_check=nsp_tot + nsp_new;
+    nplanes_single = nplanes_hit - nplanes_mult;
+    
+    // Check if cloning conditions are met
+    Int_t ntot = 0;
+    if(nplanes_hit >= 4 && nplanes_mult < 4 && nplanes_mult >0
+       && nsp_check < 20) {
+      
+      // Order planes by decreasing # of hits
+      
+      Int_t maxplane[fNPlanes];
+      for(Int_t ip=0;ip<fNPlanes;ip++) {
+	maxplane[ip] = ip;
+      }
+      // Sort by decreasing # of hits
+      for(Int_t ip1=0;ip1<fNPlanes-1;ip1++) {
+	for(Int_t ip2=ip1+1;ip2<fNPlanes;ip2++) {
+	  if(nhitsperplane[maxplane[ip2]] > nhitsperplane[maxplane[ip1]]) {
+	    Int_t temp = maxplane[ip1];
+	    maxplane[ip1] = maxplane[ip2];
+	    maxplane[ip2] = temp;
+	  }
+	}
+      }
+
+      // First fill clones with 1 hit each from the 3 planes with the most hits
+      for(Int_t n1=0;n1<nhitsperplane[maxplane[0]];n1++) {
+	for(Int_t n2=0;n2<nhitsperplane[maxplane[1]];n2++) {
+	  for(Int_t n3=0;n3<nhitsperplane[maxplane[2]];n3++) {
+	    ntot++;
+	    newsp_num = nsp_tot + ntot - 2; // ntot will be 2 for first new
+	    if(n1==0 && n2==0 && n3==0) newsp_num = isp; // Copy over original SP
+	    fSpacePoints[newsp_num].x = fSpacePoints[isp].x;
+	    fSpacePoints[newsp_num].y = fSpacePoints[isp].y;
+	    fSpacePoints[newsp_num].nhits = nplanes_hit;
+	    fSpacePoints[newsp_num].ncombos = fSpacePoints[isp].ncombos;
+	    fSpacePoints[newsp_num].hits[0] = hits_plane[maxplane[0]][n1];
+	    fSpacePoints[newsp_num].hits[1] = hits_plane[maxplane[1]][n2];
+	    fSpacePoints[newsp_num].hits[2] = hits_plane[maxplane[2]][n3];
+	    fSpacePoints[newsp_num].hits[3] = hits_plane[maxplane[3]][0];
+	    if(nhitsperplane[maxplane[4]] == 1)
+	      fSpacePoints[newsp_num].hits[4] = hits_plane[maxplane[4]][0];
+	    if(nhitsperplane[maxplane[5]] == 1)
+	      fSpacePoints[newsp_num].hits[5] = hits_plane[maxplane[5]][0];
+	  }
+	}
+      }
+#if 0
+      // Loop over clones and order hits in the same way as parent SP
+      // Why do we have to order the hits.
+      for(Int_t i=0;i<ntot;i++) {
+	Int_t newsp_num= nsp_tot + i;
+	if(i == 1) newsp_num = isp;
+	for(Int_t j=0;j<nplanes_hit;j++) {
+	  for(Int_t k=0;k<nplanes_hit;k++) {
+	    THcDCHit* hit1 = fSpacePointHits[newsp_num][j];
+	    THcDCHit* hit2 = fSpacePointHits[newsp_num][k];
+	    if(hit_order(hit1) > hit_order(hit2)) {
+	      THcDCHit* temp = fSpacePoints[newsp_num].hits[k];
+	      fSpacePoints[newsp_num].hits[k] = fSpacePoints[newsp_num].hits[j];
+	      fSpacePoints[newsp_num].hits[j] = temp;
+	    }
+	  }
+	}
+      }
+#endif
+      nsp_tot += (ntot-1);
+    } else {
+      ntot=1;
+    }
+  }
+  assert (nsp_tot > 0);
+  Int_t nadded=0;
+  if(nsp_tot <= 20) {
+    nadded = nsp_tot - fNSpacePoints;
+    fNSpacePoints = nsp_tot;
+  }
+
+  // In Fortran, fill in zeros.
+  return(nadded);
+}
+
+//_____________________________________________________________________________
+// HMS Specific?
+void THcDriftChamber::ChooseSingleHit()
+{
+  // Look at all hits in a space point.  If two hits are in the same plane,
+  // reject the one with the longer drift time.
+  Int_t goodhit[MAX_HITS_PER_POINT];
+
+  for(Int_t isp=0;isp<fNSpacePoints;isp++) {
+    Int_t startnum = fSpacePoints[isp].nhits;
+    
+    for(Int_t ihit=0;ihit<startnum;ihit++) {
+      goodhit[ihit] = 1;
+    }
+    // For each plane, mark all hits longer than the shortest drift time
+    for(Int_t ihit1=0;ihit1<startnum-1;ihit1++) {
+      THcDCHit* hit1 = fSpacePoints[isp].hits[ihit1];
+      Int_t plane1=hit1->GetPlaneIndex();
+      Double_t tdrift1 = hit1->GetTime();
+      for(Int_t ihit2=ihit1+1;ihit2<startnum;ihit2++) {
+	THcDCHit* hit2 = fSpacePoints[isp].hits[ihit2];
+	Int_t plane2=hit2->GetPlaneIndex();
+	Double_t tdrift2 = hit2->GetTime();
+	if(plane1 == plane2) {
+	  if(tdrift1 > tdrift2) {
+	    goodhit[ihit1] = 0;
+	  } else {
+	    goodhit[ihit2] = 0;
+	  }
+	}
+      }
+    }
+    // Gather the remaining hits
+    Int_t finalnum = 0;
+    for(Int_t ihit=0;ihit<startnum;ihit++) {
+      if(goodhit[ihit] > 0) {	// Keep this hit
+	if (ihit > finalnum) {	// Move hit 
+	  fSpacePoints[isp].hits[finalnum++] = fSpacePoints[isp].hits[ihit];
+	} else {
+	  finalnum++;
+	}
+      }
+    }
+    fSpacePoints[isp].nhits = finalnum;
+  }
+}
+//_____________________________________________________________________________
+// Generic
+void THcDriftChamber::SelectSpacePoints()
+//    This routine goes through the list of space_points and space_point_hits
+//    found by find_space_points and only accepts those with 
+//    number of hits > min_hits
+//    number of combinations > min_combos
+{
+  Int_t sp_count=0;
+  for(Int_t isp=0;isp<fNSpacePoints;isp++) {
+    // Include fEasySpacePoint because ncombos not filled in
+    if(fSpacePoints[isp].ncombos >= fMinCombos || fEasySpacePoint) {
+      if(fSpacePoints[isp].nhits >= fMinHits) {
+	fSpacePoints[sp_count++] = fSpacePoints[isp];
+      }
+    }
+  }
+  fNSpacePoints = sp_count;
+}
+
+/*
+*
+* Now we know rough hit positions in the chambers so we can make
+* wire velocity drift time corrections for each hit in the space point
+*
+* Assume all wires for a plane are read out on the same side (l/r or t/b).
+* If the wire is closer to horizontal, read out left/right.  If nearer
+* vertical, assume top/bottom.  (Note, this is not always true for the
+* SOS u and v planes.  They have 1 card each on the side, but the overall
+* time offset per card will cancel much of the error caused by this.  The
+* alternative is to check by card, rather than by plane and this is harder.
+*/
+
 
 //_____________________________________________________________________________
 THcDriftChamber::~THcDriftChamber()
@@ -303,111 +743,24 @@ void THcDriftChamber::DeleteArrays()
 {
   // Delete member arrays. Used by destructor.
 
-  delete [] fNWires;  fNWires = NULL;
-  //  delete [] fSpacing;  fSpacing = NULL;
-  //  delete [] fCenter;   fCenter = NULL; // This 2D. What is correct way to delete?
-
-  //  delete [] fRA_c;    fRA_c    = NULL;
-  //  delete [] fRA_p;    fRA_p    = NULL;
-  //  delete [] fRA;      fRA      = NULL;
-  //  delete [] fLA_c;    fLA_c    = NULL;
-  //  delete [] fLA_p;    fLA_p    = NULL;
-  //  delete [] fLA;      fLA      = NULL;
-  //  delete [] fRT_c;    fRT_c    = NULL;
-  //  delete [] fRT;      fRT      = NULL;
-  //  delete [] fLT_c;    fLT_c    = NULL;
-  //  delete [] fLT;      fLT      = NULL;
-  
-  //  delete [] fRGain;   fRGain   = NULL;
-  //  delete [] fLGain;   fLGain   = NULL;
-  //  delete [] fRPed;    fRPed    = NULL;
-  //  delete [] fLPed;    fLPed    = NULL;
-  //  delete [] fROff;    fROff    = NULL;
-  //  delete [] fLOff;    fLOff    = NULL;
-  //  delete [] fTWalkPar; fTWalkPar = NULL;
-  //  delete [] fTrigOff; fTrigOff = NULL;
-
-  //  delete [] fHitPad;  fHitPad  = NULL;
-  //  delete [] fTime;    fTime    = NULL;
-  //  delete [] fdTime;   fdTime   = NULL;
-  //  delete [] fYt;      fYt      = NULL;
-  //  delete [] fYa;      fYa      = NULL;
 }
 
 //_____________________________________________________________________________
 inline 
-void THcDriftChamber::ClearEvent()
+void THcDriftChamber::Clear( const Option_t* )
 {
   // Reset per-event data.
+  //  fNhits = 0;
 
-  fTrackProj->Clear();
-}
+  //  fTrackProj->Clear();
+  fNhits = 0;
 
-//_____________________________________________________________________________
-Int_t THcDriftChamber::Decode( const THaEvData& evdata )
-{
-
-  // Get the Hall C style hitlist (fRawHitList) for this event
-  Int_t nhits = THcHitList::DecodeToHitList(evdata);
-
-  // Let each plane get its hits
-  Int_t nexthit = 0;
-  for(Int_t ip=0;ip<fNPlanes;ip++) {
-    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
-  }
-
-#if 0
-  // fRawHitList is TClones array of THcRawDCHit objects
-  for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
-    THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
-    //    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
-    //	 << endl;
-    for(Int_t imhit = 0; imhit < hit->fNHits; imhit++) {
-      //      cout << "                     " << imhit << " " << hit->fTDC[imhit]
-      //	   << endl;
-    }
-  }
-  //  cout << endl;
-#endif
-
-  return nhits;
 }
 
 //_____________________________________________________________________________
 Int_t THcDriftChamber::ApplyCorrections( void )
 {
   return(0);
-}
-
-//_____________________________________________________________________________
-Int_t THcDriftChamber::CoarseTrack( TClonesArray& /* tracks */ )
-{
-  // Calculation of coordinates of particle track cross point with scint
-  // plane in the detector coordinate system. For this, parameters of track 
-  // reconstructed in THaVDC::CoarseTrack() are used.
-  //
-  // Apply corrections and reconstruct the complete hits.
-  //
-  //  static const Double_t sqrt2 = TMath::Sqrt(2.);
-  
-  ApplyCorrections();
-
-  return 0;
-}
-
-//_____________________________________________________________________________
-Int_t THcDriftChamber::FineTrack( TClonesArray& tracks )
-{
-  // Reconstruct coordinates of particle track cross point with scintillator
-  // plane, and copy the data into the following local data structure:
-  //
-  // Units of measurements are meters.
-
-  // Calculation of coordinates of particle track cross point with scint
-  // plane in the detector coordinate system. For this, parameters of track 
-  // reconstructed in THaVDC::FineTrack() are used.
-
-  return 0;
 }
 
 ClassImp(THcDriftChamber)

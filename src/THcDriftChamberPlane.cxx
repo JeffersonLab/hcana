@@ -14,7 +14,7 @@
 #include "THcGlobals.h"
 #include "THcParmList.h"
 #include "THcHitList.h"
-#include "THcDriftChamber.h"
+#include "THcDC.h"
 #include "THcHodoscope.h"
 #include "TClass.h"
 
@@ -97,11 +97,11 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   // Retrieve parameters we need from parent class
-  THcDriftChamber* fParent;
+  THcDC* fParent;
 
-  fParent = (THcDriftChamber*) GetParent();
+  fParent = (THcDC*) GetParent();
   // These are single variables here, but arrays in THcDriftChamber.
-  fNChamber = fParent->GetNChamber(fPlaneNum);
+  fChamberNum = fParent->GetNChamber(fPlaneNum);
   fNWires = fParent->GetNWires(fPlaneNum);
   fWireOrder = fParent->GetWireOrder(fPlaneNum);
   fPitch = fParent->GetPitch(fPlaneNum);
@@ -113,7 +113,34 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
 
   fNSperChan = fParent->GetNSperChan();
 
-  cout << fPlaneNum << " " << fNWires << endl;
+  // Calculate Geometry Constants
+  // Do we want to move all this to the Chamber of DC Package leve
+  // as that is where these things will be needed?
+  Double_t alpha = fParent->GetAlphaAngle(fPlaneNum);
+  Double_t beta = fParent->GetBetaAngle(fPlaneNum);
+  Double_t gamma = fParent->GetGammaAngle(fPlaneNum);
+  Double_t cosalpha = TMath::Cos(alpha);
+  Double_t sinalpha = TMath::Sin(alpha);
+  Double_t cosbeta = TMath::Cos(beta);
+  Double_t sinbeta = TMath::Sin(beta);
+  Double_t cosgamma = TMath::Cos(gamma);
+  Double_t singamma = TMath::Sin(gamma);
+  
+  Double_t hzchi = -cosalpha*sinbeta + sinalpha*cosbeta*singamma;
+  Double_t hzpsi =  sinalpha*sinbeta + cosalpha*cosbeta*singamma;
+  Double_t hxchi = -cosalpha*cosbeta - sinalpha*sinbeta*singamma;
+  Double_t hxpsi =  sinalpha*cosbeta - cosalpha*sinbeta*singamma;
+  Double_t hychi =  sinalpha*cosgamma;
+  Double_t hypsi =  cosalpha*cosgamma;
+
+  Double_t sumsqupsi = hzpsi*hzpsi+hxpsi*hxpsi+hypsi*hypsi;
+  Double_t sumsquchi = hzchi*hzchi+hxchi*hxchi+hychi*hychi;
+  Double_t sumcross = hzpsi*hzchi + hxpsi*hxchi + hypsi*hychi;
+  Double_t denom = sumsqupsi*sumsquchi-sumcross*sumcross;
+  fXsp = hychi/denom;
+  fYsp = -hxchi/denom;
+
+  cout << fPlaneNum << " " << fNWires << " " << fWireOrder << endl;
 
   fTTDConv = new THcDCLookupTTDConv(DriftMapFirstBin,fPitch/2,DriftMapBinSize,
 				    NumDriftMapBins,DriftMap);
@@ -242,7 +269,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	    - rawtdc*fNSperChan + fPlaneTimeZero;
 	  // How do we get this start time from the hodoscope to here
 	  // (or at least have it ready by coarse process)
-	  new( (*fHits)[nextHit++] ) THcDCHit(wire, rawtdc, time);
+	  new( (*fHits)[nextHit++] ) THcDCHit(wire, rawtdc, time, this);
 	}
 	wire_last = wireNum;
       }
