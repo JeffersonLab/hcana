@@ -57,6 +57,10 @@ class THcDriftChamberPlane : public THaSubDetector {
   Int_t        GetPlaneIndex() { return fPlaneIndex; }
   Double_t     GetXsp() const { return fXsp; }
   Double_t     GetYsp() const { return fYsp; }
+  Int_t        GetReadoutX() { return fReadoutX; }
+  Double_t     GetReadoutCorr() { return fReadoutCorr; }
+  Double_t     GetCentralTime() { return fCentralTime; }
+  Int_t        GetDriftTimeSign() { return fDriftTimeSign; }
 
  protected:
 
@@ -77,6 +81,11 @@ class THcDriftChamberPlane : public THaSubDetector {
   Double_t fPlaneTimeZero;
   Double_t fXsp;
   Double_t fYsp;
+
+  Int_t fReadoutX;
+  Double_t fReadoutCorr;
+  Double_t fCentralTime;
+  Int_t fDriftTimeSign;
 
   Double_t fCenter;
 

@@ -110,6 +110,8 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   fTdcWinMax = fParent->GetTdcWinMax(fPlaneNum);
   fPlaneTimeZero = fParent->GetPlaneTimeZero(fPlaneNum);
   fCenter = fParent->GetCenter(fPlaneNum);
+  fCentralTime = fParent->GetCentralTime(fPlaneNum);
+  fDriftTimeSign = fParent->GetDriftTimeSign(fPlaneNum);
 
   fNSperChan = fParent->GetNSperChan();
 
@@ -132,6 +134,14 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   Double_t hxpsi =  sinalpha*cosbeta - cosalpha*sinbeta*singamma;
   Double_t hychi =  sinalpha*cosgamma;
   Double_t hypsi =  cosalpha*cosgamma;
+
+  if(cosalpha <= 0.707) { // x-like wire, need dist from x=0 line
+    fReadoutX = 1;
+    fReadoutCorr = 1/sinalpha;
+  } else {
+    fReadoutX = 0;
+    fReadoutCorr = 1/cosalpha;
+  }
 
   Double_t sumsqupsi = hzpsi*hzpsi+hxpsi*hxpsi+hypsi*hypsi;
   Double_t sumsquchi = hzchi*hzchi+hxchi*hxchi+hychi*hychi;

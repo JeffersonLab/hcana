@@ -119,6 +119,7 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   prefix[1]='\0';
   DBRequest list[]={
     {"_remove_sppt_if_one_y_plane",&fRemove_Sppt_If_One_YPlane, kInt},
+    {"dc_wire_velocity", &fWireVelocity, kDouble},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
@@ -709,20 +710,36 @@ void THcDriftChamber::SelectSpacePoints()
   fNSpacePoints = sp_count;
 }
 
-/*
-*
-* Now we know rough hit positions in the chambers so we can make
-* wire velocity drift time corrections for each hit in the space point
-*
-* Assume all wires for a plane are read out on the same side (l/r or t/b).
-* If the wire is closer to horizontal, read out left/right.  If nearer
-* vertical, assume top/bottom.  (Note, this is not always true for the
-* SOS u and v planes.  They have 1 card each on the side, but the overall
-* time offset per card will cancel much of the error caused by this.  The
-* alternative is to check by card, rather than by plane and this is harder.
-*/
+void THcDriftChamber::CorrectHitTimes()
+{
+  // Use the rough hit positions in the chambers to correct the drift time
+  // for hits in the space points.
 
+  // Assume all wires for a plane are read out on the same side (l/r or t/b).
+  // If the wire is closer to horizontal, read out left/right.  If nearer
+  // vertical, assume top/bottom.  (Note, this is not always true for the
+  // SOS u and v planes.  They have 1 card each on the side, but the overall
+  // time offset per card will cancel much of the error caused by this.  The
+  // alternative is to check by card, rather than by plane and this is harder.
+  for(Int_t isp=0;isp<fNSpacePoints;isp++) {
+    Double_t x = fSpacePoints[isp].x;
+    Double_t y = fSpacePoints[isp].y;
+    for(Int_t ihit=0;ihit<fSpacePoints[isp].nhits;ihit++) {
+      THcDCHit* hit = fSpacePoints[isp].hits[ihit];
+      THcDriftChamberPlane* plane=hit->GetWirePlane();
 
+      // How do we know this correction only gets applied once?  Is
+      // it determined that a given hit can only belong to one space point?
+      Double_t time_corr = plane->GetReadoutX() ?
+	fSpacePoints[isp].y*plane->GetReadoutCorr()/fWireVelocity :
+	fSpacePoints[isp].x*plane->GetReadoutCorr()/fWireVelocity;
+      
+      hit->SetTime(hit->GetTime()
+		   - plane->GetCentralTime() + plane->GetDriftTimeSign()*time_corr);
+      hit->ConvertTimeToDist();
+    }
+  }
+}	   
 //_____________________________________________________________________________
 THcDriftChamber::~THcDriftChamber()
 {

@@ -52,6 +52,8 @@ public:
   Int_t GetMaxHits(Int_t chamber) const { return fMaxHits[chamber-1];}
   Int_t GetMinCombos(Int_t chamber) const { return fMinCombos[chamber-1];}
   Double_t GetSpacePointCriterion(Int_t chamber) const { return TMath::Sqrt(fSpace_Point_Criterion2[chamber-1]);}
+  Double_t GetCentralTime(Int_t plane) const { return fCentralTime[plane-1];}
+  Int_t GetDriftTimeSign(Int_t plane) const { return fDriftTimeSign[plane-1];}
 
   Double_t GetPlaneTimeZero(Int_t plane) const { return fPlaneTimeZero[plane-1];}
 
