@@ -241,7 +241,7 @@ Int_t THcDriftChamber::FindSpacePoints( void )
       SelectSpacePoints();
       if(fNSpacePoints == 0) cout << "SelectSpacePoints() killed SP" << endl;
     }
-    //cout << fNSpacePoints << " Space Points remain" << endl;
+    cout << fNSpacePoints << " Space Points remain" << endl;
     // Add these space points to the total list of space points for the
     // the DC package.  Do this in THcDC.cxx.
 #if 0
@@ -731,12 +731,19 @@ void THcDriftChamber::CorrectHitTimes()
       // How do we know this correction only gets applied once?  Is
       // it determined that a given hit can only belong to one space point?
       Double_t time_corr = plane->GetReadoutX() ?
-	fSpacePoints[isp].y*plane->GetReadoutCorr()/fWireVelocity :
-	fSpacePoints[isp].x*plane->GetReadoutCorr()/fWireVelocity;
+	y*plane->GetReadoutCorr()/fWireVelocity :
+	x*plane->GetReadoutCorr()/fWireVelocity;
       
-      hit->SetTime(hit->GetTime()
-		   - plane->GetCentralTime() + plane->GetDriftTimeSign()*time_corr);
-      hit->ConvertTimeToDist();
+      //      cout << "Correcting hit " << hit << " " << plane->GetPlaneNum() << " " << isp << "/" << ihit << "  " << x << "," << y << endl;
+      // Fortran ENGINE does not do this check, so hits can get "corrected"
+      // multiple times if they belong to multiple space points.
+      // To reproduce the precise ENGINE behavior, remove this if condition.
+      if(! hit->GetCorrectedStatus()) {
+	hit->SetTime(hit->GetTime() - plane->GetCentralTime()
+		     + plane->GetDriftTimeSign()*time_corr);
+	hit->ConvertTimeToDist();
+	hit->SetCorrectedStatus(1);
+      }
     }
   }
 }	   
