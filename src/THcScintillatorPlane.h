@@ -59,6 +59,10 @@ class THcScintillatorPlane : public THaSubDetector {
 
  protected:
 
+  TClonesArray* frPosTDCHits;
+  TClonesArray* frNegTDCHits;
+  TClonesArray* frPosADCHits;
+  TClonesArray* frNegADCHits;
   TClonesArray* fPosTDCHits;
   TClonesArray* fNegTDCHits;
   TClonesArray* fPosADCHits;
