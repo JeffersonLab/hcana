@@ -359,12 +359,14 @@ Int_t THcDriftChamber::FindHardSpacePoints()
   Combo combos[10*MAX_NUMBER_PAIRS];
   for(Int_t ipair1=0;ipair1<ntest_points-1;ipair1++) {
     for(Int_t ipair2=ipair1+1;ipair2<ntest_points;ipair2++) {
-      Double_t dist2 = pow(pairs[ipair1].x - pairs[ipair2].x,2)
-	+ pow(pairs[ipair1].y - pairs[ipair2].y,2);
-      if(dist2 <= fSpacePointCriterion2) {
-	combos[ncombos].pair1 = &pairs[ipair1];
-	combos[ncombos].pair2 = &pairs[ipair2];
-	ncombos++;
+      if(ncombos < 10*MAX_NUMBER_PAIRS) {
+	Double_t dist2 = pow(pairs[ipair1].x - pairs[ipair2].x,2)
+	  + pow(pairs[ipair1].y - pairs[ipair2].y,2);
+	if(dist2 <= fSpacePointCriterion2) {
+	  combos[ncombos].pair1 = &pairs[ipair1];
+	  combos[ncombos].pair2 = &pairs[ipair2];
+	  ncombos++;
+	}
       }
     }
   }
@@ -376,8 +378,8 @@ Int_t THcDriftChamber::FindHardSpacePoints()
     hits[2]=combos[icombo].pair2->hit1;
     hits[3]=combos[icombo].pair2->hit2;
     // Get Average Space point xt, yt
-    Double_t xt = combos[icombo].pair1->x + combos[icombo].pair2->x;
-    Double_t yt = combos[icombo].pair1->y + combos[icombo].pair2->y;
+    Double_t xt = (combos[icombo].pair1->x + combos[icombo].pair2->x)/2.0;
+    Double_t yt = (combos[icombo].pair1->y + combos[icombo].pair2->y)/2.0;
     // Loop over space points
     if(fNSpacePoints > 0) {
       Int_t add_flag=1;
@@ -419,8 +421,10 @@ Int_t THcDriftChamber::FindHardSpacePoints()
 	      if(iflag[icm]==0) {
 		fSpacePoints[ispace].hits[fSpacePoints[ispace].nhits++] = hits[icm];
 	      }
-	      fSpacePoints[ispace].ncombos++;
 	    }
+	    fSpacePoints[ispace].ncombos++;
+	    // Terminate loop since this combo can only belong to one space point
+	    break;
 	  }
 	}
       }// End of loop over existing space points
