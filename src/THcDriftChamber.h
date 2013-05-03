@@ -33,6 +33,7 @@ public:
   virtual Int_t      ApplyCorrections( void );
   virtual void       ProcessHits( void );
   virtual Int_t      FindSpacePoints( void ) ;
+  virtual void       CorrectHitTimes( void ) ;
 
   virtual void   Clear( Option_t* opt="" );
 
@@ -66,6 +67,7 @@ protected:
   Int_t fMaxHits; 		// Maximum required to do something
   Int_t fMinCombos;             // Minimum # pairs in a space point
   Int_t fRemove_Sppt_If_One_YPlane;
+  Double_t fWireVelocity;
 
   Double_t fXCenter;
   Double_t fYCenter;

@@ -21,6 +21,7 @@ public:
   fWire(wire), fRawTime(rawtime), fTime(time), fWirePlane(wp),
     fDist(0.0), ftrDist(kBig) {
       ConvertTimeToDist();
+      fCorrected = 0;
     }
   virtual ~THcDCHit() {}
 
@@ -37,6 +38,7 @@ public:
   Double_t GetDist()    const { return fDist; }
   Double_t GetPos()     const { return fWire->GetPos(); } //Position of hit wire
   Double_t GetdDist()   const { return fdDist; }
+  Int_t    GetCorrectedStatus() const { return fCorrected; }
 
   THcDriftChamberPlane* GetWirePlane() const { return fWirePlane; }
   
@@ -50,6 +52,7 @@ public:
   Int_t    GetPlaneNum() const { return fWirePlane->GetPlaneNum(); }
   Int_t    GetPlaneIndex() const { return fWirePlane->GetPlaneIndex(); }
   Int_t    GetChamberNum() const { return fWirePlane->GetChamberNum(); }
+  void     SetCorrectedStatus(Int_t c) { fCorrected = c; }
   
 protected:
   static const Double_t kBig;  //!
@@ -61,6 +64,7 @@ protected:
   Double_t    fDist;     // (Perpendicular) Drift Distance
   Double_t    fdDist;    // uncertainty in fDist (for chi2 calc)
   Double_t    ftrDist;   // (Perpendicular) distance from the track
+  Int_t       fCorrected; // Has this hit been corrected?
 
   THcDriftChamber* fChamber; //! Pointer to parent wire plane
 
