@@ -171,6 +171,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     };
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
+
   YPos = new Double_t* [fNLayers];
   for(Int_t i=0;i<fNLayers;i++) {
     YPos[i] = new Double_t [fNBlocks[i]];
@@ -180,6 +181,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     };
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
+
   for(Int_t i=0;i<fNLayers;i++) {
     cout << "Plane " << fLayerNames[i] << ":" << endl;
     cout << "    Block thickness: " << BlockThick[i] << endl;
@@ -191,7 +193,158 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
       cout << " " << YPos[i][j];
     }
     cout << endl;
+
   }
+
+  //Calibration related parameters (from hcal.param).
+
+  fNtotBlocks=0;              //total number of blocks
+  for (Int_t i=0; i<fNLayers; i++) fNtotBlocks += fNBlocks[i];
+
+  cout << "Total number of blocks in he calorimeter: " << fNtotBlocks << endl;
+
+  //Pedestal limits from hcal.param.
+  fCalPosPedLimit = new Int_t [fNtotBlocks];
+  fCalNegPedLimit = new Int_t [fNtotBlocks];
+
+  //Calibration constants
+  fCalPosCalConst = new Double_t [fNtotBlocks];
+  fCalNegCalConst = new Double_t [fNtotBlocks];
+
+  //Read in parameters from hcal.param
+  Double_t hcal_pos_cal_const[fNtotBlocks];
+  //  Double_t hcal_pos_gain_ini[fNtotBlocks];
+  //  Double_t hcal_pos_gain_cur[fNtotBlocks];
+  Int_t    hcal_pos_ped_limit[fNtotBlocks];
+  Double_t hcal_pos_gain_cor[fNtotBlocks];
+
+  Double_t hcal_neg_cal_const[fNtotBlocks];
+  //  Double_t hcal_neg_gain_ini[fNtotBlocks];
+  //  Double_t hcal_neg_gain_cur[fNtotBlocks];
+  Int_t    hcal_neg_ped_limit[fNtotBlocks];
+  Double_t hcal_neg_gain_cor[fNtotBlocks];
+
+  DBRequest list[]={
+    {"cal_pos_cal_const", hcal_pos_cal_const, kDouble, fNtotBlocks},
+    //    {"cal_pos_gain_ini",  hcal_pos_gain_ini,  kDouble, fNtotBlocks},
+    //    {"cal_pos_gain_cur",  hcal_pos_gain_cur,  kDouble, fNtotBlocks},
+    {"cal_pos_ped_limit", hcal_pos_ped_limit, kInt,    fNtotBlocks},
+    {"cal_pos_gain_cor",  hcal_pos_gain_cor,  kDouble, fNtotBlocks},
+    {"cal_neg_cal_const", hcal_neg_cal_const, kDouble, fNtotBlocks},
+    //    {"cal_neg_gain_ini",  hcal_neg_gain_ini,  kDouble, fNtotBlocks},
+    //    {"cal_neg_gain_cur",  hcal_neg_gain_cur,  kDouble, fNtotBlocks},
+    {"cal_neg_ped_limit", hcal_neg_ped_limit, kInt,    fNtotBlocks},
+    {"cal_neg_gain_cor",  hcal_neg_gain_cor,  kDouble, fNtotBlocks},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list, prefix);
+
+  //+++
+
+  cout << "hcal_pos_cal_const:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << hcal_pos_cal_const[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  //  cout << "hcal_pos_gain_ini:" << endl;
+  //  for (Int_t j=0; j<fNLayers; j++) {
+  //    for (Int_t i=0; i<fNBlocks[j]; i++) {
+  //      cout << hcal_pos_gain_ini[j*fNBlocks[j]+i] << " ";
+  //    };
+  //    cout <<  endl;
+  //  };
+
+  //  cout << "hcal_pos_gain_cur:" << endl;
+  //  for (Int_t j=0; j<fNLayers; j++) {
+  //    for (Int_t i=0; i<fNBlocks[j]; i++) {
+  //      cout << hcal_pos_gain_cur[j*fNBlocks[j]+i] << " ";
+  //    };
+  //    cout <<  endl;
+  //  };
+
+  cout << "hcal_pos_ped_limit:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << hcal_pos_ped_limit[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  cout << "hcal_pos_gain_cor:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << hcal_pos_gain_cor[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  //---
+
+  cout << "hcal_neg_cal_const:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << hcal_neg_cal_const[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  //  cout << "hcal_neg_gain_ini:" << endl;
+  //  for (Int_t j=0; j<fNLayers; j++) {
+  //    for (Int_t i=0; i<fNBlocks[j]; i++) {
+  //      cout << hcal_neg_gain_ini[j*fNBlocks[j]+i] << " ";
+  //    };
+  //  //    cout <<  endl;
+  //  };
+
+  //  cout << "hcal_neg_gain_cur:" << endl;
+  //  for (Int_t j=0; j<fNLayers; j++) {
+  //    for (Int_t i=0; i<fNBlocks[j]; i++) {
+  //      cout << hcal_neg_gain_cur[j*fNBlocks[j]+i] << " ";
+  //    };
+  //    cout <<  endl;
+  //  };
+
+  cout << "hcal_neg_ped_limit:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << hcal_neg_ped_limit[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  cout << "hcal_neg_gain_cor:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << hcal_neg_gain_cor[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  //Calibration constants in GeV per ADC channel.
+
+  for (Int_t i=0; i<fNtotBlocks; i++) {
+    fCalPosCalConst[i] = hcal_pos_cal_const[i] *  hcal_pos_gain_cor[i];
+    fCalNegCalConst[i] = hcal_neg_cal_const[i] *  hcal_neg_gain_cor[i];
+  }
+
+  cout << "fCalPosCalConst:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << fCalPosCalConst[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  cout << "fCalNegCalConst:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << fCalNegCalConst[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
 
   fIsInit = true;
 

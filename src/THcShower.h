@@ -38,20 +38,31 @@ public:
   friend class THaScCalib;
 
   THcShower();  // for ROOT I/O
+
 protected:
+
   Int_t fAnalyzePedestals;
-  // Calibration
+
+  // Number of events for pedestal calculations.
+  Int_t* fCalPosPedLimit;
+  Int_t* fCalNegPedLimit;
+
+  // Calibration constants
+  Double_t* fCalPosCalConst;
+  Double_t* fCalNegCalConst;
 
   // Per-event data
 
 
   // Potential Hall C parameters.  Mostly here for demonstration
+
   char** fLayerNames;
   Int_t fNLayers;
   Int_t fNRows;
-  Double_t* fNLayerZPos;		// Z position of front of shower counter layers
+  Double_t* fNLayerZPos;	// Z position of front of shower counter layers
   Double_t* BlockThick;		// Thickness of shower counter blocks, blocks
-  Int_t* fNBlocks;           // Number of shower counter blocks per layer
+  Int_t* fNBlocks;              // Number of shower counter blocks per layer
+  Int_t fNtotBlocks;            // Total number of shower counter blocks
   Double_t** YPos;		//X,Y positions of shower counter blocks
   Double_t* XPos;
 
@@ -59,6 +70,7 @@ protected:
 
   TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
                               // and estimated match to TOF paddle
+
   // Useful derived quantities
   // double tan_angle, sin_angle, cos_angle;
   
@@ -84,9 +96,9 @@ protected:
   enum ESide { kLeft = 0, kRight = 1 };
   
   virtual  Double_t TimeWalkCorrection(const Int_t& paddle,
-					   const ESide side);
+				       const ESide side);
 
-void Setup(const char* name, const char* description);
+  void Setup(const char* name, const char* description);
 
   ClassDef(THcShower,0)   // Generic hodoscope class
 };

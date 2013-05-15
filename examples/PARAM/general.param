@@ -26,3 +26,5 @@ raddeg=3.14159265/180
 #include "PARAM/haero.param"
 #include "PARAM/hdc.param"
 #include "PARAM/hdriftmap.param"
+#include "PARAM/hcal.param"
+
