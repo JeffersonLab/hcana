@@ -10,6 +10,9 @@
 #include "THaSubDetector.h"
 #include "THcDriftChamberPlane.h"
 #include "TClonesArray.h"
+#include "TMatrixDSym.h"
+
+#include <map>
 
 #define MAX_SPACE_POINTS 50
 #define MAX_HITS_PER_POINT 20
@@ -68,11 +71,19 @@ protected:
   Int_t fMinCombos;             // Minimum # pairs in a space point
   Int_t fRemove_Sppt_If_One_YPlane;
   Double_t fWireVelocity;
+  Int_t fSmallAngleApprox;
+  Double_t fStubMaxXPDiff;
 
   Double_t fXCenter;
   Double_t fYCenter;
   Double_t fSpacePointCriterion;
   Double_t fSpacePointCriterion2;
+  Double_t* fSinBeta;
+  Double_t* fCosBeta;
+  Double_t* fTanBeta;
+  Double_t* fSigma;
+  Double_t* fPsi0;
+  Double_t** fStubCoefs;
 
   THcDriftChamberPlane* fPlanes[20]; // List of plane objects
 
@@ -90,6 +101,10 @@ protected:
   Int_t      SpacePointMultiWire(void);
   void       ChooseSingleHit(void);
   void       SelectSpacePoints(void);
+  UInt_t     Count1Bits(UInt_t x);
+  void       LeftRight(void);
+  Double_t   FindStub(Int_t nhits, THcDCHit** hits, Int_t* plane_list,
+			  UInt_t bitpat, Int_t* plusminus, Double_t* stub);
 
   THcDCHit* fHits[10000];	/* All hits for this chamber */
   // A simple structure until we figure out what we are doing.
@@ -99,10 +114,14 @@ protected:
     Int_t nhits;
     Int_t ncombos;
     THcDCHit* hits[MAX_HITS_PER_POINT];
+    Double_t stub[4];
   };
   SpacePoint fSpacePoints[MAX_SPACE_POINTS];
   Int_t fNSpacePoints;
   Int_t fEasySpacePoint;	/* This event is an easy space point */
+
+  Double_t* stubcoef[4]; 
+  std::map<int,TMatrixDSym*> fAA3Inv;
 
   ClassDef(THcDriftChamber,0)   // Drift Chamber class
 };

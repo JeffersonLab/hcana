@@ -19,6 +19,7 @@
 #include "THaTrack.h"
 #include "TClonesArray.h"
 #include "TMath.h"
+#include "TVectorD.h"
 
 #include "THaTrackProj.h"
 
@@ -26,6 +27,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -79,7 +81,7 @@ Int_t THcDriftChamber::Decode( const THaEvData& evdata )
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcDriftChamber::Init( const TDatime& date )
 {
-  static const char* const here = "Init()";
+  //  static const char* const here = "Init()";
 
   Setup(GetName(), GetTitle());
   
@@ -120,6 +122,8 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   DBRequest list[]={
     {"_remove_sppt_if_one_y_plane",&fRemove_Sppt_If_One_YPlane, kInt},
     {"dc_wire_velocity", &fWireVelocity, kDouble},
+    {"SmallAngleApprox", &fSmallAngleApprox, kInt},
+    {"stub_max_xpdiff", &fStubMaxXPDiff, kDouble},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
@@ -146,6 +150,64 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
     YPlanePNum = 11;
   }
     
+  // Generate the HAA3INV matrix for all the acceptable combinations
+  // of hit planes.  Try to make it as generic as possible 
+  // pindex=0 -> Plane 1 missing, pindex5 -> plane 6 missing.  Won't 
+  // replicate the exact values used in the ENGINE, because the engine
+  // had one big list of matrices for both chambers, while here we will
+  // have a list just for one chamber.  Also, call pindex, pmindex as
+  // we tend to use pindex as a plane index.
+  fCosBeta = new Double_t [fNPlanes];
+  fSinBeta = new Double_t [fNPlanes];
+  fTanBeta = new Double_t [fNPlanes];
+  fSigma = new Double_t [fNPlanes];
+  fPsi0 = new Double_t [fNPlanes];
+  fStubCoefs = new Double_t* [fNPlanes];
+  Int_t allplanes=0;
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    fCosBeta[ip] = TMath::Cos(fPlanes[ip]->GetBeta());
+    fSinBeta[ip] = TMath::Sin(fPlanes[ip]->GetBeta());
+    fTanBeta[ip] = fSinBeta[ip]/fCosBeta[ip];
+    fSigma[ip] = fPlanes[ip]->GetSigma();
+    fPsi0[ip] = fPlanes[ip]->GetPsi0();
+    fStubCoefs[ip] = fPlanes[ip]->GetStubCoef();
+    allplanes |= 1<<ip;
+  }
+  // Unordered map introduced in C++-11
+  // Can use unordered_map if using C++-11
+  // May not want to use map a all for performance, but using it now
+  // for code clarity
+  for(Int_t ipm1=0;ipm1<fNPlanes+1;ipm1++) { // Loop over missing plane1
+    for(Int_t ipm2=ipm1;ipm2<fNPlanes+1;ipm2++) {
+      if(ipm1==ipm2 && ipm1<fNPlanes) continue;
+      TMatrixDSym* AA3 = new TMatrixDSym(3);
+      for(Int_t i=0;i<3;i++) {
+	for(Int_t j=i;j<3;j++) {
+	  (*AA3)[j][i] = 0.0;
+	  for(Int_t ip=0;ip<fNPlanes;ip++) {
+	    if(ipm1 != ip && ipm2 != ip) {
+	      (*AA3)[j][i] += fStubCoefs[ip][i]*fStubCoefs[ip][j];
+	    }
+	  }
+	}
+      }
+      // Use the bit pattern of missing planes as an hash index.
+      // Perhaps it is more efficient to just use a regular array instead of map
+      Int_t bitpat = allplanes & ~(1<<ipm1) & ~(1<<ipm2);
+      // Should check that it is invertable
+      AA3->Invert();
+      fAA3Inv[bitpat] = AA3;
+    }
+  }
+
+#if 0  
+  for(map<int,TMatrixDSym*>::iterator pm=fHaa3map.begin();
+      pm != fHaa3map.end(); pm++) {
+    cout << setbase(8) << pm->first << endl;
+    fAA3Inv[pm->first]->Print();
+  }
+#endif
+
   fIsInit = true;
   return kOK;
 }
@@ -751,6 +813,235 @@ void THcDriftChamber::CorrectHitTimes()
     }
   }
 }	   
+UInt_t THcDriftChamber::Count1Bits(UInt_t x)
+// From "Hacker's Delight"
+{
+   x = x - ((x >> 1) & 0x55555555);
+   x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+   x = x + (x >> 8);
+   x = x + (x >> 16);
+   return x & 0x0000003F;
+}
+
+//_____________________________________________________________________________
+// HMS Specific
+void THcDriftChamber::LeftRight()
+{
+  // For each space point,
+  // Fit stubs to all possible left-right combinations of drift distances
+  // and choose the set with the minimum chi**2.
+
+  for(Int_t isp=0; isp<fNSpacePoints; isp++) {
+    // Build a bit pattern of which planes are hit
+    Int_t nhits = fSpacePoints[isp].nhits;
+    UInt_t bitpat  = 0;		// Bit pattern of which planes are hit
+    Double_t minchi2 = 1.0e10;
+    Double_t tmp_minchi2;
+    Double_t minxp = 0.25;
+    Int_t hasy1 = -1;
+    Int_t hasy2 = -1;
+    Int_t plusminusknown[nhits];
+    Int_t plusminusbest[nhits];
+    Int_t plusminus[nhits];	// ENGINE makes this array float.  Why?
+    Int_t tmp_plusminus[nhits];
+    Int_t plane_list[nhits];
+    Double_t stub[4];
+    Double_t tmp_stub[4];
+
+    if(nhits < 0) {
+      cout << "THcDriftChamber::LeftRight() nhits < 0" << endl;
+    } else if (nhits==0) {
+      cout << "THcDriftChamber::LeftRight() nhits = 0" << endl;
+    }
+    for(Int_t ihit=0;ihit < nhits;ihit++) {
+      THcDCHit* hit = fSpacePoints[isp].hits[ihit];
+      Int_t pindex = hit->GetPlaneIndex();
+      plane_list[ihit] = pindex;
+
+      bitpat |= 1<<pindex;
+
+      plusminusknown[ihit] = 0;
+
+      if(pindex == YPlaneInd) hasy1 = ihit;
+      if(pindex == YPlanePInd) hasy2 = ihit;
+    }
+    Int_t smallAngOK = (hasy1>=0) && (hasy2>=0);
+    if(fSmallAngleApprox !=0 && smallAngOK) { // to small Angle L/R for Y,Y' planes
+      if(fSpacePoints[isp].hits[hasy1]->GetPos() <=
+	 fSpacePoints[isp].hits[hasy2]->GetPos()) {
+	plusminusknown[hasy1] = -1;
+	plusminusknown[hasy2] = 1;
+      } else {
+	plusminusknown[hasy1] = 1;
+	plusminusknown[hasy2] = -1;
+      }
+    }
+    if(nhits < 2) {
+      cout << "THcDriftChamber::LeftRight: numhits-2 < 0" << endl;
+    } else if (nhits == 2) {
+      cout << "THcDriftChamber::LeftRight: numhits-2 = 0" << endl;
+    }
+    Int_t nplaneshit = Count1Bits(bitpat);
+    Int_t nplusminus = pow(2,nhits-2);
+    
+    // Use bit value of integer word to set + or -
+    // Loop over all combinations of left right.
+    for(Int_t pmloop=0;pmloop<nplusminus;pmloop++) {
+      Int_t iswhit = 1;
+      for(Int_t ihit=0;ihit<nhits;ihit++) {
+	if(plusminusknown[ihit]!=0) {
+	  plusminus[ihit] = plusminusknown[ihit];
+	} else {
+	  // Max hits per point has to be less than 32.  
+	  if(pmloop & iswhit) {
+	    plusminus[ihit] = 1;
+	  } else {
+	    plusminus[ihit] = -1;
+	  }
+	  iswhit <<= 1;
+	}
+      }
+      if (nplaneshit >= fNPlanes-1) {
+	Double_t chi2 = FindStub(nhits, fSpacePoints[isp].hits,
+				     plane_list, bitpat, plusminus, stub);
+				     
+	//if(debugging)
+	//cout << "pmloop=" << pmloop << " Chi2=" << chi2 << endl;
+	// Take best chi2 IF x' of the stub agrees with x' as expected from x.
+	// Sometimes an incorrect x' gives a good chi2 for the stub, even though it is
+	// not the correct left/right combination for the real track.
+	// Rotate x'(=stub(3)) to hut coordinates and compare to x' expected from x.
+	// THIS ASSUMES STANDARD HMS TUNE!!!!, for which x' is approx. x/875.
+	if(chi2 < minchi2) {
+	  if(stub[2]*fTanBeta[plane_list[0]]==-1.0) {
+	    cout << "THcDriftChamber::LeftRight() Error 3" << endl;
+	  }
+	  Double_t xp_fit=stub[2]-fTanBeta[plane_list[0]]
+	    /(1+stub[2]*fTanBeta[plane_list[0]]);
+	  // Tune depdendent.  Definitely HMS specific
+	  Double_t xp_expect = fSpacePoints[isp].x/875.0;
+	  if(TMath::Abs(xp_fit-xp_expect)<fStubMaxXPDiff) {
+	    minchi2 = chi2;
+	    for(Int_t ihit=0;ihit<nhits;ihit++) {
+	      plusminusbest[ihit] = plusminus[ihit];
+	    }
+	    for(Int_t i=0;i<4;i++) {
+	      fSpacePoints[isp].stub[i] = stub[i];
+	    }
+	  } else {		// Record best stub failing angle cut
+	    tmp_minchi2 = chi2;
+	    for(Int_t ihit=0;ihit<nhits;ihit++) {
+	      tmp_plusminus[ihit] = plusminus[ihit];
+	    }
+	    for(Int_t i=0;i<4;i++) {
+	      tmp_stub[i] = stub[i];
+	    }
+	  }
+	}
+      } else if (nplaneshit >= fNPlanes-2) { // Two planes missing
+	Double_t chi2 = FindStub(nhits, fSpacePoints[isp].hits,
+				     plane_list, bitpat, plusminus, stub); 
+	//if(debugging)
+	//cout << "pmloop=" << pmloop << " Chi2=" << chi2 << endl;
+	// Isn't this a bad idea, doing == with reals
+	if(stub[2]*fTanBeta[plane_list[0]] == -1.0) {
+	  cout << "THcDriftChamber::LeftRight() Error 3" << endl;
+	}
+	Double_t xp_fit=stub[2]-fTanBeta[plane_list[0]]
+	  /(1+stub[2]*fTanBeta[plane_list[0]]);
+	if(TMath::Abs(xp_fit) <= minxp) {
+	  minxp = TMath::Abs(xp_fit);
+	  minchi2 = chi2;
+	  for(Int_t ihit=0;ihit<nhits;ihit++) {
+	    plusminusbest[ihit] = plusminus[ihit];
+	  }
+	  for(Int_t i=0;i<4;i++) {
+	    fSpacePoints[isp].stub[i] = stub[i];
+	  }
+	}
+      } else {
+	cout << "Insufficient planes hit in THcDriftChamber::LeftRight()" << bitpat <<endl;
+      }
+    } // End loop of pm combinations
+
+    if(minchi2 > 9.9e9) {	// No track passed angle cut
+      minchi2 = tmp_minchi2;
+      for(Int_t ihit=0;ihit<nhits;ihit++) {
+	plusminusbest[ihit] = tmp_plusminus[ihit];
+      }
+      for(Int_t i=0;i<4;i++) {
+	fSpacePoints[isp].stub[i] = tmp_stub[i];
+      }
+      
+    }
+
+    // Calculate final coordinate based on plusminusbest
+    // Update the hit positions in the space points
+    for(Int_t ihit; ihit<nhits; ihit++) {
+      fSpacePoints[isp].hits[ihit]->SetLeftRight(plusminusbest[ihit]);
+    }
+
+    // Stubs are calculated in rotated coordinate system
+    // (I think this rotates in case chambers not perpendicular to central ray)
+    Int_t pindex=plane_list[0];
+    if(fSpacePoints[isp].stub[2] - fTanBeta[pindex] == -1.0) {
+      cout << "THcDriftChamber::LeftRight(): stub3 error" << endl;
+    }
+    stub[2] = (fSpacePoints[isp].stub[2] - fTanBeta[pindex])
+      / (1.0 + fSpacePoints[isp].stub[2]*fTanBeta[pindex]);
+    if(fSpacePoints[isp].stub[2]*fSinBeta[pindex] ==  -fCosBeta[pindex]) {
+      cout << "THcDriftChamber::LeftRight(): stub4 error" << endl;
+    }
+    stub[3] = fSpacePoints[isp].stub[3]
+      / (fSpacePoints[isp].stub[2]*fSinBeta[pindex]+fCosBeta[pindex]);
+    stub[0] = fSpacePoints[isp].stub[0]*fCosBeta[pindex]
+      - fSpacePoints[isp].stub[0]*stub[2]*fSinBeta[pindex];
+    stub[1] = fSpacePoints[isp].stub[1]
+      - fSpacePoints[isp].stub[1]*stub[3]*fSinBeta[pindex];
+    for(Int_t i=0;i<4;i++) {
+      fSpacePoints[isp].stub[i] = stub[i];
+    }
+  }
+  // Option to print stubs
+}
+    //    if(fAA3Inv.find(bitpat) != fAAInv.end()) { // Valid hit combination
+//_____________________________________________________________________________
+Double_t THcDriftChamber::FindStub(Int_t nhits, THcDCHit** hits,
+				       Int_t* plane_list, UInt_t bitpat,
+				       Int_t* plusminus, Double_t* stub)
+{
+  // For a given combination of L/R, fit a stub to the space point
+  Double_t zeros[] = {0.0,0.0,0.0};
+  TVectorD TT; TT.Use(3, zeros);
+  TVectorD dstub;
+  Double_t dpos[3];
+  
+  for(Int_t ihit=0;ihit<nhits; ihit++) {
+    dpos[ihit] = hits[ihit]->GetPos() + plusminus[ihit]*hits[ihit]->GetdDist()
+      - fPsi0[plane_list[ihit]];
+    for(Int_t index=0;index<3;index++) {
+      TT[index]+= dpos[ihit]*fStubCoefs[plane_list[ihit]][index]
+	/fSigma[plane_list[ihit]];
+    }
+  }
+  dstub = (*fAA3Inv[bitpat]) * TT;
+
+  // Calculate Chi2.  Remember one power of sigma is in fStubCoefs
+  stub[0] = dstub[0];
+  stub[1] = dstub[1];
+  stub[2] = dstub[2];
+  stub[3] = 0.0;
+  Double_t chi2=0.0;
+  for(Int_t ihit=0;ihit<nhits; ihit++) {
+    chi2 += pow( dpos[ihit]/fSigma[plane_list[ihit]]
+		 - fStubCoefs[plane_list[ihit]][0]*stub[0]
+		 - fStubCoefs[plane_list[ihit]][1]*stub[1]
+		 - fStubCoefs[plane_list[ihit]][2]*stub[2]
+		 , 2);
+  }
+  return(chi2);
+}
+
 //_____________________________________________________________________________
 THcDriftChamber::~THcDriftChamber()
 {

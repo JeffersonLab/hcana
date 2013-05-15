@@ -112,14 +112,17 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   fCenter = fParent->GetCenter(fPlaneNum);
   fCentralTime = fParent->GetCentralTime(fPlaneNum);
   fDriftTimeSign = fParent->GetDriftTimeSign(fPlaneNum);
+  fSigma = fParent->GetSigma(fPlaneNum);
 
   fNSperChan = fParent->GetNSperChan();
 
   // Calculate Geometry Constants
   // Do we want to move all this to the Chamber of DC Package leve
   // as that is where these things will be needed?
+  Double_t z0 = fParent->GetZPos(fPlaneNum);
   Double_t alpha = fParent->GetAlphaAngle(fPlaneNum);
   Double_t beta = fParent->GetBetaAngle(fPlaneNum);
+  fBeta = beta;
   Double_t gamma = fParent->GetGammaAngle(fPlaneNum);
   Double_t cosalpha = TMath::Cos(alpha);
   Double_t sinalpha = TMath::Sin(alpha);
@@ -127,13 +130,17 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   Double_t sinbeta = TMath::Sin(beta);
   Double_t cosgamma = TMath::Cos(gamma);
   Double_t singamma = TMath::Sin(gamma);
-  
+
   Double_t hzchi = -cosalpha*sinbeta + sinalpha*cosbeta*singamma;
   Double_t hzpsi =  sinalpha*sinbeta + cosalpha*cosbeta*singamma;
   Double_t hxchi = -cosalpha*cosbeta - sinalpha*sinbeta*singamma;
   Double_t hxpsi =  sinalpha*cosbeta - cosalpha*sinbeta*singamma;
   Double_t hychi =  sinalpha*cosgamma;
   Double_t hypsi =  cosalpha*cosgamma;
+  Double_t stubxchi = -cosalpha;
+  Double_t stubxpsi = sinalpha;
+  Double_t stubychi = sinalpha;
+  Double_t stubypsi = cosalpha;
 
   if(cosalpha <= 0.707) { // x-like wire, need dist from x=0 line
     fReadoutX = 1;
@@ -146,9 +153,27 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   Double_t sumsqupsi = hzpsi*hzpsi+hxpsi*hxpsi+hypsi*hypsi;
   Double_t sumsquchi = hzchi*hzchi+hxchi*hxchi+hychi*hychi;
   Double_t sumcross = hzpsi*hzchi + hxpsi*hxchi + hypsi*hychi;
-  Double_t denom = sumsqupsi*sumsquchi-sumcross*sumcross;
-  fXsp = hychi/denom;
-  fYsp = -hxchi/denom;
+  Double_t denom1 = sumsqupsi*sumsquchi-sumcross*sumcross;
+  fPsi0 = (-z0*hzpsi*sumsquchi
+		    +z0*hzchi*sumcross) / denom1;
+  Double_t hchi0 = (-z0*hzchi*sumsqupsi
+		    +z0*hzpsi*sumcross) / denom1;
+  Double_t hphi0 = TMath::Sqrt(pow(z0+hzpsi*fPsi0+hzchi*hchi0,2)
+			       + pow(hxpsi*fPsi0+hxchi*hchi0,2)
+			       + pow(hypsi*fPsi0+hychi*hchi0,2) );
+  if(z0 < 0.0) hphi0 = -hphi0;
+  
+  Double_t denom2 = stubxpsi*stubychi - stubxchi*stubypsi;
+
+  // Why are there 4, but only 3 used?
+  fStubCoef[0] = stubychi/(fSigma*denom2);   // sin(a)/sigma
+  fStubCoef[1] = -stubxchi/(fSigma*denom2);   // cos(a)/sigma
+  fStubCoef[2] = hphi0*fStubCoef[0];     // z0*sin(a)/sig
+  fStubCoef[3] = hphi0*fStubCoef[1];     // z0*cos(a)/sig
+
+  fXsp = hychi/denom2;		// sin(a)
+  fYsp = -hxchi/denom2;		// cos(a)
+
 
   cout << fPlaneNum << " " << fNWires << " " << fWireOrder << endl;
 

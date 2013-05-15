@@ -44,6 +44,7 @@ public:
   Int_t GetTdcWinMin(Int_t plane) const { return fTdcWinMin[plane-1];}
   Int_t GetTdcWinMax(Int_t plane) const { return fTdcWinMax[plane-1];}
 
+  Double_t GetZPos(Int_t plane) const { return fZPos[plane-1];}
   Double_t GetAlphaAngle(Int_t plane) const { return fAlphaAngle[plane-1];}
   Double_t GetBetaAngle(Int_t plane) const { return fBetaAngle[plane-1];}
   Double_t GetGammaAngle(Int_t plane) const { return fGammaAngle[plane-1];}
@@ -56,6 +57,7 @@ public:
   Int_t GetDriftTimeSign(Int_t plane) const { return fDriftTimeSign[plane-1];}
 
   Double_t GetPlaneTimeZero(Int_t plane) const { return fPlaneTimeZero[plane-1];}
+  Double_t GetSigma(Int_t plane) const { return fSigma[plane-1];}
 
   Double_t GetNSperChan() const { return fNSperChan;}
 
@@ -109,6 +111,7 @@ protected:
   Double_t* fPitch;
   Double_t* fCentralWire;
   Double_t* fPlaneTimeZero;
+  Double_t* fSigma;
 
   THcDriftChamberPlane** fPlanes; // List of plane objects
   THcDriftChamber** fChambers; // List of chamber objects

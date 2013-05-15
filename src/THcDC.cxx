@@ -222,7 +222,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
   fPitch = new Double_t [fNPlanes];
   fCentralWire = new Double_t [fNPlanes];
   fPlaneTimeZero = new Double_t [fNPlanes];
-
+  fSigma = new Double_t [fNPlanes];
 
   DBRequest list[]={
     {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
@@ -250,6 +250,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"dc_pitch", fPitch, kDouble, fNPlanes},
     {"dc_central_wire", fCentralWire, kDouble, fNPlanes},
     {"dc_plane_time_zero", fPlaneTimeZero, kDouble, fNPlanes},
+    {"dc_sigma", fSigma, kDouble, fNPlanes},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
