@@ -13,6 +13,7 @@
 #include "TMatrixDSym.h"
 
 #include <map>
+#include <vector>
 
 #define MAX_SPACE_POINTS 50
 #define MAX_HITS_PER_POINT 20
@@ -85,7 +86,8 @@ protected:
   Double_t* fPsi0;
   Double_t** fStubCoefs;
 
-  THcDriftChamberPlane* fPlanes[20]; // List of plane objects
+  std::vector<THcDriftChamberPlane*> fPlanes;
+  //  THcDriftChamberPlane* fPlanes[20]; // List of plane objects
 
   TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
                               // and estimated match to TOF paddle
@@ -103,17 +105,19 @@ protected:
   void       SelectSpacePoints(void);
   UInt_t     Count1Bits(UInt_t x);
   void       LeftRight(void);
-  Double_t   FindStub(Int_t nhits, THcDCHit** hits, Int_t* plane_list,
-			  UInt_t bitpat, Int_t* plusminus, Double_t* stub);
+  Double_t   FindStub(Int_t nhits, const std::vector<THcDCHit*>& hits,
+		      Int_t* plane_list, UInt_t bitpat,
+		      Int_t* plusminus, Double_t* stub);
 
-  THcDCHit* fHits[10000];	/* All hits for this chamber */
+  std::vector<THcDCHit*> fHits;	/* All hits for this chamber */
   // A simple structure until we figure out what we are doing.
   struct SpacePoint {
     Double_t x;
     Double_t y;
     Int_t nhits;
     Int_t ncombos;
-    THcDCHit* hits[MAX_HITS_PER_POINT];
+    //    THcDCHit* hits[MAX_HITS_PER_POINT];
+    std::vector<THcDCHit*> hits;
     Double_t stub[4];
   };
   SpacePoint fSpacePoints[MAX_SPACE_POINTS];

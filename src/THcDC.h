@@ -113,8 +113,8 @@ protected:
   Double_t* fPlaneTimeZero;
   Double_t* fSigma;
 
-  THcDriftChamberPlane** fPlanes; // List of plane objects
-  THcDriftChamber** fChambers; // List of chamber objects
+  std::vector<THcDriftChamberPlane*> fPlanes; // List of plane objects
+  std::vector<THcDriftChamber*> fChambers; // List of chamber objects
 
   TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
                               // and estimated match to TOF paddle

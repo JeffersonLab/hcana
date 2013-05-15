@@ -41,12 +41,36 @@ THcDC::THcDC(
   //  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
   fNPlanes = 0;			// No planes until we make them
 
+  fXCenter = NULL;
+  fYCenter = NULL;
+  fMinHits = NULL;
+  fMaxHits = NULL;
+  fMinCombos = NULL;
+  fSpace_Point_Criterion2 = NULL;
+
+  fTdcWinMin = NULL;
+  fTdcWinMax = NULL;
+  fCentralTime = NULL;
+  fNWires = NULL;
+  fNChamber = NULL;
+  fWireOrder = NULL;
+  fDriftTimeSign = NULL;
+
+  fZPos = NULL;
+  fAlphaAngle = NULL;
+  fBetaAngle = NULL;
+  fGammaAngle = NULL;
+  fPitch = NULL;
+  fCentralWire = NULL;
+  fPlaneTimeZero = NULL;
+  fSigma = NULL;
 }
 
 //_____________________________________________________________________________
 void THcDC::Setup(const char* name, const char* description)
 {
 
+  static const char* const here = "Setup";
   char prefix[2];
   char parname[100];
 
@@ -87,23 +111,32 @@ void THcDC::Setup(const char* name, const char* description)
   }
 
   char *desc = new char[strlen(description)+100];
-  fPlanes = new THcDriftChamberPlane* [fNPlanes];
+  fPlanes.clear();
 
   for(Int_t i=0;i<fNPlanes;i++) {
     strcpy(desc, description);
     strcat(desc, " Plane ");
     strcat(desc, fPlaneNames[i]);
 
-    fPlanes[i] = new THcDriftChamberPlane(fPlaneNames[i], desc, i+1, this);
+    THcDriftChamberPlane* newplane = new THcDriftChamberPlane(fPlaneNames[i], desc, i+1, this);
+    if( !newplane or newplane->IsZombie() ) {
+      Error( Here(here), "Error creating Drift Chamber plane %s. Call expert.", name);
+      MakeZombie();
+      return;
+    }
+    fPlanes.push_back(newplane);
+    newplane->SetDebug(fDebug);
     cout << "Created Drift Chamber Plane " << fPlaneNames[i] << ", " << desc << endl;
 
   }
-  fChambers = new THcDriftChamber* [fNChambers];
+
+  fChambers.clear();
   for(Int_t i=0;i<fNChambers;i++) {
     sprintf(desc,"%s Chamber %d",description, i+1);
 
     // Should construct a better chamber name
-    fChambers[i] = new THcDriftChamber(desc, desc, i+1, this);
+    THcDriftChamber* newchamber = new THcDriftChamber(desc, desc, i+1, this);
+    fChambers.push_back(newchamber);
     cout << "Created Drift Chamber " << i+1 << ", " << desc << endl;
     
     
@@ -200,29 +233,29 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
 
   prefix[1]='\0';
 
-  fXCenter = new Double_t [fNChambers];
-  fYCenter = new Double_t [fNChambers];
-  fMinHits = new Int_t [fNChambers];
-  fMaxHits = new Int_t [fNChambers];
-  fMinCombos = new Int_t [fNChambers];
-  fSpace_Point_Criterion2 = new Double_t [fNChambers];
+  delete [] fXCenter;  fXCenter = new Double_t [fNChambers];
+  delete [] fYCenter;  fYCenter = new Double_t [fNChambers];
+  delete [] fMinHits;  fMinHits = new Int_t [fNChambers];
+  delete [] fMaxHits;  fMaxHits = new Int_t [fNChambers];
+  delete [] fMinCombos;  fMinCombos = new Int_t [fNChambers];
+  delete [] fSpace_Point_Criterion2;  fSpace_Point_Criterion2 = new Double_t [fNChambers];
 
-  fTdcWinMin = new Int_t [fNPlanes];
-  fTdcWinMax = new Int_t [fNPlanes];
-  fCentralTime = new Int_t [fNPlanes];
-  fNWires = new Int_t [fNPlanes];
-  fNChamber = new Int_t [fNPlanes]; // Which chamber is this plane
-  fWireOrder = new Int_t [fNPlanes]; // Wire readout order
-  fDriftTimeSign = new Int_t [fNPlanes];
+  delete [] fTdcWinMin;  fTdcWinMin = new Int_t [fNPlanes];
+  delete [] fTdcWinMax;  fTdcWinMax = new Int_t [fNPlanes];
+  delete [] fCentralTime;  fCentralTime = new Int_t [fNPlanes];
+  delete [] fNWires;  fNWires = new Int_t [fNPlanes];
+  delete [] fNChamber;  fNChamber = new Int_t [fNPlanes]; // Which chamber is this plane
+  delete [] fWireOrder;  fWireOrder = new Int_t [fNPlanes]; // Wire readout order
+  delete [] fDriftTimeSign;  fDriftTimeSign = new Int_t [fNPlanes];
 
-  fZPos = new Double_t [fNPlanes];
-  fAlphaAngle = new Double_t [fNPlanes];
-  fBetaAngle = new Double_t [fNPlanes];
-  fGammaAngle = new Double_t [fNPlanes];
-  fPitch = new Double_t [fNPlanes];
-  fCentralWire = new Double_t [fNPlanes];
-  fPlaneTimeZero = new Double_t [fNPlanes];
-  fSigma = new Double_t [fNPlanes];
+  delete [] fZPos;  fZPos = new Double_t [fNPlanes];
+  delete [] fAlphaAngle;  fAlphaAngle = new Double_t [fNPlanes];
+  delete [] fBetaAngle;  fBetaAngle = new Double_t [fNPlanes];
+  delete [] fGammaAngle;  fGammaAngle = new Double_t [fNPlanes];
+  delete [] fPitch;  fPitch = new Double_t [fNPlanes];
+  delete [] fCentralWire;  fCentralWire = new Double_t [fNPlanes];
+  delete [] fPlaneTimeZero;  fPlaneTimeZero = new Double_t [fNPlanes];
+  delete [] fSigma;  fSigma = new Double_t [fNPlanes];
 
   DBRequest list[]={
     {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
@@ -293,6 +326,14 @@ THcDC::~THcDC()
     RemoveVariables();
   if( fIsInit )
     DeleteArrays();
+
+  // Delete the plane objects
+  for (vector<THcDriftChamberPlane*>::iterator ip = fPlanes.begin();
+       ip != fPlanes.end(); ip++) delete *ip;
+  // Delete the chamber objects
+  for (vector<THcDriftChamber*>::iterator ip = fChambers.begin();
+       ip != fChambers.end(); ip++) delete *ip;
+
   if (fTrackProj) {
     fTrackProj->Clear();
     delete fTrackProj; fTrackProj = 0;
@@ -304,35 +345,30 @@ void THcDC::DeleteArrays()
 {
   // Delete member arrays. Used by destructor.
 
-  delete [] fNWires;  fNWires = NULL;
-  //  delete [] fSpacing;  fSpacing = NULL;
-  //  delete [] fCenter;   fCenter = NULL; // This 2D. What is correct way to delete?
+  delete [] fXCenter;   fXCenter = NULL;
+  delete [] fYCenter;   fYCenter = NULL;
+  delete [] fMinHits;   fMinHits = NULL;
+  delete [] fMaxHits;   fMaxHits = NULL;
+  delete [] fMinCombos;   fMinCombos = NULL;
+  delete [] fSpace_Point_Criterion2;   fSpace_Point_Criterion2 = NULL;
 
-  //  delete [] fRA_c;    fRA_c    = NULL;
-  //  delete [] fRA_p;    fRA_p    = NULL;
-  //  delete [] fRA;      fRA      = NULL;
-  //  delete [] fLA_c;    fLA_c    = NULL;
-  //  delete [] fLA_p;    fLA_p    = NULL;
-  //  delete [] fLA;      fLA      = NULL;
-  //  delete [] fRT_c;    fRT_c    = NULL;
-  //  delete [] fRT;      fRT      = NULL;
-  //  delete [] fLT_c;    fLT_c    = NULL;
-  //  delete [] fLT;      fLT      = NULL;
-  
-  //  delete [] fRGain;   fRGain   = NULL;
-  //  delete [] fLGain;   fLGain   = NULL;
-  //  delete [] fRPed;    fRPed    = NULL;
-  //  delete [] fLPed;    fLPed    = NULL;
-  //  delete [] fROff;    fROff    = NULL;
-  //  delete [] fLOff;    fLOff    = NULL;
-  //  delete [] fTWalkPar; fTWalkPar = NULL;
-  //  delete [] fTrigOff; fTrigOff = NULL;
+  delete [] fTdcWinMin;   fTdcWinMin = NULL;
+  delete [] fTdcWinMax;   fTdcWinMax = NULL;
+  delete [] fCentralTime;   fCentralTime = NULL;
+  delete [] fNWires;   fNWires = NULL;
+  delete [] fNChamber;   fNChamber = NULL;
+  delete [] fWireOrder;   fWireOrder = NULL;
+  delete [] fDriftTimeSign;   fDriftTimeSign = NULL;
 
-  //  delete [] fHitPad;  fHitPad  = NULL;
-  //  delete [] fTime;    fTime    = NULL;
-  //  delete [] fdTime;   fdTime   = NULL;
-  //  delete [] fYt;      fYt      = NULL;
-  //  delete [] fYa;      fYa      = NULL;
+  delete [] fZPos;   fZPos = NULL;
+  delete [] fAlphaAngle;   fAlphaAngle = NULL;
+  delete [] fBetaAngle;   fBetaAngle = NULL;
+  delete [] fGammaAngle;   fGammaAngle = NULL;
+  delete [] fPitch;   fPitch = NULL;
+  delete [] fCentralWire;   fCentralWire = NULL;
+  delete [] fPlaneTimeZero;   fPlaneTimeZero = NULL;
+  delete [] fSigma;   fSigma = NULL;
+
 }
 
 //_____________________________________________________________________________

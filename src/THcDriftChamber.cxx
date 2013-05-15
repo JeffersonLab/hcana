@@ -69,6 +69,7 @@ THcDriftChamber::THcDriftChamber( ) :
   THaSubDetector()
 {
   // Constructor
+  fPlanes.clear();
 }
 
 //_____________________________________________________________________________
@@ -97,7 +98,7 @@ void THcDriftChamber::AddPlane(THcDriftChamberPlane *plane)
 {
   cout << "Added plane " << plane->GetPlaneNum() << " to chamber " << fChamberNum << " " << fNPlanes << " " << YPlaneInd << " " << YPlanePInd << endl;
   plane->SetPlaneIndex(fNPlanes);
-  fPlanes[fNPlanes] = plane;
+  fPlanes.push_back(plane);
  // HMS Specific
   // Hard code Y plane numbers.  Should be able to get from wire angle
   if(fChamberNum == 1) {
@@ -109,7 +110,7 @@ void THcDriftChamber::AddPlane(THcDriftChamberPlane *plane)
   }
 
   // HMS Specific
-  // Check if this is a Y Plae
+  // Check if this is a Y Plane
   if(plane->GetPlaneNum() == YPlaneNum) {
     YPlaneInd = fNPlanes;
   } else if (plane->GetPlaneNum() == YPlanePNum) {
@@ -232,11 +233,14 @@ void THcDriftChamber::ProcessHits( void)
 {
   // Make a list of hits for whole chamber
   fNhits = 0;
+  fHits.clear();
+  fHits.reserve(10);
 
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     TClonesArray* hitsarray = fPlanes[ip]->GetHits();
     for(Int_t ihit=0;ihit<fPlanes[ip]->GetNHits();ihit++) {
-      fHits[fNhits++] = static_cast<THcDCHit*>(hitsarray->At(ihit));
+      fHits.push_back(static_cast<THcDCHit*>(hitsarray->At(ihit)));
+      fNhits++;
     }
   }
   //  cout << "ThcDriftChamber::ProcessHits() " << fNhits << " hits" << endl;
@@ -373,9 +377,9 @@ Int_t THcDriftChamber::FindEasySpacePoint(Int_t yplane_hitind,Int_t yplanep_hiti
     fSpacePoints[0].y = yt;
     fSpacePoints[0].nhits = fNhits;
     fSpacePoints[0].ncombos = 0; // No combos
+    fSpacePoints[0].hits.resize(fNhits);
     for(Int_t ihit=0;ihit<fNhits;ihit++) {
-      THcDCHit* thishit = fHits[ihit];
-      fSpacePoints[0].hits[ihit] = thishit;
+      fSpacePoints[0].hits[ihit] = fHits[ihit];
     }
   }
   return(easy_space_point);
@@ -485,7 +489,8 @@ Int_t THcDriftChamber::FindHardSpacePoints()
 	    // Add the unique combo hits to the space point
 	    for(Int_t icm=0;icm<4;icm++) {
 	      if(iflag[icm]==0) {
-		fSpacePoints[ispace].hits[fSpacePoints[ispace].nhits++] = hits[icm];
+		fSpacePoints[ispace].hits.push_back(hits[icm]);
+		fSpacePoints[ispace].nhits++;
 	      }
 	    }
 	    fSpacePoints[ispace].ncombos++;
@@ -499,15 +504,18 @@ Int_t THcDriftChamber::FindHardSpacePoints()
 	if(add_flag) {
 	  fSpacePoints[fNSpacePoints].nhits=2;
 	  fSpacePoints[fNSpacePoints].ncombos=1;
+	  fSpacePoints[fNSpacePoints].hits.resize(fSpacePoints[fNSpacePoints].nhits);
 	  fSpacePoints[fNSpacePoints].hits[0]=hits[0];
 	  fSpacePoints[fNSpacePoints].hits[1]=hits[1];
 	  fSpacePoints[fNSpacePoints].x = xt;
 	  fSpacePoints[fNSpacePoints].y = yt;
 	  if(hits[0] != hits[2] && hits[1] != hits[2]) {
-	    fSpacePoints[fNSpacePoints].hits[fSpacePoints[fNSpacePoints].nhits++] = hits[2];
+	    fSpacePoints[fNSpacePoints].hits.push_back(hits[2]);
+	    fSpacePoints[fNSpacePoints].nhits++;
 	  }
 	  if(hits[0] != hits[3] && hits[1] != hits[3]) {
-	    fSpacePoints[fNSpacePoints].hits[fSpacePoints[fNSpacePoints].nhits++] = hits[3];
+	    fSpacePoints[fNSpacePoints].hits.push_back(hits[3]);
+	    fSpacePoints[fNSpacePoints].nhits++;
 	  }
 	  fNSpacePoints++;
 	}
@@ -517,15 +525,18 @@ Int_t THcDriftChamber::FindHardSpacePoints()
       // to avoid
       fSpacePoints[fNSpacePoints].nhits=2;
       fSpacePoints[fNSpacePoints].ncombos=1;
-      fSpacePoints[fNSpacePoints].hits[0]=hits[0];
-      fSpacePoints[fNSpacePoints].hits[1]=hits[1];
+      fSpacePoints[fNSpacePoints].hits.resize(fSpacePoints[fNSpacePoints].nhits);
+      fSpacePoints[fNSpacePoints].hits[0] = hits[0];
+      fSpacePoints[fNSpacePoints].hits[1] = hits[1];
       fSpacePoints[fNSpacePoints].x = xt;
       fSpacePoints[fNSpacePoints].y = yt;
       if(hits[0] != hits[2] && hits[1] != hits[2]) {
-	fSpacePoints[fNSpacePoints].hits[fSpacePoints[fNSpacePoints].nhits++] = hits[2];
+	fSpacePoints[fNSpacePoints].hits.push_back(hits[2]);
+	fSpacePoints[fNSpacePoints].nhits++;
       }
       if(hits[0] != hits[3] && hits[1] != hits[3]) {
-	fSpacePoints[fNSpacePoints].hits[fSpacePoints[fNSpacePoints].nhits++] = hits[3];
+	fSpacePoints[fNSpacePoints].hits.push_back(hits[3]);
+	fSpacePoints[fNSpacePoints].nhits++;
       }
       fNSpacePoints++;
     }//End check on 0 space points
@@ -668,14 +679,16 @@ Int_t THcDriftChamber::SpacePointMultiWire()
 	    fSpacePoints[newsp_num].y = fSpacePoints[isp].y;
 	    fSpacePoints[newsp_num].nhits = nplanes_hit;
 	    fSpacePoints[newsp_num].ncombos = fSpacePoints[isp].ncombos;
-	    fSpacePoints[newsp_num].hits[0] = hits_plane[maxplane[0]][n1];
-	    fSpacePoints[newsp_num].hits[1] = hits_plane[maxplane[1]][n2];
-	    fSpacePoints[newsp_num].hits[2] = hits_plane[maxplane[2]][n3];
-	    fSpacePoints[newsp_num].hits[3] = hits_plane[maxplane[3]][0];
-	    if(nhitsperplane[maxplane[4]] == 1)
-	      fSpacePoints[newsp_num].hits[4] = hits_plane[maxplane[4]][0];
-	    if(nhitsperplane[maxplane[5]] == 1)
-	      fSpacePoints[newsp_num].hits[5] = hits_plane[maxplane[5]][0];
+	    fSpacePoints[newsp_num].hits.resize(0);
+	    fSpacePoints[newsp_num].hits.push_back(hits_plane[maxplane[0]][n1]);
+	    fSpacePoints[newsp_num].hits.push_back(hits_plane[maxplane[1]][n2]);
+	    fSpacePoints[newsp_num].hits.push_back(hits_plane[maxplane[2]][n3]);
+	    fSpacePoints[newsp_num].hits.push_back(hits_plane[maxplane[3]][0]);
+	    if(nhitsperplane[maxplane[4]] == 1) {
+	      fSpacePoints[newsp_num].hits.push_back(hits_plane[maxplane[4]][0]);
+	      if(nhitsperplane[maxplane[5]] == 1) 
+		fSpacePoints[newsp_num].hits.push_back(hits_plane[maxplane[5]][0]);
+	    }
 	  }
 	}
       }
@@ -1010,7 +1023,7 @@ void THcDriftChamber::LeftRight()
 }
     //    if(fAA3Inv.find(bitpat) != fAAInv.end()) { // Valid hit combination
 //_____________________________________________________________________________
-Double_t THcDriftChamber::FindStub(Int_t nhits, THcDCHit** hits,
+Double_t THcDriftChamber::FindStub(Int_t nhits, const std::vector<THcDCHit*>& hits,
 				       Int_t* plane_list, UInt_t bitpat,
 				       Int_t* plusminus, Double_t* stub)
 {
