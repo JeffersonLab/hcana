@@ -22,7 +22,7 @@
   for(Int_t ih=0;ih<12;ih++) {
     Int_t ipad = 2*(ih%6)+1 + ih/6;
     cout << ipad << endl;
-    TPad *pt = c1->cd(ipad);
+    c1->cd(ipad);
     h[ih]->SetFillColor(kBlue);
     h[ih]->SetFillStyle(3354);
     h[ih]->Draw();
