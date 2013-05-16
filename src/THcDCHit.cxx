@@ -9,9 +9,30 @@
 #include "THcDCHit.h"
 #include "THcDCTimeToDistConv.h"
 
+#include <iostream>
+
+using std::cout;
+using std::endl;
+
 ClassImp(THcDCHit)
 
 const Double_t THcDCHit::kBig = 1.e38; // Arbitrary large value
+
+//_____________________________________________________________________________
+void THcDCHit::Print( Option_t* opt ) const
+{
+  // Print hit info
+
+  cout << "Hit: wire=" << GetWireNum()
+       << "/" << (fWirePlane ? fWirePlane->GetName() : "??")
+       << " wpos="     << GetPos()
+       << " time="     << GetTime()
+       << " drift="    << GetDist();
+  //       << " res="      << GetResolution()
+    //       << " z="        << GetZ()
+  if( *opt != 'C' )
+    cout << endl;
+}
 
 //_____________________________________________________________________________
 Double_t THcDCHit::ConvertTimeToDist()
@@ -51,15 +72,17 @@ Int_t THcDCHit::Compare( const TObject* obj ) const
  
   Int_t myWireNum = fWire->GetNum();
   Int_t hitWireNum = hit->GetWire()->GetNum();
-  // Compare wire numbers
+  Int_t myPlaneNum = GetPlaneNum();
+  Int_t hitPlaneNum = hit->GetPlaneNum();
+  if (myPlaneNum < hitPlaneNum) return -1;
+  if (myPlaneNum > hitPlaneNum) return 1;
+  // If planes are the same, compare wire numbers
   if (myWireNum < hitWireNum) return -1;
   if (myWireNum > hitWireNum) return  1;
-  if (myWireNum == hitWireNum) {
-    // If wire numbers are the same, compare times
-    Double_t hitTime = hit->GetTime();
-    if (fTime < hitTime) return -1;
-    if (fTime > hitTime) return  1;
-  }
+  // If wire numbers are the same, compare times
+  Double_t hitTime = hit->GetTime();
+  if (fTime < hitTime) return -1;
+  if (fTime > hitTime) return  1;
   return 0;
 }
 

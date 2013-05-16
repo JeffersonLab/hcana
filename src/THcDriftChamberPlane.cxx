@@ -14,7 +14,7 @@
 #include "THcGlobals.h"
 #include "THcParmList.h"
 #include "THcHitList.h"
-#include "THcDriftChamber.h"
+#include "THcDC.h"
 #include "THcHodoscope.h"
 #include "TClass.h"
 
@@ -97,11 +97,11 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   // Retrieve parameters we need from parent class
-  THcDriftChamber* fParent;
+  THcDC* fParent;
 
-  fParent = (THcDriftChamber*) GetParent();
+  fParent = (THcDC*) GetParent();
   // These are single variables here, but arrays in THcDriftChamber.
-  fNChamber = fParent->GetNChamber(fPlaneNum);
+  fChamberNum = fParent->GetNChamber(fPlaneNum);
   fNWires = fParent->GetNWires(fPlaneNum);
   fWireOrder = fParent->GetWireOrder(fPlaneNum);
   fPitch = fParent->GetPitch(fPlaneNum);
@@ -110,10 +110,72 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   fTdcWinMax = fParent->GetTdcWinMax(fPlaneNum);
   fPlaneTimeZero = fParent->GetPlaneTimeZero(fPlaneNum);
   fCenter = fParent->GetCenter(fPlaneNum);
+  fCentralTime = fParent->GetCentralTime(fPlaneNum);
+  fDriftTimeSign = fParent->GetDriftTimeSign(fPlaneNum);
+  fSigma = fParent->GetSigma(fPlaneNum);
 
   fNSperChan = fParent->GetNSperChan();
 
-  cout << fPlaneNum << " " << fNWires << endl;
+  // Calculate Geometry Constants
+  // Do we want to move all this to the Chamber of DC Package leve
+  // as that is where these things will be needed?
+  Double_t z0 = fParent->GetZPos(fPlaneNum);
+  Double_t alpha = fParent->GetAlphaAngle(fPlaneNum);
+  Double_t beta = fParent->GetBetaAngle(fPlaneNum);
+  fBeta = beta;
+  Double_t gamma = fParent->GetGammaAngle(fPlaneNum);
+  Double_t cosalpha = TMath::Cos(alpha);
+  Double_t sinalpha = TMath::Sin(alpha);
+  Double_t cosbeta = TMath::Cos(beta);
+  Double_t sinbeta = TMath::Sin(beta);
+  Double_t cosgamma = TMath::Cos(gamma);
+  Double_t singamma = TMath::Sin(gamma);
+
+  Double_t hzchi = -cosalpha*sinbeta + sinalpha*cosbeta*singamma;
+  Double_t hzpsi =  sinalpha*sinbeta + cosalpha*cosbeta*singamma;
+  Double_t hxchi = -cosalpha*cosbeta - sinalpha*sinbeta*singamma;
+  Double_t hxpsi =  sinalpha*cosbeta - cosalpha*sinbeta*singamma;
+  Double_t hychi =  sinalpha*cosgamma;
+  Double_t hypsi =  cosalpha*cosgamma;
+  Double_t stubxchi = -cosalpha;
+  Double_t stubxpsi = sinalpha;
+  Double_t stubychi = sinalpha;
+  Double_t stubypsi = cosalpha;
+
+  if(cosalpha <= 0.707) { // x-like wire, need dist from x=0 line
+    fReadoutX = 1;
+    fReadoutCorr = 1/sinalpha;
+  } else {
+    fReadoutX = 0;
+    fReadoutCorr = 1/cosalpha;
+  }
+
+  Double_t sumsqupsi = hzpsi*hzpsi+hxpsi*hxpsi+hypsi*hypsi;
+  Double_t sumsquchi = hzchi*hzchi+hxchi*hxchi+hychi*hychi;
+  Double_t sumcross = hzpsi*hzchi + hxpsi*hxchi + hypsi*hychi;
+  Double_t denom1 = sumsqupsi*sumsquchi-sumcross*sumcross;
+  fPsi0 = (-z0*hzpsi*sumsquchi
+		    +z0*hzchi*sumcross) / denom1;
+  Double_t hchi0 = (-z0*hzchi*sumsqupsi
+		    +z0*hzpsi*sumcross) / denom1;
+  Double_t hphi0 = TMath::Sqrt(pow(z0+hzpsi*fPsi0+hzchi*hchi0,2)
+			       + pow(hxpsi*fPsi0+hxchi*hchi0,2)
+			       + pow(hypsi*fPsi0+hychi*hchi0,2) );
+  if(z0 < 0.0) hphi0 = -hphi0;
+  
+  Double_t denom2 = stubxpsi*stubychi - stubxchi*stubypsi;
+
+  // Why are there 4, but only 3 used?
+  fStubCoef[0] = stubychi/(fSigma*denom2);   // sin(a)/sigma
+  fStubCoef[1] = -stubxchi/(fSigma*denom2);   // cos(a)/sigma
+  fStubCoef[2] = hphi0*fStubCoef[0];     // z0*sin(a)/sig
+  fStubCoef[3] = hphi0*fStubCoef[1];     // z0*cos(a)/sig
+
+  fXsp = hychi/denom2;		// sin(a)
+  fYsp = -hxchi/denom2;		// cos(a)
+
+
+  cout << fPlaneNum << " " << fNWires << " " << fWireOrder << endl;
 
   fTTDConv = new THcDCLookupTTDConv(DriftMapFirstBin,fPitch/2,DriftMapBinSize,
 				    NumDriftMapBins,DriftMap);
@@ -242,7 +304,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	    - rawtdc*fNSperChan + fPlaneTimeZero;
 	  // How do we get this start time from the hodoscope to here
 	  // (or at least have it ready by coarse process)
-	  new( (*fHits)[nextHit++] ) THcDCHit(wire, rawtdc, time);
+	  new( (*fHits)[nextHit++] ) THcDCHit(wire, rawtdc, time, this);
 	}
 	wire_last = wireNum;
       }

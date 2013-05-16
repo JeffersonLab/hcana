@@ -164,3 +164,9 @@ TH1F hdc2v1_dd 'HDC 2V1 Drift Distance' H.dc.2v1.dist 300 -0.1 0.6
 TH1F hdc2y2_dd 'HDC 2Y2 Drift Distance' H.dc.2y2.dist 300 -0.1 0.6
 TH1F hdc2x2_dd 'HDC 2X2 Drift Distance' H.dc.2x2.dist 300 -0.1 0.6
 
+# Focal Plane times
+TH1F hs1xfptime 'HODO s1x fptime' H.hod.1x.fptime 80 0 80 H.hod.hgoodstarttime
+TH1F hs1yfptime 'HODO s1y fptime' H.hod.1y.fptime 80 0 80 H.hod.hgoodstarttime
+TH1F hs2xfptime 'HODO s2x fptime' H.hod.2x.fptime 80 0 80 H.hod.hgoodstarttime
+TH1F hs2yfptime 'HODO s2y fptime' H.hod.2y.fptime 80 0 80 H.hod.hgoodstarttime
+TH1F starttime  'HODO start time' H.hod.starttime 80 0 80 H.hod.hgoodstarttime

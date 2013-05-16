@@ -73,15 +73,29 @@ void THcHodoscope::Setup(const char* name, const char* description)
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
 
+  string planenamelist;
   DBRequest listextra[]={
     {"hodo_num_planes", &fNPlanes, kInt},
+    {"hodo_plane_names",&planenamelist, kString},
     {0}
   };
-  fNPlanes = 4; 		// Default if not defined
+  //fNPlanes = 4; 		// Default if not defined
   gHcParms->LoadParmValues((DBRequest*)&listextra,prefix);
   
-  // Plane names
+  cout << "Plane Name List : " << planenamelist << endl;
+
+  vector<string> plane_names = vsplit(planenamelist);
+  // Plane names  
+  if(plane_names.size() != (UInt_t) fNPlanes) {
+    cout << "ERROR: Number of planes " << fNPlanes << " doesn't agree with number of plane names " << plane_names.size() << endl;
+    // Should quit.  Is there an official way to quit?
+  }
   fPlaneNames = new char* [fNPlanes];
+  for(Int_t i=0;i<fNPlanes;i++) {
+    fPlaneNames[i] = new char[plane_names[i].length()];
+    strcpy(fPlaneNames[i], plane_names[i].c_str());
+  }
+  /*  fPlaneNames = new char* [fNPlanes];
   for(Int_t i=0;i<fNPlanes;i++) {fPlaneNames[i] = new char[3];}
   // Should get the plane names from parameters.  
   // could try this: grep _zpos PARAM/hhodo.pos | sed 's/\_/\ /g' | awk '{print $2}'
@@ -89,16 +103,15 @@ void THcHodoscope::Setup(const char* name, const char* description)
   strcpy(fPlaneNames[1],"1y");
   strcpy(fPlaneNames[2],"2x");
   strcpy(fPlaneNames[3],"2y");
-
+  */
   // Probably shouldn't assume that description is defined
-  char* desc = new char[strlen(description)+50];
+  char* desc = new char[strlen(description)+100];
   fPlanes = new THcScintillatorPlane* [fNPlanes];
   for(Int_t i=0;i < fNPlanes;i++) {
     strcpy(desc, description);
     strcat(desc, " Plane ");
     strcat(desc, fPlaneNames[i]);
-    fPlanes[i] = new THcScintillatorPlane(fPlaneNames[i], desc, i+1,fNPlanes, this); 
-    //fPlanes[i] = new THcScintillatorPlane(fPlaneNames[i], desc, i+1, this); 
+    fPlanes[i] = new THcScintillatorPlane(fPlaneNames[i], desc, i+1,fNPlanes,this); // Number planes starting from zero!!
     cout << "Created Scintillator Plane " << fPlaneNames[i] << ", " << desc << endl;
   }
 }
@@ -304,7 +317,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   strcpy(parname,prefix);
   strcat(parname,"scin_");
   Int_t plen=strlen(parname);
-
+  cout << " readdatabse hodo fnplanes = " << fNPlanes << endl;
   fNPaddle = new Int_t [fNPlanes];
   //  fSpacing = new Double_t [fNPlanes];
   //fCenter = new Double_t* [fNPlanes];
@@ -393,6 +406,11 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"hodo_pos_ped_limit",&fHodoPosPedLimit[0],kInt,fMaxHodoScin},
     {"hodo_neg_ped_limit",&fHodoNegPedLimit[0],kInt,fMaxHodoScin},
     {"tofusinginvadc",&fTofUsingInvAdc,kInt},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  if (fTofUsingInvAdc) {
+  DBRequest list2[]={
     {"hodo_pos_invadc_offset",&fHodoPosInvAdcOffset[0],kDouble,fMaxHodoScin},
     {"hodo_neg_invadc_offset",&fHodoNegInvAdcOffset[0],kDouble,fMaxHodoScin},
     {"hodo_pos_invadc_linear",&fHodoPosInvAdcLinear[0],kDouble,fMaxHodoScin},
@@ -401,7 +419,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"hodo_neg_invadc_adc",&fHodoNegInvAdcAdc[0],kDouble,fMaxHodoScin},
     {0}
   };
-  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  gHcParms->LoadParmValues((DBRequest*)&list2,prefix);
+  };
   if (fDebug >=1) {
     cout <<"******* Testing Hodoscope Parameter Reading ***\n";
     cout<<"StarTimeCenter = "<<fStartTimeCenter<<endl;
@@ -455,7 +474,9 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
     //...
     //    hnegtdc4 HMS s2y- TDC hits
 
-  //  RVarDef vars[] = {
+  RVarDef vars[] = {
+    {"starttime","Hodoscope Start Time","fStartTime"},
+    {"hgoodstarttime","Hodoscope Good Start Time","fGoodStartTime"},
   //    { "nlthit", "Number of Left paddles TDC times",  "fLTNhit" },
   //    { "nrthit", "Number of Right paddles TDC times", "fRTNhit" },
   //    { "nlahit", "Number of Left paddles ADCs amps",  "fLANhit" },
@@ -484,10 +505,10 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
   //    { "trpath", "TRCS pathlen of track to det plane","fTrackProj.THaTrackProj.fPathl" },
   //    { "trdx",   "track deviation in x-position (m)", "fTrackProj.THaTrackProj.fdX" },
   //    { "trpad",  "paddle-hit associated with track",  "fTrackProj.THaTrackProj.fChannel" },
-  //    { 0 }
-  //  };
-  //  return DefineVarsFromList( vars, mode );
-  return kOK;
+        { 0 }
+   };
+  return DefineVarsFromList( vars, mode );
+  //  return kOK;
 }
 
 //_____________________________________________________________________________
@@ -594,6 +615,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   Int_t nexthit = 0;
   Int_t nfptimes=0;
 
+  fStartTime=0;
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     //    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
     // GN: select only events that have reasonable TDC values to start with
@@ -601,9 +623,8 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList,nexthit);
     if (fPlanes[ip]->GetNScinHits()>0) {
       fPlanes[ip]->PulseHeightCorrection();
-      ///cout <<"Plane "<<ip<<" number of fpTimes = "<<fPlanes[ip]->GetFpTimeHits()<<endl;
-      for (Int_t ifptimes=0;ifptimes<fPlanes[ip]->GetFpTimeHits();ifptimes++) {
-	fStartTime=fStartTime+fPlanes[ip]->GetFpTime(ifptimes);
+      if (TMath::Abs(fPlanes[ip]->GetFpTime()-fStartTimeCenter)<=fStartTimeSlop) {
+	fStartTime=fStartTime+fPlanes[ip]->GetFpTime();
 	nfptimes++;
       }
     }

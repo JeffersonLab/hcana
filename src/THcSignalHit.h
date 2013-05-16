@@ -22,6 +22,8 @@ class THcSignalHit : public TObject {
 
   virtual void Set(Int_t paddle, Int_t data)
   { fPaddleNumber=paddle; fData=data; }
+  virtual void Set(Int_t paddle, Double_t data)
+  { fPaddleNumber=paddle; fData=data; }
 
  private:
   Int_t fPaddleNumber;

@@ -53,13 +53,16 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t GetPosRight();
   Double_t GetPosOffset();
   Double_t GetPosCenter(Int_t PaddleNo); // here we're counting from zero!
-  Double_t GetFpTime(Int_t index) { return fpTime[index];};
-  Int_t GetFpTimeHits() { return fpTimeHits;};
+  Double_t GetFpTime() { return fpTime;};
 
   TClonesArray* fParentHitList;
 
  protected:
 
+  TClonesArray* frPosTDCHits;
+  TClonesArray* frNegTDCHits;
+  TClonesArray* frPosADCHits;
+  TClonesArray* frNegADCHits;
   TClonesArray* fPosTDCHits;
   TClonesArray* fNegTDCHits;
   TClonesArray* fPosADCHits;
@@ -103,8 +106,8 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t *fNegThresh;
 
   //
-  Int_t fpTimeHits; // number of entries in *fpTime
-  Double_t   *fpTime; // array with fpTimes for this scintillator plane
+  Double_t   fpTime; // the original code only has one fpTime per plane!
+
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );

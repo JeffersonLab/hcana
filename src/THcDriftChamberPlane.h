@@ -48,6 +48,24 @@ class THcDriftChamberPlane : public THaSubDetector {
   { assert( i>=1 && i<=GetNWires() );
     return (THcDCWire*)fWires->UncheckedAt(i-1); }
 
+  Int_t         GetNHits() const { return fHits->GetLast()+1; }
+  TClonesArray* GetHits()  const { return fHits; }
+
+  Int_t        GetPlaneNum() const { return fPlaneNum; }
+  Int_t        GetChamberNum() const { return fChamberNum; }
+  void         SetPlaneIndex(Int_t index) { fPlaneIndex = index; }
+  Int_t        GetPlaneIndex() { return fPlaneIndex; }
+  Double_t     GetXsp() const { return fXsp; }
+  Double_t     GetYsp() const { return fYsp; }
+  Int_t        GetReadoutX() { return fReadoutX; }
+  Double_t     GetReadoutCorr() { return fReadoutCorr; }
+  Double_t     GetCentralTime() { return fCentralTime; }
+  Int_t        GetDriftTimeSign() { return fDriftTimeSign; }
+  Double_t     GetBeta() { return fBeta; }
+  Double_t     GetSigma() { return fSigma; }
+  Double_t     GetPsi0() { return fPsi0; }
+  Double_t*    GetStubCoef() { return fStubCoef; }
+
  protected:
 
   TClonesArray* fParentHitList;
@@ -56,7 +74,8 @@ class THcDriftChamberPlane : public THaSubDetector {
   TClonesArray* fWires;
 
   Int_t fPlaneNum;
-  Int_t fNChamber;
+  Int_t fPlaneIndex;		/* Index of this plane within it's chamber */
+  Int_t fChamberNum;
   Int_t fNWires;
   Int_t fWireOrder;
   Int_t fTdcWinMin;
@@ -64,6 +83,17 @@ class THcDriftChamberPlane : public THaSubDetector {
   Double_t fPitch;
   Double_t fCentralWire;
   Double_t fPlaneTimeZero;
+  Double_t fXsp;
+  Double_t fYsp;
+  Double_t fSigma;
+  Double_t fPsi0;
+  Double_t fStubCoef[4];
+  Double_t fBeta;
+
+  Int_t fReadoutX;
+  Double_t fReadoutCorr;
+  Double_t fCentralTime;
+  Int_t fDriftTimeSign;
 
   Double_t fCenter;
 
