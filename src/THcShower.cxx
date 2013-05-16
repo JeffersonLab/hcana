@@ -235,6 +235,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     //    {"cal_neg_gain_cur",  hcal_neg_gain_cur,  kDouble, fNtotBlocks},
     {"cal_neg_ped_limit", fShNegPedLimit, kInt,    fNtotBlocks},
     {"cal_neg_gain_cor",  hcal_neg_gain_cor,  kDouble, fNtotBlocks},
+    {"cal_min_peds", &fShMinPeds, kInt},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);

@@ -146,6 +146,9 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   for(Int_t i=0;i<fNelem;i++) cout << " " << fNegPedLimit[i];
   cout << endl;
 
+  fMinPeds = fParent->fGetMinPeds();
+  cout << "   fMinPeds = " << fMinPeds << endl;
+
   InitializePedestals();
 
   return kOK;
@@ -337,14 +340,11 @@ void THcShowerPlane::CalculatePedestals( )
 void THcShowerPlane::InitializePedestals( )
 {
   fNPedestalEvents = 0;
-  fMinPeds = 500; 		// In engine, this is set in parameter file
   fPosPedSum = new Int_t [fNelem];
   fPosPedSum2 = new Int_t [fNelem];
-  //  fPosPedLimit = new Int_t [fNelem];
   fPosPedCount = new Int_t [fNelem];
   fNegPedSum = new Int_t [fNelem];
   fNegPedSum2 = new Int_t [fNelem];
-  //  fNegPedLimit = new Int_t [fNelem];
   fNegPedCount = new Int_t [fNelem];
 
   fPosSig = new Double_t [fNelem];

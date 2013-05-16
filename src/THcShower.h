@@ -46,6 +46,10 @@ public:
     return ( Side == 0 ? fShPosPedLimit[nelem] : fShNegPedLimit[nelem]);
   }
 
+  Int_t fGetMinPeds() {
+    return fShMinPeds;
+  }
+
   THcShower();  // for ROOT I/O
 
 protected:
@@ -55,6 +59,8 @@ protected:
   // ADC signal limits for pedestal calculations.
   Int_t* fShPosPedLimit;
   Int_t* fShNegPedLimit;
+
+  Int_t fShMinPeds;   //Min.number of events to analize/update pedestals.
 
   // Calibration constants
   Double_t* fPosCalConst;
