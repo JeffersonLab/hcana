@@ -37,19 +37,28 @@ public:
   Int_t GetNBlocks(Int_t plane) const { return fNBlocks[plane-1];}
   friend class THaScCalib;
 
+  Int_t fGetPedLimit(Int_t NBlock, Int_t NLayer, Int_t Side) {
+    if (Side!=0&&Side!=1) {
+      cout << "*** Wrong Side in fGetPedLimit:" << Side << " ***" << endl;
+      return -1;
+    }
+    Int_t nelem = NBlock+NLayer*fNBlocks[NLayer];
+    return ( Side == 0 ? fShPosPedLimit[nelem] : fShNegPedLimit[nelem]);
+  }
+
   THcShower();  // for ROOT I/O
 
 protected:
 
   Int_t fAnalyzePedestals;
 
-  // Number of events for pedestal calculations.
-  Int_t* fCalPosPedLimit;
-  Int_t* fCalNegPedLimit;
+  // ADC signal limits for pedestal calculations.
+  Int_t* fShPosPedLimit;
+  Int_t* fShNegPedLimit;
 
   // Calibration constants
-  Double_t* fCalPosCalConst;
-  Double_t* fCalNegCalConst;
+  Double_t* fPosCalConst;
+  Double_t* fNegCalConst;
 
   // Per-event data
 

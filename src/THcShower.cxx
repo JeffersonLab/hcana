@@ -204,36 +204,36 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   cout << "Total number of blocks in he calorimeter: " << fNtotBlocks << endl;
 
   //Pedestal limits from hcal.param.
-  fCalPosPedLimit = new Int_t [fNtotBlocks];
-  fCalNegPedLimit = new Int_t [fNtotBlocks];
+  fShPosPedLimit = new Int_t [fNtotBlocks];
+  fShNegPedLimit = new Int_t [fNtotBlocks];
 
   //Calibration constants
-  fCalPosCalConst = new Double_t [fNtotBlocks];
-  fCalNegCalConst = new Double_t [fNtotBlocks];
+  fPosCalConst = new Double_t [fNtotBlocks];
+  fNegCalConst = new Double_t [fNtotBlocks];
 
   //Read in parameters from hcal.param
   Double_t hcal_pos_cal_const[fNtotBlocks];
   //  Double_t hcal_pos_gain_ini[fNtotBlocks];
   //  Double_t hcal_pos_gain_cur[fNtotBlocks];
-  Int_t    hcal_pos_ped_limit[fNtotBlocks];
+  //  Int_t    hcal_pos_ped_limit[fNtotBlocks];
   Double_t hcal_pos_gain_cor[fNtotBlocks];
 
   Double_t hcal_neg_cal_const[fNtotBlocks];
   //  Double_t hcal_neg_gain_ini[fNtotBlocks];
   //  Double_t hcal_neg_gain_cur[fNtotBlocks];
-  Int_t    hcal_neg_ped_limit[fNtotBlocks];
+  //  Int_t    hcal_neg_ped_limit[fNtotBlocks];
   Double_t hcal_neg_gain_cor[fNtotBlocks];
 
   DBRequest list[]={
     {"cal_pos_cal_const", hcal_pos_cal_const, kDouble, fNtotBlocks},
     //    {"cal_pos_gain_ini",  hcal_pos_gain_ini,  kDouble, fNtotBlocks},
     //    {"cal_pos_gain_cur",  hcal_pos_gain_cur,  kDouble, fNtotBlocks},
-    {"cal_pos_ped_limit", hcal_pos_ped_limit, kInt,    fNtotBlocks},
+    {"cal_pos_ped_limit", fShPosPedLimit, kInt,    fNtotBlocks},
     {"cal_pos_gain_cor",  hcal_pos_gain_cor,  kDouble, fNtotBlocks},
     {"cal_neg_cal_const", hcal_neg_cal_const, kDouble, fNtotBlocks},
     //    {"cal_neg_gain_ini",  hcal_neg_gain_ini,  kDouble, fNtotBlocks},
     //    {"cal_neg_gain_cur",  hcal_neg_gain_cur,  kDouble, fNtotBlocks},
-    {"cal_neg_ped_limit", hcal_neg_ped_limit, kInt,    fNtotBlocks},
+    {"cal_neg_ped_limit", fShNegPedLimit, kInt,    fNtotBlocks},
     {"cal_neg_gain_cor",  hcal_neg_gain_cor,  kDouble, fNtotBlocks},
     {0}
   };
@@ -265,10 +265,10 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   //    cout <<  endl;
   //  };
 
-  cout << "hcal_pos_ped_limit:" << endl;
+  cout << "fShPosPedLimit:" << endl;
   for (Int_t j=0; j<fNLayers; j++) {
     for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << hcal_pos_ped_limit[j*fNBlocks[j]+i] << " ";
+      cout << fShPosPedLimit[j*fNBlocks[j]+i] << " ";
     };
     cout <<  endl;
   };
@@ -307,10 +307,10 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   //    cout <<  endl;
   //  };
 
-  cout << "hcal_neg_ped_limit:" << endl;
+  cout << "fShNegPedLimit:" << endl;
   for (Int_t j=0; j<fNLayers; j++) {
     for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << hcal_neg_ped_limit[j*fNBlocks[j]+i] << " ";
+      cout << fShNegPedLimit[j*fNBlocks[j]+i] << " ";
     };
     cout <<  endl;
   };
@@ -326,22 +326,22 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   //Calibration constants in GeV per ADC channel.
 
   for (Int_t i=0; i<fNtotBlocks; i++) {
-    fCalPosCalConst[i] = hcal_pos_cal_const[i] *  hcal_pos_gain_cor[i];
-    fCalNegCalConst[i] = hcal_neg_cal_const[i] *  hcal_neg_gain_cor[i];
+    fPosCalConst[i] = hcal_pos_cal_const[i] *  hcal_pos_gain_cor[i];
+    fNegCalConst[i] = hcal_neg_cal_const[i] *  hcal_neg_gain_cor[i];
   }
 
-  cout << "fCalPosCalConst:" << endl;
+  cout << "fPosCalConst:" << endl;
   for (Int_t j=0; j<fNLayers; j++) {
     for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << fCalPosCalConst[j*fNBlocks[j]+i] << " ";
+      cout << fPosCalConst[j*fNBlocks[j]+i] << " ";
     };
     cout <<  endl;
   };
 
-  cout << "fCalNegCalConst:" << endl;
+  cout << "fNegCalConst:" << endl;
   for (Int_t j=0; j<fNLayers; j++) {
     for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << fCalNegCalConst[j*fNBlocks[j]+i] << " ";
+      cout << fNegCalConst[j*fNBlocks[j]+i] << " ";
     };
     cout <<  endl;
   };
