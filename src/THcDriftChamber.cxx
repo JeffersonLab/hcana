@@ -882,7 +882,7 @@ void THcDriftChamber::LeftRight()
       cout << "THcDriftChamber::LeftRight: numhits-2 = 0" << endl;
     }
     Int_t nplaneshit = Count1Bits(bitpat);
-    Int_t nplusminus = pow(2,nhits-2);
+    Int_t nplusminus = 1<<(nhits-2);
     
     // Use bit value of integer word to set + or -
     // Loop over all combinations of left right.
