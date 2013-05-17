@@ -105,12 +105,13 @@ protected:
   void       SelectSpacePoints(void);
   UInt_t     Count1Bits(UInt_t x);
   void       LeftRight(void);
-  Double_t   FindStub(Int_t nhits, const std::vector<THcDCHit*>& hits,
+  Double_t   FindStub(Int_t nhits, const std::vector<THcDCHit*>* hits,
 		      Int_t* plane_list, UInt_t bitpat,
 		      Int_t* plusminus, Double_t* stub);
 
   std::vector<THcDCHit*> fHits;	/* All hits for this chamber */
   // A simple structure until we figure out what we are doing.
+#if 0
   struct SpacePoint {
     Double_t x;
     Double_t y;
@@ -119,8 +120,12 @@ protected:
     //    THcDCHit* hits[MAX_HITS_PER_POINT];
     std::vector<THcDCHit*> hits;
     Double_t stub[4];
+    void Clear(Option_t* opt="") {nhits=0;ncombos=0;hits.clear();};
+    SpacePoint() {nhits=0;ncombos=0;hits.clear();};
+    void SetXY(Double_t xa, Double_t ya) {x = xa; y = ya;};
   };
-  SpacePoint fSpacePoints[MAX_SPACE_POINTS];
+#endif
+  TClonesArray *fSpacePoints;
   Int_t fNSpacePoints;
   Int_t fEasySpacePoint;	/* This event is an easy space point */
 

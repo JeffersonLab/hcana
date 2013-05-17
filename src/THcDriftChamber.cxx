@@ -20,6 +20,7 @@
 #include "TClonesArray.h"
 #include "TMath.h"
 #include "TVectorD.h"
+#include "THcSpacePoint.h"
 
 #include "THaTrackProj.h"
 
@@ -43,6 +44,8 @@ THcDriftChamber::THcDriftChamber(
   fNPlanes = 0;			// No planes until we make them
 
   fChamberNum = chambernum;
+
+  fSpacePoints = new TClonesArray("THcSpacePoint",10);
 
 }
 
@@ -253,6 +256,8 @@ Int_t THcDriftChamber::FindSpacePoints( void )
 
   // Code below is specifically for HMS chambers with Y and Y' planes
 
+  fSpacePoints->Clear();
+
   Int_t yplane_hitind=0;
   Int_t yplanep_hitind=0;
 
@@ -372,14 +377,11 @@ Int_t THcDriftChamber::FindEasySpacePoint(Int_t yplane_hitind,Int_t yplanep_hiti
   }
   if(easy_space_point) {	// Register the space point
     cout << "Easy Space Point " << xt << " " << yt << endl;
-    fNSpacePoints = 1;
-    fSpacePoints[0].x = xt;
-    fSpacePoints[0].y = yt;
-    fSpacePoints[0].nhits = fNhits;
-    fSpacePoints[0].ncombos = 0; // No combos
-    fSpacePoints[0].hits.resize(fNhits);
+    THcSpacePoint* sp = (THcSpacePoint*)fSpacePoints->ConstructedAt(fNSpacePoints++);
+    sp->Clear();
+    sp->SetXY(xt, yt);
     for(Int_t ihit=0;ihit<fNhits;ihit++) {
-      fSpacePoints[0].hits[ihit] = fHits[ihit];
+      sp->AddHit(fHits[ihit]);
     }
   }
   return(easy_space_point);
@@ -454,9 +456,9 @@ Int_t THcDriftChamber::FindHardSpacePoints()
     if(fNSpacePoints > 0) {
       Int_t add_flag=1;
       for(Int_t ispace=0;ispace<fNSpacePoints;ispace++) {
-	if(fSpacePoints[ispace].nhits > 0) {
-	  Double_t sqdist_test = pow(xt - fSpacePoints[ispace].x,2) +
-	    pow(yt - fSpacePoints[ispace].y,2);
+	THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[ispace];
+	if(sp->GetNHits() > 0) {
+	  Double_t sqdist_test = pow(xt - sp->GetX(),2) + pow(yt - sp->GetY(),2);
 	  // I (who is I) want to be careful if sqdist_test is bvetween 1 and
 	  // 3 fSpacePointCriterion2.  Let me ignore not add a new point the
 	  if(sqdist_test < 3*fSpacePointCriterion2) {
@@ -470,9 +472,9 @@ Int_t THcDriftChamber::FindHardSpacePoints()
 	    // Find out which of the four hits in the combo are already
 	    // in the space point under consideration so that we don't
 	    // add duplicate hits to the space point
-	    for(Int_t isp_hit=0;isp_hit<fSpacePoints[ispace].nhits;isp_hit++) {
+	    for(Int_t isp_hit=0;isp_hit<sp->GetNHits();isp_hit++) {
 	      for(Int_t icm_hit=0;icm_hit<4;icm_hit++) { // Loop over combo hits
-		if(fSpacePoints[ispace].hits[isp_hit]==hits[icm_hit]) {
+		if(sp->GetHit(isp_hit)==hits[icm_hit]) {
 		  iflag[icm_hit] = 1;
 		}
 	      }
@@ -489,11 +491,10 @@ Int_t THcDriftChamber::FindHardSpacePoints()
 	    // Add the unique combo hits to the space point
 	    for(Int_t icm=0;icm<4;icm++) {
 	      if(iflag[icm]==0) {
-		fSpacePoints[ispace].hits.push_back(hits[icm]);
-		fSpacePoints[ispace].nhits++;
+		sp->AddHit(hits[icm]);
 	      }
 	    }
-	    fSpacePoints[ispace].ncombos++;
+	    sp->IncCombos();
 	    // Terminate loop since this combo can only belong to one space point
 	    break;
 	  }
@@ -502,43 +503,35 @@ Int_t THcDriftChamber::FindHardSpacePoints()
       // Create a new space point if more than 2*space_point_criteria
       if(fNSpacePoints < MAX_SPACE_POINTS) {
 	if(add_flag) {
-	  fSpacePoints[fNSpacePoints].nhits=2;
-	  fSpacePoints[fNSpacePoints].ncombos=1;
-	  fSpacePoints[fNSpacePoints].hits.resize(fSpacePoints[fNSpacePoints].nhits);
-	  fSpacePoints[fNSpacePoints].hits[0]=hits[0];
-	  fSpacePoints[fNSpacePoints].hits[1]=hits[1];
-	  fSpacePoints[fNSpacePoints].x = xt;
-	  fSpacePoints[fNSpacePoints].y = yt;
+	  THcSpacePoint* sp = (THcSpacePoint*)fSpacePoints->ConstructedAt(fNSpacePoints++);
+	  sp->Clear();
+	  sp->SetXY(xt, yt);
+	  sp->SetCombos(1);
+	  sp->AddHit(hits[0]);
+	  sp->AddHit(hits[1]);
 	  if(hits[0] != hits[2] && hits[1] != hits[2]) {
-	    fSpacePoints[fNSpacePoints].hits.push_back(hits[2]);
-	    fSpacePoints[fNSpacePoints].nhits++;
+	    sp->AddHit(hits[2]);
 	  }
 	  if(hits[0] != hits[3] && hits[1] != hits[3]) {
-	    fSpacePoints[fNSpacePoints].hits.push_back(hits[3]);
-	    fSpacePoints[fNSpacePoints].nhits++;
+	    sp->AddHit(hits[3]);
 	  }
-	  fNSpacePoints++;
 	}
       }
     } else {// Create first space point
       // This duplicates code above.  Need to see if we can restructure
       // to avoid
-      fSpacePoints[fNSpacePoints].nhits=2;
-      fSpacePoints[fNSpacePoints].ncombos=1;
-      fSpacePoints[fNSpacePoints].hits.resize(fSpacePoints[fNSpacePoints].nhits);
-      fSpacePoints[fNSpacePoints].hits[0] = hits[0];
-      fSpacePoints[fNSpacePoints].hits[1] = hits[1];
-      fSpacePoints[fNSpacePoints].x = xt;
-      fSpacePoints[fNSpacePoints].y = yt;
+      THcSpacePoint* sp = (THcSpacePoint*)fSpacePoints->ConstructedAt(fNSpacePoints++);
+      sp->Clear();
+      sp->SetXY(xt, yt);
+      sp->SetCombos(1);
+      sp->AddHit(hits[0]);
+      sp->AddHit(hits[1]);
       if(hits[0] != hits[2] && hits[1] != hits[2]) {
-	fSpacePoints[fNSpacePoints].hits.push_back(hits[2]);
-	fSpacePoints[fNSpacePoints].nhits++;
+	sp->AddHit(hits[2]);
       }
       if(hits[0] != hits[3] && hits[1] != hits[3]) {
-	fSpacePoints[fNSpacePoints].hits.push_back(hits[3]);
-	fSpacePoints[fNSpacePoints].nhits++;
+	sp->AddHit(hits[3]);
       }
-      fNSpacePoints++;
     }//End check on 0 space points
   }//End loop over combos
   return(fNSpacePoints);
@@ -562,8 +555,9 @@ Int_t THcDriftChamber::DestroyPoorSpacePoints()
       nhitsperplane[ip] = 0;
     }
     // Count # hits in each plane for this space point
-    for(Int_t ihit=0;ihit<fSpacePoints[isp].nhits;ihit++) {
-      THcDCHit* hit=fSpacePoints[isp].hits[ihit];
+    THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
+    for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
+      THcDCHit* hit=sp->GetHit(ihit);
       // hit_order(hit) = ihit;
       Int_t ip = hit->GetPlaneIndex();
       nhitsperplane[ip]++;
@@ -590,7 +584,7 @@ Int_t THcDriftChamber::DestroyPoorSpacePoints()
     if(osp > isp) {
       // Does this work, or do we have to copy each member?
       // If it doesn't we should overload the = operator
-      fSpacePoints[isp] = fSpacePoints[osp];
+      (*fSpacePoints)[isp] = (*fSpacePoints)[osp];
     }
   }
   return nremoved;
@@ -628,8 +622,9 @@ Int_t THcDriftChamber::SpacePointMultiWire()
       nhitsperplane[ip] = 0;
     }
     // Sort Space Points hits by plane
-    for(Int_t ihit=0;ihit<fSpacePoints[isp].nhits;ihit++) { // All hits in SP
-      THcDCHit* hit=fSpacePoints[isp].hits[ihit];
+    THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
+    for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) { // All hits in SP
+      THcDCHit* hit=sp->GetHit(ihit);
       //      hit_order Make a hash
       // hash(hit) = ihit;
       Int_t ip = hit->GetPlaneIndex();
@@ -674,20 +669,25 @@ Int_t THcDriftChamber::SpacePointMultiWire()
 	  for(Int_t n3=0;n3<nhitsperplane[maxplane[2]];n3++) {
 	    ntot++;
 	    newsp_num = nsp_tot + ntot - 2; // ntot will be 2 for first new
-	    if(n1==0 && n2==0 && n3==0) newsp_num = isp; // Copy over original SP
-	    fSpacePoints[newsp_num].x = fSpacePoints[isp].x;
-	    fSpacePoints[newsp_num].y = fSpacePoints[isp].y;
-	    fSpacePoints[newsp_num].nhits = nplanes_hit;
-	    fSpacePoints[newsp_num].ncombos = fSpacePoints[isp].ncombos;
-	    fSpacePoints[newsp_num].hits.resize(0);
-	    fSpacePoints[newsp_num].hits.push_back(hits_plane[maxplane[0]][n1]);
-	    fSpacePoints[newsp_num].hits.push_back(hits_plane[maxplane[1]][n2]);
-	    fSpacePoints[newsp_num].hits.push_back(hits_plane[maxplane[2]][n3]);
-	    fSpacePoints[newsp_num].hits.push_back(hits_plane[maxplane[3]][0]);
+	    THcSpacePoint* newsp;
+	    if(n1==0 && n2==0 && n3==0) {
+	      newsp_num = isp; // Copy over original SP
+	      newsp = sp;
+	      newsp->Clear();	// Clear doesn't clear X, Y
+	    } else {
+	      THcSpacePoint* newsp = (THcSpacePoint*)fSpacePoints->ConstructedAt(fNSpacePoints++);
+	      newsp->Clear();
+	      newsp->SetXY(sp->GetX(), sp->GetY());
+	    }
+	    newsp->SetCombos(sp->GetCombos());
+	    newsp->AddHit(hits_plane[maxplane[0]][n1]);
+	    newsp->AddHit(hits_plane[maxplane[1]][n2]);
+	    newsp->AddHit(hits_plane[maxplane[2]][n3]);
+	    newsp->AddHit(hits_plane[maxplane[3]][0]);
 	    if(nhitsperplane[maxplane[4]] == 1) {
-	      fSpacePoints[newsp_num].hits.push_back(hits_plane[maxplane[4]][0]);
+	      newsp->AddHit(hits_plane[maxplane[4]][0]);
 	      if(nhitsperplane[maxplane[5]] == 1) 
-		fSpacePoints[newsp_num].hits.push_back(hits_plane[maxplane[5]][0]);
+		newsp->AddHit(hits_plane[maxplane[5]][0]);
 	    }
 	  }
 	}
@@ -733,21 +733,22 @@ void THcDriftChamber::ChooseSingleHit()
 {
   // Look at all hits in a space point.  If two hits are in the same plane,
   // reject the one with the longer drift time.
-  Int_t goodhit[MAX_HITS_PER_POINT];
 
   for(Int_t isp=0;isp<fNSpacePoints;isp++) {
-    Int_t startnum = fSpacePoints[isp].nhits;
+    THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
+    Int_t startnum = sp->GetNHits();
+    Int_t goodhit[startnum];
     
     for(Int_t ihit=0;ihit<startnum;ihit++) {
       goodhit[ihit] = 1;
     }
     // For each plane, mark all hits longer than the shortest drift time
     for(Int_t ihit1=0;ihit1<startnum-1;ihit1++) {
-      THcDCHit* hit1 = fSpacePoints[isp].hits[ihit1];
+      THcDCHit* hit1 = sp->GetHit(ihit1);
       Int_t plane1=hit1->GetPlaneIndex();
       Double_t tdrift1 = hit1->GetTime();
       for(Int_t ihit2=ihit1+1;ihit2<startnum;ihit2++) {
-	THcDCHit* hit2 = fSpacePoints[isp].hits[ihit2];
+	THcDCHit* hit2 = sp->GetHit(ihit2);
 	Int_t plane2=hit2->GetPlaneIndex();
 	Double_t tdrift2 = hit2->GetTime();
 	if(plane1 == plane2) {
@@ -764,13 +765,11 @@ void THcDriftChamber::ChooseSingleHit()
     for(Int_t ihit=0;ihit<startnum;ihit++) {
       if(goodhit[ihit] > 0) {	// Keep this hit
 	if (ihit > finalnum) {	// Move hit 
-	  fSpacePoints[isp].hits[finalnum++] = fSpacePoints[isp].hits[ihit];
-	} else {
-	  finalnum++;
+	  sp->ReplaceHit(finalnum++, sp->GetHit(ihit));
 	}
       }
     }
-    fSpacePoints[isp].nhits = finalnum;
+    sp->SetNHits(finalnum);
   }
 }
 //_____________________________________________________________________________
@@ -784,12 +783,17 @@ void THcDriftChamber::SelectSpacePoints()
   Int_t sp_count=0;
   for(Int_t isp=0;isp<fNSpacePoints;isp++) {
     // Include fEasySpacePoint because ncombos not filled in
-    if(fSpacePoints[isp].ncombos >= fMinCombos || fEasySpacePoint) {
-      if(fSpacePoints[isp].nhits >= fMinHits) {
-	fSpacePoints[sp_count++] = fSpacePoints[isp];
+    THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
+    if(sp->GetCombos() >= fMinCombos || fEasySpacePoint) {
+      if(sp->GetNHits() >= fMinHits) {
+	if(isp > sp_count) 
+	  (*fSpacePoints)[sp_count] = (*fSpacePoints)[isp];
+	sp_count++;
       }
     }
   }
+  if(sp_count < fNSpacePoints)
+    cout << "Reduced from " << fNSpacePoints << " to " << sp_count << " space points" << endl;
   fNSpacePoints = sp_count;
 }
 
@@ -805,10 +809,11 @@ void THcDriftChamber::CorrectHitTimes()
   // time offset per card will cancel much of the error caused by this.  The
   // alternative is to check by card, rather than by plane and this is harder.
   for(Int_t isp=0;isp<fNSpacePoints;isp++) {
-    Double_t x = fSpacePoints[isp].x;
-    Double_t y = fSpacePoints[isp].y;
-    for(Int_t ihit=0;ihit<fSpacePoints[isp].nhits;ihit++) {
-      THcDCHit* hit = fSpacePoints[isp].hits[ihit];
+    THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
+    Double_t x = sp->GetX();
+    Double_t y = sp->GetY();
+    for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
+      THcDCHit* hit = sp->GetHit(ihit);
       THcDriftChamberPlane* plane=hit->GetWirePlane();
 
       // How do we know this correction only gets applied once?  Is
@@ -850,7 +855,8 @@ void THcDriftChamber::LeftRight()
 
   for(Int_t isp=0; isp<fNSpacePoints; isp++) {
     // Build a bit pattern of which planes are hit
-    Int_t nhits = fSpacePoints[isp].nhits;
+    THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
+    Int_t nhits = sp->GetNHits();
     UInt_t bitpat  = 0;		// Bit pattern of which planes are hit
     Double_t minchi2 = 1.0e10;
     Double_t tmp_minchi2;
@@ -871,7 +877,7 @@ void THcDriftChamber::LeftRight()
       cout << "THcDriftChamber::LeftRight() nhits = 0" << endl;
     }
     for(Int_t ihit=0;ihit < nhits;ihit++) {
-      THcDCHit* hit = fSpacePoints[isp].hits[ihit];
+      THcDCHit* hit = sp->GetHit(ihit);
       Int_t pindex = hit->GetPlaneIndex();
       plane_list[ihit] = pindex;
 
@@ -884,8 +890,8 @@ void THcDriftChamber::LeftRight()
     }
     Int_t smallAngOK = (hasy1>=0) && (hasy2>=0);
     if(fSmallAngleApprox !=0 && smallAngOK) { // to small Angle L/R for Y,Y' planes
-      if(fSpacePoints[isp].hits[hasy1]->GetPos() <=
-	 fSpacePoints[isp].hits[hasy2]->GetPos()) {
+      if(sp->GetHit(hasy1)->GetPos() <=
+	 sp->GetHit(hasy2)->GetPos()) {
 	plusminusknown[hasy1] = -1;
 	plusminusknown[hasy2] = 1;
       } else {
@@ -919,7 +925,7 @@ void THcDriftChamber::LeftRight()
 	}
       }
       if (nplaneshit >= fNPlanes-1) {
-	Double_t chi2 = FindStub(nhits, fSpacePoints[isp].hits,
+	Double_t chi2 = FindStub(nhits, sp->GetHitVectorP(),
 				     plane_list, bitpat, plusminus, stub);
 				     
 	//if(debugging)
@@ -936,14 +942,15 @@ void THcDriftChamber::LeftRight()
 	  Double_t xp_fit=stub[2]-fTanBeta[plane_list[0]]
 	    /(1+stub[2]*fTanBeta[plane_list[0]]);
 	  // Tune depdendent.  Definitely HMS specific
-	  Double_t xp_expect = fSpacePoints[isp].x/875.0;
+	  Double_t xp_expect = sp->GetX()/875.0;
 	  if(TMath::Abs(xp_fit-xp_expect)<fStubMaxXPDiff) {
 	    minchi2 = chi2;
 	    for(Int_t ihit=0;ihit<nhits;ihit++) {
 	      plusminusbest[ihit] = plusminus[ihit];
 	    }
+	    Double_t *spstub = sp->GetStubP();
 	    for(Int_t i=0;i<4;i++) {
-	      fSpacePoints[isp].stub[i] = stub[i];
+	      spstub[i] = stub[i];
 	    }
 	  } else {		// Record best stub failing angle cut
 	    tmp_minchi2 = chi2;
@@ -956,7 +963,7 @@ void THcDriftChamber::LeftRight()
 	  }
 	}
       } else if (nplaneshit >= fNPlanes-2) { // Two planes missing
-	Double_t chi2 = FindStub(nhits, fSpacePoints[isp].hits,
+	Double_t chi2 = FindStub(nhits, sp->GetHitVectorP(),
 				     plane_list, bitpat, plusminus, stub); 
 	//if(debugging)
 	//cout << "pmloop=" << pmloop << " Chi2=" << chi2 << endl;
@@ -972,8 +979,9 @@ void THcDriftChamber::LeftRight()
 	  for(Int_t ihit=0;ihit<nhits;ihit++) {
 	    plusminusbest[ihit] = plusminus[ihit];
 	  }
+	  Double_t *spstub = sp->GetStubP();
 	  for(Int_t i=0;i<4;i++) {
-	    fSpacePoints[isp].stub[i] = stub[i];
+	    spstub[i] = stub[i];
 	  }
 	}
       } else {
@@ -981,13 +989,14 @@ void THcDriftChamber::LeftRight()
       }
     } // End loop of pm combinations
 
+    Double_t *spstub = sp->GetStubP();
     if(minchi2 > 9.9e9) {	// No track passed angle cut
       minchi2 = tmp_minchi2;
       for(Int_t ihit=0;ihit<nhits;ihit++) {
 	plusminusbest[ihit] = tmp_plusminus[ihit];
       }
       for(Int_t i=0;i<4;i++) {
-	fSpacePoints[isp].stub[i] = tmp_stub[i];
+	spstub[i] = tmp_stub[i];
       }
       
     }
@@ -995,35 +1004,35 @@ void THcDriftChamber::LeftRight()
     // Calculate final coordinate based on plusminusbest
     // Update the hit positions in the space points
     for(Int_t ihit; ihit<nhits; ihit++) {
-      fSpacePoints[isp].hits[ihit]->SetLeftRight(plusminusbest[ihit]);
+      sp->GetHit(ihit)->SetLeftRight(plusminusbest[ihit]);
     }
 
     // Stubs are calculated in rotated coordinate system
     // (I think this rotates in case chambers not perpendicular to central ray)
     Int_t pindex=plane_list[0];
-    if(fSpacePoints[isp].stub[2] - fTanBeta[pindex] == -1.0) {
+    if(spstub[2] - fTanBeta[pindex] == -1.0) {
       cout << "THcDriftChamber::LeftRight(): stub3 error" << endl;
     }
-    stub[2] = (fSpacePoints[isp].stub[2] - fTanBeta[pindex])
-      / (1.0 + fSpacePoints[isp].stub[2]*fTanBeta[pindex]);
-    if(fSpacePoints[isp].stub[2]*fSinBeta[pindex] ==  -fCosBeta[pindex]) {
+    stub[2] = (spstub[2] - fTanBeta[pindex])
+      / (1.0 + spstub[2]*fTanBeta[pindex]);
+    if(spstub[2]*fSinBeta[pindex] ==  -fCosBeta[pindex]) {
       cout << "THcDriftChamber::LeftRight(): stub4 error" << endl;
     }
-    stub[3] = fSpacePoints[isp].stub[3]
-      / (fSpacePoints[isp].stub[2]*fSinBeta[pindex]+fCosBeta[pindex]);
-    stub[0] = fSpacePoints[isp].stub[0]*fCosBeta[pindex]
-      - fSpacePoints[isp].stub[0]*stub[2]*fSinBeta[pindex];
-    stub[1] = fSpacePoints[isp].stub[1]
-      - fSpacePoints[isp].stub[1]*stub[3]*fSinBeta[pindex];
+    stub[3] = spstub[3]
+      / (spstub[2]*fSinBeta[pindex]+fCosBeta[pindex]);
+    stub[0] = spstub[0]*fCosBeta[pindex]
+      - spstub[0]*stub[2]*fSinBeta[pindex];
+    stub[1] = spstub[1]
+      - spstub[1]*stub[3]*fSinBeta[pindex];
     for(Int_t i=0;i<4;i++) {
-      fSpacePoints[isp].stub[i] = stub[i];
+      spstub[i] = stub[i];
     }
   }
   // Option to print stubs
 }
     //    if(fAA3Inv.find(bitpat) != fAAInv.end()) { // Valid hit combination
 //_____________________________________________________________________________
-Double_t THcDriftChamber::FindStub(Int_t nhits, const std::vector<THcDCHit*>& hits,
+Double_t THcDriftChamber::FindStub(Int_t nhits, const std::vector<THcDCHit*>* hits,
 				       Int_t* plane_list, UInt_t bitpat,
 				       Int_t* plusminus, Double_t* stub)
 {
@@ -1031,10 +1040,11 @@ Double_t THcDriftChamber::FindStub(Int_t nhits, const std::vector<THcDCHit*>& hi
   Double_t zeros[] = {0.0,0.0,0.0};
   TVectorD TT; TT.Use(3, zeros);
   TVectorD dstub;
-  Double_t dpos[3];
-  
+  Double_t dpos[nhits];
+
+  // This isn't right.  dpos only goes up to 2.
   for(Int_t ihit=0;ihit<nhits; ihit++) {
-    dpos[ihit] = hits[ihit]->GetPos() + plusminus[ihit]*hits[ihit]->GetdDist()
+    dpos[ihit] = (*hits)[ihit]->GetPos() + plusminus[ihit]*(*hits)[ihit]->GetdDist()
       - fPsi0[plane_list[ihit]];
     for(Int_t index=0;index<3;index++) {
       TT[index]+= dpos[ihit]*fStubCoefs[plane_list[ihit]][index]
@@ -1063,6 +1073,8 @@ Double_t THcDriftChamber::FindStub(Int_t nhits, const std::vector<THcDCHit*>& hi
 THcDriftChamber::~THcDriftChamber()
 {
   // Destructor. Remove variables from global list.
+
+  delete fSpacePoints;
 
   if( fIsSetup )
     RemoveVariables();

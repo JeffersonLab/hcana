@@ -66,6 +66,7 @@ class THcDriftChamberPlane : public THaSubDetector {
   Double_t     GetPsi0() { return fPsi0; }
   Double_t*    GetStubCoef() { return fStubCoef; }
 
+  THcDriftChamberPlane(); // for ROOT I/O
  protected:
 
   TClonesArray* fParentHitList;

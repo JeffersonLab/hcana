@@ -41,6 +41,12 @@ THcDriftChamberPlane::THcDriftChamberPlane( const char* name,
   fPlaneNum = planenum;
 }
 
+//_____________________________________________________________________________
+THcDriftChamberPlane::THcDriftChamberPlane() :
+  THaSubDetector()
+{
+  // Constructor
+}
 //______________________________________________________________________________
 THcDriftChamberPlane::~THcDriftChamberPlane()
 {
