@@ -155,6 +155,20 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
 
+  {
+    DBRequest list[]={
+      {"cal_num_neg_columns", &fNegCols, kInt},
+      {"cal_slop", &fSlop, kDouble},
+      {"cal_fv_test", &fvTest, kDouble},
+      {0}
+    };
+    gHcParms->LoadParmValues((DBRequest*)&list, prefix);
+  }
+
+  cout << "Number of neg. columns   = " << fNegCols << endl;
+  cout << "Slop parameter           = " << fSlop << endl;
+  cout << "Fiducial volum test flag = " << fvTest << endl;
+
   BlockThick = new Double_t [fNLayers];
   fNBlocks = new Int_t [fNLayers];
   fNLayerZPos = new Double_t [fNLayers];
@@ -476,11 +490,11 @@ Int_t THcShower::ApplyCorrections( void )
 }
 
 //_____________________________________________________________________________
-Double_t THcShower::TimeWalkCorrection(const Int_t& paddle,
-					     const ESide side)
-{
-  return(0.0);
-}
+//Double_t THcShower::TimeWalkCorrection(const Int_t& paddle,
+//					     const ESide side)
+//{
+//  return(0.0);
+//}
 
 //_____________________________________________________________________________
 Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks

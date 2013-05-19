@@ -35,7 +35,8 @@ public:
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
 
   Int_t GetNBlocks(Int_t plane) const { return fNBlocks[plane-1];}
-  friend class THaScCalib;
+
+  //  friend class THaScCalib; not needed?
 
   Int_t fGetPedLimit(Int_t NBlock, Int_t NLayer, Int_t Side) {
     if (Side!=0&&Side!=1) {
@@ -73,13 +74,16 @@ protected:
 
   char** fLayerNames;
   Int_t fNLayers;
-  Int_t fNRows;
+  //  Int_t fNRows;             fNBlocks is used instead
   Double_t* fNLayerZPos;	// Z position of front of shower counter layers
   Double_t* BlockThick;		// Thickness of shower counter blocks, blocks
   Int_t* fNBlocks;              // Number of shower counter blocks per layer
   Int_t fNtotBlocks;            // Total number of shower counter blocks
   Double_t** YPos;		//X,Y positions of shower counter blocks
   Double_t* XPos;
+  Int_t fNegCols; //number of columns with PMTTs on the negative side only.
+  Double_t fSlop;               //Track to cluster vertical slop distance.
+  Int_t fvTest;                 //fiducial volume test flag
 
   THcShowerPlane** fPlanes; // List of plane objects
 
@@ -108,10 +112,10 @@ protected:
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
 
-  enum ESide { kLeft = 0, kRight = 1 };
+  //  enum ESide { kLeft = 0, kRight = 1 };
   
-  virtual  Double_t TimeWalkCorrection(const Int_t& paddle,
-				       const ESide side);
+  //  virtual  Double_t TimeWalkCorrection(const Int_t& paddle,
+  //				       const ESide side);
 
   void Setup(const char* name, const char* description);
 

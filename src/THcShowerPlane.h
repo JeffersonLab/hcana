@@ -35,7 +35,7 @@ class THcShowerPlane : public THaSubDetector {
 
   virtual Int_t CoarseProcess( TClonesArray& tracks );
   virtual Int_t FineProcess( TClonesArray& tracks );
-          Bool_t   IsTracking() { return kFALSE; }
+  Bool_t   IsTracking() { return kFALSE; }
   virtual Bool_t   IsPid()      { return kFALSE; }
 
   virtual Int_t ProcessHits(TClonesArray* rawhits, Int_t nexthit);
@@ -84,6 +84,3 @@ class THcShowerPlane : public THaSubDetector {
   ClassDef(THcShowerPlane,0)
 };
 #endif
-
-
- 
