@@ -95,19 +95,27 @@ THaAnalysisObject::EStatus THcDriftChamber::Init( const TDatime& date )
 
 void THcDriftChamber::AddPlane(THcDriftChamberPlane *plane)
 {
-  cout << "Added plane " << plane->GetPlaneNum() << " to chamber " << fChamberNum << endl;
+  cout << "Added plane " << plane->GetPlaneNum() << " to chamber " << fChamberNum << " " << fNPlanes << " " << YPlaneInd << " " << YPlanePInd << endl;
   plane->SetPlaneIndex(fNPlanes);
   fPlanes[fNPlanes] = plane;
+ // HMS Specific
+  // Hard code Y plane numbers.  Should be able to get from wire angle
+  if(fChamberNum == 1) {
+    YPlaneNum = 2;
+    YPlanePNum = 5;
+  } else {
+    YPlaneNum = 8;
+    YPlanePNum = 11;
+  }
 
   // HMS Specific
-  // Check if this is a Y Plane
+  // Check if this is a Y Plae
   if(plane->GetPlaneNum() == YPlaneNum) {
     YPlaneInd = fNPlanes;
   } else if (plane->GetPlaneNum() == YPlanePNum) {
     YPlanePInd = fNPlanes;
   }
   fNPlanes++;
-
   return;
 }
 
@@ -136,20 +144,10 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   fMinCombos = fParent->GetMinCombos(fChamberNum);
 
   cout << "Chamber " << fChamberNum << "  Min/Max: " << fMinHits << "/" << fMaxHits << endl;
-
-  fSpacePointCriterion = fParent->GetSpacePointCriterion(fChamberNum); 
+  fSpacePointCriterion = fParent->GetSpacePointCriterion(fChamberNum);
+   
   fSpacePointCriterion2 = fSpacePointCriterion*fSpacePointCriterion;
-
-  // HMS Specific
-  // Hard code Y plane numbers.  Should be able to get from wire angle
-  if(fChamberNum == 1) {
-    YPlaneNum = 2;
-    YPlanePNum = 5;
-  } else {
-    YPlaneNum = 8;
-    YPlanePNum = 11;
-  }
-    
+   cout << " cham = " << fChamberNum << " Set yplane num " << YPlaneNum << " "<< YPlanePNum << endl; 
   // Generate the HAA3INV matrix for all the acceptable combinations
   // of hit planes.  Try to make it as generic as possible 
   // pindex=0 -> Plane 1 missing, pindex5 -> plane 6 missing.  Won't 
@@ -259,18 +257,19 @@ Int_t THcDriftChamber::FindSpacePoints( void )
   // Should really build up array of hits
   if(fNhits >= fMinHits && fNhits < fMaxHits) {
     /* Has this list of hits already been cut the way it should have at this point? */
-    
     for(Int_t ihit=0;ihit<fNhits;ihit++) {
       THcDCHit* thishit = fHits[ihit];
       Int_t ip=thishit->GetPlaneNum();  // This is the absolute plane mumber
       if(ip==YPlaneNum) yplane_hitind = ihit;
       if(ip==YPlanePNum) yplanep_hitind = ihit;
+      cout << " hit  = " << ihit << " " << ip <<" " << thishit->GetWireNum()<<" " << thishit->GetPos()<< " " << thishit->GetPlaneNum()<< endl;
     }
     // fPlanes is the array of planes for this chamber.
     //    cout << fPlanes[YPlaneInd]->GetNHits() << " "
     //	 << fPlanes[YPlanePInd]->GetNHits() << " " << endl;
+    cout << " Yplane ind " << YPlaneInd << " " << YPlanePInd << endl;
     if (fPlanes[YPlaneInd]->GetNHits() == 1 && fPlanes[YPlanePInd]->GetNHits() == 1) {
-      cout << fHits[yplane_hitind]->GetWireNum() << " "
+      cout <<" Yplane info :" << fHits[yplane_hitind]->GetWireNum() << " "
 	   << fHits[yplane_hitind]->GetPos() << " "
 	   << fHits[yplanep_hitind]->GetWireNum() << " "
 	   << fHits[yplanep_hitind]->GetPos() << " " 
@@ -280,9 +279,12 @@ Int_t THcDriftChamber::FindSpacePoints( void )
        && TMath::Abs(fHits[yplane_hitind]->GetPos() - fHits[yplanep_hitind]->GetPos())
        < fSpacePointCriterion
        && fNhits <= 6) {	// An easy case, probably one hit per plane
+      cout << " call FindEasySpacePoint" << endl;
       fEasySpacePoint = FindEasySpacePoint(yplane_hitind, yplanep_hitind);
     }
     if(!fEasySpacePoint) {	// It's not easy
+      cout << " call FindHardSpacePoints" << endl;
+      cout << " nhits = " << fNhits << " " << fPlanes[YPlaneInd]->GetNHits() << " " << fPlanes[YPlanePInd]->GetNHits() << endl;
       FindHardSpacePoints();
     }
 
@@ -342,6 +344,7 @@ Int_t THcDriftChamber::FindEasySpacePoint(Int_t yplane_hitind,Int_t yplanep_hiti
     THcDCHit* thishit = fHits[ihit];
     if(ihit!=yplane_hitind && ihit!=yplanep_hitind) { // x-like hit
       // ysp and xsp are from h_generate_geometry
+      cout << ihit << " " << thishit->GetPos() << " " << yt << " " << thishit->GetWirePlane()->GetYsp() << " " << thishit->GetWirePlane()->GetXsp() << endl;
       x_pos[ihit] = (thishit->GetPos()
 		     -yt*thishit->GetWirePlane()->GetYsp())
 	/thishit->GetWirePlane()->GetXsp();
@@ -351,14 +354,15 @@ Int_t THcDriftChamber::FindEasySpacePoint(Int_t yplane_hitind,Int_t yplanep_hiti
       x_pos[ihit] = 0.0;
     }
   }
+  Double_t max_dist = TMath::Sqrt(fSpacePointCriterion/2.);
   xt = (num_xhits>0?xt/num_xhits:0.0);
-  cout << "xt=" << xt << endl;
+  cout << " mean x = "<< xt << " max dist = " << max_dist << endl;
   easy_space_point = 1; // Assume we have an easy space point
   // Rule it out if x points don't cluster well enough
   for(Int_t ihit=0;ihit<fNhits;ihit++) {
-    cout << "Hit " << ihit << " " << x_pos[ihit] << " " << xt << endl;
+    cout << "Hit " << ihit << " " << x_pos[ihit] << " " << TMath::Abs(xt-x_pos[ihit]) << endl;
     if(ihit!=yplane_hitind && ihit!=yplanep_hitind) { // x-like hit
-      if(TMath::Abs(xt-x_pos[ihit]) >= fSpacePointCriterion)
+      if(TMath::Abs(xt-x_pos[ihit]) >= max_dist)
 	{ easy_space_point=0; break;}
     }
   }

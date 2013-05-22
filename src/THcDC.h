@@ -39,8 +39,8 @@ public:
   Int_t GetNWires(Int_t plane) const { return fNWires[plane-1];}
   Int_t GetNChamber(Int_t plane) const { return fNChamber[plane-1];}
   Int_t GetWireOrder(Int_t plane) const { return fWireOrder[plane-1];}
-  Int_t GetPitch(Int_t plane) const { return fPitch[plane-1];}
-  Int_t GetCentralWire(Int_t plane) const { return fCentralWire[plane-1];}
+  Double_t GetPitch(Int_t plane) const { return fPitch[plane-1];}
+  Double_t GetCentralWire(Int_t plane) const { return fCentralWire[plane-1];}
   Int_t GetTdcWinMin(Int_t plane) const { return fTdcWinMin[plane-1];}
   Int_t GetTdcWinMax(Int_t plane) const { return fTdcWinMax[plane-1];}
 
@@ -52,7 +52,7 @@ public:
   Int_t GetMinHits(Int_t chamber) const { return fMinHits[chamber-1];}
   Int_t GetMaxHits(Int_t chamber) const { return fMaxHits[chamber-1];}
   Int_t GetMinCombos(Int_t chamber) const { return fMinCombos[chamber-1];}
-  Double_t GetSpacePointCriterion(Int_t chamber) const { return TMath::Sqrt(fSpace_Point_Criterion2[chamber-1]);}
+  Double_t GetSpacePointCriterion(Int_t chamber) const { return fSpace_Point_Criterion2[chamber-1];}
   Double_t GetCentralTime(Int_t plane) const { return fCentralTime[plane-1];}
   Int_t GetDriftTimeSign(Int_t plane) const { return fDriftTimeSign[plane-1];}
 
