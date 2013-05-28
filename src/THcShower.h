@@ -47,6 +47,15 @@ public:
     return ( Side == 0 ? fShPosPedLimit[nelem] : fShNegPedLimit[nelem]);
   }
 
+  Double_t fGetGain(Int_t NBlock, Int_t NLayer, Int_t Side) {
+    if (Side!=0&&Side!=1) {
+      cout << "*** Wrong Side in fGetGain:" << Side << " ***" << endl;
+      return -1;
+    }
+    Int_t nelem = NBlock+NLayer*fNBlocks[NLayer];
+    return ( Side == 0 ? fPosGain[nelem] : fNegGain[nelem]);
+  }
+
   Int_t fGetMinPeds() {
     return fShMinPeds;
   }
@@ -64,8 +73,8 @@ protected:
   Int_t fShMinPeds;   //Min.number of events to analize/update pedestals.
 
   // Calibration constants
-  Double_t* fPosCalConst;
-  Double_t* fNegCalConst;
+  Double_t* fPosGain;
+  Double_t* fNegGain;
 
   // Per-event data
 

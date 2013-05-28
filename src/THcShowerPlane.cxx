@@ -57,6 +57,9 @@ THcShowerPlane::~THcShowerPlane()
   delete [] fA_Pos_p;
   delete [] fA_Neg_p;
 
+  delete [] fEpos;
+  delete [] fEneg;
+  delete [] fEmean;
 }
 
 THaAnalysisObject::EStatus THcShowerPlane::Init( const TDatime& date )
@@ -116,6 +119,10 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   fA_Pos_p = new Float_t[fNelem];
   fA_Neg_p = new Float_t[fNelem];
 
+  fEpos = new Float_t[fNelem];
+  fEneg = new Float_t[fNelem];
+  fEmean= new Float_t[fNelem];
+
  //  fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
 // 
 //   parname[plen]='\0';
@@ -172,6 +179,10 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
     {"aneg",   "Raw Negative ADC Amplitudes",            "fA_Neg"},
     {"apos_p", "Ped-subtracted Positive ADC Amplitudes", "fA_Pos_p"},
     {"aneg_p", "Ped-subtracted Negative ADC Amplitudes", "fA_Neg_p"},
+    {"epos",   "Energy Depositions from Positive Side PMTs", "fEpos"},
+    {"eneg",   "Energy Depositions from Negative Side PMTs", "fEneg"},
+    {"emean",  "Mean Energy Depositions",                    "fEMean"},
+    {"eplane", "Energy Deposition per plane",                "fEplane"},
     { 0 }
   };
 
@@ -202,6 +213,8 @@ Int_t THcShowerPlane::CoarseProcess( TClonesArray& tracks )
  
   //  HitCount();
 
+  cout << "THcShowerPlane::CoarseProcess called ---------------------" << endl;
+
  return 0;
 }
 
@@ -227,7 +240,12 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     fA_Neg[i] = 0;
     fA_Pos_p[i] = 0;
     fA_Neg_p[i] = 0;
+    fEpos[i] = 0;
+    fEneg[i] = 0;
+    fEmean[i] = 0;
   }
+
+  fEplane = 0;
 
   Int_t nrawhits = rawhits->GetLast()+1;
 
@@ -249,18 +267,31 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     fA_Pos_p[hit->fCounter-1] = hit->fADC_pos - fPosPed[hit->fCounter -1];
     fA_Neg_p[hit->fCounter-1] = hit->fADC_neg - fNegPed[hit->fCounter -1];
 
+    THcShower* fParent;
+    fParent = (THcShower*) GetParent();
+
     double thresh_pos = fPosThresh[hit->fCounter -1];
     if(hit->fADC_pos >  thresh_pos) {
-      THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
 
+      THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
       sighit->Set(hit->fCounter, hit->fADC_pos);
+
+      fEpos[hit->fCounter-1] += fA_Pos_p[hit->fCounter-1]*
+	fParent->fGetGain(hit->fCounter-1,fLayerNum,0);
     }
 
     double thresh_neg = fNegThresh[hit->fCounter -1];
     if(hit->fADC_neg >  thresh_neg) {
+
       THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
       sighit->Set(hit->fCounter, hit->fADC_neg);
+
+      fEneg[hit->fCounter-1] += fA_Neg_p[hit->fCounter-1]*
+	fParent->fGetGain(hit->fCounter-1,fLayerNum,1);
     }
+
+    fEmean[hit->fCounter-1] += (fEpos[hit->fCounter-1] + fEneg[hit->fCounter-1]);
+    fEplane += fEmean[hit->fCounter-1];
 
     ihit++;
   }

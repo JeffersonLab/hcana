@@ -34,6 +34,12 @@ TH1F chnegadc2 'HMS Cal B- ADC hits' H.cal.2ta.negadchits 13 0.5 13.5
 TH1F chposadc3 'HMS Cal C+ ADC hits' H.cal.3ta.posadchits 13 0.5 13.5
 TH1F chposadc4 'HMS Cal D+ ADC hits' H.cal.4ta.posadchits 13 0.5 13.5
 
+# Deposited Energies per Calorimeter layer
+TH1F edep1 'HMS Cal A Edep' H.cal.1pr.eplane 100 -0.1 2.074
+TH1F edep2 'HMS Cal B Edep' H.cal.2ta.eplane 100 -0.1 2.074
+TH1F edep3 'HMS Cal C Edep' H.cal.3ta.eplane 100 -0.1 2.074
+TH1F edep4 'HMS Cal D Edep' H.cal.4ta.eplane 100 -0.1 2.074
+
 #Calorimeter ADC channels
 TH1F hcaladc_A1p 'HMS Cal ADC A1p - PED' H.cal.1pr.apos_p[0] 150 50 500
 TH1F hcaladc_A2p 'HMS Cal ADC A2p - PED' H.cal.1pr.apos_p[1] 150 50 500

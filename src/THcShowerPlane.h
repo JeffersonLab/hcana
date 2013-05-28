@@ -53,6 +53,11 @@ class THcShowerPlane : public THaSubDetector {
   Float_t*   fA_Pos_p;	     // [fNelem] Array of pedestal subtracted ADC amplitudes
   Float_t*   fA_Neg_p;	     // [fNelem] Array of pedestal subtracted ADC amplitudes
 
+  Float_t* fEpos;     // [fNelem] Array of energy depositions seen by positive PMTs
+  Float_t* fEneg;     // [fNelem] Array of energy depositions seen by negative PMTs
+  Float_t* fEmean;    // [fNelem] Array of mean energy depositions (pos + neg)
+  Float_t  fEplane;   // Energy deposition per plane
+
   TClonesArray* fPosADCHits;
   TClonesArray* fNegADCHits;
 

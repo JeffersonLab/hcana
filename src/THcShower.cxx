@@ -215,15 +215,15 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   fNtotBlocks=0;              //total number of blocks
   for (Int_t i=0; i<fNLayers; i++) fNtotBlocks += fNBlocks[i];
 
-  cout << "Total number of blocks in he calorimeter: " << fNtotBlocks << endl;
+  cout << "Total number of blocks in the calorimeter: " << fNtotBlocks << endl;
 
   //Pedestal limits from hcal.param.
   fShPosPedLimit = new Int_t [fNtotBlocks];
   fShNegPedLimit = new Int_t [fNtotBlocks];
 
   //Calibration constants
-  fPosCalConst = new Double_t [fNtotBlocks];
-  fNegCalConst = new Double_t [fNtotBlocks];
+  fPosGain = new Double_t [fNtotBlocks];
+  fNegGain = new Double_t [fNtotBlocks];
 
   //Read in parameters from hcal.param
   Double_t hcal_pos_cal_const[fNtotBlocks];
@@ -341,22 +341,22 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   //Calibration constants in GeV per ADC channel.
 
   for (Int_t i=0; i<fNtotBlocks; i++) {
-    fPosCalConst[i] = hcal_pos_cal_const[i] *  hcal_pos_gain_cor[i];
-    fNegCalConst[i] = hcal_neg_cal_const[i] *  hcal_neg_gain_cor[i];
+    fPosGain[i] = hcal_pos_cal_const[i] *  hcal_pos_gain_cor[i];
+    fNegGain[i] = hcal_neg_cal_const[i] *  hcal_neg_gain_cor[i];
   }
 
-  cout << "fPosCalConst:" << endl;
+  cout << "fPosGain:" << endl;
   for (Int_t j=0; j<fNLayers; j++) {
     for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << fPosCalConst[j*fNBlocks[j]+i] << " ";
+      cout << fPosGain[j*fNBlocks[j]+i] << " ";
     };
     cout <<  endl;
   };
 
-  cout << "fNegCalConst:" << endl;
+  cout << "fNegGain:" << endl;
   for (Int_t j=0; j<fNLayers; j++) {
     for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << fNegCalConst[j*fNBlocks[j]+i] << " ";
+      cout << fNegGain[j*fNBlocks[j]+i] << " ";
     };
     cout <<  endl;
   };
@@ -448,38 +448,37 @@ Int_t THcShower::Decode( const THaEvData& evdata )
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = THcHitList::DecodeToHitList(evdata);
 
-if(gHaCuts->Result("Pedestal_event")) {
+  if(gHaCuts->Result("Pedestal_event")) {
     Int_t nexthit = 0;
     for(Int_t ip=0;ip<fNLayers;ip++) {
       nexthit = fPlanes[ip]->AccumulatePedestals(fRawHitList, nexthit);
-//cout << "nexthit = " << nexthit << endl;
+      //cout << "nexthit = " << nexthit << endl;
     }
     fAnalyzePedestals = 1;	// Analyze pedestals first normal events
     return(0);
   }
 
-   if(fAnalyzePedestals) {
-     for(Int_t ip=0;ip<fNLayers;ip++) {
-       fPlanes[ip]->CalculatePedestals();
-     }
-     fAnalyzePedestals = 0;	// Don't analyze pedestals next event
-   }
-
-
+  if(fAnalyzePedestals) {
+    for(Int_t ip=0;ip<fNLayers;ip++) {
+      fPlanes[ip]->CalculatePedestals();
+    }
+    fAnalyzePedestals = 0;	// Don't analyze pedestals next event
+  }
 
   Int_t nexthit = 0;
   for(Int_t ip=0;ip<fNLayers;ip++) {
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
   }
-/*
-//   fRawHitList is TClones array of THcShowerHit objects
-  for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
-    THcShowerHit* hit = (THcShowerHit *) fRawHitList->At(ihit);
-    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
-	 << hit->fADC_pos << " " << hit->fADC_neg << " "  << endl;
-  }
-  cout << endl;
-*/
+
+  //   fRawHitList is TClones array of THcShowerHit objects
+  //  cout << "THcShower::Decode: Shower raw hit list:" << endl;
+  //  for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
+  //    THcShowerHit* hit = (THcShowerHit *) fRawHitList->At(ihit);
+  //    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
+  //	 << hit->fADC_pos << " " << hit->fADC_neg << " "  << endl;
+  //  }
+  //  cout << endl;
+
   return nhits;
 }
 
@@ -507,6 +506,8 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
   //
   //  static const Double_t sqrt2 = TMath::Sqrt(2.);
   
+  cout << "THcShower::CoarseProcess called ---------------------------" <<endl;
+
   ApplyCorrections();
 
   return 0;
