@@ -442,6 +442,7 @@ Int_t THcDC::CoarseTrack( TClonesArray& /* tracks */ )
 
     fChambers[i]->FindSpacePoints();
     fChambers[i]->CorrectHitTimes();
+    fChambers[i]->LeftRight();
   }
 
   ApplyCorrections();

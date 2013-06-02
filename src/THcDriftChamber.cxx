@@ -182,28 +182,28 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   for(Int_t ipm1=0;ipm1<fNPlanes+1;ipm1++) { // Loop over missing plane1
     for(Int_t ipm2=ipm1;ipm2<fNPlanes+1;ipm2++) {
       if(ipm1==ipm2 && ipm1<fNPlanes) continue;
-      TMatrixDSym* AA3 = new TMatrixDSym(3);
+      TMatrixD* AA3 = new TMatrixD(3,3);
       for(Int_t i=0;i<3;i++) {
 	for(Int_t j=i;j<3;j++) {
-	  (*AA3)[j][i] = 0.0;
+	  (*AA3)[i][j] = 0.0;
 	  for(Int_t ip=0;ip<fNPlanes;ip++) {
 	    if(ipm1 != ip && ipm2 != ip) {
-	      (*AA3)[j][i] += fStubCoefs[ip][i]*fStubCoefs[ip][j];
+	      (*AA3)[i][j] += fStubCoefs[ip][i]*fStubCoefs[ip][j];
 	    }
 	  }
+	  (*AA3)[j][i] = (*AA3)[i][j];
 	}
       }
-      // Use the bit pattern of missing planes as an hash index.
-      // Perhaps it is more efficient to just use a regular array instead of map
       Int_t bitpat = allplanes & ~(1<<ipm1) & ~(1<<ipm2);
       // Should check that it is invertable
+      //      cout << bitpat << " Determinant: " << AA3->Determinant() << endl;
       AA3->Invert();
       fAA3Inv[bitpat] = AA3;
     }
   }
 
 #if 0  
-  for(map<int,TMatrixDSym*>::iterator pm=fHaa3map.begin();
+  for(map<int,TMatrixD*>::iterator pm=fHaa3map.begin();
       pm != fHaa3map.end(); pm++) {
     cout << setbase(8) << pm->first << endl;
     fAA3Inv[pm->first]->Print();
@@ -1039,7 +1039,7 @@ Double_t THcDriftChamber::FindStub(Int_t nhits, const std::vector<THcDCHit*>* hi
   // For a given combination of L/R, fit a stub to the space point
   Double_t zeros[] = {0.0,0.0,0.0};
   TVectorD TT; TT.Use(3, zeros);
-  TVectorD dstub;
+  TVectorD dstub; dstub.Use(3, zeros);
   Double_t dpos[nhits];
 
   // This isn't right.  dpos only goes up to 2.
@@ -1051,12 +1051,19 @@ Double_t THcDriftChamber::FindStub(Int_t nhits, const std::vector<THcDCHit*>* hi
 	/fSigma[plane_list[ihit]];
     }
   }
-  dstub = (*fAA3Inv[bitpat]) * TT;
+  fAA3Inv[bitpat]->Print();
+  cout << TT[0] << " " << TT[1] << " " << TT[2] << endl;
+  //  TT->Print();
+
+  //dstub = *(fAA3Inv[bitpat]) * TT;
+  TT *= *fAA3Inv[bitpat];
+ cout << TT[0] << " " << TT[1] << " " << TT[2] << endl;
+ //  cout << dstub[0] << " " << dstub[1] << " " << dstub[2] << endl;
 
   // Calculate Chi2.  Remember one power of sigma is in fStubCoefs
-  stub[0] = dstub[0];
-  stub[1] = dstub[1];
-  stub[2] = dstub[2];
+  stub[0] = TT[0];
+  stub[1] = TT[1];
+  stub[2] = TT[2];
   stub[3] = 0.0;
   Double_t chi2=0.0;
   for(Int_t ihit=0;ihit<nhits; ihit++) {
@@ -1075,6 +1082,7 @@ THcDriftChamber::~THcDriftChamber()
   // Destructor. Remove variables from global list.
 
   delete fSpacePoints;
+  // Should delete the matrices
 
   if( fIsSetup )
     RemoveVariables();

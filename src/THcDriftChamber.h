@@ -10,7 +10,7 @@
 #include "THaSubDetector.h"
 #include "THcDriftChamberPlane.h"
 #include "TClonesArray.h"
-#include "TMatrixDSym.h"
+#include "TMatrixD.h"
 
 #include <map>
 #include <vector>
@@ -38,11 +38,13 @@ public:
   virtual void       ProcessHits( void );
   virtual Int_t      FindSpacePoints( void ) ;
   virtual void       CorrectHitTimes( void ) ;
+  virtual void       LeftRight(void);
+
 
   virtual void   Clear( Option_t* opt="" );
 
   //  Int_t GetNHits() const { return fNhit; }
-  
+  Int_t GetNSpacePoints() const { return(fNSpacePoints);}
   Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
 
@@ -104,7 +106,6 @@ protected:
   void       ChooseSingleHit(void);
   void       SelectSpacePoints(void);
   UInt_t     Count1Bits(UInt_t x);
-  void       LeftRight(void);
   Double_t   FindStub(Int_t nhits, const std::vector<THcDCHit*>* hits,
 		      Int_t* plane_list, UInt_t bitpat,
 		      Int_t* plusminus, Double_t* stub);
@@ -130,7 +131,7 @@ protected:
   Int_t fEasySpacePoint;	/* This event is an easy space point */
 
   Double_t* stubcoef[4]; 
-  std::map<int,TMatrixDSym*> fAA3Inv;
+  std::map<int,TMatrixD*> fAA3Inv;
 
   ClassDef(THcDriftChamber,0)   // Drift Chamber class
 };
