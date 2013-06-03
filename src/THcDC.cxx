@@ -284,10 +284,18 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"dc_central_wire", fCentralWire, kDouble, fNPlanes},
     {"dc_plane_time_zero", fPlaneTimeZero, kDouble, fNPlanes},
     {"dc_sigma", fSigma, kDouble, fNPlanes},
+    {"single_stub",&fSingleStub, kInt},
+    {"ntracks_max_fp", &fNTracksMaxFP, kInt},
+    {"xt_track_criterion", &fXtTrCriterion, kDouble},
+    {"yt_track_criterion", &fYtTrCriterion, kDouble},
+    {"xpt_track_criterion", &fXptTrCriterion, kDouble},
+    {"ypt_track_criterion", &fYptTrCriterion, kDouble},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
+  if(fNTracksMaxFP <= 0) fNTracksMaxFP = 10;
+  // if(fNTracksMaxFP > HNRACKS_MAX) fNTracksMaxFP = NHTRACKS_MAX;
   cout << "Plane counts:";
   for(Int_t i=0;i<fNPlanes;i++) {
     cout << " " << fNWires[i];
@@ -444,6 +452,8 @@ Int_t THcDC::CoarseTrack( TClonesArray& /* tracks */ )
     fChambers[i]->CorrectHitTimes();
     fChambers[i]->LeftRight();
   }
+  // Now link the stubs between chambers
+  LinkStubs();
 
   ApplyCorrections();
 
@@ -463,6 +473,174 @@ Int_t THcDC::FineTrack( TClonesArray& tracks )
   // reconstructed in THaVDC::FineTrack() are used.
 
   return 0;
+}
+void THcDC::LinkStubs()
+{
+  //     The logic is
+  //                  0) Put all space points in a single list
+  //                  1) loop over all space points as seeds  isp1
+  //                  2) Check if this space point is all ready in a track
+  //                  3) loop over all succeeding space pointss   isp2
+  //                  4) check if there is a track-criterion match
+  //                       either add to existing track
+  //                       or if there is another point in same chamber
+  //                          make a copy containing isp2 rather than 
+  //                            other point in same chamber
+  //                  5) If hsingle_stub is set, make a track of all single
+  //                     stubs.
+
+  std::vector<THcSpacePoint*> fSp;
+  Int_t fNSp=0;
+  fSp.clear();
+  fSp.reserve(10);
+  // Make a vector of pointers to the SpacePoints
+  cout << "Linking " << fChambers[0]->GetNSpacePoints()
+       << " and " << fChambers[1]->GetNSpacePoints() << " stubs" << endl;
+  for(Int_t ich=0;ich<fNChambers;ich++) {
+    Int_t nchamber=fChambers[ich]->GetChamberNum();
+    TClonesArray* spacepointarray = fChambers[ich]->GetSpacePointsP();
+    for(Int_t isp=0;isp<fChambers[ich]->GetNSpacePoints();isp++) {
+      fSp.push_back(static_cast<THcSpacePoint*>(spacepointarray->At(isp)));
+      fSp[fNSp]->fNChamber = nchamber;
+      fNSp++;
+    }
+  }
+  Int_t ntracks_fp=0;		// Number of Focal Plane tracks found
+  Double_t stubminx = 999999;
+  Double_t stubminy = 999999;
+  Double_t stubminxp = 999999;
+  Double_t stubminyp = 999999;
+  Int_t stub_tracks[MAXTRACKS];
+
+  if(!fSingleStub) {
+    for(Int_t isp1=0;isp1<fNSp-1;isp1++) {
+      Int_t sptracks=0;
+      // Now make sure this sp is not already used in a sp.
+      // Could this be done by having a sp point to the track it is in?
+      Int_t tryflag=1;
+      for(Int_t itrack=0;itrack<ntracks_fp;itrack++) {
+	for(Int_t isp=0;isp<fTrackSP[itrack].nSP;isp++) {
+	  if(fTrackSP[itrack].spID[isp] == isp1) {
+	    tryflag=0;
+	  }
+	}
+      }
+      if(tryflag) { // SP not already part of a track
+	Int_t newtrack=1;
+	for(Int_t isp2=isp1+1;isp2<fNSp;isp2++) {
+	  if(fSp[isp1]->fNChamber!=fSp[isp2]->fNChamber) {
+	    Double_t *spstub1=fSp[isp1]->GetStubP();
+	    Double_t *spstub2=fSp[isp2]->GetStubP();
+	    Double_t dposx = spstub1[0] - spstub2[0];
+	    Double_t dposy = spstub1[1] - spstub2[1];
+	    Double_t dposxp = spstub1[2] - spstub2[2];
+	    Double_t dposyp = spstub1[3] - spstub2[3];
+	      
+	    // What is the point of saving these stubmin values.  They
+	    // Don't seem to be used anywhere except that they can be
+	    // printed out if hbypass_track_eff_files is zero.
+	    if(TMath::Abs(dposx)<TMath::Abs(stubminx)) stubminx = dposx;
+	    if(TMath::Abs(dposy)<TMath::Abs(stubminy)) stubminy = dposy;
+	    if(TMath::Abs(dposxp)<TMath::Abs(stubminxp)) stubminxp = dposxp;
+	    if(TMath::Abs(dposyp)<TMath::Abs(stubminyp)) stubminyp = dposyp;
+	      
+	    // if hbypass_track_eff_files == 0 then
+	    // Print out each stubminX that is less that its criterion
+
+	    if((TMath::Abs(dposx) < fXtTrCriterion)
+	       && (TMath::Abs(dposy) < fYtTrCriterion)
+	       && (TMath::Abs(dposxp) < fXptTrCriterion)
+	       && (TMath::Abs(dposyp) < fYptTrCriterion)) {
+	      if(newtrack) {
+		assert(sptracks==0);
+		//stubtest=1;  Used in h_track_tests.f
+		// Make a new track if there are not to many
+		if(ntracks_fp < MAXTRACKS) {
+		  sptracks=0; // Number of tracks with this seed
+		  stub_tracks[sptracks++] = ntracks_fp;
+		  fTrackSP[ntracks_fp].nSP=2;
+		  fTrackSP[ntracks_fp].spID[0] = isp1;
+		  fTrackSP[ntracks_fp].spID[1] = isp2;
+		  // Now save the X, Y and XP for the two stubs
+		  // in arrays hx_sp1, hy_sp1, hy_sp1, ... hxp_sp2
+		  // Why not also YP?
+		  // Skip for here.  May be a diagnostic thing
+		  newtrack = 0; // Make no more tracks in this loop
+		  // (But could replace a SP?)
+		  ntracks_fp++;
+		} else {
+		  cout << "EPIC FAIL 1:  Too many tracks found in THcDC::LinkStubs" << endl;
+		  ntracks_fp=0;
+		  // Do something here to fail this event
+		  return;
+		}
+	      } else {
+		// Check if there is another space point in the same chamber
+		for(Int_t itrack=0;itrack<sptracks;itrack++) {
+		  Int_t track=stub_tracks[itrack];
+		  Int_t spoint=0;
+		  Int_t duppoint=0;
+		  for(Int_t isp=0;fTrackSP[track].nSP;isp++) {
+		    if(fSp[isp2]->fNChamber ==
+		       fSp[fTrackSP[track].spID[isp]]->fNChamber) {
+		      spoint=isp;
+		    }
+		    if(isp2==fTrackSP[track].spID[isp]) {
+		      duppoint=1;
+		    }
+		  } // End loop over sp in tracks with isp1
+		    // If there is no other space point in this chamber
+		    // add this space point to current track(2)
+		  if(!duppoint) {
+		    if(!spoint) {
+		      fTrackSP[track].spID[fTrackSP[track].nSP++] = isp2;
+		    } else {
+		      // If there is another point in the same chamber
+		      // in this track create a new track with all the
+		      // same space points except spoint
+		      if(ntracks_fp < MAXTRACKS) {
+			stub_tracks[sptracks++] = ntracks_fp;
+			fTrackSP[ntracks_fp].nSP=fTrackSP[track].nSP;
+			for(Int_t isp=0;isp<fTrackSP[track].nSP;isp++) {
+			  if(isp!=spoint) {
+			    fTrackSP[ntracks_fp].spID[isp] = fTrackSP[track].spID[isp];
+			  } else {
+			    fTrackSP[ntracks_fp].spID[isp] = isp2;
+			  } // End check for dup on copy
+			} // End copy of track
+		      } else {
+			cout << "EPIC FAIL 2:  Too many tracks found in THcDC::LinkStubs" << endl;
+			ntracks_fp=0;
+			// Do something here to fail this event
+			return; // Max # of allowed tracks
+		      }
+		    } // end if on same chamber
+		  } // end if on duplicate point
+		} // end for over tracks with isp1
+	      }
+	    }
+	  } // end test on same chamber
+	} // end isp2 loop over new space points
+      } // end test on tryflag
+    } // end isp1 outer loop over space points
+  } else { // Make track out of each single space point
+    for(Int_t isp=0;isp<fNSp;isp++) {
+      if(ntracks_fp<MAXTRACKS) {
+	fTrackSP[ntracks_fp].nSP=1;
+	fTrackSP[ntracks_fp].spID[0]=isp;
+	ntracks_fp++;
+      } else {
+	cout << "EPIC FAIL 3:  Too many tracks found in THcDC::LinkStubs" << endl;
+	ntracks_fp=0;
+	// Do something here to fail this event
+	return; // Max # of allowed tracks
+      }
+    }
+  }
+  // Now list all hits on a track.  What needs this
+  ///
+  ///
+  cout << "Found " << ntracks_fp << " tracks"<<endl;
 }
 
 ClassImp(THcDC)

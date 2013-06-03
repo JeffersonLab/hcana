@@ -47,10 +47,12 @@ public:
   Int_t GetNSpacePoints() const { return(fNSpacePoints);}
   Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
+  TClonesArray* GetSpacePointsP() const { return(fSpacePoints);}
+  Int_t GetChamberNum() const { return fChamberNum;}
 
   //  friend class THaScCalib;
 
-  THcDriftChamber();  // for ROOT I/O
+  THcDriftChamber();  // for ROOT I/O // Why do we need this?
 protected:
 
   // Calibration

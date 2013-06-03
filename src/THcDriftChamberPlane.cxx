@@ -107,6 +107,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
 
   fParent = (THcDC*) GetParent();
   // These are single variables here, but arrays in THcDriftChamber.
+  fSigma = fParent->GetSigma(fPlaneNum);
   fChamberNum = fParent->GetNChamber(fPlaneNum);
   fNWires = fParent->GetNWires(fPlaneNum);
   fWireOrder = fParent->GetWireOrder(fPlaneNum);
@@ -118,7 +119,6 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   fCenter = fParent->GetCenter(fPlaneNum);
   fCentralTime = fParent->GetCentralTime(fPlaneNum);
   fDriftTimeSign = fParent->GetDriftTimeSign(fPlaneNum);
-  fSigma = fParent->GetSigma(fPlaneNum);
 
   fNSperChan = fParent->GetNSperChan();
 

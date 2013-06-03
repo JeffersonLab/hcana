@@ -43,6 +43,10 @@ public:
   void SetCombos(Int_t ncombos) { fNCombos=ncombos; };
   Int_t GetCombos() { return fNCombos; };
 
+  // This is the chamber number (1,2), not index (0,1).  Sometime
+  // we need figure out how to avoid confusion between number and index.
+  Int_t fNChamber;
+
  protected:
 
   Double_t fX;
@@ -51,6 +55,7 @@ public:
   Int_t fNCombos;
   std::vector<THcDCHit*> fHits;
   Double_t fStub[4];
+  // Should we also have a pointer back to the chamber object
 
   ClassDef(THcSpacePoint,0)   // Drift Chamber class
 };
