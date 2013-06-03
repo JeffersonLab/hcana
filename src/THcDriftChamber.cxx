@@ -836,13 +836,11 @@ void THcDriftChamber::CorrectHitTimes()
   }
 }	   
 UInt_t THcDriftChamber::Count1Bits(UInt_t x)
-// From "Hacker's Delight"
+// From http://graphics.stanford.edu/~seander/bithacks.html
 {
-   x = x - ((x >> 1) & 0x55555555);
-   x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
-   x = x + (x >> 8);
-   x = x + (x >> 16);
-   return x & 0x0000003F;
+  x = x - ((x >> 1) & 0x55555555);
+  x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+  return (((x + (x >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
 }
 
 //_____________________________________________________________________________
@@ -1003,7 +1001,7 @@ void THcDriftChamber::LeftRight()
 
     // Calculate final coordinate based on plusminusbest
     // Update the hit positions in the space points
-    for(Int_t ihit; ihit<nhits; ihit++) {
+    for(Int_t ihit=0; ihit<nhits; ihit++) {
       sp->GetHit(ihit)->SetLeftRight(plusminusbest[ihit]);
     }
 
