@@ -1,5 +1,8 @@
+void comphits(Int_t run)
 {
-  TFile* f = new TFile("hodtest.root");
+  //  TFile* f = new TFile("hodtest.root");
+  TFile* f = new TFile(Form("hodtest_%d.root",run));
+  cout << "hcana root file " << Form("hodtest_%d.root",run) << endl;
   TH1F* h[6];
   h[0] = chposadc1;
   h[1] = chnegadc1;
@@ -8,16 +11,28 @@
   h[4] = chposadc3;
   h[5] = chposadc4;
 
-  TFile* f1 = new TFile("50017_hbk.root");
+  TFile* f1 = new TFile(Form("%d_hbk.root",run));
+  cout << "Engine root file " << Form("%d_hbk.root",run) << endl;
   TH1F* h1[6];
-  h1[0] = h212;   //A+
-  h1[1] = h216;   //A-
-  h1[2] = h213;   //B+
-  h1[3] = h217;   //B-
-  h1[4] = h214;   //C+
-  h1[5] = h215;   //D+
+  switch (run) {
+  case 50017 :
+    h1[0] = h212;   //A+
+    h1[1] = h213;   //A-
+    h1[2] = h214;   //B+
+    h1[3] = h215;   //B-
+    h1[4] = h216;   //C+
+    h1[5] = h217;   //D+
+    break;
+  default :
+    h1[0] = h213;   //A+
+    h1[1] = h217;   //A-
+    h1[2] = h214;   //B+
+    h1[3] = h218;   //B-
+    h1[4] = h215;   //C+
+    h1[5] = h216;   //D+
+  }
 
-  TCanvas *c1 = new TCanvas("c1", "Shower Hit Maps", 1000, 750); 
+  TCanvas *c1 = new TCanvas("c1", "Shower Hit Maps", 1000, 667); 
   c1->Divide(2, 3);
 
   for (int j = 0; j < 6; j++){
@@ -29,7 +44,6 @@
     h1[j]->SetFillColor(kBlue);
     h1[j]->SetFillStyle(3354);
     h1[j]->Draw("same");
-
   }
 
 } 

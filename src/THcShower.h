@@ -34,29 +34,33 @@ public:
   Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
 
-  Int_t GetNBlocks(Int_t plane) const { return fNBlocks[plane-1];}
+  Int_t GetNBlocks(Int_t NLayer) const { return fNBlocks[NLayer];}
 
   //  friend class THaScCalib; not needed?
 
-  Int_t fGetPedLimit(Int_t NBlock, Int_t NLayer, Int_t Side) {
+  Int_t GetPedLimit(Int_t NBlock, Int_t NLayer, Int_t Side) {
     if (Side!=0&&Side!=1) {
-      cout << "*** Wrong Side in fGetPedLimit:" << Side << " ***" << endl;
+      cout << "*** Wrong Side in GetPedLimit:" << Side << " ***" << endl;
       return -1;
     }
-    Int_t nelem = NBlock+NLayer*fNBlocks[NLayer];
+    Int_t nelem = 0;
+    for (Int_t i=0; i<NLayer; i++) nelem += fNBlocks[i];
+    nelem += NBlock;
     return ( Side == 0 ? fShPosPedLimit[nelem] : fShNegPedLimit[nelem]);
   }
 
-  Double_t fGetGain(Int_t NBlock, Int_t NLayer, Int_t Side) {
+  Double_t GetGain(Int_t NBlock, Int_t NLayer, Int_t Side) {
     if (Side!=0&&Side!=1) {
-      cout << "*** Wrong Side in fGetGain:" << Side << " ***" << endl;
+      cout << "*** Wrong Side in GetGain:" << Side << " ***" << endl;
       return -1;
     }
-    Int_t nelem = NBlock+NLayer*fNBlocks[NLayer];
+    Int_t nelem = 0;
+    for (Int_t i=0; i<NLayer; i++) nelem += fNBlocks[i];
+    nelem += NBlock;
     return ( Side == 0 ? fPosGain[nelem] : fNegGain[nelem]);
   }
 
-  Int_t fGetMinPeds() {
+  Int_t GetMinPeds() {
     return fShMinPeds;
   }
 
