@@ -293,14 +293,14 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-
+  fDebugDC=0;
   if(fNTracksMaxFP <= 0) fNTracksMaxFP = 10;
   // if(fNTracksMaxFP > HNRACKS_MAX) fNTracksMaxFP = NHTRACKS_MAX;
-  cout << "Plane counts:";
+  if (fDebugDC) cout << "Plane counts:";
   for(Int_t i=0;i<fNPlanes;i++) {
-    cout << " " << fNWires[i];
+    if (fDebugDC) cout << " " << fNWires[i];
   }
-  cout << endl;
+  if (fDebugDC) cout << endl;
 
   fIsInit = true;
 
@@ -417,14 +417,14 @@ Int_t THcDC::Decode( const THaEvData& evdata )
   // fRawHitList is TClones array of THcRawDCHit objects
   for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
     THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
-    //    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
+    //    if (fDebugDC) cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
     //	 << endl;
     for(Int_t imhit = 0; imhit < hit->fNHits; imhit++) {
-      //      cout << "                     " << imhit << " " << hit->fTDC[imhit]
+      //      if (fDebugDC) cout << "                     " << imhit << " " << hit->fTDC[imhit]
       //	   << endl;
     }
   }
-  //  cout << endl;
+  //  if (fDebugDC) cout << endl;
 #endif
 
   return fNhits;
@@ -494,7 +494,7 @@ void THcDC::LinkStubs()
   fSp.clear();
   fSp.reserve(10);
   // Make a vector of pointers to the SpacePoints
-  cout << "Linking " << fChambers[0]->GetNSpacePoints()
+  if (fDebugDC) cout << "Linking " << fChambers[0]->GetNSpacePoints()
        << " and " << fChambers[1]->GetNSpacePoints() << " stubs" << endl;
   for(Int_t ich=0;ich<fNChambers;ich++) {
     Int_t nchamber=fChambers[ich]->GetChamberNum();
@@ -569,7 +569,7 @@ void THcDC::LinkStubs()
 		  // (But could replace a SP?)
 		  ntracks_fp++;
 		} else {
-		  cout << "EPIC FAIL 1:  Too many tracks found in THcDC::LinkStubs" << endl;
+		  if (fDebugDC) cout << "EPIC FAIL 1:  Too many tracks found in THcDC::LinkStubs" << endl;
 		  ntracks_fp=0;
 		  // Do something here to fail this event
 		  return;
@@ -609,7 +609,7 @@ void THcDC::LinkStubs()
 			  } // End check for dup on copy
 			} // End copy of track
 		      } else {
-			cout << "EPIC FAIL 2:  Too many tracks found in THcDC::LinkStubs" << endl;
+			if (fDebugDC) cout << "EPIC FAIL 2:  Too many tracks found in THcDC::LinkStubs" << endl;
 			ntracks_fp=0;
 			// Do something here to fail this event
 			return; // Max # of allowed tracks
@@ -630,7 +630,7 @@ void THcDC::LinkStubs()
 	fTrackSP[ntracks_fp].spID[0]=isp;
 	ntracks_fp++;
       } else {
-	cout << "EPIC FAIL 3:  Too many tracks found in THcDC::LinkStubs" << endl;
+	if (fDebugDC) cout << "EPIC FAIL 3:  Too many tracks found in THcDC::LinkStubs" << endl;
 	ntracks_fp=0;
 	// Do something here to fail this event
 	return; // Max # of allowed tracks
@@ -640,7 +640,7 @@ void THcDC::LinkStubs()
   // Now list all hits on a track.  What needs this
   ///
   ///
-  cout << "Found " << ntracks_fp << " tracks"<<endl;
+  if (fDebugDC) cout << "Found " << ntracks_fp << " tracks"<<endl;
 }
 
 ClassImp(THcDC)
