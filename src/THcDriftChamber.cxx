@@ -221,7 +221,7 @@ Int_t THcDriftChamber::DefineVariables( EMode mode )
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
-  fDebugDriftCh=0;
+  fDebugDriftCh=1;
   // Register variables in global list
 
   //  RVarDef vars[] = {
