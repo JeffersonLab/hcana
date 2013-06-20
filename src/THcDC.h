@@ -15,6 +15,8 @@
 #include "THcDriftChamber.h"
 #include "TMath.h"
 
+#define NUM_FPRAY 4
+
 //class THaScCalib;
 class TClonesArray;
 
@@ -77,6 +79,7 @@ protected:
 
   // Per-event data
   Int_t fNhits;
+  Int_t ntracks_fp;		/* Change this to fN something */
 
   // Potential Hall C parameters.  Mostly here for demonstration
   Int_t fNPlanes;
@@ -119,6 +122,7 @@ protected:
   Double_t* fCentralWire;
   Double_t* fPlaneTimeZero;
   Double_t* fSigma;
+  Double_t** fPlaneCoeffs;
 
   // Useful derived quantities
   // double tan_angle, sin_angle, cos_angle;
@@ -128,6 +132,9 @@ protected:
   struct TrackSP {
     Int_t nSP; /* Number of space points in this track */
     Int_t spID[10];		/* List of space points in this track */
+    Int_t fNHits;
+    Int_t fNfree;		  /* Number of degrees of freedom */
+    std::vector<THcDCHit*> fHits; /* List of hits for this track */
   } fTrackSP[MAXTRACKS];
 
   std::vector<THcDriftChamberPlane*> fPlanes; // List of plane objects
@@ -140,6 +147,7 @@ protected:
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
   void           LinkStubs();
+  void           TrackFit();
 
   void Setup(const char* name, const char* description);
 

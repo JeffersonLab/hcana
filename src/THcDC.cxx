@@ -20,6 +20,7 @@
 #include "THaTrack.h"
 #include "TClonesArray.h"
 #include "TMath.h"
+#include "TVectorD.h"
 
 #include "THaTrackProj.h"
 
@@ -180,6 +181,11 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
     if((status = fChambers[ic]->Init ( date ))) {
       return fStatus=status;
     }
+  }
+  // Retrieve the fiting coefficients
+  fPlaneCoeffs = new Double_t* [fNPlanes];
+  for(Int_t ip=0; ip<fNPlanes;ip++) {
+    fPlaneCoeffs[ip] = fPlanes[ip]->GetPlaneCoef();
   }
 
   // Replace with what we need for Hall C
@@ -454,6 +460,7 @@ Int_t THcDC::CoarseTrack( TClonesArray& /* tracks */ )
   }
   // Now link the stubs between chambers
   LinkStubs();
+  if(ntracks_fp > 0) TrackFit();
 
   ApplyCorrections();
 
@@ -505,7 +512,7 @@ void THcDC::LinkStubs()
       fNSp++;
     }
   }
-  Int_t ntracks_fp=0;		// Number of Focal Plane tracks found
+  ntracks_fp=0;		// Number of Focal Plane tracks found
   Double_t stubminx = 999999;
   Double_t stubminy = 999999;
   Double_t stubminxp = 999999;
@@ -637,10 +644,113 @@ void THcDC::LinkStubs()
       }
     }
   }
-  // Now list all hits on a track.  What needs this
+  // Add the list of hits on the track to the track.
+  for(Int_t itrack=0;itrack<ntracks_fp;itrack++) {
+    fTrackSP[itrack].fNHits=0;
+    fTrackSP[itrack].fHits.clear();
+    for(Int_t isp=0;isp<fNSp;isp++) {
+      for(Int_t ihit=0;ihit<fSp[isp]->GetNHits();ihit++) {
+	fTrackSP[itrack].fHits.push_back(fSp[isp]->GetHit(ihit));
+	fTrackSP[itrack].fNHits++;
+      }
+    }
+  }
   ///
   ///
   cout << "Found " << ntracks_fp << " tracks"<<endl;
+}
+
+// Primary track fitting routine
+void THcDC::TrackFit()
+{
+
+  // Number of ray parameters in focal plane.
+  const Int_t raycoeffmap[]={4,5,2,3};
+
+  // Initialize residuals
+  // Need to make these member variables so they can be histogrammed
+  // Probably an array of vectors.
+  Double_t double_resolution[fNPlanes][ntracks_fp];
+  Double_t single_resolution[fNPlanes][ntracks_fp];
+  Double_t double_res[fNPlanes]; // For the good track
+
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    double_res[ip] = 1000.0;
+    for(Int_t itrack=0;itrack<ntracks_fp;itrack++) {
+      double_resolution[ip][itrack] = 1000.0;
+      single_resolution[ip][itrack] = 1000.0;
+    }
+  }
+  
+  Double_t dummychi2 = 1.0E4;
+  for(Int_t itrack=0;itrack<ntracks_fp;itrack++) {
+    //    Double_t chi2 = dummychi2;
+    //    Int_t htrack_fit_num = itrack;
+    fTrackSP[itrack].fNfree = fTrackSP[itrack].fNHits - NUM_FPRAY;
+    if(fTrackSP[itrack].fNfree > 0) {
+      TVectorD TT(NUM_FPRAY);
+      TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
+      for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
+	TT[irayp] = 0.0;
+	for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
+	  THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+	  Int_t plane=hit->GetPlaneIndex();
+	  TT[irayp] += (hit->GetCoord()*
+			fPlaneCoeffs[plane][raycoeffmap[irayp]])
+	    /pow(fSigma[plane],2);
+	}
+      }
+      for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
+	for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
+	  AA[irayp][jrayp] = 0.0;
+	  if(jrayp<irayp) { // Symmetric
+	    AA[irayp][jrayp] = AA[jrayp][irayp];
+	  } else {
+	    for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
+	      THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+	      Int_t plane=hit->GetPlaneIndex();
+	      AA[irayp][jrayp] += fPlaneCoeffs[plane][raycoeffmap[irayp]]*
+		fPlaneCoeffs[plane][raycoeffmap[jrayp]]/
+		pow(fSigma[plane],2);
+	    }
+	  }
+	}
+      }
+      
+      // Solve 4x4 equations
+      TVectorD dray(NUM_FPRAY);
+      // Should check that it is invertable
+      AA.Invert();
+      dray = AA*TT;
+      //      cout << "DRAY: " << dray[0] << " "<< dray[1] << " "<< dray[2] << " "<< dray[3] << " "  << endl;
+      //      if(bad_determinant) {
+      //	dray[0] = dray[1] = 10000.; dray[2] = dray[3] = 2.0;
+      //      }
+      Double_t chi2 = 0.0;
+      // Calculate hit coordinate for each plane for chi2 and efficiency
+      // calculations
+      Double_t hdc_track_coord[fNPlanes];
+      for(Int_t iplane=0;iplane < fNPlanes; iplane++) {
+	hdc_track_coord[iplane] = 0.0;// (itrk,pln)
+	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
+	  hdc_track_coord[iplane] += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
+	}
+      }
+      cout << "Residuals:" << endl;
+      for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
+	THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+	Int_t plane=hit->GetPlaneIndex();
+	Double_t residual = hit->GetCoord() - hdc_track_coord[plane];
+	cout << "   " << plane << ": " << residual << endl;
+	chi2 += pow(residual/fSigma[plane],2);
+      }
+	
+      
+    }
+  }
+	
+
+  
 }
 
 ClassImp(THcDC)

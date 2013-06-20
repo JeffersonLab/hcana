@@ -65,6 +65,7 @@ class THcDriftChamberPlane : public THaSubDetector {
   Double_t     GetSigma() { return fSigma; }
   Double_t     GetPsi0() { return fPsi0; }
   Double_t*    GetStubCoef() { return fStubCoef; }
+  Double_t*    GetPlaneCoef() { return fPlaneCoef; }
 
   THcDriftChamberPlane(); // for ROOT I/O
  protected:
@@ -90,6 +91,7 @@ class THcDriftChamberPlane : public THaSubDetector {
   Double_t fPsi0;
   Double_t fStubCoef[4];
   Double_t fBeta;
+  Double_t fPlaneCoef[9];
 
   Int_t fReadoutX;
   Double_t fReadoutCorr;

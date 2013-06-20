@@ -180,6 +180,17 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   fXsp = hychi/denom2;		// sin(a)
   fYsp = -hxchi/denom2;		// cos(a)
 
+  // Comput track fitting coefficients
+#define LOCRAYZT 0.0
+  fPlaneCoef[0]= hzchi;		      // = 0.
+  fPlaneCoef[1]=-hzchi;		      // = 0.
+  fPlaneCoef[2]= hychi*(z0-LOCRAYZT);  // sin(a)*(z-hlocrayzt)
+  fPlaneCoef[3]= hxchi*(LOCRAYZT-z0);  // cos(a)*(z-hlocrayzt)
+  fPlaneCoef[4]= hychi;		       // sin(a)
+  fPlaneCoef[5]=-hxchi;		       // cos(a)
+  fPlaneCoef[6]= hzchi*hypsi - hychi*hzpsi; // 0.
+  fPlaneCoef[7]=-hzchi*hxpsi + hxchi*hzpsi; // 0.
+  fPlaneCoef[8]= hychi*hxpsi - hxchi*hypsi; // 1.
 
   cout << fPlaneNum << " " << fNWires << " " << fWireOrder << endl;
 
