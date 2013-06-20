@@ -74,7 +74,7 @@ public:
 
   THcDC();  // for ROOT I/O
 protected:
-
+  Int_t fDebugDC;
   // Calibration
 
   // Per-event data

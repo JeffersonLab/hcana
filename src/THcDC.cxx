@@ -299,14 +299,14 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-
+  fDebugDC=0;
   if(fNTracksMaxFP <= 0) fNTracksMaxFP = 10;
   // if(fNTracksMaxFP > HNRACKS_MAX) fNTracksMaxFP = NHTRACKS_MAX;
-  cout << "Plane counts:";
+  if (fDebugDC) cout << "Plane counts:";
   for(Int_t i=0;i<fNPlanes;i++) {
-    cout << " " << fNWires[i];
+    if (fDebugDC) cout << " " << fNWires[i];
   }
-  cout << endl;
+  if (fDebugDC) cout << endl;
 
   fIsInit = true;
 
@@ -405,7 +405,8 @@ Int_t THcDC::Decode( const THaEvData& evdata )
 {
 
   ClearEvent();
-
+  Int_t num_event = evdata.GetEvNum();
+  if (fDebugDC) cout << " event num = " << num_event << endl;
   // Get the Hall C style hitlist (fRawHitList) for this event
   fNhits = THcHitList::DecodeToHitList(evdata);
 
@@ -423,14 +424,14 @@ Int_t THcDC::Decode( const THaEvData& evdata )
   // fRawHitList is TClones array of THcRawDCHit objects
   for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
     THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
-    //    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
+    //    if (fDebugDC) cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
     //	 << endl;
     for(Int_t imhit = 0; imhit < hit->fNHits; imhit++) {
-      //      cout << "                     " << imhit << " " << hit->fTDC[imhit]
+      //      if (fDebugDC) cout << "                     " << imhit << " " << hit->fTDC[imhit]
       //	   << endl;
     }
   }
-  //  cout << endl;
+  //  if (fDebugDC) cout << endl;
 #endif
 
   return fNhits;
@@ -453,7 +454,6 @@ Int_t THcDC::CoarseTrack( TClonesArray& /* tracks */ )
   //
   //  static const Double_t sqrt2 = TMath::Sqrt(2.);
   for(Int_t i=0;i<fNChambers;i++) {
-
     fChambers[i]->FindSpacePoints();
     fChambers[i]->CorrectHitTimes();
     fChambers[i]->LeftRight();
@@ -501,12 +501,13 @@ void THcDC::LinkStubs()
   fSp.clear();
   fSp.reserve(10);
   // Make a vector of pointers to the SpacePoints
-  cout << "Linking " << fChambers[0]->GetNSpacePoints()
+  if (fDebugDC) cout << "Linking " << fChambers[0]->GetNSpacePoints()
        << " and " << fChambers[1]->GetNSpacePoints() << " stubs" << endl;
   for(Int_t ich=0;ich<fNChambers;ich++) {
     Int_t nchamber=fChambers[ich]->GetChamberNum();
     TClonesArray* spacepointarray = fChambers[ich]->GetSpacePointsP();
     for(Int_t isp=0;isp<fChambers[ich]->GetNSpacePoints();isp++) {
+      if (fDebugDC) cout << " Chamber = " << nchamber << " number of space pts = " << fNSp << endl;
       fSp.push_back(static_cast<THcSpacePoint*>(spacepointarray->At(isp)));
       fSp[fNSp]->fNChamber = nchamber;
       fNSp++;
@@ -518,7 +519,7 @@ void THcDC::LinkStubs()
   Double_t stubminxp = 999999;
   Double_t stubminyp = 999999;
   Int_t stub_tracks[MAXTRACKS];
-
+  if (fDebugDC) cout << " single stub , fsnp" << fSingleStub << fNSp << endl;
   if(!fSingleStub) {
     for(Int_t isp1=0;isp1<fNSp-1;isp1++) {
       Int_t sptracks=0;
@@ -559,6 +560,7 @@ void THcDC::LinkStubs()
 	       && (TMath::Abs(dposxp) < fXptTrCriterion)
 	       && (TMath::Abs(dposyp) < fYptTrCriterion)) {
 	      if(newtrack) {
+  if (fDebugDC) cout << " new track" << endl;
 		assert(sptracks==0);
 		//stubtest=1;  Used in h_track_tests.f
 		// Make a new track if there are not to many
@@ -576,12 +578,13 @@ void THcDC::LinkStubs()
 		  // (But could replace a SP?)
 		  ntracks_fp++;
 		} else {
-		  cout << "EPIC FAIL 1:  Too many tracks found in THcDC::LinkStubs" << endl;
+		  if (fDebugDC) cout << "EPIC FAIL 1:  Too many tracks found in THcDC::LinkStubs" << endl;
 		  ntracks_fp=0;
 		  // Do something here to fail this event
 		  return;
 		}
 	      } else {
+  if (fDebugDC) cout << " check if another space point in same chamber" << endl;
 		// Check if there is another space point in the same chamber
 		for(Int_t itrack=0;itrack<sptracks;itrack++) {
 		  Int_t track=stub_tracks[itrack];
@@ -616,7 +619,7 @@ void THcDC::LinkStubs()
 			  } // End check for dup on copy
 			} // End copy of track
 		      } else {
-			cout << "EPIC FAIL 2:  Too many tracks found in THcDC::LinkStubs" << endl;
+			if (fDebugDC) cout << "EPIC FAIL 2:  Too many tracks found in THcDC::LinkStubs" << endl;
 			ntracks_fp=0;
 			// Do something here to fail this event
 			return; // Max # of allowed tracks
@@ -637,7 +640,7 @@ void THcDC::LinkStubs()
 	fTrackSP[ntracks_fp].spID[0]=isp;
 	ntracks_fp++;
       } else {
-	cout << "EPIC FAIL 3:  Too many tracks found in THcDC::LinkStubs" << endl;
+	if (fDebugDC) cout << "EPIC FAIL 3:  Too many tracks found in THcDC::LinkStubs" << endl;
 	ntracks_fp=0;
 	// Do something here to fail this event
 	return; // Max # of allowed tracks
@@ -657,7 +660,7 @@ void THcDC::LinkStubs()
   }
   ///
   ///
-  cout << "Found " << ntracks_fp << " tracks"<<endl;
+  if (fDebugDC) cout << "Found " << ntracks_fp << " tracks"<<endl;
 }
 
 // Primary track fitting routine
@@ -736,6 +739,7 @@ void THcDC::TrackFit()
 	  hdc_track_coord[iplane] += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
 	}
       }
+      if (fDebugDC) {
       cout << "Residuals:" << endl;
       for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
 	THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
@@ -744,7 +748,7 @@ void THcDC::TrackFit()
 	cout << "   " << plane << ": " << residual << endl;
 	chi2 += pow(residual/fSigma[plane],2);
       }
-	
+      }
       
     }
   }
