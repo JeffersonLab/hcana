@@ -13,6 +13,7 @@
 #include "THcParmList.h"
 #include "THcHitList.h"
 #include "THcShower.h"
+#include "THcRawShowerHit.h"
 #include "TClass.h"
 #include "math.h"
 
@@ -253,7 +254,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   //cout << "nrawhits =  " << nrawhits << endl;
   //cout << "nexthit =  " << nexthit << endl;
   while(ihit < nrawhits) {
-    THcShowerHit* hit = (THcShowerHit *) rawhits->At(ihit);
+    THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
 
     //cout << "fplane =  " << hit->fPlane << " Num = " << fLayerNum << endl;
     if(hit->fPlane > fLayerNum) {
@@ -308,7 +309,7 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
   //  cout << "THcScintillatorPlane::AcculatePedestals " << fLayerNum << " " << nexthit << "/" << nrawhits << endl;
   Int_t ihit = nexthit;
   while(ihit < nrawhits) {
-    THcShowerHit* hit = (THcShowerHit *) rawhits->At(ihit);
+    THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
     //cout << "fPlane =  " << hit->fPlane << " Limit = " << fPlaneNum << endl;
     if(hit->fPlane > fLayerNum) {
       break;

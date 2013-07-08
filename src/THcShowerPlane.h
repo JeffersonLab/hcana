@@ -46,6 +46,14 @@ class THcShowerPlane : public THaSubDetector {
 
   TClonesArray* fParentHitList;
 
+  Float_t GetEplane() {
+    return fEplane;
+  };
+
+  Float_t GetEmean(Int_t i) {
+    return fEmean[i];
+  };
+
  protected:
 
   Float_t*   fA_Pos;         // [fNelem] Array of ADC amplitudes of blocks

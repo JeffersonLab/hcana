@@ -21,7 +21,7 @@ SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcDCWire.cxx \
 	src/THcDCLookupTTDConv.cxx src/THcDCTimeToDistConv.cxx \
 	src/THcShower.cxx src/THcShowerPlane.cxx \
-	src/THcShowerHit.cxx \
+	src/THcRawShowerHit.cxx \
 	src/THcAerogel.cxx src/THcAerogelHit.cxx
 
 # Name of your package. 

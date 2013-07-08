@@ -10,6 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "THcShower.h"
+#include "THcShowerCluster.h"
 #include "THaEvData.h"
 #include "THaDetMap.h"
 #include "THcDetectorMap.h"
@@ -105,7 +106,7 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
 
-  THcHitList::InitHitList(fDetMap, "THcShowerHit", 100);
+  THcHitList::InitHitList(fDetMap, "THcRawShowerHit", 100);
 
   EStatus status;
   if( (status = THaNonTrackingDetector::Init( date )) )
@@ -185,6 +186,8 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     };
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
+
+  //Caution! Z positions (fronts) are off in hcal.param! Correct later on.
 
   YPos = new Double_t* [fNLayers];
   for(Int_t i=0;i<fNLayers;i++) {
@@ -470,10 +473,10 @@ Int_t THcShower::Decode( const THaEvData& evdata )
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
   }
 
-  //   fRawHitList is TClones array of THcShowerHit objects
+  //   fRawHitList is TClones array of THcRawShowerHit objects
   //  cout << "THcShower::Decode: Shower raw hit list:" << endl;
   //  for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
-  //    THcShowerHit* hit = (THcShowerHit *) fRawHitList->At(ihit);
+  //    THcRawShowerHit* hit = (THcRawShowerHit *) fRawHitList->At(ihit);
   //    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
   //	 << hit->fADC_pos << " " << hit->fADC_neg << " "  << endl;
   //  }
@@ -508,8 +511,70 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
   
   cout << "THcShower::CoarseProcess called ---------------------------" <<endl;
 
-  ApplyCorrections();
+  //  ApplyCorrections();
 
+  //
+  // Clustering of hits.
+  //
+
+  THcShowerHitList HitList;                    //list of unclusterd hits
+
+  for(Int_t j=0; j < fNLayers; j++) {
+
+   //cout << "Plane " << j << "  Eplane = " << fPlanes[j]->GetEplane() << endl;
+
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+
+      Float_t Edep = fPlanes[j]->GetEmean(i);
+      if (Edep > 0.) {                                    //hit
+	Float_t y = YPos[j][i] + BlockThick[j]/2.;        //top + thick/2
+	Float_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
+	THcShowerHit* hit = new THcShowerHit(i,j,y,z,Edep);
+
+	HitList.push_back(hit);
+
+	//cout << "Hit: Edep = " << Edep << " Y = " << y << " Z = " << z <<
+	//	  " Block " << i << " Layer " << j << endl;
+      };
+
+    }
+  }
+
+  //Print out hits before clustering.
+  //
+  cout << "Total hits:     " << HitList.size() << endl;
+  for (unsigned int i=0; i!=HitList.size(); i++) {
+    cout << "unclustered hit " << i << ": ";
+    (*(HitList.begin()+i))->show();
+  }
+
+  THcShowerClusterList* ClusterList = new THcShowerClusterList;
+  ClusterList->ClusterHits(HitList);
+
+  //Print out the cluster list.
+  //
+  cout << "Cluster_list size: " << (*ClusterList).NbClusters() << endl;
+
+  for (unsigned int i=0; i!=(*ClusterList).NbClusters(); i++) {
+
+    THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
+
+    cout << "Cluster #" << i 
+         <<":  E=" << (*cluster).clE() 
+         << "  Epr=" << (*cluster).clEpr()
+         << "  Y=" << (*cluster).clY()
+         << "  Z=" << (*cluster).clZ()
+         << "  size=" << (*cluster).clSize()
+         << endl;
+
+    for (unsigned int j=0; j!=(*cluster).clSize(); j++) {
+      THcShowerHit* hit = (*cluster).ClusteredHit(j);
+      cout << "  hit #" << j << ":  "; (*hit).show();
+    }
+
+  }
+   
+  cout << "THcShower::CoarseProcess return ---------------------------" <<endl;
   return 0;
 }
 
