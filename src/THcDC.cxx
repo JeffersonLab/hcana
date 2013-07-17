@@ -299,7 +299,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-  fDebugDC=0;
+  fDebugDC=1;
   if(fNTracksMaxFP <= 0) fNTracksMaxFP = 10;
   // if(fNTracksMaxFP > HNRACKS_MAX) fNTracksMaxFP = NHTRACKS_MAX;
   if (fDebugDC) cout << "Plane counts:";
@@ -461,6 +461,22 @@ Int_t THcDC::CoarseTrack( TClonesArray& /* tracks */ )
   // Now link the stubs between chambers
   LinkStubs();
   if(ntracks_fp > 0) TrackFit();
+  // Check for internal TrackFit errors
+  // Histogram the focal plane tracks
+  // Histograms made in h_fill_dc_fp_hist
+  //   The following are one hist per track
+  //      x_fp
+  //      y_fp
+  //      xp_fp
+  //      yp_fp
+  //      log chi2
+  //      reduced chi2
+  //      For each plane:
+  //         double residual
+  //         single residual
+  // Will need to make a track class that has all these things.   Need to
+  // move the structure out of THcDC into it's own class which should probably
+  // inherit from a podd track class
 
   ApplyCorrections();
 
@@ -560,7 +576,7 @@ void THcDC::LinkStubs()
 	       && (TMath::Abs(dposxp) < fXptTrCriterion)
 	       && (TMath::Abs(dposyp) < fYptTrCriterion)) {
 	      if(newtrack) {
-  if (fDebugDC) cout << " new track" << endl;
+		if (fDebugDC) cout << " new track" << endl;
 		assert(sptracks==0);
 		//stubtest=1;  Used in h_track_tests.f
 		// Make a new track if there are not to many
@@ -584,13 +600,13 @@ void THcDC::LinkStubs()
 		  return;
 		}
 	      } else {
-  if (fDebugDC) cout << " check if another space point in same chamber" << endl;
+		if (fDebugDC) cout << " check if another space point in same chamber" << endl;
 		// Check if there is another space point in the same chamber
 		for(Int_t itrack=0;itrack<sptracks;itrack++) {
 		  Int_t track=stub_tracks[itrack];
 		  Int_t spoint=0;
 		  Int_t duppoint=0;
-		  for(Int_t isp=0;fTrackSP[track].nSP;isp++) {
+		  for(Int_t isp=0;isp<fTrackSP[track].nSP;isp++) {
 		    if(fSp[isp2]->fNChamber ==
 		       fSp[fTrackSP[track].spID[isp]]->fNChamber) {
 		      spoint=isp;
@@ -690,6 +706,7 @@ void THcDC::TrackFit()
     //    Double_t chi2 = dummychi2;
     //    Int_t htrack_fit_num = itrack;
     fTrackSP[itrack].fNfree = fTrackSP[itrack].fNHits - NUM_FPRAY;
+    Double_t chi2 = dummychi2;
     if(fTrackSP[itrack].fNfree > 0) {
       TVectorD TT(NUM_FPRAY);
       TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
@@ -697,7 +714,7 @@ void THcDC::TrackFit()
 	TT[irayp] = 0.0;
 	for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
 	  THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
-	  Int_t plane=hit->GetPlaneIndex();
+	  Int_t plane=hit->GetPlaneNum()-1;
 	  TT[irayp] += (hit->GetCoord()*
 			fPlaneCoeffs[plane][raycoeffmap[irayp]])
 	    /pow(fSigma[plane],2);
@@ -711,7 +728,7 @@ void THcDC::TrackFit()
 	  } else {
 	    for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
 	      THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
-	      Int_t plane=hit->GetPlaneIndex();
+	      Int_t plane=hit->GetPlaneNum()-1;
 	      AA[irayp][jrayp] += fPlaneCoeffs[plane][raycoeffmap[irayp]]*
 		fPlaneCoeffs[plane][raycoeffmap[jrayp]]/
 		pow(fSigma[plane],2);
@@ -729,33 +746,138 @@ void THcDC::TrackFit()
       //      if(bad_determinant) {
       //	dray[0] = dray[1] = 10000.; dray[2] = dray[3] = 2.0;
       //      }
-      Double_t chi2 = 0.0;
       // Calculate hit coordinate for each plane for chi2 and efficiency
       // calculations
-      Double_t hdc_track_coord[fNPlanes];
+      fTrackSP[itrack].fCoords.clear();
+      fTrackSP[itrack].fResiduals.clear();
+      fTrackSP[itrack].fDoubleResiduals.clear();
       for(Int_t iplane=0;iplane < fNPlanes; iplane++) {
-	hdc_track_coord[iplane] = 0.0;// (itrk,pln)
+	fTrackSP[itrack].fCoords.push_back(0.0);
+	fTrackSP[itrack].fResiduals.push_back(1000.0);
+	fTrackSP[itrack].fDoubleResiduals.push_back(1000.0);
 	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
-	  hdc_track_coord[iplane] += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
+	  fTrackSP[itrack].fCoords[iplane] += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
 	}
       }
-      if (fDebugDC) {
-      cout << "Residuals:" << endl;
+      // Compute Chi2 and residuals
+      chi2 = 0.0;
+      fTrackSP[itrack].fResiduals.clear();
       for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
 	THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
-	Int_t plane=hit->GetPlaneIndex();
-	Double_t residual = hit->GetCoord() - hdc_track_coord[plane];
-	cout << "   " << plane << ": " << residual << endl;
+	Int_t plane=hit->GetPlaneNum()-1;
+	Double_t residual = hit->GetCoord() - fTrackSP[itrack].fCoords[plane];
+	fTrackSP[itrack].fResiduals[plane] = residual;
 	chi2 += pow(residual/fSigma[plane],2);
       }
+      if (fDebugDC) {
+	cout << "Residuals:" << endl;
+	for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
+	  THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+	  Int_t plane=hit->GetPlaneNum()-1;
+	  cout << "   " << plane << ": " << fTrackSP[itrack].fResiduals[ihit] << endl;
+	}
       }
-      
+      fTrackSP[itrack].x_fp = dray[0];
+      fTrackSP[itrack].y_fp = dray[1];
+      fTrackSP[itrack].z_fp = 0.0;
+      fTrackSP[itrack].xp_fp = dray[2];
+      fTrackSP[itrack].xp_fp = dray[3];
+    }
+    fTrackSP[itrack].chi2_fp = chi2;
+  }
+
+  // Calculate residuals for each chamber if in single stub mode
+  // and there was a track found in each chamber
+  // Specific for two chambers.  Can/should it be generalized?
+
+  if(fSingleStub != 0) {
+    if(ntracks_fp == 2) {
+      Int_t itrack=0;
+      Int_t ihit=0;
+      THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+      Int_t plane=hit->GetPlaneNum()-1;
+      Int_t chamber=fNChamber[plane];
+      if(chamber==1) {
+	itrack=1;
+	hit=fTrackSP[itrack].fHits[ihit];
+	plane=hit->GetPlaneNum()-1;
+	chamber=fNChamber[plane];
+	if(chamber==2) {
+	  Double_t ray1[4];
+	  Double_t ray2[4];
+	  ray1[0] = fTrackSP[0].x_fp;
+	  ray1[1] = fTrackSP[0].y_fp;
+	  ray1[2] = fTrackSP[0].xp_fp;
+	  ray1[3] = fTrackSP[0].yp_fp;
+	  ray2[0] = fTrackSP[1].x_fp;
+	  ray2[1] = fTrackSP[1].y_fp;
+	  ray2[2] = fTrackSP[1].xp_fp;
+	  ray2[3] = fTrackSP[1].yp_fp;
+	  itrack = 1;
+	  // Loop over hits in second chamber
+	  for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
+	    // Calculate residual in second chamber from first chamber track
+	    THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+	    Int_t plane=hit->GetPlaneNum()-1;
+	    Double_t pos = DpsiFun(ray1,plane);
+	    fTrackSP[itrack-1].fDoubleResiduals[plane] = hit->GetCoord() - pos;
+	    //  hdc_dbl_res(pln) = hdc_double_residual(1,pln)  for hists
+	  }
+	  itrack=0;
+	  // Loop over hits in first chamber
+	  for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
+	    // Calculate residual in first chamber from second chamber track
+	    THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+	    Int_t plane=hit->GetPlaneNum()-1;
+	    Double_t pos = DpsiFun(ray1,plane);
+	    fTrackSP[itrack+1].fDoubleResiduals[plane] = hit->GetCoord() - pos;
+	    //  hdc_dbl_res(pln) = hdc_double_residual(1,pln)  for hists
+	  }
+	}
+      }
     }
   }
-	
-
-  
+  // print tracks if hdebugtrackprint is on
 }
+Double_t THcDC::DpsiFun(Double_t ray[4], Int_t plane)
+{
+  /*
+    this function calculates the psi coordinate of the intersection
+    of a ray (defined by ray) with a hms wire chamber plane. the geometry
+    of the plane is contained in the coeff array calculated in the
+    array hplane_coeff
+    Note it is call by MINUIT via H_FCNCHISQ and so uses double precision
+    variables
+
+    the ray is defined by
+    x = (z-zt)*tan(xp) + xt
+    y = (z-zt)*tan(yp) + yt
+     at some fixed value of zt*
+    ray(1) = xt
+    ray(2) = yt
+    ray(3) = tan(xp)
+    ray(4) = tan(yp)
+  */
+
+  Double_t infinity = 1.0E+20;
+  Double_t cinfinity = 1/infinity;
+  Double_t DpsiFun = 
+    ray[2]*ray[1]*fPlaneCoeffs[plane][0] +
+    ray[3]*ray[0]*fPlaneCoeffs[plane][1] +
+    ray[2]*fPlaneCoeffs[plane][2] +
+    ray[3]*fPlaneCoeffs[plane][3] +
+    ray[0]*fPlaneCoeffs[plane][4] +
+    ray[1]*fPlaneCoeffs[plane][5];
+  Double_t denom = ray[2]*fPlaneCoeffs[plane][6]
+    + ray[3]*fPlaneCoeffs[plane][7]
+    + fPlaneCoeffs[plane][8];
+  if(TMath::Abs(denom) < cinfinity) {
+    DpsiFun = infinity;
+  } else { 
+    DpsiFun = DpsiFun/denom;
+  }
+  return(DpsiFun);
+}	    
 
 ClassImp(THcDC)
 ////////////////////////////////////////////////////////////////////////////////

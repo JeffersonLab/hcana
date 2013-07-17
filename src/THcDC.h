@@ -135,6 +135,12 @@ protected:
     Int_t fNHits;
     Int_t fNfree;		  /* Number of degrees of freedom */
     std::vector<THcDCHit*> fHits; /* List of hits for this track */
+    std::vector<Double_t> fCoords; /* Coordinate on each plane */
+    std::vector<Double_t> fResiduals; /* Residual on each plane */
+    std::vector<Double_t> fDoubleResiduals; /* Residual on each plane for single stub mode */
+    Double_t x_fp, y_fp, z_fp;
+    Double_t xp_fp, yp_fp;
+    Double_t chi2_fp;
   } fTrackSP[MAXTRACKS];
 
   std::vector<THcDriftChamberPlane*> fPlanes; // List of plane objects
@@ -148,6 +154,7 @@ protected:
   virtual Int_t  DefineVariables( EMode mode = kDefine );
   void           LinkStubs();
   void           TrackFit();
+  Double_t       DpsiFun(Double_t ray[4], Int_t plane);
 
   void Setup(const char* name, const char* description);
 
