@@ -1,4 +1,4 @@
-void comphits(Int_t run)
+void comprawhits(Int_t run)
 {
   //  TFile* f = new TFile("hodtest.root");
   TFile* f = new TFile(Form("hodtest_%d.root",run));

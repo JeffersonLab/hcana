@@ -54,6 +54,38 @@ class THcShowerPlane : public THaSubDetector {
     return fEmean[i];
   };
 
+  Float_t GetAposP(Int_t i) {
+    return fA_Pos_p[i];
+  };
+
+  Float_t GetAnegP(Int_t i) {
+    return fA_Neg_p[i];
+  };
+
+  Float_t GetApos(Int_t i) {
+    return fA_Pos[i];
+  };
+
+  Float_t GetAneg(Int_t i) {
+    return fA_Neg[i];
+  };
+
+  Float_t GetPosThr(Int_t i) {
+    return fPosThresh[i];
+  };
+
+  Float_t GetNegThr(Int_t i) {
+    return fNegThresh[i];
+  };
+
+  Float_t GetPosPed(Int_t i) {
+    return fPosPed[i];
+  };
+
+  Float_t GetNegPed(Int_t i) {
+    return fNegPed[i];
+  };
+
  protected:
 
   Float_t*   fA_Pos;         // [fNelem] Array of ADC amplitudes of blocks

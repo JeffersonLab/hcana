@@ -383,25 +383,26 @@ Int_t THcShower::DefineVariables( EMode mode )
 
   // Register variables in global list
 
- //  RVarDef vars[] = {
- //   { "nhit",   "Number of hits",                     "fNhits" },
+  RVarDef vars[] = {
+    { "nhits",  "Number of hits",                     "fNhits" },
  //   { "a",      "Raw ADC amplitudes",                 "fA" },
  //   { "a_p",    "Ped-subtracted ADC amplitudes",      "fA_p" },
  //   { "a_c",    "Calibrated ADC amplitudes",          "fA_c" },
  //   { "asum_p", "Sum of ped-subtracted ADCs",         "fAsum_p" },
  //   { "asum_c", "Sum of calibrated ADCs",             "fAsum_c" },
- //   { "nclust", "Number of clusters",                 "fNclust" },
- //   { "e",      "Energy (MeV) of largest cluster",    "fE" },
+    { "nclust", "Number of clusters",                 "fNclust" },
+    { "emax",   "Energy (MeV) of largest cluster",    "fE" },
  //   { "x",      "x-position (cm) of largest cluster", "fX" },
  //   { "y",      "y-position (cm) of largest cluster", "fY" },
- //   { "mult",   "Multiplicity of largest cluster",    "fMult" },
+    { "mult",   "Multiplicity of largest cluster",    "fMult" },
  //   { "nblk",   "Numbers of blocks in main cluster",  "fNblk" },
  //   { "eblk",   "Energies of blocks in main cluster", "fEblk" },
  //   { "trx",    "track x-position in det plane",      "fTRX" },
  //   { "try",    "track y-position in det plane",      "fTRY" },
- //   { 0 }
- // };
- //  return DefineVarsFromList( vars, mode );
+    { 0 }
+  };
+  return DefineVarsFromList( vars, mode );
+
   return kOK;
 }
 
@@ -438,16 +439,27 @@ void THcShower::DeleteArrays()
 inline 
 void THcShower::Clear(Option_t* opt)
 {
+
 //   Reset per-event data.
+
   for(Int_t ip=0;ip<fNLayers;ip++) {
     fPlanes[ip]->Clear(opt);
   }
+
  // fTrackProj->Clear();
+
+  fNhits = 0;
+  fNclust = 0;
+  fMult = 0;
+  fE = 0.;
 }
 
 //_____________________________________________________________________________
 Int_t THcShower::Decode( const THaEvData& evdata )
 {
+
+  Clear();
+
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = THcHitList::DecodeToHitList(evdata);
 
@@ -525,10 +537,25 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
 
     for (Int_t i=0; i<fNBlocks[j]; i++) {
 
-      Float_t Edep = fPlanes[j]->GetEmean(i);
-      if (Edep > 0.) {                                    //hit
-	Float_t y = YPos[j][i] + BlockThick[j]/2.;        //top + thick/2
-	Float_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
+      //May be should be done this way.
+      //
+      //      Float_t Edep = fPlanes[j]->GetEmean(i);
+      //      if (Edep > 0.) {                                    //hit
+      //	Float_t y = YPos[j][i] + BlockThick[j]/2.;        //top + thick/2
+      //	Float_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
+      //      	THcShowerHit* hit = new THcShowerHit(i,j,y,z,Edep);
+
+      //ENGINE way.
+      //
+      //      if (fPlanes[j]->GetApos(i)> fPlanes[j]->GetPosThr(i) ||
+      //	  fPlanes[j]->GetAneg(i)> fPlanes[j]->GetNegThr(i)) {    //hit
+      if (fPlanes[j]->GetApos(i) - fPlanes[j]->GetPosPed(i) >
+	  fPlanes[j]->GetPosThr(i) - fPlanes[j]->GetPosPed(i) ||
+	  fPlanes[j]->GetAneg(i) - fPlanes[j]->GetNegPed(i) >
+	  fPlanes[j]->GetNegThr(i) - fPlanes[j]->GetNegPed(i)) {    //hit
+	Float_t Edep = fPlanes[j]->GetEmean(i);
+      	Float_t y = YPos[j][i] + BlockThick[j]/2.;        //top + thick/2
+      	Float_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
 	THcShowerHit* hit = new THcShowerHit(i,j,y,z,Edep);
 
 	HitList.push_back(hit);
@@ -542,8 +569,9 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
 
   //Print out hits before clustering.
   //
-  cout << "Total hits:     " << HitList.size() << endl;
-  for (unsigned int i=0; i!=HitList.size(); i++) {
+  fNhits = HitList.size();
+  cout << "Total hits:     " << fNhits << endl;
+  for (unsigned int i=0; i!=fNhits; i++) {
     cout << "unclustered hit " << i << ": ";
     (*(HitList.begin()+i))->show();
   }
@@ -553,9 +581,10 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
 
   //Print out the cluster list.
   //
-  cout << "Cluster_list size: " << (*ClusterList).NbClusters() << endl;
+  fNclust = (*ClusterList).NbClusters();
+  cout << "Cluster_list size: " << fNclust << endl;
 
-  for (unsigned int i=0; i!=(*ClusterList).NbClusters(); i++) {
+  for (unsigned int i=0; i!=fNclust; i++) {
 
     THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
 
@@ -573,6 +602,39 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
     }
 
   }
+
+  
+  //The largest cluster.
+  //
+
+  if (fNclust != 0) {
+
+    THcShowerCluster* MaxCluster;
+
+    for (unsigned int i=0; i!=fNclust; i++) {
+
+      THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
+
+      Int_t size = (*cluster).clSize();
+
+      if (fMult < size) {
+	fMult = size;
+	MaxCluster = cluster;
+      }
+    }
+
+    fE = (*MaxCluster).clE();
+  }
+
+  /*
+    cout << "Cluster #" << i 
+         <<":  E=" << (*cluster).clE() 
+         << "  Epr=" << (*cluster).clEpr()
+         << "  Y=" << (*cluster).clY()
+         << "  Z=" << (*cluster).clZ()
+         << "  size=" << (*cluster).clSize()
+         << endl;
+  */
    
   cout << "THcShower::CoarseProcess return ---------------------------" <<endl;
   return 0;

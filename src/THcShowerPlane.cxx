@@ -362,7 +362,8 @@ void THcShowerPlane::CalculatePedestals( )
     //  fNegThresh[i] = fNegPed[i] + 15;
     fNegThresh[i] = fNegPed[i] + TMath::Min(50., TMath::Max(10., 3.*fNegSig[i]));
 
-    //    cout << i+1 << " " << 3.*fPosSig[i] << " " << 3.*fNegSig[i] << endl;
+    cout << "Ped&Thr: " << fPosPed[i] << " " << fPosThresh[i] << " " <<
+      fNegPed[i] << " " << fNegThresh[i] << " " << i+1 << endl;
   }
   //  cout << " " << endl;
   
