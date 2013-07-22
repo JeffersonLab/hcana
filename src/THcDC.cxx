@@ -596,6 +596,7 @@ void THcDC::LinkStubs()
 		  THcDCTrack *theDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
 		  theDCTrack->AddSpacePoint(isp1);
 		  theDCTrack->AddSpacePoint(isp2);
+		  if (fDebugDC) cout << " # sp pts combined = " << theDCTrack->GetNSpacePoints() << endl;
 		  if (fDebugDC) cout << " combine sp = " << isp1 << " and " << isp2 << endl;
 		  // Now save the X, Y and XP for the two stubs
 		  // in arrays hx_sp1, hy_sp1, hy_sp1, ... hxp_sp2
@@ -619,7 +620,7 @@ void THcDC::LinkStubs()
 
 		  Int_t spoint=0;
 		  Int_t duppoint=0;
-		  if (fDebugDC) cout << "checking abother sp pt in cham = " << itrack+1 << " track = " << theDCTrack->GetNSpacePoints() << endl;
+		  if (fDebugDC) cout << "checking abother sp pt in cham track = " << itrack+1 << " with # sp pts = " << theDCTrack->GetNSpacePoints() << endl;
 		  for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
 		    if (fDebugDC) cout << "looping of previous track = " << isp+1 << endl;
 		    if(fSp[isp2]->fNChamber ==
@@ -640,15 +641,17 @@ void THcDC::LinkStubs()
 		      // in this track create a new track with all the
 		      // same space points except spoint
 		      if(fNDCTracks < MAXTRACKS) {
-                        if (fDebugDC) cout << "found another track = " << ntracks_fp << endl;
+                        if (fDebugDC) cout << "found another track, presently # of tracks = " << fNDCTracks << endl;
 			stub_tracks[sptracks++] = fNDCTracks;
 			THcDCTrack *newDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
+                        if (fDebugDC) cout << "loop over theDCtrack # of sp tps = " << theDCTrack->GetNSpacePoints() << endl;
 			for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
 			  if(isp!=spoint) {
 			    newDCTrack->AddSpacePoint(theDCTrack->GetSpacePointID(isp));
 			  } else {
 			    newDCTrack->AddSpacePoint(theDCTrack->GetSpacePointID(isp2));
 			  } // End check for dup on copy
+                        if (fDebugDC) cout << "newDCtrack # of sp tps = " << newDCTrack->GetNSpacePoints() << endl;
 			} // End copy of track
 		      } else {
 			if (fDebugDC) cout << "EPIC FAIL 2:  Too many tracks found in THcDC::LinkStubs" << endl;
@@ -683,7 +686,8 @@ void THcDC::LinkStubs()
   // Looks like it adds all hits for all space points to every track
   for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
     THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
-    theDCTrack->Clear();
+    theDCTrack->ClearHits();
+    if (fDebugDC) cout << " Looping thru track add hits track = " << itrack+1 << " with " << theDCTrack->GetNSpacePoints() << " space points "<< endl;
     // Hit list in the track should have been cleared when created.
     for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
       Int_t spind=theDCTrack->GetSpacePointID(isp);
@@ -695,7 +699,7 @@ void THcDC::LinkStubs()
   }
   ///
   ///
-  if (fDebugDC) cout << " End Linkstubs Found " << ntracks_fp << " tracks"<<endl;
+  if (fDebugDC) cout << " End Linkstubs Found " << fNDCTracks << " tracks"<<endl;
 }
 
 // Primary track fitting routine
@@ -725,7 +729,7 @@ void THcDC::TrackFit()
     //    Double_t chi2 = dummychi2;
     //    Int_t htrack_fit_num = itrack;
     THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
-    cout << " Looping trhu track = " << itrack+1 << " Hits = " <<  theDCTrack->GetNHits() << endl;
+    cout << " Looping thru track = " << itrack+1 << " Hits = " <<  theDCTrack->GetNHits() << endl;
     theDCTrack->SetNFree(theDCTrack->GetNHits() - NUM_FPRAY);
     Double_t chi2 = dummychi2;
     if(theDCTrack->GetNFree() > 0) {
