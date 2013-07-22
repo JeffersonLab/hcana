@@ -75,6 +75,9 @@ public:
   THcDC();  // for ROOT I/O
 protected:
   Int_t fDebugDC;
+
+  Int_t fNDCTracks;
+  TClonesArray* fDCTracks;     // Tracks found from stubs (THcDCTrack obj)
   // Calibration
 
   // Per-event data
@@ -129,19 +132,6 @@ protected:
   
   // Intermediate structure for building 
   static const char MAXTRACKS = 50;
-  struct TrackSP {
-    Int_t nSP; /* Number of space points in this track */
-    Int_t spID[10];		/* List of space points in this track */
-    Int_t fNHits;
-    Int_t fNfree;		  /* Number of degrees of freedom */
-    std::vector<THcDCHit*> fHits; /* List of hits for this track */
-    std::vector<Double_t> fCoords; /* Coordinate on each plane */
-    std::vector<Double_t> fResiduals; /* Residual on each plane */
-    std::vector<Double_t> fDoubleResiduals; /* Residual on each plane for single stub mode */
-    Double_t x_fp, y_fp, z_fp;
-    Double_t xp_fp, yp_fp;
-    Double_t chi2_fp;
-  } fTrackSP[MAXTRACKS];
 
   std::vector<THcDriftChamberPlane*> fPlanes; // List of plane objects
   std::vector<THcDriftChamber*> fChambers; // List of chamber objects

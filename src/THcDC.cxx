@@ -15,6 +15,7 @@
 #include "THcDetectorMap.h"
 #include "THcGlobals.h"
 #include "THcParmList.h"
+#include "THcDCTrack.h"
 #include "VarDef.h"
 #include "VarType.h"
 #include "THaTrack.h"
@@ -65,6 +66,8 @@ THcDC::THcDC(
   fCentralWire = NULL;
   fPlaneTimeZero = NULL;
   fSigma = NULL;
+
+  fDCTracks = new TClonesArray( "THcDCTrack", 20 );
 }
 
 //_____________________________________________________________________________
@@ -352,6 +355,7 @@ THcDC::~THcDC()
     fTrackProj->Clear();
     delete fTrackProj; fTrackProj = 0;
   }
+  delete fDCTracks;
 }
 
 //_____________________________________________________________________________
@@ -460,7 +464,7 @@ Int_t THcDC::CoarseTrack( TClonesArray& /* tracks */ )
   }
   // Now link the stubs between chambers
   LinkStubs();
-  if(ntracks_fp > 0) TrackFit();
+  if(fNDCTracks > 0) TrackFit();
   // Check for internal TrackFit errors
   // Histogram the focal plane tracks
   // Histograms made in h_fill_dc_fp_hist
@@ -529,7 +533,8 @@ void THcDC::LinkStubs()
       fNSp++;
     }
   }
-  ntracks_fp=0;		// Number of Focal Plane tracks found
+  fNDCTracks=0;		// Number of Focal Plane tracks found
+  fDCTracks->Clear();
   Double_t stubminx = 999999;
   Double_t stubminy = 999999;
   Double_t stubminxp = 999999;
@@ -542,9 +547,10 @@ void THcDC::LinkStubs()
       // Now make sure this sp is not already used in a sp.
       // Could this be done by having a sp point to the track it is in?
       Int_t tryflag=1;
-      for(Int_t itrack=0;itrack<ntracks_fp;itrack++) {
-	for(Int_t isp=0;isp<fTrackSP[itrack].nSP;isp++) {
-	  if(fTrackSP[itrack].spID[isp] == isp1) {
+      for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
+	THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
+	for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
+	  if(theDCTrack->GetSpacePointID(isp) == isp1) {
 	    tryflag=0;
 	  }
 	}
@@ -580,22 +586,21 @@ void THcDC::LinkStubs()
 		assert(sptracks==0);
 		//stubtest=1;  Used in h_track_tests.f
 		// Make a new track if there are not to many
-		if(ntracks_fp < MAXTRACKS) {
+		if(fNDCTracks < MAXTRACKS) {
 		  sptracks=0; // Number of tracks with this seed
-		  stub_tracks[sptracks++] = ntracks_fp;
-		  fTrackSP[ntracks_fp].nSP=2;
-		  fTrackSP[ntracks_fp].spID[0] = isp1;
-		  fTrackSP[ntracks_fp].spID[1] = isp2;
+		  stub_tracks[sptracks++] = fNDCTracks;
+		  THcDCTrack *theDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
+		  theDCTrack->AddSpacePoint(isp1);
+		  theDCTrack->AddSpacePoint(isp2);
 		  // Now save the X, Y and XP for the two stubs
 		  // in arrays hx_sp1, hy_sp1, hy_sp1, ... hxp_sp2
 		  // Why not also YP?
 		  // Skip for here.  May be a diagnostic thing
 		  newtrack = 0; // Make no more tracks in this loop
 		  // (But could replace a SP?)
-		  ntracks_fp++;
 		} else {
 		  if (fDebugDC) cout << "EPIC FAIL 1:  Too many tracks found in THcDC::LinkStubs" << endl;
-		  ntracks_fp=0;
+		  fNDCTracks=0;
 		  // Do something here to fail this event
 		  return;
 		}
@@ -604,14 +609,16 @@ void THcDC::LinkStubs()
 		// Check if there is another space point in the same chamber
 		for(Int_t itrack=0;itrack<sptracks;itrack++) {
 		  Int_t track=stub_tracks[itrack];
+		  THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(track));
+
 		  Int_t spoint=0;
 		  Int_t duppoint=0;
-		  for(Int_t isp=0;isp<fTrackSP[track].nSP;isp++) {
+		  for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
 		    if(fSp[isp2]->fNChamber ==
-		       fSp[fTrackSP[track].spID[isp]]->fNChamber) {
+		       fSp[theDCTrack->GetSpacePointID(isp)]->fNChamber) {
 		      spoint=isp;
 		    }
-		    if(isp2==fTrackSP[track].spID[isp]) {
+		    if(isp2==theDCTrack->GetSpacePointID(isp)) {
 		      duppoint=1;
 		    }
 		  } // End loop over sp in tracks with isp1
@@ -619,24 +626,24 @@ void THcDC::LinkStubs()
 		    // add this space point to current track(2)
 		  if(!duppoint) {
 		    if(!spoint) {
-		      fTrackSP[track].spID[fTrackSP[track].nSP++] = isp2;
+		      theDCTrack->AddSpacePoint(isp2);
 		    } else {
 		      // If there is another point in the same chamber
 		      // in this track create a new track with all the
 		      // same space points except spoint
-		      if(ntracks_fp < MAXTRACKS) {
-			stub_tracks[sptracks++] = ntracks_fp;
-			fTrackSP[ntracks_fp].nSP=fTrackSP[track].nSP;
-			for(Int_t isp=0;isp<fTrackSP[track].nSP;isp++) {
+		      if(fNDCTracks < MAXTRACKS) {
+			stub_tracks[sptracks++] = fNDCTracks;
+			THcDCTrack *newDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
+			for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
 			  if(isp!=spoint) {
-			    fTrackSP[ntracks_fp].spID[isp] = fTrackSP[track].spID[isp];
+			    newDCTrack->AddSpacePoint(theDCTrack->GetSpacePointID(isp));
 			  } else {
-			    fTrackSP[ntracks_fp].spID[isp] = isp2;
+			    newDCTrack->AddSpacePoint(theDCTrack->GetSpacePointID(isp2));
 			  } // End check for dup on copy
 			} // End copy of track
 		      } else {
 			if (fDebugDC) cout << "EPIC FAIL 2:  Too many tracks found in THcDC::LinkStubs" << endl;
-			ntracks_fp=0;
+			fNDCTracks=0;
 			// Do something here to fail this event
 			return; // Max # of allowed tracks
 		      }
@@ -649,34 +656,36 @@ void THcDC::LinkStubs()
 	} // end isp2 loop over new space points
       } // end test on tryflag
     } // end isp1 outer loop over space points
-  } else { // Make track out of each single space point
+   } else { // Make track out of each single space point
     for(Int_t isp=0;isp<fNSp;isp++) {
-      if(ntracks_fp<MAXTRACKS) {
-	fTrackSP[ntracks_fp].nSP=1;
-	fTrackSP[ntracks_fp].spID[0]=isp;
-	ntracks_fp++;
+      if(fNDCTracks<MAXTRACKS) {
+	// Need some constructed at thingy
+	THcDCTrack *newDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
+	newDCTrack->AddSpacePoint(isp);
       } else {
 	if (fDebugDC) cout << "EPIC FAIL 3:  Too many tracks found in THcDC::LinkStubs" << endl;
-	ntracks_fp=0;
+	fNDCTracks=0;
 	// Do something here to fail this event
 	return; // Max # of allowed tracks
       }
     }
   }
   // Add the list of hits on the track to the track.
-  for(Int_t itrack=0;itrack<ntracks_fp;itrack++) {
-    fTrackSP[itrack].fNHits=0;
-    fTrackSP[itrack].fHits.clear();
-    for(Int_t isp=0;isp<fNSp;isp++) {
-      for(Int_t ihit=0;ihit<fSp[isp]->GetNHits();ihit++) {
-	fTrackSP[itrack].fHits.push_back(fSp[isp]->GetHit(ihit));
-	fTrackSP[itrack].fNHits++;
+  // Looks like it adds all hits for all space points to every track
+  for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
+    THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
+    theDCTrack->Clear();
+    // Hit list in the track should have been cleared when created.
+    for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
+      Int_t spid=theDCTrack->GetSpacePointID(isp);
+      for(Int_t ihit=0;ihit<fSp[spid]->GetNHits();ihit++) {
+	theDCTrack->AddHit(fSp[spid]->GetHit(ihit));
       }
     }
   }
   ///
   ///
-  if (fDebugDC) cout << "Found " << ntracks_fp << " tracks"<<endl;
+  if (fDebugDC) cout << "Found " << fNDCTracks << " tracks"<<endl;
 }
 
 // Primary track fitting routine
@@ -689,31 +698,32 @@ void THcDC::TrackFit()
   // Initialize residuals
   // Need to make these member variables so they can be histogrammed
   // Probably an array of vectors.
-  Double_t double_resolution[fNPlanes][ntracks_fp];
-  Double_t single_resolution[fNPlanes][ntracks_fp];
+  Double_t double_resolution[fNPlanes][fNDCTracks];
+  Double_t single_resolution[fNPlanes][fNDCTracks];
   Double_t double_res[fNPlanes]; // For the good track
 
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     double_res[ip] = 1000.0;
-    for(Int_t itrack=0;itrack<ntracks_fp;itrack++) {
+    for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
       double_resolution[ip][itrack] = 1000.0;
       single_resolution[ip][itrack] = 1000.0;
     }
   }
   
   Double_t dummychi2 = 1.0E4;
-  for(Int_t itrack=0;itrack<ntracks_fp;itrack++) {
+  for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
     //    Double_t chi2 = dummychi2;
     //    Int_t htrack_fit_num = itrack;
-    fTrackSP[itrack].fNfree = fTrackSP[itrack].fNHits - NUM_FPRAY;
+    THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
+    theDCTrack->SetNFree(theDCTrack->GetNHits() - NUM_FPRAY);
     Double_t chi2 = dummychi2;
-    if(fTrackSP[itrack].fNfree > 0) {
+    if(theDCTrack->GetNFree() > 0) {
       TVectorD TT(NUM_FPRAY);
       TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
 	TT[irayp] = 0.0;
-	for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
-	  THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+	  THcDCHit* hit=theDCTrack->GetHit(ihit);
 	  Int_t plane=hit->GetPlaneNum()-1;
 	  TT[irayp] += (hit->GetCoord()*
 			fPlaneCoeffs[plane][raycoeffmap[irayp]])
@@ -726,8 +736,8 @@ void THcDC::TrackFit()
 	  if(jrayp<irayp) { // Symmetric
 	    AA[irayp][jrayp] = AA[jrayp][irayp];
 	  } else {
-	    for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
-	      THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+	    for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+	      THcDCHit* hit=theDCTrack->GetHit(ihit);
 	      Int_t plane=hit->GetPlaneNum()-1;
 	      AA[irayp][jrayp] += fPlaneCoeffs[plane][raycoeffmap[irayp]]*
 		fPlaneCoeffs[plane][raycoeffmap[jrayp]]/
@@ -748,42 +758,35 @@ void THcDC::TrackFit()
       //      }
       // Calculate hit coordinate for each plane for chi2 and efficiency
       // calculations
-      fTrackSP[itrack].fCoords.clear();
-      fTrackSP[itrack].fResiduals.clear();
-      fTrackSP[itrack].fDoubleResiduals.clear();
+
+      // Make sure fCoords, fResiduals, and fDoubleResiduals are clear
       for(Int_t iplane=0;iplane < fNPlanes; iplane++) {
-	fTrackSP[itrack].fCoords.push_back(0.0);
-	fTrackSP[itrack].fResiduals.push_back(1000.0);
-	fTrackSP[itrack].fDoubleResiduals.push_back(1000.0);
+	Double_t coord=0.0;
 	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
-	  fTrackSP[itrack].fCoords[iplane] += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
+	  coord += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
 	}
+	theDCTrack->SetCoord(iplane,coord);
       }
       // Compute Chi2 and residuals
       chi2 = 0.0;
-      fTrackSP[itrack].fResiduals.clear();
-      for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
-	THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+      for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+	THcDCHit* hit=theDCTrack->GetHit(ihit);
 	Int_t plane=hit->GetPlaneNum()-1;
-	Double_t residual = hit->GetCoord() - fTrackSP[itrack].fCoords[plane];
-	fTrackSP[itrack].fResiduals[plane] = residual;
+	Double_t residual = hit->GetCoord() - theDCTrack->GetCoord(plane);
+	theDCTrack->SetResidual(plane, residual);
 	chi2 += pow(residual/fSigma[plane],2);
       }
       if (fDebugDC) {
 	cout << "Residuals:" << endl;
-	for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
-	  THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+	  THcDCHit* hit=theDCTrack->GetHit(ihit);
 	  Int_t plane=hit->GetPlaneNum()-1;
-	  cout << "   " << plane << ": " << fTrackSP[itrack].fResiduals[ihit] << endl;
+	  cout << "   " << plane << ": " << theDCTrack->GetResidual(plane) << endl;
 	}
       }
-      fTrackSP[itrack].x_fp = dray[0];
-      fTrackSP[itrack].y_fp = dray[1];
-      fTrackSP[itrack].z_fp = 0.0;
-      fTrackSP[itrack].xp_fp = dray[2];
-      fTrackSP[itrack].xp_fp = dray[3];
+      theDCTrack->SetVector(dray[0], dray[1], 0.0, dray[2], dray[3]);
     }
-    fTrackSP[itrack].chi2_fp = chi2;
+    theDCTrack->SetChisq(chi2);
   }
 
   // Calculate residuals for each chamber if in single stub mode
@@ -791,46 +794,42 @@ void THcDC::TrackFit()
   // Specific for two chambers.  Can/should it be generalized?
 
   if(fSingleStub != 0) {
-    if(ntracks_fp == 2) {
+    if(fNDCTracks == 2) {
+      THcDCTrack *theDCTrack1 = static_cast<THcDCTrack*>( fDCTracks->At(0));
+      THcDCTrack *theDCTrack2 = static_cast<THcDCTrack*>( fDCTracks->At(1));
       Int_t itrack=0;
       Int_t ihit=0;
-      THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+      THcDCHit* hit=theDCTrack1->GetHit(ihit);
       Int_t plane=hit->GetPlaneNum()-1;
       Int_t chamber=fNChamber[plane];
       if(chamber==1) {
 	itrack=1;
-	hit=fTrackSP[itrack].fHits[ihit];
+	hit=theDCTrack2->GetHit(ihit);
 	plane=hit->GetPlaneNum()-1;
 	chamber=fNChamber[plane];
 	if(chamber==2) {
 	  Double_t ray1[4];
 	  Double_t ray2[4];
-	  ray1[0] = fTrackSP[0].x_fp;
-	  ray1[1] = fTrackSP[0].y_fp;
-	  ray1[2] = fTrackSP[0].xp_fp;
-	  ray1[3] = fTrackSP[0].yp_fp;
-	  ray2[0] = fTrackSP[1].x_fp;
-	  ray2[1] = fTrackSP[1].y_fp;
-	  ray2[2] = fTrackSP[1].xp_fp;
-	  ray2[3] = fTrackSP[1].yp_fp;
+	  theDCTrack1->GetRay(ray1);
+	  theDCTrack2->GetRay(ray2);
 	  itrack = 1;
 	  // Loop over hits in second chamber
-	  for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
+	  for(Int_t ihit=0;ihit < theDCTrack2->GetNHits();ihit++) {
 	    // Calculate residual in second chamber from first chamber track
-	    THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+	    THcDCHit* hit=theDCTrack2->GetHit(ihit);
 	    Int_t plane=hit->GetPlaneNum()-1;
 	    Double_t pos = DpsiFun(ray1,plane);
-	    fTrackSP[itrack-1].fDoubleResiduals[plane] = hit->GetCoord() - pos;
+	    theDCTrack1->SetDoubleResidual(plane,hit->GetCoord() - pos);
 	    //  hdc_dbl_res(pln) = hdc_double_residual(1,pln)  for hists
 	  }
 	  itrack=0;
 	  // Loop over hits in first chamber
-	  for(Int_t ihit=0;ihit < fTrackSP[itrack].fNHits;ihit++) {
+	  for(Int_t ihit=0;ihit < theDCTrack1->GetNHits();ihit++) {
 	    // Calculate residual in first chamber from second chamber track
-	    THcDCHit* hit=fTrackSP[itrack].fHits[ihit];
+	    THcDCHit* hit=theDCTrack1->GetHit(ihit);
 	    Int_t plane=hit->GetPlaneNum()-1;
 	    Double_t pos = DpsiFun(ray1,plane);
-	    fTrackSP[itrack+1].fDoubleResiduals[plane] = hit->GetCoord() - pos;
+	    theDCTrack2->SetDoubleResidual(plane,hit->GetCoord() - pos);
 	    //  hdc_dbl_res(pln) = hdc_double_residual(1,pln)  for hists
 	  }
 	}

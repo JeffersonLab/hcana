@@ -20,7 +20,7 @@ SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcRawDCHit.cxx src/THcDCHit.cxx \
 	src/THcDCWire.cxx \
 	src/THcDCLookupTTDConv.cxx src/THcDCTimeToDistConv.cxx \
-	src/THcSpacePoint.cxx \
+	src/THcSpacePoint.cxx src/THcDCTrack.cxx \
 	src/THcShower.cxx src/THcShowerPlane.cxx \
 	src/THcShowerHit.cxx \
 	src/THcAerogel.cxx src/THcAerogelHit.cxx
