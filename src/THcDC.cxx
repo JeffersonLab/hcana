@@ -328,6 +328,11 @@ Int_t THcDC::DefineVariables( EMode mode )
 
   RVarDef vars[] = {
     { "nhit", "Number of DC hits",  "fNhits" },
+    { "ntrack", "Number of Tracks", "fNDCTracks" },
+    { "x", "X at focal plane", "fDCTracks.THcDCTrack.GetX()"},
+    { "y", "Y at focal plane", "fDCTracks.THcDCTrack.GetY()"},
+    { "xp", "YP at focal plane", "fDCTracks.THcDCTrack.GetXP()"},
+    { "yp", "YP at focal plane", "fDCTracks.THcDCTrack.GetYP()"},
     { 0 }
   };
   return DefineVarsFromList( vars, mode );

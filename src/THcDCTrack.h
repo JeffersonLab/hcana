@@ -35,6 +35,10 @@ public:
   Double_t GetCoord(Int_t ip)     const {return fCoords[ip];}
   Double_t GetResidual(Int_t ip)     const {return fResiduals[ip];}
   void GetRay(Double_t *ray) const {ray[0]=fX_fp; ray[1]=fY_fp; ray[2]=fXp_fp; ray[3]=fYp_fp;}
+  Double_t GetX()                 const {return fX_fp;}
+  Double_t GetY()                 const {return fY_fp;}
+  Double_t GetXP()                 const {return fXp_fp;}
+  Double_t GetYP()                 const {return fYp_fp;}
   void SetNFree(Int_t nfree)           {fNfree = nfree;}
   void SetCoord(Int_t ip, Double_t coord) {fCoords[ip] = coord;}
   void SetResidual(Int_t ip, Double_t coord) {fResiduals[ip] = coord;}
