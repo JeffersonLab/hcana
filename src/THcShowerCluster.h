@@ -44,18 +44,18 @@ class THcShowerCluster : THcShowerHitList {
     (*(THcShowerHitList::begin()+num))->show();
   }
 
-  //Y coordinate of cluster's center of gravity.
+  //X coordinate of cluster's center of gravity.
   //
-  float clY() {
-    float y_sum=0.;
+  float clX() {
+    float x_sum=0.;
     float Etot=0.;
     for (THcShowerHitIt it=THcShowerHitList::begin();
 	 it!=THcShowerHitList::end(); it++) {
-      y_sum += (*it)->hitY() * (*it)->hitE();
+      x_sum += (*it)->hitX() * (*it)->hitE();
       Etot += (*it)->hitE();
     }
-    //    cout << "y_sum=" << y_sum << "  Etot=" << Etot << endl;
-    return y_sum/Etot;
+    //    cout << "x_sum=" << x_sum << "  Etot=" << Etot << endl;
+    return (Etot != 0. ? x_sum/Etot : -75.);
   }
 
   //Z coordinate for a cluster, calculated as a weighted by energy average.

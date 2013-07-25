@@ -93,8 +93,9 @@ protected:
   Float_t fAsum_c; // Sum of calibrated ADCs
   Int_t fNclust;   // Number of clusters
   Float_t fE;      // Energy (MeV) of largest cluster
+  Float_t fEpr;    // Preshower Energy (MeV) of largest cluster
   Float_t fX;      // x-position (cm) of largest cluster
-  Float_t fY;      // y-position (cm) of largest cluster
+  Float_t fZ;      // z-position (cm) of largest cluster
   Int_t fMult;     // Multiplicity of largest cluster
   Int_t fNblk;     // Number of blocks in main cluster
   Float_t* fEblk;  // Energies of blocks in main cluster
@@ -110,8 +111,9 @@ protected:
   Double_t* BlockThick;		// Thickness of shower counter blocks, blocks
   Int_t* fNBlocks;              // Number of shower counter blocks per layer
   Int_t fNtotBlocks;            // Total number of shower counter blocks
-  Double_t** YPos;		//X,Y positions of shower counter blocks
-  Double_t* XPos;
+  Double_t** XPos;		//X,Y,Z positions of shower counter blocks
+  Double_t* YPos;
+  Double_t* ZPos;
   Int_t fNegCols; //number of columns with PMTTs on the negative side only.
   Double_t fSlop;               //Track to cluster vertical slop distance.
   Int_t fvTest;                 //fiducial volume test flag

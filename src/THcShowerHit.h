@@ -13,22 +13,22 @@ class THcShowerHit {           //HMS calorimeter hit class
 
  private:
   unsigned int fCol, fRow; //hit colomn and row
-  float fY, fZ;            //hit Y (vert.) and Z (along spect.axis) coordinates
+  float fX, fZ;            //hit X (vert.) and Z (along spect.axis) coordinates
   float fE;                 //hit energy deposition
 
  public:
 
   THcShowerHit() {             //default constructor
   fCol=fRow=0;
-  fY=fZ=0.;
+  fX=fZ=0.;
   fE=0.;
   }
 
-  THcShowerHit(unsigned int hRow, unsigned int hCol, float hY, float hZ,
+  THcShowerHit(unsigned int hRow, unsigned int hCol, float hX, float hZ,
 	       float hE) {
     fRow=hRow;
     fCol=hCol;
-    fY=hY;
+    fX=hX;
     fZ=hZ;
     fE=hE;
   }
@@ -45,8 +45,8 @@ class THcShowerHit {           //HMS calorimeter hit class
     return fRow;
   }
 
-  float hitY() {
-    return fY;
+  float hitX() {
+    return fX;
   }
 
   float hitZ() {
@@ -67,7 +67,7 @@ class THcShowerHit {           //HMS calorimeter hit class
   //
   void show() {
     cout << "row=" << fRow << "  column=" << fCol << 
-      "  y=" << fY << "  z=" << fZ << "  E=" << fE << endl;
+      "  x=" << fX << "  z=" << fZ << "  E=" << fE << endl;
   }
 
 };

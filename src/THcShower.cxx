@@ -173,15 +173,15 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   BlockThick = new Double_t [fNLayers];
   fNBlocks = new Int_t [fNLayers];
   fNLayerZPos = new Double_t [fNLayers];
-  XPos = new Double_t [2*fNLayers];
+  YPos = new Double_t [2*fNLayers];
 
   for(Int_t i=0;i<fNLayers;i++) {
     DBRequest list[]={
       {Form("cal_%s_thick",fLayerNames[i]), &BlockThick[i], kDouble},
       {Form("cal_%s_nr",fLayerNames[i]), &fNBlocks[i], kInt},
       {Form("cal_%s_zpos",fLayerNames[i]), &fNLayerZPos[i], kDouble},
-      {Form("cal_%s_left",fLayerNames[i]), &XPos[2*i], kDouble},
-      {Form("cal_%s_right",fLayerNames[i]), &XPos[2*i+1], kDouble},
+      {Form("cal_%s_right",fLayerNames[i]), &YPos[2*i], kDouble},
+      {Form("cal_%s_left",fLayerNames[i]), &YPos[2*i+1], kDouble},
       {0}
     };
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
@@ -189,11 +189,11 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
   //Caution! Z positions (fronts) are off in hcal.param! Correct later on.
 
-  YPos = new Double_t* [fNLayers];
+  XPos = new Double_t* [fNLayers];
   for(Int_t i=0;i<fNLayers;i++) {
-    YPos[i] = new Double_t [fNBlocks[i]];
+    XPos[i] = new Double_t [fNBlocks[i]];
     DBRequest list[]={
-      {Form("cal_%s_top",fLayerNames[i]),YPos[i], kDouble, fNBlocks[i]},
+      {Form("cal_%s_top",fLayerNames[i]),XPos[i], kDouble, fNBlocks[i]},
       {0}
     };
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
@@ -204,10 +204,10 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     cout << "    Block thickness: " << BlockThick[i] << endl;
     cout << "    NBlocks        : " << fNBlocks[i] << endl;
     cout << "    Z Position     : " << fNLayerZPos[i] << endl;
-    cout << "    X Positions    : " << XPos[2*i] << ", " << XPos[2*i+1] << endl;
-    cout << "    Y Positions    :";
+    cout << "    Y Positions    : " << YPos[2*i] << ", " << YPos[2*i+1] <<endl;
+    cout << "    X Positions    :";
     for(Int_t j=0; j<fNBlocks[i]; j++) {
-      cout << " " << YPos[i][j];
+      cout << " " << XPos[i][j];
     }
     cout << endl;
 
@@ -392,8 +392,9 @@ Int_t THcShower::DefineVariables( EMode mode )
  //   { "asum_c", "Sum of calibrated ADCs",             "fAsum_c" },
     { "nclust", "Number of clusters",                 "fNclust" },
     { "emax",   "Energy (MeV) of largest cluster",    "fE" },
- //   { "x",      "x-position (cm) of largest cluster", "fX" },
- //   { "y",      "y-position (cm) of largest cluster", "fY" },
+    { "eprmax",   "Preshower Energy (MeV) of largest cluster",    "fEpr" },
+    { "xmax",      "x-position (cm) of largest cluster", "fX" },
+ //   { "z",      "z-position (cm) of largest cluster", "fZ" },
     { "mult",   "Multiplicity of largest cluster",    "fMult" },
  //   { "nblk",   "Numbers of blocks in main cluster",  "fNblk" },
  //   { "eblk",   "Energies of blocks in main cluster", "fEblk" },
@@ -430,7 +431,7 @@ void THcShower::DeleteArrays()
   delete [] fNBlocks;  fNBlocks = NULL;
   delete [] fNLayerZPos;  fNLayerZPos = NULL;
   delete [] XPos;  XPos = NULL;
-  delete [] YPos;  YPos = NULL;
+  delete [] ZPos;  ZPos = NULL;
   //delete [] fSpacing;  fSpacing = NULL;
   //delete [] fCenter;   fCenter = NULL; // This 2D. What is correct way to delete?
 }
@@ -452,6 +453,8 @@ void THcShower::Clear(Option_t* opt)
   fNclust = 0;
   fMult = 0;
   fE = 0.;
+  fEpr = 0.;
+  fX = -75.;   //out of acceptance
 }
 
 //_____________________________________________________________________________
@@ -541,9 +544,9 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
       //
       //      Float_t Edep = fPlanes[j]->GetEmean(i);
       //      if (Edep > 0.) {                                    //hit
-      //	Float_t y = YPos[j][i] + BlockThick[j]/2.;        //top + thick/2
+      //	Float_t x = YPos[j][i] + BlockThick[j]/2.;        //top + thick/2
       //	Float_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
-      //      	THcShowerHit* hit = new THcShowerHit(i,j,y,z,Edep);
+      //      	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep);
 
       //ENGINE way.
       //
@@ -554,13 +557,13 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
 	  fPlanes[j]->GetAneg(i) - fPlanes[j]->GetNegPed(i) >
 	  fPlanes[j]->GetNegThr(i) - fPlanes[j]->GetNegPed(i)) {    //hit
 	Float_t Edep = fPlanes[j]->GetEmean(i);
-      	Float_t y = YPos[j][i] + BlockThick[j]/2.;        //top + thick/2
+      	Float_t x = XPos[j][i] + BlockThick[j]/2.;        //top + thick/2
       	Float_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
-	THcShowerHit* hit = new THcShowerHit(i,j,y,z,Edep);
+	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep);
 
 	HitList.push_back(hit);
 
-	//cout << "Hit: Edep = " << Edep << " Y = " << y << " Z = " << z <<
+	//cout << "Hit: Edep = " << Edep << " X = " << x << " Z = " << z <<
 	//	  " Block " << i << " Layer " << j << endl;
       };
 
@@ -591,7 +594,7 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
     cout << "Cluster #" << i 
          <<":  E=" << (*cluster).clE() 
          << "  Epr=" << (*cluster).clEpr()
-         << "  Y=" << (*cluster).clY()
+         << "  X=" << (*cluster).clX()
          << "  Z=" << (*cluster).clZ()
          << "  size=" << (*cluster).clSize()
          << endl;
@@ -624,13 +627,17 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
     }
 
     fE = (*MaxCluster).clE();
+    fEpr = (*MaxCluster).clEpr();
+    fX = (*MaxCluster).clX();
   }
+
+  cout << fEpr << " " << fE << " " << fX << " PrSh" << endl;
 
   /*
     cout << "Cluster #" << i 
          <<":  E=" << (*cluster).clE() 
          << "  Epr=" << (*cluster).clEpr()
-         << "  Y=" << (*cluster).clY()
+         << "  X=" << (*cluster).clX()
          << "  Z=" << (*cluster).clZ()
          << "  size=" << (*cluster).clSize()
          << endl;
