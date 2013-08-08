@@ -548,7 +548,7 @@ void THcDC::LinkStubs()
   if (fDebugDC) cout << "Fsinglestub (no = 0) = " << fSingleStub << endl;
   if (fDebugDC) cout << "Joined space points = " << fNSp-1 << endl;
   if(!fSingleStub) {
-    for(Int_t isp1=0;isp1<fNSp-1;isp1++) {
+    for(Int_t isp1=0;isp1<fNSp-1;isp1++) { // isp1 is index/id in total list of space points
       if (fDebugDC) cout << "Loop thru joined space points " << isp1+1<< endl;
       Int_t sptracks=0;
       // Now make sure this sp is not already used in a sp.
@@ -557,6 +557,7 @@ void THcDC::LinkStubs()
       for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
 	THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
 	for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
+	  // isp is index into list of space points attached to theDCTrack
 	  if(theDCTrack->GetSpacePointID(isp) == isp1) {
 	    tryflag=0;
 	  }
@@ -623,10 +624,11 @@ void THcDC::LinkStubs()
 		  Int_t track=stub_tracks[itrack];
 		  THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(track));
 
-		  Int_t spoint=0;
+		  Int_t spoint=-1;
 		  Int_t duppoint=0;
 		  if (fDebugDC) cout << "checking abother sp pt in cham track = " << itrack+1 << " with # sp pts = " << theDCTrack->GetNSpacePoints() << endl;
 		  for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
+		    // isp is index of space points in theDCTrack
 		    if (fDebugDC) cout << "looping of previous track = " << isp+1 << endl;
 		    if(fSp[isp2]->fNChamber ==
 		       fSp[theDCTrack->GetSpacePointID(isp)]->fNChamber) {
@@ -639,7 +641,7 @@ void THcDC::LinkStubs()
 		    // If there is no other space point in this chamber
 		    // add this space point to current track(2)
 		  if(!duppoint) {
-		    if(!spoint) {
+		    if(spoint<0) {
 		      theDCTrack->AddSpacePoint(isp2);
 		    } else {
 		      // If there is another point in the same chamber
@@ -654,7 +656,7 @@ void THcDC::LinkStubs()
 			  if(isp!=spoint) {
 			    newDCTrack->AddSpacePoint(theDCTrack->GetSpacePointID(isp));
 			  } else {
-			    newDCTrack->AddSpacePoint(theDCTrack->GetSpacePointID(isp2));
+			    newDCTrack->AddSpacePoint(isp2);
 			  } // End check for dup on copy
                         if (fDebugDC) cout << "newDCtrack # of sp tps = " << newDCTrack->GetNSpacePoints() << endl;
 			} // End copy of track
