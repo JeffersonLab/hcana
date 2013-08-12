@@ -18,7 +18,7 @@ THcDC.cxx THcDriftChamberPlane.cxx \
 THcDriftChamber.cxx \
 THcRawDCHit.cxx THcDCHit.cxx \
 THcDCWire.cxx \
-THcSpacePoint.cxx \
+THcSpacePoint.cxx THcDCTrack.cxx \
 THcDCLookupTTDConv.cxx THcDCTimeToDistConv.cxx \
 THcShower.cxx THcShowerPlane.cxx \
 THcShowerHit.cxx \
