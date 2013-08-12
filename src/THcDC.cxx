@@ -333,6 +333,7 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "y", "Y at focal plane", "fDCTracks.THcDCTrack.GetY()"},
     { "xp", "YP at focal plane", "fDCTracks.THcDCTrack.GetXP()"},
     { "yp", "YP at focal plane", "fDCTracks.THcDCTrack.GetYP()"},
+    { "p1residual", "Plane 1 Residual", "fDCTracks.THcDCTrack.GetResidual1()"},
     { 0 }
   };
   return DefineVarsFromList( vars, mode );

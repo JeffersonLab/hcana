@@ -34,6 +34,7 @@ public:
   Int_t GetNFree()                const {return fNfree;}
   Double_t GetCoord(Int_t ip)     const {return fCoords[ip];}
   Double_t GetResidual(Int_t ip)     const {return fResiduals[ip];}
+  Double_t GetResidual1()     const {return fResiduals[0];}
   void GetRay(Double_t *ray) const {ray[0]=fX_fp; ray[1]=fY_fp; ray[2]=fXp_fp; ray[3]=fYp_fp;}
   Double_t GetX()                 const {return fX_fp;}
   Double_t GetY()                 const {return fY_fp;}
