@@ -191,6 +191,8 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
     fPlaneCoeffs[ip] = fPlanes[ip]->GetPlaneCoef();
   }
 
+  fResiduals = new Double_t [fNPlanes];
+
   // Replace with what we need for Hall C
   //  const DataDest tmp[NDEST] = {
   //    { &fRTNhit, &fRANhit, fRT, fRT_c, fRA, fRA_p, fRA_c, fROff, fRPed, fRGain },
@@ -333,7 +335,7 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "y", "Y at focal plane", "fDCTracks.THcDCTrack.GetY()"},
     { "xp", "YP at focal plane", "fDCTracks.THcDCTrack.GetXP()"},
     { "yp", "YP at focal plane", "fDCTracks.THcDCTrack.GetYP()"},
-    { "p1residual", "Plane 1 Residual", "fDCTracks.THcDCTrack.GetResidual1()"},
+    { "residual", "Residuals", "fResiduals"},
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
@@ -406,6 +408,9 @@ void THcDC::ClearEvent()
     fChambers[i]->Clear();
   }
 
+  for(Int_t i=0;i<fNPlanes;i++) {
+    fResiduals[i] = 1000.0;
+  }
   
   //  fTrackProj->Clear();
 }
@@ -857,6 +862,12 @@ void THcDC::TrackFit()
 	  }
 	}
       }
+    }
+  }
+  if(fNDCTracks>0) {
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
+      THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(0));
+      fResiduals[ip] = theDCTrack->GetResidual(ip);
     }
   }
   // print tracks if hdebugtrackprint is on

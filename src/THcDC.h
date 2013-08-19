@@ -80,14 +80,15 @@ protected:
   TClonesArray* fDCTracks;     // Tracks found from stubs (THcDCTrack obj)
   // Calibration
 
+  // Hall C Parameters
+  Int_t fNPlanes;              // Total number of DC planes
+  char** fPlaneNames;
+  Int_t fNChambers;
+
   // Per-event data
   Int_t fNhits;
   Int_t ntracks_fp;		/* Change this to fN something */
-
-  // Potential Hall C parameters.  Mostly here for demonstration
-  Int_t fNPlanes;
-  char** fPlaneNames;
-  Int_t fNChambers;
+  Double_t* fResiduals;         //[fNPlanes] Array of residuals
 
   Double_t fNSperChan;		/* TDC bin size */
   Double_t fWireVelocity;
