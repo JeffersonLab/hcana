@@ -12,7 +12,7 @@ using namespace std;
 class THcShowerHit {           //HMS calorimeter hit class
 
  private:
-  unsigned int fCol, fRow; //hit colomn and row
+  UInt_t fCol, fRow; //hit colomn and row
   float fX, fZ;            //hit X (vert.) and Z (along spect.axis) coordinates
   float fE;                 //hit energy deposition
 
@@ -24,7 +24,7 @@ class THcShowerHit {           //HMS calorimeter hit class
   fE=0.;
   }
 
-  THcShowerHit(unsigned int hRow, unsigned int hCol, float hX, float hZ,
+  THcShowerHit(UInt_t hRow, UInt_t hCol, float hX, float hZ,
 	       float hE) {
     fRow=hRow;
     fCol=hCol;
@@ -37,11 +37,11 @@ class THcShowerHit {           //HMS calorimeter hit class
     //    cout << " hit destructed" << endl;
   }
 
-  unsigned int hitColumn() {
+  UInt_t hitColumn() {
     return fCol;
   }
 
-  unsigned int hitRow() {
+  UInt_t hitRow() {
     return fRow;
   }
 
@@ -58,8 +58,8 @@ class THcShowerHit {           //HMS calorimeter hit class
   }
 
   bool isNeighbour(THcShowerHit* hit1) {      //Is hit1 neighbouring this hit?
-    int dRow = fRow-(*hit1).fRow;
-    int dCol = fCol-(*hit1).fCol;
+    Int_t dRow = fRow-(*hit1).fRow;
+    Int_t dCol = fCol-(*hit1).fCol;
     return TMath::Abs(dRow)<2 && TMath::Abs(dCol)<2;
   }
 

@@ -34,13 +34,13 @@ class THcShowerCluster : THcShowerHitList {
 
   //Pointer to the hit #i in the cluster hit list
   //
-  THcShowerHit* ClusteredHit(unsigned int i) {
+  THcShowerHit* ClusteredHit(UInt_t i) {
     return * (THcShowerHitList::begin()+i);
   }
 
   //Print out a hit in the cluster
   //
-  void showHit(unsigned int num) {
+  void showHit(UInt_t num) {
     (*(THcShowerHitList::begin()+num))->show();
   }
 
@@ -97,7 +97,7 @@ class THcShowerCluster : THcShowerHitList {
 
   //Cluster size.
   //
-  unsigned int clSize() {
+  UInt_t clSize() {
     return THcShowerHitList::size();
   }
 
@@ -139,13 +139,13 @@ class THcShowerClusterList : private THcShClusterList {
 
   //Pointer to the cluster #i in the cluster list
   //
-  THcShowerCluster* ListedCluster(unsigned int i) {
+  THcShowerCluster* ListedCluster(UInt_t i) {
     return *(THcShClusterList::begin()+i);
   }
 
   //Cluster list size.
   //
-  unsigned int NbClusters() {
+  UInt_t NbClusters() {
     return THcShClusterList::size();
   }
 
@@ -170,7 +170,7 @@ void ClusterHits(THcShowerHitList HitList) {
 
       for (THcShowerHitIt i=HitList.begin(); i!=HitList.end(); i++) {
 
-	for (unsigned int k=0; k!=(*cluster).clSize(); k++) {
+	for (UInt_t k=0; k!=(*cluster).clSize(); k++) {
 
 	  if ((**i).isNeighbour((*cluster).ClusteredHit(k))) {
 

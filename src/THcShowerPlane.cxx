@@ -271,7 +271,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     THcShower* fParent;
     fParent = (THcShower*) GetParent();
 
-    double thresh_pos = fPosThresh[hit->fCounter -1];
+    Double_t thresh_pos = fPosThresh[hit->fCounter -1];
     if(hit->fADC_pos >  thresh_pos) {
 
       THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
@@ -281,7 +281,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	fParent->GetGain(hit->fCounter-1,fLayerNum-1,0);
     }
 
-    double thresh_neg = fNegThresh[hit->fCounter -1];
+    Double_t thresh_neg = fNegThresh[hit->fCounter -1];
     if(hit->fADC_neg >  thresh_neg) {
 
       THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);

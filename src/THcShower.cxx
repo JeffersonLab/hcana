@@ -574,7 +574,7 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
   //
   fNhits = HitList.size();
   cout << "Total hits:     " << fNhits << endl;
-  for (unsigned int i=0; i!=fNhits; i++) {
+  for (UInt_t i=0; i!=fNhits; i++) {
     cout << "unclustered hit " << i << ": ";
     (*(HitList.begin()+i))->show();
   }
@@ -587,7 +587,7 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
   fNclust = (*ClusterList).NbClusters();
   cout << "Cluster_list size: " << fNclust << endl;
 
-  for (unsigned int i=0; i!=fNclust; i++) {
+  for (UInt_t i=0; i!=fNclust; i++) {
 
     THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
 
@@ -599,7 +599,7 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
          << "  size=" << (*cluster).clSize()
          << endl;
 
-    for (unsigned int j=0; j!=(*cluster).clSize(); j++) {
+    for (UInt_t j=0; j!=(*cluster).clSize(); j++) {
       THcShowerHit* hit = (*cluster).ClusteredHit(j);
       cout << "  hit #" << j << ":  "; (*hit).show();
     }
@@ -614,7 +614,7 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
 
     THcShowerCluster* MaxCluster;
 
-    for (unsigned int i=0; i!=fNclust; i++) {
+    for (UInt_t i=0; i!=fNclust; i++) {
 
       THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
 
