@@ -98,7 +98,7 @@ hallalib = 'HallA'
 dclib = 'dc'
 scalerlib = 'scaler'
 
-baseenv.Append(LIBPATH=['$HC_SRC','$HA_SRC','$HA_DC','$HA_SCALER'])
+baseenv.Append(LIBPATH=['$HC_DIR','$HA_DIR','$HC_SRC','$HA_SRC','$HA_DC','$HA_SCALER'])
 baseenv.Append(LIBS=[hallclib,hallalib,dclib,scalerlib])
 baseenv.Replace(SHLIBSUFFIX = '.so')
 
