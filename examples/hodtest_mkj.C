@@ -1,9 +1,11 @@
+
 void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000) {
 
   //
   //  Steering script to test hodoscope decoding
   //
   
+  //Int_t RunNumber=52949;
   if (RunNumber == 50017) {
     char* RunFileNamePattern="daq04_%d.log.0";
   } else {
@@ -15,7 +17,6 @@ void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000) {
   gHcParms->Load(gHcParms->GetString("g_ctp_database_filename"), RunNumber);
 
   // g_ctp_parm_filename and g_decode_map_filename should now be defined
-
 
   gHcParms->Load(gHcParms->GetString("g_ctp_parm_filename"));
 
@@ -69,10 +70,10 @@ void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000) {
                                 // include scaler or control events
 
   // Define the analysis parameters
-  analyzer->SetCountMode( 0 );   //Mark's modification
+  analyzer->SetCountMode( 0 );
   analyzer->SetEvent( event );
   analyzer->SetOutFile(Form("hodtest_%05d.root",RunNumber));
-  analyzer->SetOdefFile(Form("output_%d.def",RunNumber));
+  analyzer->SetOdefFile("output_mkj.def");
   analyzer->SetCutFile("hodtest_cuts_mkj.def");        // optional
   
   // File to record cuts accounting information

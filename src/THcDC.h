@@ -10,9 +10,12 @@
 #include "THaTrackingDetector.h"
 #include "THcHitList.h"
 #include "THcRawDCHit.h"
+#include "THcSpacePoint.h"
 #include "THcDriftChamberPlane.h"
 #include "THcDriftChamber.h"
 #include "TMath.h"
+
+#define NUM_FPRAY 4
 
 //class THaScCalib;
 class TClonesArray;
@@ -39,11 +42,12 @@ public:
   Int_t GetNWires(Int_t plane) const { return fNWires[plane-1];}
   Int_t GetNChamber(Int_t plane) const { return fNChamber[plane-1];}
   Int_t GetWireOrder(Int_t plane) const { return fWireOrder[plane-1];}
-  Int_t GetPitch(Int_t plane) const { return fPitch[plane-1];}
-  Int_t GetCentralWire(Int_t plane) const { return fCentralWire[plane-1];}
+  Double_t GetPitch(Int_t plane) const { return fPitch[plane-1];}
+  Double_t GetCentralWire(Int_t plane) const { return fCentralWire[plane-1];}
   Int_t GetTdcWinMin(Int_t plane) const { return fTdcWinMin[plane-1];}
   Int_t GetTdcWinMax(Int_t plane) const { return fTdcWinMax[plane-1];}
 
+  Double_t GetZPos(Int_t plane) const { return fZPos[plane-1];}
   Double_t GetAlphaAngle(Int_t plane) const { return fAlphaAngle[plane-1];}
   Double_t GetBetaAngle(Int_t plane) const { return fBetaAngle[plane-1];}
   Double_t GetGammaAngle(Int_t plane) const { return fGammaAngle[plane-1];}
@@ -51,11 +55,12 @@ public:
   Int_t GetMinHits(Int_t chamber) const { return fMinHits[chamber-1];}
   Int_t GetMaxHits(Int_t chamber) const { return fMaxHits[chamber-1];}
   Int_t GetMinCombos(Int_t chamber) const { return fMinCombos[chamber-1];}
-  Double_t GetSpacePointCriterion(Int_t chamber) const { return TMath::Sqrt(fSpace_Point_Criterion2[chamber-1]);}
+  Double_t GetSpacePointCriterion(Int_t chamber) const { return fSpace_Point_Criterion2[chamber-1];}
   Double_t GetCentralTime(Int_t plane) const { return fCentralTime[plane-1];}
   Int_t GetDriftTimeSign(Int_t plane) const { return fDriftTimeSign[plane-1];}
 
   Double_t GetPlaneTimeZero(Int_t plane) const { return fPlaneTimeZero[plane-1];}
+  Double_t GetSigma(Int_t plane) const { return fSigma[plane-1];}
 
   Double_t GetNSperChan() const { return fNSperChan;}
 
@@ -69,11 +74,15 @@ public:
 
   THcDC();  // for ROOT I/O
 protected:
+  Int_t fDebugDC;
 
+  Int_t fNDCTracks;
+  TClonesArray* fDCTracks;     // Tracks found from stubs (THcDCTrack obj)
   // Calibration
 
   // Per-event data
   Int_t fNhits;
+  Int_t ntracks_fp;		/* Change this to fN something */
 
   // Potential Hall C parameters.  Mostly here for demonstration
   Int_t fNPlanes;
@@ -82,6 +91,12 @@ protected:
 
   Double_t fNSperChan;		/* TDC bin size */
   Double_t fWireVelocity;
+  Int_t fSingleStub;		/* If 1, single stubs make tracks */
+  Int_t fNTracksMaxFP;
+  Double_t fXtTrCriterion;
+  Double_t fYtTrCriterion;
+  Double_t fXptTrCriterion;
+  Double_t fYptTrCriterion;
 
   // Each of these will be dimensioned with the number of chambers
   Double_t* fXCenter;
@@ -109,33 +124,27 @@ protected:
   Double_t* fPitch;
   Double_t* fCentralWire;
   Double_t* fPlaneTimeZero;
+  Double_t* fSigma;
+  Double_t** fPlaneCoeffs;
 
-  THcDriftChamberPlane** fPlanes; // List of plane objects
-  THcDriftChamber** fChambers; // List of chamber objects
-
-  TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
-                              // and estimated match to TOF paddle
   // Useful derived quantities
   // double tan_angle, sin_angle, cos_angle;
   
-  //  static const char NDEST = 2;
-  //  struct DataDest {
-  //    Int_t*    nthit;
-  //    Int_t*    nahit;
-  //    Double_t*  tdc;
-  //    Double_t*  tdc_c;
-  //    Double_t*  adc;
-  //    Double_t*  adc_p;
-  //    Double_t*  adc_c;
-  //    Double_t*  offset;
-  //    Double_t*  ped;
-  //    Double_t*  gain;
-  //  } fDataDest[NDEST];     // Lookup table for decoder
+  // Intermediate structure for building 
+  static const char MAXTRACKS = 50;
 
+  std::vector<THcDriftChamberPlane*> fPlanes; // List of plane objects
+  std::vector<THcDriftChamber*> fChambers; // List of chamber objects
+
+  TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
+                              // and estimated match to TOF paddle
   void           ClearEvent();
   void           DeleteArrays();
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
+  void           LinkStubs();
+  void           TrackFit();
+  Double_t       DpsiFun(Double_t ray[4], Int_t plane);
 
   void Setup(const char* name, const char* description);
 

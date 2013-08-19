@@ -37,6 +37,7 @@ public:
   Double_t GetTime()    const { return fTime; }
   Double_t GetDist()    const { return fDist; }
   Double_t GetPos()     const { return fWire->GetPos(); } //Position of hit wire
+  Double_t GetCoord()   const { return fCoord; }
   Double_t GetdDist()   const { return fdDist; }
   Int_t    GetCorrectedStatus() const { return fCorrected; }
 
@@ -47,6 +48,7 @@ public:
   void     SetRawTime(Int_t time)     { fRawTime = time; }
   void     SetTime(Double_t time)     { fTime = time; }
   void     SetDist(Double_t dist)     { fDist = dist; }
+  void     SetLeftRight(Int_t lr)   { fCoord = GetPos() + lr*fDist;}
   void     SetdDist(Double_t ddist)   { fdDist = ddist; }
   void     SetFitDist(Double_t dist)  { ftrDist = dist; }
   Int_t    GetPlaneNum() const { return fWirePlane->GetPlaneNum(); }
@@ -62,6 +64,7 @@ protected:
   Double_t    fTime;     // Time corrected for time offset of wire (s)
   THcDriftChamberPlane* fWirePlane; //! Pointer to parent wire plane
   Double_t    fDist;     // (Perpendicular) Drift Distance
+  Double_t    fCoord;    // Actual coordinate of hit
   Double_t    fdDist;    // uncertainty in fDist (for chi2 calc)
   Double_t    ftrDist;   // (Perpendicular) distance from the track
   Int_t       fCorrected; // Has this hit been corrected?
