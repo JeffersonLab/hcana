@@ -1308,7 +1308,7 @@ Slot= 22
   50, 2, 5, 3 !TDC ROC#1 Sl#23 Ch#50 HSCIN pl#2 [Y1] id#5 sig#3 [TDC-] (50 Y1N-05)
   51, 2, 7, 3 !TDC ROC#1 Sl#23 Ch#51 HSCIN pl#2 [Y1] id#7 sig#3 [TDC-] (51 Y1N-07)
   52, 2, 9, 3 !TDC ROC#1 Sl#23 Ch#52 HSCIN pl#2 [Y1] id#9 sig#3 [TDC-] (52 Y1N-09)
-  53, 2, 10, 3 !TDC ROC#1 Sl#23 Ch#53 Y1N-10 As Of 12 Apr 07
+!  53 !TDC ROC#1 Sl#23 Ch#53 unused
 !  54 !TDC ROC#1 Sl#23 Ch#54 unused
 !  55 !TDC ROC#1 Sl#23 Ch#55 unused
   56, 2, 2, 3 !TDC ROC#1 Sl#23 Ch#56 HSCIN pl#2 [Y1] id#2 sig#3 [TDC-] (56 Y1N-02)
@@ -1316,10 +1316,9 @@ Slot= 22
   58, 2, 6, 3 !TDC ROC#1 Sl#23 Ch#58 HSCIN pl#2 [Y1] id#6 sig#3 [TDC-] (58 Y1N-06)
   59, 2, 8, 3 !TDC ROC#1 Sl#23 Ch#59 HSCIN pl#2 [Y1] id#8 sig#3 [TDC-] (59 Y1N-08)
 !  60, 2, 10, 3 !TDC ROC#1 Sl#23 Ch#60 HSCIN pl#2 [Y1] id#10 sig#3 [TDC-] (60 Y1N-10)
-!  61, 2, 10, 3 !TDC ROC#1 Sl#23 Ch#61 swap location for h1y10-
+  61 , 2, 10, 3 !TDC ROC#1 Sl#23 Ch#61 swap location for h1y10-
 !  62 !TDC ROC#1 Sl#23 Ch#62 unused
 !  63 !TDC ROC#1 Sl#23 Ch#63 unused
-!  Channels 60-63 possibly bad 12 Apr 07 - moved Y1N-10 to 53
 !
  Slot= 21 ! TDC  
 ! 
@@ -1620,8 +1619,7 @@ Slot= 22
   41, 2, 4, 0 !ADC ROC#1 Sl#9 Ch#41 HSCIN pl#2 [Y1] id#4 sig#0 [ADC+] (41 Y1P-04)
   42, 2, 6, 0 !ADC ROC#1 Sl#9 Ch#42 HSCIN pl#2 [Y1] id#6 sig#0 [ADC+] (42 Y1P-06)
   43, 2, 8, 0 !ADC ROC#1 Sl#9 Ch#43 HSCIN pl#2 [Y1] id#8 sig#0 [ADC+] (43 Y1P-08)
-  44, 2, 10, 0 !ADC ROC#1 Sl#9 Ch#44 HSCIN pl#2 [Y1] id#10 sig#0 [ADC+] (44 Y1P-10) as of 19 Apr 07 (PS)
-!  37, 2, 10, 0 !ADC ROC#1 Sl#9 Ch#44 HSCIN pl#2 [Y1] id#10 sig#0 [ADC+] (44 Y1P-10)
+  44, 2, 10, 0 !ADC ROC#1 Sl#9 Ch#44 HSCIN pl#2 [Y1] id#10 sig#0 [ADC+] (44 Y1P-10)
 !  45 !ADC ROC#1 Sl#9 Ch#45 unused
 !  46 !ADC ROC#1 Sl#9 Ch#46 unused
 !  47 !ADC ROC#1 Sl#9 Ch#47 unused
@@ -1715,22 +1713,22 @@ Slot= 22
     detector= 4 !HCAL
 !
  Slot= 1 ! ADC  
-   0, 1, 1  !Adc Roc#1 Sl#1 Ch#0 Hcal Col#1 Row#1 (0 A-01)
-   1, 1, 2  !Adc Roc#1 Sl#1 Ch#1 Hcal Col#1 Row#2 (1 A-02)
-   2, 1, 3  !Adc Roc#1 Sl#1 Ch#2 Hcal Col#1 Row#3 (2 A-03)
-   3, 1, 4  !Adc Roc#1 Sl#1 Ch#3 Hcal Col#1 Row#4 (3 A-04)
-   4, 1, 5  !Adc Roc#1 Sl#1 Ch#4 Hcal Col#1 Row#5 (4 A-05)
-   5, 1, 6  !Adc Roc#1 Sl#1 Ch#5 Hcal Col#1 Row#6 (5 A-06)
-   6, 1, 7  !Adc Roc#1 Sl#1 Ch#6 Hcal Col#1 Row#7 (6 A-07)
-   7, 1, 8  !Adc Roc#1 Sl#1 Ch#7 Hcal Col#1 Row#8 (7 A-08)
-   8, 1, 9  !Adc Roc#1 Sl#1 Ch#8 Hcal Col#1 Row#9 (8 A-09)
-   9, 1, 10 !Adc Roc#1 Sl#1 Ch#9 Hcal Col#1 Row#10 (9 A-10)
-  10, 1, 11 !Adc Roc#1 Sl#1 Ch#10 Hcal Col#1 Row#11 (10 A-11)
-  11, 1, 12 !Adc Roc#1 Sl#1 Ch#11 Hcal Col#1 Row#12 (11 A-12)
-  12, 1, 13 !Adc Roc#1 Sl#1 Ch#12 Hcal Col#1 Row#13 (12 A-13)
-!   13 !Adc Roc#1 Sl#1 Ch#13 Unused
-!   14 !Adc Roc#1 Sl#1 Ch#14 Unused
-!   15 !Adc Roc#1 Sl#1 Ch#15 Unused
+   0, 1, 1  !ADC ROC#1 Sl#1 Ch#0 HCAL col#1 row#1 (0 A-01)
+   1, 1, 2  !ADC ROC#1 Sl#1 Ch#1 HCAL col#1 row#2 (1 A-02)
+   2, 1, 3  !ADC ROC#1 Sl#1 Ch#2 HCAL col#1 row#3 (2 A-03)
+   3, 1, 4  !ADC ROC#1 Sl#1 Ch#3 HCAL col#1 row#4 (3 A-04)
+   4, 1, 5  !ADC ROC#1 Sl#1 Ch#4 HCAL col#1 row#5 (4 A-05)
+   5, 1, 6  !ADC ROC#1 Sl#1 Ch#5 HCAL col#1 row#6 (5 A-06)
+   6, 1, 7  !ADC ROC#1 Sl#1 Ch#6 HCAL col#1 row#7 (6 A-07)
+   7, 1, 8  !ADC ROC#1 Sl#1 Ch#7 HCAL col#1 row#8 (7 A-08)
+   8, 1, 9  !ADC ROC#1 Sl#1 Ch#8 HCAL col#1 row#9 (8 A-09)
+   9, 1, 10 !ADC ROC#1 Sl#1 Ch#9 HCAL col#1 row#10 (9 A-10)
+  10, 1, 11 !ADC ROC#1 Sl#1 Ch#10 HCAL col#1 row#11 (10 A-11)
+  11, 1, 12 !ADC ROC#1 Sl#1 Ch#11 HCAL col#1 row#12 (11 A-12)
+  12, 1, 13 !ADC ROC#1 Sl#1 Ch#12 HCAL col#1 row#13 (12 A-13)
+!   13 !ADC ROC#1 Sl#1 Ch#13 unused
+!   14 !ADC ROC#1 Sl#1 Ch#14 unused
+!   15 !ADC ROC#1 Sl#1 Ch#15 unused
   16, 2, 1  !ADC ROC#1 Sl#1 Ch#16 HCAL col#2 row#1 (16 B-01)
   17, 2, 2  !ADC ROC#1 Sl#1 Ch#17 HCAL col#2 row#2 (17 B-02)
   18, 2, 3  !ADC ROC#1 Sl#1 Ch#18 HCAL col#2 row#3 (18 B-03)
@@ -1772,16 +1770,16 @@ Slot= 22
   54, 4, 7  !ADC ROC#1 Sl#1 Ch#54 HCAL col#4 row#7 (54 D-07)
   55, 4, 8  !ADC ROC#1 Sl#1 Ch#55 HCAL col#4 row#8 (55 D-08)
   56, 4, 9  !ADC ROC#1 Sl#1 Ch#56 HCAL col#4 row#9 (56 D-09)
-  63, 4, 10 !ADC ROC#1 Sl#1 Ch#57 HCAL col#4 row#10 (57 D-10)
-!  57, 4, 10 !ADC ROC#1 Sl#1 Ch#57 HCAL col#4 row#10 (57 D-10) (05/09/07, Patricia, flaky ribbon channel)
+  57, 4, 10 !ADC ROC#1 Sl#1 Ch#57 HCAL col#4 row#10 (57 D-10)
   58, 4, 11 !ADC ROC#1 Sl#1 Ch#58 HCAL col#4 row#11 (58 D-11)
   59, 4, 12 !ADC ROC#1 Sl#1 Ch#59 HCAL col#4 row#12 (59 D-12)
   60, 4, 13 !ADC ROC#1 Sl#1 Ch#60 HCAL col#4 row#13 (60 D-13)
+!
 !  61 !ADC ROC#1 Sl#1 Ch#61 unused
 
     detector= 5    !HMISC - scintillator (ADCs) - behind calorimeter
   62, 2, 1, 0 !2,1,0 stands for: 2=adc,channel#1,0=dummy(pos vs. neg).
-!  63, 2, 2, 0 !
+  63, 2, 2, 0 !
 !
 detector= 4 !HCAL
 Slot= 5 ! ADC  Second set of tubes on first two layers
@@ -1796,7 +1794,7 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
   8, 1, 9, 1 !ADC ROC#1 Sl#5 Ch#8 HCAL col#1 row#9 (8 An-09)
   9, 1, 10, 1 !ADC ROC#1 Sl#5 Ch#9 HCAL col#1 row#10 (9 An-10)
   10, 1, 11, 1 !ADC ROC#1 Sl#5 Ch#10 HCAL col#1 row#11 (10 An-11)
-  11, 1, 12, 1 !ADC ROC#1 Sl#5 Ch#11 HCAL col#1 row#12 (11 An-12)
+  11, 1, 12, 1 !ADC ROC#1 Sl#5 Ch#11 HCAL col#1 row#12 (11 An-112)
   12, 1, 13, 1 !ADC ROC#1 Sl#5 Ch#12 HCAL col#1 row#13 (12 An-13)
 !  13 !ADC ROC#1 Sl#5 Ch#13 unused
 !  14 !ADC ROC#1 Sl#5 Ch#14 unused
@@ -1813,8 +1811,7 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
   25, 2, 10, 1 !ADC ROC#1 Sl#5 Ch#25 HCAL col#2 row#10 (25 Bn-10)
   26, 2, 11, 1 !ADC ROC#1 Sl#5 Ch#26 HCAL col#2 row#11 (26 Bn-11)
   27, 2, 12, 1 !ADC ROC#1 Sl#5 Ch#27 HCAL col#2 row#12 (27 Bn-12)
-  30, 2, 13, 1 !ADC ROC#1 Sl#5 Ch#30 HCAL col#2 row#13 (30 Bn-13)
-!  28, 2, 13, 1 !ADC ROC#1 Sl#5 Ch#28 HCAL col#2 row#13 (28 Bn-13) (05/09/07, bad ADC channel, put it at 30)
+  28, 2, 13, 1 !ADC ROC#1 Sl#5 Ch#28 HCAL col#2 row#13 (28 Bn-13)
 !  29 !ADC ROC#1 Sl#1 Ch#29 unused
 !  30 !ADC ROC#1 Sl#1 Ch#30 unused
 !  31 !ADC ROC#1 Sl#1 Ch#31 unused
@@ -1891,9 +1888,6 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
 !   13 !ADC ROC#1 Sl#3 Ch#13 unused
 !   14 !ADC ROC#1 Sl#3 Ch#14 unused
 !   15 !ADC ROC#1 Sl#3 Ch#15 unused
-!   13 !ADC ROC#1 Sl#1 Ch#13 unused
-!   14 !ADC ROC#1 Sl#1 Ch#14 unused
-!   15 !ADC ROC#1 Sl#1 Ch#15 unused
 !   16 !ADC ROC#1 Sl#3 Ch#16 unused
 !   17 !ADC ROC#1 Sl#3 Ch#17 unused
 !   18 !ADC ROC#1 Sl#3 Ch#18 unused
@@ -1958,10 +1952,10 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
 !
   Slot= 13
 !
-  0, 2, 17, 0 !ADC ROC#1 Sl#15 Ch#0 H00C X+
-  1, 2, 18, 0 !ADC ROC#1 Sl#15 Ch#1 H00C X-
-  2, 2, 19, 0 !ADC ROC#1 Sl#15 Ch#2 H00C Y+
-  3, 2, 20, 0 !ADC ROC#1 Sl#15 Ch#3 H00C Y-
+!  0, 2, 1, 0 !ADC ROC#1 Sl#15 Ch#0
+!  1, 2, 2, 0 !ADC ROC#1 Sl#15 Ch#1
+!  2, 2, 3, 0 !ADC ROC#1 Sl#15 Ch#2
+!  3, 2, 4, 0 !ADC ROC#1 Sl#15 Ch#3
   4, 2, 5, 0 !ADC ROC#1 Sl#15 Ch#4 H00A X+
   5, 2, 6, 0 !ADC ROC#1 Sl#15 Ch#5 H00A X-
   6, 2, 7, 0 !ADC ROC#1 Sl#15 Ch#6 H00A Y+
@@ -1979,10 +1973,10 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
   15, 2, 14, 0 !ADC ROC#1 Sl#15 Ch#15 Fast Raster X-signal
   12, 2, 15, 0 !ADC ROC#1 Sl#15 Ch#12 Fast Raster Y-sync
   13, 2, 16, 0 !ADC ROC#1 Sl#15 Ch#13 Fast Raster Y-signal
-!  16, 2, 17, 0  !ADC ROC#1 Sl#15 Ch#16 H00C X+
-!  17, 2, 18, 0  !ADC ROC#1 Sl#15 Ch#17 H00C X-
-!  18, 2, 19, 0  !ADC ROC#1 Sl#15 Ch#18 H00C Y+
-!  19, 2, 20, 0  !ADC ROC#1 Sl#15 Ch#19 H00C Y-
+  16, 2, 17, 0  !ADC ROC#1 Sl#15 Ch#16 H00C X+
+  17, 2, 18, 0  !ADC ROC#1 Sl#15 Ch#17 H00C X-
+  18, 2, 19, 0  !ADC ROC#1 Sl#15 Ch#18 H00C Y+
+  19, 2, 20, 0  !ADC ROC#1 Sl#15 Ch#19 H00C Y-
 !   20 !ADC ROC#1 Sl#15 Ch#20 unused
 !   21 !ADC ROC#1 Sl#15 Ch#21 unused
   22, 2, 23, 0  !ADC ROC#1 Sl#15 Ch#22 Raster gate
@@ -2730,42 +2724,6 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
  62, 10, 63
  63, 10, 64
 !
-! Use for runs before July 3rd 8:00am
-!    detector= 15 !SMISC for tracker
-!95, 1, 81, 0  ! 0 !TDC ROC#4 Sl#12 track 3
-!83, 1, 82, 0  ! 0 !TDC ROC#4 Sl#12 track 4
-!82, 1, 83, 0  ! 0 !TDC ROC#4 Sl#12 track 5
-!81, 1, 84, 0  ! 0 !TDC ROC#4 Sl#12 track 6   
-!84, 1, 85, 0  ! 0 !TDC ROC#4 Sl#12 track 7   
-!85, 1, 86, 0  ! 0 !TDC ROC#4 Sl#12 track 8   
-!86, 1, 87, 0  ! 0 !TDC ROC#4 Sl#12 track 9   
-!87, 1, 88, 0  ! 0 !TDC ROC#4 Sl#12 track 10 
-! before run 63466 track 11 in chan 88 and fiber 1 in chan 90 
-! after run 63466 track 11 in chan 90 and fiber 1 in chan 88 
-!90, 1, 89, 0  ! 0 !TDC ROC#4 Sl#12 track 11  
-!89, 1, 90, 0  ! 0 !TDC ROC#4 Sl#12 track 12 
-!88, 1, 91, 0  ! 0 !TDC ROC#4 Sl#12 fiber 1    
-!91, 1, 92, 0  ! 0 !TDC ROC#4 Sl#12 bad    
-!92, 1, 93, 0  ! 0 !TDC ROC#4 Sl#12 fiber 2    
-!93, 1, 94, 0  ! 0 !TDC ROC#4 Sl#12 fiber 3
-!94, 1, 95, 0  ! 0 !TDC ROC#4 Sl#12 fiber 4  
-!
-! Use for runs after July 3rd 8:00am ( CAMAC slot 19 mod 3412 8mV disc)
- 82, 1, 81, 0  ! 0 !TDC ROC#4 Sl#12 track 3   
- 83, 1, 82, 0  ! 0 !TDC ROC#4 Sl#12 track 4   
- 84, 1, 83, 0  ! 0 !TDC ROC#4 Sl#12 track 5   
- 85, 1, 84, 0  ! 0 !TDC ROC#4 Sl#12 track 6   
- 86, 1, 85, 0  ! 0 !TDC ROC#4 Sl#12 track 7   
- 87, 1, 86, 0  ! 0 !TDC ROC#4 Sl#12 track 8   
- 88, 1, 87, 0  ! 0 !TDC ROC#4 Sl#12 track 9   
- 89, 1, 88, 0  ! 0 !TDC ROC#4 Sl#12 track 10  
- 90, 1, 89, 0  ! 0 !TDC ROC#4 Sl#12 track 11  
- 91, 1, 90, 0  ! 0 !TDC ROC#4 Sl#12 track 12 
- 92, 1, 91, 0  ! 0 !TDC ROC#4 Sl#12 fiber 1    
- 93, 1, 93, 0  ! 0 !TDC ROC#4 Sl#12 fiber 2    
- 94, 1, 94, 0  ! 0 !TDC ROC#4 Sl#12 fiber 3
- 95, 1, 95, 0  ! 0 !TDC ROC#4 Sl#12 fiber 4  
-
 !   SOS upstairs (SSCIN+SCAL+SCER) map    K.B.Beard 13-Jun-1994
 !
     ROC= 3               !upstairs SOS crate (fbch2)
@@ -2998,8 +2956,6 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
 !  44 !ADC ROC#3 Sl#9 Ch#44 unused
 !  45 !ADC ROC#3 Sl#9 Ch#45 unused
 !  46 !ADC ROC#3 Sl#9 Ch#46 unused
-  45, 3, 16, 0 !ADC ROC#3 Sl#7 Ch#15 SSCIN pl#3 [X2] id sig#16 [ADC+]
-  47, 3, 16, 1 !ADC ROC#3 Sl#7 Ch#31 SSCIN pl#3 [X2] id sig#16 [ADC-]
 !  47 !ADC ROC#3 Sl#9 Ch#47 unused
   48, 2, 1, 1 !ADC ROC#3 Sl#9 Ch#48 SSCIN pl#2 [Y1] id sig#1 [ADC-]
   49, 2, 3, 1 !ADC ROC#3 Sl#9 Ch#49 SSCIN pl#2 [Y1] id sig#3 [ADC-]
@@ -3034,7 +2990,7 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
   12, 3, 10, 0 !ADC ROC#3 Sl#7 Ch#12 SSCIN pl#3 [X2] id sig#10 [ADC+]
   13, 3, 12, 0 !ADC ROC#3 Sl#7 Ch#13 SSCIN pl#3 [X2] id sig#12 [ADC+]
   14, 3, 14, 0 !ADC ROC#3 Sl#7 Ch#14 SSCIN pl#3 [X2] id sig#14 [ADC+]
-!  15, 3, 16, 0 !ADC ROC#3 Sl#7 Ch#15 SSCIN pl#3 [X2] id sig#16 [ADC+]
+  15, 3, 16, 0 !ADC ROC#3 Sl#7 Ch#15 SSCIN pl#3 [X2] id sig#16 [ADC+]
   16, 3, 1, 1 !ADC ROC#3 Sl#7 Ch#16 SSCIN pl#3 [X2] id sig#1 [ADC-]
   17, 3, 3, 1 !ADC ROC#3 Sl#7 Ch#17 SSCIN pl#3 [X2] id sig#3 [ADC-]
   18, 3, 5, 1 !ADC ROC#3 Sl#7 Ch#18 SSCIN pl#3 [X2] id sig#5 [ADC-]
@@ -3050,7 +3006,7 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
   28, 3, 10, 1 !ADC ROC#3 Sl#7 Ch#28 SSCIN pl#3 [X2] id sig#10 [ADC-]
   29, 3, 12, 1 !ADC ROC#3 Sl#7 Ch#29 SSCIN pl#3 [X2] id sig#12 [ADC-]
   30, 3, 14, 1 !ADC ROC#3 Sl#7 Ch#30 SSCIN pl#3 [X2] id sig#14 [ADC-]
-!  31, 3, 16, 1 !ADC ROC#3 Sl#7 Ch#31 SSCIN pl#3 [X2] id sig#16 [ADC-]
+  31, 3, 16, 1 !ADC ROC#3 Sl#7 Ch#31 SSCIN pl#3 [X2] id sig#16 [ADC-]
   32, 4, 1, 0 !ADC ROC#3 Sl#7 Ch#32 SSCIN pl#4 [Y2] id sig#1 [ADC+]
   33, 4, 3, 0 !ADC ROC#3 Sl#7 Ch#33 SSCIN pl#4 [Y2] id sig#3 [ADC+]
   34, 4, 5, 0 !ADC ROC#3 Sl#7 Ch#34 SSCIN pl#4 [Y2] id sig#5 [ADC+]
@@ -3088,7 +3044,7 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
 !
  Slot= 1 ! ADC  
   0, 1, 1 !ADC ROC#3 Sl#1 Ch#0 SCAL column#1 row#1
-! 1  !ADC ROC#3 Sl#1 Ch#2 unused
+  1, 1, 2 !ADC ROC#3 Sl#1 Ch#1 SCAL column#1 row#2
   2, 1, 3 !ADC ROC#3 Sl#1 Ch#2 SCAL column#1 row#3
   3, 1, 4 !ADC ROC#3 Sl#1 Ch#3 SCAL column#1 row#4
   4, 1, 5 !ADC ROC#3 Sl#1 Ch#4 SCAL column#1 row#5
@@ -3096,12 +3052,12 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
   6, 1, 7 !ADC ROC#3 Sl#1 Ch#6 SCAL column#1 row#7
   7, 1, 8 !ADC ROC#3 Sl#1 Ch#7 SCAL column#1 row#8
   8, 1, 9 !ADC ROC#3 Sl#1 Ch#8 SCAL column#1 row#9
-! 9  !ADC ROC#3 Sl#1 Ch#9 unused
-! 10 !ADC ROC#3 Sl#1 Ch#10 unused
-  11, 1, 2 !ADC ROC#3 Sl#1 Ch#1 SCAL column#1 row#2
-  12, 1, 11 !ADC ROC#3 Sl#1 Ch#10 SCAL column#1 row#11
-  13, 1, 10 !ADC ROC#3 Sl#1 Ch#9 SCAL column#1 row#10
-! 14  !ADC ROC#3 Sl#1 Ch#14 unused
+  9, 1, 10 !ADC ROC#3 Sl#1 Ch#9 SCAL column#1 row#10
+  10, 1, 11 !ADC ROC#3 Sl#1 Ch#10 SCAL column#1 row#11
+!  11 !ADC ROC#3 Sl#1 Ch#11 unused
+!  12 !ADC ROC#3 Sl#1 Ch#12 unused
+!  13 !ADC ROC#3 Sl#1 Ch#13 unused
+!  14 !ADC ROC#3 Sl#1 Ch#14 unused
 !  15 !ADC ROC#3 Sl#1 Ch#15 unused
   16, 2, 1 !ADC ROC#3 Sl#1 Ch#16 SCAL column#2 row#1
   17, 2, 2 !ADC ROC#3 Sl#1 Ch#17 SCAL column#2 row#2
@@ -3119,19 +3075,20 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
 !  29 !ADC ROC#3 Sl#1 Ch#29 unused
 !  30 !ADC ROC#3 Sl#1 Ch#30 unused
 !  31 !ADC ROC#3 Sl#1 Ch#31 unused
-  32, 3, 1 !ADC ROC#3 Sl#1 Ch#32 SCAL column#3 row#1
+!  32, 3, 1 !ADC ROC#3 Sl#1 Ch#32 SCAL column#3 row#1  
+  44, 3, 1 !ADC ROC#3 Sl#1 Ch#32 SCAL column#3 row#1
   33, 3, 2 !ADC ROC#3 Sl#1 Ch#33 SCAL column#3 row#2
   34, 3, 3 !ADC ROC#3 Sl#1 Ch#34 SCAL column#3 row#3
   35, 3, 4 !ADC ROC#3 Sl#1 Ch#35 SCAL column#3 row#4
   36, 3, 5 !ADC ROC#3 Sl#1 Ch#36 SCAL column#3 row#5
-! 37 !ADC ROC#3 Sl#1 Ch#37 unused
+  37, 3, 6 !ADC ROC#3 Sl#1 Ch#37 SCAL column#3 row#6
   38, 3, 7 !ADC ROC#3 Sl#1 Ch#38 SCAL column#3 row#7
   39, 3, 8 !ADC ROC#3 Sl#1 Ch#39 SCAL column#3 row#8
   40, 3, 9 !ADC ROC#3 Sl#1 Ch#40 SCAL column#3 row#9
   41, 3, 10 !ADC ROC#3 Sl#1 Ch#41 SCAL column#3 row#10
   42, 3, 11 !ADC ROC#3 Sl#1 Ch#42 SCAL column#3 row#11
-  43, 3, 6 !ADC ROC#3 Sl#1 Ch#43 SCAL column#3 row#6
-!  44 !ADC ROC#3 Sl#1 Ch#43 unused
+!  43 !ADC ROC#3 Sl#1 Ch#43 unused
+!  44 !ADC ROC#3 Sl#1 Ch#44 unused
 !  45 !ADC ROC#3 Sl#1 Ch#45 unused
 !  46 !ADC ROC#3 Sl#1 Ch#46 unused
 !  47 !ADC ROC#3 Sl#1 Ch#47 unused
@@ -3152,6 +3109,7 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
 !  59 !ADC ROC#3 Sl#1 Ch#59 unused
 !  60 !ADC ROC#3 Sl#1 Ch#60 unused
 !  61 !ADC ROC#3 Sl#1 Ch#61 unused
+!  62 !ADC ROC#3 Sl#1 Ch#62 unused
   62, 4, 1 !ADC ROC#3 Sl#1 Ch#48 SCAL column#4 row#1
 !  63 !ADC ROC#3 Sl#1 Ch#63 unused
  detector= 15   !smisc  -  photodiode for laser gain calibration system.

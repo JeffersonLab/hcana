@@ -10,6 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "THcShower.h"
+#include "THcShowerCluster.h"
 #include "THaEvData.h"
 #include "THaDetMap.h"
 #include "THcDetectorMap.h"
@@ -105,7 +106,7 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
 
-  THcHitList::InitHitList(fDetMap, "THcShowerHit", 100);
+  THcHitList::InitHitList(fDetMap, "THcRawShowerHit", 100);
 
   EStatus status;
   if( (status = THaNonTrackingDetector::Init( date )) )
@@ -155,43 +156,213 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
 
+  {
+    DBRequest list[]={
+      {"cal_num_neg_columns", &fNegCols, kInt},
+      {"cal_slop", &fSlop, kDouble},
+      {"cal_fv_test", &fvTest, kDouble},
+      {0}
+    };
+    gHcParms->LoadParmValues((DBRequest*)&list, prefix);
+  }
+
+  cout << "Number of neg. columns   = " << fNegCols << endl;
+  cout << "Slop parameter           = " << fSlop << endl;
+  cout << "Fiducial volum test flag = " << fvTest << endl;
+
   BlockThick = new Double_t [fNLayers];
   fNBlocks = new Int_t [fNLayers];
   fNLayerZPos = new Double_t [fNLayers];
-  XPos = new Double_t [2*fNLayers];
+  YPos = new Double_t [2*fNLayers];
 
   for(Int_t i=0;i<fNLayers;i++) {
     DBRequest list[]={
       {Form("cal_%s_thick",fLayerNames[i]), &BlockThick[i], kDouble},
       {Form("cal_%s_nr",fLayerNames[i]), &fNBlocks[i], kInt},
       {Form("cal_%s_zpos",fLayerNames[i]), &fNLayerZPos[i], kDouble},
-      {Form("cal_%s_left",fLayerNames[i]), &XPos[2*i], kDouble},
-      {Form("cal_%s_right",fLayerNames[i]), &XPos[2*i+1], kDouble},
+      {Form("cal_%s_right",fLayerNames[i]), &YPos[2*i], kDouble},
+      {Form("cal_%s_left",fLayerNames[i]), &YPos[2*i+1], kDouble},
       {0}
     };
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
-  YPos = new Double_t* [fNLayers];
+
+  //Caution! Z positions (fronts) are off in hcal.param! Correct later on.
+
+  XPos = new Double_t* [fNLayers];
   for(Int_t i=0;i<fNLayers;i++) {
-    YPos[i] = new Double_t [fNBlocks[i]];
+    XPos[i] = new Double_t [fNBlocks[i]];
     DBRequest list[]={
-      {Form("cal_%s_top",fLayerNames[i]),YPos[i], kDouble, fNBlocks[i]},
+      {Form("cal_%s_top",fLayerNames[i]),XPos[i], kDouble, fNBlocks[i]},
       {0}
     };
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
+
   for(Int_t i=0;i<fNLayers;i++) {
     cout << "Plane " << fLayerNames[i] << ":" << endl;
     cout << "    Block thickness: " << BlockThick[i] << endl;
     cout << "    NBlocks        : " << fNBlocks[i] << endl;
     cout << "    Z Position     : " << fNLayerZPos[i] << endl;
-    cout << "    X Positions    : " << XPos[2*i] << ", " << XPos[2*i+1] << endl;
-    cout << "    Y Positions    :";
+    cout << "    Y Positions    : " << YPos[2*i] << ", " << YPos[2*i+1] <<endl;
+    cout << "    X Positions    :";
     for(Int_t j=0; j<fNBlocks[i]; j++) {
-      cout << " " << YPos[i][j];
+      cout << " " << XPos[i][j];
     }
     cout << endl;
+
   }
+
+  //Calibration related parameters (from hcal.param).
+
+  fNtotBlocks=0;              //total number of blocks
+  for (Int_t i=0; i<fNLayers; i++) fNtotBlocks += fNBlocks[i];
+
+  cout << "Total number of blocks in the calorimeter: " << fNtotBlocks << endl;
+
+  //Pedestal limits from hcal.param.
+  fShPosPedLimit = new Int_t [fNtotBlocks];
+  fShNegPedLimit = new Int_t [fNtotBlocks];
+
+  //Calibration constants
+  fPosGain = new Double_t [fNtotBlocks];
+  fNegGain = new Double_t [fNtotBlocks];
+
+  //Read in parameters from hcal.param
+  Double_t hcal_pos_cal_const[fNtotBlocks];
+  //  Double_t hcal_pos_gain_ini[fNtotBlocks];
+  //  Double_t hcal_pos_gain_cur[fNtotBlocks];
+  //  Int_t    hcal_pos_ped_limit[fNtotBlocks];
+  Double_t hcal_pos_gain_cor[fNtotBlocks];
+
+  Double_t hcal_neg_cal_const[fNtotBlocks];
+  //  Double_t hcal_neg_gain_ini[fNtotBlocks];
+  //  Double_t hcal_neg_gain_cur[fNtotBlocks];
+  //  Int_t    hcal_neg_ped_limit[fNtotBlocks];
+  Double_t hcal_neg_gain_cor[fNtotBlocks];
+
+  DBRequest list[]={
+    {"cal_pos_cal_const", hcal_pos_cal_const, kDouble, fNtotBlocks},
+    //    {"cal_pos_gain_ini",  hcal_pos_gain_ini,  kDouble, fNtotBlocks},
+    //    {"cal_pos_gain_cur",  hcal_pos_gain_cur,  kDouble, fNtotBlocks},
+    {"cal_pos_ped_limit", fShPosPedLimit, kInt,    fNtotBlocks},
+    {"cal_pos_gain_cor",  hcal_pos_gain_cor,  kDouble, fNtotBlocks},
+    {"cal_neg_cal_const", hcal_neg_cal_const, kDouble, fNtotBlocks},
+    //    {"cal_neg_gain_ini",  hcal_neg_gain_ini,  kDouble, fNtotBlocks},
+    //    {"cal_neg_gain_cur",  hcal_neg_gain_cur,  kDouble, fNtotBlocks},
+    {"cal_neg_ped_limit", fShNegPedLimit, kInt,    fNtotBlocks},
+    {"cal_neg_gain_cor",  hcal_neg_gain_cor,  kDouble, fNtotBlocks},
+    {"cal_min_peds", &fShMinPeds, kInt},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list, prefix);
+
+  //+++
+
+  cout << "hcal_pos_cal_const:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << hcal_pos_cal_const[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  //  cout << "hcal_pos_gain_ini:" << endl;
+  //  for (Int_t j=0; j<fNLayers; j++) {
+  //    for (Int_t i=0; i<fNBlocks[j]; i++) {
+  //      cout << hcal_pos_gain_ini[j*fNBlocks[j]+i] << " ";
+  //    };
+  //    cout <<  endl;
+  //  };
+
+  //  cout << "hcal_pos_gain_cur:" << endl;
+  //  for (Int_t j=0; j<fNLayers; j++) {
+  //    for (Int_t i=0; i<fNBlocks[j]; i++) {
+  //      cout << hcal_pos_gain_cur[j*fNBlocks[j]+i] << " ";
+  //    };
+  //    cout <<  endl;
+  //  };
+
+  cout << "fShPosPedLimit:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << fShPosPedLimit[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  cout << "hcal_pos_gain_cor:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << hcal_pos_gain_cor[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  //---
+
+  cout << "hcal_neg_cal_const:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << hcal_neg_cal_const[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  //  cout << "hcal_neg_gain_ini:" << endl;
+  //  for (Int_t j=0; j<fNLayers; j++) {
+  //    for (Int_t i=0; i<fNBlocks[j]; i++) {
+  //      cout << hcal_neg_gain_ini[j*fNBlocks[j]+i] << " ";
+  //    };
+  //  //    cout <<  endl;
+  //  };
+
+  //  cout << "hcal_neg_gain_cur:" << endl;
+  //  for (Int_t j=0; j<fNLayers; j++) {
+  //    for (Int_t i=0; i<fNBlocks[j]; i++) {
+  //      cout << hcal_neg_gain_cur[j*fNBlocks[j]+i] << " ";
+  //    };
+  //    cout <<  endl;
+  //  };
+
+  cout << "fShNegPedLimit:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << fShNegPedLimit[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  cout << "hcal_neg_gain_cor:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << hcal_neg_gain_cor[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  //Calibration constants in GeV per ADC channel.
+
+  for (Int_t i=0; i<fNtotBlocks; i++) {
+    fPosGain[i] = hcal_pos_cal_const[i] *  hcal_pos_gain_cor[i];
+    fNegGain[i] = hcal_neg_cal_const[i] *  hcal_neg_gain_cor[i];
+  }
+
+  cout << "fPosGain:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << fPosGain[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
+
+  cout << "fNegGain:" << endl;
+  for (Int_t j=0; j<fNLayers; j++) {
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+      cout << fNegGain[j*fNBlocks[j]+i] << " ";
+    };
+    cout <<  endl;
+  };
 
   fIsInit = true;
 
@@ -212,25 +383,27 @@ Int_t THcShower::DefineVariables( EMode mode )
 
   // Register variables in global list
 
- //  RVarDef vars[] = {
- //   { "nhit",   "Number of hits",                     "fNhits" },
+  RVarDef vars[] = {
+    { "nhits",  "Number of hits",                     "fNhits" },
  //   { "a",      "Raw ADC amplitudes",                 "fA" },
  //   { "a_p",    "Ped-subtracted ADC amplitudes",      "fA_p" },
  //   { "a_c",    "Calibrated ADC amplitudes",          "fA_c" },
  //   { "asum_p", "Sum of ped-subtracted ADCs",         "fAsum_p" },
  //   { "asum_c", "Sum of calibrated ADCs",             "fAsum_c" },
- //   { "nclust", "Number of clusters",                 "fNclust" },
- //   { "e",      "Energy (MeV) of largest cluster",    "fE" },
- //   { "x",      "x-position (cm) of largest cluster", "fX" },
- //   { "y",      "y-position (cm) of largest cluster", "fY" },
- //   { "mult",   "Multiplicity of largest cluster",    "fMult" },
+    { "nclust", "Number of clusters",                 "fNclust" },
+    { "emax",   "Energy (MeV) of largest cluster",    "fE" },
+    { "eprmax",   "Preshower Energy (MeV) of largest cluster",    "fEpr" },
+    { "xmax",      "x-position (cm) of largest cluster", "fX" },
+ //   { "z",      "z-position (cm) of largest cluster", "fZ" },
+    { "mult",   "Multiplicity of largest cluster",    "fMult" },
  //   { "nblk",   "Numbers of blocks in main cluster",  "fNblk" },
  //   { "eblk",   "Energies of blocks in main cluster", "fEblk" },
  //   { "trx",    "track x-position in det plane",      "fTRX" },
  //   { "try",    "track y-position in det plane",      "fTRY" },
- //   { 0 }
- // };
- //  return DefineVarsFromList( vars, mode );
+    { 0 }
+  };
+  return DefineVarsFromList( vars, mode );
+
   return kOK;
 }
 
@@ -258,7 +431,7 @@ void THcShower::DeleteArrays()
   delete [] fNBlocks;  fNBlocks = NULL;
   delete [] fNLayerZPos;  fNLayerZPos = NULL;
   delete [] XPos;  XPos = NULL;
-  delete [] YPos;  YPos = NULL;
+  delete [] ZPos;  ZPos = NULL;
   //delete [] fSpacing;  fSpacing = NULL;
   //delete [] fCenter;   fCenter = NULL; // This 2D. What is correct way to delete?
 }
@@ -267,51 +440,63 @@ void THcShower::DeleteArrays()
 inline 
 void THcShower::Clear(Option_t* opt)
 {
+
 //   Reset per-event data.
+
   for(Int_t ip=0;ip<fNLayers;ip++) {
     fPlanes[ip]->Clear(opt);
   }
+
  // fTrackProj->Clear();
+
+  fNhits = 0;
+  fNclust = 0;
+  fMult = 0;
+  fE = 0.;
+  fEpr = 0.;
+  fX = -75.;   //out of acceptance
 }
 
 //_____________________________________________________________________________
 Int_t THcShower::Decode( const THaEvData& evdata )
 {
+
+  Clear();
+
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = THcHitList::DecodeToHitList(evdata);
 
-if(gHaCuts->Result("Pedestal_event")) {
+  if(gHaCuts->Result("Pedestal_event")) {
     Int_t nexthit = 0;
     for(Int_t ip=0;ip<fNLayers;ip++) {
       nexthit = fPlanes[ip]->AccumulatePedestals(fRawHitList, nexthit);
-//cout << "nexthit = " << nexthit << endl;
+      //cout << "nexthit = " << nexthit << endl;
     }
     fAnalyzePedestals = 1;	// Analyze pedestals first normal events
     return(0);
   }
 
-   if(fAnalyzePedestals) {
-     for(Int_t ip=0;ip<fNLayers;ip++) {
-       fPlanes[ip]->CalculatePedestals();
-     }
-     fAnalyzePedestals = 0;	// Don't analyze pedestals next event
-   }
-
-
+  if(fAnalyzePedestals) {
+    for(Int_t ip=0;ip<fNLayers;ip++) {
+      fPlanes[ip]->CalculatePedestals();
+    }
+    fAnalyzePedestals = 0;	// Don't analyze pedestals next event
+  }
 
   Int_t nexthit = 0;
   for(Int_t ip=0;ip<fNLayers;ip++) {
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
   }
-/*
-//   fRawHitList is TClones array of THcShowerHit objects
-  for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
-    THcShowerHit* hit = (THcShowerHit *) fRawHitList->At(ihit);
-    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
-	 << hit->fADC_pos << " " << hit->fADC_neg << " "  << endl;
-  }
-  cout << endl;
-*/
+
+  //   fRawHitList is TClones array of THcRawShowerHit objects
+  //  cout << "THcShower::Decode: Shower raw hit list:" << endl;
+  //  for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
+  //    THcRawShowerHit* hit = (THcRawShowerHit *) fRawHitList->At(ihit);
+  //    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
+  //	 << hit->fADC_pos << " " << hit->fADC_neg << " "  << endl;
+  //  }
+  //  cout << endl;
+
   return nhits;
 }
 
@@ -322,11 +507,11 @@ Int_t THcShower::ApplyCorrections( void )
 }
 
 //_____________________________________________________________________________
-Double_t THcShower::TimeWalkCorrection(const Int_t& paddle,
-					     const ESide side)
-{
-  return(0.0);
-}
+//Double_t THcShower::TimeWalkCorrection(const Int_t& paddle,
+//					     const ESide side)
+//{
+//  return(0.0);
+//}
 
 //_____________________________________________________________________________
 Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
@@ -339,8 +524,126 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
   //
   //  static const Double_t sqrt2 = TMath::Sqrt(2.);
   
-  ApplyCorrections();
+  cout << "THcShower::CoarseProcess called ---------------------------" <<endl;
 
+  //  ApplyCorrections();
+
+  //
+  // Clustering of hits.
+  //
+
+  THcShowerHitList HitList;                    //list of unclusterd hits
+
+  for(Int_t j=0; j < fNLayers; j++) {
+
+   //cout << "Plane " << j << "  Eplane = " << fPlanes[j]->GetEplane() << endl;
+
+    for (Int_t i=0; i<fNBlocks[j]; i++) {
+
+      //May be should be done this way.
+      //
+      //      Float_t Edep = fPlanes[j]->GetEmean(i);
+      //      if (Edep > 0.) {                                    //hit
+      //	Float_t x = YPos[j][i] + BlockThick[j]/2.;        //top + thick/2
+      //	Float_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
+      //      	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep);
+
+      //ENGINE way.
+      //
+      //      if (fPlanes[j]->GetApos(i)> fPlanes[j]->GetPosThr(i) ||
+      //	  fPlanes[j]->GetAneg(i)> fPlanes[j]->GetNegThr(i)) {    //hit
+      if (fPlanes[j]->GetApos(i) - fPlanes[j]->GetPosPed(i) >
+	  fPlanes[j]->GetPosThr(i) - fPlanes[j]->GetPosPed(i) ||
+	  fPlanes[j]->GetAneg(i) - fPlanes[j]->GetNegPed(i) >
+	  fPlanes[j]->GetNegThr(i) - fPlanes[j]->GetNegPed(i)) {    //hit
+	Float_t Edep = fPlanes[j]->GetEmean(i);
+      	Float_t x = XPos[j][i] + BlockThick[j]/2.;        //top + thick/2
+      	Float_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
+	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep);
+
+	HitList.push_back(hit);
+
+	//cout << "Hit: Edep = " << Edep << " X = " << x << " Z = " << z <<
+	//	  " Block " << i << " Layer " << j << endl;
+      };
+
+    }
+  }
+
+  //Print out hits before clustering.
+  //
+  fNhits = HitList.size();
+  cout << "Total hits:     " << fNhits << endl;
+  for (UInt_t i=0; i!=fNhits; i++) {
+    cout << "unclustered hit " << i << ": ";
+    (*(HitList.begin()+i))->show();
+  }
+
+  THcShowerClusterList* ClusterList = new THcShowerClusterList;
+  ClusterList->ClusterHits(HitList);
+
+  //Print out the cluster list.
+  //
+  fNclust = (*ClusterList).NbClusters();
+  cout << "Cluster_list size: " << fNclust << endl;
+
+  for (UInt_t i=0; i!=fNclust; i++) {
+
+    THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
+
+    cout << "Cluster #" << i 
+         <<":  E=" << (*cluster).clE() 
+         << "  Epr=" << (*cluster).clEpr()
+         << "  X=" << (*cluster).clX()
+         << "  Z=" << (*cluster).clZ()
+         << "  size=" << (*cluster).clSize()
+         << endl;
+
+    for (UInt_t j=0; j!=(*cluster).clSize(); j++) {
+      THcShowerHit* hit = (*cluster).ClusteredHit(j);
+      cout << "  hit #" << j << ":  "; (*hit).show();
+    }
+
+  }
+
+  
+  //The largest cluster.
+  //
+
+  if (fNclust != 0) {
+
+    THcShowerCluster* MaxCluster;
+
+    for (UInt_t i=0; i!=fNclust; i++) {
+
+      THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
+
+      Int_t size = (*cluster).clSize();
+
+      if (fMult < size) {
+	fMult = size;
+	MaxCluster = cluster;
+      }
+    }
+
+    fE = (*MaxCluster).clE();
+    fEpr = (*MaxCluster).clEpr();
+    fX = (*MaxCluster).clX();
+  }
+
+  cout << fEpr << " " << fE << " " << fX << " PrSh" << endl;
+
+  /*
+    cout << "Cluster #" << i 
+         <<":  E=" << (*cluster).clE() 
+         << "  Epr=" << (*cluster).clEpr()
+         << "  X=" << (*cluster).clX()
+         << "  Z=" << (*cluster).clZ()
+         << "  size=" << (*cluster).clSize()
+         << endl;
+  */
+   
+  cout << "THcShower::CoarseProcess return ---------------------------" <<endl;
   return 0;
 }
 

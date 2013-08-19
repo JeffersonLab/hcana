@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// THcShowerHit                                                           //
+// THcRawShowerHit                                                           //
 //                                                                           //
 // Class representing a single raw hit for a hodoscope paddle                //
 //                                                                           //
@@ -8,12 +8,12 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "THcShowerHit.h"
+#include "THcRawShowerHit.h"
 
 using namespace std;
 
 
-void THcShowerHit::SetData(Int_t signal, Int_t data) {
+void THcRawShowerHit::SetData(Int_t signal, Int_t data) {
   if(signal==0) {
     fADC_pos = data;
   } else if (signal==1) {
@@ -21,7 +21,7 @@ void THcShowerHit::SetData(Int_t signal, Int_t data) {
   } 
 }
 
-Int_t THcShowerHit::GetData(Int_t signal) {
+Int_t THcRawShowerHit::GetData(Int_t signal) {
   if(signal==0) {
     return(fADC_pos);
   } else if (signal==1) {
@@ -32,11 +32,11 @@ Int_t THcShowerHit::GetData(Int_t signal) {
 }
 
 #if 0
-Int_t THcShowerHit::Compare(const TObject* obj) const
+Int_t THcRawShowerHit::Compare(const TObject* obj) const
 {
   // Compare to sort by plane and counter
 
-  const THcShowerHit* hit = dynamic_cast<const THcShowerHit*>(obj);
+  const THcRawShowerHit* hit = dynamic_cast<const THcRawShowerHit*>(obj);
 
   if(!hit) return -1;
   Int_t p1 = fPlane;
@@ -53,7 +53,7 @@ Int_t THcShowerHit::Compare(const TObject* obj) const
 }
 #endif
 //_____________________________________________________________________________
-THcShowerHit& THcShowerHit::operator=( const THcShowerHit& rhs )
+THcRawShowerHit& THcRawShowerHit::operator=( const THcRawShowerHit& rhs )
 {
   // Assignment operator.
 
@@ -70,6 +70,6 @@ THcShowerHit& THcShowerHit::operator=( const THcShowerHit& rhs )
 
 
 //////////////////////////////////////////////////////////////////////////
-ClassImp(THcShowerHit)
+ClassImp(THcRawShowerHit)
 
  

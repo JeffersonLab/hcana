@@ -13,6 +13,7 @@
 #include "THcParmList.h"
 #include "THcHitList.h"
 #include "THcShower.h"
+#include "THcRawShowerHit.h"
 #include "TClass.h"
 #include "math.h"
 
@@ -57,7 +58,11 @@ THcShowerPlane::~THcShowerPlane()
   delete [] fA_Pos_p;
   delete [] fA_Neg_p;
 
+  delete [] fEpos;
+  delete [] fEneg;
+  delete [] fEmean;
 }
+
 THaAnalysisObject::EStatus THcShowerPlane::Init( const TDatime& date )
 {
   // Extra initialization for shower layer: set up DataDest map
@@ -105,12 +110,19 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   fParent = (THcShower*) GetParent();
 
-  fNelem = fParent->GetNBlocks(fLayerNum);
+  fNelem = fParent->GetNBlocks(fLayerNum-1);
+
+  //  cout << "THcShowerPlane::ReadDatabase: fLayerNum=" << fLayerNum 
+  //       << "  fNelem=" << fNelem << endl;
 
   fA_Pos = new Float_t[fNelem];
   fA_Neg = new Float_t[fNelem];
   fA_Pos_p = new Float_t[fNelem];
   fA_Neg_p = new Float_t[fNelem];
+
+  fEpos = new Float_t[fNelem];
+  fEneg = new Float_t[fNelem];
+  fEmean= new Float_t[fNelem];
 
  //  fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
 // 
@@ -127,9 +139,29 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   
   // Create arrays to hold results here
 
- InitializePedestals();
+  fPosPedLimit = new Int_t [fNelem];
+  fNegPedLimit = new Int_t [fNelem];
+
+  for(Int_t i=0;i<fNelem;i++) {
+    fPosPedLimit[i] = fParent->GetPedLimit(i,fLayerNum-1,0);
+    fNegPedLimit[i] = fParent->GetPedLimit(i,fLayerNum-1,1);
+  }
+
+  cout << "   fPosPedLimit:";
+  for(Int_t i=0;i<fNelem;i++) cout << " " << fPosPedLimit[i];
+  cout << endl;
+  cout << "   fNegPedLimit:";
+  for(Int_t i=0;i<fNelem;i++) cout << " " << fNegPedLimit[i];
+  cout << endl;
+
+  fMinPeds = fParent->GetMinPeds();
+  cout << "   fMinPeds = " << fMinPeds << endl;
+
+  InitializePedestals();
+
   return kOK;
 }
+
 //_____________________________________________________________________________
 Int_t THcShowerPlane::DefineVariables( EMode mode )
 {
@@ -148,6 +180,10 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
     {"aneg",   "Raw Negative ADC Amplitudes",            "fA_Neg"},
     {"apos_p", "Ped-subtracted Positive ADC Amplitudes", "fA_Pos_p"},
     {"aneg_p", "Ped-subtracted Negative ADC Amplitudes", "fA_Neg_p"},
+    {"epos",   "Energy Depositions from Positive Side PMTs", "fEpos"},
+    {"eneg",   "Energy Depositions from Negative Side PMTs", "fEneg"},
+    {"emean",  "Mean Energy Depositions",                    "fEMean"},
+    {"eplane", "Energy Deposition per plane",                "fEplane"},
     { 0 }
   };
 
@@ -171,11 +207,14 @@ Int_t THcShowerPlane::Decode( const THaEvData& evdata )
 
   return 0;
 }
+
 //_____________________________________________________________________________
 Int_t THcShowerPlane::CoarseProcess( TClonesArray& tracks )
 {
  
   //  HitCount();
+
+  cout << "THcShowerPlane::CoarseProcess called ---------------------" << endl;
 
  return 0;
 }
@@ -185,6 +224,7 @@ Int_t THcShowerPlane::FineProcess( TClonesArray& tracks )
 {
   return 0;
 }
+
 Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 {
   // Extract the data for this layer from hit list
@@ -201,7 +241,12 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     fA_Neg[i] = 0;
     fA_Pos_p[i] = 0;
     fA_Neg_p[i] = 0;
+    fEpos[i] = 0;
+    fEneg[i] = 0;
+    fEmean[i] = 0;
   }
+
+  fEplane = 0;
 
   Int_t nrawhits = rawhits->GetLast()+1;
 
@@ -209,7 +254,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   //cout << "nrawhits =  " << nrawhits << endl;
   //cout << "nexthit =  " << nexthit << endl;
   while(ihit < nrawhits) {
-    THcShowerHit* hit = (THcShowerHit *) rawhits->At(ihit);
+    THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
 
     //cout << "fplane =  " << hit->fPlane << " Num = " << fLayerNum << endl;
     if(hit->fPlane > fLayerNum) {
@@ -223,23 +268,37 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     fA_Pos_p[hit->fCounter-1] = hit->fADC_pos - fPosPed[hit->fCounter -1];
     fA_Neg_p[hit->fCounter-1] = hit->fADC_neg - fNegPed[hit->fCounter -1];
 
-    double thresh_pos = fPosThresh[hit->fCounter -1];
-    if(hit->fADC_pos >  thresh_pos) {
-      THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
+    THcShower* fParent;
+    fParent = (THcShower*) GetParent();
 
+    Double_t thresh_pos = fPosThresh[hit->fCounter -1];
+    if(hit->fADC_pos >  thresh_pos) {
+
+      THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
       sighit->Set(hit->fCounter, hit->fADC_pos);
+
+      fEpos[hit->fCounter-1] += fA_Pos_p[hit->fCounter-1]*
+	fParent->GetGain(hit->fCounter-1,fLayerNum-1,0);
     }
 
-    double thresh_neg = fNegThresh[hit->fCounter -1];
+    Double_t thresh_neg = fNegThresh[hit->fCounter -1];
     if(hit->fADC_neg >  thresh_neg) {
+
       THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
       sighit->Set(hit->fCounter, hit->fADC_neg);
+
+      fEneg[hit->fCounter-1] += fA_Neg_p[hit->fCounter-1]*
+	fParent->GetGain(hit->fCounter-1,fLayerNum-1,1);
     }
+
+    fEmean[hit->fCounter-1] += (fEpos[hit->fCounter-1] + fEneg[hit->fCounter-1]);
+    fEplane += fEmean[hit->fCounter-1];
 
     ihit++;
   }
   return(ihit);
 }
+
 //_____________________________________________________________________________
 Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 {
@@ -250,7 +309,7 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
   //  cout << "THcScintillatorPlane::AcculatePedestals " << fLayerNum << " " << nexthit << "/" << nrawhits << endl;
   Int_t ihit = nexthit;
   while(ihit < nrawhits) {
-    THcShowerHit* hit = (THcShowerHit *) rawhits->At(ihit);
+    THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
     //cout << "fPlane =  " << hit->fPlane << " Limit = " << fPlaneNum << endl;
     if(hit->fPlane > fLayerNum) {
       break;
@@ -282,9 +341,8 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 
   return(ihit);
 }
-
     
- //_____________________________________________________________________________
+//_____________________________________________________________________________
 void THcShowerPlane::CalculatePedestals( )
 {
   // Use the accumulated pedestal data to calculate pedestals
@@ -304,7 +362,8 @@ void THcShowerPlane::CalculatePedestals( )
     //  fNegThresh[i] = fNegPed[i] + 15;
     fNegThresh[i] = fNegPed[i] + TMath::Min(50., TMath::Max(10., 3.*fNegSig[i]));
 
-    //    cout << i+1 << " " << 3.*fPosSig[i] << " " << 3.*fNegSig[i] << endl;
+    cout << "Ped&Thr: " << fPosPed[i] << " " << fPosThresh[i] << " " <<
+      fNegPed[i] << " " << fNegThresh[i] << " " << i+1 << endl;
   }
   //  cout << " " << endl;
   
@@ -314,14 +373,11 @@ void THcShowerPlane::CalculatePedestals( )
 void THcShowerPlane::InitializePedestals( )
 {
   fNPedestalEvents = 0;
-  fMinPeds = 500; 		// In engine, this is set in parameter file
   fPosPedSum = new Int_t [fNelem];
   fPosPedSum2 = new Int_t [fNelem];
-  fPosPedLimit = new Int_t [fNelem];
   fPosPedCount = new Int_t [fNelem];
   fNegPedSum = new Int_t [fNelem];
   fNegPedSum2 = new Int_t [fNelem];
-  fNegPedLimit = new Int_t [fNelem];
   fNegPedCount = new Int_t [fNelem];
 
   fPosSig = new Double_t [fNelem];
@@ -333,13 +389,9 @@ void THcShowerPlane::InitializePedestals( )
   for(Int_t i=0;i<fNelem;i++) {
     fPosPedSum[i] = 0;
     fPosPedSum2[i] = 0;
-    fPosPedLimit[i] = 1000;	// In engine, this are set in parameter file
     fPosPedCount[i] = 0;
     fNegPedSum[i] = 0;
     fNegPedSum2[i] = 0;
-    fNegPedLimit[i] = 1000;	// In engine, this are set in parameter file
     fNegPedCount[i] = 0;
   }
 } 
-  
-

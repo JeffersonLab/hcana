@@ -1,36 +1,89 @@
 #ifndef ROOT_THcShowerHit
 #define ROOT_THcShowerHit
 
-#include "THcRawHit.h"
+// HMS calorimeter hit, version 2
 
-class THcShowerHit : public THcRawHit {
+#include <vector>
+#include <iterator>
+#include <iostream>
+
+using namespace std;
+
+class THcShowerHit {           //HMS calorimeter hit class
+
+ private:
+  UInt_t fCol, fRow; //hit colomn and row
+  float fX, fZ;            //hit X (vert.) and Z (along spect.axis) coordinates
+  float fE;                 //hit energy deposition
 
  public:
 
- THcShowerHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
-    fADC_pos(-1), fADC_neg(-1){
+  THcShowerHit() {             //default constructor
+  fCol=fRow=0;
+  fX=fZ=0.;
+  fE=0.;
   }
-  THcShowerHit& operator=( const THcShowerHit& );
-  virtual ~THcShowerHit() {}
 
-  virtual void Clear( Option_t* opt="" )
-    { fADC_pos = -1; fADC_neg = -1; }
+  THcShowerHit(UInt_t hRow, UInt_t hCol, float hX, float hZ,
+	       float hE) {
+    fRow=hRow;
+    fCol=hCol;
+    fX=hX;
+    fZ=hZ;
+    fE=hE;
+  }
 
-  void SetData(Int_t signal, Int_t data);
-  Int_t GetData(Int_t signal);
+  ~THcShowerHit() {
+    //    cout << " hit destructed" << endl;
+  }
 
-  //  virtual Bool_t  IsSortable () const {return kTRUE; }
-  //  virtual Int_t   Compare(const TObject* obj) const;
+  UInt_t hitColumn() {
+    return fCol;
+  }
 
-  Int_t fADC_pos;
-  Int_t fADC_neg;
+  UInt_t hitRow() {
+    return fRow;
+  }
 
- protected:
+  float hitX() {
+    return fX;
+  }
 
- private:
+  float hitZ() {
+    return fZ;
+  }
 
-  ClassDef(THcShowerHit, 0);	// Shower hit class
-};  
+  float hitE() {
+    return fE;
+  }
+
+  bool isNeighbour(THcShowerHit* hit1) {      //Is hit1 neighbouring this hit?
+    Int_t dRow = fRow-(*hit1).fRow;
+    Int_t dCol = fCol-(*hit1).fCol;
+    return TMath::Abs(dRow)<2 && TMath::Abs(dCol)<2;
+  }
+
+  //Print out hit information
+  //
+  void show() {
+    cout << "row=" << fRow << "  column=" << fCol << 
+      "  x=" << fX << "  z=" << fZ << "  E=" << fE << endl;
+  }
+
+};
+
+
+typedef vector<THcShowerHit*> THcShowerHitList;      //alias for hit container
+typedef THcShowerHitList::iterator THcShowerHitIt;   //and for its iterator
+
+//Purge sequence container of pointers. Found in Echel, v.2, p.253.
+//
+template<class Seq> void purge(Seq& c) {
+  typename Seq::iterator i;
+  for(i = c.begin(); i != c.end(); i++) {
+    delete *i;
+    *i = 0;
+  }
+}
 
 #endif
- 

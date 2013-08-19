@@ -35,7 +35,7 @@ class THcShowerPlane : public THaSubDetector {
 
   virtual Int_t CoarseProcess( TClonesArray& tracks );
   virtual Int_t FineProcess( TClonesArray& tracks );
-          Bool_t   IsTracking() { return kFALSE; }
+  Bool_t   IsTracking() { return kFALSE; }
   virtual Bool_t   IsPid()      { return kFALSE; }
 
   virtual Int_t ProcessHits(TClonesArray* rawhits, Int_t nexthit);
@@ -46,12 +46,57 @@ class THcShowerPlane : public THaSubDetector {
 
   TClonesArray* fParentHitList;
 
+  Float_t GetEplane() {
+    return fEplane;
+  };
+
+  Float_t GetEmean(Int_t i) {
+    return fEmean[i];
+  };
+
+  Float_t GetAposP(Int_t i) {
+    return fA_Pos_p[i];
+  };
+
+  Float_t GetAnegP(Int_t i) {
+    return fA_Neg_p[i];
+  };
+
+  Float_t GetApos(Int_t i) {
+    return fA_Pos[i];
+  };
+
+  Float_t GetAneg(Int_t i) {
+    return fA_Neg[i];
+  };
+
+  Float_t GetPosThr(Int_t i) {
+    return fPosThresh[i];
+  };
+
+  Float_t GetNegThr(Int_t i) {
+    return fNegThresh[i];
+  };
+
+  Float_t GetPosPed(Int_t i) {
+    return fPosPed[i];
+  };
+
+  Float_t GetNegPed(Int_t i) {
+    return fNegPed[i];
+  };
+
  protected:
 
   Float_t*   fA_Pos;         // [fNelem] Array of ADC amplitudes of blocks
   Float_t*   fA_Neg;         // [fNelem] Array of ADC amplitudes of blocks
   Float_t*   fA_Pos_p;	     // [fNelem] Array of pedestal subtracted ADC amplitudes
   Float_t*   fA_Neg_p;	     // [fNelem] Array of pedestal subtracted ADC amplitudes
+
+  Float_t* fEpos;     // [fNelem] Array of energy depositions seen by positive PMTs
+  Float_t* fEneg;     // [fNelem] Array of energy depositions seen by negative PMTs
+  Float_t* fEmean;    // [fNelem] Array of mean energy depositions (pos + neg)
+  Float_t  fEplane;   // Energy deposition per plane
 
   TClonesArray* fPosADCHits;
   TClonesArray* fNegADCHits;
@@ -84,6 +129,3 @@ class THcShowerPlane : public THaSubDetector {
   ClassDef(THcShowerPlane,0)
 };
 #endif
-
-
- 
