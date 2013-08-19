@@ -60,7 +60,7 @@ class THcShowerHit {           //HMS calorimeter hit class
   bool isNeighbour(THcShowerHit* hit1) {      //Is hit1 neighbouring this hit?
     int dRow = fRow-(*hit1).fRow;
     int dCol = fCol-(*hit1).fCol;
-    return abs(dRow)<2 && abs(dCol)<2;
+    return TMath::Abs(dRow)<2 && TMath::Abs(dCol)<2;
   }
 
   //Print out hit information
