@@ -1,0 +1,17 @@
+# Demo cuts for hodtest
+#
+
+Block: RawDecode
+
+Pedestal_event    g.evtyp==4
+RawDecode_master  1
+
+Block: Decode
+Decode_master     !Pedestal_event
+
+Block: CoarseTracking
+CoarseTracking_master !Pedestal_event
+
+Block: CoarseReconstruct
+RawCoarseReconstruct !Pedestal_event
+
