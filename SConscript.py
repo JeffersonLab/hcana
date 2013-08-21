@@ -16,7 +16,7 @@ hcheaders = Split("""
 	src/THcScintillatorPlane.h src/THcHodoscopeHit.h src/THcDC.h src/THcDriftChamberPlane.h 
 	src/THcDriftChamber.h src/THcRawDCHit.h src/THcDCHit.h src/THcDCWire.h src/THcSpacePoint.h 
 	src/THcDCLookupTTDConv.h src/THcDCTimeToDistConv.h src/THcShower.h src/THcShowerPlane.h 
-	src/THcShowerHit.h src/THcAerogel.h src/THcAerogelHit.h src/THcGlobals.h src/THcDCTrack.h
+	src/THcRawShowerHit.h src/THcAerogel.h src/THcAerogelHit.h src/THcGlobals.h src/THcDCTrack.h
 	src/HallC_LinkDef.h
 	""")
 baseenv.RootCint(roothcdict,hcheaders)
