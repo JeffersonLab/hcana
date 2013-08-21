@@ -6,6 +6,12 @@ HallCDict.h
 HallCDict.o
 hcana
 
+# scons stuff
+config.log
+*.pyc
+.sconsign.dblite
+.sconf_temp/
+
 # Patterns
 *.[oad]
 *~
