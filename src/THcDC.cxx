@@ -459,7 +459,7 @@ Int_t THcDC::ApplyCorrections( void )
 }
 
 //_____________________________________________________________________________
-Int_t THcDC::CoarseTrack( TClonesArray& /* tracks */ )
+Int_t THcDC::CoarseTrack( TClonesArray& tracks )
 {
   // Calculation of coordinates of particle track cross point with scint
   // plane in the detector coordinate system. For this, parameters of track 
@@ -475,7 +475,26 @@ Int_t THcDC::CoarseTrack( TClonesArray& /* tracks */ )
   }
   // Now link the stubs between chambers
   LinkStubs();
-  if(fNDCTracks > 0) TrackFit();
+  if(fNDCTracks > 0) {
+    TrackFit();
+    // Copy tracks into podd tracks list
+    for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
+      THaTrack* theTrack = NULL;
+      theTrack = AddTrack(tracks, 0.0, 0.0, 0.0, 0.0); // Leaving off trackID
+      // Should we add stubs with AddCluster?
+
+      THcDCTrack *tr = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
+      theTrack->SetD(tr->GetX(), tr->GetY(), tr->GetXP(), tr->GetYP());
+      theTrack->SetFlag((UInt_t) 0);
+      Int_t nhits=tr->GetNHits();
+      // Need to look at how engine does chi2 and track selection.  Reduced?
+      theTrack->SetChi2(tr->GetChisq(),nhits-4); // Nconstraints - Nparameters
+      // CalcFocalPlaneCoords.  Aren't our tracks already in focal plane coords
+      // We should have some kind of track ID so that the THaTrack can be
+      // associate back with the DC track
+    }
+  }
+
   // Check for internal TrackFit errors
   // Histogram the focal plane tracks
   // Histograms made in h_fill_dc_fp_hist

@@ -40,6 +40,7 @@ public:
   Double_t GetY()                 const {return fY_fp;}
   Double_t GetXP()                 const {return fXp_fp;}
   Double_t GetYP()                 const {return fYp_fp;}
+  Double_t GetChisq()              const {return fChi2_fp;}
   void SetNFree(Int_t nfree)           {fNfree = nfree;}
   void SetCoord(Int_t ip, Double_t coord) {fCoords[ip] = coord;}
   void SetResidual(Int_t ip, Double_t coord) {fResiduals[ip] = coord;}
