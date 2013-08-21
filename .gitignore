@@ -2,8 +2,17 @@
 
 # Auto generated files
 HallCDict.cxx
+HallCDict.C
 HallCDict.h
 HallCDict.o
+NormAnaDict.C
+NormAnaDict.h
+THaScalDict.C
+THaScalDict.h
+THaDecDict.C
+THaDecDict.h
+haDict.h
+haDict.C
 hcana
 
 # scons stuff
@@ -16,6 +25,7 @@ config.log
 *.[oad]
 *~
 *.so
+*.os
 \#*\#
 
 # Examples directory
