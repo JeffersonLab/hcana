@@ -68,7 +68,7 @@ THcHallCSpectrometer::THcHallCSpectrometer( const char* name, const char* descri
 
   //sc_ref = static_cast<THaScintillator*>(GetDetector("s1"));
 
-  SetTrSorting(kFALSE);
+  SetTrSorting(kTRUE);
 }
 
 //_____________________________________________________________________________
