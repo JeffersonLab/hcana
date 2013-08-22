@@ -188,7 +188,9 @@ clean:
 		rm -f src/*.o *~ $(USERLIB) $(USERDICT).*
 
 realclean:	clean
-		rm -f *.d
+		rm -f *.d NormAnaDict.* THaDecDict.* THaScallDict.* bin/hcana
+		rm -f src/*.os
+		rm -f bin
 
 srcdist:
 		rm -f $(DISTFILE)
