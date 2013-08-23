@@ -1,6 +1,5 @@
 void comprawhits(Int_t run)
 {
-  //  TFile* f = new TFile("hodtest.root");
   TFile* f = new TFile(Form("hodtest_%d.root",run));
   cout << "hcana root file " << Form("hodtest_%d.root",run) << endl;
   TH1F* h[6];
@@ -44,6 +43,26 @@ void comprawhits(Int_t run)
     h1[j]->SetFillColor(kBlue);
     h1[j]->SetFillStyle(3354);
     h1[j]->Draw("same");
+  }
+
+  //Differences
+
+  TCanvas *c2 = new TCanvas("c2", "Shower Hit Map Differences", 1000, 667);
+  c2->Divide(2, 3);
+
+  for (int j = 0; j < 6; j++){
+
+    c2->cd(j+1);
+
+    TH1F* dif = h[j]->Clone();
+    dif->Add(h[j],h1[j],1.,-1.);
+
+    dif->SetTitle(Form("Difference %d",j+1));
+    dif->SetFillColor(kRed);
+    dif->SetLineColor(kRed);
+    dif->SetLineWidth(1);
+    dif->SetFillStyle(1111);
+    dif->Draw();
   }
 
 } 

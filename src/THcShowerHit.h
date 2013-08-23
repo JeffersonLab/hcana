@@ -13,8 +13,8 @@ class THcShowerHit {           //HMS calorimeter hit class
 
  private:
   UInt_t fCol, fRow; //hit colomn and row
-  float fX, fZ;            //hit X (vert.) and Z (along spect.axis) coordinates
-  float fE;                 //hit energy deposition
+  Double_t fX, fZ;            //hit X (vert.) and Z (along spect.axis) coordinates
+  Double_t fE;                 //hit energy deposition
 
  public:
 
@@ -24,8 +24,8 @@ class THcShowerHit {           //HMS calorimeter hit class
   fE=0.;
   }
 
-  THcShowerHit(UInt_t hRow, UInt_t hCol, float hX, float hZ,
-	       float hE) {
+  THcShowerHit(UInt_t hRow, UInt_t hCol, Double_t hX, Double_t hZ,
+	       Double_t hE) {
     fRow=hRow;
     fCol=hCol;
     fX=hX;
@@ -45,15 +45,15 @@ class THcShowerHit {           //HMS calorimeter hit class
     return fRow;
   }
 
-  float hitX() {
+  Double_t hitX() {
     return fX;
   }
 
-  float hitZ() {
+  Double_t hitZ() {
     return fZ;
   }
 
-  float hitE() {
+  Double_t hitE() {
     return fE;
   }
 

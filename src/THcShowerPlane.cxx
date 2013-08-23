@@ -115,14 +115,14 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   //  cout << "THcShowerPlane::ReadDatabase: fLayerNum=" << fLayerNum 
   //       << "  fNelem=" << fNelem << endl;
 
-  fA_Pos = new Float_t[fNelem];
-  fA_Neg = new Float_t[fNelem];
-  fA_Pos_p = new Float_t[fNelem];
-  fA_Neg_p = new Float_t[fNelem];
+  fA_Pos = new Double_t[fNelem];
+  fA_Neg = new Double_t[fNelem];
+  fA_Pos_p = new Double_t[fNelem];
+  fA_Neg_p = new Double_t[fNelem];
 
-  fEpos = new Float_t[fNelem];
-  fEneg = new Float_t[fNelem];
-  fEmean= new Float_t[fNelem];
+  fEpos = new Double_t[fNelem];
+  fEneg = new Double_t[fNelem];
+  fEmean= new Double_t[fNelem];
 
  //  fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
 // 
@@ -351,15 +351,15 @@ void THcShowerPlane::CalculatePedestals( )
   for(Int_t i=0; i<fNelem;i++) {
     
     // Positive tubes
-    fPosPed[i] = ((Double_t) fPosPedSum[i]) / TMath::Max(1, fPosPedCount[i]);
-    fPosSig[i] = sqrt((fPosPedSum2[i] - 2.*fPosPed[i]*fPosPedSum[i])/TMath::Max(1, fPosPedCount[i]) + fPosPed[i]*fPosPed[i]);
-    //  fPosThresh[i] = fPosPed[i] + 15;
+    fPosPed[i] = ((Float_t) fPosPedSum[i]) / TMath::Max(1, fPosPedCount[i]);
+    fPosSig[i] = sqrt(((Float_t)fPosPedSum2[i])/TMath::Max(1, fPosPedCount[i])
+		      - fPosPed[i]*fPosPed[i]);
     fPosThresh[i] = fPosPed[i] + TMath::Min(50., TMath::Max(10., 3.*fPosSig[i]));
 
     // Negative tubes
-    fNegPed[i] = ((Double_t) fNegPedSum[i]) / TMath::Max(1, fNegPedCount[i]);
-    fNegSig[i] = sqrt((fNegPedSum2[i] - 2.*fNegPed[i]*fNegPedSum[i])/TMath::Max(1, fNegPedCount[i]) + fNegPed[i]*fNegPed[i]);
-    //  fNegThresh[i] = fNegPed[i] + 15;
+    fNegPed[i] = ((Float_t) fNegPedSum[i]) / TMath::Max(1, fNegPedCount[i]);
+    fNegSig[i] = sqrt(((Float_t)fNegPedSum2[i])/TMath::Max(1, fNegPedCount[i])
+		      - fNegPed[i]*fNegPed[i]);
     fNegThresh[i] = fNegPed[i] + TMath::Min(50., TMath::Max(10., 3.*fNegSig[i]));
 
     cout << "Ped&Thr: " << fPosPed[i] << " " << fPosThresh[i] << " " <<
@@ -380,12 +380,12 @@ void THcShowerPlane::InitializePedestals( )
   fNegPedSum2 = new Int_t [fNelem];
   fNegPedCount = new Int_t [fNelem];
 
-  fPosSig = new Double_t [fNelem];
-  fNegSig = new Double_t [fNelem];
-  fPosPed = new Double_t [fNelem];
-  fNegPed = new Double_t [fNelem];
-  fPosThresh = new Double_t [fNelem];
-  fNegThresh = new Double_t [fNelem];
+  fPosSig = new Float_t [fNelem];
+  fNegSig = new Float_t [fNelem];
+  fPosPed = new Float_t [fNelem];
+  fNegPed = new Float_t [fNelem];
+  fPosThresh = new Float_t [fNelem];
+  fNegThresh = new Float_t [fNelem];
   for(Int_t i=0;i<fNelem;i++) {
     fPosPedSum[i] = 0;
     fPosPedSum2[i] = 0;

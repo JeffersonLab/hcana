@@ -46,9 +46,9 @@ class THcShowerCluster : THcShowerHitList {
 
   //X coordinate of cluster's center of gravity.
   //
-  float clX() {
-    float x_sum=0.;
-    float Etot=0.;
+  Double_t clX() {
+    Double_t x_sum=0.;
+    Double_t Etot=0.;
     for (THcShowerHitIt it=THcShowerHitList::begin();
 	 it!=THcShowerHitList::end(); it++) {
       x_sum += (*it)->hitX() * (*it)->hitE();
@@ -60,9 +60,9 @@ class THcShowerCluster : THcShowerHitList {
 
   //Z coordinate for a cluster, calculated as a weighted by energy average.
   //
-  float clZ() {
-    float z_sum=0.;
-    float Etot=0.;
+  Double_t clZ() {
+    Double_t z_sum=0.;
+    Double_t Etot=0.;
     for (THcShowerHitIt it=THcShowerHitList::begin();
 	 it!=THcShowerHitList::end(); it++) {
       z_sum += (*it)->hitZ() * (*it)->hitE();
@@ -74,9 +74,9 @@ class THcShowerCluster : THcShowerHitList {
 
   //Energy depostion in a cluster
   //
-  float clE() {
+  Double_t clE() {
     //    cout << "In ECl:" << endl;
-    float Etot=0.;
+    Double_t Etot=0.;
     for (THcShowerHitIt it=THcShowerHitList::begin();
 	 it!=THcShowerHitList::end(); it++) {
       Etot += (*it)->hitE();
@@ -86,8 +86,8 @@ class THcShowerCluster : THcShowerHitList {
 
   //Energy deposition in the Preshower (1st layer) for a cluster
   //
-  float clEpr() {
-    float Epr=0.;
+  Double_t clEpr() {
+    Double_t Epr=0.;
     for (THcShowerHitIt it=THcShowerHitList::begin();
 	 it!=THcShowerHitList::end(); it++) {
       if ((*it)->hitColumn() == 0) Epr += (*it)->hitE();

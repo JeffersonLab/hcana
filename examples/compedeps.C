@@ -17,13 +17,13 @@ void compedeps(Int_t run)
     h1[0] = h683;   //A
     h1[1] = h684;   //B
     h1[2] = h685;   //C
-    h1[3] = h686;   //C
+    h1[3] = h686;   //D
     break;
   default :
-    h1[0] = h628;   //A
-    h1[1] = h629;   //B
-    h1[2] = h630;   //C
-    h1[3] = h631;   //C
+    h1[0] = h632;   //A
+    h1[1] = h633;   //B
+    h1[2] = h634;   //C
+    h1[3] = h635;   //D
   }
 
   TCanvas *c1 = new TCanvas("c1", "Shower raw Edeps", 1000, 667); 

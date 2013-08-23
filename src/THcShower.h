@@ -86,21 +86,21 @@ protected:
   // Per-event data
 
   Int_t fNhits;    // Number of hits
-  Float_t** fA;    // Raw ADC amplitudes
-  Float_t** fA_p;  // Ped-subtracted ADC amplitudes
-  Float_t** fA_c;  // Calibrated ADC amplitudes
-  Float_t fAsum_p; // Sum of ped-subtracted ADCs
-  Float_t fAsum_c; // Sum of calibrated ADCs
+  Double_t** fA;    // Raw ADC amplitudes
+  Double_t** fA_p;  // Ped-subtracted ADC amplitudes
+  Double_t** fA_c;  // Calibrated ADC amplitudes
+  Double_t fAsum_p; // Sum of ped-subtracted ADCs
+  Double_t fAsum_c; // Sum of calibrated ADCs
   Int_t fNclust;   // Number of clusters
-  Float_t fE;      // Energy (MeV) of largest cluster
-  Float_t fEpr;    // Preshower Energy (MeV) of largest cluster
-  Float_t fX;      // x-position (cm) of largest cluster
-  Float_t fZ;      // z-position (cm) of largest cluster
+  Double_t fE;      // Energy (MeV) of largest cluster
+  Double_t fEpr;    // Preshower Energy (MeV) of largest cluster
+  Double_t fX;      // x-position (cm) of largest cluster
+  Double_t fZ;      // z-position (cm) of largest cluster
   Int_t fMult;     // Multiplicity of largest cluster
   Int_t fNblk;     // Number of blocks in main cluster
-  Float_t* fEblk;  // Energies of blocks in main cluster
-  Float_t fTRX;    // track x-position in det plane"
-  Float_t fTRY;    // track y-position in det plane",      
+  Double_t* fEblk;  // Energies of blocks in main cluster
+  Double_t fTRX;    // track x-position in det plane"
+  Double_t fTRY;    // track y-position in det plane",
 
   // Potential Hall C parameters.  Mostly here for demonstration
 

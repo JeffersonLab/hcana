@@ -46,57 +46,57 @@ class THcShowerPlane : public THaSubDetector {
 
   TClonesArray* fParentHitList;
 
-  Float_t GetEplane() {
+  Double_t GetEplane() {
     return fEplane;
   };
 
-  Float_t GetEmean(Int_t i) {
+  Double_t GetEmean(Int_t i) {
     return fEmean[i];
   };
 
-  Float_t GetAposP(Int_t i) {
+  Double_t GetAposP(Int_t i) {
     return fA_Pos_p[i];
   };
 
-  Float_t GetAnegP(Int_t i) {
+  Double_t GetAnegP(Int_t i) {
     return fA_Neg_p[i];
   };
 
-  Float_t GetApos(Int_t i) {
+  Double_t GetApos(Int_t i) {
     return fA_Pos[i];
   };
 
-  Float_t GetAneg(Int_t i) {
+  Double_t GetAneg(Int_t i) {
     return fA_Neg[i];
   };
 
-  Float_t GetPosThr(Int_t i) {
+  Double_t GetPosThr(Int_t i) {
     return fPosThresh[i];
   };
 
-  Float_t GetNegThr(Int_t i) {
+  Double_t GetNegThr(Int_t i) {
     return fNegThresh[i];
   };
 
-  Float_t GetPosPed(Int_t i) {
+  Double_t GetPosPed(Int_t i) {
     return fPosPed[i];
   };
 
-  Float_t GetNegPed(Int_t i) {
+  Double_t GetNegPed(Int_t i) {
     return fNegPed[i];
   };
 
  protected:
 
-  Float_t*   fA_Pos;         // [fNelem] Array of ADC amplitudes of blocks
-  Float_t*   fA_Neg;         // [fNelem] Array of ADC amplitudes of blocks
-  Float_t*   fA_Pos_p;	     // [fNelem] Array of pedestal subtracted ADC amplitudes
-  Float_t*   fA_Neg_p;	     // [fNelem] Array of pedestal subtracted ADC amplitudes
+  Double_t*   fA_Pos;         // [fNelem] Array of ADC amplitudes of blocks
+  Double_t*   fA_Neg;         // [fNelem] Array of ADC amplitudes of blocks
+  Double_t*   fA_Pos_p;	     // [fNelem] Array of pedestal subtracted ADC amplitudes
+  Double_t*   fA_Neg_p;	     // [fNelem] Array of pedestal subtracted ADC amplitudes
 
-  Float_t* fEpos;     // [fNelem] Array of energy depositions seen by positive PMTs
-  Float_t* fEneg;     // [fNelem] Array of energy depositions seen by negative PMTs
-  Float_t* fEmean;    // [fNelem] Array of mean energy depositions (pos + neg)
-  Float_t  fEplane;   // Energy deposition per plane
+  Double_t* fEpos;     // [fNelem] Array of energy depositions seen by positive PMTs
+  Double_t* fEneg;     // [fNelem] Array of energy depositions seen by negative PMTs
+  Double_t* fEmean;    // [fNelem] Array of mean energy depositions (pos + neg)
+  Double_t  fEplane;   // Energy deposition per plane
 
   TClonesArray* fPosADCHits;
   TClonesArray* fNegADCHits;
@@ -115,13 +115,18 @@ class THcShowerPlane : public THaSubDetector {
   Int_t *fNegPedLimit;
   Int_t *fNegPedCount;
 
-  Double_t *fPosPed;
-  Double_t *fPosSig;
-  Double_t *fPosThresh;
-  Double_t *fNegPed;
-  Double_t *fNegSig;
-  Double_t *fNegThresh;
-
+  //  Double_t *fPosPed;
+  //  Double_t *fPosSig;
+  //  Double_t *fPosThresh;
+  //  Double_t *fNegPed;
+  //  Double_t *fNegSig;
+  //  Double_t *fNegThresh;
+  Float_t *fPosPed;      //To be consistent with Engine
+  Float_t *fPosSig;
+  Float_t *fPosThresh;
+  Float_t *fNegPed;
+  Float_t *fNegSig;
+  Float_t *fNegThresh;
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );

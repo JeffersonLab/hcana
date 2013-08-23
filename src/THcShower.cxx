@@ -542,10 +542,10 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
 
       //May be should be done this way.
       //
-      //      Float_t Edep = fPlanes[j]->GetEmean(i);
+      //      Double_t Edep = fPlanes[j]->GetEmean(i);
       //      if (Edep > 0.) {                                    //hit
-      //	Float_t x = YPos[j][i] + BlockThick[j]/2.;        //top + thick/2
-      //	Float_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
+      //	Double_t x = YPos[j][i] + BlockThick[j]/2.;        //top + thick/2
+      //	Double_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
       //      	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep);
 
       //ENGINE way.
@@ -556,9 +556,9 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
 	  fPlanes[j]->GetPosThr(i) - fPlanes[j]->GetPosPed(i) ||
 	  fPlanes[j]->GetAneg(i) - fPlanes[j]->GetNegPed(i) >
 	  fPlanes[j]->GetNegThr(i) - fPlanes[j]->GetNegPed(i)) {    //hit
-	Float_t Edep = fPlanes[j]->GetEmean(i);
-      	Float_t x = XPos[j][i] + BlockThick[j]/2.;        //top + thick/2
-      	Float_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
+	Double_t Edep = fPlanes[j]->GetEmean(i);
+	Double_t x = XPos[j][i] + BlockThick[j]/2.;        //top + thick/2
+	Double_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
 	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep);
 
 	HitList.push_back(hit);
@@ -618,15 +618,15 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
 
       THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
 
-      Int_t size = (*cluster).clSize();
+      Double_t E = (*cluster).clE();
 
-      if (fMult < size) {
-	fMult = size;
+      if (fE < E) {
+	fE = E;
 	MaxCluster = cluster;
       }
     }
 
-    fE = (*MaxCluster).clE();
+    fMult = (*MaxCluster).clSize();
     fEpr = (*MaxCluster).clEpr();
     fX = (*MaxCluster).clX();
   }
