@@ -117,6 +117,7 @@ protected:
   Int_t fNegCols; //number of columns with PMTTs on the negative side only.
   Double_t fSlop;               //Track to cluster vertical slop distance.
   Int_t fvTest;                 //fiducial volume test flag
+  Int_t fdbg_clusters_cal;                 // Shower debug flag
 
   THcShowerPlane** fPlanes; // List of plane objects
 
