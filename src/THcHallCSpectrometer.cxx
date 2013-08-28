@@ -44,18 +44,16 @@
 
 #include "THcHallCSpectrometer.h"
 #include "THaTrackingDetector.h"
+#include "THcGlobals.h"
+#include "THcParmList.h"
 #include "THaTrack.h"
 #include "THaTrackProj.h"
 #include "THaTriggerTime.h"
 #include "TMath.h"
 #include "TList.h"
 
-#include "TList.h"
-#include "TMath.h"
-
-#ifdef WITH_DEBUG
 #include <iostream>
-#endif
+#include <fstream>
 
 using namespace std;
 
@@ -95,23 +93,194 @@ Bool_t THcHallCSpectrometer::GetTrSorting() const
 }
  
 //_____________________________________________________________________________
+void THcHallCSpectrometer::InitializeReconstruction()
+{
+  fNReconTerms = 0;
+  for(Int_t i=0;i<fNReconTerms;i++) {
+    for(Int_t j=0;j<4;j++) {
+      fReconCoeff[i][j] = 0.0;
+    }
+    for(Int_t j=0;j<5;j++) {
+      fReconExponents[i][j] = 0;
+    }
+  }
+  fAngSlope_x = 0.0;
+  fAngSlope_y = 0.0;
+  fAngOffset_x = 0.0;
+  fAngOffset_y = 0.0;
+  fDetOffset_x = 0.0;
+  fDetOffset_y = 0.0;
+  fZTrueFocus = 0.0;
+}
+//_____________________________________________________________________________
+Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
+{
+
+  static const char* const here = "THcHallCSpectrometer::ReadDatabase";
+
+#ifdef WITH_DEBUG
+  cout << "In THcHallCSpectrometer::ReadDatabase()" << endl;
+#endif
+
+  // Get the matrix element filename from the variable store
+  // Read in the matrix
+
+  InitializeReconstruction();
+
+  char prefix[2];
+
+  cout << " GetName() " << GetName() << endl;
+
+  prefix[0]=tolower(GetName()[0]);
+  prefix[1]='\0';
+
+  string reconCoeffFilename;
+  DBRequest list[]={
+    {"_recon_coeff_filename",&reconCoeffFilename,kString},
+    {"theta_offset",&fThetaOffset,kDouble},
+    {"phi_offset",&fPhiOffset,kDouble},
+    {"delta_offset",&fDeltaOffset,kDouble},
+    {"pcentral",&fPCentral,kDouble},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+
+  ifstream ifile;
+  ifile.open(reconCoeffFilename.c_str());
+  if(!ifile.is_open()) {
+    Error(here, "error opening reconstruction coefficient file %s",reconCoeffFilename.c_str());
+    return kInitError; // Is this the right return code?
+  }
+  
+  string line="!";
+  int good=1;
+  while(good && line[0]=='!') {
+    good = getline(ifile,line).good();
+    cout << line << endl;
+  }
+  // Read in focal plane rotation coefficients
+  // Probably not used, so for now, just paste in fortran code as a comment
+  while(good && line.compare(0,4," ---")!=0) {
+    //  if(line(1:13).eq.'h_ang_slope_x')read(line,1201,err=94)h_ang_slope_x
+    //  if(line(1:13).eq.'h_ang_slope_y')read(line,1201,err=94)h_ang_slope_y
+    //  if(line(1:14).eq.'h_ang_offset_x')read(line,1201,err=94)h_ang_offset_x
+    //  if(line(1:14).eq.'h_ang_offset_y')read(line,1201,err=94)h_ang_offset_y
+    //  if(line(1:14).eq.'h_det_offset_x')read(line,1201,err=94)h_det_offset_x
+    //  if(line(1:14).eq.'h_det_offset_y')read(line,1201,err=94)h_det_offset_y
+    //  if(line(1:14).eq.'h_z_true_focus')read(line,1201,err=94)h_z_true_focus
+    good = getline(ifile,line).good();
+  }
+  // Read in reconstruction coefficients and exponents
+  line=" ";
+  good = getline(ifile,line).good();
+  cout << line << endl;
+  fNReconTerms = 0;
+  cout << "Reading matrix elements" << endl;
+  while(good && line.compare(0,4," ---")!=0) {
+    if(fNReconTerms >= fMaxReconElements) {
+      Error(here, "too much data in reconstruction coefficient file %s",reconCoeffFilename.c_str());
+      return kInitError; // Is this the right return code?
+    }
+#if 0
+    Double_t x,y,z,t;
+    Int_t a,b,c,d,e;
+    sscanf(line.c_str()," %le %le %le %le %1d%1d%1d%1d%1d",&x,&y,&z,&t,
+	   &a,&b,&c,&d,&e);
+    cout << x << " " << y << " " << z << " " << t << " "
+	 << a << b << c << d << endl;
+#endif
+    sscanf(line.c_str()," %le %le %le %le %1d%1d%1d%1d%1d"
+	   ,&fReconCoeff[fNReconTerms][0],&fReconCoeff[fNReconTerms][1]
+	   ,&fReconCoeff[fNReconTerms][2],&fReconCoeff[fNReconTerms][3]
+	   ,&fReconExponents[fNReconTerms][0]
+	   ,&fReconExponents[fNReconTerms][1]
+	   ,&fReconExponents[fNReconTerms][2]
+	   ,&fReconExponents[fNReconTerms][3]
+	   ,&fReconExponents[fNReconTerms][4]);
+    // Parse line into fReconCoeff[fNReconTerms][0 - 3] and
+    //                 fReconExponents[fNReconTerms][0 - 5]
+    fNReconTerms++;
+    good = getline(ifile,line).good();    
+  }
+#if 0
+  cout << fNReconTerms << " Reconstruction terms" << endl;
+  for (Int_t i=0;i<fNReconTerms;i++) {
+    cout << fReconCoeff[i][0] << " " << fReconCoeff[i][1] << " "
+	 << fReconCoeff[i][2] << " " << fReconCoeff[i][3] << " "
+	 << fReconExponents[i][0] << fReconExponents[i][1]
+	 << fReconExponents[i][2] << fReconExponents[i][3]
+	 << fReconExponents[i][4] << endl;
+  }
+#endif
+  if(!good) {
+    Error(here, "error processing reconstruction coefficient file %s",reconCoeffFilename.c_str());
+    return kInitError; // Is this the right return code?
+  }
+
+  return kOK;
+}
+
+//_____________________________________________________________________________
 Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 {
   // Reconstruct target coordinates for all tracks found in the focal plane.
 
-  TIter nextTrack( fTrackingDetectors );
+  // In Hall A, this is passed off to the tracking detectors.
+  // In Hall C, we do the target traceback here since the traceback should
+  // not depend on which tracking detectors are used.
 
-  nextTrack.Reset();
-  while( THaTrackingDetector* theTrackDetector =
-	 static_cast<THaTrackingDetector*>( nextTrack() )) {
-#ifdef WITH_DEBUG
-    if( fDebug>1 ) cout << "Call FineTrack() for " 
-			<< theTrackDetector->GetName() << "... ";
-#endif
-    theTrackDetector->FindVertices( tracks );
-#ifdef WITH_DEBUG
-    if( fDebug>1 ) cout << "done.\n";
-#endif
+  cout << "In THcHallCSpectrometer::FindVertices" << endl;
+  for (Int_t it=0;it<tracks.GetLast()+1;it++) {
+    THaTrack* track = static_cast<THaTrack*>( tracks[it] );
+
+    Double_t hut[5];
+    Double_t hut_rot[5];
+    
+    hut[0] = track->GetX()/100.0 + fZTrueFocus*track->GetTheta() + fDetOffset_x;//m
+    hut[1] = track->GetTheta() + fAngOffset_x;//radians
+    hut[2] = track->GetY()/100.0 + fZTrueFocus*track->GetPhi() + fDetOffset_y;//m
+    hut[3] = track->GetPhi() + fAngOffset_y;//radians
+
+    Double_t gbeam_y = 0.0;// This will be the y position from the fast raster
+
+    hut[4] = -gbeam_y/100.0;
+
+    // Retrieve the focal plane coordnates
+    // Do the transpormation
+    // Stuff results into track
+    hut_rot[0] = hut[0];
+    hut_rot[1] = hut[1] + hut[0]*fAngSlope_x;
+    hut_rot[2] = hut[2];
+    hut_rot[3] = hut[3] + hut[2]*fAngSlope_y;
+    hut_rot[4] = hut[4];
+
+    // Compute COSY sums
+    Double_t sum[4];
+    for(Int_t k=0;k<4;k++) {
+      sum[k] = 0.0;
+    }
+    for(Int_t iterm=0;iterm<fNReconTerms;iterm++) {
+      Double_t term=1.0;
+      for(Int_t j=0;j<5;j++) {
+	if(fReconExponents[iterm][j]!=0) {
+	  term *= pow(hut_rot[j],fReconExponents[iterm][j]);
+	}
+      }
+      for(Int_t k=0;k<4;k++) {
+	sum[k] += term*fReconCoeff[iterm][k];
+      }
+    }
+    // Transfer results to track
+    // No beam raster yet
+    //; In transport coordinates phi = hyptar = dy/dz and theta = hxptar = dx/dz 
+    //;    but for unknown reasons the yp offset is named  htheta_offset
+    //;    and  the xp offset is named  hphi_offset
+
+    track->SetTarget(0.0, sum[1]*100.0, sum[0]+fPhiOffset, sum[2]+fThetaOffset);
+    track->SetDp(sum[3]*100.0+fDeltaOffset);	// Percent.  (Don't think podd cares if it is % or fraction)
+    // There is an hpcentral_offset that needs to be applied somewhere.
+    // (happly_offs)
+    track->SetMomentum(fPCentral*(1+track->GetDp()/100.0));
   }
 
   // If enabled, sort the tracks by chi2/ndof
@@ -157,16 +326,19 @@ Int_t THcHallCSpectrometer::TrackTimes( TClonesArray* Tracks ) {
   // To be useful, a meaningful timing resolution should be assigned
   // to each Scintillator object (part of the database).
   
+#if 0
   if ( !Tracks ) return -1;
-  
+
   THaTrack *track=0;
   Int_t ntrack = GetNTracks();
+
+  THaTrack *track=0;
 
   // linear regression to:  t = t0 + pathl/(beta*c)
   //   where t0 is the time of the track at the reference plane (sc_ref).
   //   t0 and beta are solved for.
   //
-#if 0
+
   for ( Int_t i=0; i < ntrack; i++ ) {
     track = static_cast<THaTrack*>(Tracks->At(i));
     THaTrackProj* tr_ref = static_cast<THaTrackProj*>
