@@ -7,7 +7,8 @@ void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000) {
   if (RunNumber == 50017) {
     char* RunFileNamePattern="daq04_%d.log.0";
   } else {
-    char* RunFileNamePattern="/cache/mss/hallc/daq04/raw/daq04_%d.log.0";
+    //    char* RunFileNamePattern="/cache/mss/hallc/daq04/raw/daq04_%d.log.0";
+    char* RunFileNamePattern="/scratch/tadevosn/daq04_%d.log.0";
   }
   gHcParms->Define("gen_run_number", "Run Number", RunNumber);
   gHcParms->AddString("g_ctp_database_filename", "DBASE/test.database");

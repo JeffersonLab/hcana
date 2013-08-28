@@ -110,6 +110,8 @@ public:
   Double_t fSlop;               // Track to cluster vertical slop distance.
   Int_t fvTest;                 // fiducial volume test flag for tracking
 
+  Int_t fdbg_clusters_cal;      // Shower debug flag
+
   THcShowerPlane** fPlanes;     // [fNLayers] Shower Plane objects
 
   TClonesArray*  fTrackProj;    // projection of track onto plane
