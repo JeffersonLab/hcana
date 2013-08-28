@@ -612,9 +612,14 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
 
   if (fNclust != 0) {
 
-    THcShowerCluster* MaxCluster;
+    //    THcShowerCluster* MaxCluster;
+    //    for (UInt_t i=0; i!=fNclust; i++) {
 
-    for (UInt_t i=0; i!=fNclust; i++) {
+    THcShowerCluster* MaxCluster =  (*ClusterList).ListedCluster(0);
+    fE = (*MaxCluster).clE();
+
+    for (UInt_t i=1; i<fNclust; i++) {
+
 
       THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
 
