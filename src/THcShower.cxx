@@ -161,7 +161,8 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
       {"cal_num_neg_columns", &fNegCols, kInt},
       {"cal_slop", &fSlop, kDouble},
       {"cal_fv_test", &fvTest, kDouble},
-      {0}
+      {"dbg_clusters_cal", &fdbg_clusters_cal, kInt},
+     {0}
     };
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
@@ -169,6 +170,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   cout << "Number of neg. columns   = " << fNegCols << endl;
   cout << "Slop parameter           = " << fSlop << endl;
   cout << "Fiducial volum test flag = " << fvTest << endl;
+  cout << "Cluster debug flag = " <<fdbg_clusters_cal  << endl;
 
   BlockThick = new Double_t [fNLayers];
   fNBlocks = new Int_t [fNLayers];
@@ -524,7 +526,7 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
   //
   //  static const Double_t sqrt2 = TMath::Sqrt(2.);
   
-  cout << "THcShower::CoarseProcess called ---------------------------" <<endl;
+   if (fdbg_clusters_cal)  cout << "THcShower::CoarseProcess called ---------------------------" <<endl;
 
   //  ApplyCorrections();
 
@@ -572,11 +574,13 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
 
   //Print out hits before clustering.
   //
+
   fNhits = HitList.size();
-  cout << "Total hits:     " << fNhits << endl;
+  if (fdbg_clusters_cal) cout << "Total hits:     " << fNhits << endl;
   for (UInt_t i=0; i!=fNhits; i++) {
-    cout << "unclustered hit " << i << ": ";
-    (*(HitList.begin()+i))->show();
+    if (fdbg_clusters_cal) cout << "unclustered hit " << i << ": ";
+    if (fdbg_clusters_cal) {
+      (*(HitList.begin()+i))->show();}
   }
 
   THcShowerClusterList* ClusterList = new THcShowerClusterList;
@@ -585,13 +589,13 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
   //Print out the cluster list.
   //
   fNclust = (*ClusterList).NbClusters();
-  cout << "Cluster_list size: " << fNclust << endl;
+  if (fdbg_clusters_cal) cout << "Cluster_list size: " << fNclust << endl;
 
   for (UInt_t i=0; i!=fNclust; i++) {
 
     THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
 
-    cout << "Cluster #" << i 
+    if (fdbg_clusters_cal) cout << "Cluster #" << i 
          <<":  E=" << (*cluster).clE() 
          << "  Epr=" << (*cluster).clEpr()
          << "  X=" << (*cluster).clX()
@@ -601,7 +605,8 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
 
     for (UInt_t j=0; j!=(*cluster).clSize(); j++) {
       THcShowerHit* hit = (*cluster).ClusteredHit(j);
-      cout << "  hit #" << j << ":  "; (*hit).show();
+      if (fdbg_clusters_cal) {
+	cout << "  hit #" << j << ":  "; (*hit).show();}
     }
 
   }
@@ -631,7 +636,7 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
     fX = (*MaxCluster).clX();
   }
 
-  cout << fEpr << " " << fE << " " << fX << " PrSh" << endl;
+   if (fdbg_clusters_cal) cout << fEpr << " " << fE << " " << fX << " PrSh" << endl;
 
   /*
     cout << "Cluster #" << i 
@@ -643,7 +648,7 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
          << endl;
   */
    
-  cout << "THcShower::CoarseProcess return ---------------------------" <<endl;
+   if (fdbg_clusters_cal)  cout << "THcShower::CoarseProcess return ---------------------------" <<endl;
   return 0;
 }
 
