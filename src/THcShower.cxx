@@ -21,6 +21,7 @@
 #include "VarType.h"
 #include "THaTrack.h"
 #include "TClonesArray.h"
+#include "THaTrackProj.h"
 #include "TMath.h"
 
 #include "THaTrackProj.h"
@@ -64,6 +65,8 @@ void THcShower::Setup(const char* name, const char* description)
     {0}
   };
 
+  cout << "THcShower::Setup called " << GetName() << endl;
+
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   cout << layernamelist << endl;
   cout << "Shower Counter: " << fNLayers << " layers" << endl;
@@ -92,6 +95,8 @@ void THcShower::Setup(const char* name, const char* description)
     fPlanes[i] = new THcShowerPlane(fLayerNames[i], desc, i+1, this); 
     cout << "Created Shower Plane " << fLayerNames[i] << ", " << desc << endl;
   }
+
+  cout << "THcShower::Setup Return " << GetName() << endl;
 }
 
 
@@ -366,6 +371,31 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     cout <<  endl;
   };
 
+  // Origin of the calorimeter, at tha middle of the face of the detector,
+  // or at the middle of the front plane of the 1-st layer.
+  //
+  Double_t xOrig = (XPos[0][0] + XPos[0][fNBlocks[0]-1])/2 + BlockThick[0]/2;
+  Double_t yOrig = (YPos[0] + YPos[1])/2;
+  Double_t zOrig = fNLayerZPos[0];
+
+  //  cout << "Origin of the Calorimeter to be set:" << endl;
+  //  cout << "       Xorig = " << xOrig << endl;
+  //  cout << "       Yorig = " << yOrig << endl;
+  //  cout << "       Zorig = " << zOrig << endl;
+  // << endl;
+
+  fOrigin.SetXYZ(xOrig, yOrig, zOrig);
+
+  cout << "Origin of the Calorimeter:" << endl;
+  cout << "       Xorig = " << GetOrigin().X() << endl;
+  cout << "       Yorig = " << GetOrigin().Y() << endl;
+  cout << "       Zorig = " << GetOrigin().Z() << endl;
+  cout << endl;
+
+  // Detector axes. Assume no rotation.
+  //
+  DefineAxes(0.);
+
   fIsInit = true;
 
   return kOK;
@@ -516,7 +546,7 @@ Int_t THcShower::ApplyCorrections( void )
 //}
 
 //_____________________________________________________________________________
-Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
+Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 {
   // Calculation of coordinates of particle track cross point with shower
   // plane in the detector coordinate system. For this, parameters of track 
@@ -645,11 +675,63 @@ Int_t THcShower::CoarseProcess( TClonesArray&  ) //tracks
   if (fdbg_clusters_cal)
     cout << fEpr << " " << fE << " " << fX << " PrSh" << endl;
 
+  // Track-to-cluster  matching.
+  //
+
+  Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
+
+  cout << "Number of reconstructed tracks = " << Ntracks << endl;
+
+  for (Int_t i=0; i<Ntracks; i++) {
+
+    THaTrack* theTrack = static_cast<THaTrack*>( tracks[i] );
+
+    //    cout << "   Track " << i << ": "
+    //	 << "  X = " << theTrack->GetX()
+    //	 << "  Y = " << theTrack->GetY()
+    //	 << "  Theta = " << theTrack->GetTheta()
+    //	 << "  Phi = " << theTrack->GetPhi()
+    //	 << endl;
+
+    MatchCluster(theTrack);
+  }
+
   if (fdbg_clusters_cal)
   cout << "THcShower::CoarseProcess return ---------------------------" <<endl;
 
   return 0;
 }
+
+//-----------------------------------------------------------------------------
+
+void THcShower::MatchCluster(THaTrack* Track)
+{
+  // Match a cluster to a given track.
+
+  cout << "Track at DC:"
+       << "  X = " << Track->GetX()
+       << "  Y = " << Track->GetY()
+       << "  Theta = " << Track->GetTheta()
+       << "  Phi = " << Track->GetPhi()
+       << endl;
+
+  Double_t xc = 1.e8;
+  Double_t yc = 1.e8;
+  Double_t pathl = 1.e8;
+
+  CalcTrackIntercept(Track, pathl, xc, yc);
+
+  //  Double_t dx = 0.;
+  //  Int_t pad = -1;
+  //  new ( (*fTrackProj)[0]) THaTrackProj(xc,yc,pathl,dx,pad,this);
+
+  cout << "Track at Calorimeter:"
+       << "  X = " << xc
+       << "  Y = " << yc
+       << "  Pathl = " << pathl
+       << endl;
+}
+
 
 //_____________________________________________________________________________
 Int_t THcShower::FineProcess( TClonesArray& tracks )

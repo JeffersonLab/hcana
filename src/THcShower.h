@@ -123,6 +123,8 @@ public:
 
   void Setup(const char* name, const char* description);
 
+  void MatchCluster(THaTrack*);
+
   ClassDef(THcShower,0)         // Generic class
 };
 
