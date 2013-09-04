@@ -1,7 +1,7 @@
 #ifndef ROOT_THcShowerHit
 #define ROOT_THcShowerHit
 
-// HMS calorimeter hit, version 2
+// HMS calorimeter hits, version 2
 
 #include <vector>
 #include <iterator>
@@ -9,16 +9,16 @@
 
 using namespace std;
 
-class THcShowerHit {           //HMS calorimeter hit class
+class THcShowerHit {       //HMS calorimeter hit class
 
  private:
-  UInt_t fCol, fRow; //hit colomn and row
-  Double_t fX, fZ;            //hit X (vert.) and Z (along spect.axis) coordinates
-  Double_t fE;                 //hit energy deposition
+  UInt_t fCol, fRow;       //hit colomn and row
+  Double_t fX, fZ;         //hit X (vert.) and Z (along spect.axis) coordinates
+  Double_t fE;             //hit energy deposition
 
  public:
 
-  THcShowerHit() {             //default constructor
+  THcShowerHit() {         //default constructor
   fCol=fRow=0;
   fX=fZ=0.;
   fE=0.;
@@ -57,6 +57,9 @@ class THcShowerHit {           //HMS calorimeter hit class
     return fE;
   }
 
+  // Decide if a hit is neighbouring the current hit.
+  // Two hits are neighbours if share a side or a corner.
+  //
   bool isNeighbour(THcShowerHit* hit1) {      //Is hit1 neighbouring this hit?
     Int_t dRow = fRow-(*hit1).fRow;
     Int_t dCol = fCol-(*hit1).fCol;
@@ -73,17 +76,9 @@ class THcShowerHit {           //HMS calorimeter hit class
 };
 
 
-typedef vector<THcShowerHit*> THcShowerHitList;      //alias for hit container
-typedef THcShowerHitList::iterator THcShowerHitIt;   //and for its iterator
-
-//Purge sequence container of pointers. Found in Echel, v.2, p.253.
+// Container (collection) of hits and its iterator.
 //
-template<class Seq> void purge(Seq& c) {
-  typename Seq::iterator i;
-  for(i = c.begin(); i != c.end(); i++) {
-    delete *i;
-    *i = 0;
-  }
-}
+typedef vector<THcShowerHit*> THcShowerHitList;
+typedef THcShowerHitList::iterator THcShowerHitIt;
 
 #endif

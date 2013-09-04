@@ -1,0 +1,42 @@
+; Offset in the spectrometer momentum.
+  smomentum_factor = 0.000 ; leave 0 so it will have no effect
+                           ; use spcentral_offset if one needs to offset central momentum
+;
+; The sdelta_offset,stheta_offset,sphi_offset effect the
+; reconstructed target quantities. Used in s_targ_trans.f 
+; For transport x is in the dispersive direction with + down
+;               y is in the horizontal + towards large angles.
+;               z is along the central optics axis.
+; In transport coordinates phi = syptar = dy/dz and theta = sxptar = dx/dz 
+;    but for unknown reasons the yp offset is named  stheta_offset
+;    and  the xp offset is named  sphi_offset
+; Do not to change these values, since these are the zero order
+;  CMOP matrix elements. If you do change then your soss sieve
+;  plots will be screwed up.
+  sdelta_offset = 0.       ; (%) sdelta_tar = sdelta_tar + sdelta_offset
+  stheta_offset = 0.  	   ; (rad) syp_tar = syp_tar + stheta_offset
+  sphi_offset   = 0.       ; (rad) sxp_tar = sxp_tar + sphi_offset
+
+;saturation correction enable
+   genable_sos_satcorr = 1 ;(0=disabled) - STRACKING/s_satcorr.f
+                           ; event by event correction to ssdelta
+;central field saturation  correction enable
+   genable_sos_fieldcorr = 2003 ;(0=disabled) - ENGINE/s_fieldcorr.f
+;  genable_sos_fieldcorr = 2003 means using  C. Xu's parametrization 
+;  genable_sos_fieldcorr = 1999 means using  J. Volmer's parametrization
+;  either one determines sosp0corr which effects spcentral =   spcentral*(1+sosp0corr/100.)
+;
+; The following offsets are applied to the central kinematic variables
+;  in s_apply_offsets.f  . These might be modified by an experiment
+;  after doing calibration with elastic ep
+;
+  spcentral_offset = 0.0 ; sets  spcentral = spcentral * ( 1. + spcentral_offset / 100. )
+  sthetacentral_offset = 0.00 ; (rad)
+                       ;stheta_lab=stheta_lab + sthetacentral_offset/degree
+; This offset is determined from elastic ep data.
+; Must be added to ssxptar when used in calculating lab angles.
+; Example is in s_physics.f
+; 
+  s_oopcentral_offset = 0.0032  ; (rad)
+
+

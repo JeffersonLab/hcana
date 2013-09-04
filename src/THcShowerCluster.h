@@ -21,9 +21,6 @@ class THcShowerCluster : THcShowerHitList {
       delete *i;
       *i = 0;
     }
-    //    purge(THcShowerHitList::);
-    //    THcShowerHitList::clear();
-    //    cout << "THcShowerCluster object destructed" << endl;
   }
 
   // Add a hit to the cluster hit list
@@ -44,7 +41,10 @@ class THcShowerCluster : THcShowerHitList {
     (*(THcShowerHitList::begin()+num))->show();
   }
 
-  //X coordinate of cluster's center of gravity.
+  // X coordinate of cluster's center of gravity,
+  // calculated as a weighted by hit energies average.
+  // Put X out of the calorimeter (-75 cm), if there is no energy deposition
+  // in the cluster.
   //
   Double_t clX() {
     Double_t x_sum=0.;
@@ -58,7 +58,10 @@ class THcShowerCluster : THcShowerHitList {
     return (Etot != 0. ? x_sum/Etot : -75.);
   }
 
-  //Z coordinate for a cluster, calculated as a weighted by energy average.
+  // Z coordinate of cluster's center of gravity,
+  // calculated as a weighted by hit energies average.
+  // Put Z out of the calorimeter (0 cm), if there is no energy deposition
+  // in the cluster.
   //
   Double_t clZ() {
     Double_t z_sum=0.;
@@ -69,7 +72,7 @@ class THcShowerCluster : THcShowerHitList {
       Etot += (*it)->hitE();
     }
     //    cout << "z_sum=" << z_sum << "  Etot=" << Etot << endl;
-    return z_sum/Etot;
+    return (Etot != 0. ? z_sum/Etot : 0.);
   }
 
   //Energy depostion in a cluster
@@ -95,7 +98,7 @@ class THcShowerCluster : THcShowerHitList {
     return Epr;
   }
 
-  //Cluster size.
+  //Cluster size (number of hits in the cluster).
   //
   UInt_t clSize() {
     return THcShowerHitList::size();
@@ -105,13 +108,13 @@ class THcShowerCluster : THcShowerHitList {
 
 //-----------------------------------------------------------------------------
 
-//Alias for cluster container and for its iterator
+//Alias for container of clusters and for its iterator
 //
 typedef vector<THcShowerCluster*> THcShClusterList;
 typedef THcShClusterList::iterator THcShClusterIt;
 
 //List of clusters
-
+//
 class THcShowerClusterList : private THcShClusterList {
 
  public:
@@ -126,9 +129,6 @@ class THcShowerClusterList : private THcShClusterList {
       delete *i;
       *i = 0;
     }
-    //    purge(THcShClusterList);
-    //    THcShClusterList::clear();
-    //    cout << "THcShowerClusterList object destroyed" << endl;
   }
 
   //Put a cluster in the cluster list
@@ -153,7 +153,7 @@ class THcShowerClusterList : private THcShClusterList {
 
 void ClusterHits(THcShowerHitList HitList) {
 
-//Cluster hits from the HitList. The resultant hit clusters are saved
+// Cluster hits from the HitList. The resultant clusters of hits are saved
 //in the ClusterList.
 
   while (HitList.size() != 0) {
@@ -174,9 +174,9 @@ void ClusterHits(THcShowerHitList HitList) {
 
 	  if ((**i).isNeighbour((*cluster).ClusteredHit(k))) {
 
-	    (*cluster).grow(*i);          //If hit i is neighbouring a hit
+	    (*cluster).grow(*i);          //If the hit #i is neighbouring a hit
 	    HitList.erase(i);             //in the cluster, then move it
-	                                  //into cluster.
+	                                  //into the cluster.
 	    clustered = true;
 	  }
 
@@ -188,10 +188,9 @@ void ClusterHits(THcShowerHitList HitList) {
 
     }                                     //while clustered
 
-    //    (*ClusterList).grow(cluster);  //Put the cluster in the cluster list
-    grow(cluster);        //Put the cluster in the cluster list
+    grow(cluster);                        //Put the cluster in the cluster list
 
-  }                                       //while hit_list not exhausted
+  }                                       //While hit_list not exhausted
 
 }
 
