@@ -693,7 +693,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
     //	 << "  Phi = " << theTrack->GetPhi()
     //	 << endl;
 
-    MatchCluster(theTrack);
+    MatchCluster(theTrack, ClusterList);
   }
 
   if (fdbg_clusters_cal)
@@ -704,7 +704,8 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
 //-----------------------------------------------------------------------------
 
-void THcShower::MatchCluster(THaTrack* Track)
+Int_t THcShower::MatchCluster(THaTrack* Track,
+			      THcShowerClusterList* ClusterList)
 {
   // Match a cluster to a given track.
 
@@ -715,21 +716,73 @@ void THcShower::MatchCluster(THaTrack* Track)
        << "  Phi = " << Track->GetPhi()
        << endl;
 
-  Double_t xc = 1.e8;
-  Double_t yc = 1.e8;
-  Double_t pathl = 1.e8;
+  Double_t xtrk = kBig;
+  Double_t ytrk = kBig;
+  Double_t pathl = kBig;
 
-  CalcTrackIntercept(Track, pathl, xc, yc);
+  // Track interception with face of the calorimeter. The coordinates are
+  // in the calorimeter's local system.
 
-  //  Double_t dx = 0.;
-  //  Int_t pad = -1;
-  //  new ( (*fTrackProj)[0]) THaTrackProj(xc,yc,pathl,dx,pad,this);
+  CalcTrackIntercept(Track, pathl, xtrk, ytrk);
+
+  // Transform coordiantes to the spectrometer's coordinate system.
+
+  xtrk += GetOrigin().X();
+  ytrk += GetOrigin().Y();
 
   cout << "Track at Calorimeter:"
-       << "  X = " << xc
-       << "  Y = " << yc
+       << "  X = " << xtrk
+       << "  Y = " << ytrk
        << "  Pathl = " << pathl
        << endl;
+
+  // Match a cluster to the track.
+
+  Int_t mclust = -1;    // The match cluster #, initialize with a bogus value.
+  Double_t deltaX = kBig;   // Track to cluster distance
+
+  //      hcal_zmin= hcal_1pr_zpos
+  //      hcal_zmax= hcal_4ta_zpos
+  //      hcal_fv_xmin=hcal_xmin+5.
+  //      hcal_fv_xmax=hcal_xmax-5.
+  //      hcal_fv_ymin=hcal_ymin+5.
+  //      hcal_fv_ymax=hcal_ymax-5.
+  //      hcal_fv_zmin=hcal_zmin
+  //      hcal_fv_zmax=hcal_zmax
+
+  //        dz_f=hcal_zmin-hz_fp(nt)
+  //        dz_b=hcal_zmax-hz_fp(nt)
+
+  //        xf=hx_fp(nt)+hxp_fp(nt)*dz_f
+  //        xb=hx_fp(nt)+hxp_fp(nt)*dz_b
+
+  //        yf=hy_fp(nt)+hyp_fp(nt)*dz_f
+  //        yb=hy_fp(nt)+hyp_fp(nt)*dz_b
+
+  //        track_in_fv = (xf.le.hcal_fv_xmax  .and.  xf.ge.hcal_fv_xmin  .and.
+  //     &                 xb.le.hcal_fv_xmax  .and.  xb.ge.hcal_fv_xmin  .and.
+  //     &                 yf.le.hcal_fv_ymax  .and.  yf.ge.hcal_fv_ymin  .and.
+  //     &                 yb.le.hcal_fv_ymax  .and.  yb.ge.hcal_fv_ymin)
+
+  for (Int_t i=0; i<fNclust; i++) {
+
+    THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
+
+    Double_t dx = TMath::Abs( (*cluster).clX() - xtrk );
+
+    if (dx <= (0.5*BlockThick[0] + fSlop)) {
+
+      if (dx <= deltaX) {
+	mclust = i;
+	deltaX = dx;
+      }
+    }
+
+  }
+
+  cout << "MatchCluster: mclust= " << mclust << "  delatX= " << deltaX << endl;
+
+  return mclust;
 }
 
 

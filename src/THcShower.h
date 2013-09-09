@@ -11,6 +11,7 @@
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
 #include "THcShowerPlane.h"
+#include "THcShowerCluster.h"
 
 class THaScCalib;
 
@@ -123,7 +124,7 @@ public:
 
   void Setup(const char* name, const char* description);
 
-  void MatchCluster(THaTrack*);
+  Int_t MatchCluster(THaTrack*, THcShowerClusterList*);
 
   ClassDef(THcShower,0)         // Generic class
 };
