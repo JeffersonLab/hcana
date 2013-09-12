@@ -5,7 +5,7 @@
 //                         
 // THcShowerPlane
 //
-// A Hall C scintillator plane
+// A Hall C Shower plane
 //
 // May want to later inherit from a THcPlane class if there are similarities
 // in what a plane is shared with other detector types (shower, etc.)
@@ -88,42 +88,35 @@ class THcShowerPlane : public THaSubDetector {
 
  protected:
 
-  Double_t*   fA_Pos;         // [fNelem] Array of ADC amplitudes of blocks
-  Double_t*   fA_Neg;         // [fNelem] Array of ADC amplitudes of blocks
-  Double_t*   fA_Pos_p;	     // [fNelem] Array of pedestal subtracted ADC amplitudes
-  Double_t*   fA_Neg_p;	     // [fNelem] Array of pedestal subtracted ADC amplitudes
+  Double_t*   fA_Pos;         // [fNelem] ADC amplitudes of blocks
+  Double_t*   fA_Neg;
+  Double_t*   fA_Pos_p;	      // [fNelem] pedestal subtracted ADC amplitudes
+  Double_t*   fA_Neg_p;
 
-  Double_t* fEpos;     // [fNelem] Array of energy depositions seen by positive PMTs
-  Double_t* fEneg;     // [fNelem] Array of energy depositions seen by negative PMTs
-  Double_t* fEmean;    // [fNelem] Array of mean energy depositions (pos + neg)
-  Double_t  fEplane;   // Energy deposition per plane
+  Double_t* fEpos;     // [fNelem] energy depositions seen by positive PMTs
+  Double_t* fEneg;     // [fNelem] energy depositions seen by negative PMTs
+  Double_t* fEmean;    // [fNelem] mean energy depositions (pos + neg)
+  Double_t  fEplane;   // Energy deposition in the plane
 
-  TClonesArray* fPosADCHits;
-  TClonesArray* fNegADCHits;
+  TClonesArray* fPosADCHits;    // List of positive ADC hits
+  TClonesArray* fNegADCHits;    // List of negative ADC hits
 
-  Int_t fLayerNum;
+  Int_t fLayerNum;		// Layer # 1-4
 
-  Int_t fPlaneNum;		/* Which plane am I 1-4 */
-  Int_t fNPedestalEvents;	/* Number of pedestal events */
+  Int_t fNPedestalEvents;	/* Pedestal event counter */
   Int_t fMinPeds;		/* Only analyze/update if num events > */
   Int_t *fPosPedSum;		/* Accumulators for pedestals */
   Int_t *fPosPedSum2;
-  Int_t *fPosPedLimit;
-  Int_t *fPosPedCount;
+  Int_t *fPosPedLimit;          // Analyze pedestal if ADC signal < PedLimit
+  Int_t *fPosPedCount;          // [fNelem] counter of pedestal analysis
   Int_t *fNegPedSum;
   Int_t *fNegPedSum2;
-  Int_t *fNegPedLimit;
-  Int_t *fNegPedCount;
+  Int_t *fNegPedLimit;          // Analyze pedestal if ADC signal < PedLimit
+  Int_t *fNegPedCount;          // [fNelem] counter of pedestal analysis
 
-  //  Double_t *fPosPed;
-  //  Double_t *fPosSig;
-  //  Double_t *fPosThresh;
-  //  Double_t *fNegPed;
-  //  Double_t *fNegSig;
-  //  Double_t *fNegThresh;
-  Float_t *fPosPed;      //To be consistent with Engine
-  Float_t *fPosSig;
-  Float_t *fPosThresh;
+  Float_t *fPosPed;             // [fNelem] pedestal positions
+  Float_t *fPosSig;             // [fNelem] pedestal rms-s
+  Float_t *fPosThresh;          // [fNelem] ADC thresholds
   Float_t *fNegPed;
   Float_t *fNegSig;
   Float_t *fNegThresh;

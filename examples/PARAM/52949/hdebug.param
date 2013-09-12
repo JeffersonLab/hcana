@@ -1,0 +1,117 @@
+; hms tracking code debug flags. 
+; when these flags are non-zero, dump routines are called to 
+; print out the data banks for each event.
+;
+;  hluno     fortran lun for output
+      hluno = 66
+; hdebugdumptof           Dump timing information for fitting offsets
+      hdebugdumptof = 0
+; hdebugdumpcal           Dump calorimeter information for fitting gains
+      hdebugdumpcal = 0
+; number of pedestal events required to overwrite orig. peds.
+  hhodo_min_peds = 500
+  hcal_min_peds  = 500
+  hcer_min_peds  = 500
+  haero_min_peds  = 500
+  hmisc_min_peds  = 500
+
+; DEBUGGING OUTPUT FLAGS
+; ----------------------
+; hdebugprintrawdc        Dump HMS_RAW_DC Bank
+      hdebugprintrawdc = 0
+; hdebugprintdecodeddc    Dump HMS_DECODED_DC BAnk
+      hdebugprintdecodeddc = 0
+; hdebugflagpsi               Dump calculated coordinate positions
+      hdebugflagpsi =  0
+; hdebugflaggeoemtry          Dump calculated geometrical parameters
+      hdebugflaggeometry = 0
+; hdebugflagpr                Dump intermediate pattern recognition results
+      hdebugflagpr = 0
+; hdebugflagstubchisq         Dump chi2 of left-right fits
+      hdebugstubchisq = 0
+; hdebugflagstubs             Dump stub fit       
+      hdebugflagstubs = 0
+; hdebuglinkstubs             Dump linked hits
+      hdebuglinkstubs = 0
+; hdebugtrackprint            Dump focal plane track fit results
+      hdebugtrackprint = 0
+; hdebugtartrackprint         Dump tracks at target
+      hdebugtartrackprint = 0
+; tof debuging 
+;
+;  hdebugprintscinraw         Dump HMS_RAW_SCIN
+    hdebugprintscinraw = 0
+;  hdebugprintscindec         Dump HMS_DECODED_SCIN
+    hdebugprintscindec = 0
+;  hdebugprinttoftracks       Dump  hms_scin_tof
+    hdebugprinttoftracks = 0
+;  hdebugprinttracktests      Dump HMS_TRACK_TESTS
+    hdebugprinttracktests = 0
+;
+;  hms calorimeter debug flags
+;  hlun_dbg_cal                lun
+   hlun_dbg_cal    = hluno
+;  hdbg_raw_cal        call h_prt_cal_raw
+   hdbg_raw_cal = 0
+;  hdbg_sparsified_cal call h_prt_cal_sparsified
+   hdbg_sparsified_cal = 0
+;  hdbg_decoded_cal    call h_prt_cal_decoded
+   hdbg_decoded_cal = 0
+;  hdbg_clusters_cal   call h_prt_cal_clusters
+   hdbg_clusters_cal = 0
+;  hdbg_tracks_cal     call h_prt_cal_tracks
+   hdbg_tracks_cal = 0
+;  hdbg_tests_cal      call h_prt_cal_tests    HMS_TRACK_TESTS
+   hdbg_tests_cal = 0
+;
+;  hard wired histograms. If these flags .ne. 0 then the histogram
+;     blocks are filled
+;
+; hturnon_scin_raw_hist       Histogram HMS raw hodoscope data (each block)
+  hturnon_scin_raw_hist = 1
+; hturnon_decoded_dc_hist     Histogram HMS_DECODED_DC
+  hturnon_decoded_dc_hist = 1
+; hturnon_focal_plane_hist    Histogram HMS_FOCAL_PLANE 
+  hturnon_focal_plane_hist = 1
+; hturnon_target_hist         HISTOGRAM HMS_TARGET
+  hturnon_target_hist = 1
+;
+; Bypass paramters to bypass code elementes in h_reconstruction
+;      Stored in hmsbypass_switches.cmn
+;      Code element is bypassed if switch .ne. 0
+; hbypass_trans_dc         bypass h_trans_dc
+  hbypass_trans_dc   = 0 
+; hbypass_track            bypass h_track
+  hbypass_track      = 0
+; hbypass_targ_trans       bypass h_targ_trans
+  hbypass_targ_trans = 0
+; hbypass_dc_eff           bypass h_dc_eff and h_dc_eff_shutdown
+  hbypass_dc_eff     = 0
+; hbypass_track_eff        bypass h_tracking efficiency code
+  hbypass_track_eff  = 0
+; hbypass_track_eff_files  bypass h_tracking efficiency output files
+  hbypass_track_eff_files  = 1
+
+; hbypass_trans_scin       bypass h_trans_scin
+  hbypass_trans_scin = 0
+; hbypass_tof              bypass h_tof
+  hbypass_tof        = 0
+; hbypass_scin_eff         bypass h_scin_eff and h_scin_eff_shutdown
+  hbypass_scin_eff   = 0
+
+; hbypass_trans_cer        bypass h_trans_cer
+  hbypass_trans_cer  = 0
+; hbypass_cer              bypass h_cer
+  hbypass_cer        = 0
+; hbypass_cer_eff          bypass h_cer_eff and h_cer_eff_shutdown
+  hbypass_cer_eff    = 0
+
+; hbypass_trans_cal        bypass h_trans_cal
+  hbypass_trans_cal  = 0
+; hbypass_cal              bypass h_cal
+  hbypass_cal        = 0
+; hbypass_cal_eff          bypass h_cal_eff and h_cal_eff_shutdown
+  hbypass_cal_eff    = 0
+
+; hbypass_physics          bypass h_physics
+  hbypass_physics    = 0

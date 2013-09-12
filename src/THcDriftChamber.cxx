@@ -962,6 +962,7 @@ void THcDriftChamber::LeftRight()
     Int_t plane_list[nhits];
     Double_t stub[4];
     Double_t tmp_stub[4];
+    Int_t nplusminus;
 
     if(nhits < 0) {
       if (fDebugDriftCh) cout << "THcDriftChamber::LeftRight() nhits < 0" << endl;
@@ -980,6 +981,7 @@ void THcDriftChamber::LeftRight()
       if(pindex == YPlaneInd) hasy1 = ihit;
       if(pindex == YPlanePInd) hasy2 = ihit;
     }
+    nplusminus = 1<<nhits;
     Int_t smallAngOK = (hasy1>=0) && (hasy2>=0);
     if(fSmallAngleApprox !=0 && smallAngOK) { // to small Angle L/R for Y,Y' planes
       if(sp->GetHit(hasy2)->GetPos() <=
@@ -990,6 +992,7 @@ void THcDriftChamber::LeftRight()
 	plusminusknown[hasy1] = 1;
 	plusminusknown[hasy2] = -1;
       }
+      nplusminus = 1<<(nhits-2);
       if (fDebugDriftCh) cout << " Small angle approx = " << smallAngOK << " " << plusminusknown[hasy1] << endl;
       if (fDebugDriftCh) cout << "pm =  " << plusminusknown[hasy2] << " " << hasy1 << " " << hasy2 << endl;
       if (fDebugDriftCh) cout << " Plane index " << YPlaneInd << " " << YPlanePInd << endl;
@@ -1000,7 +1003,6 @@ void THcDriftChamber::LeftRight()
       if (fDebugDriftCh) cout << "THcDriftChamber::LeftRight: numhits-2 = 0" << endl;
     }
     Int_t nplaneshit = Count1Bits(bitpat);
-    Int_t nplusminus = 1<<(nhits-2);
     if (fDebugDriftCh) cout << " num of pm = " << nplusminus << " num of hits =" << nhits << endl;
     // Use bit value of integer word to set + or -
     // Loop over all combinations of left right.

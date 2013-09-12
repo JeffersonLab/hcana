@@ -132,7 +132,7 @@ protected:
   // double tan_angle, sin_angle, cos_angle;
   
   // Intermediate structure for building 
-  static const char MAXTRACKS = 50;
+  static const char MAXTRACKS = 10;
 
   std::vector<THcDriftChamberPlane*> fPlanes; // List of plane objects
   std::vector<THcDriftChamber*> fChambers; // List of chamber objects

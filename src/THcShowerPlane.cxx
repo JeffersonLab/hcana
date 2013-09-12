@@ -310,7 +310,7 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
   Int_t ihit = nexthit;
   while(ihit < nrawhits) {
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
-    //cout << "fPlane =  " << hit->fPlane << " Limit = " << fPlaneNum << endl;
+    //cout << "fPlane =  " << hit->fPlane << " Limit = " << fLayerNum << endl;
     if(hit->fPlane > fLayerNum) {
       break;
     }
