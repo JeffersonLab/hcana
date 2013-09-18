@@ -165,17 +165,19 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     DBRequest list[]={
       {"cal_num_neg_columns", &fNegCols, kInt},
       {"cal_slop", &fSlop, kDouble},
-      {"cal_fv_test", &fvTest, kDouble},
+      {"cal_fv_test", &fvTest, kInt},
+      {"cal_fv_delta", &fvDelta, kDouble},
       {"dbg_clusters_cal", &fdbg_clusters_cal, kInt},
       {0}
     };
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
 
-  cout << "Number of neg. columns   = " << fNegCols << endl;
-  cout << "Slop parameter           = " << fSlop << endl;
-  cout << "Fiducial volum test flag = " << fvTest << endl;
-  cout << "Cluster debug flag       = " << fdbg_clusters_cal  << endl;
+  cout << "Number of neg. columns      = " << fNegCols << endl;
+  cout << "Slop parameter              = " << fSlop << endl;
+  cout << "Fiducial volume test flag   = " << fvTest << endl;
+  cout << "Fiducial volume excl. width = " << fvDelta << endl;
+  cout << "Cluster debug flag          = " << fdbg_clusters_cal  << endl;
 
   BlockThick = new Double_t [fNLayers];
   fNBlocks = new Int_t [fNLayers];
@@ -219,6 +221,18 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     cout << endl;
 
   }
+
+  // Fiducial volume limits, based on Plane 1 positions.
+  //
+
+  fvXmin = XPos[0][0] + fvDelta;
+  fvXmax = XPos[0][fNBlocks[0]-1] + BlockThick[0] - fvDelta;
+  fvYmin = YPos[0] + fvDelta;
+  fvYmax = YPos[1] - fvDelta;
+
+  cout << "Fiducial volume limits:" << endl;
+  cout << "   Xmin = " << fvXmin << "  Xmax = " << fvXmax << endl;
+  cout << "   Ymin = " << fvYmin << "  Ymax = " << fvYmax << endl;
 
   //Calibration related parameters (from hcal.param).
 
@@ -716,68 +730,77 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
        << "  Phi = " << Track->GetPhi()
        << endl;
 
-  Double_t xtrk = kBig;
-  Double_t ytrk = kBig;
+  Double_t XTrFront = kBig;
+  Double_t YTrFront = kBig;
   Double_t pathl = kBig;
 
   // Track interception with face of the calorimeter. The coordinates are
   // in the calorimeter's local system.
 
-  CalcTrackIntercept(Track, pathl, xtrk, ytrk);
+  fOrigin = fPlanes[0]->GetOrigin();
+
+  CalcTrackIntercept(Track, pathl, XTrFront, YTrFront);
 
   // Transform coordiantes to the spectrometer's coordinate system.
 
-  xtrk += GetOrigin().X();
-  ytrk += GetOrigin().Y();
+  XTrFront += GetOrigin().X();
+  YTrFront += GetOrigin().Y();
 
-  cout << "Track at Calorimeter:"
-       << "  X = " << xtrk
-       << "  Y = " << ytrk
+  cout << "Track at the front of Calorimeter:"
+       << "  X = " << XTrFront
+       << "  Y = " << YTrFront
        << "  Pathl = " << pathl
        << endl;
+
+  Bool_t inFidVol = true;
+
+  if (fvTest) {
+
+    fOrigin = fPlanes[fNLayers-1]->GetOrigin();
+
+    Double_t XTrBack = kBig;
+    Double_t YTrBack = kBig;
+
+    CalcTrackIntercept(Track, pathl, XTrBack, YTrBack);
+
+    XTrBack += GetOrigin().X();
+    YTrBack += GetOrigin().Y();
+
+    cout << "Track at the back of Calorimeter:"
+	 << "  X = " << XTrBack
+	 << "  Y = " << YTrBack
+	 << "  Pathl = " << pathl
+	 << endl;
+
+    inFidVol = (XTrFront < fvXmax) && (XTrFront > fvXmin) &&
+               (YTrFront < fvYmax) && (YTrFront > fvYmin) &&
+               (XTrBack < fvXmax) && (XTrBack > fvXmin) &&
+               (YTrBack < fvYmax) && (YTrBack > fvYmin);
+
+    cout << "Fiducial volume test: inFidVol = " << inFidVol << endl;
+  }
 
   // Match a cluster to the track.
 
   Int_t mclust = -1;    // The match cluster #, initialize with a bogus value.
   Double_t deltaX = kBig;   // Track to cluster distance
 
-  //      hcal_zmin= hcal_1pr_zpos
-  //      hcal_zmax= hcal_4ta_zpos
-  //      hcal_fv_xmin=hcal_xmin+5.
-  //      hcal_fv_xmax=hcal_xmax-5.
-  //      hcal_fv_ymin=hcal_ymin+5.
-  //      hcal_fv_ymax=hcal_ymax-5.
-  //      hcal_fv_zmin=hcal_zmin
-  //      hcal_fv_zmax=hcal_zmax
+  if (inFidVol) {
 
-  //        dz_f=hcal_zmin-hz_fp(nt)
-  //        dz_b=hcal_zmax-hz_fp(nt)
+    for (Int_t i=0; i<fNclust; i++) {
 
-  //        xf=hx_fp(nt)+hxp_fp(nt)*dz_f
-  //        xb=hx_fp(nt)+hxp_fp(nt)*dz_b
+      THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
 
-  //        yf=hy_fp(nt)+hyp_fp(nt)*dz_f
-  //        yb=hy_fp(nt)+hyp_fp(nt)*dz_b
+      Double_t dx = TMath::Abs( (*cluster).clX() - XTrFront );
 
-  //        track_in_fv = (xf.le.hcal_fv_xmax  .and.  xf.ge.hcal_fv_xmin  .and.
-  //     &                 xb.le.hcal_fv_xmax  .and.  xb.ge.hcal_fv_xmin  .and.
-  //     &                 yf.le.hcal_fv_ymax  .and.  yf.ge.hcal_fv_ymin  .and.
-  //     &                 yb.le.hcal_fv_ymax  .and.  yb.ge.hcal_fv_ymin)
+      if (dx <= (0.5*BlockThick[0] + fSlop)) {
 
-  for (Int_t i=0; i<fNclust; i++) {
-
-    THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
-
-    Double_t dx = TMath::Abs( (*cluster).clX() - xtrk );
-
-    if (dx <= (0.5*BlockThick[0] + fSlop)) {
-
-      if (dx <= deltaX) {
-	mclust = i;
-	deltaX = dx;
+	if (dx <= deltaX) {
+	  mclust = i;
+	  deltaX = dx;
+	}
       }
     }
-
   }
 
   cout << "MatchCluster: mclust= " << mclust << "  delatX= " << deltaX << endl;

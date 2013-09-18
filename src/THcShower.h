@@ -36,6 +36,22 @@ public:
 
   Int_t GetNBlocks(Int_t NLayer) const { return fNBlocks[NLayer];}
 
+  Double_t GetXPos(Int_t NLayer, Int_t NRaw) const {
+    return XPos[NLayer][NRaw];
+  }
+
+  Double_t GetYPos(Int_t NLayer, Int_t Side) const {
+
+    //Side = 0 for postive (left) side
+    //Side = 1 for negative (right) side
+
+    return YPos[2*NLayer+(1-Side)];
+  }
+
+  Double_t GetZPos(Int_t NLayer) const {return fNLayerZPos[NLayer];}
+
+  Double_t GetBlockThick(Int_t NLayer) {return BlockThick[NLayer];}
+
   //  friend class THaScCalib; not needed for now.
 
   Int_t GetPedLimit(Int_t NBlock, Int_t NLayer, Int_t Side) {
@@ -110,6 +126,12 @@ public:
   Int_t fNegCols;               // # of columns with neg. side PMTs only.
   Double_t fSlop;               // Track to cluster vertical slop distance.
   Int_t fvTest;                 // fiducial volume test flag for tracking
+  Double_t fvDelta;             // Exclusion band width for fiducial volume
+
+  Double_t fvXmin;              // Fiducial volume limits
+  Double_t fvXmax;
+  Double_t fvYmin;
+  Double_t fvYmax;
 
   Int_t fdbg_clusters_cal;      // Shower debug flag
 

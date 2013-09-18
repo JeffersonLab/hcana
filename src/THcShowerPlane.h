@@ -46,6 +46,10 @@ class THcShowerPlane : public THaSubDetector {
 
   TClonesArray* fParentHitList;
 
+  TVector3 GetOrigin() {
+    return fOrigin;
+  }
+
   Double_t GetEplane() {
     return fEplane;
   };

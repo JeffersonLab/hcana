@@ -16,6 +16,8 @@
 #include "THcRawShowerHit.h"
 #include "TClass.h"
 #include "math.h"
+#include "THaTrack.h"
+#include "THaTrackProj.h"
 
 #include <cstring>
 #include <cstdio>
@@ -114,6 +116,30 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   //  cout << "THcShowerPlane::ReadDatabase: fLayerNum=" << fLayerNum 
   //       << "  fNelem=" << fNelem << endl;
+
+  // Origin of the plane.
+
+  Double_t BlockThick = fParent->GetBlockThick(fLayerNum-1);
+
+  Double_t xOrig = (fParent->GetXPos(fLayerNum-1,0) + 
+		    fParent->GetXPos(fLayerNum-1,fNelem-1))/2 +
+    BlockThick/2;
+
+  Double_t yOrig = (fParent->GetYPos(fLayerNum-1,0) +
+		    fParent->GetYPos(fLayerNum-1,1))/2;
+
+  Double_t zOrig = fParent->GetZPos(fLayerNum-1);
+
+  fOrigin.SetXYZ(xOrig, yOrig, zOrig);
+
+  cout << "Origin of Layer " << fLayerNum << ": "
+       << fOrigin.X() << " " << fOrigin.Y() << " " << fOrigin.Z() << endl;
+
+  // Detector axes. Assume no rotation.
+  //
+  //  DefineAxes(0.); not for subdetector
+
+  //
 
   fA_Pos = new Double_t[fNelem];
   fA_Neg = new Double_t[fNelem];
@@ -215,6 +241,22 @@ Int_t THcShowerPlane::CoarseProcess( TClonesArray& tracks )
   //  HitCount();
 
   cout << "THcShowerPlane::CoarseProcess called ---------------------" << endl;
+
+  Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
+
+  cout << "   Number of reconstructed tracks = " << Ntracks << endl;
+
+  /*
+  for (Int_t i=0; i<Ntracks; i++) {
+
+    THaTrack* theTrack = static_cast<THaTrack*>( tracks[i] );
+
+    Double_t pathl;
+    Double_t xtrk;
+    Double_t ytrk;
+    CalcTrackIntercept(theTrack, pathl, xtrk, ytrk);
+  }
+  */
 
  return 0;
 }
