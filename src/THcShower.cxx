@@ -444,8 +444,10 @@ Int_t THcShower::DefineVariables( EMode mode )
     { "mult",   "Multiplicity of largest cluster",    "fMult" },
  //   { "nblk",   "Numbers of blocks in main cluster",  "fNblk" },
  //   { "eblk",   "Energies of blocks in main cluster", "fEblk" },
- //   { "trx",    "track x-position in det plane",      "fTRX" },
- //   { "try",    "track y-position in det plane",      "fTRY" },
+    { "trx",    "track x-position in det plane (1st track)",      "fTRX" },
+    { "try",    "track y-position in det plane (1st track)",      "fTRY" },
+    { "tre",    "track energy in the calorimeter (1st track)",    "fTRE" },
+    { "trepr",  "track energy in the preshower (1st track)",      "fTREpr" },
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
@@ -500,7 +502,11 @@ void THcShower::Clear(Option_t* opt)
   fMult = 0;
   fE = 0.;
   fEpr = 0.;
-  fX = -75.;   //out of acceptance
+  fX = -75.;    //out of acceptance
+  fTRX = -75.;  //out of acceptance
+  fTRY = -40.;  //out of acceptance
+  fTRE = -1.;
+  fTREpr = -1.;
 }
 
 //_____________________________________________________________________________
@@ -707,8 +713,24 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
     //	 << "  Phi = " << theTrack->GetPhi()
     //	 << endl;
 
-    MatchCluster(theTrack, ClusterList);
+    Double_t Xtr;
+    Double_t Ytr;
+
+    Int_t mclust = MatchCluster(theTrack, ClusterList, Xtr, Ytr);
+
+    if (i==0) {
+      fTRX = Xtr;
+      fTRY = Ytr;
+      if (mclust >= 0) {
+	THcShowerCluster* cluster = (*ClusterList).ListedCluster(mclust);
+	fTRE = (*cluster).clE();
+	fTREpr = (*cluster).clEpr();
+      }
+    }
+
   }
+
+  cout << "   fTRX = " << fTRX << "  fTRY = " << fTRY << endl;
 
   if (fdbg_clusters_cal)
   cout << "THcShower::CoarseProcess return ---------------------------" <<endl;
@@ -719,7 +741,8 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 //-----------------------------------------------------------------------------
 
 Int_t THcShower::MatchCluster(THaTrack* Track,
-			      THcShowerClusterList* ClusterList)
+			      THcShowerClusterList* ClusterList,
+			      Double_t& XTrFront, Double_t& YTrFront)
 {
   // Match a cluster to a given track.
 
@@ -730,8 +753,8 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
        << "  Phi = " << Track->GetPhi()
        << endl;
 
-  Double_t XTrFront = kBig;
-  Double_t YTrFront = kBig;
+  XTrFront = kBig;
+  YTrFront = kBig;
   Double_t pathl = kBig;
 
   // Track interception with face of the calorimeter. The coordinates are

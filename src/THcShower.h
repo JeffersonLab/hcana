@@ -107,10 +107,12 @@ public:
   Double_t fX;               // x-position (cm) of the largest cluster
   Double_t fZ;               // z-position (cm) of the largest cluster
   Int_t fMult;               // # of hits in the largest cluster
-  //  Int_t fNblk;      // Number of blocks in main cluster
-  //  Double_t* fEblk;  // Energies of blocks in main cluster
-  //  Double_t fTRX;    // track x-position in det plane"
-  //  Double_t fTRY;    // track y-position in det plane",
+  //  Int_t fNblk;           // Number of blocks in main cluster
+  //  Double_t* fEblk;       // Energies of blocks in main cluster
+  Double_t fTRX;             // track x-position in det plane (1st track)
+  Double_t fTRY;             // track y-position in det plane (1st track)
+  Double_t fTRE;             // Energy (MeV) of the cluster associated to track
+  Double_t fTREpr;           // Preshower Energy (MeV) of the track's cluster
 
   // Potential Hall C parameters.  Mostly here for demonstration
 
@@ -146,7 +148,7 @@ public:
 
   void Setup(const char* name, const char* description);
 
-  Int_t MatchCluster(THaTrack*, THcShowerClusterList*);
+  Int_t MatchCluster(THaTrack*, THcShowerClusterList*, Double_t&, Double_t&);
 
   ClassDef(THcShower,0)         // Generic class
 };
