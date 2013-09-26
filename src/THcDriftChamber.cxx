@@ -146,6 +146,7 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   fMinHits = fParent->GetMinHits(fChamberNum);
   fMaxHits = fParent->GetMaxHits(fChamberNum);
   fMinCombos = fParent->GetMinCombos(fChamberNum);
+  fFixPropagationCorrection = fParent->GetFixPropagationCorrectionFlag();
 
   if (fDebugDriftCh) cout << "Chamber " << fChamberNum << "  Min/Max: " << fMinHits << "/" << fMaxHits << endl;
   fSpacePointCriterion = fParent->GetSpacePointCriterion(fChamberNum);
@@ -919,13 +920,29 @@ void THcDriftChamber::CorrectHitTimes()
       // Fortran ENGINE does not do this check, so hits can get "corrected"
       // multiple times if they belong to multiple space points.
       // To reproduce the precise ENGINE behavior, remove this if condition.
-      //if(! hit->GetCorrectedStatus()) {
+      if(fFixPropagationCorrection==0) { // ENGINE behavior
 	hit->SetTime(hit->GetTime() - plane->GetCentralTime()
 		     + plane->GetDriftTimeSign()*time_corr);
 	hit->ConvertTimeToDist();
-        //if (fDebugDriftCh) cout << ihit+1 << " " << plane->GetPlaneNum() << " " << plane->GetChamberNum() << " " << hit->GetTime() << " " << hit->GetDist() << " " << plane->GetCentralTime() << " " << plane->GetDriftTimeSign() << " " << time_corr << endl;
-	hit->SetCorrectedStatus(1);
-	//}
+	//      hit->SetCorrectedStatus(1);
+      } else {
+	// New behavior: Save corrected distance with the hit in the space point
+	// so that the same hit can have a different correction depending on
+	// which space point it is in.
+	//
+	// This is a hack now because the converttimetodist method is connected to the hit
+	// so I compute the corrected time and distance, and then restore the original
+	// time and distance.  Can probably add a method to hit that does a conversion on a time
+	// but does not modify the hit data.
+	Double_t time=hit->GetTime();
+	Double_t dist=hit->GetDist();
+	hit->SetTime(time - plane->GetCentralTime()
+		     + plane->GetDriftTimeSign()*time_corr);
+	hit->ConvertTimeToDist();
+	sp->SetHitDist(ihit, hit->GetDist());
+	hit->SetTime(time);	// Restore time
+	hit->SetDist(dist);	// Restore distance
+      }
     }
   }
 }	   
@@ -1022,7 +1039,7 @@ void THcDriftChamber::LeftRight()
 	}
       }
       if (nplaneshit >= fNPlanes-1) {
-	Double_t chi2 = FindStub(nhits, sp->GetHitVectorP(),
+	Double_t chi2 = FindStub(nhits, sp,
 				     plane_list, bitpat, plusminus, stub);
 				     
 	//if(debugging)
@@ -1059,7 +1076,7 @@ void THcDriftChamber::LeftRight()
 	  }
 	}
       } else if (nplaneshit >= fNPlanes-2) { // Two planes missing
-	Double_t chi2 = FindStub(nhits, sp->GetHitVectorP(),
+	Double_t chi2 = FindStub(nhits, sp,
 				     plane_list, bitpat, plusminus, stub); 
 	//if(debugging)
 	//if (fDebugDriftCh) cout << "pmloop=" << pmloop << " Chi2=" << chi2 << endl;
@@ -1100,7 +1117,10 @@ void THcDriftChamber::LeftRight()
     // Calculate final coordinate based on plusminusbest
     // Update the hit positions in the space points
     for(Int_t ihit=0; ihit<nhits; ihit++) {
+      // Save left/right status with the hit and in the space point
+      // In THcDC will decide which to used based on fix_lr flag
       sp->GetHit(ihit)->SetLeftRight(plusminusbest[ihit]);
+      sp->SetHitLR(ihit, plusminusbest[ihit]);
     }
 
     // Stubs are calculated in rotated coordinate system
@@ -1129,7 +1149,7 @@ void THcDriftChamber::LeftRight()
 }
     //    if(fAA3Inv.find(bitpat) != fAAInv.end()) { // Valid hit combination
 //_____________________________________________________________________________
-Double_t THcDriftChamber::FindStub(Int_t nhits, const std::vector<THcDCHit*>* hits,
+Double_t THcDriftChamber::FindStub(Int_t nhits, THcSpacePoint *sp,
 				       Int_t* plane_list, UInt_t bitpat,
 				       Int_t* plusminus, Double_t* stub)
 {
@@ -1141,7 +1161,8 @@ Double_t THcDriftChamber::FindStub(Int_t nhits, const std::vector<THcDCHit*>* hi
 
   // This isn't right.  dpos only goes up to 2.
   for(Int_t ihit=0;ihit<nhits; ihit++) {
-    dpos[ihit] = (*hits)[ihit]->GetPos() + plusminus[ihit]*(*hits)[ihit]->GetDist()
+    dpos[ihit] = sp->GetHit(ihit)->GetPos()
+      + plusminus[ihit]*sp->GetHit(ihit)->GetDist()
       - fPsi0[plane_list[ihit]];
     for(Int_t index=0;index<3;index++) {
       TT[index]+= dpos[ihit]*fStubCoefs[plane_list[ihit]][index]

@@ -67,6 +67,11 @@ THcDC::THcDC(
   fPlaneTimeZero = NULL;
   fSigma = NULL;
 
+  // These should be set to zero (in a parameter file) in order to
+  // replicate historical ENGINE behavior
+  fFixLR = 1;
+  fFixPropagationCorrection = 1;
+
   fDCTracks = new TClonesArray( "THcDCTrack", 20 );
 }
 
@@ -301,6 +306,8 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"yt_track_criterion", &fYtTrCriterion, kDouble},
     {"xpt_track_criterion", &fXptTrCriterion, kDouble},
     {"ypt_track_criterion", &fYptTrCriterion, kDouble},
+    {"dc_fix_lr", &fFixLR, kInt},
+    {"dc_fix_propcorr", &fFixPropagationCorrection, kInt},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
@@ -565,7 +572,7 @@ void THcDC::LinkStubs()
     }
   }
   fNDCTracks=0;		// Number of Focal Plane tracks found
-  fDCTracks->Clear();
+  fDCTracks->Clear("C");
   Double_t stubminx = 999999;
   Double_t stubminy = 999999;
   Double_t stubminxp = 999999;
@@ -575,6 +582,7 @@ void THcDC::LinkStubs()
   if (fDebugDC) cout << "Joined space points = " << fNSp-1 << endl;
   if(!fSingleStub) {
     for(Int_t isp1=0;isp1<fNSp-1;isp1++) { // isp1 is index/id in total list of space points
+      THcSpacePoint* sp1 = fSp[isp1];
       if (fDebugDC) cout << "Loop thru joined space points " << isp1+1<< endl;
       Int_t sptracks=0;
       // Now make sure this sp is not already used in a sp.
@@ -584,7 +592,7 @@ void THcDC::LinkStubs()
 	THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
 	for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
 	  // isp is index into list of space points attached to theDCTrack
-	  if(theDCTrack->GetSpacePointID(isp) == isp1) {
+	  if(theDCTrack->GetSpacePoint(isp) == sp1) {
 	    tryflag=0;
 	  }
 	}
@@ -592,10 +600,11 @@ void THcDC::LinkStubs()
       if(tryflag) { // SP not already part of a track
 	Int_t newtrack=1;
 	for(Int_t isp2=isp1+1;isp2<fNSp;isp2++) {
+	  THcSpacePoint* sp2=fSp[isp2];
           if (fDebugDC) cout << "second Loop space points " << isp2<< endl;
-	  if(fSp[isp1]->fNChamber!=fSp[isp2]->fNChamber) {
-	    Double_t *spstub1=fSp[isp1]->GetStubP();
-	    Double_t *spstub2=fSp[isp2]->GetStubP();
+	  if(sp1->fNChamber!=sp2->fNChamber) {
+	    Double_t *spstub1=sp1->GetStubP();
+	    Double_t *spstub2=sp2->GetStubP();
 	    Double_t dposx = spstub1[0] - spstub2[0];
 	    Double_t dposy = spstub1[1] - spstub2[1];
 	    Double_t dposxp = spstub1[2] - spstub2[2];
@@ -626,8 +635,8 @@ void THcDC::LinkStubs()
 		  sptracks=0; // Number of tracks with this seed
 		  stub_tracks[sptracks++] = fNDCTracks;
 		  THcDCTrack *theDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
-		  theDCTrack->AddSpacePoint(isp1);
-		  theDCTrack->AddSpacePoint(isp2);
+		  theDCTrack->AddSpacePoint(sp1);
+		  theDCTrack->AddSpacePoint(sp2);
 		  if (fDebugDC) cout << " # sp pts combined = " << theDCTrack->GetNSpacePoints() << endl;
 		  if (fDebugDC) cout << " combine sp = " << isp1 << " and " << isp2 << endl;
 		  // Now save the X, Y and XP for the two stubs
@@ -656,11 +665,11 @@ void THcDC::LinkStubs()
 		  for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
 		    // isp is index of space points in theDCTrack
 		    if (fDebugDC) cout << "looping of previous track = " << isp+1 << endl;
-		    if(fSp[isp2]->fNChamber ==
-		       fSp[theDCTrack->GetSpacePointID(isp)]->fNChamber) {
+		    if(sp2->fNChamber ==
+		       theDCTrack->GetSpacePoint(isp)->fNChamber) {
 		      spoint=isp;
 		    }
-		    if(isp2==theDCTrack->GetSpacePointID(isp)) {
+		    if(sp2==theDCTrack->GetSpacePoint(isp)) {
 		      duppoint=1;
 		    }
 		  } // End loop over sp in tracks with isp1
@@ -668,7 +677,7 @@ void THcDC::LinkStubs()
 		    // add this space point to current track(2)
 		  if(!duppoint) {
 		    if(spoint<0) {
-		      theDCTrack->AddSpacePoint(isp2);
+		      theDCTrack->AddSpacePoint(sp2);
 		    } else {
 		      // If there is another point in the same chamber
 		      // in this track create a new track with all the
@@ -680,9 +689,9 @@ void THcDC::LinkStubs()
                         if (fDebugDC) cout << "loop over theDCtrack # of sp tps = " << theDCTrack->GetNSpacePoints() << endl;
 			for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
 			  if(isp!=spoint) {
-			    newDCTrack->AddSpacePoint(theDCTrack->GetSpacePointID(isp));
+			    newDCTrack->AddSpacePoint(theDCTrack->GetSpacePoint(isp));
 			  } else {
-			    newDCTrack->AddSpacePoint(isp2);
+			    newDCTrack->AddSpacePoint(sp2);
 			  } // End check for dup on copy
                         if (fDebugDC) cout << "newDCtrack # of sp tps = " << newDCTrack->GetNSpacePoints() << endl;
 			} // End copy of track
@@ -706,7 +715,7 @@ void THcDC::LinkStubs()
       if(fNDCTracks<MAXTRACKS) {
 	// Need some constructed at thingy
 	THcDCTrack *newDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
-	newDCTrack->AddSpacePoint(isp);
+	newDCTrack->AddSpacePoint(fSp[isp]);
       } else {
 	if (fDebugDC) cout << "EPIC FAIL 3:  Too many tracks found in THcDC::LinkStubs" << endl;
 	fNDCTracks=0;
@@ -715,22 +724,6 @@ void THcDC::LinkStubs()
       }
     }
   }
-  // Add the list of hits on the track to the track.
-  // Looks like it adds all hits for all space points to every track
-  for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
-    THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
-    theDCTrack->ClearHits();
-    if (fDebugDC) cout << " Looping thru track add hits track = " << itrack+1 << " with " << theDCTrack->GetNSpacePoints() << " space points "<< endl;
-    // Hit list in the track should have been cleared when created.
-    for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
-      Int_t spind=theDCTrack->GetSpacePointID(isp);
-     if (fDebugDC) cout << " add hits to  " << itrack+1 << " sp pt = " << spind << " hits = " << fSp[spind]->GetNHits() <<endl;
-      for(Int_t ihit=0;ihit<fSp[spind]->GetNHits();ihit++) {
-	theDCTrack->AddHit(fSp[spind]->GetHit(ihit));
-      }
-    }
-  }
-  ///
   ///
   if (fDebugDC) cout << " End Linkstubs Found " << fNDCTracks << " tracks"<<endl;
 }
@@ -758,10 +751,35 @@ void THcDC::TrackFit()
   }
   
   Double_t dummychi2 = 1.0E4;
+
   for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
     //    Double_t chi2 = dummychi2;
     //    Int_t htrack_fit_num = itrack;
     THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
+
+    Double_t coords[theDCTrack->GetNHits()];
+    Int_t planes[theDCTrack->GetNHits()];
+    for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+      THcDCHit* hit=theDCTrack->GetHit(ihit);
+      planes[ihit]=hit->GetPlaneNum()-1;
+      if(fFixLR) {
+	if(fFixPropagationCorrection) {
+	  coords[ihit] = hit->GetPos()
+	    + theDCTrack->GetHitLR(ihit)*theDCTrack->GetHitDist(ihit);
+	} else {
+	  coords[ihit] = hit->GetPos()
+	    + theDCTrack->GetHitLR(ihit)*hit->GetDist();
+	}
+      } else {
+	if(fFixPropagationCorrection) {
+	  coords[ihit] = hit->GetPos()
+	    + hit->GetLR()*theDCTrack->GetHitDist(ihit);
+	} else {
+	  coords[ihit] = hit->GetCoord();
+	}
+      }
+    }
+
     cout << " Looping thru track = " << itrack+1 << " Hits = " <<  theDCTrack->GetNHits() << endl;
     theDCTrack->SetNFree(theDCTrack->GetNHits() - NUM_FPRAY);
     Double_t chi2 = dummychi2;
@@ -771,11 +789,9 @@ void THcDC::TrackFit()
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
 	TT[irayp] = 0.0;
 	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-	  THcDCHit* hit=theDCTrack->GetHit(ihit);
-	  Int_t plane=hit->GetPlaneNum()-1;
-	  TT[irayp] += (hit->GetCoord()*
-			fPlaneCoeffs[plane][raycoeffmap[irayp]])
-	    /pow(fSigma[plane],2);
+	  TT[irayp] += (coords[ihit]*
+			fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])
+	    /pow(fSigma[planes[ihit]],2);
 	}
       }
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
@@ -785,11 +801,9 @@ void THcDC::TrackFit()
 	    AA[irayp][jrayp] = AA[jrayp][irayp];
 	  } else {
 	    for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-	      THcDCHit* hit=theDCTrack->GetHit(ihit);
-	      Int_t plane=hit->GetPlaneNum()-1;
-	      AA[irayp][jrayp] += fPlaneCoeffs[plane][raycoeffmap[irayp]]*
-		fPlaneCoeffs[plane][raycoeffmap[jrayp]]/
-		pow(fSigma[plane],2);
+	      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
+		fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
+		pow(fSigma[planes[ihit]],2);
 	    }
 	  }
 	}
@@ -818,18 +832,16 @@ void THcDC::TrackFit()
       // Compute Chi2 and residuals
       chi2 = 0.0;
       for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-	THcDCHit* hit=theDCTrack->GetHit(ihit);
-	Int_t plane=hit->GetPlaneNum()-1;
-	Double_t residual = hit->GetCoord() - theDCTrack->GetCoord(plane);
-	theDCTrack->SetResidual(plane, residual);
-	chi2 += pow(residual/fSigma[plane],2);
+	Double_t residual = coords[ihit] - theDCTrack->GetCoord(planes[ihit]);
+	theDCTrack->SetResidual(planes[ihit], residual);
+	chi2 += pow(residual/fSigma[planes[ihit]],2);
       }
       if (fDebugDC) {
         cout << "Hit     HDC_WIRE_COORD  Fit postiion  Residual " << endl;
 	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
 	  THcDCHit* hit=theDCTrack->GetHit(ihit);
 	  Int_t plane=hit->GetPlaneNum()-1;
-	  cout << ihit+1 << "   " << hit->GetCoord() << "     " << theDCTrack->GetCoord(plane) << "     " << theDCTrack->GetResidual(plane) << endl;
+	  cout << ihit+1 << "   " << coords[ihit] << "     " << theDCTrack->GetCoord(plane) << "     " << theDCTrack->GetResidual(plane) << endl;
 	}
       }
       theDCTrack->SetVector(dray[0], dray[1], 0.0, dray[2], dray[3]);
@@ -867,7 +879,24 @@ void THcDC::TrackFit()
 	    THcDCHit* hit=theDCTrack2->GetHit(ihit);
 	    Int_t plane=hit->GetPlaneNum()-1;
 	    Double_t pos = DpsiFun(ray1,plane);
-	    theDCTrack1->SetDoubleResidual(plane,hit->GetCoord() - pos);
+	    Double_t coord;
+	    if(fFixLR) {
+	      if(fFixPropagationCorrection) {
+		coord = hit->GetPos()
+		  + theDCTrack2->GetHitLR(ihit)*theDCTrack2->GetHitDist(ihit);
+	      } else {
+		coord = hit->GetPos()
+		  + theDCTrack2->GetHitLR(ihit)*hit->GetDist();
+	      }
+	    } else {
+	      if(fFixPropagationCorrection) {
+		coord = hit->GetPos()
+		  + hit->GetLR()*theDCTrack2->GetHitDist(ihit);
+	      } else {
+		coord = hit->GetCoord();
+	      }
+	    }
+	    theDCTrack1->SetDoubleResidual(plane,coord - pos);
 	    //  hdc_dbl_res(pln) = hdc_double_residual(1,pln)  for hists
 	  }
 	  itrack=0;
@@ -877,7 +906,24 @@ void THcDC::TrackFit()
 	    THcDCHit* hit=theDCTrack1->GetHit(ihit);
 	    Int_t plane=hit->GetPlaneNum()-1;
 	    Double_t pos = DpsiFun(ray1,plane);
-	    theDCTrack2->SetDoubleResidual(plane,hit->GetCoord() - pos);
+	    Double_t coord;
+	    if(fFixLR) {
+	      if(fFixPropagationCorrection) {
+		coord = hit->GetPos()
+		  + theDCTrack1->GetHitLR(ihit)*theDCTrack1->GetHitDist(ihit);
+	      } else {
+		coord = hit->GetPos()
+		  + theDCTrack1->GetHitLR(ihit)*hit->GetDist();
+	      }
+	    } else {
+	      if(fFixPropagationCorrection) {
+		coord = hit->GetPos()
+		  + hit->GetLR()*theDCTrack1->GetHitDist(ihit);
+	      } else {
+		coord = hit->GetCoord();
+	      }
+	    }
+	    theDCTrack2->SetDoubleResidual(plane,coord - pos);
 	    //  hdc_dbl_res(pln) = hdc_double_residual(1,pln)  for hists
 	  }
 	}

@@ -22,14 +22,16 @@ public:
   THcDCTrack(Int_t nplanes);
   virtual ~THcDCTrack() {};
 
-  virtual void AddHit(THcDCHit * hit);
-  virtual void AddSpacePoint(Int_t spid);
+  virtual void AddSpacePoint(THcSpacePoint* sp);
 
   //Get and Set Functions
-  Int_t* GetSpacePoints()               {return fspID;}
+  //  Int_t* GetSpacePoints()               {return fspID;}
   Int_t GetNSpacePoints()         const { return fnSP;}
-  Int_t GetSpacePointID(Int_t i)  const {return fspID[i];}
-  THcDCHit* GetHit(Int_t i)       const {return fHits[i];}
+  //  Int_t GetSpacePointID(Int_t i)  const {return fspID[i];}
+  THcSpacePoint* GetSpacePoint(Int_t i) const {return fSp[i];}
+  THcDCHit* GetHit(Int_t i)       const {return fHits[i].dchit;}
+  Double_t GetHitDist(Int_t ihit) { return fHits[ihit].distCorr; };
+  Int_t GetHitLR(Int_t ihit) { return fHits[ihit].lr; };
   Int_t GetNHits()                const {return fNHits;}
   Int_t GetNFree()                const {return fNfree;}
   Double_t GetCoord(Int_t ip)     const {return fCoords[ip];}
@@ -58,16 +60,28 @@ public:
     Int_t fnSP; /* Number of space points in this track */
                 /* Should we have a list of pointers to space points
 		   instead of their indices? */
-    Int_t fspID[10];		/* List of space points in this track */
+  //    Int_t fspID[10];		/* List of space points in this track */
+    THcSpacePoint* fSp[10];                      /* List of space points in this track */
+
     Int_t fNHits;
     Int_t fNfree;		  /* Number of degrees of freedom */
-    std::vector<THcDCHit*> fHits; /* List of hits for this track */
+    struct Hit {
+      // This is the same structure as in THcSpacePoint.  Can we not
+      // duplicate this?
+      THcDCHit* dchit;
+      Double_t distCorr;
+      Int_t lr;
+    };
+    std::vector<Hit> fHits; /* List of hits for this track */
+    //std::vector<THcDCHit*> fHits; /* List of hits for this track */
     std::vector<Double_t> fCoords; /* Coordinate on each plane */
     std::vector<Double_t> fResiduals; /* Residual on each plane */
     std::vector<Double_t> fDoubleResiduals; /* Residual on each plane for single stub mode */
     Double_t fX_fp, fY_fp, fZ_fp;
     Double_t fXp_fp, fYp_fp;
     Double_t fChi2_fp;
+
+    virtual void AddHit(THcDCHit * hit, Double_t dist, Int_t lr);
 
  private:
   // Hide copy ctor and op=
