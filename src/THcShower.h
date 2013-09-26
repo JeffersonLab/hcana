@@ -86,7 +86,7 @@ public:
 
   THcShower();  // for ROOT I/O
 
- protected:
+protected:
 
   Int_t fAnalyzePedestals;   // Flag for pedestal analysis.
 

@@ -11,17 +11,17 @@ using namespace std;
 
 class THcShowerHit {       //HMS calorimeter hit class
 
- private:
+private:
   UInt_t fCol, fRow;       //hit colomn and row
   Double_t fX, fZ;         //hit X (vert.) and Z (along spect.axis) coordinates
   Double_t fE;             //hit energy deposition
-
- public:
+  
+public:
 
   THcShowerHit() {         //default constructor
-  fCol=fRow=0;
-  fX=fZ=0.;
-  fE=0.;
+    fCol=fRow=0;
+    fX=fZ=0.;
+    fE=0.;
   }
 
   THcShowerHit(UInt_t hRow, UInt_t hCol, Double_t hX, Double_t hZ,

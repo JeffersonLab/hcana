@@ -24,7 +24,7 @@ class THaSignalHit;
 
 class THcShowerPlane : public THaSubDetector {
   
- public:
+public:
   THcShowerPlane( const char* name, const char* description,
 			Int_t planenum, THaDetectorBase* parent = NULL);
   virtual ~THcShowerPlane();
@@ -90,7 +90,7 @@ class THcShowerPlane : public THaSubDetector {
     return fNegPed[i];
   };
 
- protected:
+protected:
 
   Double_t*   fA_Pos;         // [fNelem] ADC amplitudes of blocks
   Double_t*   fA_Neg;
