@@ -20,7 +20,7 @@ using namespace std;
 
 class THcHitList {
 
- public:
+public:
 
   virtual ~THcHitList();
 
@@ -39,7 +39,7 @@ class THcHitList {
 
   THaDetMap*    fdMap;
 
- protected:
+protected:
 
   ClassDef(THcHitList,0)
 };

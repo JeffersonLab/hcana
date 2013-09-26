@@ -14,8 +14,8 @@ class THcSpacePoint : public TObject {
 
 public:
 
- THcSpacePoint(Int_t nhits=0, Int_t ncombos=0) :
-  fNHits(nhits), fNCombos(ncombos) {
+  THcSpacePoint(Int_t nhits=0, Int_t ncombos=0) :
+    fNHits(nhits), fNCombos(ncombos) {
     fHits.clear();
   }
   virtual ~THcSpacePoint() {}
@@ -72,7 +72,7 @@ public:
   // we need figure out how to avoid confusion between number and index.
   Int_t fNChamber;
 
- protected:
+protected:
 
   Double_t fX;
   Double_t fY;

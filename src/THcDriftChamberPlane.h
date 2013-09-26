@@ -26,7 +26,7 @@ class THcHodoscope;
 
 class THcDriftChamberPlane : public THaSubDetector {
   
- public:
+public:
   THcDriftChamberPlane( const char* name, const char* description,
 			Int_t planenum, THaDetectorBase* parent = NULL);
   virtual ~THcDriftChamberPlane();
@@ -68,7 +68,7 @@ class THcDriftChamberPlane : public THaSubDetector {
   Double_t*    GetPlaneCoef() { return fPlaneCoef; }
 
   THcDriftChamberPlane(); // for ROOT I/O
- protected:
+protected:
 
   TClonesArray* fParentHitList;
 

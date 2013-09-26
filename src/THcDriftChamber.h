@@ -115,21 +115,6 @@ protected:
 		      Int_t* plusminus, Double_t* stub);
 
   std::vector<THcDCHit*> fHits;	/* All hits for this chamber */
-  // A simple structure until we figure out what we are doing.
-#if 0
-  struct SpacePoint {
-    Double_t x;
-    Double_t y;
-    Int_t nhits;
-    Int_t ncombos;
-    //    THcDCHit* hits[MAX_HITS_PER_POINT];
-    std::vector<THcDCHit*> hits;
-    Double_t stub[4];
-    void Clear(Option_t* opt="") {nhits=0;ncombos=0;hits.clear();};
-    SpacePoint() {nhits=0;ncombos=0;hits.clear();};
-    void SetXY(Double_t xa, Double_t ya) {x = xa; y = ya;};
-  };
-#endif
   TClonesArray *fSpacePoints;
   Int_t fNSpacePoints;
   Int_t fEasySpacePoint;	/* This event is an easy space point */

@@ -15,7 +15,7 @@ class THcDCWire : public TObject {
 public:
 
   THcDCWire( Int_t num=0, Double_t pos=0.0, Double_t offset=0.0,
-	      THcDCTimeToDistConv* ttd=NULL ) :
+	     THcDCTimeToDistConv* ttd=NULL ) :
     fNum(num), fFlag(0), fPos(pos), fTOffset(offset), fTTDConv(ttd) {}
   virtual ~THcDCWire() {}
 

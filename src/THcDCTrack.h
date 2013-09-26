@@ -56,34 +56,31 @@ public:
   // TObject functions redefined
   virtual void Clear( Option_t* opt="" );
 
- protected:
-    Int_t fnSP; /* Number of space points in this track */
-                /* Should we have a list of pointers to space points
-		   instead of their indices? */
-  //    Int_t fspID[10];		/* List of space points in this track */
-    THcSpacePoint* fSp[10];                      /* List of space points in this track */
+protected:
+  Int_t fnSP; /* Number of space points in this track */
+  THcSpacePoint* fSp[10];         /* List of space points in this track */
 
-    Int_t fNHits;
-    Int_t fNfree;		  /* Number of degrees of freedom */
-    struct Hit {
-      // This is the same structure as in THcSpacePoint.  Can we not
-      // duplicate this?
-      THcDCHit* dchit;
-      Double_t distCorr;
-      Int_t lr;
-    };
-    std::vector<Hit> fHits; /* List of hits for this track */
-    //std::vector<THcDCHit*> fHits; /* List of hits for this track */
-    std::vector<Double_t> fCoords; /* Coordinate on each plane */
-    std::vector<Double_t> fResiduals; /* Residual on each plane */
-    std::vector<Double_t> fDoubleResiduals; /* Residual on each plane for single stub mode */
-    Double_t fX_fp, fY_fp, fZ_fp;
-    Double_t fXp_fp, fYp_fp;
-    Double_t fChi2_fp;
-
-    virtual void AddHit(THcDCHit * hit, Double_t dist, Int_t lr);
-
- private:
+  Int_t fNHits;
+  Int_t fNfree;		  /* Number of degrees of freedom */
+  struct Hit {
+    // This is the same structure as in THcSpacePoint.  Can we not
+    // duplicate this?
+    THcDCHit* dchit;
+    Double_t distCorr;
+    Int_t lr;
+  };
+  std::vector<Hit> fHits; /* List of hits for this track */
+  //std::vector<THcDCHit*> fHits; /* List of hits for this track */
+  std::vector<Double_t> fCoords; /* Coordinate on each plane */
+  std::vector<Double_t> fResiduals; /* Residual on each plane */
+  std::vector<Double_t> fDoubleResiduals; /* Residual on each plane for single stub mode */
+  Double_t fX_fp, fY_fp, fZ_fp;
+  Double_t fXp_fp, fYp_fp;
+  Double_t fChi2_fp;
+  
+  virtual void AddHit(THcDCHit * hit, Double_t dist, Int_t lr);
+  
+private:
   // Hide copy ctor and op=
   THcDCTrack( const THcDCTrack& );
   THcDCTrack& operator=( const THcDCTrack& );

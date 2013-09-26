@@ -7,9 +7,9 @@
 
 class THcRawDCHit : public THcRawHit {
 
- public:
+public:
 
- THcRawDCHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
+  THcRawDCHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
     fNHits(0) {
   }
   THcRawDCHit& operator=( const THcRawDCHit& );
@@ -27,9 +27,9 @@ class THcRawDCHit : public THcRawHit {
   Int_t fNHits;
   Int_t fTDC[MAXHITS];
 
- protected:
+protected:
 
- private:
+private:
 
   ClassDef(THcRawDCHit, 0);	// DC hit class
 };  

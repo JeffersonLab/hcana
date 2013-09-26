@@ -13,8 +13,8 @@
 class THcDCLookupTTDConv : public THcDCTimeToDistConv{
 
 public:
- THcDCLookupTTDConv(Double_t T0, Double_t MaxDriftDistance, Double_t BinSize,
-		    Int_t NumBins, Double_t* Table);
+  THcDCLookupTTDConv(Double_t T0, Double_t MaxDriftDistance, Double_t BinSize,
+		     Int_t NumBins, Double_t* Table);
 
   virtual ~THcDCLookupTTDConv();
 

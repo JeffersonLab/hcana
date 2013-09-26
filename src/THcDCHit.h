@@ -16,13 +16,13 @@
 class THcDCHit : public TObject {
 
 public:
- THcDCHit( THcDCWire* wire=NULL, Int_t rawtime=0, Double_t time=0.0,
-	   THcDriftChamberPlane* wp=0) : 
-  fWire(wire), fRawTime(rawtime), fTime(time), fWirePlane(wp),
+  THcDCHit( THcDCWire* wire=NULL, Int_t rawtime=0, Double_t time=0.0,
+	    THcDriftChamberPlane* wp=0) : 
+    fWire(wire), fRawTime(rawtime), fTime(time), fWirePlane(wp),
     fDist(0.0), ftrDist(kBig) {
-      ConvertTimeToDist();
-      fCorrected = 0;
-    }
+    ConvertTimeToDist();
+    fCorrected = 0;
+  }
   virtual ~THcDCHit() {}
 
   virtual Double_t ConvertTimeToDist();
@@ -74,7 +74,7 @@ protected:
   THcDriftChamber* fChamber; //! Pointer to parent wire plane
 
   
- private:
+private:
   THcDCHit( const THcDCHit& );
   THcDCHit& operator=( const THcDCHit& );
   
