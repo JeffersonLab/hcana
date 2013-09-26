@@ -135,7 +135,11 @@ public:
   Double_t fvYmin;
   Double_t fvYmax;
 
-  Int_t fdbg_clusters_cal;      // Shower debug flag
+
+  Int_t fdbg_decoded_cal;      // Shower debug flags
+  Int_t fdbg_sparsified_cal;
+  Int_t fdbg_clusters_cal;
+  Int_t fdbg_tracks_cal;
 
   THcShowerPlane** fPlanes;     // [fNLayers] Shower Plane objects
 
@@ -149,6 +153,8 @@ public:
   void Setup(const char* name, const char* description);
 
   Int_t MatchCluster(THaTrack*, THcShowerClusterList*, Double_t&, Double_t&);
+
+  friend class THcShowerPlane;
 
   ClassDef(THcShower,0)         // Generic class
 };

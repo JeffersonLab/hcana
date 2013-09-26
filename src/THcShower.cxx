@@ -74,7 +74,9 @@ void THcShower::Setup(const char* name, const char* description)
   vector<string> layer_names = vsplit(layernamelist);
 
   if(layer_names.size() != (UInt_t) fNLayers) {
-    cout << "ERROR: Number of layers " << fNLayers << " doesn't agree with number of layer names " << layer_names.size() << endl;
+    cout << "ERROR: Number of layers " << fNLayers 
+	 << " doesn't agree with number of layer names "
+	 << layer_names.size() << endl;
     // Should quit.  Is there an official way to quit?
   }
 
@@ -167,7 +169,10 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
       {"cal_slop", &fSlop, kDouble},
       {"cal_fv_test", &fvTest, kInt},
       {"cal_fv_delta", &fvDelta, kDouble},
+      {"dbg_decoded_cal", &fdbg_decoded_cal, kInt},
+      {"dbg_sparsified_cal", &fdbg_sparsified_cal, kInt},
       {"dbg_clusters_cal", &fdbg_clusters_cal, kInt},
+      {"dbg_tracks_cal", &fdbg_tracks_cal, kInt},
       {0}
     };
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
@@ -177,7 +182,10 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   cout << "Slop parameter              = " << fSlop << endl;
   cout << "Fiducial volume test flag   = " << fvTest << endl;
   cout << "Fiducial volume excl. width = " << fvDelta << endl;
+  cout << "Decode debug flag           = " << fdbg_decoded_cal  << endl;
+  cout << "Sparsify debug flag         = " << fdbg_sparsified_cal  << endl;
   cout << "Cluster debug flag          = " << fdbg_clusters_cal  << endl;
+  cout << "Tracking debug flag         = " << fdbg_tracks_cal  << endl;
 
   BlockThick = new Double_t [fNLayers];
   fNBlocks = new Int_t [fNLayers];
@@ -522,7 +530,9 @@ Int_t THcShower::Decode( const THaEvData& evdata )
     Int_t nexthit = 0;
     for(Int_t ip=0;ip<fNLayers;ip++) {
       nexthit = fPlanes[ip]->AccumulatePedestals(fRawHitList, nexthit);
-      //cout << "nexthit = " << nexthit << endl;
+      if (fdbg_decoded_cal) {
+	cout << "THcShower::Decode: nexthit = " << nexthit << endl;
+      }
     }
     fAnalyzePedestals = 1;	// Analyze pedestals first normal events
     return(0);
@@ -541,13 +551,16 @@ Int_t THcShower::Decode( const THaEvData& evdata )
   }
 
   //   fRawHitList is TClones array of THcRawShowerHit objects
-  //  cout << "THcShower::Decode: Shower raw hit list:" << endl;
-  //  for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
-  //    THcRawShowerHit* hit = (THcRawShowerHit *) fRawHitList->At(ihit);
-  //    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
-  //	 << hit->fADC_pos << " " << hit->fADC_neg << " "  << endl;
+
+  //  if (fdbg_decoded_cal) {
+  //    cout << "THcShower::Decode: Shower raw hit list:" << endl;
+  //    for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
+  //      THcRawShowerHit* hit = (THcRawShowerHit *) fRawHitList->At(ihit);
+  //      cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
+  //	   << hit->fADC_pos << " " << hit->fADC_neg << " "  << endl;
+  //    }
+  //    cout << endl;
   //  }
-  //  cout << endl;
 
   return nhits;
 }
@@ -585,7 +598,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
   // Clustering of hits.
   //
 
-  THcShowerHitList HitList;                    //list of unclusterd hits
+  THcShowerHitList HitList;                    //list of unclustered hits
 
   for(Int_t j=0; j < fNLayers; j++) {
 
@@ -693,25 +706,31 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
   }
 
   if (fdbg_clusters_cal)
-    cout << fEpr << " " << fE << " " << fX << " PrSh" << endl;
+    cout << "Max.cluster: fEpr = " << fEpr << " fE = " << fE << " fX = " << fX
+	 << endl;
 
   // Track-to-cluster  matching.
   //
 
   Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
 
-  cout << "Number of reconstructed tracks = " << Ntracks << endl;
+  if (fdbg_tracks_cal) {
+    cout << endl;
+    cout << "Number of reconstructed tracks = " << Ntracks << endl;
+  }
 
   for (Int_t i=0; i<Ntracks; i++) {
 
     THaTrack* theTrack = static_cast<THaTrack*>( tracks[i] );
 
-    //    cout << "   Track " << i << ": "
-    //	 << "  X = " << theTrack->GetX()
-    //	 << "  Y = " << theTrack->GetY()
-    //	 << "  Theta = " << theTrack->GetTheta()
-    //	 << "  Phi = " << theTrack->GetPhi()
-    //	 << endl;
+    if (fdbg_tracks_cal) {
+      cout << "   Track " << i << ": "
+	   << "  X = " << theTrack->GetX()
+	   << "  Y = " << theTrack->GetY()
+	   << "  Theta = " << theTrack->GetTheta()
+	   << "  Phi = " << theTrack->GetPhi()
+	   << endl;
+    }
 
     Double_t Xtr;
     Double_t Ytr;
@@ -730,7 +749,9 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   }
 
-  cout << "   fTRX = " << fTRX << "  fTRY = " << fTRY << endl;
+  if (fdbg_tracks_cal)
+    cout << "1st track cluster:  fTRX = " << fTRX << "  fTRY = " << fTRY 
+	 << endl;
 
   if (fdbg_clusters_cal)
   cout << "THcShower::CoarseProcess return ---------------------------" <<endl;
@@ -746,12 +767,14 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 {
   // Match a cluster to a given track.
 
-  cout << "Track at DC:"
-       << "  X = " << Track->GetX()
-       << "  Y = " << Track->GetY()
-       << "  Theta = " << Track->GetTheta()
-       << "  Phi = " << Track->GetPhi()
-       << endl;
+  if (fdbg_tracks_cal) {
+    cout << "THcShower::MatchCluster: Track at DC:"
+	 << "  X = " << Track->GetX()
+	 << "  Y = " << Track->GetY()
+	 << "  Theta = " << Track->GetTheta()
+	 << "  Phi = " << Track->GetPhi()
+	 << endl;
+  }
 
   XTrFront = kBig;
   YTrFront = kBig;
@@ -769,11 +792,12 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
   XTrFront += GetOrigin().X();
   YTrFront += GetOrigin().Y();
 
-  cout << "Track at the front of Calorimeter:"
-       << "  X = " << XTrFront
-       << "  Y = " << YTrFront
-       << "  Pathl = " << pathl
-       << endl;
+  if (fdbg_tracks_cal)
+    cout << "  Track at the front of Calorimeter:"
+	 << "  X = " << XTrFront
+	 << "  Y = " << YTrFront
+	 << "  Pathl = " << pathl
+	 << endl;
 
   Bool_t inFidVol = true;
 
@@ -789,18 +813,20 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
     XTrBack += GetOrigin().X();
     YTrBack += GetOrigin().Y();
 
-    cout << "Track at the back of Calorimeter:"
-	 << "  X = " << XTrBack
-	 << "  Y = " << YTrBack
-	 << "  Pathl = " << pathl
-	 << endl;
+    if (fdbg_tracks_cal)
+      cout << "  Track at the back of Calorimeter:"
+	   << "  X = " << XTrBack
+	   << "  Y = " << YTrBack
+	   << "  Pathl = " << pathl
+	   << endl;
 
     inFidVol = (XTrFront < fvXmax) && (XTrFront > fvXmin) &&
                (YTrFront < fvYmax) && (YTrFront > fvYmin) &&
                (XTrBack < fvXmax) && (XTrBack > fvXmin) &&
                (YTrBack < fvYmax) && (YTrBack > fvYmin);
 
-    cout << "Fiducial volume test: inFidVol = " << inFidVol << endl;
+    if (fdbg_tracks_cal) 
+      cout << "  Fiducial volume test: inFidVol = " << inFidVol << endl;
   }
 
   // Match a cluster to the track.
@@ -826,7 +852,9 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
     }
   }
 
-  cout << "MatchCluster: mclust= " << mclust << "  delatX= " << deltaX << endl;
+  if (fdbg_tracks_cal)
+    cout << "MatchCluster: mclust= " << mclust << "  delatX= " << deltaX 
+	 << endl;
 
   return mclust;
 }
