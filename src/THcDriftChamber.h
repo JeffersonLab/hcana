@@ -54,7 +54,7 @@ public:
 
   THcDriftChamber();  // for ROOT I/O // Why do we need this?
 protected:
-  Int_t fDebugDriftCh;
+  Int_t f;
 
   // Calibration
 
@@ -80,7 +80,7 @@ protected:
   Int_t fSmallAngleApprox;
   Double_t fStubMaxXPDiff;
   Int_t fFixPropagationCorrection;
-
+  Int_t fhdebugflagpr;
   Double_t fXCenter;
   Double_t fYCenter;
   Double_t fSpacePointCriterion;

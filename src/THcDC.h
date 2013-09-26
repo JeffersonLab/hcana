@@ -75,7 +75,9 @@ public:
 
   THcDC();  // for ROOT I/O
 protected:
-  Int_t fDebugDC;
+  Int_t fdebuglinkstubs;
+  Int_t fdebugprintdecodeddc;
+  Int_t fdebugtrackprint;
 
   Int_t fNDCTracks;
   TClonesArray* fDCTracks;     // Tracks found from stubs (THcDCTrack obj)

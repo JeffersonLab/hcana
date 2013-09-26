@@ -229,7 +229,6 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
   // In Hall C, we do the target traceback here since the traceback should
   // not depend on which tracking detectors are used.
 
-  cout << "In THcHallCSpectrometer::FindVertices" << endl;
   for (Int_t it=0;it<tracks.GetLast()+1;it++) {
     THaTrack* track = static_cast<THaTrack*>( tracks[it] );
 
