@@ -7,6 +7,7 @@
 
 #include "THcDCHit.h"
 #include "THcDCTrack.h"
+#include "THcSpacePoint.h"
 THcDCTrack::THcDCTrack(Int_t nplanes) : fnSP(0), fNHits(0)
 {
   fHits.clear();
@@ -15,17 +16,26 @@ THcDCTrack::THcDCTrack(Int_t nplanes) : fnSP(0), fNHits(0)
   fDoubleResiduals.resize(nplanes);
 }  
 
-void THcDCTrack::AddHit(THcDCHit * hit)
+void THcDCTrack::AddHit(THcDCHit * hit, Double_t dist, Int_t lr)
 {
   // Add a hit to the track
-  fHits.push_back(hit);
+  Hit newhit;
+  newhit.dchit = hit;
+  newhit.distCorr = dist;
+  newhit.lr = lr;
+  fHits.push_back(newhit);
   fNHits++;
 }
-void THcDCTrack::AddSpacePoint( Int_t spid )
+void THcDCTrack::AddSpacePoint( THcSpacePoint* sp )
 {
   // Add to list of space points in this track
   // Need a check for maximum spacepoints of 10
-  fspID[fnSP++] = spid;
+  fSp[fnSP++] = sp;
+  // Copy all the hits from the space point into the track
+  // Will need to also copy the corrected distance and lr information
+  for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
+    AddHit(sp->GetHit(ihit),sp->GetHitDist(ihit),sp->GetHitLR(ihit));
+  }
 }
 
 void THcDCTrack::Clear( const Option_t* )

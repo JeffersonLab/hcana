@@ -61,6 +61,7 @@ public:
 
   Double_t GetPlaneTimeZero(Int_t plane) const { return fPlaneTimeZero[plane-1];}
   Double_t GetSigma(Int_t plane) const { return fSigma[plane-1];}
+  Int_t GetFixPropagationCorrectionFlag() const {return fFixPropagationCorrection;}
 
   Double_t GetNSperChan() const { return fNSperChan;}
 
@@ -84,6 +85,12 @@ protected:
   Int_t fNPlanes;              // Total number of DC planes
   char** fPlaneNames;
   Int_t fNChambers;
+  Int_t fFixLR;			// If 1, allow a given hit to have different LR
+                                // for different space points
+  Int_t fFixPropagationCorrection; // If 1, don't reapply (and accumulate) the
+                                // propagation along the wire correction for
+                                // each space point a hit occurs in.  Keep a
+                                // separate correction for each space point.
 
   // Per-event data
   Int_t fNhits;

@@ -19,3 +19,14 @@ hhodo_plane_names = "1x 1y 2x 2y"
 # The following were defined in REPLAY.PARAM
 h_recon_coeff_filename =    'PARAM/hms_recon_coeff.dat'  ;hms optics matrix
 s_recon_coeff_filename =    'PARAM/sos_recon_coeff.dat'  ;sos optics matrix
+
+# The following are set to zero to replicate historical ENGINE behavior
+# For new analyses they should be set to 1.  If not defined here,
+# hcana will default 1, the new and correct behaviour.
+
+# If 1, Let a hit have different L/R assignment for different space points
+# instead of L/R assignment from first sp it appears in.
+hdc_fix_lr = 0
+# If 1, don't do the the propagation along the wire each time the hit
+# appears in a space point.  (Which means the correction accumulates)
+hdc_fix_propcorr = 0

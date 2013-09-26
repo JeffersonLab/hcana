@@ -20,24 +20,49 @@ public:
   }
   virtual ~THcSpacePoint() {}
 
+  struct Hit {
+    THcDCHit* dchit;
+    Double_t distCorr; 		// Drift distance corrected by propagation along wire
+    Int_t lr;			// Left right flag (+/- 1)
+    // Should we copy into here the information from hit
+    // this is likely to be often used?
+  };
+
   void SetXY(Double_t x, Double_t y) {fX = x; fY = y;};
   void Clear(Option_t* opt="") {fNHits=0; fNCombos=0; fHits.clear();};
   void AddHit(THcDCHit* hit) {
-    fHits.push_back(hit);
+    Hit newhit;
+    newhit.dchit = hit;
+    newhit.distCorr = 0.0;
+    newhit.lr = 0;
+    fHits.push_back(newhit);
     fNHits++;
   }
   Int_t GetNHits() {return fNHits;};
   void SetNHits(Int_t nhits) {fNHits = nhits;};
   Double_t GetX() {return fX;};
   Double_t GetY() {return fY;};
-  THcDCHit* GetHit(Int_t ihit) {return fHits[ihit];};
-  std::vector<THcDCHit*>* GetHitVectorP() {return &fHits;};
-  void ReplaceHit(Int_t ihit, THcDCHit *hit) {fHits[ihit] = hit;};
+  THcDCHit* GetHit(Int_t ihit) {return fHits[ihit].dchit;};
+  //  std::vector<THcDCHit*>* GetHitVectorP() {return &fHits;};
+  //std::vector<Hit>* GetHitStuffVectorP() {return &fHits;}; 
+  void ReplaceHit(Int_t ihit, THcDCHit *hit) {
+    fHits[ihit].dchit = hit;
+    fHits[ihit].distCorr = 0.0;
+    fHits[ihit].lr = 0;
+  };
+  void SetHitDist(Int_t ihit, Double_t dist) {
+    fHits[ihit].distCorr = dist;
+  };
+  void SetHitLR(Int_t ihit, Int_t lr) {
+    fHits[ihit].lr = lr;
+  };
   void SetStub(Double_t stub[4]) {
     for(Int_t i=0;i<4;i++) {
       fStub[i] = stub[i];
     }
   };
+  Double_t GetHitDist(Int_t ihit) { return fHits[ihit].distCorr; };
+  Int_t GetHitLR(Int_t ihit) { return fHits[ihit].lr; };
   Double_t* GetStubP() { return fStub; };
   void IncCombos() { fNCombos++; };
   void SetCombos(Int_t ncombos) { fNCombos=ncombos; };
@@ -53,7 +78,9 @@ public:
   Double_t fY;
   Int_t fNHits;
   Int_t fNCombos;
-  std::vector<THcDCHit*> fHits;
+  // This adds more indirection to getting hit information.
+  std::vector<Hit> fHits;
+  //std::vector<THcDCHit*> fHits;
   Double_t fStub[4];
   // Should we also have a pointer back to the chamber object
 

@@ -22,6 +22,7 @@
 
 //class THaScCalib;
 class TClonesArray;
+class THcSpacePoint;
 
 class THcDriftChamber : public THaSubDetector {
 
@@ -78,6 +79,7 @@ protected:
   Double_t fWireVelocity;
   Int_t fSmallAngleApprox;
   Double_t fStubMaxXPDiff;
+  Int_t fFixPropagationCorrection;
 
   Double_t fXCenter;
   Double_t fYCenter;
@@ -108,7 +110,7 @@ protected:
   void       ChooseSingleHit(void);
   void       SelectSpacePoints(void);
   UInt_t     Count1Bits(UInt_t x);
-  Double_t   FindStub(Int_t nhits, const std::vector<THcDCHit*>* hits,
+  Double_t   FindStub(Int_t nhits, THcSpacePoint *sp,
 		      Int_t* plane_list, UInt_t bitpat,
 		      Int_t* plusminus, Double_t* stub);
 
