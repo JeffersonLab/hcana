@@ -16,6 +16,8 @@
 #include "THcRawShowerHit.h"
 #include "TClass.h"
 #include "math.h"
+#include "THaTrack.h"
+#include "THaTrackProj.h"
 
 #include <cstring>
 #include <cstdio>
@@ -114,6 +116,30 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   //  cout << "THcShowerPlane::ReadDatabase: fLayerNum=" << fLayerNum 
   //       << "  fNelem=" << fNelem << endl;
+
+  // Origin of the plane.
+
+  Double_t BlockThick = fParent->GetBlockThick(fLayerNum-1);
+
+  Double_t xOrig = (fParent->GetXPos(fLayerNum-1,0) + 
+		    fParent->GetXPos(fLayerNum-1,fNelem-1))/2 +
+    BlockThick/2;
+
+  Double_t yOrig = (fParent->GetYPos(fLayerNum-1,0) +
+		    fParent->GetYPos(fLayerNum-1,1))/2;
+
+  Double_t zOrig = fParent->GetZPos(fLayerNum-1);
+
+  fOrigin.SetXYZ(xOrig, yOrig, zOrig);
+
+  cout << "Origin of Layer " << fLayerNum << ": "
+       << fOrigin.X() << " " << fOrigin.Y() << " " << fOrigin.Z() << endl;
+
+  // Detector axes. Assume no rotation.
+  //
+  //  DefineAxes(0.); not for subdetector
+
+  //
 
   fA_Pos = new Double_t[fNelem];
   fA_Neg = new Double_t[fNelem];
@@ -214,7 +240,25 @@ Int_t THcShowerPlane::CoarseProcess( TClonesArray& tracks )
  
   //  HitCount();
 
+  /*
+    if (THcShower::fdbg_tracks_cal)
   cout << "THcShowerPlane::CoarseProcess called ---------------------" << endl;
+
+  Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
+
+  if (THcShower::fdbg_tracks_cal)
+  cout << "   Number of reconstructed tracks = " << Ntracks << endl;
+
+  for (Int_t i=0; i<Ntracks; i++) {
+
+    THaTrack* theTrack = static_cast<THaTrack*>( tracks[i] );
+
+    Double_t pathl;
+    Double_t xtrk;
+    Double_t ytrk;
+    CalcTrackIntercept(theTrack, pathl, xtrk, ytrk);
+  }
+  */
 
  return 0;
 }
@@ -230,6 +274,12 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   // Extract the data for this layer from hit list
   // Assumes that the hit list is sorted by layer, so we stop when the
   // plane doesn't agree and return the index for the next hit.
+
+  THcShower* fParent;
+  fParent = (THcShower*) GetParent();
+
+  if (fParent->fdbg_decoded_cal)
+    cout << "THcShowerPlane::ProcessHits called ----" << endl;
 
   Int_t nPosADCHits=0;
   Int_t nNegADCHits=0;
@@ -251,12 +301,19 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   Int_t nrawhits = rawhits->GetLast()+1;
 
   Int_t ihit = nexthit;
-  //cout << "nrawhits =  " << nrawhits << endl;
-  //cout << "nexthit =  " << nexthit << endl;
+
+  if (fParent->fdbg_decoded_cal)
+ {
+    cout << "   nrawhits =  " << nrawhits << endl;
+    cout << "   nexthit =  " << nexthit << endl;
+  }
+
   while(ihit < nrawhits) {
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
 
-    //cout << "fplane =  " << hit->fPlane << " Num = " << fLayerNum << endl;
+    if (fParent->fdbg_decoded_cal)
+      cout << "   fplane =  " << hit->fPlane << " Num = " << fLayerNum << endl;
+
     if(hit->fPlane > fLayerNum) {
       break;
     }
@@ -268,13 +325,11 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     fA_Pos_p[hit->fCounter-1] = hit->fADC_pos - fPosPed[hit->fCounter -1];
     fA_Neg_p[hit->fCounter-1] = hit->fADC_neg - fNegPed[hit->fCounter -1];
 
-    THcShower* fParent;
-    fParent = (THcShower*) GetParent();
-
     Double_t thresh_pos = fPosThresh[hit->fCounter -1];
     if(hit->fADC_pos >  thresh_pos) {
 
-      THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
+      THcSignalHit *sighit =
+	(THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
       sighit->Set(hit->fCounter, hit->fADC_pos);
 
       fEpos[hit->fCounter-1] += fA_Pos_p[hit->fCounter-1]*
@@ -284,7 +339,8 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Double_t thresh_neg = fNegThresh[hit->fCounter -1];
     if(hit->fADC_neg >  thresh_neg) {
 
-      THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
+      THcSignalHit *sighit = 
+	(THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
       sighit->Set(hit->fCounter, hit->fADC_neg);
 
       fEneg[hit->fCounter-1] += fA_Neg_p[hit->fCounter-1]*
@@ -296,6 +352,10 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     ihit++;
   }
+
+  if (fParent->fdbg_decoded_cal) 
+    cout << "THcShowerPlane::ProcessHits return ----" << endl;
+
   return(ihit);
 }
 
@@ -306,7 +366,10 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
   // arrays for calculating pedestals.
 
   Int_t nrawhits = rawhits->GetLast()+1;
-  //  cout << "THcScintillatorPlane::AcculatePedestals " << fLayerNum << " " << nexthit << "/" << nrawhits << endl;
+
+  //  cout << "THcScintillatorPlane::AcculatePedestals " << fLayerNum << " " 
+  //  << nexthit << "/" << nrawhits << endl;
+
   Int_t ihit = nexthit;
   while(ihit < nrawhits) {
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
@@ -362,8 +425,8 @@ void THcShowerPlane::CalculatePedestals( )
 		      - fNegPed[i]*fNegPed[i]);
     fNegThresh[i] = fNegPed[i] + TMath::Min(50., TMath::Max(10., 3.*fNegSig[i]));
 
-    cout << "Ped&Thr: " << fPosPed[i] << " " << fPosThresh[i] << " " <<
-      fNegPed[i] << " " << fNegThresh[i] << " " << i+1 << endl;
+    //    cout << "Ped&Thr: " << fPosPed[i] << " " << fPosThresh[i] << " " <<
+    //      fNegPed[i] << " " << fNegThresh[i] << " " << i+1 << endl;
   }
   //  cout << " " << endl;
   
