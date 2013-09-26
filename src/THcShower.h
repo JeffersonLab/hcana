@@ -11,6 +11,7 @@
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
 #include "THcShowerPlane.h"
+#include "THcShowerCluster.h"
 
 class THaScCalib;
 
@@ -34,6 +35,22 @@ public:
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
 
   Int_t GetNBlocks(Int_t NLayer) const { return fNBlocks[NLayer];}
+
+  Double_t GetXPos(Int_t NLayer, Int_t NRaw) const {
+    return XPos[NLayer][NRaw];
+  }
+
+  Double_t GetYPos(Int_t NLayer, Int_t Side) const {
+
+    //Side = 0 for postive (left) side
+    //Side = 1 for negative (right) side
+
+    return YPos[2*NLayer+(1-Side)];
+  }
+
+  Double_t GetZPos(Int_t NLayer) const {return fNLayerZPos[NLayer];}
+
+  Double_t GetBlockThick(Int_t NLayer) {return BlockThick[NLayer];}
 
   //  friend class THaScCalib; not needed for now.
 
@@ -90,10 +107,12 @@ public:
   Double_t fX;               // x-position (cm) of the largest cluster
   Double_t fZ;               // z-position (cm) of the largest cluster
   Int_t fMult;               // # of hits in the largest cluster
-  //  Int_t fNblk;      // Number of blocks in main cluster
-  //  Double_t* fEblk;  // Energies of blocks in main cluster
-  //  Double_t fTRX;    // track x-position in det plane"
-  //  Double_t fTRY;    // track y-position in det plane",
+  //  Int_t fNblk;           // Number of blocks in main cluster
+  //  Double_t* fEblk;       // Energies of blocks in main cluster
+  Double_t fTRX;             // track x-position in det plane (1st track)
+  Double_t fTRY;             // track y-position in det plane (1st track)
+  Double_t fTRE;             // Energy (MeV) of the cluster associated to track
+  Double_t fTREpr;           // Preshower Energy (MeV) of the track's cluster
 
   // Potential Hall C parameters.  Mostly here for demonstration
 
@@ -106,10 +125,21 @@ public:
   Double_t** XPos;		// [fNLayers] X,Y,Z positions of blocks
   Double_t* YPos;
   Double_t* ZPos;
-  Int_t fNegCols; //number of columns with PMTTs on the negative side only.
-  Double_t fSlop;               //Track to cluster vertical slop distance.
-  Int_t fvTest;                 //fiducial volume test flag
-  Int_t fdbg_clusters_cal;      // Shower debug flag
+  Int_t fNegCols;               // # of columns with neg. side PMTs only.
+  Double_t fSlop;               // Track to cluster vertical slop distance.
+  Int_t fvTest;                 // fiducial volume test flag for tracking
+  Double_t fvDelta;             // Exclusion band width for fiducial volume
+
+  Double_t fvXmin;              // Fiducial volume limits
+  Double_t fvXmax;
+  Double_t fvYmin;
+  Double_t fvYmax;
+
+
+  Int_t fdbg_decoded_cal;      // Shower debug flags
+  Int_t fdbg_sparsified_cal;
+  Int_t fdbg_clusters_cal;
+  Int_t fdbg_tracks_cal;
 
   THcShowerPlane** fPlanes;     // [fNLayers] Shower Plane objects
 
@@ -122,7 +152,9 @@ public:
 
   void Setup(const char* name, const char* description);
 
-  void MatchCluster(THaTrack*);
+  Int_t MatchCluster(THaTrack*, THcShowerClusterList*, Double_t&, Double_t&);
+
+  friend class THcShowerPlane;
 
   ClassDef(THcShower,0)         // Generic class
 };

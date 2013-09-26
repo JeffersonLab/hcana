@@ -63,6 +63,17 @@ TH1F eprmax 'HMS PrSh Max Clust. Edep' H.cal.eprmax 100 -0.1 0.811
 # X coordinate the largest cluster.
 TH1F xmax 'HMS Cal Max Clust. X' H.cal.xmax 150 -75. 75.
 
+# Track coordinates at the front of calorimeter
+TH2F trx_vs_try 'HMS Track X vs Y at calor.' H.cal.try H.cal.trx 80 -40. 40. 150 -75. 75. H.dc.ntrack==1
+TH1F trx 'HMS Track X at calorimeter' H.cal.trx 150 -75. 75. H.dc.ntrack==1
+TH1F try 'HMS Track Y at calorimeter' H.cal.try  80 -40. 40. H.dc.ntrack==1
+
+# Energy of the cluster associated to the main (currently first) track
+TH1F tre 'HMS Cal Track Clust. Edep' H.cal.tre 200 -0.1 1.622 H.dc.ntrack==1
+
+# Preshower Energy of the cluster associated to the main (currently 1st) track
+TH1F trepr 'HMS PrSh Track Clust. Edep' H.cal.trepr 100 -0.1 0.811 H.dc.ntrack==1
+
 #Calorimeter ADC channels
 TH1F hcaladc_A1p 'HMS Cal ADC A1p - PED' H.cal.1pr.apos_p[0] 150 50 500
 TH1F hcaladc_A2p 'HMS Cal ADC A2p - PED' H.cal.1pr.apos_p[1] 150 50 500
