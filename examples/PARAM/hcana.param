@@ -7,6 +7,9 @@ hhodo_num_planes = 4
 
 hcal_num_layers = 4
 
+# Exclusion band width for the calorimeter's fiducial volume.
+hcal_fv_delta = 5.0
+
 haero_num_pairs = 8
 
 # Names of planes so that parameter names can be constructed
