@@ -8,7 +8,6 @@
 
 #define INCLUDESTR "#include"
 
-#include "THaDB.h"
 #include "TObjArray.h"
 #include "TObjString.h"
 

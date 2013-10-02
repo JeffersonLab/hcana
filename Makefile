@@ -7,7 +7,6 @@
 # List only the implementation files (*.cxx). For every implementation file
 # there must be a corresponding header file (*.h).
 
-
 SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcHallCSpectrometer.cxx \
 	src/THcDetectorMap.cxx \
@@ -125,7 +124,7 @@ ifeq ($(CXX),)
 $(error $(ARCH) invalid architecture)
 endif
 
-CXXFLAGS     += $(INCLUDES)
+CXXFLAGS     += $(INCLUDES) -DHALLC_MODS
 LIBS         += $(ROOTLIBS) $(SYSLIBS)
 GLIBS        += $(ROOTGLIBS) $(SYSLIBS)
 
@@ -175,7 +174,7 @@ $(USERLIB):	$(HDR) $(OBJS)
 
 $(HDR_COMPILEDATA) $(LIBHALLA) $(LIBDC) $(LIBSCALER): $(ANALYZER)/Makefile
 		@echo "Building Podd"		
-		@cd $(ANALYZER) ; make
+		@cd $(ANALYZER) ; export PODD_EXTRA_DEFINES=-DHALLC_MODS ; make
 
 $(USERDICT).cxx: $(RCHDR) $(HDR) $(LINKDEF)
 	@echo "Generating dictionary $(USERDICT)..."
