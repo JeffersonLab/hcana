@@ -3,6 +3,7 @@
 
 //HMS calorimeter hit cluster, version 3.
 
+//#include "THcShower.h"
 #include "THcShowerHit.h"
 
 //HMS calorimeter hit cluster
@@ -87,16 +88,53 @@ class THcShowerCluster : THcShowerHitList {
     return Etot;
   }
 
-  //Energy deposition in the Preshower (1st layer) for a cluster
+  //Energy deposition in the Preshower (1st plane) for a cluster
   //
   Double_t clEpr() {
     Double_t Epr=0.;
     for (THcShowerHitIt it=THcShowerHitList::begin();
 	 it!=THcShowerHitList::end(); it++) {
-      if ((*it)->hitColumn() == 0) Epr += (*it)->hitE();
+      if ((*it)->hitColumn() == 0) {
+	Epr += (*it)->hitE();
+      }
     }
     return Epr;
   }
+
+  //Cluster energy deposition in plane iplane=0,..,3.
+  // side=0 -- from positive PMTs only
+  // side=1 -- from negative PMTs only
+  // side=2 -- from postive and negative PMTs
+  //
+
+  Double_t clEplane(Int_t iplane, Int_t side) {
+
+    if (side!=0&&side!=1||side!=2) {
+      cout << "*** Wrong Side in clEplane:" << side << " ***" << endl;
+      return -1;
+    }
+
+    Double_t Eplane=0.;
+    for (THcShowerHitIt it=THcShowerHitList::begin();
+	 it!=THcShowerHitList::end(); it++) {
+
+      if ((*it)->hitColumn() == iplane) 
+
+	switch (side) {
+	case 0 : Eplane += (*it)->hitEpos();
+	  break;
+	case 1 : Eplane += (*it)->hitEneg();
+	  break;
+	case 2 : Eplane += (*it)->hitE();
+	  break;
+	default : ;
+	}
+
+    }
+
+    return Eplane;
+  }
+
 
   //Cluster size (number of hits in the cluster).
   //

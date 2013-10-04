@@ -84,6 +84,10 @@ public:
     return fMult;
   }
 
+  Int_t GetNLayers() {
+    return fNLayers;
+  }
+
   THcShower();  // for ROOT I/O
 
 protected:
@@ -141,6 +145,11 @@ protected:
   Int_t fdbg_clusters_cal;
   Int_t fdbg_tracks_cal;
 
+  Double_t fAcor;               // Coordinate correction constants
+  Double_t fBcor;
+  Double_t fCcor;
+  Double_t fDcor;
+
   THcShowerPlane** fPlanes;     // [fNLayers] Shower Plane objects
 
   TClonesArray*  fTrackProj;    // projection of track onto plane
@@ -152,11 +161,14 @@ protected:
 
   void Setup(const char* name, const char* description);
 
+  // cluster to track association method.
+
   Int_t MatchCluster(THaTrack*, THcShowerClusterList*, Double_t&, Double_t&);
 
-  friend class THcShowerPlane;
+  friend class THcShowerPlane;   //to access debug flags.
+  //  friend class THcShowerCluster; //to access fNLayers
 
-  ClassDef(THcShower,0)         // Generic class
+  ClassDef(THcShower,0)          // Generic class
 };
 
 ///////////////////////////////////////////////////////////////////////////////

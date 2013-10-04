@@ -209,6 +209,8 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
     {"eneg",   "Energy Depositions from Negative Side PMTs", "fEneg"},
     {"emean",  "Mean Energy Depositions",                    "fEMean"},
     {"eplane", "Energy Deposition per plane",                "fEplane"},
+    {"eplane_pos", "Energy Deposition per plane from pos. PMTs","fEplane_pos"},
+    {"eplane_neg", "Energy Deposition per plane from neg. PMTs","fEplane_neg"},
     { 0 }
   };
 
@@ -296,6 +298,8 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   }
 
   fEplane = 0;
+  fEplane_pos = 0;
+  fEplane_neg = 0;
 
   Int_t nrawhits = rawhits->GetLast()+1;
 
@@ -348,6 +352,8 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     fEmean[hit->fCounter-1] += (fEpos[hit->fCounter-1] + fEneg[hit->fCounter-1]);
     fEplane += fEmean[hit->fCounter-1];
+    fEplane_pos += fEpos[hit->fCounter-1];
+    fEplane_neg += fEneg[hit->fCounter-1];
 
     ihit++;
   }

@@ -187,6 +187,23 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   cout << "Cluster debug flag          = " << fdbg_clusters_cal  << endl;
   cout << "Tracking debug flag         = " << fdbg_tracks_cal  << endl;
 
+  {
+    DBRequest list[]={
+      {"cal_a_cor", &fAcor, kDouble},
+      {"cal_b_cor", &fBcor, kDouble},
+      {"cal_c_cor", &fCcor, kDouble},
+      {"cal_d_cor", &fDcor, kDouble},
+      {0}
+    };
+    gHcParms->LoadParmValues((DBRequest*)&list, prefix);
+  }
+
+  cout << "HMS Calorimeter coordinate correction constants:" << endl;
+  cout << "    fAcor = " << fAcor << endl;
+  cout << "    fBcor = " << fBcor << endl;
+  cout << "    fCcor = " << fCcor << endl;
+  cout << "    fDcor = " << fDcor << endl;
+
   BlockThick = new Double_t [fNLayers];
   fNBlocks = new Int_t [fNLayers];
   fNLayerZPos = new Double_t [fNLayers];
@@ -623,9 +640,11 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 	  fPlanes[j]->GetAneg(i) - fPlanes[j]->GetNegPed(i) >
 	  fPlanes[j]->GetNegThr(i) - fPlanes[j]->GetNegPed(i)) {    //hit
 	Double_t Edep = fPlanes[j]->GetEmean(i);
+	Double_t Epos = fPlanes[j]->GetEpos(i);
+	Double_t Eneg = fPlanes[j]->GetEneg(i);
 	Double_t x = XPos[j][i] + BlockThick[j]/2.;        //top + thick/2
 	Double_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
-	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep);
+	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep,Epos,Eneg);
 
 	HitList.push_back(hit);
 
@@ -656,7 +675,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   //Print out the cluster list.
   //
-  fNclust = (*ClusterList).NbClusters();
+
   if (fdbg_clusters_cal) cout << "Cluster_list size: " << fNclust << endl;
 
     for (Int_t i=0; i!=fNclust; i++) {
