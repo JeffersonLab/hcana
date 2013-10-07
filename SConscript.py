@@ -22,6 +22,7 @@ hcheaders = Split("""
 baseenv.RootCint(roothcdict,hcheaders)
 baseenv.SharedObject(target = roothcobj, source = roothcdict)
 
+baseenv.Append(CPPDEFINES= '-DHALLC_MODS')
 
 #######  Start of main SConscript ###########
 
