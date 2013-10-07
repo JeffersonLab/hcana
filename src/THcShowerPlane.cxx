@@ -92,7 +92,7 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   // See what file it looks for
   
-  static const char* const here = "ReadDatabase()";
+  //  static const char* const here = "ReadDatabase()";
   char prefix[2];
   char parname[100];
   
@@ -102,7 +102,6 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   strcpy(parname,prefix);
   strcat(parname,"cal_");
   strcat(parname,GetName());
-  Int_t plen=strlen(parname);
 
   strcat(parname,"_nr");
   cout << " Getting value of SHOWER!!!" << parname << endl;

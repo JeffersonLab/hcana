@@ -81,7 +81,6 @@ void THcDC::Setup(const char* name, const char* description)
 
   static const char* const here = "Setup";
   char prefix[2];
-  char parname[100];
 
   THaApparatus *app = GetApparatus();
   if(app) {
@@ -233,7 +232,6 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
 
   //  static const char* const here = "ReadDatabase()";
   char prefix[2];
-  char parname[100];
 
   // Read data from database 
   // Pull values from the THcParmList instead of reading a database
@@ -494,7 +492,6 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
       THcDCTrack *tr = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
       theTrack->Set(tr->GetX(), tr->GetY(), tr->GetXP(), tr->GetYP());
       theTrack->SetFlag((UInt_t) 0);
-      Int_t nhits=tr->GetNHits();
       // Need to look at how engine does chi2 and track selection.  Reduced?
       theTrack->SetChi2(tr->GetChisq(),tr->GetNFree());
       // CalcFocalPlaneCoords.  Aren't our tracks already in focal plane coords

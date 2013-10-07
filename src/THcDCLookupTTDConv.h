@@ -24,9 +24,9 @@ public:
 protected:
 
   Double_t fT0;
+  Double_t fMaxDriftDistance;
   Double_t fBinSize;
   Int_t fNumBins;
-  Double_t fMaxDriftDistance;
   Double_t* fTable;
 
   ClassDef(THcDCLookupTTDConv,0)             // VDC Analytic TTD Conv class
