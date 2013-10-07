@@ -147,7 +147,6 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   strcpy(parname,prefix);
   strcat(parname,"scin_");
   strcat(parname,GetName());
-  Int_t plen=strlen(parname);
   strcat(parname,"_nr");
   fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
   //

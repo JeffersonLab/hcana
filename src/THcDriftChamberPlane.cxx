@@ -85,7 +85,6 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   
   static const char* const here = "ReadDatabase()";
   char prefix[2];
-  char parname[100];
   Int_t NumDriftMapBins;
   Double_t DriftMapFirstBin;
   Double_t DriftMapBinSize;
@@ -203,8 +202,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   for (int i=0; i<nWires; i++) {
     Double_t pos = fPitch*( (fWireOrder==0?(i+1):fNWires-i) 
 			    - fCentralWire) - fCenter;
-    THcDCWire* wire = new((*fWires)[i])
-      THcDCWire( i+1, pos , 0.0, fTTDConv);
+    new((*fWires)[i]) THcDCWire( i+1, pos , 0.0, fTTDConv);
     //if( something < 0 ) wire->SetFlag(1);
   }
 

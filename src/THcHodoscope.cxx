@@ -58,9 +58,9 @@ THcHodoscope::THcHodoscope( ) :
 void THcHodoscope::Setup(const char* name, const char* description)
 {
 
-  static const char* const here = "Setup()";
-  static const char* const message = 
-    "Must construct %s detector with valid name! Object construction failed.";
+  //  static const char* const here = "Setup()";
+  //  static const char* const message = 
+  //    "Must construct %s detector with valid name! Object construction failed.";
 
   cout << "In THcHodoscope::Setup()" << endl;
   // Base class constructor failed?
@@ -316,7 +316,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   prefix[1]='\0';
   strcpy(parname,prefix);
   strcat(parname,"scin_");
-  Int_t plen=strlen(parname);
+  //  Int_t plen=strlen(parname);
   cout << " readdatabse hodo fnplanes = " << fNPlanes << endl;
   fNPaddle = new Int_t [fNPlanes];
   //  fSpacing = new Double_t [fNPlanes];
