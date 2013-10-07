@@ -99,11 +99,16 @@ dclib = 'dc'
 scalerlib = 'scaler'
 
 baseenv.Append(LIBPATH=['$HC_DIR','$HA_DIR','$HC_SRC','$HA_SRC','$HA_DC','$HA_SCALER'])
-baseenv.Append(LIBS=[hallclib,hallalib,dclib,scalerlib])
 baseenv.Replace(SHLIBSUFFIX = '.so')
+baseenv.Append(CPPDEFINES = '-DHALLC_MODS')
 
 directorylist = ['./','src','podd','podd/src','podd/hana_decode','podd/hana_scaler']
 
-SConscript(dirs = directorylist,name='SConscript.py',exports='baseenv')
+pbaseenv=baseenv.Clone()
+pbaseenv.Append(LIBS=[hallclib,hallalib,dclib,scalerlib])
+baseenv.Append(LIBS=[hallalib,dclib,scalerlib])
+Export('pbaseenv')
+
+SConscript(dirs = directorylist,name='SConscript.py',exports='pbaseenv')
 
 #######  End of SConstruct #########

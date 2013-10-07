@@ -24,6 +24,8 @@
 #include "THcAnalyzer.h"
 #include "THaBenchmark.h"
 #include "TList.h"
+#include "THaGlobals.h"
+
 
 #include <fstream>
 #include <algorithm>

@@ -86,6 +86,9 @@ THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
   //  gHaDB      = new THaFileDB();
   gHaTextvars = new THaTextvars;
 
+  cout << "In THcInterface ... " << endl;
+  cout << "Decoder => " << gHaDecoder << endl;
+
   // Set the maximum size for a file written by Podd contained by the TTree
   //  putting it to 1.5 GB, down from the default 1.9 GB since something odd
   //  happens for larger files
@@ -231,6 +234,7 @@ void THcInterface::PrintLogo( Bool_t lite )
 TClass* THcInterface::GetDecoder()
 {
   // Get class of the current decoder
+  cout << "In THcInterface::GetDecoder ... " << gHaDecoder << endl;
   return gHaDecoder;
 }
 
@@ -250,6 +254,8 @@ TClass* THcInterface::SetDecoder( TClass* c )
 	    "decoder class must inherit from THaEvData");
     return NULL;
   }
+
+  cout << "In THcInterface::SetDecoder ... " << c << endl;
 
   gHaDecoder = c;
   return gHaDecoder;
