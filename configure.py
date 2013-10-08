@@ -6,20 +6,24 @@ def config(env,args):
 	if env['PLATFORM'] == 'posix':
       		if (platform.machine() == 'x86_64'):
         		print "Got a 64-bit processor, I can do a 64-bit build in theory..."
-         		if args.get('32bit', 0):
-             			print '32-bit Linux build'
-             			env['MEMORYMODEL'] = '32bit'
-             			import linux6432
-             			linux6432.config(env, args)
-         		elif args.get('64bit', 0):
-             			env['MEMORYMODEL'] = '64bit'
-             			import linux64
-             			linux64.config(env, args)
-         		else:
-             			print 'Memory model not specified, so I\'m building 32-bit...'
-             			env['MEMORYMODEL'] = '32bit'
-             			import linux6432
-             			linux6432.config(env, args)
+			for element in platform.architecture():
+         			if (element == '32bit'):
+             				print '32-bit Linux build'
+             				env['MEMORYMODEL'] = '32bit'
+             				import linux32
+             				linux32.config(env, args)
+					break
+         			elif (element == '64bit'):
+             				print '64-bit Linux build'
+             				env['MEMORYMODEL'] = '64bit'
+             				import linux64
+             				linux64.config(env, args)
+					break
+         			else:
+             				print 'Memory model not specified, so I\'m building 32-bit...'
+             				env['MEMORYMODEL'] = '32bit'
+             				import linux32
+             				linux32.config(env, args)
       		else:
           		print '32-bit Linux Build.'
           		env['MEMORYMODEL'] = '32bit'

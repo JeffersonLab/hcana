@@ -14,7 +14,7 @@ def config(env,args):
 	if int(standalone):
 		env.Append(STANDALONE= '1')
 
-	env.Append(CXXFLAGS = '-Wall -Woverloaded-virtual')
+	env.Append(CXXFLAGS = '-m32 -Wall -Woverloaded-virtual')
 	env.Append(CPPDEFINES = '-DLINUXVERS')
 
 	cxxversion = env.subst('$CXXVERSION')
@@ -25,7 +25,7 @@ def config(env,args):
 	if float(cxxversion[0:2])>=3.0:
 			env.Append(CPPDEFINES = '-DHAS_SSTREAM')
 	
-	env['SHLINKFLAGS'] = '$LINKFLAGS -shared'
+	env['SHLINKFLAGS'] = '$LINKFLAGS -m32 -shared'
 	env['SHLIBSUFFIX'] = '.so'
 
 
