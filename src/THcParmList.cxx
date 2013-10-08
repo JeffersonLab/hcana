@@ -61,7 +61,6 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
   }
   
   string line;
-  Int_t nlines_read = 0, nparameters_read = 0;
   char varname[100];
   Int_t InRunRange;
   Int_t currentindex = 0;
