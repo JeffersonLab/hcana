@@ -24,6 +24,8 @@
 #include "THcAnalyzer.h"
 #include "THaBenchmark.h"
 #include "TList.h"
+#include "THaGlobals.h"
+
 
 #include <fstream>
 #include <algorithm>
@@ -31,7 +33,6 @@
 #include <cstring>
 
 using namespace std;
-
 
 // Pointer to single instance of this object
 //THcAnalyzer* THcAnalyzer::fgAnalyzer = 0;
