@@ -22,12 +22,16 @@ def rootcint(target,source,env):
 	return ok
 
 baseenv = Environment(ENV = os.environ)
-
 #dict = baseenv.Dictionary()
 #keys = dict.keys()
 #keys.sort()
 #for key in keys:
 #	print "Construction variable = '%s', value = '%s'" % (key, dict[key])
+
+####### Check SCons version ##################
+print('!!! You should be using the local version of SCons, invoked with:')
+print('!!! ./podd/scons/scons.py')
+EnsureSConsVersion(4,9,9)
 
 ####### Hall A Build Environment #############
 #
@@ -75,18 +79,23 @@ if not conf.CheckFunc('printf'):
 baseenv = conf.Finish()
 
 ######## ROOT Dictionaries #########
-
-rootsys = baseenv['ENV']['ROOTSYS']
-baseenv.Append(ROOTCONFIG = rootsys+'/bin/root-config')
-baseenv.Append(ROOTCINT = rootsys+'/bin/rootcint')
+baseenv.Append(ROOTCONFIG = 'root-config')
+baseenv.Append(ROOTCINT = 'rootcint')
 
 try:
-	baseenv.ParseConfig('$ROOTCONFIG --cflags')
-	baseenv.ParseConfig('$ROOTCONFIG --libs')
-	#baseenv.MergeFlags('-fPIC')
+        baseenv.ParseConfig('$ROOTCONFIG --cflags')
+        baseenv.ParseConfig('$ROOTCONFIG --libs')
+        baseenv.MergeFlags('-fPIC')
 except OSError:
-	print "ROOT not found!!"
-	exit(1)
+        try:
+		baseenv.Replace(ROOTCONFIG = baseenv['ENV']['ROOTSYS'] + '/bin/root-config')
+		baseenv.Replace(ROOTCINT = baseenv['ENV']['ROOTSYS'] + '/bin/rootcint')
+		baseenv.ParseConfig('$ROOTCONFIG --cflags')
+		baseenv.ParseConfig('$ROOTCONFIG --libs')
+		baseenv.MergeFlags('-fPIC')
+	except KeyError:
+                print('!!! Cannot find ROOT.  Check if root-config is in your PATH.')
+                Exit(1)
 
 bld = Builder(action=rootcint)
 baseenv.Append(BUILDERS = {'RootCint': bld})
@@ -99,11 +108,16 @@ dclib = 'dc'
 scalerlib = 'scaler'
 
 baseenv.Append(LIBPATH=['$HC_DIR','$HA_DIR','$HC_SRC','$HA_SRC','$HA_DC','$HA_SCALER'])
-baseenv.Append(LIBS=[hallclib,hallalib,dclib,scalerlib])
 baseenv.Replace(SHLIBSUFFIX = '.so')
+baseenv.Append(CPPDEFINES = '-DHALLC_MODS')
 
 directorylist = ['./','src','podd','podd/src','podd/hana_decode','podd/hana_scaler']
 
-SConscript(dirs = directorylist,name='SConscript.py',exports='baseenv')
+pbaseenv=baseenv.Clone()
+pbaseenv.Append(LIBS=[hallclib,hallalib,dclib,scalerlib])
+baseenv.Append(LIBS=[hallalib,dclib,scalerlib])
+Export('pbaseenv')
+
+SConscript(dirs = directorylist,name='SConscript.py',exports='pbaseenv')
 
 #######  End of SConstruct #########

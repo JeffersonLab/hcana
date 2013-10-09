@@ -4,12 +4,12 @@
 import os
 import re
 import SCons.Util
-Import ('baseenv')
+Import ('pbaseenv')
 
 ######## ROOT Dictionaries #########
 
-roothcdict = baseenv.subst('$HC_DIR')+'/HallCDict.C'
-roothcobj = baseenv.subst('$HC_SRC')+'/HallCDict.so'
+roothcdict = pbaseenv.subst('$HC_DIR')+'/HallCDict.C'
+roothcobj = pbaseenv.subst('$HC_SRC')+'/HallCDict.so'
 hcheaders = Split("""
 	src/THcInterface.h src/THcParmList.h src/THcAnalyzer.h src/THcHallCSpectrometer.h 
 	src/THcDetectorMap.h src/THcRawHit.h src/THcHitList.h src/THcSignalHit.h src/THcHodoscope.h 
@@ -19,12 +19,10 @@ hcheaders = Split("""
 	src/THcRawShowerHit.h src/THcAerogel.h src/THcAerogelHit.h src/THcGlobals.h src/THcDCTrack.h
 	src/HallC_LinkDef.h
 	""")
-baseenv.RootCint(roothcdict,hcheaders)
-baseenv.SharedObject(target = roothcobj, source = roothcdict)
-
+pbaseenv.RootCint(roothcdict,hcheaders)
+pbaseenv.SharedObject(target = roothcobj, source = roothcdict)
 
 #######  Start of main SConscript ###########
-
-analyzer = baseenv.Program(target = 'hcana', source = 'src/main.o')
-baseenv.Install('./bin',analyzer)
-baseenv.Alias('install',['./bin'])
+analyzer = pbaseenv.Program(target = 'hcana', source = 'src/main.o')
+pbaseenv.Install('./bin',analyzer)
+pbaseenv.Alias('install',['./bin'])
