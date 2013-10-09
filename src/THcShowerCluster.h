@@ -109,7 +109,7 @@ class THcShowerCluster : THcShowerHitList {
 
   Double_t clEplane(Int_t iplane, Int_t side) {
 
-    if (side!=0&&side!=1||side!=2) {
+    if (side!=0&&side!=1&&side!=2) {
       cout << "*** Wrong Side in clEplane:" << side << " ***" << endl;
       return -1;
     }

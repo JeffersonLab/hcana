@@ -12,6 +12,7 @@
 #include "THcHitList.h"
 #include "THcShowerPlane.h"
 #include "THcShowerCluster.h"
+#include "TMath.h"
 
 class THaScCalib;
 
@@ -88,6 +89,27 @@ public:
     return fNLayers;
   }
 
+  //Coordinate correction for single PMT modules.
+  //PMT attached at right (negative) side.
+
+  Float_t Ycor(Double_t y) {
+    return TMath::Exp(y/fAcor)/(1. + y*y/fBcor);
+    //    return TMath::Exp(-y/fAcor)/(1. + y*y/fBcor);
+  }
+
+  //Coordinate correction for double PMT modules.
+  //
+
+  Float_t Ycor(Double_t y, Int_t side) {
+    if (side!=0&&side!=1) {
+      cout << "THcShower::Ycor : wrong side " << side << endl;
+      return 0.;
+    }
+    Int_t sign = 1 - 2*side;
+    //    Int_t sign = 2*side - 1;
+    return (fCcor + sign*y)/(fCcor + sign*y/fDcor);
+  }
+
   THcShower();  // for ROOT I/O
 
 protected:
@@ -106,8 +128,8 @@ protected:
 
   Int_t fNhits;              // Total number of hits
   Int_t fNclust;             // Number of clusters
-  Double_t fE;               // Energy (MeV) of the largest cluster
-  Double_t fEpr;             // Preshower Energy (MeV) of the largest cluster
+  Double_t fE;               // Energy of the largest cluster
+  Double_t fEpr;             // Preshower Energy of the largest cluster
   Double_t fX;               // x-position (cm) of the largest cluster
   Double_t fZ;               // z-position (cm) of the largest cluster
   Int_t fMult;               // # of hits in the largest cluster
@@ -115,8 +137,13 @@ protected:
   //  Double_t* fEblk;       // Energies of blocks in main cluster
   Double_t fTRX;             // track x-position in det plane (1st track)
   Double_t fTRY;             // track y-position in det plane (1st track)
-  Double_t fTRE;             // Energy (MeV) of the cluster associated to track
-  Double_t fTREpr;           // Preshower Energy (MeV) of the track's cluster
+  Double_t fTRE;             // Energy of the cluster associated to track
+  Double_t fTREpr;           // Preshower Energy of the track's cluster
+  Double_t fTRE_cor;         // Y-corrected track total energy
+  Double_t fTREpr_cor;       // Y-corrected track Preshower energy
+  Double_t* fTREpl_cor;      // Y-corrected track energy per plane
+  Double_t* fTREpl_pos_cor;  // Y-corrected track positive energy per plane
+  Double_t* fTREpl_neg_cor;  // Y-corrected track negative energy per plane
 
   // Potential Hall C parameters.  Mostly here for demonstration
 

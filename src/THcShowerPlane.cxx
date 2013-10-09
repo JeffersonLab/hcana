@@ -207,7 +207,7 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
     {"aneg_p", "Ped-subtracted Negative ADC Amplitudes", "fA_Neg_p"},
     {"epos",   "Energy Depositions from Positive Side PMTs", "fEpos"},
     {"eneg",   "Energy Depositions from Negative Side PMTs", "fEneg"},
-    {"emean",  "Mean Energy Depositions",                    "fEMean"},
+    {"emean",  "Mean Energy Depositions",                    "fEmean"},
     {"eplane", "Energy Deposition per plane",                "fEplane"},
     {"eplane_pos", "Energy Deposition per plane from pos. PMTs","fEplane_pos"},
     {"eplane_neg", "Energy Deposition per plane from neg. PMTs","fEplane_neg"},
