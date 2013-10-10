@@ -707,7 +707,9 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
   //Print out the cluster list.
   //
 
-  if (fdbg_clusters_cal) cout << "Cluster_list size: " << fNclust << endl;
+  if (fdbg_clusters_cal) {
+
+    cout << "Cluster_list size: " << fNclust << endl;
 
     for (Int_t i=0; i!=fNclust; i++) {
 
@@ -726,7 +728,8 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 	cout << "  hit #" << j << ":  "; (*hit).show();
       }
 
-   }
+    }
+  }
 
   
   //The largest cluster.
