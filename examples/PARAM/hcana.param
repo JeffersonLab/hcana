@@ -8,7 +8,13 @@ hhodo_num_planes = 4
 hcal_num_layers = 4
 
 # Exclusion band width for the calorimeter's fiducial volume.
-hcal_fv_delta = 5.0
+hcal_fv_delta = 5.
+
+# Constants for the coordiante correction of the calorimeter energy depositions
+hcal_a_cor = 200.
+hcal_b_cor = 8000.
+hcal_c_cor = 64.36
+hcal_d_cor = 1.66
 
 haero_num_pairs = 8
 

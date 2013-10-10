@@ -54,8 +54,24 @@ public:
     return fEplane;
   };
 
+  Double_t GetEplane_pos() {
+    return fEplane_pos;
+  };
+
+  Double_t GetEplane_neg() {
+    return fEplane_neg;
+  };
+
   Double_t GetEmean(Int_t i) {
     return fEmean[i];
+  };
+
+  Double_t GetEpos(Int_t i) {
+    return fEpos[i];
+  };
+
+  Double_t GetEneg(Int_t i) {
+    return fEneg[i];
   };
 
   Double_t GetAposP(Int_t i) {
@@ -101,6 +117,9 @@ protected:
   Double_t* fEneg;     // [fNelem] energy depositions seen by negative PMTs
   Double_t* fEmean;    // [fNelem] mean energy depositions (pos + neg)
   Double_t  fEplane;   // Energy deposition in the plane
+  Double_t  fEplane_pos;   // Energy deposition in the plane from positive PMTs
+  Double_t  fEplane_neg;   // Energy deposition in the plane from negative PMTs
+
 
   TClonesArray* fPosADCHits;    // List of positive ADC hits
   TClonesArray* fNegADCHits;    // List of negative ADC hits

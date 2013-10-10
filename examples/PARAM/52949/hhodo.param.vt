@@ -8,7 +8,7 @@
    hscin_tdc_max = 4000                                                         
 ; hscin_tdc_to_time   scin tdc time per channel                                 
    hscin_tdc_to_time = 0.0259                                                   
- new variable for picking good hits for tof fitting
+; new variable for picking good hits for tof fitting
 ; this should not be set tight until you are ready to fit
 ; tof and you figured out good values
    htof_tolerance = 100.0

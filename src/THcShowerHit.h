@@ -14,7 +14,9 @@ class THcShowerHit {       //HMS calorimeter hit class
 private:
   UInt_t fCol, fRow;       //hit colomn and row
   Double_t fX, fZ;         //hit X (vert.) and Z (along spect.axis) coordinates
-  Double_t fE;             //hit energy deposition
+  Double_t fE;             //hit mean energy deposition
+  Double_t fEpos;          //hit energy deposition from positive PMT
+  Double_t fEneg;          //hit energy deposition from negative PMT
   
 public:
 
@@ -22,15 +24,19 @@ public:
     fCol=fRow=0;
     fX=fZ=0.;
     fE=0.;
+    fEpos=0.;
+    fEneg=0.;
   }
 
   THcShowerHit(UInt_t hRow, UInt_t hCol, Double_t hX, Double_t hZ,
-	       Double_t hE) {
+	       Double_t hE, Double_t hEpos, Double_t hEneg) {
     fRow=hRow;
     fCol=hCol;
     fX=hX;
     fZ=hZ;
     fE=hE;
+    fEpos=hEpos;
+    fEneg=hEneg;
   }
 
   ~THcShowerHit() {
@@ -57,6 +63,14 @@ public:
     return fE;
   }
 
+  Double_t hitEpos() {
+    return fEpos;
+  }
+
+  Double_t hitEneg() {
+    return fEneg;
+  }
+
   // Decide if a hit is neighbouring the current hit.
   // Two hits are neighbours if share a side or a corner.
   //
@@ -69,8 +83,9 @@ public:
   //Print out hit information
   //
   void show() {
-    cout << "row=" << fRow << "  column=" << fCol << 
-      "  x=" << fX << "  z=" << fZ << "  E=" << fE << endl;
+    cout << "row=" << fRow << "  column=" << fCol 
+	 << "  x=" << fX << "  z=" << fZ 
+	 << "  E=" << fE << "  Epos=" << fEpos << "  Eneg=" << fEneg << endl;
   }
 
 };
