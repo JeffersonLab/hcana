@@ -32,8 +32,9 @@ public:
 
   Int_t GetNHits() const { return fNhits; }
   
-  Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
-  const TClonesArray* GetTrackHits() const { return fTrackProj; }
+  // These are not used in the calorimeter code.
+  //  Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
+  //  const TClonesArray* GetTrackHits() const { return fTrackProj; }
 
   Int_t GetNBlocks(Int_t NLayer) const { return fNBlocks[NLayer];}
 
@@ -43,8 +44,8 @@ public:
 
   Double_t GetYPos(Int_t NLayer, Int_t Side) const {
 
-    //Side = 0 for postive (left) side
-    //Side = 1 for negative (right) side
+    //Side = 0 for postive (right) side
+    //Side = 1 for negative (left) side
 
     return YPos[2*NLayer+(1-Side)];
   }
@@ -90,11 +91,10 @@ public:
   }
 
   //Coordinate correction for single PMT modules.
-  //PMT attached at right (negative) side.
+  //PMT attached at right (positive) side.
 
   Float_t Ycor(Double_t y) {
     return TMath::Exp(y/fAcor)/(1. + y*y/fBcor);
-    //    return TMath::Exp(-y/fAcor)/(1. + y*y/fBcor);
   }
 
   //Coordinate correction for double PMT modules.
@@ -106,7 +106,6 @@ public:
       return 0.;
     }
     Int_t sign = 1 - 2*side;
-    //    Int_t sign = 2*side - 1;
     return (fCcor + sign*y)/(fCcor + sign*y/fDcor);
   }
 
@@ -135,9 +134,13 @@ protected:
   Int_t fMult;               // # of hits in the largest cluster
   //  Int_t fNblk;           // Number of blocks in main cluster
   //  Double_t* fEblk;       // Energies of blocks in main cluster
+
+  // Track quantities, are here for test purposes. Better to move
+  // to the track class(es) later on.
+
   Double_t fTRX;             // track x-position in det plane (1st track)
   Double_t fTRY;             // track y-position in det plane (1st track)
-  Double_t fTRE;             // Energy of the cluster associated to track
+  Double_t fTRE;             // Energy of a cluster associated to the track
   Double_t fTREpr;           // Preshower Energy of the track's cluster
   Double_t fTRE_cor;         // Y-corrected track total energy
   Double_t fTREpr_cor;       // Y-corrected track Preshower energy
@@ -193,7 +196,6 @@ protected:
   Int_t MatchCluster(THaTrack*, THcShowerClusterList*, Double_t&, Double_t&);
 
   friend class THcShowerPlane;   //to access debug flags.
-  //  friend class THcShowerCluster; //to access fNLayers
 
   ClassDef(THcShower,0)          // Generic class
 };

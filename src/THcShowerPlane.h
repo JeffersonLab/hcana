@@ -42,7 +42,7 @@ public:
   virtual Int_t AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit);
   virtual void  CalculatePedestals( );
 
-  Double_t fSpacing;
+  //  Double_t fSpacing;   not used
 
   TClonesArray* fParentHitList;
 
@@ -120,8 +120,8 @@ protected:
   Double_t  fEplane_pos;   // Energy deposition in the plane from positive PMTs
   Double_t  fEplane_neg;   // Energy deposition in the plane from negative PMTs
 
-
-  TClonesArray* fPosADCHits;    // List of positive ADC hits
+  // These lists are not used actively for now.
+  TClonesArray* fPosADCHits;    // List of positive ADC hits 
   TClonesArray* fNegADCHits;    // List of negative ADC hits
 
   Int_t fLayerNum;		// Layer # 1-4
