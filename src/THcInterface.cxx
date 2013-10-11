@@ -73,7 +73,7 @@ THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
   if( !noLogo )
     PrintLogo();
 
-  SetPrompt("analyzer [%d] ");
+  SetPrompt("analyzerTHcInterface [%d] ");
   gHaVars    = new THaVarList;
   gHcParms    = new THcParmList;
   gHaCuts    = new THaCutList( gHaVars );
