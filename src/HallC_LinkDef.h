@@ -7,6 +7,18 @@
 #pragma link C++ global gHcParms;
 #pragma link C++ global gHcDetectorMap;
 
+#ifdef MACVERS
+#pragma link C++ global gHaVars;
+#pragma link C++ global gHaCuts;
+#pragma link C++ global gHaApps;
+#pragma link C++ global gHaScalers;
+#pragma link C++ global gHaPhysics;
+#pragma link C++ global gHaRun;
+#pragma link C++ global gHaDB;
+#pragma link C++ global gHaTextvars;
+#pragma link C++ global gHaDecoder;
+#endif
+
 #pragma link C++ class THcInterface+;
 #pragma link C++ class THcParmList+;
 #pragma link C++ class THcAnalyzer+;
