@@ -116,7 +116,12 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   //  cout << "THcShowerPlane::ReadDatabase: fLayerNum=" << fLayerNum 
   //       << "  fNelem=" << fNelem << endl;
 
-  // Origin of the plane.
+  // Origin of the plane:
+  //
+  // X is average of top X coordinates of the top and bottom blocks
+  // shifted by a half of the block thickness;
+  // Y is average of left and right edges;
+  // Z is _front_ position of the plane along the beam.
 
   Double_t BlockThick = fParent->GetBlockThick(fLayerNum-1);
 
@@ -136,20 +141,9 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   // Detector axes. Assume no rotation.
   //
-  //  DefineAxes(0.); not for subdetector
+  //  DefineAxes(0.); Do not work for subdetector
 
-  //
-
-  fA_Pos = new Double_t[fNelem];
-  fA_Neg = new Double_t[fNelem];
-  fA_Pos_p = new Double_t[fNelem];
-  fA_Neg_p = new Double_t[fNelem];
-
-  fEpos = new Double_t[fNelem];
-  fEneg = new Double_t[fNelem];
-  fEmean= new Double_t[fNelem];
-
- //  fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+//  fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
 // 
 //   parname[plen]='\0';
 //   strcat(parname,"_spacing");
@@ -163,6 +157,8 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   //  Find the number of elements
   
   // Create arrays to hold results here
+
+  // Pedestal limits per channel.
 
   fPosPedLimit = new Int_t [fNelem];
   fNegPedLimit = new Int_t [fNelem];
@@ -184,6 +180,19 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   InitializePedestals();
 
+  // ADC amplitudes per channel.
+
+  fA_Pos = new Double_t[fNelem];
+  fA_Neg = new Double_t[fNelem];
+  fA_Pos_p = new Double_t[fNelem];
+  fA_Neg_p = new Double_t[fNelem];
+
+  // Energy depositions per block (not corrected for track coordinate)
+
+  fEpos = new Double_t[fNelem];
+  fEneg = new Double_t[fNelem];
+  fEmean= new Double_t[fNelem];
+
   return kOK;
 }
 
@@ -201,14 +210,14 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
   RVarDef vars[] = {
     {"posadchits", "List of Positive ADC hits","fPosADCHits.THcSignalHit.GetPaddleNumber()"},
     {"negadchits", "List of Negative ADC hits","fNegADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"apos",   "Raw Positive ADC Amplitudes",            "fA_Pos"},
-    {"aneg",   "Raw Negative ADC Amplitudes",            "fA_Neg"},
-    {"apos_p", "Ped-subtracted Positive ADC Amplitudes", "fA_Pos_p"},
-    {"aneg_p", "Ped-subtracted Negative ADC Amplitudes", "fA_Neg_p"},
-    {"epos",   "Energy Depositions from Positive Side PMTs", "fEpos"},
-    {"eneg",   "Energy Depositions from Negative Side PMTs", "fEneg"},
-    {"emean",  "Mean Energy Depositions",                    "fEmean"},
-    {"eplane", "Energy Deposition per plane",                "fEplane"},
+    {"apos",       "Raw Positive ADC Amplitudes",                   "fA_Pos"},
+    {"aneg",       "Raw Negative ADC Amplitudes",                   "fA_Neg"},
+    {"apos_p",     "Ped-subtracted Positive ADC Amplitudes",        "fA_Pos_p"},
+    {"aneg_p",     "Ped-subtracted Negative ADC Amplitudes",        "fA_Neg_p"},
+    {"epos",       "Energy Depositions from Positive Side PMTs",    "fEpos"},
+    {"eneg",       "Energy Depositions from Negative Side PMTs",    "fEneg"},
+    {"emean",      "Mean Energy Depositions",                       "fEmean"},
+    {"eplane",     "Energy Deposition per plane",                   "fEplane"},
     {"eplane_pos", "Energy Deposition per plane from pos. PMTs","fEplane_pos"},
     {"eplane_neg", "Energy Deposition per plane from neg. PMTs","fEplane_neg"},
     { 0 }
@@ -238,7 +247,10 @@ Int_t THcShowerPlane::Decode( const THaEvData& evdata )
 //_____________________________________________________________________________
 Int_t THcShowerPlane::CoarseProcess( TClonesArray& tracks )
 {
- 
+
+  // Nothing is done here. See ProcessHits method instead.
+  //  
+
   //  HitCount();
 
   /*
@@ -270,6 +282,7 @@ Int_t THcShowerPlane::FineProcess( TClonesArray& tracks )
   return 0;
 }
 
+//_____________________________________________________________________________
 Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 {
   // Extract the data for this layer from hit list
@@ -281,6 +294,8 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   if (fParent->fdbg_decoded_cal)
     cout << "THcShowerPlane::ProcessHits called ----" << endl;
+
+  // Initialize variable.
 
   Int_t nPosADCHits=0;
   Int_t nNegADCHits=0;
@@ -301,6 +316,9 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   fEplane_pos = 0;
   fEplane_neg = 0;
 
+  // Process raw hits. Get ADC hits for the plane, assign variables for each
+  // channel.
+
   Int_t nrawhits = rawhits->GetLast()+1;
 
   Int_t ihit = nexthit;
@@ -317,6 +335,8 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     if (fParent->fdbg_decoded_cal)
       cout << "   fplane =  " << hit->fPlane << " Num = " << fLayerNum << endl;
 
+    // This is OK as far as the hit list is sorted by layer.
+    //
     if(hit->fPlane > fLayerNum) {
       break;
     }
@@ -327,6 +347,9 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     fA_Pos_p[hit->fCounter-1] = hit->fADC_pos - fPosPed[hit->fCounter -1];
     fA_Neg_p[hit->fCounter-1] = hit->fADC_neg - fNegPed[hit->fCounter -1];
+
+    // Sparsify positive side hits, fill the hit list, compute the
+    // energy depostion from positive side for the counter.
 
     Double_t thresh_pos = fPosThresh[hit->fCounter -1];
     if(hit->fADC_pos >  thresh_pos) {
@@ -339,6 +362,9 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	fParent->GetGain(hit->fCounter-1,fLayerNum-1,0);
     }
 
+    // Sparsify negative side hits, fill the hit list, compute the
+    // energy depostion from negative side for the counter.
+
     Double_t thresh_neg = fNegThresh[hit->fCounter -1];
     if(hit->fADC_neg >  thresh_neg) {
 
@@ -350,7 +376,12 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	fParent->GetGain(hit->fCounter-1,fLayerNum-1,1);
     }
 
+    // Mean energy in the counter.
+
     fEmean[hit->fCounter-1] += (fEpos[hit->fCounter-1] + fEneg[hit->fCounter-1]);
+
+    // Accumulate energies in the plane.
+
     fEplane += fEmean[hit->fCounter-1];
     fEplane_pos += fEpos[hit->fCounter-1];
     fEplane_neg += fEneg[hit->fCounter-1];
@@ -377,8 +408,12 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 
   Int_t ihit = nexthit;
   while(ihit < nrawhits) {
+
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
+
     //cout << "fPlane =  " << hit->fPlane << " Limit = " << fLayerNum << endl;
+
+    // OK for hit list sorted by layer.
     if(hit->fPlane > fLayerNum) {
       break;
     }

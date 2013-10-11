@@ -42,8 +42,8 @@ class THcShowerCluster : THcShowerHitList {
     (*(THcShowerHitList::begin()+num))->show();
   }
 
-  // X coordinate of cluster's center of gravity,
-  // calculated as a weighted by hit energies average.
+  // X coordinate of center of gravity of cluster,
+  // calculated as hit energy weighted average.
   // Put X out of the calorimeter (-75 cm), if there is no energy deposition
   // in the cluster.
   //
@@ -59,8 +59,8 @@ class THcShowerCluster : THcShowerHitList {
     return (Etot != 0. ? x_sum/Etot : -75.);
   }
 
-  // Z coordinate of cluster's center of gravity,
-  // calculated as a weighted by hit energies average.
+  // Z coordinate of center of gravity of cluster,
+  // calculated as a hit energy weighted average.
   // Put Z out of the calorimeter (0 cm), if there is no energy deposition
   // in the cluster.
   //
@@ -101,10 +101,10 @@ class THcShowerCluster : THcShowerHitList {
     return Epr;
   }
 
-  //Cluster energy deposition in plane iplane=0,..,3.
-  // side=0 -- from positive PMTs only
-  // side=1 -- from negative PMTs only
-  // side=2 -- from postive and negative PMTs
+  //Cluster energy deposition in plane iplane=0,..,3:
+  // side=0 -- from positive PMTs only;
+  // side=1 -- from negative PMTs only;
+  // side=2 -- from postive and negative PMTs.
   //
 
   Double_t clEplane(Int_t iplane, Int_t side) {
@@ -191,18 +191,18 @@ class THcShowerClusterList : private THcShClusterList {
 
 void ClusterHits(THcShowerHitList HitList) {
 
-// Cluster hits from the HitList. The resultant clusters of hits are saved
-//in the ClusterList.
+// Collect hits from the HitList into the clusters. The resultant clusters
+// of hits are saved in the ClusterList.
 
   while (HitList.size() != 0) {
 
     THcShowerCluster* cluster = new THcShowerCluster;
 
-    (*cluster).grow(*(HitList.end()-1)); //move the last hit from the hit list
+    (*cluster).grow(*(HitList.end()-1)); //Move the last hit from the hit list
     HitList.erase(HitList.end()-1);      //into the 1st cluster
     bool clustered = true;
 
-    while (clustered) {                   //while a hit is clustered
+    while (clustered) {                   //Proceed while a hit is clustered
 
       clustered = false;
 
