@@ -658,17 +658,17 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
       THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
 
-      cout << "Cluster #" << i 
-	   <<":  E=" << (*cluster).clE() 
-	   << "  Epr=" << (*cluster).clEpr()
-	   << "  X=" << (*cluster).clX()
-	   << "  Z=" << (*cluster).clZ()
-	   << "  size=" << (*cluster).clSize()
-	   << endl;
+      //cout << "Cluster #" << i 
+	   //<<":  E=" << (*cluster).clE() 
+	   //<< "  Epr=" << (*cluster).clEpr()
+	   //<< "  X=" << (*cluster).clX()
+	   //<< "  Z=" << (*cluster).clZ()
+	   //<< "  size=" << (*cluster).clSize()
+	   //<< endl;
 
       for (UInt_t j=0; j!=(*cluster).clSize(); j++) {
 	THcShowerHit* hit = (*cluster).ClusteredHit(j);
-	cout << "  hit #" << j << ":  "; (*hit).show();
+	//cout << "  hit #" << j << ":  "; (*hit).show();
       }
 
     }
