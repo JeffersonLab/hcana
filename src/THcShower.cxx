@@ -39,7 +39,6 @@ THcShower::THcShower( const char* name, const char* description,
   THaNonTrackingDetector(name,description,apparatus)
 {
   // Constructor
-//  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
   fNLayers = 0;			// No layers until we make them
 }
 
@@ -50,8 +49,10 @@ THcShower::THcShower( ) :
   // Constructor
 }
 
+//_____________________________________________________________________________
 void THcShower::Setup(const char* name, const char* description)
 {
+  cout << "THcShower::Setup called " << GetName() << endl;
 
   char prefix[2];
 
@@ -64,8 +65,6 @@ void THcShower::Setup(const char* name, const char* description)
     {"cal_layer_names", &layernamelist, kString},
     {0}
   };
-
-  cout << "THcShower::Setup called " << GetName() << endl;
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   cout << layernamelist << endl;
@@ -95,6 +94,7 @@ void THcShower::Setup(const char* name, const char* description)
     strcat(desc, fLayerNames[i]);
 
     fPlanes[i] = new THcShowerPlane(fLayerNames[i], desc, i+1, this); 
+
     cout << "Created Shower Plane " << fLayerNames[i] << ", " << desc << endl;
   }
 
@@ -276,15 +276,15 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
   //Read in parameters from hcal.param
   Double_t hcal_pos_cal_const[fNtotBlocks];
-  //  Double_t hcal_pos_gain_ini[fNtotBlocks];
-  //  Double_t hcal_pos_gain_cur[fNtotBlocks];
-  //  Int_t    hcal_pos_ped_limit[fNtotBlocks];
+  //  Double_t hcal_pos_gain_ini[fNtotBlocks];     not used
+  //  Double_t hcal_pos_gain_cur[fNtotBlocks];     not used
+  //  Int_t    hcal_pos_ped_limit[fNtotBlocks];    not used
   Double_t hcal_pos_gain_cor[fNtotBlocks];
 
   Double_t hcal_neg_cal_const[fNtotBlocks];
-  //  Double_t hcal_neg_gain_ini[fNtotBlocks];
-  //  Double_t hcal_neg_gain_cur[fNtotBlocks];
-  //  Int_t    hcal_neg_ped_limit[fNtotBlocks];
+  //  Double_t hcal_neg_gain_ini[fNtotBlocks];     not used
+  //  Double_t hcal_neg_gain_cur[fNtotBlocks];     not used
+  //  Int_t    hcal_neg_ped_limit[fNtotBlocks];    not used
   Double_t hcal_neg_gain_cor[fNtotBlocks];
 
   DBRequest list[]={
@@ -303,8 +303,6 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   };
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 
-  //+++
-
   cout << "hcal_pos_cal_const:" << endl;
   for (Int_t j=0; j<fNLayers; j++) {
     for (Int_t i=0; i<fNBlocks[j]; i++) {
@@ -312,22 +310,6 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     };
     cout <<  endl;
   };
-
-  //  cout << "hcal_pos_gain_ini:" << endl;
-  //  for (Int_t j=0; j<fNLayers; j++) {
-  //    for (Int_t i=0; i<fNBlocks[j]; i++) {
-  //      cout << hcal_pos_gain_ini[j*fNBlocks[j]+i] << " ";
-  //    };
-  //    cout <<  endl;
-  //  };
-
-  //  cout << "hcal_pos_gain_cur:" << endl;
-  //  for (Int_t j=0; j<fNLayers; j++) {
-  //    for (Int_t i=0; i<fNBlocks[j]; i++) {
-  //      cout << hcal_pos_gain_cur[j*fNBlocks[j]+i] << " ";
-  //    };
-  //    cout <<  endl;
-  //  };
 
   cout << "fShPosPedLimit:" << endl;
   for (Int_t j=0; j<fNLayers; j++) {
@@ -345,8 +327,6 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     cout <<  endl;
   };
 
-  //---
-
   cout << "hcal_neg_cal_const:" << endl;
   for (Int_t j=0; j<fNLayers; j++) {
     for (Int_t i=0; i<fNBlocks[j]; i++) {
@@ -354,22 +334,6 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     };
     cout <<  endl;
   };
-
-  //  cout << "hcal_neg_gain_ini:" << endl;
-  //  for (Int_t j=0; j<fNLayers; j++) {
-  //    for (Int_t i=0; i<fNBlocks[j]; i++) {
-  //      cout << hcal_neg_gain_ini[j*fNBlocks[j]+i] << " ";
-  //    };
-  //  //    cout <<  endl;
-  //  };
-
-  //  cout << "hcal_neg_gain_cur:" << endl;
-  //  for (Int_t j=0; j<fNLayers; j++) {
-  //    for (Int_t i=0; i<fNBlocks[j]; i++) {
-  //      cout << hcal_neg_gain_cur[j*fNBlocks[j]+i] << " ";
-  //    };
-  //    cout <<  endl;
-  //  };
 
   cout << "fShNegPedLimit:" << endl;
   for (Int_t j=0; j<fNLayers; j++) {
@@ -387,7 +351,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     cout <<  endl;
   };
 
-  //Calibration constants in GeV per ADC channel.
+  // Calibration constants (GeV / ADC channel).
 
   for (Int_t i=0; i<fNtotBlocks; i++) {
     fPosGain[i] = hcal_pos_cal_const[i] *  hcal_pos_gain_cor[i];
@@ -416,18 +380,12 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   fTREpl_pos_cor = new Double_t [fNLayers];
   fTREpl_neg_cor = new Double_t [fNLayers];
 
-  // Origin of the calorimeter, at tha middle of the face of the detector,
-  // or at the middle of the front plane of the 1-st layer.
+  // Origin of the calorimeter, at the centre of the face of the detector,
+  // or at the centre of the front of the 1-st layer.
   //
   Double_t xOrig = (XPos[0][0] + XPos[0][fNBlocks[0]-1])/2 + BlockThick[0]/2;
   Double_t yOrig = (YPos[0] + YPos[1])/2;
   Double_t zOrig = fNLayerZPos[0];
-
-  //  cout << "Origin of the Calorimeter to be set:" << endl;
-  //  cout << "       Xorig = " << xOrig << endl;
-  //  cout << "       Yorig = " << yOrig << endl;
-  //  cout << "       Zorig = " << zOrig << endl;
-  // << endl;
 
   fOrigin.SetXYZ(xOrig, yOrig, zOrig);
 
@@ -447,7 +405,6 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 }
 
 
-
 //_____________________________________________________________________________
 Int_t THcShower::DefineVariables( EMode mode )
 {
@@ -461,45 +418,30 @@ Int_t THcShower::DefineVariables( EMode mode )
   // Register variables in global list
 
   RVarDef vars[] = {
-    { "nhits",  "Number of hits",                     "fNhits" },
+    { "nhits", "Number of hits",                                 "fNhits" },
  //   { "a",      "Raw ADC amplitudes",                 "fA" },
  //   { "a_p",    "Ped-subtracted ADC amplitudes",      "fA_p" },
  //   { "a_c",    "Calibrated ADC amplitudes",          "fA_c" },
  //   { "asum_p", "Sum of ped-subtracted ADCs",         "fAsum_p" },
  //   { "asum_c", "Sum of calibrated ADCs",             "fAsum_c" },
-    { "nclust", "Number of clusters",                 "fNclust" },
-    { "emax",   "Energy of largest cluster",    "fE" },
-    { "eprmax",   "Preshower Energy of largest cluster",    "fEpr" },
-    { "xmax",      "x-position (cm) of largest cluster", "fX" },
+    { "nclust", "Number of clusters",                            "fNclust" },
+    { "emax",   "Energy of largest cluster",                     "fE" },
+    { "eprmax",   "Preshower Energy of largest cluster",         "fEpr" },
+    { "xmax",      "x-position (cm) of largest cluster",         "fX" },
  //   { "z",      "z-position (cm) of largest cluster", "fZ" },
-    { "mult",   "Multiplicity of largest cluster",    "fMult" },
+    { "mult",   "Multiplicity of largest cluster",               "fMult" },
  //   { "nblk",   "Numbers of blocks in main cluster",  "fNblk" },
  //   { "eblk",   "Energies of blocks in main cluster", "fEblk" },
-    { "trx",    "track x-position in det plane (1st track)",      "fTRX" },
-    { "try",    "track y-position in det plane (1st track)",      "fTRY" },
-    { "tre",    "track energy in the calorimeter (1st track)",    "fTRE" },
-    { "trepr",  "track energy in the preshower (1st track)",      "fTREpr" },
-    { "trecor",    "Y-corrected track Edep (1st track)", "fTRE_cor" },
-    { "treprcor",  "Y-corrected track Epr (1st track)", "fTREpr_cor" },
-    { "treplcor", "Y-corrected track Edep for planes", "fTREpl_cor" },
+    { "trx",      "track x-position in det plane (1st track)",   "fTRX" },
+    { "try",      "track y-position in det plane (1st track)",   "fTRY" },
+    { "tre",      "track energy in the calorimeter (1st track)", "fTRE" },
+    { "trepr",    "track energy in the preshower (1st track)",   "fTREpr" },
+    { "trecor",   "Y-corrected track Edep (1st track)",          "fTRE_cor" },
+    { "treprcor", "Y-corrected track Epr (1st track)",           "fTREpr_cor" },
+    { "treplcor", "Y-corrected track Edep for planes",           "fTREpl_cor" },
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
-
-  /*
-  for (Int_t i=0; i<fNLayers; i++) {
-    RVarDef vars[] = {
-      { Form("treplcor%d",i+1),
-	Form("Y-corrected track Edep for plane %d",i+1),
-	Form("fTREpl_cor[%d]",i) },
-      { 0 }
-    };
-    return DefineVarsFromList( vars, mode );
-  };
-  */
-
-  //{ "treplposcor","Y-corrected track pos. Edep per plane", "fTREpl_pos_cor"},
-  //{ "treplnegcor","Y-corrected track neg. Edep per plane", "fTREpl_neg_cor"},
 
   return kOK;
 }
@@ -600,6 +542,8 @@ Int_t THcShower::Decode( const THaEvData& evdata )
 
   //   fRawHitList is TClones array of THcRawShowerHit objects
 
+  // This debug output does not work, needs to be corrected.
+
   //  if (fdbg_decoded_cal) {
   //    cout << "THcShower::Decode: Shower raw hit list:" << endl;
   //    for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
@@ -634,38 +578,36 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
   // reconstructed in THaVDC::CoarseTrack() are used.
   //
   // Apply corrections and reconstruct the complete hits.
-  //
-  //  static const Double_t sqrt2 = TMath::Sqrt(2.);
   
  if (fdbg_clusters_cal)
   cout << "THcShower::CoarseProcess called ---------------------------" <<endl;
 
-  //  ApplyCorrections();
+ // Clustering of hits.
+ //
 
-  //
-  // Clustering of hits.
-  //
+ // Fill list of unclustered hits.
 
-  THcShowerHitList HitList;                    //list of unclustered hits
+ if (fdbg_clusters_cal) cout << "Filling list of unclustered hits..."  << endl;
+
+  THcShowerHitList HitList;
 
   for(Int_t j=0; j < fNLayers; j++) {
 
-   //cout << "Plane " << j << "  Eplane = " << fPlanes[j]->GetEplane() << endl;
+    if (fdbg_clusters_cal)cout << "  Plane " << j << "  Eplane = " 
+			       << fPlanes[j]->GetEplane() << endl;
 
     for (Int_t i=0; i<fNBlocks[j]; i++) {
 
       //May be should be done this way.
       //
       //      Double_t Edep = fPlanes[j]->GetEmean(i);
-      //      if (Edep > 0.) {                                    //hit
-      //	Double_t x = YPos[j][i] + BlockThick[j]/2.;        //top + thick/2
-      //	Double_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
+      //      if (Edep > 0.) {                                 //hit
+      //	Double_t x = YPos[j][i] + BlockThick[j]/2.;    //top + thick/2
+      //	Double_t z = fNLayerZPos[j] + BlockThick[j]/2.;//front + thick/2
       //      	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep);
 
       //ENGINE way.
       //
-      //      if (fPlanes[j]->GetApos(i)> fPlanes[j]->GetPosThr(i) ||
-      //	  fPlanes[j]->GetAneg(i)> fPlanes[j]->GetNegThr(i)) {    //hit
       if (fPlanes[j]->GetApos(i) - fPlanes[j]->GetPosPed(i) >
 	  fPlanes[j]->GetPosThr(i) - fPlanes[j]->GetPosPed(i) ||
 	  fPlanes[j]->GetAneg(i) - fPlanes[j]->GetNegPed(i) >
@@ -679,15 +621,15 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
 	HitList.push_back(hit);
 
-	//cout << "Hit: Edep = " << Edep << " X = " << x << " Z = " << z <<
-	//	  " Block " << i << " Layer " << j << endl;
+	if (fdbg_clusters_cal)
+	  cout << "    Hit: Edep = " << Edep << " X = " << x << " Z = " << z
+	       << " Block " << i << " Layer " << j << endl;
       };
 
     }
   }
 
   //Print out hits before clustering.
-  //
 
   fNhits = HitList.size();
 
@@ -699,15 +641,18 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
     }
   }
 
+  // Create list of clusters and fill it.
+
   THcShowerClusterList* ClusterList = new THcShowerClusterList;
   ClusterList->ClusterHits(HitList);
 
-  fNclust = (*ClusterList).NbClusters();
+  fNclust = (*ClusterList).NbClusters();   //number of clusters
 
   //Print out the cluster list.
-  //
 
-  if (fdbg_clusters_cal) cout << "Cluster_list size: " << fNclust << endl;
+  if (fdbg_clusters_cal) {
+
+    cout << "Cluster_list size: " << fNclust << endl;
 
     for (Int_t i=0; i!=fNclust; i++) {
 
@@ -726,11 +671,13 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 	//cout << "  hit #" << j << ":  "; (*hit).show();
       }
 
-   }
+    }
+  }
 
+  // The following is for testing the code, by comparison with Engine.
   
-  //The largest cluster.
-  //
+  // The largest cluster by deposited energy, its size and energy
+  // depositions.
 
   if (fNclust != 0) {
 
@@ -750,9 +697,9 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
       }
     }
 
-    fMult = (*MaxCluster).clSize();
-    fEpr = (*MaxCluster).clEpr();
-    fX = (*MaxCluster).clX();
+    fMult = (*MaxCluster).clSize();    // number of hit counters
+    fEpr = (*MaxCluster).clEpr();      // Preshower energy
+    fX = (*MaxCluster).clX();          // X coordinate (in vertical direction)
   }
 
   if (fdbg_clusters_cal)
@@ -782,27 +729,39 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 	   << endl;
     }
 
+    // Track coordinates at front of the calorimeter, initialize out of
+    // acceptance.
     Double_t Xtr = -75.;
     Double_t Ytr = -40.;
 
+    // Associate a cluster to the track.
+
     Int_t mclust = MatchCluster(theTrack, ClusterList, Xtr, Ytr);
 
+    // Do this for the 1-st track only for now.
+    //
     if (itrk==0) {
 
-      fTRX = Xtr;
+      fTRX = Xtr;                // track coordinates at the calorimeter
       fTRY = Ytr;
 
-      if (mclust >= 0) {
+      if (mclust >= 0) {         // if there is a matched cluster
 
+	//Assign energies (not Y corrected) of the matched cluster to the track.
 	THcShowerCluster* cluster = (*ClusterList).ListedCluster(mclust);
 	fTRE = (*cluster).clE();
 	fTREpr = (*cluster).clEpr();
 
-	fTRE_cor = 0.;
+	// Correct track energy depositions for the impact coordinate.
+
+	fTRE_cor = 0.;           // Coord. corrected total energy depostion
 
 	for (Int_t ip=0; ip<fNLayers; ip++) {
 
-	  Float_t corpos = 1.;
+	  // Coordinate correction factors for positive and negative sides,
+	  // different for single PMT counters in the 1-st two layes and for
+	  // 2 PMT counters in the rear two layers.
+	  Float_t corpos = 1.;   
 	  Float_t corneg = 1.;
 	  if (ip < fNegCols) {
 	    corpos = Ycor(Ytr,0);
@@ -832,7 +791,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
 	}   //over planes
 
-	fTREpr_cor = fTREpl_cor[0];
+	fTREpr_cor = fTREpl_cor[0];   // Coord. corrected Edep in Preshower
 
 	if (fdbg_tracks_cal)
 	  cout << "   fTREpr = " << fTREpr 
@@ -860,7 +819,8 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 			      THcShowerClusterList* ClusterList,
 			      Double_t& XTrFront, Double_t& YTrFront)
 {
-  // Match a cluster to a given track.
+  // Match a cluster to a given track. Return the cluster number,
+  // and track coordinates at the front of calorimeter.
 
   if (fdbg_tracks_cal) {
     cout << "THcShower::MatchCluster: Track at DC:"
@@ -894,10 +854,15 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 	 << "  Pathl = " << pathl
 	 << endl;
 
-  Bool_t inFidVol = true;
+  Bool_t inFidVol = true;            // In Fiducial Volume flag
+
+  // Re-evaluate Fid. Volume Flag if fid. volume test is requested
 
   if (fvTest) {
 
+    // Track coordinates at the back of the detector.
+
+    // Origin at the front of the last layer.
     fOrigin = fPlanes[fNLayers-1]->GetOrigin();
 
     Double_t XTrBack = kBig;
@@ -905,8 +870,8 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 
     CalcTrackIntercept(Track, pathl, XTrBack, YTrBack);
 
-    XTrBack += GetOrigin().X();
-    YTrBack += GetOrigin().Y();
+    XTrBack += GetOrigin().X();   // from local coord. system
+    YTrBack += GetOrigin().Y();   // to the spectrometer system
 
     if (fdbg_tracks_cal)
       cout << "  Track at the back of Calorimeter:"

@@ -12,7 +12,7 @@ using namespace std;
 class THcShowerHit {       //HMS calorimeter hit class
 
 private:
-  UInt_t fCol, fRow;       //hit colomn and row
+  Int_t fCol, fRow;        //hit colomn and row
   Double_t fX, fZ;         //hit X (vert.) and Z (along spect.axis) coordinates
   Double_t fE;             //hit mean energy deposition
   Double_t fEpos;          //hit energy deposition from positive PMT
@@ -28,7 +28,7 @@ public:
     fEneg=0.;
   }
 
-  THcShowerHit(UInt_t hRow, UInt_t hCol, Double_t hX, Double_t hZ,
+  THcShowerHit(Int_t hRow, Int_t hCol, Double_t hX, Double_t hZ,
 	       Double_t hE, Double_t hEpos, Double_t hEneg) {
     fRow=hRow;
     fCol=hCol;
@@ -43,11 +43,11 @@ public:
     //    cout << " hit destructed" << endl;
   }
 
-  UInt_t hitColumn() {
+  Int_t hitColumn() {
     return fCol;
   }
 
-  UInt_t hitRow() {
+  Int_t hitRow() {
     return fRow;
   }
 
