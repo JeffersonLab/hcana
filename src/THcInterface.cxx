@@ -38,15 +38,15 @@
 
 using namespace std;
 
-THaVarList*  gHaVars     = NULL;  // List of symbolic analyzer variables
-THaCutList*  gHaCuts     = NULL;  // List of global analyzer cuts/tests
-TList*       gHaApps     = NULL;  // List of Apparatuses
-TList*       gHaScalers  = NULL;  // List of scaler groups
-TList*       gHaPhysics  = NULL;  // List of physics modules
-THaRunBase*  gHaRun      = NULL;  // The currently active run
-TClass*      gHaDecoder  = NULL;  // Class(!) of decoder to use
-THaDB*       gHaDB       = NULL;  // Database system to use
-THaTextvars* gHaTextvars = NULL;  // Text variable definitions
+//THaVarList*  gHaVars     = NULL;  // List of symbolic analyzer variables
+//THaCutList*  gHaCuts     = NULL;  // List of global analyzer cuts/tests
+//TList*       gHaApps     = NULL;  // List of Apparatuses
+//TList*       gHaScalers  = NULL;  // List of scaler groups
+//TList*       gHaPhysics  = NULL;  // List of physics modules
+//THaRunBase*  gHaRun      = NULL;  // The currently active run
+//TClass*      gHaDecoder  = NULL;  // Class(!) of decoder to use
+//THaDB*       gHaDB       = NULL;  // Database system to use
+//THaTextvars* gHaTextvars = NULL;  // Text variable definitions
 
 THcParmList* gHcParms     = NULL;  // List of symbolic analyzer variables
 THcDetectorMap* gHcDetectorMap = NULL; // Global (Hall C style) detector map
