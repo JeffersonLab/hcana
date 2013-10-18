@@ -33,5 +33,6 @@
 #pragma link C++ class THcRawShowerHit+;
 #pragma link C++ class THcAerogel+;
 #pragma link C++ class THcAerogelHit+;
+#pragma link C++ class THcFormula+;
 
 #endif

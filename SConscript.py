@@ -17,6 +17,7 @@ hcheaders = Split("""
 	src/THcDriftChamber.h src/THcRawDCHit.h src/THcDCHit.h src/THcDCWire.h src/THcSpacePoint.h 
 	src/THcDCLookupTTDConv.h src/THcDCTimeToDistConv.h src/THcShower.h src/THcShowerPlane.h 
 	src/THcRawShowerHit.h src/THcAerogel.h src/THcAerogelHit.h src/THcGlobals.h src/THcDCTrack.h
+        src/THcFormula.h
 	src/HallC_LinkDef.h
 	""")
 pbaseenv.RootCint(roothcdict,hcheaders)

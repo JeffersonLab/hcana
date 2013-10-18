@@ -76,4 +76,5 @@
   //  analyzer->SetSummaryFile("summary_example.log"); // optional
   
   analyzer->Process(run);     // start the actual analysis
+  analyzer->PrintReport("report.template","report.out");
 }
