@@ -18,6 +18,8 @@ public:
 
   void SetPedestalEvtype( Int_t evtype ) { fPedestalEvtype = evtype; }
 
+  void PrintReport( const char* templatefile, const char* ofile);
+
 protected:
 
   Int_t fPedestalEvtype;

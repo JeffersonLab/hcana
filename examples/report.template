@@ -1,0 +1,34 @@
+
+           This is a report template file.
+
+It can be used to create simple run summary/statistics output files.
+
+To produce a report, put in your analysis steering script, the line 
+
+   analyzer->PrintReport(templatefilename, reportfilename); 
+
+where analyzer is your analyzer object.
+
+The template file is copied to the output file, except that anything
+inside of the braces gets evaluated.  If the braces contain a string variable,
+the value of variable replaces the braced name.  Otherwise what is
+in the braces is evaluated as an expression.  Currently the expression can be
+composed of Hall C style parameter variables, cut results (not really too usefull)
+and cut statistics.  (Number of times called and number of times passed.)
+
+For example, {100*Pedestal_event.npassed/Pedestal_event.ncalled:%.2f}% is the percentage of events that were pedestal events.
+
+Horizontal drift chamber z positions:
+Chamber 1: {hdc_zpos[0]:%6.2f} {hdc_zpos[1]:%6.2f} {hdc_zpos[2]:%6.2f} {hdc_zpos[3]:%6.2f} {hdc_zpos[4]:%6.2f} {hdc_zpos[5]:%6.2f} 
+Chamber 2: {hdc_zpos[6]:%6.2f} {hdc_zpos[7]:%6.2f} {hdc_zpos[8]:%6.2f} {hdc_zpos[9]:%6.2f} {hdc_zpos[10]:%6.2f} {hdc_zpos[11]:%6.2f} 
+
+The expression result can be formatted by putting a ":" followed by
+a c-style format after the expression.
+
+The HMS reconstruction coefficient file name is {h_recon_coeff_filename}
+The names of the HMS drift chamber planes are: {hdc_plane_names}
+
+Later, such things as hardware scalers will be added to the set of variables
+that can be used in expressions.
+
+
