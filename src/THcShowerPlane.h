@@ -109,9 +109,9 @@ public:
 protected:
 
   Double_t*   fA_Pos;         // [fNelem] ADC amplitudes of blocks
-  Double_t*   fA_Neg;
+  Double_t*   fA_Neg;         // [fNelem] ADC amplitudes of blocks
   Double_t*   fA_Pos_p;	      // [fNelem] pedestal subtracted ADC amplitudes
-  Double_t*   fA_Neg_p;
+  Double_t*   fA_Neg_p;	      // [fNelem] pedestal subtracted ADC amplitudes
 
   Double_t* fEpos;     // [fNelem] energy depositions seen by positive PMTs
   Double_t* fEneg;     // [fNelem] energy depositions seen by negative PMTs
