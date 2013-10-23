@@ -5,6 +5,7 @@ import os
 import sys
 import platform
 import commands
+import SCons
 
 def rootcint(target,source,env):
 	"""Executes the ROOT dictionary generator over a list of headers."""
@@ -29,9 +30,11 @@ baseenv = Environment(ENV = os.environ)
 #	print "Construction variable = '%s', value = '%s'" % (key, dict[key])
 
 ####### Check SCons version ##################
-print('!!! You should be using the local version of SCons, invoked with:')
-print('!!! ./podd/scons/scons.py')
-EnsureSConsVersion(4,9,9)
+#print('!!! You should be using the local version of SCons, invoked with:')
+#print('!!! ./podd/scons/scons.py')
+print('!!! Building the Hall C analyzer and libraries with SCons requires')
+print('!!! SCons version 2.1.0 or newer.')
+EnsureSConsVersion(2,1,0)
 
 ####### Hall A Build Environment #############
 #
@@ -46,8 +49,10 @@ baseenv.Append(HA_DIR = baseenv.subst('$HC_DIR')+'/podd ')
 baseenv.Append(HA_SRC = baseenv.subst('$HA_DIR')+'/src ') 
 baseenv.Append(HA_DC = baseenv.subst('$HA_DIR')+'/hana_decode ') 
 baseenv.Append(HA_SCALER = baseenv.subst('$HA_DIR')+'/hana_scaler ') 
-baseenv.Append(SOVERSION = '1.5')
+baseenv.Append(MAJORVERSION = '1')
+baseenv.Append(MINORVERSION = '5')
 baseenv.Append(PATCH = '25')
+baseenv.Append(SOVERSION = baseenv.subst('$MAJORVERSION')+'.'+baseenv.subst('$MINORVERSION'))
 baseenv.Append(VERSION = baseenv.subst('$SOVERSION')+'.'+baseenv.subst('$PATCH'))
 baseenv.Append(EXTVERS = '')
 baseenv.Append(HA_VERSION = baseenv.subst('$VERSION')+baseenv.subst('$EXTVERS'))
