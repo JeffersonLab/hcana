@@ -23,6 +23,9 @@ pbaseenv.RootCint(roothcdict,hcheaders)
 pbaseenv.SharedObject(target = roothcobj, source = roothcdict)
 
 #######  Start of main SConscript ###########
+
+print ('LIBS = %s\n' % pbaseenv.subst('$LIBS'))
+
 analyzer = pbaseenv.Program(target = 'hcana', source = 'src/main.o')
 pbaseenv.Install('./bin',analyzer)
 pbaseenv.Alias('install',['./bin'])
