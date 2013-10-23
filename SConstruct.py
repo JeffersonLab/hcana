@@ -118,11 +118,12 @@ baseenv.Append(CPPDEFINES = '-DHALLC_MODS')
 
 directorylist = ['./','src','podd','podd/src','podd/hana_decode','podd/hana_scaler']
 
+baseenv.Append(SHLIBSUFFIX ='.'+baseenv.subst('$VERSION'))
 pbaseenv=baseenv.Clone()
 pbaseenv.Append(LIBS=[hallclib,hallalib,dclib,scalerlib])
 baseenv.Append(LIBS=[hallalib,dclib,scalerlib])
 Export('pbaseenv')
 
-SConscript(dirs = directorylist,name='SConscript.py',exports='pbaseenv')
+SConscript(dirs = directorylist,name='SConscript.py',exports='baseenv')
 
 #######  End of SConstruct #########

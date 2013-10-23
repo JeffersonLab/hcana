@@ -4,7 +4,7 @@
 import os
 import re
 import SCons.Util
-Import('baseenv')
+Import('pbaseenv')
 
 list = Split("""
 THcInterface.cxx THcParmList.cxx THcAnalyzer.cxx \
@@ -25,13 +25,26 @@ THcRawShowerHit.cxx \
 THcAerogel.cxx THcAerogelHit.cxx
 """)
 
-baseenv.Object('main.C')
+pbaseenv.Object('main.C')
 
 sotarget = 'HallC'
 
-#srclib = baseenv.SharedLibrary(target = sotarget, source = list+['HallCDict.so'],SHLIBVERSION=['$VERSION'],LIBS=[''])
-srclib = baseenv.SharedLibrary(target = sotarget, source = list+['HallCDict.so'],LIBS=[''])
+#srclib = pbaseenv.SharedLibrary(target = sotarget, source = list+['HallCDict.so'],SHLIBVERSION=['$VERSION'],LIBS=[''])
+srclib = pbaseenv.SharedLibrary(target = sotarget, source = list+['HallCDict.so'],SHLIBPREFIX='../lib',LIBS=[''])
 print ('Source shared library = %s\n' % srclib)
-baseenv.Install('../',srclib)
-baseenv.Alias('install',['../'])
+
+linkbase =pbaseenv.subst('$SHLIBPREFIX')+sotarget
+
+cleantarget = linkbase+'.so.'+pbaseenv.subst('$VERSION')
+localmajorcleantarget = '../'+linkbase+'.so'
+
+print('cleantarget = %s\n' % cleantarget)
+print('localmajorcleantarget = %s\n' % localmajorcleantarget)
+try:
+	os.symlink(cleantarget,localmajorcleantarget)
+except:
+	print " Continuing ... "
+
+#baseenv.Install('../',srclib)
+#baseenv.Alias('install',['../'])
 
