@@ -28,6 +28,10 @@ a c-style format after the expression.
 The HMS reconstruction coefficient file name is {h_recon_coeff_filename}
 The names of the HMS drift chamber planes are: {hdc_plane_names}
 
+DC Events: {hdc_tot_events}
+Hit in chamber: {hdc_cham_hits[0]/hdc_tot_events:%.3f} {hdc_cham_hits[1]/hdc_tot_events:%.3f}
+Hit in plane: {hdc_hits_per_plane[0]/hdc_tot_events:%.3f} {hdc_hits_per_plane[1]/hdc_tot_events:%.3f} {hdc_hits_per_plane[2]/hdc_tot_events:%.3f} {hdc_hits_per_plane[3]/hdc_tot_events:%.3f} {hdc_hits_per_plane[4]/hdc_tot_events:%.3f} {hdc_hits_per_plane[5]/hdc_tot_events:%.3f} {hdc_hits_per_plane[6]/hdc_tot_events:%.3f} {hdc_hits_per_plane[7]/hdc_tot_events:%.3f} {hdc_hits_per_plane[8]/hdc_tot_events:%.3f} {hdc_hits_per_plane[9]/hdc_tot_events:%.3f} {hdc_hits_per_plane[10]/hdc_tot_events:%.3f} {hdc_hits_per_plane[11]/hdc_tot_events:%.3f}
+
 Later, such things as hardware scalers will be added to the set of variables
 that can be used in expressions.
 

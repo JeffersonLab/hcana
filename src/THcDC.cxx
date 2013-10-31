@@ -80,17 +80,16 @@ void THcDC::Setup(const char* name, const char* description)
 {
 
   static const char* const here = "Setup";
-  char prefix[2];
 
   THaApparatus *app = GetApparatus();
   if(app) {
     cout << app->GetName() << endl;
+    fPrefix[0]=tolower(app->GetName()[0]);
+    fPrefix[1]='\0';
   } else {
     cout << "No apparatus found" << endl;
+    fPrefix[0]='\0';
   }
-
-  prefix[0]=tolower(app->GetName()[0]);
-  prefix[1]='\0';
 
   string planenamelist;
   DBRequest list[]={
@@ -102,7 +101,7 @@ void THcDC::Setup(const char* name, const char* description)
     {0}
   };
 
-  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
   cout << planenamelist << endl;
   cout << "Drift Chambers: " <<  fNPlanes << " planes in " << fNChambers << " chambers" << endl;
 
@@ -164,7 +163,8 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   static const char* const here = "Init()";
 
   Setup(GetName(), GetTitle());	// Create the subdetectors here
-  
+  EffInit();
+
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
   THcHitList::InitHitList(fDetMap, "THcRawDCHit", 1000);
@@ -231,7 +231,6 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
   // 'date' contains the date/time of the run being analyzed.
 
   //  static const char* const here = "ReadDatabase()";
-  char prefix[2];
 
   // Read data from database 
   // Pull values from the THcParmList instead of reading a database
@@ -242,10 +241,6 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
 
   // Will need to determine which spectrometer in order to construct
   // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
-
-  prefix[0]=tolower(GetApparatus()->GetName()[0]);
-
-  prefix[1]='\0';
 
   delete [] fXCenter;  fXCenter = new Double_t [fNChambers];
   delete [] fYCenter;  fYCenter = new Double_t [fNChambers];
@@ -311,7 +306,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"debugtrackprint", &fdebugtrackprint , kInt},
     {0}
   };
-  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
   if(fNTracksMaxFP <= 0) fNTracksMaxFP = 10;
   // if(fNTracksMaxFP > HNRACKS_MAX) fNTracksMaxFP = NHTRACKS_MAX;
   cout << "Plane counts:";
@@ -453,6 +448,7 @@ Int_t THcDC::Decode( const THaEvData& evdata )
   }
     cout << endl;
   }
+  Eff();			// Accumlate statistics
 
   return fNhits;
 }
@@ -473,6 +469,7 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
   // Apply corrections and reconstruct the complete hits.
   //
   //  static const Double_t sqrt2 = TMath::Sqrt(2.);
+
   for(Int_t i=0;i<fNChambers;i++) {
     fChambers[i]->FindSpacePoints();
     fChambers[i]->CorrectHitTimes();
@@ -973,6 +970,54 @@ Double_t THcDC::DpsiFun(Double_t ray[4], Int_t plane)
   }
   return(DpsiFun);
 }	    
+
+//_____________________________________________________________________________
+Int_t THcDC::End(THaRunBase* run)
+{
+  //  EffCalc();
+}
+
+//_____________________________________________________________________________
+void THcDC::EffInit()
+{
+  // Create, and initialize counters used to calculate
+  // efficiencies.  Register the counters in gHcParms so that the
+  // variables can be used in end of run reports.
+
+  delete [] fNChamHits;  fNChamHits = new Int_t [fNChambers];
+  delete [] fHitsPerPlane; fHitsPerPlane = new Int_t [fNPlanes];
+  
+  fTotEvents = 0;
+  for(Int_t i=0;i<fNChambers;i++) {
+    fNChamHits[i] = 0;
+  }
+  for(Int_t i=0;i<fNPlanes;i++) {
+    fHitsPerPlane[i] = 0;
+  }
+  gHcParms->Define(Form("%sdc_tot_events",fPrefix),"Total DC Events",fTotEvents);
+  gHcParms->Define(Form("%sdc_cham_hits[%d]",fPrefix,fNChambers),"N events with hits per chamber",*fNChamHits);
+  gHcParms->Define(Form("%sdc_hits_per_plane[%d]",fPrefix,fNPlanes),"N events with hits per plane",*fHitsPerPlane);
+  cout << Form("%sdc_hits_per_plane[%d]",fPrefix,fNPlanes) << endl;
+}
+
+//_____________________________________________________________________________
+void THcDC::Eff()
+{
+  // Accumulate statistics for efficiency calculations
+
+  fTotEvents++;
+  for(Int_t i=0;i<fNChambers;i++) {
+    if(fChambers[i]->GetNHits()>0) fNChamHits[i]++;
+    cout << fNChamHits[i] << " ";
+  }
+  cout << endl;
+  for(Int_t i=0;i<fNPlanes;i++) {
+    if(fPlanes[i]->GetNHits() > 0) fHitsPerPlane[i]++;
+    cout << fHitsPerPlane[i] << " ";
+  }
+  cout << endl;
+  return;
+}
 
 ClassImp(THcDC)
 ////////////////////////////////////////////////////////////////////////////////
