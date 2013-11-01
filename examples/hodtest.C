@@ -71,6 +71,7 @@
   analyzer->SetOutFile( "hodtest.root" );
   analyzer->SetOdefFile("output.def");
   analyzer->SetCutFile("hodtest_cuts.def");        // optional
+  analyzer->SetCountMode(2);// Counter event number same as gen_event_ID_number
   
   // File to record cuts accounting information
   //  analyzer->SetSummaryFile("summary_example.log"); // optional

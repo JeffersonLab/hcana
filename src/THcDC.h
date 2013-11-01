@@ -84,6 +84,7 @@ protected:
   // Calibration
 
   // Hall C Parameters
+  char fPrefix[2];
   Int_t fNPlanes;              // Total number of DC planes
   char** fPlaneNames;
   Int_t fNChambers;
@@ -137,6 +138,11 @@ protected:
   Double_t* fSigma;
   Double_t** fPlaneCoeffs;
 
+  // For accumulating statitics for efficiencies
+  Int_t fTotEvents;
+  Int_t* fNChamHits;
+  Int_t* fHitsPerPlane;
+
   // Useful derived quantities
   // double tan_angle, sin_angle, cos_angle;
   
@@ -155,6 +161,9 @@ protected:
   void           LinkStubs();
   void           TrackFit();
   Double_t       DpsiFun(Double_t ray[4], Int_t plane);
+  Int_t          End(THaRunBase* run);
+  void           EffInit();
+  void           Eff();
 
   void Setup(const char* name, const char* description);
 
