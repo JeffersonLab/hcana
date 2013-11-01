@@ -27,7 +27,8 @@ protected:
 private:
   //  THcAnalyzer( const THcAnalyzer& );
   //  THcAnalyzer& operator=( const THcAnalyzer& );
-  
+  void LoadInfo();
+
   ClassDef(THcAnalyzer,0)  //Hall C Analyzer Standard Event Loop
 
 };

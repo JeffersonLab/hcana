@@ -22,6 +22,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "THcAnalyzer.h"
+#include "THaRunBase.h"
 #include "THaBenchmark.h"
 #include "TList.h"
 #include "THcParmList.h"
@@ -74,7 +75,10 @@ void THcAnalyzer::PrintReport(const char* templatefile, const char* ofile)
 
   if(!ostr.is_open()) {
       cout << "Error opening report output file " << ofile << endl;
+      return;
   }
+
+  LoadInfo();			// Load some run information into gHcParms
 
   // In principle, we should allow braces to be escaped.  But for
   // now we won't.  Existing template files don't seem to output
@@ -115,7 +119,11 @@ void THcAnalyzer::PrintReport(const char* templatefile, const char* ofile)
 	    format = "%f";
 	  }
 	}
-	replacement=Form(format.c_str(),value);
+	if(format[format.length()-1] == 'd') {
+	  replacement=Form(format.c_str(),TMath::Nint(value));
+	} else {
+	  replacement=Form(format.c_str(),value);
+	}
       }
       //      cout << "Replacement:" << replacement << endl;
       line.replace(start,end-start+1,replacement);
@@ -128,6 +136,46 @@ void THcAnalyzer::PrintReport(const char* templatefile, const char* ofile)
   return;
 }
 
+//_____________________________________________________________________________
+void THcAnalyzer::LoadInfo()
+{
+  // Copy some run information into gHcParms variables so that in can
+  // be used in reports.
+  // For example run number, first event analyzed, number of events, etc.
+  Int_t* runnum;
+  Int_t* firstevent;
+  Int_t* lastevent;
+
+  THaVar* varptr;
+  varptr = gHcParms->Find("gen_run_number");
+  if(varptr) {
+    runnum = (Int_t*) varptr->GetValuePointer(); // Assume correct type
+  } else {
+    runnum = new Int_t[1];
+    gHcParms->Define("gen_run_number","Run Number", *runnum);
+  }
+  *runnum = fRun->GetNumber();
+  
+  varptr = gHcParms->Find("gen_run_starting_event");
+  if(varptr) {
+    firstevent = (Int_t*) varptr->GetValuePointer(); // Assume correct type
+  } else {
+    firstevent = new Int_t[1];
+    gHcParms->Define("gen_run_starting_event","First event analyzed", *firstevent);
+  }
+  // May not agree with engine event definintions
+  *firstevent = fRun->GetFirstEvent();
+  
+  varptr = gHcParms->Find("gen_event_id_number");
+  if(varptr) {
+    lastevent = (Int_t*)varptr->GetValuePointer(); // Assume correct type
+  } else {
+    lastevent = new Int_t[1];
+    gHcParms->Define("gen_event_id_number","Last event analyzed", *lastevent);
+  }
+  // Not accurate
+  *lastevent = fRun->GetFirstEvent()+fRun->GetNumAnalyzed();
+}  
 
 //_____________________________________________________________________________
 

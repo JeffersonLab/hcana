@@ -44,7 +44,7 @@ public:
 
   virtual void   Clear( Option_t* opt="" );
 
-  //  Int_t GetNHits() const { return fNhit; }
+  Int_t GetNHits() const { return fNhits; }
   Int_t GetNSpacePoints() const { return(fNSpacePoints);}
   Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
