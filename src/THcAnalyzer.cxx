@@ -119,7 +119,11 @@ void THcAnalyzer::PrintReport(const char* templatefile, const char* ofile)
 	    format = "%f";
 	  }
 	}
-	replacement=Form(format.c_str(),value);
+	if(format[format.length()-1] == 'd') {
+	  replacement=Form(format.c_str(),TMath::Nint(value));
+	} else {
+	  replacement=Form(format.c_str(),value);
+	}
       }
       //      cout << "Replacement:" << replacement << endl;
       line.replace(start,end-start+1,replacement);
