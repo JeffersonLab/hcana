@@ -140,11 +140,20 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     {"theta_offset",&fThetaOffset,kDouble},
     {"phi_offset",&fPhiOffset,kDouble},
     {"delta_offset",&fDeltaOffset,kDouble},
+    {"thetacentral_offset",&fThetaCentralOffset,kDouble},
+    {"_oopcentral_offset",&fOopCentralOffset,kDouble},
+    {"pcentral_offset",&fPCentralOffset,kDouble},
     {"pcentral",&fPCentral,kDouble},
+    {"theta_lab",&fTheta_lab,kDouble},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-
+  //
+  cout << " fPcentral = " <<  fPCentral << " " <<fPCentralOffset << endl; 
+  cout << " fThate_lab = " <<  fTheta_lab << " " <<fThetaCentralOffset << endl; 
+  fPCentral= fPCentral*(1.+fPCentralOffset/100.);
+  fTheta_lab=fTheta_lab + fThetaCentralOffset*(180./3.14159);
+  //
   ifstream ifile;
   ifile.open(reconCoeffFilename.c_str());
   if(!ifile.is_open()) {
