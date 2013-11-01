@@ -1008,14 +1008,10 @@ void THcDC::Eff()
   fTotEvents++;
   for(Int_t i=0;i<fNChambers;i++) {
     if(fChambers[i]->GetNHits()>0) fNChamHits[i]++;
-    cout << fNChamHits[i] << " ";
   }
-  cout << endl;
   for(Int_t i=0;i<fNPlanes;i++) {
     if(fPlanes[i]->GetNHits() > 0) fHitsPerPlane[i]++;
-    cout << fHitsPerPlane[i] << " ";
   }
-  cout << endl;
   return;
 }
 
