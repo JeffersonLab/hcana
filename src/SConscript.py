@@ -23,6 +23,7 @@ THcDCLookupTTDConv.cxx THcDCTimeToDistConv.cxx \
 THcShower.cxx THcShowerPlane.cxx \
 THcRawShowerHit.cxx \
 THcAerogel.cxx THcAerogelHit.cxx
+THcFormula.cxx
 """)
 
 pbaseenv.Object('main.C')
