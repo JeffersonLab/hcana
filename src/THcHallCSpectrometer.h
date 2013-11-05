@@ -41,10 +41,14 @@ protected:
   Double_t fDetOffset_x;
   Double_t fDetOffset_y;
   Double_t fZTrueFocus;
-  Double_t fThetaOffset;
-  Double_t fPhiOffset;
-  Double_t fDeltaOffset;
-  Double_t fPCentral;
+  Double_t fThetaOffset; // Zero order term in yptar optics  matrix (rad)
+  Double_t fPhiOffset; // Zero order term in xptar optics matrix (rad)
+  Double_t fDeltaOffset; // Zero order term in delta optics matrix (%)
+  Double_t fThetaCentralOffset; // Offset of Central spectrometer angle (rad)
+  Double_t fOopCentralOffset; //Offset of central out-of-plane angle (rad) 
+  Double_t fPCentralOffset; // Offset Central spectrometer momentum (%)
+  Double_t fPCentral; // Central spectrometer momentum (GeV)
+  Double_t fTheta_lab; // Central spectrometer angle (deg)
 
   //  THaScintillator *sc_ref;  // calculate time track hits this plane
 
