@@ -2,16 +2,68 @@
 #
 
 Block: RawDecode
-
-Pedestal_event    g.evtyp==4
 RawDecode_master  1
+Pedestal_event    g.evtyp==4
 
 Block: Decode
 Decode_master     !Pedestal_event
 
 Block: CoarseTracking
-CoarseTracking_master !Pedestal_event
+
+hfoundtrack	H.dc.ntrack != 0
+hfound1track	H.dc.ntrack == 1
+hfound2track	H.dc.ntrack == 2
+hfound3track	H.dc.ntrack == 3
+hfound4track	H.dc.ntrack == 4
+
+goodhdc1x1	(H.dc.1x1.nhit > 0) && (H.dc.1x1.nhit < 3)
+goodhdc1y1	(H.dc.1y1.nhit > 0) && (H.dc.1y1.nhit < 3)
+goodhdc1u1	(H.dc.1u1.nhit > 0) && (H.dc.1u1.nhit < 3)
+goodhdc1v1	(H.dc.1v1.nhit > 0) && (H.dc.1v1.nhit < 3)
+goodhdc1y2	(H.dc.1y2.nhit > 0) && (H.dc.1y2.nhit < 3)
+goodhdc1x2	(H.dc.1x2.nhit > 0) && (H.dc.1x2.nhit < 3)
+
+goodhdc2x1	(H.dc.2x1.nhit > 0) && (H.dc.2x1.nhit < 3)
+goodhdc2y1	(H.dc.2y1.nhit > 0) && (H.dc.2y1.nhit < 3)
+goodhdc2u1	(H.dc.2u1.nhit > 0) && (H.dc.2u1.nhit < 3)
+goodhdc2v1	(H.dc.2v1.nhit > 0) && (H.dc.2v1.nhit < 3)
+goodhdc2y2	(H.dc.2y2.nhit > 0) && (H.dc.2y2.nhit < 3)
+goodhdc2x2	(H.dc.2x2.nhit > 0) && (H.dc.2x2.nhit < 3)
+
+goodhdc1	goodhdc1x1 && goodhdc1y1 && goodhdc1u1 && goodhdc1v1 && goodhdc1y2 && goodhdc1x2
+goodhdc2	goodhdc2x1 && goodhdc2y1 && goodhdc2u1 && goodhdc2v1 && goodhdc2y2 && goodhdc2x2
+bothgoodhdc	goodhdc1 && goodhdc2
+
+realhdc1x1	goodhdc1x1 && (H.dc.nsp != 0)
+realhdc1y1	goodhdc1y1 && (H.dc.nsp != 0)
+realhdc1u1	goodhdc1u1 && (H.dc.nsp != 0)
+realhdc1v1	goodhdc1v1 && (H.dc.nsp != 0)
+realhdc1y2	goodhdc1y2 && (H.dc.nsp != 0)
+realhdc1x2	goodhdc1x2 && (H.dc.nsp != 0)
+realhdc2x1	goodhdc2x1 && (H.dc.nsp != 0)
+realhdc2y1	goodhdc2y1 && (H.dc.nsp != 0)
+realhdc2u1	goodhdc2u1 && (H.dc.nsp != 0)
+realhdc2v1	goodhdc2v1 && (H.dc.nsp != 0)
+realhdc2y2	goodhdc2y2 && (H.dc.nsp != 0)
+realhdc2x2	goodhdc2x2 && (H.dc.nsp != 0)
+
+#hlowchi2	(hschi2perdeg<10) && hcleantrack
+
+hlowchi2	1
+
+hdcres_1	(H.dc.residual[0] < 1000) && hlowchi2
+hdcres_2	(H.dc.residual[1] < 1000) && hlowchi2
+hdcres_3	(H.dc.residual[2] < 1000) && hlowchi2
+hdcres_4	(H.dc.residual[3] < 1000) && hlowchi2
+hdcres_5	(H.dc.residual[4] < 1000) && hlowchi2
+hdcres_6	(H.dc.residual[5] < 1000) && hlowchi2
+hdcres_7	(H.dc.residual[6] < 1000) && hlowchi2
+hdcres_8	(H.dc.residual[7] < 1000) && hlowchi2
+hdcres_9	(H.dc.residual[8] < 1000) && hlowchi2
+hdcres_10	(H.dc.residual[9] < 1000) && hlowchi2
+hdcres_11	(H.dc.residual[10] < 1000) && hlowchi2
+hdcres_12	(H.dc.residual[11] < 1000) && hlowchi2
 
 Block: CoarseReconstruct
-RawCoarseReconstruct !Pedestal_event
+CourseReconstruct 1
 

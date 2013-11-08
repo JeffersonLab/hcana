@@ -36,8 +36,8 @@ public:
 
   //  Int_t GetNHits() const { return fNhit; }
   
-  Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
-  const TClonesArray* GetTrackHits() const { return fTrackProj; }
+  //  Int_t GetNTracks() const { return fNDCTracks; }
+  //  const TClonesArray* GetTrackHits() const { return fTrackProj; }
 
   Int_t GetNWires(Int_t plane) const { return fNWires[plane-1];}
   Int_t GetNChamber(Int_t plane) const { return fNChamber[plane-1];}
@@ -97,7 +97,7 @@ protected:
 
   // Per-event data
   Int_t fNhits;
-  Int_t ntracks_fp;		/* Change this to fN something */
+  Int_t fNSp;                   // Number of space points
   Double_t* fResiduals;         //[fNPlanes] Array of residuals
 
   Double_t fNSperChan;		/* TDC bin size */
@@ -141,7 +141,7 @@ protected:
   // For accumulating statitics for efficiencies
   Int_t fTotEvents;
   Int_t* fNChamHits;
-  Int_t* fHitsPerPlane;
+  Int_t* fPlaneEvents;
 
   // Useful derived quantities
   // double tan_angle, sin_angle, cos_angle;

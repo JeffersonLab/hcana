@@ -236,6 +236,7 @@ Int_t THcDriftChamberPlane::DefineVariables( EMode mode )
      "fHits.THcDCHit.GetTime()"},
     {"dist","Drift distancess",
      "fHits.THcDCHit.GetDist()"},
+    {"nhit", "Number of hits", "GetNHits()"},
     { 0 }
   };
 
