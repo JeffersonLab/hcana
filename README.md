@@ -35,11 +35,15 @@ depending on whether your shell is bash or csh.
     make
 
 ### Compiling with scons
-    python ./podd/scons/scons.py
+    scons
+
+### Additional SCons features 
 To do the equivalent of "make clean", do
-`python ./podd/scons/scons.py -c`
+`scons -c`
+To compile with debug capabilities, do
+`scons debug=1`
 To compile the standalone codes the are part of podd, do
-`python ./podd/scons/scons.py standalone=1`
+`scons standalone=1`
 
 Running
 -------

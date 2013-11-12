@@ -46,6 +46,9 @@ try:
 except:
 	print " Continuing ... "
 
+Clean(srclib,cleantarget)
+Clean(srclib,localmajorcleantarget)
+
 #baseenv.Install('../',srclib)
 #baseenv.Alias('install',['../'])
 
