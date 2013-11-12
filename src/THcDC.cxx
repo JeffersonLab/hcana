@@ -23,8 +23,6 @@
 #include "TMath.h"
 #include "TVectorD.h"
 
-#include "THaTrackProj.h"
-
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
@@ -40,7 +38,6 @@ THcDC::THcDC(
 {
   // Constructor
 
-  //  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
   fNPlanes = 0;			// No planes until we make them
 
   fXCenter = NULL;
@@ -333,6 +330,7 @@ Int_t THcDC::DefineVariables( EMode mode )
   RVarDef vars[] = {
     { "nhit", "Number of DC hits",  "fNhits" },
     { "ntrack", "Number of Tracks", "fNDCTracks" },
+    { "nsp", "Number of Space Points", "fNSp" },
     { "x", "X at focal plane", "fDCTracks.THcDCTrack.GetX()"},
     { "y", "Y at focal plane", "fDCTracks.THcDCTrack.GetY()"},
     { "xp", "YP at focal plane", "fDCTracks.THcDCTrack.GetXP()"},
@@ -361,10 +359,6 @@ THcDC::~THcDC()
   for (vector<THcDriftChamber*>::iterator ip = fChambers.begin();
        ip != fChambers.end(); ip++) delete *ip;
 
-  if (fTrackProj) {
-    fTrackProj->Clear();
-    delete fTrackProj; fTrackProj = 0;
-  }
   delete fDCTracks;
 }
 
@@ -549,7 +543,7 @@ void THcDC::LinkStubs()
   //                     stubs.
 
   std::vector<THcSpacePoint*> fSp;
-  Int_t fNSp=0;
+  fNSp=0;
   fSp.clear();
   fSp.reserve(10);
   // Make a vector of pointers to the SpacePoints
@@ -985,19 +979,18 @@ void THcDC::EffInit()
   // variables can be used in end of run reports.
 
   delete [] fNChamHits;  fNChamHits = new Int_t [fNChambers];
-  delete [] fHitsPerPlane; fHitsPerPlane = new Int_t [fNPlanes];
+  delete [] fPlaneEvents; fPlaneEvents = new Int_t [fNPlanes];
   
   fTotEvents = 0;
   for(Int_t i=0;i<fNChambers;i++) {
     fNChamHits[i] = 0;
   }
   for(Int_t i=0;i<fNPlanes;i++) {
-    fHitsPerPlane[i] = 0;
+    fPlaneEvents[i] = 0;
   }
   gHcParms->Define(Form("%sdc_tot_events",fPrefix),"Total DC Events",fTotEvents);
   gHcParms->Define(Form("%sdc_cham_hits[%d]",fPrefix,fNChambers),"N events with hits per chamber",*fNChamHits);
-  gHcParms->Define(Form("%sdc_hits_per_plane[%d]",fPrefix,fNPlanes),"N events with hits per plane",*fHitsPerPlane);
-  cout << Form("%sdc_hits_per_plane[%d]",fPrefix,fNPlanes) << endl;
+  gHcParms->Define(Form("%sdc_events[%d]",fPrefix,fNPlanes),"N events with hits per plane",*fPlaneEvents);
 }
 
 //_____________________________________________________________________________
@@ -1010,7 +1003,7 @@ void THcDC::Eff()
     if(fChambers[i]->GetNHits()>0) fNChamHits[i]++;
   }
   for(Int_t i=0;i<fNPlanes;i++) {
-    if(fPlanes[i]->GetNHits() > 0) fHitsPerPlane[i]++;
+    if(fPlanes[i]->GetNHits() > 0) fPlaneEvents[i]++;
   }
   return;
 }
