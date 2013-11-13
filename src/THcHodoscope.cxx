@@ -134,7 +134,6 @@ void THcHodoscope::SetApparatus( THaApparatus* app )
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 {
-  static const char* const here = "Init()";
   cout << "In THcHodoscope::Init()" << endl;
   Setup(GetName(), GetTitle());
 
@@ -166,6 +165,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   // Will need to determine which apparatus it belongs to and use the
   // appropriate detector ID in the FillMap call
   if( gHcDetectorMap->FillMap(fDetMap, "HSCIN") < 0 ) {
+    static const char* const here = "Init()";
     Error( Here(here), "Error filling detectormap for %s.", 
 	     "HSCIN");
       return kInitError;

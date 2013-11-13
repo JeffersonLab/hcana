@@ -105,8 +105,6 @@ void THcShower::Setup(const char* name, const char* description)
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
 {
-  static const char* const here = "Init()";
-
   cout << "THcShower::Init " << GetName() << endl;
   Setup(GetName(), GetTitle());
 
@@ -129,6 +127,7 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
   EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
 
   if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
+    static const char* const here = "Init()";
     Error( Here(here), "Error filling detectormap for %s.", 
 	     EngineDID);
       return kInitError;
@@ -667,8 +666,8 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 	   //<< endl;
 
       for (UInt_t j=0; j!=(*cluster).clSize(); j++) {
-	THcShowerHit* hit = (*cluster).ClusteredHit(j);
-	//cout << "  hit #" << j << ":  "; (*hit).show();
+       	//THcShowerHit* hit = (*cluster).ClusteredHit(j);
+       	//cout << "  hit #" << j << ":  "; (*hit).show();
       }
 
     }
