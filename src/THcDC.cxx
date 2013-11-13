@@ -157,8 +157,6 @@ THcDC::THcDC( ) :
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
 {
-  static const char* const here = "Init()";
-
   Setup(GetName(), GetTitle());	// Create the subdetectors here
   EffInit();
 
@@ -211,6 +209,7 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   EngineDID[3] = '\0';
   
   if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
+    static const char* const here = "Init()";
     Error( Here(here), "Error filling detectormap for %s.", 
 	     EngineDID);
       return kInitError;
@@ -354,10 +353,10 @@ THcDC::~THcDC()
 
   // Delete the plane objects
   for (vector<THcDriftChamberPlane*>::iterator ip = fPlanes.begin();
-       ip != fPlanes.end(); ip++) delete *ip;
+       ip != fPlanes.end(); ++ip) delete *ip;
   // Delete the chamber objects
   for (vector<THcDriftChamber*>::iterator ip = fChambers.begin();
-       ip != fChambers.end(); ip++) delete *ip;
+       ip != fChambers.end(); ++ip) delete *ip;
 
   delete fDCTracks;
 }
@@ -723,20 +722,22 @@ void THcDC::TrackFit()
   // Number of ray parameters in focal plane.
   const Int_t raycoeffmap[]={4,5,2,3};
 
-  // Initialize residuals
-  // Need to make these member variables so they can be histogrammed
-  // Probably an array of vectors.
-  Double_t double_resolution[fNPlanes][fNDCTracks];
-  Double_t single_resolution[fNPlanes][fNDCTracks];
-  Double_t double_res[fNPlanes]; // For the good track
-
-  for(Int_t ip=0;ip<fNPlanes;ip++) {
-    double_res[ip] = 1000.0;
-    for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
-      double_resolution[ip][itrack] = 1000.0;
-      single_resolution[ip][itrack] = 1000.0;
-    }
-  }
+  // EJB_Note:  Why is this here?  It does not appear to be used anywhere ... commenting out for now.
+  //
+  //// Initialize residuals
+  //// Need to make these member variables so they can be histogrammed
+  //// Probably an array of vectors.
+  //Double_t double_resolution[fNPlanes][fNDCTracks];
+  //Double_t single_resolution[fNPlanes][fNDCTracks];
+  //Double_t double_res[fNPlanes]; // For the good track
+  //
+  // for(Int_t ip=0;ip<fNPlanes;ip++) {
+  //  double_res[ip] = 1000.0;
+  //  for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
+  //    double_resolution[ip][itrack] = 1000.0;
+  //    single_resolution[ip][itrack] = 1000.0;
+  //  }
+  // }
   
   Double_t dummychi2 = 1.0E4;
 
