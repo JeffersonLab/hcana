@@ -5,8 +5,8 @@
   //  Steering script to test hodoscope decoding
   //
   
-  Int_t RunNumber=50017;
-  char* RunFileNamePattern="daq04_%d.log.0";
+  Int_t RunNumber=52949;
+  char* RunFileNamePattern="/cache/mss/hallc/daq04/raw/daq04_%d.log.0";
   
   gHcParms->Define("gen_run_number", "Run Number", RunNumber);
   gHcParms->AddString("g_ctp_database_filename", "DBASE/test.database");
@@ -41,6 +41,8 @@
   HMS->AddDetector( new THcDC("dc", "Drift Chambers" ));
   THcAerogel* aerogel = new THcAerogel("aero", "Aerogel Cerenkov" );
   HMS->AddDetector( aerogel );
+  THcCherenkov* cherenkov = new THcCherenkov("cher", "Gas Cerenkov" );
+  HMS->AddDetector( cherenkov );
 
   // Set up the analyzer - we use the standard one,
   // but this could be an experiment-specific one as well.
@@ -63,7 +65,7 @@
 
   // Eventually need to learn to skip over, or properly analyze
   // the pedestal events
-  run->SetEventRange(1,2000);//  Physics Event number, does not
+  run->SetEventRange(1,20000);//  Physics Event number, does not
                                 // include scaler or control events
 
   // Define the analysis parameters

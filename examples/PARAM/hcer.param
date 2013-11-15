@@ -17,7 +17,7 @@ hcer_width = 50, 50
 ;            tube: bot     top
 ;hcer_adc_to_npe = 1/93., 1/120.
 ; DJG June 21 2007: Quick and dirty online calibration.
-hcer_adc_to_npe = 1/149.6, 1/166.0.
+hcer_adc_to_npe = 1/149.6, 1/166.0
 
 hcer_chi2max = 50.
 hcer_beta_min = 0.8
