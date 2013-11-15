@@ -8,20 +8,6 @@ block H.cher.*
 block H.tr.*
 block g.evtyp
 
-# Cherenkov histograms
-TH1F h_cher_aneg       'Cherenkov Aneg'         H.cher.aneg       100 0 6000
-TH1F h_cher_aneg_p     'Cherenkov Aneg_p'       H.cher.aneg_p     100 0 6000
-TH1F h_cher_aneg_p     'Cherenkov Apos'         H.cher.apos       100 0 6000
-TH1F h_cher_apos_p     'Cherenkov Apos'         H.cher.apos_p     100 0 60000
-TH1F h_cher_neg_npe    'Cherenkov Neg NPE'      H.cher.neg_npe    100 0 100
-TH1F h_cher_pos_npe    'Cherenkov neg tdc hits' H.cher.pos_npe    100 0 100
-TH1F h_cher_negadchits 'Cherenkov neg adc hits' H.cher.negadchits 100 0 100
-TH1F h_cher_negtdchits 'Cherenkov neg tdc hits' H.cher.negtdchits 10 -2 2
-TH1F h_cher_posadchits 'Cherenkov neg tdc hits' H.cher.posadchits 10 -0 2.2
-TH1F h_cher_postdchits 'Cherenkov pos tdc hits' H.cher.postdchits 10 -0 2.2
-TH1F h_cher_tneg       'Cherenkov tneg'         H.cher.tneg       10 -0.2 2.2
-TH1F h_cher_tpos       'Cherenkov tpos'         H.cher.tpos       10 -0.2 2.2
-
 # TDC hits per paddle
 TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.postdchits 16 0.5 16.5
 TH1F hnegtdc1 'HMS s1x- TDC hits' H.hod.1x.negtdchits 16 0.5 16.5
