@@ -37,15 +37,7 @@ void THcHitList::InitHitList(THaDetMap* detmap,
   fNMaxRawHits = maxhits;
   fNRawHits = 0;
   for(Int_t i=0;i<maxhits;i++) {
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,32,0)
     fRawHitList->ConstructedAt(i);
-#else
-  // The essence of the ConstructedAt code explictly
-    TObject* obj = (*fRawHitList)[i];
-    R__ASSERT( obj );  // should never happen ...
-    if( !obj->TestBit(TObject::kNotDeleted) )
-      fRawHitClass->New(obj);
-#endif
   }
   
   fdMap = detmap;
@@ -54,7 +46,7 @@ void THcHitList::InitHitList(THaDetMap* detmap,
 Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
   THcRawHit* rawhit;
   // cout << " Clearing TClonesArray " << endl;
-  fRawHitList->Clear("C");
+  fRawHitList->Clear( );
   fNRawHits = 0;
 
   for ( Int_t i=0; i < fdMap->GetSize(); i++ ) {
@@ -89,6 +81,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 
       if(thishit == fNRawHits) {
 	rawhit = (THcRawHit*) (*fRawHitList)[thishit];
+	rawhit->Clear();	// Blank out hit contents
 	fNRawHits++;
 	rawhit->fPlane = plane;
 	rawhit->fCounter = counter;

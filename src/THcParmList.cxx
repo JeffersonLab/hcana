@@ -15,6 +15,8 @@
 #include "THaVar.h"
 #include "THaFormula.h"
 
+#include "TMath.h"
+
 
 /* #incluce <algorithm> include <fstream> include <cstring> */
 #include <iostream>
@@ -23,8 +25,14 @@
 #include <cstdlib>
 
 using namespace std;
+Int_t  fDebug   = 1;  // Keep this at one while we're working on the code    
 
 ClassImp(THcParmList)
+
+THcParmList::THcParmList() : THaVarList()
+{
+  TextList = new THaTextvars;
+}
 
 inline static bool IsComment( const string& s, string::size_type pos )
 {
@@ -32,7 +40,7 @@ inline static bool IsComment( const string& s, string::size_type pos )
 	   (s[pos] == '#' || s[pos] == ';' || s.substr(pos,2) == "//") );
 }
 
-void THcParmList::Load( const char* fname )
+void THcParmList::Load( const char* fname, Int_t RunNumber )
 {
 
   static const char* const here   = "THcParmList::LoadFromFile";
@@ -53,10 +61,18 @@ void THcParmList::Load( const char* fname )
   }
   
   string line;
-  Int_t nlines_read = 0, nparameters_read = 0;
   char varname[100];
+  Int_t InRunRange;
+  Int_t currentindex = 0;
 
   varname[0] = '\0';
+
+  if(RunNumber > 0) {
+    InRunRange = 0;		// Wait until run number range matching RunNumber is found
+    cout << "Reading Parameters for run " << RunNumber << endl;
+  } else {
+    InRunRange = 1;		// Interpret all lines
+  }
 
   while(nfiles) {
     string current_comment("");
@@ -92,7 +108,6 @@ void THcParmList::Load( const char* fname )
       }
       continue;
     }
-
 
     // Blank line or comment?
     if( line.empty()
@@ -132,27 +147,96 @@ void THcParmList::Load( const char* fname )
       cout << "Skipping: " << line << endl;
       continue;
     }
-    // Ignore string assingments
-    if(line.find_first_of("\"'")!=string::npos) {
-      cout << "Skipping string assignment: " << line << endl;
-      continue;
+
+    // Get rid of all white space not in quotes
+    // Step through one char at a time 
+    pos = 0;
+    int inquote=0;
+    char quotechar=' ';
+    // cout << "Unstripped line: |" << line << "|" << endl;
+    while(pos<line.length()) {
+      if(inquote) {
+	if(line[pos++] == quotechar) { // Possibly end of quoted string
+	  if(line[pos] == quotechar) { // Protected quote
+	    pos++;		// Skip the protected quote
+	  } else {		// End of quoted string
+	    inquote = 0;
+	    quotechar = ' ';
+	    pos++;
+	  }
+	}
+      } else {
+	if(line[pos] == ' ' || line[pos] == '\t') {
+	  line.erase(pos,1);
+	} else if(line[pos] == '"' || line[pos] == '\'') {
+	  quotechar = line[pos++];\
+	  inquote = 1;
+	} else {
+	  pos++;
+	}
+      }
+    }
+    // cout << "Stripped line: |" << line << "|" << endl;
+
+    // Need to do something to bug out if line is empty
+
+    // If in Engine database mode, check if line is a number range AAAA-BBBB
+    if(RunNumber>0) {
+      if(line.find_first_not_of("0123456789-")==string::npos) { // Interpret as runnum range
+	if( (pos=line.find_first_of("-")) != string::npos) {
+	  Int_t RangeStart=atoi(line.substr(0,pos).c_str());
+	  Int_t RangeEnd=atoi(line.substr(pos+1,string::npos).c_str());
+	  if(RunNumber >= RangeStart && RunNumber <= RangeEnd) {
+	    InRunRange = 1;
+	  } else {
+	    InRunRange = 0;
+	  }
+	} else {		// A single number.  Run 
+	  if(atoi(line.c_str()) == RunNumber) {
+	    InRunRange = 1;
+	  } else {
+	    InRunRange = 0;
+	  }
+	}
+      }
     }
 
-    // Get rid of all white space
-    while((pos=line.find_first_of(whtspc)) != string::npos) {
-      line.erase(pos,1);
-    }
-    // Need to do something to bug out if line is empty
+    if(!InRunRange) continue;
 
     // Interpret left of = as var name
     Int_t valuestartpos=0;  // Stays zero if no = found
-    Int_t existinglength=0;
     Int_t ttype = 0;     // Are any of the values floating point?
     if((pos=line.find_first_of("="))!=string::npos) {
       strcpy(varname, (line.substr(0,pos)).c_str());
       valuestartpos = pos+1;
+      currentindex = 0;
     }
 
+    // If first char after = is a quote, then this is a string assignment
+    if(line[valuestartpos] == '"' || line[valuestartpos] == '\'') {
+      quotechar = line[valuestartpos++];
+      // Scan until end of line or terminating quote
+      //      valuestartpos++;
+      pos = valuestartpos;
+      while(pos<line.length()) {
+	if(line[pos++] == quotechar) { // Possibly end of quoted string
+	  if(line[pos] == quotechar) { // Protected quote
+	    pos++;
+	  } else {
+	    pos--;
+	    break;
+	  }
+	}
+      }
+      if(TextList) {
+	// Should check that a numerical assignment doesn't exist, but for
+	// now, the same variable name can be used for strings and numbers
+	string varnames(varname);
+	AddString(varnames, line.substr(valuestartpos,pos-valuestartpos));
+      }
+      continue;
+    }
+      
     TString values((line.substr(valuestartpos)).c_str());
     TObjArray *vararr = values.Tokenize(",");
     Int_t nvals = vararr->GetLast()+1;
@@ -173,20 +257,43 @@ void THcParmList::Load( const char* fname )
       }
     }
 
-    if(valuestartpos==0) {	// We are adding to an existing array
-      // Copy out the array and delete the variable to be recreated
-      THaVar* existingvar=Find(varname);
-      if(existingvar) {
-	string existingcomment;
-	existingcomment.assign(existingvar->GetTitle());
-	if(!existingcomment.empty()) {
-	  current_comment.assign(existingcomment);
-	}
-	existinglength=existingvar->GetLen();
-	Int_t existingtype=existingvar->GetType();
+    // New pseudo code
+    // currentindex = where next item goes
+    // nvals = number of new items on line
+    // newlength = curentindex+nvals
+
+    // if (variable already exists)   (valuestartpos is 0 or a find succeeded)
+    //       get existinglegnth
+    //       if (existinglength > newlength && type doesn't change) {
+    //            copy nvals values directly into array
+    //       else
+    //            make new longer array of length max(existinglength, newlength)
+    //            copy existinglength values into longer array changing type if needed
+    //            delete old varname
+    //            recreate varname of proper length
+    // else (variable doesn't exist)
+    //      make array of newlength
+    //      create varname
+    //  
+    // There is some code duplication here.  Refactor later
+
+    Int_t newlength = currentindex + nvals;
+    THaVar* existingvar=Find(varname);
+    if(existingvar) {
+      string existingcomment;
+      existingcomment.assign(existingvar->GetTitle());
+      if(!existingcomment.empty()) {
+	current_comment.assign(existingcomment);
+      }
+      Int_t existingtype=existingvar->GetType();
+      Int_t existinglength=existingvar->GetLen();
+      if(newlength > existinglength ||
+	 (existingtype == kInt && ttype > 0)) { // Length or type change needed
+	if(newlength < existinglength) newlength = existinglength;
+	Int_t newtype=-1;
 	if(ttype>0 || existingtype == kDouble) {
-	  ttype = 1;
-	  fp = new Double_t[nvals+existinglength];
+	  newtype = kDouble;
+	  fp = new Double_t[newlength];
 	  if(existingtype == kDouble) {
 	    Double_t* existingp= (Double_t*) existingvar->GetValuePointer();
 	    for(Int_t i=0;i<existinglength;i++) {
@@ -201,7 +308,8 @@ void THcParmList::Load( const char* fname )
 	    cout << "Whoops!" << endl;
 	  }
 	} else if(existingtype == kInt) {	// Stays int
-	  ip = new Int_t[nvals+existinglength];
+	  newtype = kInt;
+	  ip = new Int_t[newlength];
 	  Int_t* existingp= (Int_t*) existingvar->GetValuePointer();
 	  for(Int_t i=0;i<existinglength;i++) {
 	    ip[i] = existingp[i];
@@ -209,47 +317,91 @@ void THcParmList::Load( const char* fname )
 	} else {
 	  cout << "Whoops!" << endl;
 	}
-	RemoveName(varname);
-      }
-    }
-	
-    if(nvals > 0) {		// It's an array
-      // Type the array floating unless all are ints.  (if any variables
-      // or expressions, go floating)
-      // Allocate the array
-      if(existinglength==0) {
-	if(ttype==0) {
-	  ip = new Int_t[nvals];
-	} else {
-	  fp = new Double_t[nvals];
+	// Now copy new values in
+	for(Int_t i=0;i<nvals;i++) {
+	  TString valstr = ((TObjString *)vararr->At(i))->GetString();
+	  if(newtype == kInt) {
+	    ip[currentindex+i] = valstr.Atoi();
+	  } else {
+	    if(valstr.IsFloat()) {
+	      fp[currentindex+i] = valstr.Atof();
+	    } else {
+	      THaFormula* formula = new THaFormula("temp",valstr.Data()
+						   ,this, 0);
+	      fp[currentindex+i] = formula->Eval();
+	      delete formula;
+	    }
+	  }
 	}
+	currentindex += nvals;
+	// Remove old variable and recreate
+	RemoveName(varname);
+	char *arrayname=new char [strlen(varname)+20];
+	sprintf(arrayname,"%s[%d]",varname,newlength);
+	if(newtype == kInt) {
+	  Define(arrayname, current_comment.c_str(), *ip);
+	} else {
+	  Define(arrayname, current_comment.c_str(), *fp);
+	}
+	delete[] arrayname;
+      } else {
+	// Existing array long enough and of right type, just copy to it.
+	if(ttype == 0 && existingtype == kInt) {
+	  Int_t* existingp= (Int_t*) existingvar->GetValuePointer();
+	  for(Int_t i=0;i<nvals;i++) {
+	    TString valstr = ((TObjString *)vararr->At(i))->GetString();
+	    existingp[currentindex+i] = valstr.Atoi();
+	  }
+	} else {
+	  Double_t* existingp= (Double_t*) existingvar->GetValuePointer();
+	  for(Int_t i=0;i<nvals;i++) {
+	    TString valstr = ((TObjString *)vararr->At(i))->GetString();
+	    if(valstr.IsFloat()) {
+	      existingp[currentindex+i] = valstr.Atof();
+	    } else {
+	      THaFormula* formula = new THaFormula("temp",valstr.Data()
+						   ,this, 0);
+	      existingp[currentindex+i] = formula->Eval();
+	      delete formula;
+	    }
+	  }
+	}
+	currentindex += nvals;
+      }	
+    } else {
+      if(currentindex !=0) {
+	cout << "currentindex=" << currentindex << " shouldn't be!" << endl;
+      }
+      if(ttype==0) {
+	ip = new Int_t[nvals];
+      } else {
+	fp = new Double_t[nvals];
       }
       for(Int_t i=0;i<nvals;i++) {
 	TString valstr = ((TObjString *)vararr->At(i))->GetString();
 	if(ttype==0) {
-	  ip[existinglength+i] = valstr.Atoi();
+	  ip[i] = valstr.Atoi();
 	} else {
 	  if(valstr.IsFloat()) {
-	    fp[existinglength+i] = valstr.Atof();
+	    fp[i] = valstr.Atof();
 	  } else {
 	    THaFormula* formula = new THaFormula("temp",valstr.Data()
 						 ,this, 0);
-	    fp[existinglength+i] = formula->Eval();
+	    fp[i] = formula->Eval();
 	    delete formula;
 	  }
 	}
-	//	cout << i << " " << valstr << endl;;
       }
+      currentindex = nvals;
+      
       char *arrayname=new char [strlen(varname)+20];
-      sprintf(arrayname,"%s[%d]",varname,nvals+existinglength);
+      sprintf(arrayname,"%s[%d]",varname,nvals);
       if(ttype==0) {
 	Define(arrayname, current_comment.c_str(), *ip);
       } else {
 	Define(arrayname, current_comment.c_str(), *fp);
       }
       delete[] arrayname;
-    } else {
-      cout << "nvals is zero??  Maybe continued on next line" << endl;
     }
 
     //    cout << line << endl;
@@ -259,4 +411,155 @@ void THcParmList::Load( const char* fname )
   return;
 
 }
-//
+//_____________________________________________________________________________
+Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
+{
+  // Load a number of entries from the database.
+  // For array entries, the number of elements to be read in
+  // must be given, and the memory already allocated
+  // NOTE: initial code taken wholesale from THaDBFile. 
+  // GN 2012
+  
+  const DBRequest *ti = list;
+  Int_t cnt=0;
+  Int_t this_cnt=0;
+
+  if( !prefix ) prefix = "";
+
+  while ( ti && ti->name ) {
+    string keystr(prefix); keystr.append(ti->name);
+    const char* key = keystr.c_str();
+    ///    cout <<"Now at "<<ti->name<<endl;
+    this_cnt = 0;
+    if(this->Find(key)) {
+      VarType ty = this->Find(key)->GetType();
+      if (ti->nelem>1) {
+	// it is an array, use the appropriateinterface
+	switch (ti->type) {
+	case (kDouble) :
+	  this_cnt = GetArray(key,static_cast<Double_t*>(ti->var),ti->nelem);
+	  break;
+	case (kInt) :
+	  this_cnt = GetArray(key,static_cast<Int_t*>(ti->var),ti->nelem);
+	  break;
+	default:
+	  Error("THcParmList","Invalid type to read %s",key);
+	  break;
+	}
+
+      } else {
+	switch (ti->type) {
+	case (kDouble) :
+	  if(ty == kInt) {
+	    *static_cast<Double_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();	    
+	  } else if (ty == kDouble) {
+	    *static_cast<Double_t*>(ti->var)=*(Double_t *)this->Find(key)->GetValuePointer();
+	  } else {
+	    cout << "*** ERROR!!! Type Mismatch " << key << endl;
+	  }
+	  this_cnt=1;
+
+	  break;
+	case (kInt) :
+	  if(ty == kInt) {
+	    *static_cast<Int_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();
+	  } else if (ty == kDouble) {
+	    *static_cast<Int_t*>(ti->var)=TMath::Nint(*(Double_t *)this->Find(key)->GetValuePointer());
+	    cout << "*** WARNING!!!  Rounded " << key << " to nearest integer " << endl;
+	  } else {
+	    cout << "*** ERROR!!! Type Mismatch " << key << endl;
+	  }
+	  this_cnt=1;
+	  break;
+	default:
+	  Error("THcParmList","Invalid type to read %s",key);
+	  break;
+	}
+      }
+    } else {			// See if it is a text variable
+      const char* value = GetString(key);
+      if(value) {
+	this_cnt = 1;
+	if(ti->type == kString) {
+	  *((string*)ti->var) = string(value);
+	} else if (ti->type == kTString) {
+	  *((TString*)ti->var) = (TString) value;
+	} else {
+	  Error("THcParmList","No conversion for strings: %s",key);
+	}
+      }
+    }
+    if (this_cnt<=0) {
+      if ( !ti->optional ) {
+	Fatal("THcParmList","Could not find %s in database!",key);
+      }
+    }
+    cnt += this_cnt;
+    ti++;
+  }
+  return cnt;
+}
+
+//  READING AN ARRAY INTO A C-style ARRAY
+//_____________________________________________________________________________
+Int_t THcParmList::GetArray(const char* attr, Int_t* array, Int_t size)
+{
+  // Read in a set of Int_t's in to a C-style array.
+  
+  return ReadArray(attr,array,size);
+}
+//_____________________________________________________________________________
+Int_t THcParmList::GetArray(const char* attr, Double_t* array, Int_t size)
+{
+  // Read in a set of Double_t's in to a vector.
+  
+  return ReadArray(attr,array,size);
+}
+
+//_____________________________________________________________________________
+template<class T>
+Int_t THcParmList::ReadArray(const char* attrC, T* array, Int_t size)
+{
+  // Copy values from parameter store to array
+  // No resizing is done, so only 'size' elements may be stored.
+
+  Int_t cnt=0;
+
+  THaVar *var = Find(attrC);
+  if(!var) return(cnt);
+  VarType ty = var->GetType();
+  if( ty != kInt && ty != kDouble) {
+    cout << "*** ERROR: " << attrC << " has unsupported type " << ty << endl;
+    return(cnt);
+  }
+  Int_t sz = var->GetLen();
+  const void *vp = var->GetValuePointer();
+  if(size != sz) {
+    cout << "*** WARNING: requested " << size << " elements of " << attrC <<
+      " which has length " << sz << endl;
+  }
+  if(size<sz) sz = size;
+  Int_t donint = 0;
+  if(ty == kDouble && typeid(array[0]) == typeid(Int_t)) {
+    donint = 1;			// Use nint when putting doubles in nint
+    cout << "*** WARNING!!!  Rounded " << attrC << " elements to nearest integer " << endl;
+  }
+  for(cnt=0;cnt<sz;cnt++) {
+    if(ty == kInt) {
+      array[cnt] = ((Int_t*)vp)[cnt];
+    } else
+      if(donint) {
+	array[cnt] = TMath::Nint(((Double_t*)vp)[cnt]);
+      } else {
+	array[cnt] = ((Double_t*)vp)[cnt];
+      }
+  }
+  return(cnt);
+}
+
+//_____________________________________________________________________________
+void THcParmList::PrintFull( Option_t* option ) const
+{
+  THaVarList::PrintFull(option);
+  TextList->Print();
+}

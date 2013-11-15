@@ -1,0 +1,96 @@
+;                    BPM calibration constants
+;                    =========================
+  guse_bpm_in_recon  = 0   ; if 1 use bpm information for reconstruction
+  guse_bpmc = 1  ; if 1 use all 3 bpm info, if 0 use bpm A and B 
+  gbpm_sample  = 500 ; number of events, which are used for average 
+                     ; beam position ( <5000 ). Optimal value dep. on rate
+
+; the names are based on Paul Gueye's 'Status of the actual Beam Position
+;                   Monitors in the Hall C Beamline', December 1, 1995.
+; (mkj) apr-4-03 kappa,alpha and off for 3rd bpm are guesses,
+; need to find right values.
+;
+;  gbpm_kappa    = 1.85 ,1.85,1.85     ; sensitivity in cm
+gbpm_kappa    = 2.00 ,1.95,1.85  ; modified mkj 4/9/03
+  gbpm_alpha_x = 1.8192,0.7330 ,0.7   ; calibration gain: we may get them from the
+  gbpm_alpha_y = 1.0063,0.8935 ,0.7   ;  EPICS events, right now that's according to Paul's note
+
+; the following offsets get added to the calculated positions
+;  gbpm_x_off = -0.011,-0.004,0.      ; in cm: survey according to Paul's note
+;  gbpm_y_off = +0.052,+0.056,0.
+; From Dahlberg survey DT_C853 Apr 7, 2003
+gbpm_x_off = 0.017+.412,0.061-.353,0.037
+gbpm_y_off = 0.037+.381,-0.04-.211,0.028
+
+; average beam positions: only used if 'guse_bpm_in_recon=0' 
+;  gbeam_xoff  = +0.18
+  gbeam_xoff  = +0.00
+  gbeam_xpoff = +0.00
+  gbeam_yoff  = +0.00
+  gbeam_ypoff = +0.00
+
+; spectrometers would like to see this positions (from optics studies) 
+; we treat SOS and HMS the same, however, we may change this if necessary
+;  gspec_xoff  = +0.18
+  gspec_xoff  = +0.00
+  gspec_xpoff = +0.00
+  gspec_yoff  = +0.00
+  gspec_ypoff = +0.00
+
+; Pedestals for BPM ADCs: from cosmic run #10933, 10/3/96, book XI-137
+  gbpm_xp_ped = 431.9,331.0,0.  ; these pedestals have to be determined
+  gbpm_xm_ped = 514.7,350.6,0.  ; from runs with no beam in the cavities,
+  gbpm_yp_ped = 406.9,358.8,0.  ; e.g. cosmic runs.
+  gbpm_ym_ped = 499.7,292.7,0. ;
+
+; positions of BPMs relative to target (from Paul's note)
+  gbpm_zpos = 345.5,166.3,0.   ; cm
+
+
+;             Fast Raster calibration constants
+;             =================================
+
+; Various fast raster quantities: gUse* are flags
+
+  gusefr               = 1  ; if 1 correct for FRY in reconstruction
+
+  guse_frdefault       = 1  ; if 1 do no phase correction (default)
+                                ;if 0 apply phase correction 
+;      gfr_cal_mom      = 3.245  ; = beam momnetum during calibration run 
+;      gfrx_adcpercm    = 11328. ; = FR channels per cm deflection on target
+;      gfry_adcpercm    = 10708. ; from run 9981, August 25, 1996, book X-22
+
+      gfr_cal_mom      = 2.038  ; = beam momnetum during calibration run 
+      gfrx_adcpercm    = 4364.7 ; = FR channels per cm deflection on target
+      gfry_adcpercm    = 5471.9 ; from harp scan (H00A), June 19, 2004
+
+
+      gfrx_dphase      = 0.0    ; phase shift (never measured for x so far) 
+      gFrx_synccut     = 0.     ; should be zero if applied on centered distr.
+      gfrx_adcmax      = 1000   ; ADC amplitude in channels.
+      gfrx_maxsize     = 0.1    ; fast raster amplitude in centimeter.
+
+      gfry_dphase      = 5.8    ; phase shift 
+      gFry_synccut     = 0.     ; should be zero if applied on centered distr.
+      gfry_adcmax      = 1000   ; ADC amplitude in channels.
+      gfry_maxsize     = 0.1    ; fast raster amplitude in centimeter.
+
+; The latest FR phase analysis from spring '96 showed, that there is no
+; measurable phase shift. During early running (E91-13, E89-12) the FRY-phase
+; was determined to be 5.8 degree.
+
+; positions of FR magnets relative to target
+  gfrx_dist  = 2111   ; cm
+  gfry_dist  = 2071   ; cm
+
+
+
+
+
+
+
+
+
+
+
+

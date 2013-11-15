@@ -1,0 +1,40 @@
+#real raddeg
+raddeg=3.14159265/180
+part_mass=0.000511
+
+; hms/sosflags.param include spectrometer offsets and options.
+#include "PARAM/52949/hcana.param"
+#include "PARAM/52949/genflags.param"
+#include "PARAM/52949/hmsflags.param"
+#include "PARAM/52949/sosflags.param"
+
+#include "PARAM/52949/gdebug.param"
+#include "PARAM/52949/hdebug.param"
+#include "PARAM/52949/sdebug.param"
+#include "PARAM/52949/htracking.param"
+#include "PARAM/52949/stracking.param"
+
+#include "PARAM/52949/gscalers.param"
+#include "PARAM/52949/gbeam.param"
+#include "PARAM/52949/gtarget.param"
+#include "PARAM/52949/hdc_offsets.param"
+#include "PARAM/52949/hdc.pos"
+#include "PARAM/52949/hhodo.pos"
+#include "PARAM/52949/hcal.pos"
+#include "PARAM/52949/sdc_offsets.param"
+#include "PARAM/52949/sdc.pos"
+#include "PARAM/52949/shodo.pos"
+#include "PARAM/52949/scal.pos"
+
+#include "PARAM/52949/hdeadwires.param"
+#include "PARAM/52949/hdc.param.vt.52927"
+#include "PARAM/52949/hms.driftmap.vt.52949"
+#include "PARAM/52949/hhodo.param.vt"
+#include "PARAM/52949/hcal.param.vt.52949"
+#include "PARAM/52949/hcer.param.vt"
+#include "PARAM/52949/haero.param"
+#include "PARAM/52949/sdc.param.vt.53000"
+#include "PARAM/52949/sos.driftmap.vt.52930"
+#include "PARAM/52949/shodo.param.vt"
+#include "PARAM/52949/scal.param.vt.52843"
+#include "PARAM/52949/scer.param.vt"

@@ -22,16 +22,32 @@ public:
 		   THaApparatus* a = NULL );
   virtual ~THcHodoscope();
 
+  virtual void  Clear( Option_t* opt="" );
   virtual Int_t      Decode( const THaEvData& );
   virtual EStatus    Init( const TDatime& run_time );
+  
   virtual Int_t      CoarseProcess( TClonesArray& tracks );
   virtual Int_t      FineProcess( TClonesArray& tracks );
   
   virtual Int_t      ApplyCorrections( void );
-
-  //  Int_t GetNHits() const { return fNhit; }
-  
+  Double_t GetStartTime() const { return fStartTime; }
+  Bool_t IsStartTimeGood() const {return fGoodStartTime;};
+  Int_t GetScinIndex(Int_t nPlane, Int_t nPaddle);
+  Int_t GetScinIndex(Int_t nSide, Int_t nPlane, Int_t nPaddle);
+  Double_t GetPathLengthCentral();
   Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
+  Double_t GetTdcMin() const {return fScinTdcMin;}
+  Double_t GetTdcMax() const {return fScinTdcMax;}
+  Double_t GetTofTolerance() const {return fTofTolerance;}
+  Double_t GetTdcToTime() const {return fScinTdcToTime;}
+  Double_t GetHodoPosPhcCoeff(Int_t iii) const {return fHodoPosPhcCoeff[iii];}
+  Double_t GetHodoNegPhcCoeff(Int_t iii) const {return fHodoNegPhcCoeff[iii];}
+  Double_t GetHodoPosMinPh(Int_t iii) const {return fHodoPosMinPh[iii];}
+  Double_t GetHodoNegMinPh(Int_t iii) const {return fHodoNegMinPh[iii];}
+  Double_t GetHodoPosTimeOffset(Int_t iii) const {return fHodoPosTimeOffset[iii];}
+  Double_t GetHodoNegTimeOffset(Int_t iii) const {return fHodoNegTimeOffset[iii];}
+  Double_t GetHodoVelLight(Int_t iii) const {return fHodoVelLight[iii];}
+
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
   
   friend class THaScCalib;
@@ -39,18 +55,46 @@ public:
   THcHodoscope();  // for ROOT I/O
 protected:
 
+  Int_t fAnalyzePedestals;
+
   // Calibration
 
   // Per-event data
-
+  Bool_t fGoodStartTime;
+  Double_t fStartTime;
+  
+  // Per-event data
 
   // Potential Hall C parameters.  Mostly here for demonstration
-  Int_t fNPlanes;
+  Int_t fNPlanes,fMaxScinPerPlane,fMaxHodoScin; // number of planes; max number of scin/plane; product of the first two 
+  Double_t fStartTimeCenter, fStartTimeSlop, fScinTdcToTime;
+  Double_t fTofTolerance;
+  Double_t fPathLengthCentral;
+  Double_t fScinTdcMin, fScinTdcMax; // min and max TDC values
+  char** fPlaneNames;
   Int_t* fNPaddle;		// Number of paddles per plane
-  Double_t* fSpacing;		// Paddle spacing in cm
-  Double_t** fCenter;           // Center position of each paddle
 
-  THcScintillatorPlane** fPlane; // List of plane objects
+  Double_t* fHodoVelLight;
+  Double_t* fHodoPosSigma;
+  Double_t* fHodoNegSigma;
+
+  Double_t* fHodoPosMinPh;
+  Double_t* fHodoNegMinPh;
+  Double_t* fHodoPosPhcCoeff;
+  Double_t* fHodoNegPhcCoeff;
+  Double_t* fHodoPosTimeOffset;
+  Double_t* fHodoNegTimeOffset;
+  Int_t* fHodoPosPedLimit;
+  Int_t* fHodoNegPedLimit;
+  Int_t fTofUsingInvAdc;
+  Double_t* fHodoPosInvAdcOffset;
+  Double_t* fHodoNegInvAdcOffset;
+  Double_t* fHodoPosInvAdcLinear;
+  Double_t* fHodoNegInvAdcLinear;
+  Double_t* fHodoPosInvAdcAdc;
+  Double_t* fHodoNegInvAdcAdc;
+
+  THcScintillatorPlane** fPlanes; // List of plane objects
 
   TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
                               // and estimated match to TOF paddle
@@ -75,11 +119,17 @@ protected:
   void           DeleteArrays();
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
-
+  Double_t DefineDoubleVariable(const char* fName);
+  Int_t    DefineIntVariable(const char* fName);
+  void DefineArray(const char* fName, const Int_t index, Double_t *myArray);
+  void DefineArray(const char* fName, char** Suffix, const Int_t index, Double_t *myArray);
+  void DefineArray(const char* fName, char** Suffix, const Int_t index, Int_t *myArray);
   enum ESide { kLeft = 0, kRight = 1 };
   
   virtual  Double_t TimeWalkCorrection(const Int_t& paddle,
 					   const ESide side);
+
+  void Setup(const char* name, const char* description);
 
   ClassDef(THcHodoscope,0)   // Generic hodoscope class
 };

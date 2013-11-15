@@ -8,6 +8,11 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+
 #include "THcHodoscopeHit.h"
 
 using namespace std;

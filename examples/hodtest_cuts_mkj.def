@@ -1,0 +1,22 @@
+# Demo cuts for hodtest
+#
+
+Block: RawDecode
+
+Pedestal_event    g.evtyp==4
+scalar_event         g.evtyp==0
+HMS_event         g.evtyp==1
+SOS_event         g.evtyp==2
+coin_event         g.evtyp==3
+misc_event         g.evtyp>=5
+hms_and_coin	HMS_event||coin_event
+RawDecode_master  1
+
+Block: Decode
+Decode_master     hms_and_coin
+
+Block: CoarseTracking
+CoarseTracking_master !Pedestal_event
+
+Block: CoarseReconstruct
+RawCoarseReconstruct !Pedestal_event
