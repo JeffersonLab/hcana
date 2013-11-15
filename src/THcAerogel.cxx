@@ -111,11 +111,12 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
 
+  fNelem = 8;			// Default if not defined
+  Bool_t optional=true ;
   DBRequest listextra[]={
-    {"aero_num_pairs", &fNelem, kInt},
+    {"aero_num_pairs", &fNelem, kInt,0,optional},
     {0}
   };
-  fNelem = 8;			// Default if not defined
   gHcParms->LoadParmValues((DBRequest*)&listextra,prefix);
 
   fA_Pos = new Float_t[fNelem];
@@ -133,12 +134,12 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fNegPedMean = new Double_t[fNelem];
 
   DBRequest list[]={
-    {"aero_pos_gain", fPosGain, kDouble},
-    {"aero_neg_gain", fPosGain, kDouble},
-    {"aero_pos_ped_limit", fPosPedLimit, kInt},
-    {"aero_neg_ped_limit", fNegPedLimit, kInt},
-    //    {"aero_pos_ped_mean", fPosPedMean, kDouble},
-    //    {"aero_neg_ped_mean", fNegPedMean, kDouble},
+    {"aero_pos_gain", fPosGain, kDouble, fNelem},
+    {"aero_neg_gain", fNegGain, kDouble, fNelem},
+    {"aero_pos_ped_limit", fPosPedLimit, kInt, fNelem},
+    {"aero_neg_ped_limit", fNegPedLimit, kInt, fNelem},
+    {"aero_pos_ped_mean", fPosPedMean, kDouble, fNelem,optional},
+    {"aero_neg_ped_mean", fNegPedMean, kDouble, fNelem,optional},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
