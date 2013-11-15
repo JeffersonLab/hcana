@@ -5,8 +5,8 @@
   //  Steering script to test hodoscope decoding
   //
   
-  Int_t RunNumber=50017;
-  char* RunFileNamePattern="daq04_%d.log.0";
+  Int_t RunNumber=52949;
+  char* RunFileNamePattern="/cache/mss/hallc/daq04/raw/daq04_%d.log.0";
   
   gHcParms->Define("gen_run_number", "Run Number", RunNumber);
   gHcParms->AddString("g_ctp_database_filename", "DBASE/test.database");
