@@ -129,12 +129,12 @@ if baseenv.subst('$CPPCHECK')==proceed:
 	is_cppcheck = which('cppcheck')
 	print "Path to cppcheck is %s\n" % is_cppcheck
 
-	try:	
+	if(is_cppcheck == None):
+		print('!!! cppcheck not found on this system.  Check if cppcheck is installed and in your PATH.')
+		Exit(1)
+	else:
 		cppcheck_command = baseenv.Command('cppcheck_report.txt',[],"cppcheck --quiet --enable=all src/ 2> $TARGET")
 		baseenv.AlwaysBuild(cppcheck_command)
-	except:
-		print('!!! cppcheck not found on this system.  Check if cppcheck is in your PATH.')
-		Exit(1)
 
 ####### Start of main SConstruct ############
 
