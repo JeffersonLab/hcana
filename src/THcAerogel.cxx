@@ -76,8 +76,6 @@ THcAerogel::~THcAerogel()
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
 {
-  static const char* const here = "Init()";
-
   cout << "THcAerogel::Init " << GetName() << endl;
 
   // Should probably put this in ReadDatabase as we will know the
@@ -91,6 +89,7 @@ THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
   // Will need to determine which apparatus it belongs to and use the
   // appropriate detector ID in the FillMap call
   if( gHcDetectorMap->FillMap(fDetMap, "HAERO") < 0 ) {
+    static const char* const here = "Init()";
     Error( Here(here), "Error filling detectormap for %s.", 
 	     "HAERO");
       return kInitError;

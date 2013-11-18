@@ -110,7 +110,8 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
       }
     }
   }
-  if(mlist.size() <= 0) {
+//  if(mlist.size() <= 0) {
+  if(mlist.empty()) {
     return(-1);
   }
   Functor f;
@@ -172,13 +173,13 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
 
 void THcDetectorMap::Load(const char *fname)
 {
-  static const char* const here = "THcDetectorMap::Load";
   static const char* const whtspc = " \t";
 
   ifstream ifile;
 
   ifile.open(fname);
   if(!ifile.is_open()) {
+    static const char* const here = "THcDetectorMap::Load";
     Error(here, "error opening detector map file %s",fname);
     return;			// Need a success/failure argument?
   }

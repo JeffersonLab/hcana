@@ -83,7 +83,6 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
 
   // See what file it looks for
   
-  static const char* const here = "ReadDatabase()";
   char prefix[2];
   Int_t NumDriftMapBins;
   Double_t DriftMapFirstBin;
@@ -210,6 +209,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   const char* nm = "hod";
   if(  !app || 
       !(fglHod = dynamic_cast<THcHodoscope*>(app->GetDetector(nm))) ) {
+    static const char* const here = "ReadDatabase()";
     Warning(Here(here),"Hodoscope \"%s\" not found. "
 	    "Event-by-event time offsets will NOT be used!!",nm);
   }

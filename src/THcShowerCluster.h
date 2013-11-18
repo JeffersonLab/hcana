@@ -18,7 +18,7 @@ class THcShowerCluster : THcShowerHitList {
 
   ~THcShowerCluster() {
     for (THcShowerHitIt i = THcShowerHitList::begin();
-    	 i != THcShowerHitList::end(); i++) {
+    	 i != THcShowerHitList::end(); ++i) {
       delete *i;
       *i = 0;
     }
@@ -51,7 +51,7 @@ class THcShowerCluster : THcShowerHitList {
     Double_t x_sum=0.;
     Double_t Etot=0.;
     for (THcShowerHitIt it=THcShowerHitList::begin();
-	 it!=THcShowerHitList::end(); it++) {
+	 it!=THcShowerHitList::end(); ++it) {
       x_sum += (*it)->hitX() * (*it)->hitE();
       Etot += (*it)->hitE();
     }
@@ -68,7 +68,7 @@ class THcShowerCluster : THcShowerHitList {
     Double_t z_sum=0.;
     Double_t Etot=0.;
     for (THcShowerHitIt it=THcShowerHitList::begin();
-	 it!=THcShowerHitList::end(); it++) {
+	 it!=THcShowerHitList::end(); ++it) {
       z_sum += (*it)->hitZ() * (*it)->hitE();
       Etot += (*it)->hitE();
     }
@@ -82,7 +82,7 @@ class THcShowerCluster : THcShowerHitList {
     //    cout << "In ECl:" << endl;
     Double_t Etot=0.;
     for (THcShowerHitIt it=THcShowerHitList::begin();
-	 it!=THcShowerHitList::end(); it++) {
+	 it!=THcShowerHitList::end(); ++it) {
       Etot += (*it)->hitE();
     }
     return Etot;
@@ -93,7 +93,7 @@ class THcShowerCluster : THcShowerHitList {
   Double_t clEpr() {
     Double_t Epr=0.;
     for (THcShowerHitIt it=THcShowerHitList::begin();
-	 it!=THcShowerHitList::end(); it++) {
+	 it!=THcShowerHitList::end(); ++it) {
       if ((*it)->hitColumn() == 0) {
 	Epr += (*it)->hitE();
       }
@@ -116,7 +116,7 @@ class THcShowerCluster : THcShowerHitList {
 
     Double_t Eplane=0.;
     for (THcShowerHitIt it=THcShowerHitList::begin();
-	 it!=THcShowerHitList::end(); it++) {
+	 it!=THcShowerHitList::end(); ++it) {
 
       if ((*it)->hitColumn() == iplane) 
 
@@ -163,7 +163,7 @@ class THcShowerClusterList : private THcShClusterList {
 
   ~THcShowerClusterList() {
     for (THcShClusterIt i = THcShClusterList::begin();
-    	 i != THcShClusterList::end(); i++) {
+    	 i != THcShClusterList::end(); ++i) {
       delete *i;
       *i = 0;
     }
@@ -206,7 +206,7 @@ void ClusterHits(THcShowerHitList HitList) {
 
       clustered = false;
 
-      for (THcShowerHitIt i=HitList.begin(); i!=HitList.end(); i++) {
+      for (THcShowerHitIt i=HitList.begin(); i!=HitList.end(); ++i) {
 
 	for (UInt_t k=0; k!=(*cluster).clSize(); k++) {
 

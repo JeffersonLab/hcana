@@ -23,6 +23,7 @@ SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcShower.cxx src/THcShowerPlane.cxx \
 	src/THcRawShowerHit.cxx \
 	src/THcAerogel.cxx src/THcAerogelHit.cxx \
+	src/THcCherenkov.cxx src/THcCherenkovHit.cxx \
 	src/THcFormula.cxx
 
 # Name of your package. 

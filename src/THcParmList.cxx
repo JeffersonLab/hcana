@@ -43,7 +43,6 @@ inline static bool IsComment( const string& s, string::size_type pos )
 void THcParmList::Load( const char* fname, Int_t RunNumber )
 {
 
-  static const char* const here   = "THcParmList::LoadFromFile";
   static const char* const whtspc = " \t";
 
   ifstream ifiles[100];		// Should use stack instead
@@ -56,6 +55,7 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
   }
 
   if(!nfiles) {
+    static const char* const here   = "THcParmList::LoadFromFile";
     Error (here, "error opening parameter file %s",fname);
     return;			// Need a success argument returned
   }
@@ -76,7 +76,8 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 
   while(nfiles) {
     string current_comment("");
-    string existing_comment("");
+    // EJB_Note:  existing_comment is never used.
+    // string existing_comment("");
     string::size_type start, pos = 0;
 
     if(!getline(ifiles[nfiles-1],line)) {
