@@ -105,6 +105,17 @@ except OSError:
 bld = Builder(action=rootcint)
 baseenv.Append(BUILDERS = {'RootCint': bld})
 
+######## cppcheck ###########################
+
+proceed = "1" or "y" or "yes" or "Yes" or "Y"
+if baseenv.subst('$CPPCHECK')==proceed:
+	try:	
+		cppcheck_command = baseenv.Command('cppcheck_report.txt',[],"cppcheck --quiet --enable=all src/ 2> $TARGET")
+		baseenv.AlwaysBuild(cppcheck_command)
+	except OSError:
+		print('!!! cppcheck not found on this system.  Check if cppcheck is in your PATH.')
+		Exit(1)
+
 ####### Start of main SConstruct ############
 
 hallclib = 'HallC'
