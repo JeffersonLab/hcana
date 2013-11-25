@@ -15,7 +15,7 @@ def config(env,args):
 		env.Append(STANDALONE= '1')
 
 	#env.Append(CXXFLAGS = '-Wall -Woverloaded-virtual -pthread -rdynamic')
-	env.Append(CXXFLAGS = '-Wall -Woverloaded-virtual')
+	env.Append(CXXFLAGS = '-Wall -Woverloaded-virtual -pthread')
 	env.Append(CPPDEFINES = '-DMACVERS')
 
 	cxxversion = env.subst('$CXXVERSION')
