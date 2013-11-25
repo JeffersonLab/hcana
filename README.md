@@ -44,6 +44,8 @@ To compile with debug capabilities, do
 `scons debug=1`
 To compile the standalone codes the are part of podd, do
 `scons standalone=1`
+To run cppcheck (if installed) on the Hall C src diretory, do
+`scons cppcheck=1`
 
 Running
 -------
