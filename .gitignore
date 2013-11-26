@@ -25,6 +25,7 @@ config.log
 *.[oad]
 *~
 *.so
+*.so.*
 *.os
 \#*\#
 

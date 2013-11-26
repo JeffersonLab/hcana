@@ -5,6 +5,8 @@ def config(env,args):
 
 	debug = args.get('debug',0)
 	standalone = args.get('standalone',0)
+	cppcheck = args.get('cppcheck',0)
+
 	if int(debug):
 		env.Append(CXXFLAGS = '-g -O0')
 	else:	
@@ -14,7 +16,11 @@ def config(env,args):
 	if int(standalone):
 		env.Append(STANDALONE= '1')
 
-	env.Append(CXXFLAGS = '-Wall -Woverloaded-virtual -pthread -rdynamic')
+	if int(cppcheck):
+		env.Append(CPPCHECK= '1')
+
+	#env.Append(CXXFLAGS = '-Wall -Woverloaded-virtual -pthread -rdynamic')
+	env.Append(CXXFLAGS = '-Wall -Woverloaded-virtual -pthread')
 	env.Append(CPPDEFINES = '-DMACVERS')
 
 	cxxversion = env.subst('$CXXVERSION')
