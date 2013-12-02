@@ -1,6 +1,7 @@
 # ignore patterns
 
 # Auto generated files
+cppcheck_report.txt
 HallCDict.cxx
 HallCDict.C
 HallCDict.h
