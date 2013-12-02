@@ -78,6 +78,7 @@ protected:
   Int_t fdebuglinkstubs;
   Int_t fdebugprintdecodeddc;
   Int_t fdebugtrackprint;
+  Int_t fHMSStyleChambers;
 
   Int_t fNDCTracks;
   TClonesArray* fDCTracks;     // Tracks found from stubs (THcDCTrack obj)
@@ -94,6 +95,9 @@ protected:
                                 // propagation along the wire correction for
                                 // each space point a hit occurs in.  Keep a
                                 // separate correction for each space point.
+  Int_t fProjectToChamber;	// If 1, project y position each stub back to it's own
+                                // chamber before comparing y positions in LinkStubs
+                                // Was used for SOS in ENGINE.
 
   // Per-event data
   Int_t fNhits;

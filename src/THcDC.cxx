@@ -68,6 +68,7 @@ THcDC::THcDC(
   // replicate historical ENGINE behavior
   fFixLR = 1;
   fFixPropagationCorrection = 1;
+  fProjectToChamber = 0;  // Use 1 for SOS chambers
 
   fDCTracks = new TClonesArray( "THcDCTrack", 20 );
 }
@@ -86,6 +87,14 @@ void THcDC::Setup(const char* name, const char* description)
   } else {
     cout << "No apparatus found" << endl;
     fPrefix[0]='\0';
+  }
+
+  // For now, decide chamber style from the spectrometer name.
+  // Should override with a paramter
+  if(fPrefix[0]=='h') {
+    fHMSStyleChambers = 1;
+  } else {
+    fHMSStyleChambers = 0;
   }
 
   string planenamelist;
@@ -526,6 +535,7 @@ Int_t THcDC::FineTrack( TClonesArray& tracks )
 
   return 0;
 }
+//_____________________________________________________________________________
 void THcDC::LinkStubs()
 {
   //     The logic is
@@ -593,7 +603,18 @@ void THcDC::LinkStubs()
 	    Double_t *spstub1=sp1->GetStubP();
 	    Double_t *spstub2=sp2->GetStubP();
 	    Double_t dposx = spstub1[0] - spstub2[0];
-	    Double_t dposy = spstub1[1] - spstub2[1];
+	    Double_t dposy;
+	    if(fProjectToChamber) { // From SOS s_link_stubs
+	      // Since single chamber resolution is ~50mr, and the maximum y`
+	      // angle is about 30mr, use differenece between y AT CHAMBERS, rather
+	      // than at focal plane.  (Project back to chamber, to take out y' uncertainty)
+	      // (Should this be done for SHMS and HMS too?)
+	      Double_t y1=spstub1[1]+fChambers[sp1->fNChamber]->GetZPos()*spstub1[3];
+	      Double_t y2=spstub2[1]+fChambers[sp2->fNChamber]->GetZPos()*spstub2[3];
+	      dposy = y1-y2;
+	    } else {
+	      dposy = spstub1[1] - spstub2[1];
+	    }
 	    Double_t dposxp = spstub1[2] - spstub2[2];
 	    Double_t dposyp = spstub1[3] - spstub2[3];
 	      
@@ -715,9 +736,10 @@ void THcDC::LinkStubs()
   if (fdebuglinkstubs) cout << " End Linkstubs Found " << fNDCTracks << " tracks"<<endl;
 }
 
-// Primary track fitting routine
+//_____________________________________________________________________________
 void THcDC::TrackFit()
 {
+  // Primary track fitting routine
 
   // Number of ray parameters in focal plane.
   const Int_t raycoeffmap[]={4,5,2,3};
