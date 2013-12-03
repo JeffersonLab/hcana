@@ -50,6 +50,7 @@ public:
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
   TClonesArray* GetSpacePointsP() const { return(fSpacePoints);}
   Int_t GetChamberNum() const { return fChamberNum;}
+  Double_t GetZPos() const {return fZPos;}
   //  friend class THaScCalib;
 
   THcDriftChamber();  // for ROOT I/O // Why do we need this?
@@ -80,7 +81,9 @@ protected:
   Int_t fSmallAngleApprox;
   Double_t fStubMaxXPDiff;
   Int_t fFixPropagationCorrection;
+  Int_t fHMSStyleChambers;
   Int_t fhdebugflagpr;
+  Double_t fZPos;
   Double_t fXCenter;
   Double_t fYCenter;
   Double_t fSpacePointCriterion;
