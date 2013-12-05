@@ -166,7 +166,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     DBRequest list[]={
       {"cal_num_neg_columns", &fNegCols, kInt},
       {"cal_slop", &fSlop, kDouble},
-      {"cal_fv_test", &fvTest, kInt},
+      {"cal_fv_test", &fvTest, kInt,0,1},
       {"cal_fv_delta", &fvDelta, kDouble},
       {"dbg_decoded_cal", &fdbg_decoded_cal, kInt},
       {"dbg_sparsified_cal", &fdbg_sparsified_cal, kInt},
@@ -174,6 +174,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
       {"dbg_tracks_cal", &fdbg_tracks_cal, kInt},
       {0}
     };
+    fvTest = 0;			// Default if not defined
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
 
