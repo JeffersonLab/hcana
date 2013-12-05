@@ -256,7 +256,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
 
   delete [] fTdcWinMin;  fTdcWinMin = new Int_t [fNPlanes];
   delete [] fTdcWinMax;  fTdcWinMax = new Int_t [fNPlanes];
-  delete [] fCentralTime;  fCentralTime = new Int_t [fNPlanes];
+  delete [] fCentralTime;  fCentralTime = new Double_t [fNPlanes];
   delete [] fNWires;  fNWires = new Int_t [fNPlanes];
   delete [] fNChamber;  fNChamber = new Int_t [fNPlanes]; // Which chamber is this plane
   delete [] fWireOrder;  fWireOrder = new Int_t [fNPlanes]; // Wire readout order
@@ -284,7 +284,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
 
     {"dc_tdc_min_win", fTdcWinMin, kInt, fNPlanes},
     {"dc_tdc_max_win", fTdcWinMax, kInt, fNPlanes},
-    {"dc_central_time", fCentralTime, kInt, fNPlanes},
+    {"dc_central_time", fCentralTime, kDouble, fNPlanes},
     {"dc_nrwire", fNWires, kInt, fNPlanes},
     {"dc_chamber_planes", fNChamber, kInt, fNPlanes},
     {"dc_wire_counting", fWireOrder, kInt, fNPlanes},
