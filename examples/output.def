@@ -6,6 +6,9 @@ block H.cal.*
 block H.aero.*
 block H.cher.*
 block H.tr.*
+block S.dc.*
+block S.hod.*
+block S.cal.*
 block g.evtyp
 
 # TDC hits per paddle
