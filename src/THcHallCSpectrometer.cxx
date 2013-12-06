@@ -152,7 +152,14 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   cout << " fPcentral = " <<  fPCentral << " " <<fPCentralOffset << endl; 
   cout << " fThate_lab = " <<  fTheta_lab << " " <<fThetaCentralOffset << endl; 
   fPCentral= fPCentral*(1.+fPCentralOffset/100.);
-  fTheta_lab=fTheta_lab + fThetaCentralOffset*(180./3.14159);
+  // Check that these offsets are in radians
+  fTheta_lab=fTheta_lab + fThetaCentralOffset*TMath::RadToDeg();
+  Double_t ph = 0.0+fPhiOffset*TMath::RadToDeg();
+
+  SetCentralAngles(fTheta_lab, ph, false);
+  Double_t off_x = 0.0, off_y = 0.0, off_z = 0.0;
+  fPointingOffset.SetXYZ( off_x, off_y, off_z );
+  
   //
   ifstream ifile;
   ifile.open(reconCoeffFilename.c_str());
@@ -413,6 +420,15 @@ Int_t THcHallCSpectrometer::TrackTimes( TClonesArray* Tracks ) {
   }
 #endif  
   return 0;
+}
+
+//_____________________________________________________________________________
+Int_t THcHallCSpectrometer::ReadRunDatabase( const TDatime& date )
+{
+  // Override THaSpectrometer with nop method.  All needed kinamatics
+  // read in ReadDatabase.
+  
+  return kOK;
 }
 
 //_____________________________________________________________________________
