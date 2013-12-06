@@ -126,7 +126,7 @@ protected:
   // its plane number.  Should we have a Get method for each or 
   Int_t* fTdcWinMin;
   Int_t* fTdcWinMax;
-  Int_t* fCentralTime;
+  Double_t* fCentralTime;
   Int_t* fNWires;		// Number of wires per plane
   Int_t* fNChamber;
   Int_t* fWireOrder;

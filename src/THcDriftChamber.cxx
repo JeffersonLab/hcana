@@ -140,14 +140,16 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
   DBRequest list[]={
-    {"_remove_sppt_if_one_y_plane",&fRemove_Sppt_If_One_YPlane, kInt},
+    {"_remove_sppt_if_one_y_plane",&fRemove_Sppt_If_One_YPlane, kInt,0,1},
     {"dc_wire_velocity", &fWireVelocity, kDouble},
     {"SmallAngleApprox", &fSmallAngleApprox, kInt},
-    {"stub_max_xpdiff", &fStubMaxXPDiff, kDouble},
+    {"stub_max_xpdiff", &fStubMaxXPDiff, kDouble,0,1},
     {"debugflagpr", &fhdebugflagpr, kDouble},
     {Form("dc_%d_zpos",fChamberNum), &fZPos, kDouble},
     {0}
   };
+  fRemove_Sppt_If_One_YPlane = 0; // Default
+  fStubMaxXPDiff = 0.05;	  // The HMS default.  Not used for SOS.
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   // Get parameters parent knows about
@@ -1043,8 +1045,8 @@ void THcDriftChamber::LeftRight()
 		  plusminusknown[ihit1] = 1;
 		  plusminusknown[ihit2] = -1;
 		}
+		npaired+=2;
 	      }
-	      npaired+=2;
 	    }
 	  }
 	}

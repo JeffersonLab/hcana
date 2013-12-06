@@ -44,6 +44,13 @@
   THcCherenkov* cherenkov = new THcCherenkov("cher", "Gas Cerenkov" );
   HMS->AddDetector( cherenkov );
 
+  THaApparatus* SOS = new THcHallCSpectrometer("S","SOS");
+  gHaApps->Add( SOS );
+  // Add detectors
+  SOS->AddDetector( new THcHodoscope("hod", "Hodoscope" ));
+  SOS->AddDetector( new THcShower("cal", "Shower" ));
+  SOS->AddDetector( new THcDC("dc", "Drift Chambers" ));
+
   // Set up the analyzer - we use the standard one,
   // but this could be an experiment-specific one as well.
   // The Analyzer controls the reading of the data, executes
