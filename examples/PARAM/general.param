@@ -28,4 +28,7 @@ raddeg=3.14159265/180
 #include "PARAM/hdriftmap.param"
 #include "PARAM/hcal.param"
 #include "PARAM/hcer.param"
-
+#include "PARAM/shodo.param"
+#include "PARAM/scal.param"
+#include "PARAM/sdc.param"
+#include "PARAM/sdriftmap.param"

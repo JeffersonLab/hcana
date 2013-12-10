@@ -65,6 +65,14 @@ void THcDriftChamber::Setup(const char* name, const char* description)
   prefix[0]=tolower(app->GetName()[0]);
   prefix[1]='\0';
 
+  // For now, decide chamber style from the spectrometer name.
+  // Should override with a paramter
+  if(prefix[0]=='h') {
+    fHMSStyleChambers = 1;
+  } else {
+    fHMSStyleChambers = 0;
+  }
+
 }
 
 //_____________________________________________________________________________
@@ -132,13 +140,16 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
   DBRequest list[]={
-    {"_remove_sppt_if_one_y_plane",&fRemove_Sppt_If_One_YPlane, kInt},
+    {"_remove_sppt_if_one_y_plane",&fRemove_Sppt_If_One_YPlane, kInt,0,1},
     {"dc_wire_velocity", &fWireVelocity, kDouble},
     {"SmallAngleApprox", &fSmallAngleApprox, kInt},
-    {"stub_max_xpdiff", &fStubMaxXPDiff, kDouble},
+    {"stub_max_xpdiff", &fStubMaxXPDiff, kDouble,0,1},
     {"debugflagpr", &fhdebugflagpr, kDouble},
+    {Form("dc_%d_zpos",fChamberNum), &fZPos, kDouble},
     {0}
   };
+  fRemove_Sppt_If_One_YPlane = 0; // Default
+  fStubMaxXPDiff = 0.05;	  // The HMS default.  Not used for SOS.
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   // Get parameters parent knows about
@@ -303,16 +314,18 @@ Int_t THcDriftChamber::FindSpacePoints( void )
     // We have our space points for this chamber
         if (fhdebugflagpr) cout << fNSpacePoints << " Space Points found" << endl;
     if(fNSpacePoints > 0) {
-      if(fRemove_Sppt_If_One_YPlane == 1) {
-	// The routine is specific to HMS
-	Int_t ndest=DestroyPoorSpacePoints();
-       	if (fhdebugflagpr) cout << ndest << " Poor space points destroyed" << " # of space points = " << fNSpacePoints << endl;
-	// Loop over space points and remove those with less than 4 planes
-	// hit and missing hits in Y,Y' planes
+      if(fHMSStyleChambers) {
+	if(fRemove_Sppt_If_One_YPlane == 1) {
+	  // The routine is specific to HMS
+	  Int_t ndest=DestroyPoorSpacePoints(); // Only for HMS?
+	  if (fhdebugflagpr) cout << ndest << " Poor space points destroyed" << " # of space points = " << fNSpacePoints << endl;
+	  // Loop over space points and remove those with less than 4 planes
+	  // hit and missing hits in Y,Y' planes
+	}
+	//      if(fNSpacePoints == 0) if (fhdebugflagpr) cout << "DestroyPoorSpacePoints() killed SP" << endl;
+	Int_t nadded=SpacePointMultiWire(); // Only for HMS?
+	if (nadded) if (fhdebugflagpr) cout << nadded << " Space Points added with SpacePointMultiWire()" << endl;
       }
-      //      if(fNSpacePoints == 0) if (fhdebugflagpr) cout << "DestroyPoorSpacePoints() killed SP" << endl;
-      Int_t nadded=SpacePointMultiWire();
-      if (nadded) if (fhdebugflagpr) cout << nadded << " Space Points added with SpacePointMultiWire()" << endl;
       ChooseSingleHit();
        	if (fhdebugflagpr) cout << " After choose single hit " << " # of space points = " << fNSpacePoints << endl;
       SelectSpacePoints();
@@ -793,7 +806,7 @@ Int_t THcDriftChamber::SpacePointMultiWire()
 }
 
 //_____________________________________________________________________________
-// HMS Specific?
+// Generic
 void THcDriftChamber::ChooseSingleHit()
 {
   // Look at all hits in a space point.  If two hits are in the same plane,
@@ -955,7 +968,6 @@ UInt_t THcDriftChamber::Count1Bits(UInt_t x)
 }
 
 //_____________________________________________________________________________
-// HMS Specific
 void THcDriftChamber::LeftRight()
 {
   // For each space point,
@@ -999,20 +1011,47 @@ void THcDriftChamber::LeftRight()
       if(pindex == YPlanePInd) hasy2 = ihit;
     }
     nplusminus = 1<<nhits;
-    Int_t smallAngOK = (hasy1>=0) && (hasy2>=0);
-    if(fSmallAngleApprox !=0 && smallAngOK) { // to small Angle L/R for Y,Y' planes
-      if(sp->GetHit(hasy2)->GetPos() <=
-	 sp->GetHit(hasy1)->GetPos()) {
-	plusminusknown[hasy1] = -1;
-	plusminusknown[hasy2] = 1;
-      } else {
-	plusminusknown[hasy1] = 1;
-	plusminusknown[hasy2] = -1;
+    if(fHMSStyleChambers) {
+      Int_t smallAngOK = (hasy1>=0) && (hasy2>=0);
+      if(fSmallAngleApprox !=0 && smallAngOK) { // to small Angle L/R for Y,Y' planes
+	if(sp->GetHit(hasy2)->GetPos() <=
+	   sp->GetHit(hasy1)->GetPos()) {
+	  plusminusknown[hasy1] = -1;
+	  plusminusknown[hasy2] = 1;
+	} else {
+	  plusminusknown[hasy1] = 1;
+	  plusminusknown[hasy2] = -1;
+	}
+	nplusminus = 1<<(nhits-2);
+	if (fhdebugflagpr) cout << " Small angle approx = " << smallAngOK << " " << plusminusknown[hasy1] << endl;
+	if (fhdebugflagpr) cout << "pm =  " << plusminusknown[hasy2] << " " << hasy1 << " " << hasy2 << endl;
+	if (fhdebugflagpr) cout << " Plane index " << YPlaneInd << " " << YPlanePInd << endl;
       }
-      nplusminus = 1<<(nhits-2);
-      if (fhdebugflagpr) cout << " Small angle approx = " << smallAngOK << " " << plusminusknown[hasy1] << endl;
-      if (fhdebugflagpr) cout << "pm =  " << plusminusknown[hasy2] << " " << hasy1 << " " << hasy2 << endl;
-      if (fhdebugflagpr) cout << " Plane index " << YPlaneInd << " " << YPlanePInd << endl;
+    } else {			// SOS Style
+      if(fSmallAngleApprox !=0) {
+	// Brookhaven style chamber L/R code
+	Int_t npaired=0;
+	for(Int_t ihit1=0;ihit1 < nhits;ihit1++) {
+	  THcDCHit* hit1 = sp->GetHit(ihit1);
+	  Int_t pindex1=hit1->GetPlaneIndex();
+	  if(pindex1==0) { // Odd plane (or even index)
+	    for(Int_t ihit2=0;ihit2<nhits;ihit2++) {
+	      THcDCHit* hit2 = sp->GetHit(ihit2);
+	      if(hit2->GetPlaneIndex()-pindex1 == 1) { // Adjacent plane
+		if(hit2->GetWireNum() <= hit1->GetWireNum()) {
+		  plusminusknown[ihit1] = -1;
+		  plusminusknown[ihit2] = 1;
+		} else {
+		  plusminusknown[ihit1] = 1;
+		  plusminusknown[ihit2] = -1;
+		}
+		npaired+=2;
+	      }
+	    }
+	  }
+	}
+	nplusminus = 1 << (nhits-npaired);
+      }
     }
     if(nhits < 2) {
       if (fhdebugflagpr) cout << "THcDriftChamber::LeftRight: numhits-2 < 0" << endl;
@@ -1041,22 +1080,39 @@ void THcDriftChamber::LeftRight()
       if (nplaneshit >= fNPlanes-1) {
 	Double_t chi2 = FindStub(nhits, sp,
 				     plane_list, bitpat, plusminus, stub);
-				     
-	//if(debugging)
-	// Take best chi2 IF x' of the stub agrees with x' as expected from x.
-	// Sometimes an incorrect x' gives a good chi2 for the stub, even though it is
-	// not the correct left/right combination for the real track.
-	// Rotate x'(=stub(3)) to hut coordinates and compare to x' expected from x.
-	// THIS ASSUMES STANDARD HMS TUNE!!!!, for which x' is approx. x/875.
 	if(chi2 < minchi2) {
-	  if(stub[2]*fTanBeta[plane_list[0]]==-1.0) {
-	    if (fhdebugflagpr) cout << "THcDriftChamber::LeftRight() Error 3" << endl;
-	  }
-	  Double_t xp_fit=stub[2]-fTanBeta[plane_list[0]]
-	    /(1+stub[2]*fTanBeta[plane_list[0]]);
-	  // Tune depdendent.  Definitely HMS specific
-	  Double_t xp_expect = sp->GetX()/875.0;
-	  if(TMath::Abs(xp_fit-xp_expect)<fStubMaxXPDiff) {
+	  if(fHMSStyleChambers) { // Perhaps a different flag here
+	    // Take best chi2 IF x' of the stub agrees with x' as expected from x.
+	    // Sometimes an incorrect x' gives a good chi2 for the stub, even though it is
+	    // not the correct left/right combination for the real track.
+	    // Rotate x'(=stub(3)) to hut coordinates and compare to x' expected from x.
+	    // THIS ASSUMES STANDARD HMS TUNE!!!!, for which x' is approx. x/875.
+	    if(stub[2]*fTanBeta[plane_list[0]]==-1.0) {
+	      if (fhdebugflagpr) cout << "THcDriftChamber::LeftRight() Error 3" << endl;
+	    }
+	    Double_t xp_fit=stub[2]-fTanBeta[plane_list[0]]
+	      /(1+stub[2]*fTanBeta[plane_list[0]]);
+	    // Tune depdendent.  Definitely HMS specific
+	    Double_t xp_expect = sp->GetX()/875.0;
+	    if(TMath::Abs(xp_fit-xp_expect)<fStubMaxXPDiff) {
+	      minchi2 = chi2;
+	      for(Int_t ihit=0;ihit<nhits;ihit++) {
+		plusminusbest[ihit] = plusminus[ihit];
+	      }
+	      Double_t *spstub = sp->GetStubP();
+	      for(Int_t i=0;i<4;i++) {
+		spstub[i] = stub[i];
+	      }
+	    } else {		// Record best stub failing angle cut
+	      tmp_minchi2 = chi2;
+	      for(Int_t ihit=0;ihit<nhits;ihit++) {
+		tmp_plusminus[ihit] = plusminus[ihit];
+	      }
+	      for(Int_t i=0;i<4;i++) {
+		tmp_stub[i] = stub[i];
+	      }
+	    }
+	  } else { // Not HMS specific
 	    minchi2 = chi2;
 	    for(Int_t ihit=0;ihit<nhits;ihit++) {
 	      plusminusbest[ihit] = plusminus[ihit];
@@ -1065,17 +1121,9 @@ void THcDriftChamber::LeftRight()
 	    for(Int_t i=0;i<4;i++) {
 	      spstub[i] = stub[i];
 	    }
-	  } else {		// Record best stub failing angle cut
-	    tmp_minchi2 = chi2;
-	    for(Int_t ihit=0;ihit<nhits;ihit++) {
-	      tmp_plusminus[ihit] = plusminus[ihit];
-	    }
-	    for(Int_t i=0;i<4;i++) {
-	      tmp_stub[i] = stub[i];
-	    }
 	  }
 	}
-      } else if (nplaneshit >= fNPlanes-2) { // Two planes missing
+      } else if (nplaneshit >= fNPlanes-2 && !fHMSStyleChambers) { // Two planes missing
 	Double_t chi2 = FindStub(nhits, sp,
 				     plane_list, bitpat, plusminus, stub); 
 	//if(debugging)
@@ -1147,19 +1195,21 @@ void THcDriftChamber::LeftRight()
       }
   // Option to print stubs
 }
-    //    if(fAA3Inv.find(bitpat) != fAAInv.end()) { // Valid hit combination
 //_____________________________________________________________________________
 Double_t THcDriftChamber::FindStub(Int_t nhits, THcSpacePoint *sp,
 				       Int_t* plane_list, UInt_t bitpat,
 				       Int_t* plusminus, Double_t* stub)
 {
   // For a given combination of L/R, fit a stub to the space point
+  // This method does a linear least squares fit of a line to the
+  // hits in an individual chamber.  It assumes that the y slope is 0 
+  // The wire coordinate is calculated by
+  //          wire center + plusminus*(drift distance).
+  // Method is called in a loop over all combinations of plusminus
   Double_t zeros[] = {0.0,0.0,0.0};
-  TVectorD TT; TT.Use(3, zeros);
-  TVectorD dstub; dstub.Use(3, zeros);
+  TVectorD TT; TT.Use(3, zeros); // X, X', Y
   Double_t dpos[nhits];
 
-  // This isn't right.  dpos only goes up to 2.
   for(Int_t ihit=0;ihit<nhits; ihit++) {
     dpos[ihit] = sp->GetHit(ihit)->GetPos()
       + plusminus[ihit]*sp->GetHit(ihit)->GetDist()
@@ -1173,10 +1223,8 @@ Double_t THcDriftChamber::FindStub(Int_t nhits, THcSpacePoint *sp,
   //  if (fhdebugflagpr) cout << TT[0] << " " << TT[1] << " " << TT[2] << endl;
   //  TT->Print();
 
-  //dstub = *(fAA3Inv[bitpat]) * TT;
   TT *= *fAA3Inv[bitpat];
   // if (fhdebugflagpr) cout << TT[0] << " " << TT[1] << " " << TT[2] << endl;
- //  if (fhdebugflagpr) cout << dstub[0] << " " << dstub[1] << " " << dstub[2] << endl;
 
   // Calculate Chi2.  Remember one power of sigma is in fStubCoefs
   stub[0] = TT[0];

@@ -6,6 +6,8 @@ g_decode_map_filename="MAPS/jun04.map"
 gpbeam    = 4.015
 hpcentral = 2.074
 htheta_lab = 10.99
+spcentral = 1.73
+stheta_lab = -32.32
 hpartmass = 0.13957
 52949
 g_ctp_parm_filename="PARAM/52949/general.param"

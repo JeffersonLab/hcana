@@ -405,21 +405,22 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"hodo_neg_time_offset",&fHodoNegTimeOffset[0],kDouble,fMaxHodoScin},
     {"hodo_pos_ped_limit",&fHodoPosPedLimit[0],kInt,fMaxHodoScin},
     {"hodo_neg_ped_limit",&fHodoNegPedLimit[0],kInt,fMaxHodoScin},
-    {"tofusinginvadc",&fTofUsingInvAdc,kInt},
+    {"tofusinginvadc",&fTofUsingInvAdc,kInt,0,1},
     {0}
   };
+  fTofUsingInvAdc = 0;		// Default if not defined
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   if (fTofUsingInvAdc) {
-  DBRequest list2[]={
-    {"hodo_pos_invadc_offset",&fHodoPosInvAdcOffset[0],kDouble,fMaxHodoScin},
-    {"hodo_neg_invadc_offset",&fHodoNegInvAdcOffset[0],kDouble,fMaxHodoScin},
-    {"hodo_pos_invadc_linear",&fHodoPosInvAdcLinear[0],kDouble,fMaxHodoScin},
-    {"hodo_neg_invadc_linear",&fHodoNegInvAdcLinear[0],kDouble,fMaxHodoScin},
-    {"hodo_pos_invadc_adc",&fHodoPosInvAdcAdc[0],kDouble,fMaxHodoScin},
-    {"hodo_neg_invadc_adc",&fHodoNegInvAdcAdc[0],kDouble,fMaxHodoScin},
-    {0}
-  };
-  gHcParms->LoadParmValues((DBRequest*)&list2,prefix);
+    DBRequest list2[]={
+      {"hodo_pos_invadc_offset",&fHodoPosInvAdcOffset[0],kDouble,fMaxHodoScin},
+      {"hodo_neg_invadc_offset",&fHodoNegInvAdcOffset[0],kDouble,fMaxHodoScin},
+      {"hodo_pos_invadc_linear",&fHodoPosInvAdcLinear[0],kDouble,fMaxHodoScin},
+      {"hodo_neg_invadc_linear",&fHodoNegInvAdcLinear[0],kDouble,fMaxHodoScin},
+      {"hodo_pos_invadc_adc",&fHodoPosInvAdcAdc[0],kDouble,fMaxHodoScin},
+      {"hodo_neg_invadc_adc",&fHodoNegInvAdcAdc[0],kDouble,fMaxHodoScin},
+      {0}
+    };
+    gHcParms->LoadParmValues((DBRequest*)&list2,prefix);
   };
   if (fDebug >=1) {
     cout <<"******* Testing Hodoscope Parameter Reading ***\n";
