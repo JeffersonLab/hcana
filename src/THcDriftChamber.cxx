@@ -1034,7 +1034,7 @@ void THcDriftChamber::LeftRight()
 	for(Int_t ihit1=0;ihit1 < nhits;ihit1++) {
 	  THcDCHit* hit1 = sp->GetHit(ihit1);
 	  Int_t pindex1=hit1->GetPlaneIndex();
-	  if(pindex1==0) { // Odd plane (or even index)
+	  if((pindex1%2)==0) { // Odd plane (or even index)
 	    for(Int_t ihit2=0;ihit2<nhits;ihit2++) {
 	      THcDCHit* hit2 = sp->GetHit(ihit2);
 	      if(hit2->GetPlaneIndex()-pindex1 == 1) { // Adjacent plane
