@@ -307,6 +307,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"dc_fix_lr", &fFixLR, kInt},
     {"dc_fix_propcorr", &fFixPropagationCorrection, kInt},
     {"debuglinkstubs", &fdebuglinkstubs, kInt},
+    {"debugprintrawdc", &fdebugprintrawdc, kInt},
     {"debugprintdecodeddc", &fdebugprintdecodeddc, kInt},
     {"debugtrackprint", &fdebugtrackprint , kInt},
     {0}
@@ -425,7 +426,7 @@ Int_t THcDC::Decode( const THaEvData& evdata )
 
   ClearEvent();
   Int_t num_event = evdata.GetEvNum();
-  if (fdebugprintdecodeddc || fdebuglinkstubs || fdebugtrackprint) cout << " event num = " << num_event << endl;
+  if (fdebugprintrawdc ||fdebugprintdecodeddc || fdebuglinkstubs || fdebugtrackprint) cout << " event num = " << num_event << endl;
   // Get the Hall C style hitlist (fRawHitList) for this event
   fNhits = THcHitList::DecodeToHitList(evdata);
 
@@ -440,12 +441,13 @@ Int_t THcDC::Decode( const THaEvData& evdata )
     fChambers[ic]->ProcessHits();
   }
   // fRawHitList is TClones array of THcRawDCHit objects
-  if (fdebugprintdecodeddc) {
+  if (fdebugprintrawdc) {
+    cout << " RAW_TOT_HITS = " <<  fNRawHits << endl;
     cout << " Hit #  " << "Plane  " << " Wire " <<  " Raw TDC " << endl; 
     for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
     THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
       for(Int_t imhit = 0; imhit < hit->fNHits; imhit++) {
-    cout << ihit+imhit+1 << "  " << hit->fPlane << "  " << hit->fCounter << "  " << hit->fTDC[imhit]	   << endl;
+    cout << ihit+imhit+1 << "      " << hit->fPlane << "     " << hit->fCounter << "     " << hit->fTDC[imhit]	   << endl;
       }
   }
     cout << endl;
@@ -471,12 +473,17 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
   // Apply corrections and reconstruct the complete hits.
   //
   //  static const Double_t sqrt2 = TMath::Sqrt(2.);
-
+  if (fdebugprintdecodeddc) {
+   for(Int_t i=0;i<fNChambers;i++) {
+    fChambers[i]->PrintDecode();
+   }
+  }
   for(Int_t i=0;i<fNChambers;i++) {
     fChambers[i]->FindSpacePoints();
     fChambers[i]->CorrectHitTimes();
     fChambers[i]->LeftRight();
   }
+  if (fdebugprintdecodeddc) PrintSpacePoints();
   // Now link the stubs between chambers
   LinkStubs();
   if(fNDCTracks > 0) {
@@ -535,6 +542,25 @@ Int_t THcDC::FineTrack( TClonesArray& tracks )
 
   return 0;
 }
+//
+void THcDC::PrintSpacePoints()
+{
+  for(Int_t ich=0;ich<fNChambers;ich++) {
+      cout << " chamber = " <<  fChambers[ich]->GetChamberNum() << " number of hits = "  << fChambers[ich]->GetNHits() << " number of spacepoints = "  << fChambers[ich]->GetNSpacePoints() << endl;
+    TClonesArray* spacepointarray = fChambers[ich]->GetSpacePointsP();
+    for(Int_t isp=0;isp<fChambers[ich]->GetNSpacePoints();isp++) {
+	THcSpacePoint* sp = (THcSpacePoint*)(spacepointarray->At(isp));
+	cout << isp+1 <<  " " << sp->GetX() <<  " " <<  sp->GetY()  <<  " " << sp->GetNHits()<<  " " << sp->GetCombos() << " " ;
+	for (Int_t ii=0;ii<sp->GetNHits();ii++) {
+	  THcDCHit* hittemp = (THcDCHit*)(sp->GetHit(ii));
+	  cout << hittemp->GetWireNum() << " "  ;
+        }
+        cout << endl;
+    }
+  }
+
+}
+//
 //_____________________________________________________________________________
 void THcDC::LinkStubs()
 {
