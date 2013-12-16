@@ -76,8 +76,9 @@ public:
   THcDC();  // for ROOT I/O
 protected:
   Int_t fdebuglinkstubs;
-  Int_t fdebugprintdecodeddc;
+  Int_t fdebugprintrawdc;
   Int_t fdebugtrackprint;
+  Int_t fdebugprintdecodeddc;
   Int_t fHMSStyleChambers;
 
   Int_t fNDCTracks;
@@ -170,6 +171,7 @@ protected:
   void           Eff();
 
   void Setup(const char* name, const char* description);
+  void PrintSpacePoints();
 
   ClassDef(THcDC,0)   // Drift Chamber class
 };
