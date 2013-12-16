@@ -86,7 +86,6 @@ THcDriftChamber::THcDriftChamber( ) :
 //_____________________________________________________________________________
 Int_t THcDriftChamber::Decode( const THaEvData& evdata )
 {
-  if (fhdebugflagpr) cout << "THcDriftChamber::Decode called" << endl;
   return 0;
 }
 
@@ -107,25 +106,36 @@ THaAnalysisObject::EStatus THcDriftChamber::Init( const TDatime& date )
 
 void THcDriftChamber::AddPlane(THcDriftChamberPlane *plane)
 {
-  if (fhdebugflagpr) cout << "Added plane " << plane->GetPlaneNum() << " to chamber " << fChamberNum << " " << fNPlanes << " " << YPlaneInd << " " << YPlanePInd << endl;
   plane->SetPlaneIndex(fNPlanes);
   fPlanes.push_back(plane);
  // HMS Specific
-  // Hard code Y plane numbers.  Should be able to get from wire angle
-  if(fChamberNum == 1) {
-    YPlaneNum = 2;
-    YPlanePNum = 5;
+  // Hard code Y plane numbers.  Eventually need to get from database
+  if (fHMSStyleChambers) {
+   if(fChamberNum == 1) {
+     YPlaneNum=2;
+     YPlanePNum=5;
+    if(plane->GetPlaneNum() == 2) YPlaneInd = fNPlanes;
+    if(plane->GetPlaneNum() == 5) YPlanePInd = fNPlanes;
+   } else {
+     YPlaneNum=8;
+     YPlanePNum=11;
+    if(plane->GetPlaneNum() == 8) YPlaneInd = fNPlanes;
+    if(plane->GetPlaneNum() == 11) YPlanePInd = fNPlanes;
+   }
   } else {
-    YPlaneNum = 8;
-    YPlanePNum = 11;
-  }
-
-  // HMS Specific
-  // Check if this is a Y Plane
-  if(plane->GetPlaneNum() == YPlaneNum) {
-    YPlaneInd = fNPlanes;
-  } else if (plane->GetPlaneNum() == YPlanePNum) {
-    YPlanePInd = fNPlanes;
+ // SOS Specific
+  // Hard code X plane numbers.   Eventually need to get from database
+   if(fChamberNum == 1) {
+     XPlaneNum=3;
+     XPlanePNum=4;
+    if(plane->GetPlaneNum() == 3) XPlaneInd = fNPlanes;
+    if(plane->GetPlaneNum() == 4) XPlanePInd = fNPlanes;
+   } else {
+     XPlaneNum=9;
+     XPlanePNum=10;
+    if(plane->GetPlaneNum() == 9) XPlaneInd = fNPlanes;
+    if(plane->GetPlaneNum() == 10) XPlanePInd = fNPlanes;
+   }
   }
   fNPlanes++;
   return;
@@ -144,7 +154,8 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
     {"dc_wire_velocity", &fWireVelocity, kDouble},
     {"SmallAngleApprox", &fSmallAngleApprox, kInt},
     {"stub_max_xpdiff", &fStubMaxXPDiff, kDouble,0,1},
-    {"debugflagpr", &fhdebugflagpr, kDouble},
+    {"debugflagpr", &fhdebugflagpr, kInt},
+    {"debugstubchisq", &fdebugstubchisq, kInt},
     {Form("dc_%d_zpos",fChamberNum), &fZPos, kDouble},
     {0}
   };
@@ -160,7 +171,6 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   fMinCombos = fParent->GetMinCombos(fChamberNum);
   fFixPropagationCorrection = fParent->GetFixPropagationCorrectionFlag();
 
-  if (fhdebugflagpr) cout << "Chamber " << fChamberNum << "  Min/Max: " << fMinHits << "/" << fMaxHits << endl;
   fSpacePointCriterion = fParent->GetSpacePointCriterion(fChamberNum);
    
   fSpacePointCriterion2 = fSpacePointCriterion*fSpacePointCriterion;
@@ -218,7 +228,6 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
 #if 0  
   for(map<int,TMatrixD*>::iterator pm=fHaa3map.begin();
       pm != fHaa3map.end(); pm++) {
-    if (fhdebugflagpr) cout << setbase(8) << pm->first << endl;
     fAA3Inv[pm->first]->Print();
   }
 #endif
@@ -262,74 +271,70 @@ void THcDriftChamber::ProcessHits( void)
 }
 
 
+void THcDriftChamber::PrintDecode( void )
+{
+  cout << " Num of nits = " << fNhits << endl;
+  cout << " Num " << " Plane "  << " Wire " <<  "  Wire-Center  " << " RAW TDC " << " Drift time" << endl;
+    for(Int_t ihit=0;ihit<fNhits;ihit++) {
+    THcDCHit* thishit = fHits[ihit];
+    cout << ihit << "       " <<thishit->GetPlaneNum()  << "     " << thishit->GetWireNum() << "     " <<  thishit->GetPos() << "    " << thishit->GetRawTime() << "    " << thishit->GetTime() << endl;
+    }
+}
+
+
 Int_t THcDriftChamber::FindSpacePoints( void )
 {
-  // Following h_pattern_recognition.f, but just for one chamber
-
-  // Code below is specifically for HMS chambers with Y and Y' planes
 
   fSpacePoints->Clear();
 
-  Int_t yplane_hitind=0;
-  Int_t yplanep_hitind=0;
+  Int_t plane_hitind=0;
+  Int_t planep_hitind=0;
+
 
   fNSpacePoints=0;
   fEasySpacePoint = 0;
-  if (fhdebugflagpr) cout << " starting  build up array of hits" << endl;
-  // Should really build up array of hits
   if(fNhits >= fMinHits && fNhits < fMaxHits) {
-    /* Has this list of hits already been cut the way it should have at this point? */
     for(Int_t ihit=0;ihit<fNhits;ihit++) {
       THcDCHit* thishit = fHits[ihit];
       Int_t ip=thishit->GetPlaneNum();  // This is the absolute plane mumber
-      if(ip==YPlaneNum) yplane_hitind = ihit;
-      if(ip==YPlanePNum) yplanep_hitind = ihit;
-      if (fhdebugflagpr) cout << " hit  = " << ihit << " " << ip <<" " << thishit->GetWireNum() << " " << thishit->GetRawTime()<<" " << thishit->GetPos()<< " " << endl;
+      if(ip==YPlaneNum  && fHMSStyleChambers) plane_hitind = ihit;
+      if(ip==YPlanePNum && fHMSStyleChambers) planep_hitind = ihit;
+      if(ip==XPlaneNum  && !fHMSStyleChambers) plane_hitind = ihit;
+      if(ip==XPlanePNum && !fHMSStyleChambers) planep_hitind = ihit;
     }
-    // fPlanes is the array of planes for this chamber.
-    //    if (fhdebugflagpr) cout << fPlanes[YPlaneInd]->GetNHits() << " "
-    //	 << fPlanes[YPlanePInd]->GetNHits() << " " << endl;
-    //    if (fhdebugflagpr) cout << " Yplane ind " << YPlaneInd << " " << YPlanePInd << endl;
-    if (fPlanes[YPlaneInd]->GetNHits() == 1 && fPlanes[YPlanePInd]->GetNHits() == 1) {
-      //      if (fhdebugflagpr) cout <<" Yplane info :" << fHits[yplane_hitind]->GetWireNum() << " "
-      //	   << fHits[yplane_hitind]->GetPos() << " "
-      //	   << fHits[yplanep_hitind]->GetWireNum() << " "
-      //	   << fHits[yplanep_hitind]->GetPos() << " " 
-      //	   << fSpacePointCriterion << endl;
+    Int_t PlaneInd=0,PlanePInd=0;
+    if (fHMSStyleChambers) {
+      PlaneInd=YPlaneInd;
+      PlanePInd=YPlanePInd;
+    } else {
+      PlaneInd=XPlaneInd;
+      PlanePInd=XPlanePInd;
     }
-    if(fPlanes[YPlaneInd]->GetNHits() == 1 && fPlanes[YPlanePInd]->GetNHits() == 1
-       && TMath::Abs(fHits[yplane_hitind]->GetPos() - fHits[yplanep_hitind]->GetPos())
+    if(fPlanes[PlaneInd]->GetNHits() == 1 && fPlanes[PlanePInd]->GetNHits() == 1
+       && TMath::Abs(fHits[plane_hitind]->GetPos() - fHits[planep_hitind]->GetPos())
        < fSpacePointCriterion
        && fNhits <= 6) {	// An easy case, probably one hit per plane
-      fEasySpacePoint = FindEasySpacePoint(yplane_hitind, yplanep_hitind);
-      if (fhdebugflagpr) cout << " call FindEasySpacePoint" << " # of space points = " << fNSpacePoints << endl;
+      if(fHMSStyleChambers) fEasySpacePoint = FindEasySpacePoint_HMS(plane_hitind, planep_hitind);
+      if(!fHMSStyleChambers) fEasySpacePoint = FindEasySpacePoint_SOS(plane_hitind, planep_hitind);
     }
     if(!fEasySpacePoint) {	// It's not easy
-            if (fhdebugflagpr) cout << " call FindHardSpacePoints" << endl;
-            if (fhdebugflagpr) cout << " nhits = " << fNhits << " " << fPlanes[YPlaneInd]->GetNHits() << " " << fPlanes[YPlanePInd]->GetNHits() << endl;
       FindHardSpacePoints();
-      if (fhdebugflagpr) cout << " call FindHardSpacePoint" << " # of space points = " << fNSpacePoints << endl;
     }
 
     // We have our space points for this chamber
-        if (fhdebugflagpr) cout << fNSpacePoints << " Space Points found" << endl;
     if(fNSpacePoints > 0) {
       if(fHMSStyleChambers) {
 	if(fRemove_Sppt_If_One_YPlane == 1) {
 	  // The routine is specific to HMS
 	  Int_t ndest=DestroyPoorSpacePoints(); // Only for HMS?
-	  if (fhdebugflagpr) cout << ndest << " Poor space points destroyed" << " # of space points = " << fNSpacePoints << endl;
 	  // Loop over space points and remove those with less than 4 planes
 	  // hit and missing hits in Y,Y' planes
 	}
-	//      if(fNSpacePoints == 0) if (fhdebugflagpr) cout << "DestroyPoorSpacePoints() killed SP" << endl;
 	Int_t nadded=SpacePointMultiWire(); // Only for HMS?
 	if (nadded) if (fhdebugflagpr) cout << nadded << " Space Points added with SpacePointMultiWire()" << endl;
       }
       ChooseSingleHit();
-       	if (fhdebugflagpr) cout << " After choose single hit " << " # of space points = " << fNSpacePoints << endl;
       SelectSpacePoints();
-       	if (fhdebugflagpr) cout << " After select space point " << " # of space points = " << fNSpacePoints << endl;
       //      if(fNSpacePoints == 0) if (fhdebugflagpr) cout << "SelectSpacePoints() killed SP" << endl;
     }
     //    if (fhdebugflagpr) cout << fNSpacePoints << " Space Points remain" << endl;
@@ -354,14 +359,13 @@ Int_t THcDriftChamber::FindSpacePoints( void )
 
 //_____________________________________________________________________________
 // HMS Specific
-Int_t THcDriftChamber::FindEasySpacePoint(Int_t yplane_hitind,Int_t yplanep_hitind)
+Int_t THcDriftChamber::FindEasySpacePoint_HMS(Int_t yplane_hitind,Int_t yplanep_hitind)
 {
   // Simplified HMS find_space_point routing.  It is given all y hits and
   // checks to see if all x-like hits are close enough together to make
   // a space point.
 
   Int_t easy_space_point=0;
-  //  if (fhdebugflagpr) cout << "Doing Find Easy Space Point" << endl;
   Double_t yt = (fHits[yplane_hitind]->GetPos() + fHits[yplanep_hitind]->GetPos())/2.0;
   Double_t xt = 0.0;
   Int_t num_xhits = 0;
@@ -371,7 +375,6 @@ Int_t THcDriftChamber::FindEasySpacePoint(Int_t yplane_hitind,Int_t yplanep_hiti
     THcDCHit* thishit = fHits[ihit];
     if(ihit!=yplane_hitind && ihit!=yplanep_hitind) { // x-like hit
       // ysp and xsp are from h_generate_geometry
-           if (fhdebugflagpr) cout << ihit << " " << thishit->GetPos() << " " << yt << " " << thishit->GetWirePlane()->GetYsp() << " " << thishit->GetWirePlane()->GetXsp() << endl;
       x_pos[ihit] = (thishit->GetPos()
 		     -yt*thishit->GetWirePlane()->GetYsp())
 	/thishit->GetWirePlane()->GetXsp();
@@ -383,21 +386,67 @@ Int_t THcDriftChamber::FindEasySpacePoint(Int_t yplane_hitind,Int_t yplanep_hiti
   }
   Double_t max_dist = TMath::Sqrt(fSpacePointCriterion/2.);
   xt = (num_xhits>0?xt/num_xhits:0.0);
-    if (fhdebugflagpr) cout << " mean x = "<< xt << " max dist = " << max_dist << endl;
   easy_space_point = 1; // Assume we have an easy space point
   // Rule it out if x points don't cluster well enough
   for(Int_t ihit=0;ihit<fNhits;ihit++) {
-        if (fhdebugflagpr) cout << "Hit " << ihit+1 << " " << x_pos[ihit] << " " << TMath::Abs(xt-x_pos[ihit]) << endl;
-    if(ihit!=yplane_hitind && ihit!=yplanep_hitind) { // x-like hit
+    cout << " easy sp check xt = " << xt-x_pos[ihit] << " " << max_dist << endl;
+    if(ihit!=yplane_hitind && ihit!=yplanep_hitind) { // select x-like hit
       if(TMath::Abs(xt-x_pos[ihit]) >= max_dist)
 	{ easy_space_point=0; break;}
     }
   }
   if(easy_space_point) {	// Register the space point
     THcSpacePoint* sp = (THcSpacePoint*)fSpacePoints->ConstructedAt(fNSpacePoints++);
-    if (fhdebugflagpr) cout << "Easy Space Point " << xt << " " << yt << " Space point # ="  << fNSpacePoints << endl;
     sp->Clear();
     sp->SetXY(xt, yt);
+    sp->SetCombos(0);
+    for(Int_t ihit=0;ihit<fNhits;ihit++) {
+      sp->AddHit(fHits[ihit]);
+    }
+  }
+  return(easy_space_point);
+}
+// SOS Specific
+Int_t THcDriftChamber::FindEasySpacePoint_SOS(Int_t xplane_hitind,Int_t xplanep_hitind)
+{
+  // Simplified SOS find_space_point routing.  It is given all x hits and
+  // checks to see if all y-like hits are close enough together to make
+  // a space point.
+
+  Int_t easy_space_point=0;
+  Double_t xt = (fHits[xplane_hitind]->GetPos() + fHits[xplanep_hitind]->GetPos())/2.0;
+  Double_t yt = 0.0;
+  Int_t num_yhits = 0;
+  Double_t y_pos[MAX_HITS_PER_POINT];
+
+  for(Int_t ihit=0;ihit<fNhits;ihit++) {
+    THcDCHit* thishit = fHits[ihit];
+    if(ihit!=xplane_hitind && ihit!=xplanep_hitind) { // y-like hit
+      // ysp and xsp are from h_generate_geometry
+      y_pos[ihit] = (thishit->GetPos()
+		     -xt*thishit->GetWirePlane()->GetXsp())
+	/thishit->GetWirePlane()->GetYsp();
+      yt += y_pos[ihit];
+      num_yhits++;
+    } else {
+      y_pos[ihit] = 0.0;
+    }
+  }
+  Double_t max_dist = TMath::Sqrt(fSpacePointCriterion/2.);
+  yt = (num_yhits>0?yt/num_yhits:0.0);
+  easy_space_point = 1; // Assume we have an easy space point
+  // Rule it out if x points don't cluster well enough
+  for(Int_t ihit=0;ihit<fNhits;ihit++) {
+    if(ihit!=xplane_hitind && ihit!=xplanep_hitind) { // select y-like hit
+      if(TMath::Abs(yt-y_pos[ihit]) >= max_dist)
+	{ easy_space_point=0; break;}
+    }
+  }
+  if(easy_space_point) {	// Register the space point
+    THcSpacePoint* sp = (THcSpacePoint*)fSpacePoints->ConstructedAt(fNSpacePoints++);
+    sp->Clear();
+    sp->SetXY(xt, yt);
+    sp->SetCombos(0);
     for(Int_t ihit=0;ihit<fNhits;ihit++) {
       sp->AddHit(fHits[ihit]);
     }
@@ -461,7 +510,7 @@ Int_t THcDriftChamber::FindHardSpacePoints()
     }
   }
   // Loop over all valid combinations and build space points
-  if (fhdebugflagpr) cout << "looking for hard Space Point combos = " << ncombos << "# of sp pts = " << fNSpacePoints<< endl;
+  //if (fhdebugflagpr) cout << "looking for hard Space Point combos = " << ncombos << endl;
   for(Int_t icombo=0;icombo<ncombos;icombo++) {
     THcDCHit* hits[4];
     hits[0]=combos[icombo].pair1->hit1;
@@ -514,7 +563,7 @@ Int_t THcDriftChamber::FindHardSpacePoints()
 	      }
 	    }
 	    sp->IncCombos();
-            //cout << " number of combos = " << sp->GetCombos() << endl;
+	    //            cout << " number of combos = " << sp->GetCombos() << endl;
 	    // Terminate loop since this combo can only belong to one space point
 	    break;
 	  }
@@ -523,7 +572,7 @@ Int_t THcDriftChamber::FindHardSpacePoints()
       // Create a new space point if more than 2*space_point_criteria
       if(fNSpacePoints < MAX_SPACE_POINTS) {
 	if(add_flag) {
-          if (fhdebugflagpr) cout << " add glag = " << add_flag << " space pts =  " << fNSpacePoints << endl ;
+          //if (fhdebugflagpr) cout << " add glag = " << add_flag << " space pts =  " << fNSpacePoints << endl ;
 	  THcSpacePoint* sp = (THcSpacePoint*)fSpacePoints->ConstructedAt(fNSpacePoints++);
 	  sp->Clear();
 	  sp->SetXY(xt, yt);
@@ -553,10 +602,10 @@ Int_t THcDriftChamber::FindHardSpacePoints()
       if(hits[0] != hits[3] && hits[1] != hits[3]) {
 	sp->AddHit(hits[3]);
       }
-       if (fhdebugflagpr) cout << "1st hard Space Point " << xt << " " << yt << " Space point # ="  << fNSpacePoints << endl;
+      //if (fhdebugflagpr) cout << "1st hard Space Point " << xt << " " << yt << " Space point # ="  << fNSpacePoints << " combos = " << sp->GetCombos() << endl;
     }//End check on 0 space points
   }//End loop over combos
-  if (fhdebugflagpr) cout << " finished findspacept # of sp pts = " << fNSpacePoints << endl;
+  //if (fhdebugflagpr) cout << " finished findspacept # of sp pts = " << fNSpacePoints << endl;
   return(fNSpacePoints);
 }
 
@@ -646,14 +695,14 @@ Int_t THcDriftChamber::SpacePointMultiWire()
 
   Int_t nsp_tot=fNSpacePoints;
   Int_t nsp_totl=fNSpacePoints;
-  if (fhdebugflagpr) cout << "Start  Multiwire # of sp pts = " << nsp_totl << endl; 
+  //if (fhdebugflagpr) cout << "Start  Multiwire # of sp pts = " << nsp_totl << endl; 
 
   for(Int_t isp=0;isp<nsp_totl;isp++) {
     Int_t nplanes_hit = 0;	// Number of planes with hits
     Int_t nplanes_mult = 0;	// Number of planes with multiple hits
     Int_t nsp_new = 1;
     Int_t newsp_num=0;
-    if (fhdebugflagpr) cout << "Looping thru space pts at # = " << isp << " total = " << fNSpacePoints << endl; 
+    //if (fhdebugflagpr) cout << "Looping thru space pts at # = " << isp << " total = " << fNSpacePoints << endl; 
 
     for(Int_t ip=0;ip<fNPlanes;ip++) {
       nhitsperplane[ip] = 0;
@@ -682,12 +731,12 @@ Int_t THcDriftChamber::SpacePointMultiWire()
     --nsp_new;
     nsp_check=nsp_tot + nsp_new;
     nplanes_single = nplanes_hit - nplanes_mult;
-    if (fhdebugflagpr) cout << " # of new space points = " << nsp_new << " total now = " << nsp_tot<< endl;
+    //if (fhdebugflagpr) cout << " # of new space points = " << nsp_new << " total now = " << nsp_tot<< endl;
     // Check if cloning conditions are met
     Int_t ntot = 0;
     if(nplanes_hit >= 4 && nplanes_mult < 4 && nplanes_mult >0
        && nsp_check < 20) {
-      if (fhdebugflagpr) cout << " Cloning space point " << endl;      
+      //if (fhdebugflagpr) cout << " Cloning space point " << endl;      
       // Order planes by decreasing # of hits
       
       Int_t maxplane[fNPlanes];
@@ -704,23 +753,23 @@ Int_t THcDriftChamber::SpacePointMultiWire()
 	  }
 	}
       }
-      if (fhdebugflagpr) cout << " Max plane  and hits " << maxplane[0] << " " << nhitsperplane[maxplane[0]]<< " " << maxplane[1] << " " << nhitsperplane[maxplane[1]]<< " "<< maxplane[2] << " " << nhitsperplane[maxplane[2]]<< endl;      
+      //if (fhdebugflagpr) cout << " Max plane  and hits " << maxplane[0] << " " << nhitsperplane[maxplane[0]]<< " " << maxplane[1] << " " << nhitsperplane[maxplane[1]]<< " "<< maxplane[2] << " " << nhitsperplane[maxplane[2]]<< endl;      
       // First fill clones with 1 hit each from the 3 planes with the most hits
       for(Int_t n1=0;n1<nhitsperplane[maxplane[0]];n1++) {
 	for(Int_t n2=0;n2<nhitsperplane[maxplane[1]];n2++) {
 	  for(Int_t n3=0;n3<nhitsperplane[maxplane[2]];n3++) {
 	    ntot++;
 	    newsp_num = fNSpacePoints; // 
-	    if (fhdebugflagpr) cout << " new space pt num = " << newsp_num  << " " << fNSpacePoints <<  endl;
+	    //if (fhdebugflagpr) cout << " new space pt num = " << newsp_num  << " " << fNSpacePoints <<  endl;
 	    //THcSpacePoint* newsp;
 	    if(n1==0 && n2==0 && n3==0) {
 	      newsp_num = isp; // Copy over the original SP
 	      THcSpacePoint* newsp = (THcSpacePoint*)fSpacePoints->ConstructedAt(newsp_num);//= (THcSpacePoint*)(*fSpacePoints)[newsp_num];
-              if (fhdebugflagpr) cout << " Copy over original SP " << endl;
+              //if (fhdebugflagpr) cout << " Copy over original SP " << endl;
 	      // newsp = sp;
 	      Int_t combos_save=sp->GetCombos();
 	      newsp->Clear();	// Clear doesn't clear X, Y
-	      if (fhdebugflagpr) cout << " original sp #hits combos X y " << sp->GetCombos() << sp->GetNHits() << sp->GetX() << " " <<  sp->GetY() << endl;
+	      // if (fhdebugflagpr) cout << " original sp #hits combos X y " << sp->GetCombos() << sp->GetNHits() << sp->GetX() << " " <<  sp->GetY() << endl;
               newsp->SetXY(sp->GetX(), sp->GetY());
 	    newsp->SetCombos(combos_save);
 	    newsp->AddHit(hits_plane[maxplane[0]][n1]);
@@ -732,16 +781,8 @@ Int_t THcDriftChamber::SpacePointMultiWire()
 	      if(nhitsperplane[maxplane[5]] == 1) 
 		newsp->AddHit(hits_plane[maxplane[5]][0]);
 	    }
-	      if (fhdebugflagpr)  {
-		THcSpacePoint* spt = (THcSpacePoint*)fSpacePoints->ConstructedAt(newsp_num);//(THcSpacePoint*)(*fSpacePoints)[isp];
-	      cout << " new space pt num = " <<newsp_num  << " " << spt->GetNHits() << endl;
-                for(Int_t ihit=0;ihit<spt->GetNHits();ihit++) {
-                    THcDCHit* hit = spt->GetHit(ihit);
-		    cout << " hit = " << ihit+1 << " "  <<  hit->GetDist() << endl;
-                }
-	      } // fhdebugflagpr 
 	    } else {
-              if (fhdebugflagpr) cout << " setting other sp " << "# space pts now = " << fNSpacePoints << endl;
+	      // if (fhdebugflagpr) cout << " setting other sp " << "# space pts now = " << fNSpacePoints << endl;
 	      THcSpacePoint* newsp = (THcSpacePoint*)fSpacePoints->ConstructedAt(newsp_num);
               fNSpacePoints++; 
 	      Int_t combos_save=sp->GetCombos();
@@ -757,15 +798,7 @@ Int_t THcDriftChamber::SpacePointMultiWire()
 	      if(nhitsperplane[maxplane[5]] == 1) 
 		newsp->AddHit(hits_plane[maxplane[5]][0]);
 	    }
-	      if (fhdebugflagpr)  {
-              THcSpacePoint* spt = (THcSpacePoint*)fSpacePoints->ConstructedAt(newsp_num);
-	      cout << " new space pt num = " << fNSpacePoints << " " << spt->GetNHits() << endl;
-                for(Int_t ihit=0;ihit<spt->GetNHits();ihit++) {
-                    THcDCHit* hit = spt->GetHit(ihit);
-		    cout << " hit = " << ihit+1 << " "  <<  hit->GetDist() << endl;
-                }
-	      } // fhdebugflagpr 
-            }
+           }
 	  }
 	}
       }
@@ -799,7 +832,7 @@ Int_t THcDriftChamber::SpacePointMultiWire()
     nadded = nsp_tot - fNSpacePoints;
     // fNSpacePoints = nsp_tot;
   }
-  if (fhdebugflagpr) cout << " Added space pts " << nadded << " total space pts = " << fNSpacePoints << endl;      
+  //if (fhdebugflagpr) cout << " Added space pts " << nadded << " total space pts = " << fNSpacePoints << endl;      
  
   // In Fortran, fill in zeros.
   return(nadded);
@@ -835,7 +868,7 @@ void THcDriftChamber::ChooseSingleHit()
 	  } else {
 	    goodhit[ihit2] = 0;
 	  }
-	  if (fhdebugflagpr) cout << " Rejecting hit " << ihit1 << " " << tdrift1 << " " << ihit2 << " " << tdrift2 << endl; 
+	  // if (fhdebugflagpr) cout << " Rejecting hit " << ihit1 << " " << tdrift1 << " " << ihit2 << " " << tdrift2 << endl; 
 	}
       }
     }
@@ -843,7 +876,7 @@ void THcDriftChamber::ChooseSingleHit()
     Int_t finalnum = 0;
     for(Int_t ihit=0;ihit<startnum;ihit++) {
 	THcDCHit* hit = sp->GetHit(ihit);
-	if (fhdebugflagpr) cout << " good hit = "<< ihit << " " << goodhit[ihit] << " time = " << hit->GetTime() << endl;
+	//	if (fhdebugflagpr) cout << " good hit = "<< ihit << " " << goodhit[ihit] << " time = " << hit->GetTime() << endl;
       if(goodhit[ihit] > 0) {	// Keep this hit
 	if (ihit > finalnum) {	// Move hit 
 	  sp->ReplaceHit(finalnum++, sp->GetHit(ihit));
@@ -853,7 +886,7 @@ void THcDriftChamber::ChooseSingleHit()
       }
     }
     sp->SetNHits(finalnum);
-    if (fhdebugflagpr) cout << " choose single hit start # of hits = " <<  startnum << " final # = " <<finalnum << endl; 
+    // if (fhdebugflagpr) cout << " choose single hit start # of hits = " <<  startnum << " final # = " <<finalnum << endl; 
   }
 }
 //_____________________________________________________________________________
@@ -868,13 +901,13 @@ void THcDriftChamber::SelectSpacePoints()
   for(Int_t isp=0;isp<fNSpacePoints;isp++) {
     // Include fEasySpacePoint because ncombos not filled in
     THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
-    if (fhdebugflagpr) cout << " looping sp points " << sp->GetCombos() << " " << fMinCombos << " " << fEasySpacePoint << " " << sp->GetNHits() << " " <<  fMinHits << endl;
+    // if (fhdebugflagpr) cout << " looping sp points " << sp->GetCombos() << " " << fMinCombos << " " << fEasySpacePoint << " " << sp->GetNHits() << " " <<  fMinHits << endl;
     if(sp->GetCombos() >= fMinCombos || fEasySpacePoint) {
       if(sp->GetNHits() >= fMinHits) {
-        if (fhdebugflagpr) cout << " select space pt = " << isp << endl;
 	if(isp > sp_count) {
 	  //	  (*fSpacePoints)[sp_count] = (*fSpacePoints)[isp];
         THcSpacePoint* sp1 = (THcSpacePoint*)(*fSpacePoints)[sp_count];
+        //if (fhdebugflagpr) cout << " select space pt = " << isp << endl;
         sp1->Clear();
         Double_t xt,yt;
         xt=sp->GetX();
@@ -890,15 +923,15 @@ void THcDriftChamber::SelectSpacePoints()
       }
     }
   }
-  if(sp_count < fNSpacePoints)    if (fhdebugflagpr) cout << "Reduced from " << fNSpacePoints << " to " << sp_count << " space points" << endl;
+  // if(sp_count < fNSpacePoints)    if (fhdebugflagpr) cout << "Reduced from " << fNSpacePoints << " to " << sp_count << " space points" << endl;
   fNSpacePoints = sp_count;
   for(Int_t isp=0;isp<fNSpacePoints;isp++) {
     THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
-    if (fhdebugflagpr) cout << " sp pt = " << isp+1 << " # of hits = " << sp->GetNHits() << endl;
+    //if (fhdebugflagpr) cout << " sp pt = " << isp+1 << " # of hits = " << sp->GetNHits() << endl;
     for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
       THcDCHit* hit = sp->GetHit(ihit);
       THcDriftChamberPlane* plane=hit->GetWirePlane();
-        if (fhdebugflagpr) cout << ihit+1 << "selecting " << plane->GetPlaneNum() << " " << plane->GetChamberNum() << " " << hit->GetTime() << " " << hit->GetDist() << " " << plane->GetCentralTime() << " " << plane->GetDriftTimeSign() << endl;
+      //        if (fhdebugflagpr) cout << ihit+1 << "selecting " << plane->GetPlaneNum() << " " << plane->GetChamberNum() << " " << hit->GetTime() << " " << hit->GetDist() << " " << plane->GetCentralTime() << " " << plane->GetDriftTimeSign() << endl;
     }
   }
 }
@@ -1023,9 +1056,9 @@ void THcDriftChamber::LeftRight()
 	  plusminusknown[hasy2] = -1;
 	}
 	nplusminus = 1<<(nhits-2);
-	if (fhdebugflagpr) cout << " Small angle approx = " << smallAngOK << " " << plusminusknown[hasy1] << endl;
-	if (fhdebugflagpr) cout << "pm =  " << plusminusknown[hasy2] << " " << hasy1 << " " << hasy2 << endl;
-	if (fhdebugflagpr) cout << " Plane index " << YPlaneInd << " " << YPlanePInd << endl;
+	//	if (fhdebugflagpr) cout << " Small angle approx = " << smallAngOK << " " << plusminusknown[hasy1] << endl;
+	//if (fhdebugflagpr) cout << "pm =  " << plusminusknown[hasy2] << " " << hasy1 << " " << hasy2 << endl;
+	//if (fhdebugflagpr) cout << " Plane index " << YPlaneInd << " " << YPlanePInd << endl;
       }
     } else {			// SOS Style
       if(fSmallAngleApprox !=0) {
@@ -1054,12 +1087,12 @@ void THcDriftChamber::LeftRight()
       }
     }
     if(nhits < 2) {
-      if (fhdebugflagpr) cout << "THcDriftChamber::LeftRight: numhits-2 < 0" << endl;
+      if (fdebugstubchisq) cout << "THcDriftChamber::LeftRight: numhits-2 < 0" << endl;
     } else if (nhits == 2) {
-      if (fhdebugflagpr) cout << "THcDriftChamber::LeftRight: numhits-2 = 0" << endl;
+      if (fdebugstubchisq) cout << "THcDriftChamber::LeftRight: numhits-2 = 0" << endl;
     }
     Int_t nplaneshit = Count1Bits(bitpat);
-    if (fhdebugflagpr) cout << " num of pm = " << nplusminus << " num of hits =" << nhits << endl;
+    //if (fhdebugflagpr) cout << " num of pm = " << nplusminus << " num of hits =" << nhits << endl;
     // Use bit value of integer word to set + or -
     // Loop over all combinations of left right.
     for(Int_t pmloop=0;pmloop<nplusminus;pmloop++) {
@@ -1080,6 +1113,7 @@ void THcDriftChamber::LeftRight()
       if (nplaneshit >= fNPlanes-1) {
 	Double_t chi2 = FindStub(nhits, sp,
 				     plane_list, bitpat, plusminus, stub);
+	if (fdebugstubchisq) cout << " pmloop = " << pmloop << " chi2 = " << chi2 << endl;
 	if(chi2 < minchi2) {
 	  if(fHMSStyleChambers) { // Perhaps a different flag here
 	    // Take best chi2 IF x' of the stub agrees with x' as expected from x.
@@ -1191,7 +1225,7 @@ void THcDriftChamber::LeftRight()
     for(Int_t i=0;i<4;i++) {
       spstub[i] = stub[i];
     }
-    if (fhdebugflagpr) cout << " Left/Right space pt " << isp+1 << " " << stub[0]<< " " << stub[1] << " " << stub[2]<< " " << stub[3] << endl;
+    //if (fhdebugflagpr) cout << " Left/Right space pt " << isp+1 << " " << stub[0]<< " " << stub[1] << " " << stub[2]<< " " << stub[3] << endl;
       }
   // Option to print stubs
 }
