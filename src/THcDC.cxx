@@ -151,8 +151,7 @@ void THcDC::Setup(const char* name, const char* description)
     THcDriftChamber* newchamber = new THcDriftChamber(desc, desc, i+1, this);
     fChambers.push_back(newchamber);
     cout << "Created Drift Chamber " << i+1 << ", " << desc << endl;
-    
-    
+    newchamber->SetHMSStyleFlag(fHMSStyleChambers); // Tell the chamber its style
   }
 }
 
