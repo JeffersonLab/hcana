@@ -372,7 +372,6 @@ Int_t THcDriftChamber::FindEasySpacePoint_HMS(Int_t yplane_hitind,Int_t yplanep_
   easy_space_point = 1; // Assume we have an easy space point
   // Rule it out if x points don't cluster well enough
   for(Int_t ihit=0;ihit<fNhits;ihit++) {
-    cout << " easy sp check xt = " << xt-x_pos[ihit] << " " << max_dist << endl;
     if(ihit!=yplane_hitind && ihit!=yplanep_hitind) { // select x-like hit
       if(TMath::Abs(xt-x_pos[ihit]) >= max_dist)
 	{ easy_space_point=0; break;}
@@ -1140,7 +1139,7 @@ void THcDriftChamber::LeftRight()
 	    }
 	  }
 	}
-      } else if (nplaneshit >= fNPlanes-2 && !fHMSStyleChambers) { // Two planes missing
+      } else if (nplaneshit >= fNPlanes-2 && fHMSStyleChambers) { // Two planes missing
 	Double_t chi2 = FindStub(nhits, sp,
 				     plane_list, bitpat, plusminus, stub); 
 	//if(debugging)
