@@ -38,6 +38,7 @@ public:
   virtual Int_t      ApplyCorrections( void );
   virtual void       ProcessHits( void );
   virtual Int_t      FindSpacePoints( void ) ;
+  virtual void       PrintDecode( void ) ;
   virtual void       CorrectHitTimes( void ) ;
   virtual void       LeftRight(void);
 
@@ -52,6 +53,7 @@ public:
   Int_t GetChamberNum() const { return fChamberNum;}
   Double_t GetZPos() const {return fZPos;}
   //  friend class THaScCalib;
+  void SetHMSStyleFlag(Int_t flag) {fHMSStyleChambers = flag;}
 
   THcDriftChamber();  // for ROOT I/O // Why do we need this?
 protected:
@@ -71,6 +73,11 @@ protected:
   Int_t YPlanePInd; 		// Index of Yplanep for this chamber
   Int_t YPlaneNum;		// Absolute plane number of Yplane
   Int_t YPlanePNum;		// Absolute plane number of Yplanep
+  // SOS Specific
+  Int_t XPlaneInd; 		// Index of Xplane for this chamber
+  Int_t XPlanePInd; 		// Index of Xplanep for this chamber
+  Int_t XPlaneNum;		// Absolute plane number of Xplane
+  Int_t XPlanePNum;		// Absolute plane number of Xplanep
 
   // Parameters 
   Int_t fMinHits; 		// Minimum hits required to do something
@@ -83,6 +90,7 @@ protected:
   Int_t fFixPropagationCorrection;
   Int_t fHMSStyleChambers;
   Int_t fhdebugflagpr;
+  Int_t fdebugstubchisq;
   Double_t fZPos;
   Double_t fXCenter;
   Double_t fYCenter;
@@ -106,7 +114,8 @@ protected:
   virtual Int_t  DefineVariables( EMode mode = kDefine );
 
   void Setup(const char* name, const char* description);
-  Int_t      FindEasySpacePoint(Int_t yplane_hitind, Int_t yplanep_hitind);
+  Int_t      FindEasySpacePoint_HMS(Int_t yplane_hitind, Int_t yplanep_hitind);
+  Int_t      FindEasySpacePoint_SOS(Int_t xplane_hitind, Int_t xplanep_hitind);
   Int_t      FindHardSpacePoints(void);
   Int_t      DestroyPoorSpacePoints(void);
   Int_t      SpacePointMultiWire(void);

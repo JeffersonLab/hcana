@@ -22,6 +22,8 @@ public:
   virtual Int_t   TrackCalc();
   virtual Int_t   TrackTimes( TClonesArray* tracks );
 
+  virtual Int_t   ReadRunDatabase( const TDatime& date );
+
   Bool_t SetTrSorting( Bool_t set = kFALSE );
   Bool_t GetTrSorting() const;
 

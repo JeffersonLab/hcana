@@ -392,7 +392,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"scin_tdc_to_time", &fScinTdcToTime, kDouble},
     {"scin_tdc_min", &fScinTdcMin, kDouble},
     {"scin_tdc_max", &fScinTdcMax, kDouble},
-    {"tof_tolerance", &fTofTolerance, kDouble},
+    {"tof_tolerance", &fTofTolerance, kDouble,0,1},
     {"pathlength_central", &fPathLengthCentral, kDouble},
     {"hodo_vel_light",&fHodoVelLight[0],kDouble,fMaxHodoScin},
     {"hodo_pos_sigma",&fHodoPosSigma[0],kDouble,fMaxHodoScin},
@@ -409,6 +409,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {0}
   };
   fTofUsingInvAdc = 0;		// Default if not defined
+  fTofTolerance = 3.0;		// Default if not defined
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   if (fTofUsingInvAdc) {
     DBRequest list2[]={
@@ -637,6 +638,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     fGoodStartTime=kFALSE;
     fStartTime=fStartTimeCenter;
   }
+  fStartTime=32.; // mkj force to constant
   //  cout <<" stats = "<<fGoodStartTime<<" "<<nfptimes<<" fStartTime = "<<fStartTime<<endl;
   // fRawHitList is TClones array of THcHodoscopeHit objects
 #if 0
