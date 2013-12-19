@@ -155,8 +155,8 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   fFixPropagationCorrection = fParent->GetFixPropagationCorrectionFlag();
 
   fSpacePointCriterion = fParent->GetSpacePointCriterion(fChamberNum);
-   
-  fSpacePointCriterion2 = fSpacePointCriterion*fSpacePointCriterion;
+  fMaxDist = TMath::Sqrt(fSpacePointCriterion/2.0); // For easy space points
+
    if (fhdebugflagpr) cout << " cham = " << fChamberNum << " Set yplane num " << YPlaneNum << " "<< YPlanePNum << endl; 
   // Generate the HAA3INV matrix for all the acceptable combinations
   // of hit planes.  Try to make it as generic as possible 
@@ -367,13 +367,12 @@ Int_t THcDriftChamber::FindEasySpacePoint_HMS(Int_t yplane_hitind,Int_t yplanep_
       x_pos[ihit] = 0.0;
     }
   }
-  Double_t max_dist = TMath::Sqrt(fSpacePointCriterion/2.);
   xt = (num_xhits>0?xt/num_xhits:0.0);
   easy_space_point = 1; // Assume we have an easy space point
   // Rule it out if x points don't cluster well enough
   for(Int_t ihit=0;ihit<fNhits;ihit++) {
     if(ihit!=yplane_hitind && ihit!=yplanep_hitind) { // select x-like hit
-      if(TMath::Abs(xt-x_pos[ihit]) >= max_dist)
+      if(TMath::Abs(xt-x_pos[ihit]) >= fMaxDist)
 	{ easy_space_point=0; break;}
     }
   }
@@ -414,13 +413,12 @@ Int_t THcDriftChamber::FindEasySpacePoint_SOS(Int_t xplane_hitind,Int_t xplanep_
       y_pos[ihit] = 0.0;
     }
   }
-  Double_t max_dist = TMath::Sqrt(fSpacePointCriterion/2.);
   yt = (num_yhits>0?yt/num_yhits:0.0);
   easy_space_point = 1; // Assume we have an easy space point
   // Rule it out if x points don't cluster well enough
   for(Int_t ihit=0;ihit<fNhits;ihit++) {
     if(ihit!=xplane_hitind && ihit!=xplanep_hitind) { // select y-like hit
-      if(TMath::Abs(yt-y_pos[ihit]) >= max_dist)
+      if(TMath::Abs(yt-y_pos[ihit]) >= fMaxDist)
 	{ easy_space_point=0; break;}
     }
   }
@@ -483,7 +481,7 @@ Int_t THcDriftChamber::FindHardSpacePoints()
       if(ncombos < 10*MAX_NUMBER_PAIRS) {
 	Double_t dist2 = pow(pairs[ipair1].x - pairs[ipair2].x,2)
 	  + pow(pairs[ipair1].y - pairs[ipair2].y,2);
-	if(dist2 <= fSpacePointCriterion2) {
+	if(dist2 <= fSpacePointCriterion) {
 	  combos[ncombos].pair1 = &pairs[ipair1];
 	  combos[ncombos].pair2 = &pairs[ipair2];
 	  ncombos++;
@@ -510,11 +508,11 @@ Int_t THcDriftChamber::FindHardSpacePoints()
 	if(sp->GetNHits() > 0) {
 	  Double_t sqdist_test = pow(xt - sp->GetX(),2) + pow(yt - sp->GetY(),2);
 	  // I (who is I) want to be careful if sqdist_test is bvetween 1 and
-	  // 3 fSpacePointCriterion2.  Let me ignore not add a new point the
-	  if(sqdist_test < 3*fSpacePointCriterion2) {
+	  // 3 fSpacePointCriterion.  Let me ignore not add a new point the
+	  if(sqdist_test < 3*fSpacePointCriterion) {
 	    add_flag = 0;	// do not add a new space point
 	  }
-	  if(sqdist_test < fSpacePointCriterion2) {
+	  if(sqdist_test < fSpacePointCriterion) {
 	    // This is a real match
 	    // Add the new hits to the existing space point
 	    Int_t iflag[4];
