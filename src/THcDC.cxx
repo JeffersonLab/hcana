@@ -552,7 +552,7 @@ void THcDC::PrintSpacePoints()
 	cout << isp+1 <<  " " << sp->GetX() <<  " " <<  sp->GetY()  <<  " " << sp->GetNHits()<<  " " << sp->GetCombos() << " " ;
 	for (Int_t ii=0;ii<sp->GetNHits();ii++) {
 	  THcDCHit* hittemp = (THcDCHit*)(sp->GetHit(ii));
-	  cout << hittemp->GetWireNum() << " "  ;
+	  cout << hittemp->GetPlaneNum() << " "  << hittemp->GetWireNum() << " "  ;
         }
         cout << endl;
     }
