@@ -1053,7 +1053,7 @@ void THcDriftChamber::LeftRight()
 	    for(Int_t ihit2=0;ihit2<nhits;ihit2++) {
 	      THcDCHit* hit2 = sp->GetHit(ihit2);
 	      if(hit2->GetPlaneIndex()-pindex1 == 1) { // Adjacent plane
-		if(hit2->GetWireNum() <= hit1->GetWireNum()) {
+		if(hit2->GetPos() <= hit1->GetPos()) {
 		  plusminusknown[ihit1] = -1;
 		  plusminusknown[ihit2] = 1;
 		} else {
