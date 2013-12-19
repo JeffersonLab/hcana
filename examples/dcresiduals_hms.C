@@ -30,4 +30,5 @@
   T->Draw("H.dc.residual[10]","H.dc.residual[10] < 999");
   c1->cd(12);
   T->Draw("H.dc.residual[11]","H.dc.residual[11] < 999");
+  delete h;
 }

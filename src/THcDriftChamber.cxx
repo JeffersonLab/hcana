@@ -47,31 +47,12 @@ THcDriftChamber::THcDriftChamber(
 
   fSpacePoints = new TClonesArray("THcSpacePoint",10);
 
+  fHMSStyleChambers = 0;	// Default
 }
 
 //_____________________________________________________________________________
 void THcDriftChamber::Setup(const char* name, const char* description)
 {
-
-  char prefix[2];
-
-  THaApparatus *app = GetApparatus();
-  if(app) {
-    cout << app->GetName() << endl;
-  } else {
-    cout << "No apparatus found" << endl;
-  }
-
-  prefix[0]=tolower(app->GetName()[0]);
-  prefix[1]='\0';
-
-  // For now, decide chamber style from the spectrometer name.
-  // Should override with a paramter
-  if(prefix[0]=='h') {
-    fHMSStyleChambers = 1;
-  } else {
-    fHMSStyleChambers = 0;
-  }
 
 }
 
@@ -138,6 +119,8 @@ void THcDriftChamber::AddPlane(THcDriftChamberPlane *plane)
    }
   }
   fNPlanes++;
+  cout << fHMSStyleChambers << "P" << fNPlanes << " " << YPlaneNum << " " << YPlanePNum << " "
+       << YPlaneInd << " " << YPlanePInd << endl;
   return;
 }
 
@@ -1071,7 +1054,7 @@ void THcDriftChamber::LeftRight()
 	    for(Int_t ihit2=0;ihit2<nhits;ihit2++) {
 	      THcDCHit* hit2 = sp->GetHit(ihit2);
 	      if(hit2->GetPlaneIndex()-pindex1 == 1) { // Adjacent plane
-		if(hit2->GetWireNum() <= hit1->GetWireNum()) {
+		if(hit2->GetPos() <= hit1->GetPos()) {
 		  plusminusknown[ihit1] = -1;
 		  plusminusknown[ihit2] = 1;
 		} else {
@@ -1157,7 +1140,7 @@ void THcDriftChamber::LeftRight()
 	    }
 	  }
 	}
-      } else if (nplaneshit >= fNPlanes-2 && !fHMSStyleChambers) { // Two planes missing
+      } else if (nplaneshit >= fNPlanes-2 && fHMSStyleChambers) { // Two planes missing
 	Double_t chi2 = FindStub(nhits, sp,
 				     plane_list, bitpat, plusminus, stub); 
 	//if(debugging)

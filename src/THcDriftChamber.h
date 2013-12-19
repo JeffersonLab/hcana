@@ -53,6 +53,7 @@ public:
   Int_t GetChamberNum() const { return fChamberNum;}
   Double_t GetZPos() const {return fZPos;}
   //  friend class THaScCalib;
+  void SetHMSStyleFlag(Int_t flag) {fHMSStyleChambers = flag;}
 
   THcDriftChamber();  // for ROOT I/O // Why do we need this?
 protected:
