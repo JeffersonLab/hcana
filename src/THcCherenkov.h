@@ -52,14 +52,16 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Float_t*   fT_Pos;         // [fNelem] Array of TDCs
   Float_t*   fT_Neg;         // [fNelem] Array of TDCs
 
-  Float_t   fA_1;         // Ahmed
-  Float_t   fA_2;         // Ahmed
-  Float_t   fA_p_1;         // Ahmed
-  Float_t   fA_p_2;         // Ahmed
-  Double_t fNpe_1;		// Ahmed
-  Double_t fNpe_2;		// Ahmed
-  Int_t fNHits_1;         // Ahmed
-  Int_t fNHits_2;         // Ahmed
+  Double_t  fA_1;         // Ahmed
+  Double_t  fA_2;         // Ahmed
+  Double_t  fNHits_1;     // Ahmed
+  Double_t  fNHits_2;     // Ahmed
+  Double_t  fNHits;       // Ahmed
+  Double_t  fA_p_1;       // Ahmed
+  Double_t  fA_p_2;       // Ahmed
+  Double_t  fNpe_1;       // Ahmed
+  Double_t  fNpe_2;       // Ahmed
+  Double_t  fNpe;         // Ahmed
 
   Double_t fPosNpeSum;
   Double_t fNegNpeSum;
