@@ -4,7 +4,14 @@
 //                                                                                   //
 // Class for an Cherenkov detector consisting of onw pair of PMT's                   //
 //                                                                                   //
-// Zafar Ahmed. Second attempt. November 14 2013.                                    //
+// Zafar Ahmed. Updated on December 24 2013.                                         //
+// Four more variables are added.                                                    //
+//                                                                                   //
+// npe               Total Number of photo electrons                                 //
+// hit_1             Total hits in adc 1                                             //
+// hit_2             Total hits in adc 2                                             //
+// hit               Total hits in adc 1 and 2                                       //
+//                                                                                   //
 // Comment:No need to cahnge the Map file but may need to change the parameter file  //
 //                                                                                   //
 // This code is written for following variables:                                     //
@@ -155,12 +162,16 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
   // No.  They show up in tree as Ndata.H.aero.postdchits for example
 
   RVarDef vars[] = {
-    {"adc_1",  "Raw First ADC Amplitudes",    "fA_1"},
-    {"adc_2",  "Raw Second ADC Amplitudes",   "fA_2"},
-    {"adc_p_1",  "Raw First ADC Amplitudes",  "fA_p_1"},
-    {"adc_p_2",  "Raw Second ADC Amplitudes", "fA_p_2"},
-    {"npe_1","PEs First Tube", "fNpe_1"},
-    {"npe_2","PEs Second Tube","fNpe_2"},
+    {"adc_1",    "Raw First ADC Amplitude",                  "fA_1"},
+    {"adc_2",    "Raw Second ADC Amplitude",                 "fA_2"},
+    {"adc_p_1",  "Pedestal Subtracted First ADC Amplitude",  "fA_p_1"},
+    {"adc_p_2",  "Pedestal Subtracted Second ADC Amplitude", "fA_p_2"},
+    {"npe_1",    "PEs of First Tube",                        "fNpe_1"},
+    {"npe_2",    "PEs of Second Tube",                       "fNpe_2"},
+    {"npe",      "Total number of PEs",                      "fNpe"},
+    {"hit_1",    "ADC hits First Tube",                      "fNHits_1"},
+    {"hit_2",    "ADC hits Second Tube",                     "fNHits_2"},
+    {"hit",      "Total ADC hits",                           "fNHits"},
     {"posadchits", "List of Positive ADC hits","fPosADCHits.THcSignalHit.GetPaddleNumber()"},
     { 0 }
   };
@@ -184,6 +195,10 @@ void THcCherenkov::Clear(Option_t* opt)
   fA_p_2 = 0;
   fNpe_1 = 0;
   fNpe_2 = 0;
+  fNpe = 0;
+  fNHits_1 = 0;
+  fNHits_2 = 0;
+  fNHits = 0;
 
 }
 
@@ -259,6 +274,7 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
       enddo
      ------------------------------------------------------------------------------------------------------------------
     */
+
   for(Int_t ihit=0; ihit < fNhits; ihit++) {
     THcCherenkovHit* hit = (THcCherenkovHit *) fRawHitList->At(ihit); // nhit = 1, hcer_tot_hits
 
@@ -280,6 +296,7 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
       fA_p_1 = hit->fADC_pos - fPosPedMean[npmt];
       if ( ( fA_p_1 > 50 ) && ( hit->fADC_pos < 8000 ) ) {
 	fNpe_1 = fPosGain[npmt]*fA_p_1;
+	fNHits_1 ++;
       } else if (  hit->fADC_pos > 8000 ) {
 	fNpe_1 = 100.0;
       } else {
@@ -292,14 +309,26 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
       fA_p_2 = hit->fADC_pos - fPosPedMean[npmt];
       if ( ( fA_p_2 > 50 ) && ( hit->fADC_pos < 8000 ) ) {
 	fNpe_2 = fPosGain[npmt]*fA_p_2;
+	fNHits_2 ++;
       } else if (  hit->fADC_pos > 8000 ) {
 	fNpe_2 = 100.0;
       } else {
 	fNpe_2 = 0.0;
       }
     }
+    
+    if ( npmt == 0 ) {
+      fNpe += fNpe_1;
+      fNHits += fNHits_1;
+    }
+    
+    if ( npmt == 1 ) {
+      fNpe += fNpe_2;
+      fNHits += fNHits_2;
+    }
+    
   }
-      
+
   ApplyCorrections();
 
   return 0;
