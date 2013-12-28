@@ -55,7 +55,7 @@ public:
   Int_t GetMinHits(Int_t chamber) const { return fMinHits[chamber-1];}
   Int_t GetMaxHits(Int_t chamber) const { return fMaxHits[chamber-1];}
   Int_t GetMinCombos(Int_t chamber) const { return fMinCombos[chamber-1];}
-  Double_t GetSpacePointCriterion(Int_t chamber) const { return fSpace_Point_Criterion2[chamber-1];}
+  Double_t GetSpacePointCriterion(Int_t chamber) const { return fSpace_Point_Criterion[chamber-1];}
   Double_t GetCentralTime(Int_t plane) const { return fCentralTime[plane-1];}
   Int_t GetDriftTimeSign(Int_t plane) const { return fDriftTimeSign[plane-1];}
 
@@ -120,7 +120,7 @@ protected:
   Int_t* fMinHits;
   Int_t* fMaxHits;
   Int_t* fMinCombos;
-  Double_t* fSpace_Point_Criterion2;
+  Double_t* fSpace_Point_Criterion;
 
   // Each of these will be dimensioned with the number of planes
   // A THcDCPlane class object will need to access the value for

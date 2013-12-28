@@ -45,7 +45,7 @@ THcDC::THcDC(
   fMinHits = NULL;
   fMaxHits = NULL;
   fMinCombos = NULL;
-  fSpace_Point_Criterion2 = NULL;
+  fSpace_Point_Criterion = NULL;
 
   fTdcWinMin = NULL;
   fTdcWinMax = NULL;
@@ -251,7 +251,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
   delete [] fMinHits;  fMinHits = new Int_t [fNChambers];
   delete [] fMaxHits;  fMaxHits = new Int_t [fNChambers];
   delete [] fMinCombos;  fMinCombos = new Int_t [fNChambers];
-  delete [] fSpace_Point_Criterion2;  fSpace_Point_Criterion2 = new Double_t [fNChambers];
+  delete [] fSpace_Point_Criterion;  fSpace_Point_Criterion = new Double_t [fNChambers];
 
   delete [] fTdcWinMin;  fTdcWinMin = new Int_t [fNPlanes];
   delete [] fTdcWinMax;  fTdcWinMax = new Int_t [fNPlanes];
@@ -279,7 +279,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"min_hit", fMinHits, kInt, fNChambers},
     {"max_pr_hits", fMaxHits, kInt, fNChambers},
     {"min_combos", fMinCombos, kInt, fNChambers},
-    {"space_point_criterion", fSpace_Point_Criterion2, kDouble, fNChambers},
+    {"space_point_criterion", fSpace_Point_Criterion, kDouble, fNChambers},
 
     {"dc_tdc_min_win", fTdcWinMin, kInt, fNPlanes},
     {"dc_tdc_max_win", fTdcWinMax, kInt, fNPlanes},
@@ -380,7 +380,7 @@ void THcDC::DeleteArrays()
   delete [] fMinHits;   fMinHits = NULL;
   delete [] fMaxHits;   fMaxHits = NULL;
   delete [] fMinCombos;   fMinCombos = NULL;
-  delete [] fSpace_Point_Criterion2;   fSpace_Point_Criterion2 = NULL;
+  delete [] fSpace_Point_Criterion;   fSpace_Point_Criterion = NULL;
 
   delete [] fTdcWinMin;   fTdcWinMin = NULL;
   delete [] fTdcWinMax;   fTdcWinMax = NULL;
@@ -552,7 +552,7 @@ void THcDC::PrintSpacePoints()
 	cout << isp+1 <<  " " << sp->GetX() <<  " " <<  sp->GetY()  <<  " " << sp->GetNHits()<<  " " << sp->GetCombos() << " " ;
 	for (Int_t ii=0;ii<sp->GetNHits();ii++) {
 	  THcDCHit* hittemp = (THcDCHit*)(sp->GetHit(ii));
-	  cout << hittemp->GetWireNum() << " "  ;
+	  cout << hittemp->GetPlaneNum() << " "  << hittemp->GetWireNum() << " ";
         }
         cout << endl;
     }

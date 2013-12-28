@@ -95,7 +95,7 @@ protected:
   Double_t fXCenter;
   Double_t fYCenter;
   Double_t fSpacePointCriterion;
-  Double_t fSpacePointCriterion2;
+  Double_t fMaxDist; 		// Max dist used in EasySpacePoint methods
   Double_t* fSinBeta;
   Double_t* fCosBeta;
   Double_t* fTanBeta;
