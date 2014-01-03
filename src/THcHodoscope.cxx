@@ -162,12 +162,12 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   //  };
   //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
 
-  // Will need to determine which apparatus it belongs to and use the
-  // appropriate detector ID in the FillMap call
-  if( gHcDetectorMap->FillMap(fDetMap, "HSCIN") < 0 ) {
+  char EngineDID[]="xSCIN";
+  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
     static const char* const here = "Init()";
     Error( Here(here), "Error filling detectormap for %s.", 
-	     "HSCIN");
+	     EngineDID);
       return kInitError;
   }
 
