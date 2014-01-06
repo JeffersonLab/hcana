@@ -39,3 +39,4 @@ hdc_fix_lr = 0
 # If 1, don't do the the propagation along the wire each time the hit
 # appears in a space point.  (Which means the correction accumulates)
 hdc_fix_propcorr = 0
+
