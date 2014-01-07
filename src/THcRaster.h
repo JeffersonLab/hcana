@@ -1,36 +1,49 @@
 #ifndef ROOT_THcRaster
 #define ROOT_THcRaster
 
-#include "THcRawHit.h"
 
-class THcRaster : public THcRawHit {
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// THcRaster                                                                 //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
+#include "THaBeamDet.h"
+
+class THcRaster : public THaBeamDet {
 
  public:
 
- THcHodoscopeHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
-    fADC_pos(-1), fADC_neg(-1),
-    fTDC_pos(-1), fTDC_neg(-1) {
-  }
-  THcHodoscopeHit& operator=( const THcHodoscopeHit& );
-  virtual ~THcHodoscopeHit() {}
+  THcRaster( const char* name, const char* description ="" ,
+	     THaApparatus* a = NULL );
 
-  virtual void Clear( Option_t* opt="" )
-    { fADC_pos = -1; fADC_neg = -1; fTDC_pos = -1; fTDC_neg = -1; }
+  virtual ~THaRaster();
 
-  void SetData(Int_t signal, Int_t data);
-  Int_t GetData(Int_t signal);
+  virtual Int_t      Decode( const THaEvData& );
+  virtual Int_t      Process();
 
-  //  virtual Bool_t  IsSortable () const {return kTRUE; }
-  //  virtual Int_t   Compare(const TObject* obj) const;
+  virtual TVector3 GetPosition()  const { return fPosition[2]; }
+  virtual TVector3 GetDirection() const { return NULL; } // Hall C we don't use raster direction yet.
 
-  Int_t fADC_pos;
-  Int_t fADC_neg;
+  Double_t GetCurrentX() { return fRawPos(0); }
+  Double_t GetCurrentY() { return fRawPos(1); }
 
  protected:
+
+  void           ClearEvent();
+  virtual Int_t  ReadDatabase( const TDatime& date );
+
+  TVector        fRawPos[2];        // current in Raster ADCs for position
+  TVector3       fPosition[2];   // Beam position at 1st, 2nd BPM or at the target (meters)
+  TVector3  fPosOff[2]; // pedestals 
+
 
  private:
 
   ClassDef(THcRaster, 0);	// add THcRaster to ROOT library
 };  
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 #endif
