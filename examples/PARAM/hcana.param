@@ -40,3 +40,6 @@ hdc_fix_lr = 0
 # appears in a space point.  (Which means the correction accumulates)
 hdc_fix_propcorr = 0
 
+# parameter list for the raster
+# Maybe we can add this to geabm.param later ?
+graster_channels = "xsync xsig ysync ysig"
