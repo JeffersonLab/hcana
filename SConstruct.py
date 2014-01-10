@@ -30,25 +30,19 @@ baseenv = Environment(ENV = os.environ)
 #	print "Construction variable = '%s', value = '%s'" % (key, dict[key])
 
 ####### Check SCons version ##################
-#print('!!! You should be using the local version of SCons, invoked with:')
-#print('!!! ./podd/scons/scons.py')
 print('!!! Building the Hall C analyzer and libraries with SCons requires')
 print('!!! SCons version 2.1.0 or newer.')
 EnsureSConsVersion(2,1,0)
 
 ####### Hall A Build Environment #############
 #
-# Edit for the location of your root installation here ...
-#
-#baseenv.Append(ROOTSYS = '/usr/local/root')
-#
-baseenv.Append(MAIN_DIR = Dir('.').abspath)
-baseenv.Append(HC_DIR = baseenv.subst('$MAIN_DIR'))
-baseenv.Append(HC_SRC = baseenv.subst('$HC_DIR')+'/src ') 
-baseenv.Append(HA_DIR = baseenv.subst('$HC_DIR')+'/podd ')
-baseenv.Append(HA_SRC = baseenv.subst('$HA_DIR')+'/src ') 
-baseenv.Append(HA_DC = baseenv.subst('$HA_DIR')+'/hana_decode ') 
-baseenv.Append(HA_SCALER = baseenv.subst('$HA_DIR')+'/hana_scaler ') 
+baseenv.Append(MAIN_DIR= Dir('.').abspath)
+baseenv.Append(HC_DIR= baseenv.subst('$MAIN_DIR'))
+baseenv.Append(HC_SRC= baseenv.subst('$HC_DIR')+'/src ') 
+baseenv.Append(HA_DIR= baseenv.subst('$HC_DIR')+'/podd ')
+baseenv.Append(HA_SRC= baseenv.subst('$HA_DIR')+'/src ') 
+baseenv.Append(HA_DC= baseenv.subst('$HA_DIR')+'/hana_decode ') 
+baseenv.Append(HA_SCALER= baseenv.subst('$HA_DIR')+'/hana_scaler ') 
 baseenv.Append(MAJORVERSION = '1')
 baseenv.Append(MINORVERSION = '5')
 baseenv.Append(PATCH = '25')
@@ -163,6 +157,11 @@ pbaseenv.Append(LIBS=[hallclib,hallalib,dclib,scalerlib])
 baseenv.Append(LIBS=[hallalib,dclib,scalerlib])
 Export('pbaseenv')
 
+#SConscript('podd/SConscript.py',exports='baseenv')
+#SConscript('podd/hana_scaler/SConscript.py',exports='baseenv')
+#SConscript('podd/hana_decode/SConscript.py',exports='baseenv')
+#SConscript('src/SConscript.py',exports='baseenv')
+#SConscript('./SConscript.py',exports='baseenv')
 SConscript(dirs = directorylist,name='SConscript.py',exports='baseenv')
 
 #######  End of SConstruct #########
