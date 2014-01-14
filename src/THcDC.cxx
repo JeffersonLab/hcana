@@ -1017,6 +1017,7 @@ Double_t THcDC::DpsiFun(Double_t ray[4], Int_t plane)
 Int_t THcDC::End(THaRunBase* run)
 {
   //  EffCalc();
+  return 0;
 }
 
 //_____________________________________________________________________________

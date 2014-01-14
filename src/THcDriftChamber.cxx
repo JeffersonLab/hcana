@@ -309,7 +309,8 @@ Int_t THcDriftChamber::FindSpacePoints( void )
       if(fHMSStyleChambers) {
 	if(fRemove_Sppt_If_One_YPlane == 1) {
 	  // The routine is specific to HMS
-	  Int_t ndest=DestroyPoorSpacePoints(); // Only for HMS?
+	  //Int_t ndest=
+	    DestroyPoorSpacePoints(); // Only for HMS?
 	  // Loop over space points and remove those with less than 4 planes
 	  // hit and missing hits in Y,Y' planes
 	}
@@ -855,7 +856,7 @@ void THcDriftChamber::ChooseSingleHit()
     // Gather the remaining hits
     Int_t finalnum = 0;
     for(Int_t ihit=0;ihit<startnum;ihit++) {
-	THcDCHit* hit = sp->GetHit(ihit);
+      //THcDCHit* hit = sp->GetHit(ihit);
 	//	if (fhdebugflagpr) cout << " good hit = "<< ihit << " " << goodhit[ihit] << " time = " << hit->GetTime() << endl;
       if(goodhit[ihit] > 0) {	// Keep this hit
 	if (ihit > finalnum) {	// Move hit 
@@ -910,7 +911,7 @@ void THcDriftChamber::SelectSpacePoints()
     //if (fhdebugflagpr) cout << " sp pt = " << isp+1 << " # of hits = " << sp->GetNHits() << endl;
     for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
       THcDCHit* hit = sp->GetHit(ihit);
-      THcDriftChamberPlane* plane=hit->GetWirePlane();
+      //THcDriftChamberPlane* plane=hit->GetWirePlane();
       //        if (fhdebugflagpr) cout << ihit+1 << "selecting " << plane->GetPlaneNum() << " " << plane->GetChamberNum() << " " << hit->GetTime() << " " << hit->GetDist() << " " << plane->GetCentralTime() << " " << plane->GetDriftTimeSign() << endl;
     }
   }
