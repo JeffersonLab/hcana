@@ -6,6 +6,7 @@
 class THcCherenkovHit : public THcHodoscopeHit {
 
  public:
+  friend class THcCherenkov;
  
  protected:
 

@@ -6,6 +6,7 @@
 class THcAerogelHit : public THcHodoscopeHit {
 
  public:
+  friend class THcAerogel;
  
  protected:
 

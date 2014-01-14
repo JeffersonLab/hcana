@@ -8,6 +8,8 @@
 class THcRawDCHit : public THcRawHit {
 
 public:
+  friend class THcDriftChamberPlane;
+  friend class THcDC;
 
   THcRawDCHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
     fNHits(0) {
@@ -24,10 +26,10 @@ public:
   virtual Bool_t  IsSortable () const {return kTRUE; }
   virtual Int_t   Compare(const TObject* obj) const;
 
-  Int_t fNHits;
-  Int_t fTDC[MAXHITS];
 
 protected:
+  Int_t fNHits;
+  Int_t fTDC[MAXHITS];
 
 private:
 
