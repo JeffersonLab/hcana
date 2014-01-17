@@ -95,7 +95,7 @@ THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
 
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
-  THcHitList::InitHitList(fDetMap, "THcCherenkovHit", 100); // 100 is max hits
+  InitHitList(fDetMap, "THcCherenkovHit", 100); // 100 is max hits
 
   EStatus status;
   if( (status = THaNonTrackingDetector::Init( date )) )
@@ -206,7 +206,7 @@ void THcCherenkov::Clear(Option_t* opt)
 Int_t THcCherenkov::Decode( const THaEvData& evdata )
 {
   // Get the Hall C style hitlist (fRawHitList) for this event
-  fNhits = THcHitList::DecodeToHitList(evdata);
+  fNhits = DecodeToHitList(evdata);
 
   if(gHaCuts->Result("Pedestal_event")) {
 

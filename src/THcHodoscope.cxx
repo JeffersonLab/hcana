@@ -142,7 +142,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   // But it needs to happen before the sub detectors are initialized
   // so that they can get the pointer to the hitlist.
 
-  THcHitList::InitHitList(fDetMap, "THcHodoscopeHit", 100);
+  InitHitList(fDetMap, "THcHodoscopeHit", 100);
 
   EStatus status;
   // This triggers call of ReadDatabase and DefineVariables
@@ -596,7 +596,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 {
 
   // Get the Hall C style hitlist (fRawHitList) for this event
-  Int_t nhits = THcHitList::DecodeToHitList(evdata);
+  Int_t nhits = DecodeToHitList(evdata);
 
   if(gHaCuts->Result("Pedestal_event")) {
     Int_t nexthit = 0;
