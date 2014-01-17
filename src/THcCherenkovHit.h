@@ -12,7 +12,7 @@ class THcCherenkovHit : public THcHodoscopeHit {
 
  private:
 
-  ClassDef(THcCherenkovHit,0);	// Cherenkov hit class
+  ClassDef(THcCherenkovHit,0);	// Raw Cherenkov hit
 };
 
 #endif

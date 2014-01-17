@@ -109,7 +109,7 @@ protected:
 
   THcHodoscope* fglHod;		// Hodoscope to get start time
 
-  ClassDef(THcDriftChamberPlane,0)
+  ClassDef(THcDriftChamberPlane,0); // A single plane within a THcDriftChamber
 };
 #endif
 

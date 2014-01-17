@@ -29,7 +29,7 @@ class THcRawShowerHit : public THcRawHit {
 
  private:
 
-  ClassDef(THcRawShowerHit, 0);	// Shower hit class
+  ClassDef(THcRawShowerHit, 0);	// Raw Shower counter hit
 };  
 
 #endif

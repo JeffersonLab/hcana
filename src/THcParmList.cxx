@@ -42,6 +42,17 @@ inline static bool IsComment( const string& s, string::size_type pos )
 
 void THcParmList::Load( const char* fname, Int_t RunNumber )
 {
+  // Read a CTP style parameter file.
+  //
+  // Parameter values and arrays of values are cached in a THaVarList
+  // and are available for use elsewhere in the analyzer.
+  // Text strings are saved in a THaTextvars list.
+  // Parameter files can contain "include" statements of the form
+  //   #include "filename"
+  //
+  // If a run number is given, ignore input until a line with a matching
+  // run number or run number range is found.  All parameters following
+  // the are read until a non matching run number or range is encountered.
 
   static const char* const whtspc = " \t";
 
@@ -420,6 +431,8 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
   // must be given, and the memory already allocated
   // NOTE: initial code taken wholesale from THaDBFile. 
   // GN 2012
+  // If prefix is specified, prepend each requested parameter name with
+  // the prefix.
   
   const DBRequest *ti = list;
   Int_t cnt=0;
@@ -561,6 +574,8 @@ Int_t THcParmList::ReadArray(const char* attrC, T* array, Int_t size)
 //_____________________________________________________________________________
 void THcParmList::PrintFull( Option_t* option ) const
 {
+  // Print all the numeric parameter desciptions and values.
+  // Print all the text parameters
   THaVarList::PrintFull(option);
   TextList->Print();
 }

@@ -4,9 +4,9 @@
 //
 // THcHitList
 //
-// Add hitlist to the Hall A detector base
-// May not need to inherit from THaDetectorBase since we may end up
-// replacing most of the methods
+// Class to build a Hall C ENGINE style list of raw hits from the raw data.
+// Detectors that use hit lists need to inherit from this class
+// as well as THaTrackingDetector or THaNonTrackingDetector
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -30,7 +30,8 @@ THcHitList::~THcHitList() {
 
 void THcHitList::InitHitList(THaDetMap* detmap,
 				  const char *hitclass, Int_t maxhits) {
-  // Probably called by ReadDatabase
+  // Save the electronics to detector mapping
+  // Initialize a hit array of hits of class hitclass
 
   fRawHitList = new TClonesArray(hitclass, maxhits);
   fRawHitClass = fRawHitList->GetClass();
@@ -44,6 +45,14 @@ void THcHitList::InitHitList(THaDetMap* detmap,
 }
 
 Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
+  // Clear the hit list
+  // Find all populated channels belonging to the detector and add
+  // the data to the hitlist.  A given counter in the detector can have
+  // at most one entry in the hit list.  However, the raw "hit" can contain
+  // multiple signal types (e.g. ADC+, ADC-, TDC+, TDC-), or multiple
+  // hits for multihit tdcs.
+  // The hit list is sorted (by plane, counter) after filling.
+
   THcRawHit* rawhit;
   // cout << " Clearing TClonesArray " << endl;
   fRawHitList->Clear( );

@@ -61,8 +61,10 @@ THcAnalyzer::~THcAnalyzer()
 //_____________________________________________________________________________
 void THcAnalyzer::PrintReport(const char* templatefile, const char* ofile)
 {
-  // Copy template to ofile, replacing {stuff} with the evaluated
-  // value of stuff.
+  // Generate "reports" such as end of run scaler/efficiency sheets
+  // Reads a template file, copying that file to the output, replacing
+  // variables and expressions inside of braces ({}) with evaluated values.
+  // Similar but not identical to ENGINE/CTP report templates.
   ifstream ifile;
   ifile.open(templatefile);
 
@@ -139,9 +141,12 @@ void THcAnalyzer::PrintReport(const char* templatefile, const char* ofile)
 //_____________________________________________________________________________
 void THcAnalyzer::LoadInfo()
 {
-  // Copy some run information into gHcParms variables so that in can
-  // be used in reports.
-  // For example run number, first event analyzed, number of events, etc.
+  // Create several THcParms variables in gHcParms containing 
+  // run information such as
+  // run number, first event analyzed, number of events, etc.
+  //    gen_run_number - Current run
+  //    gen_run_starting_event - Id of first event analyzed
+  //    gen_event_id_number - Id of last event analyzed
   Int_t* runnum;
   Int_t* firstevent;
   Int_t* lastevent;

@@ -33,7 +33,7 @@ protected:
 
 private:
 
-  ClassDef(THcRawDCHit, 0);	// DC hit class
+  ClassDef(THcRawDCHit, 0);	// Raw Drift Chamber hit
 };  
 
 #endif

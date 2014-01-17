@@ -32,7 +32,7 @@ class THcHodoscopeHit : public THcRawHit {
 
  private:
 
-  ClassDef(THcHodoscopeHit, 0);	// Hodoscope hit class
+  ClassDef(THcHodoscopeHit, 0);	// Raw Hodoscope hit
 };  
 
 #endif

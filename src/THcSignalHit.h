@@ -29,7 +29,7 @@ class THcSignalHit : public TObject {
   Int_t fPaddleNumber;
   Double_t fData;
 
-  ClassDef(THcSignalHit,0)
+  ClassDef(THcSignalHit,0); // Single signal value and wire/counter number
 };
 /////////////////////////////////////////////////////////////////
 #endif

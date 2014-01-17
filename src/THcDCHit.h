@@ -78,7 +78,7 @@ private:
   THcDCHit( const THcDCHit& );
   THcDCHit& operator=( const THcDCHit& );
   
-  ClassDef(THcDCHit,2)             // VDCHit class
+  ClassDef(THcDCHit,2)             // Drift Chamber Hit
 };
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -147,6 +147,6 @@ protected:
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
   virtual void  InitializePedestals( );
-  ClassDef(THcShowerPlane,0)
+  ClassDef(THcShowerPlane,0); // Calorimeter bars in a plane
 };
 #endif
