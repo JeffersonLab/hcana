@@ -131,7 +131,7 @@ protected:
 
   void Setup(const char* name, const char* description);
 
-  ClassDef(THcHodoscope,0)   // Generic hodoscope class
+  ClassDef(THcHodoscope,0)   // Hodoscope detector
 };
 
 ////////////////////////////////////////////////////////////////////////////////

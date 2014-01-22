@@ -29,7 +29,7 @@ protected:
   Int_t fNumBins;
   Double_t* fTable;
 
-  ClassDef(THcDCLookupTTDConv,0)             // VDC Analytic TTD Conv class
+  ClassDef(THcDCLookupTTDConv,0)             // Time to Distance conversion lookup
 };
 
 

@@ -84,7 +84,7 @@ protected:
   Double_t fStub[4];
   // Should we also have a pointer back to the chamber object
 
-  ClassDef(THcSpacePoint,0)   // Drift Chamber class
+  ClassDef(THcSpacePoint,0);   // Space Point/stub track in a single drift chamber
 };
 
 ////////////////////////////////////////////////////////////////////////////////

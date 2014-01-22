@@ -134,7 +134,7 @@ protected:
   Double_t* stubcoef[4]; 
   std::map<int,TMatrixD*> fAA3Inv;
 
-  ClassDef(THcDriftChamber,0)   // Drift Chamber class
+  ClassDef(THcDriftChamber,0)   // A single drift chamber
 };
 
 ////////////////////////////////////////////////////////////////////////////////

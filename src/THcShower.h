@@ -197,7 +197,7 @@ protected:
 
   friend class THcShowerPlane;   //to access debug flags.
 
-  ClassDef(THcShower,0)          // Generic class
+  ClassDef(THcShower,0)          // Shower counter detector
 };
 
 ///////////////////////////////////////////////////////////////////////////////

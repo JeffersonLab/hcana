@@ -24,7 +24,7 @@ private:
   THcDCTimeToDistConv( const THcDCTimeToDistConv& );
   THcDCTimeToDistConv& operator=( const THcDCTimeToDistConv& );
 
-  ClassDef(THcDCTimeToDistConv,0)             // DCTimeToDistConv class
+  ClassDef(THcDCTimeToDistConv,0)             // Time to Distance conversion base class
 };
 
 ////////////////////////////////////////////////////////////////////////////////

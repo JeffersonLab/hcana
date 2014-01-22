@@ -173,7 +173,7 @@ protected:
   void Setup(const char* name, const char* description);
   void PrintSpacePoints();
 
-  ClassDef(THcDC,0)   // Drift Chamber class
+  ClassDef(THcDC,0)   // Set of Drift Chambers detector
 };
 
 ////////////////////////////////////////////////////////////////////////////////

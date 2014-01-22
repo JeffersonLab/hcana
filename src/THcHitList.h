@@ -41,6 +41,6 @@ public:
 
 protected:
 
-  ClassDef(THcHitList,0)
+  ClassDef(THcHitList,0);  // List of raw hits sorted by plane, counter
 };
 #endif

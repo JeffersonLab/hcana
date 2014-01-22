@@ -57,7 +57,7 @@ protected:
   // Flag for fProperties indicating that tracks are to be sorted by chi2
   static const UInt_t kSortTracks = BIT(16);
 
-  ClassDef(THcHallCSpectrometer,0) //A Hall A High Resolution Spectrometer
+  ClassDef(THcHallCSpectrometer,0) //A Hall C Spectrometer
 };
 
 #endif
