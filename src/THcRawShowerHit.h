@@ -6,8 +6,9 @@
 class THcRawShowerHit : public THcRawHit {
 
  public:
+  friend class THcShowerPlane;
 
- THcRawShowerHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
+  THcRawShowerHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
     fADC_pos(-1), fADC_neg(-1){
   }
   THcRawShowerHit& operator=( const THcRawShowerHit& );
@@ -22,14 +23,13 @@ class THcRawShowerHit : public THcRawHit {
   //  virtual Bool_t  IsSortable () const {return kTRUE; }
   //  virtual Int_t   Compare(const TObject* obj) const;
 
+ protected:
   Int_t fADC_pos;
   Int_t fADC_neg;
 
- protected:
-
  private:
 
-  ClassDef(THcRawShowerHit, 0);	// Shower hit class
+  ClassDef(THcRawShowerHit, 0);	// Raw Shower counter hit
 };  
 
 #endif

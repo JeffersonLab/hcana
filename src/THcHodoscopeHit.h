@@ -6,8 +6,9 @@
 class THcHodoscopeHit : public THcRawHit {
 
  public:
+  friend class THcScintillatorPlane;
 
- THcHodoscopeHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
+  THcHodoscopeHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
     fADC_pos(-1), fADC_neg(-1),
     fTDC_pos(-1), fTDC_neg(-1) {
   }
@@ -23,16 +24,15 @@ class THcHodoscopeHit : public THcRawHit {
   //  virtual Bool_t  IsSortable () const {return kTRUE; }
   //  virtual Int_t   Compare(const TObject* obj) const;
 
+ protected:
   Int_t fADC_pos;
   Int_t fADC_neg;
   Int_t fTDC_pos;
   Int_t fTDC_neg;
 
- protected:
-
  private:
 
-  ClassDef(THcHodoscopeHit, 0);	// Hodoscope hit class
+  ClassDef(THcHodoscopeHit, 0);	// Raw Hodoscope hit
 };  
 
 #endif

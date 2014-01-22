@@ -6,12 +6,13 @@
 class THcCherenkovHit : public THcHodoscopeHit {
 
  public:
+  friend class THcCherenkov;
  
  protected:
 
  private:
 
-  ClassDef(THcCherenkovHit,0);	// Cherenkov hit class
+  ClassDef(THcCherenkovHit,0);	// Raw Cherenkov hit
 };
 
 #endif

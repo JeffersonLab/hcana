@@ -10,12 +10,10 @@
 
 #include "THcRawHit.h"
 
-//THcRawHit::~THcRawHit()
-//{}
 
 Int_t THcRawHit::Compare(const TObject* obj) const
 {
-  // Compare to sort by plane and counter
+  // Comparision function for Sort().
 
   const THcRawHit* hit = dynamic_cast<const THcRawHit*>(obj);
 

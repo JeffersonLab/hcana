@@ -113,7 +113,7 @@ class THcScintillatorPlane : public THaSubDetector {
   virtual Int_t  DefineVariables( EMode mode = kDefine );
   virtual void  InitializePedestals( );
 
-  ClassDef(THcScintillatorPlane,0)
+  ClassDef(THcScintillatorPlane,0); // Scintillator bars in a plane
 };
 #endif
 

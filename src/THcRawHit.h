@@ -39,7 +39,7 @@ public:
 
  private:
 
-  ClassDef(THcRawHit,0)      // Track ID abstract base class
+  ClassDef(THcRawHit,0)      // Raw Hit Base Class
 };
 
 #endif

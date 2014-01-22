@@ -111,7 +111,7 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
 
-  THcHitList::InitHitList(fDetMap, "THcRawShowerHit", 100);
+  InitHitList(fDetMap, "THcRawShowerHit", 100);
 
   EStatus status;
   if( (status = THaNonTrackingDetector::Init( date )) )
@@ -514,7 +514,7 @@ Int_t THcShower::Decode( const THaEvData& evdata )
   Clear();
 
   // Get the Hall C style hitlist (fRawHitList) for this event
-  Int_t nhits = THcHitList::DecodeToHitList(evdata);
+  Int_t nhits = DecodeToHitList(evdata);
 
   if(gHaCuts->Result("Pedestal_event")) {
     Int_t nexthit = 0;

@@ -170,7 +170,7 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
 
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
-  THcHitList::InitHitList(fDetMap, "THcRawDCHit", 1000);
+  InitHitList(fDetMap, "THcRawDCHit", 1000);
 
   EStatus status;
   // This triggers call of ReadDatabase and DefineVariables
@@ -427,7 +427,7 @@ Int_t THcDC::Decode( const THaEvData& evdata )
   Int_t num_event = evdata.GetEvNum();
   if (fdebugprintrawdc ||fdebugprintdecodeddc || fdebuglinkstubs || fdebugtrackprint) cout << " event num = " << num_event << endl;
   // Get the Hall C style hitlist (fRawHitList) for this event
-  fNhits = THcHitList::DecodeToHitList(evdata);
+  fNhits = DecodeToHitList(evdata);
 
   // Let each plane get its hits
   Int_t nexthit = 0;
@@ -1017,6 +1017,7 @@ Double_t THcDC::DpsiFun(Double_t ray[4], Int_t plane)
 Int_t THcDC::End(THaRunBase* run)
 {
   //  EffCalc();
+  return 0;
 }
 
 //_____________________________________________________________________________

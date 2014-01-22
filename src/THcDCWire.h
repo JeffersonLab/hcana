@@ -43,7 +43,7 @@ private:
   THcDCWire( const THcDCWire& );
   THcDCWire& operator=( const THcDCWire& );
  
-  ClassDef(THcDCWire,0)             // VDCWire class
+  ClassDef(THcDCWire,0)             // Drift Chamber Wire class
 };
 
 ////////////////////////////////////////////////////////////////////////////////

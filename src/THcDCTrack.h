@@ -85,6 +85,6 @@ private:
   THcDCTrack( const THcDCTrack& );
   THcDCTrack& operator=( const THcDCTrack& );
 
-  ClassDef(THcDCTrack,0)	// DCTrack class
+  ClassDef(THcDCTrack,0)	// Full Drift Chamber track
 };
 #endif

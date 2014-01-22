@@ -4,12 +4,8 @@
 //
 // THcDetectorMap
 //
-// Class to read and hold Hall C style detector map
-//
-// Will need method to retrieve all map entries for a given
-// detector id.
-//
-// Not sure we will keep this class, but still need the parsing of the map file
+// Class to read and Hall C style detector map
+//   FillMap method builds a map for a specific detector
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -54,8 +50,11 @@ struct Functor
 };
 //_____________________________________________________________________________
 Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
-// Should probably return a status
 {
+  // Build a DAQ hardware to detector element map for detector detectorname
+  // Reads through the entire list of mappings, adding one element to
+  // detmap for each electronics channel that maps to detectorname.
+
   list<ModChanList>::iterator imod;
   list<ChaninMod>::iterator ichan;
   ChaninMod Achan;
@@ -171,8 +170,35 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
   return(0);
 }
 
+//_____________________________________________________________________________
 void THcDetectorMap::Load(const char *fname)
 {
+// Load a Hall C ENGINE style detector map file.  The map file maps
+// a given roc, slot/module, and channel # into a given detector id#, plane
+// number, counter number and signal type.  The mapping between detector
+// names and ids is found in the comments at the begging of the map file.
+// This method looks for those comments, of the form:
+//   XXX_ID = n
+// to establish that mapping between detector name and detector ID.
+//
+// Lines of the form
+//  DETECTOR = n  
+//  ROC = n
+//  SLOT = n
+// are used to establish the module (roc and slot) and the detector
+// for the mapping lines that follow.
+// The actual mappings are of the form 
+//  subadd, plane, counter [, signal]
+// Each of these lines, combined with the detector, roc, slot values
+// establish the roc, slot, subadess -> detector, plane, counter#, sigtype map
+// Other lines that may be in the map file are
+//  NSUBADD = n
+//  BSUB = n
+//  MASK = hex value
+// These define characteristics of the electronics module (# channels,
+//  The bit number specifying the location of the subaddress in a data word
+//  and hex mask that the data word is anded with to retrieve data)
+
   static const char* const whtspc = " \t";
 
   ifstream ifile;

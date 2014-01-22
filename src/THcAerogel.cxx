@@ -80,7 +80,7 @@ THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
 
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
-  THcHitList::InitHitList(fDetMap, "THcAerogelHit", 100);
+  InitHitList(fDetMap, "THcAerogelHit", 100);
 
   EStatus status;
   if( (status = THaNonTrackingDetector::Init( date )) )
@@ -237,7 +237,7 @@ void THcAerogel::Clear(Option_t* opt)
 Int_t THcAerogel::Decode( const THaEvData& evdata )
 {
   // Get the Hall C style hitlist (fRawHitList) for this event
-  fNhits = THcHitList::DecodeToHitList(evdata);
+  fNhits = DecodeToHitList(evdata);
 
   if(gHaCuts->Result("Pedestal_event")) {
 
