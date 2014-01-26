@@ -158,11 +158,6 @@ pbaseenv.Append(LIBS=[hallclib,hallalib,dclib,scalerlib])
 baseenv.Append(LIBS=[hallalib,dclib,scalerlib])
 Export('pbaseenv')
 
-#SConscript('podd/SConscript.py',exports='baseenv')
-#SConscript('podd/hana_scaler/SConscript.py',exports='baseenv')
-#SConscript('podd/hana_decode/SConscript.py',exports='baseenv')
-#SConscript('src/SConscript.py',exports='baseenv')
-#SConscript('./SConscript.py',exports='baseenv')
 SConscript(dirs = directorylist,name='SConscript.py',exports='baseenv')
 
 #######  End of SConstruct #########
