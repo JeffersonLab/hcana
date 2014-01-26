@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 ###### Hall C Software Main SConstruct Build File #####
 ###### Author:	Edward Brash (brash@jlab.org) June 2013
 
@@ -165,3 +166,7 @@ Export('pbaseenv')
 SConscript(dirs = directorylist,name='SConscript.py',exports='baseenv')
 
 #######  End of SConstruct #########
+
+# Local Variables:
+# mode: python
+# End:
