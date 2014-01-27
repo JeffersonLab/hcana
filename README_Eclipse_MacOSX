@@ -91,11 +91,29 @@ automatically.
 Restart Eclipse; you should now have access to PyDev. You should see it by going to 
 Eclipse->About Eclipse->Installation Details->Installed Software
 
+4. Opening hcana as a New Project within Eclipse
 
- 
+This section assumes that you have cloned hcana (from the command line) somewhere on your system.
 
+a) Choose File->New->Other
+b) In the pop-up window, choose 'New SCons project from existing source', and click 'Next'
+c) Choose a project name (hcana is a good choice), specify the existing code location, and
+then add any SCons Options (for example, debug=1 standalone=1 will compile the code in debug
+mode, and compile the standalone codes as well.
+d) Click 'Finish'
 
+You should now see the project within the Project Explorer window on the RHS of the Eclipse window.
+You can double-click on any file, and it should open in the editor window.  You can edit and save
+changes in the usual way.  Clicking on the "Hammer" icon on the Eclipse toolbar should execute
+scons, with the output of the build process shown in the console view at the bottom of the Eclipse
+window.
 
+Also, you should see the current git branch that you are working on displayed next to the 
+top-level hcana folder that is displayed in the Project Explorer window.
+
+If you right-click on the hcana folder in the Project Explorer window, and then choose "Team", you
+should see the various git commands available.  From here, you can switch to another branch,
+checkout a new branch, do commits and pushes, and/or fetch and merge from upstream.
 
 
 
