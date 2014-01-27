@@ -1,12 +1,13 @@
-Installation of Eclipse (Kepler) on MacOSX, with plugins for SCons, Git, GitHub, and Python
+Installation of Eclipse (Kepler) on MacOSX, with plugins for SCons,
+Git, GitHub, and Python
 
 =========================
 
 1.  Install Eclipse
 
-There exists an Eclipse plugin for SCons, called SConsolidator.  As of January, 2014, this
-plugin works only with the Kepler version of Eclipse.  To download and install this version
-of Eclipse, go to:
+There exists an Eclipse plugin for SCons, called SConsolidator.  As of
+January, 2014, this plugin works only with the Kepler version of
+Eclipse.  To download and install this version of Eclipse, go to:
 
 http://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers/keplersr1
 
@@ -14,8 +15,9 @@ and download the MacOSX (Cocoa 64) version.  The file should be called:
 
 eclipse-cpp-kepler-SR1-macosx-cocoa-x86_64.tar.gz
 
-Unpack this somewhere in your own user space.  I chose to install it directly underneath
-my home directory, but of course you can install it where you like.
+Unpack this somewhere in your own user space.  I chose to install it
+directly underneath my home directory, but of course you can install
+it where you like.
 
 $ cd
 $ sudo tar -xvzf ~/Downloads/eclipse-cpp-kepler-SR1-macosx-cocoa-x86_64.tar.gz
@@ -24,24 +26,26 @@ Start up Eclipse from the command line with:
 
 $ ~/eclipse/eclipse
 
-You might also find it useful to add the Eclipse app to your dock, permanently, to make it
-easier to start up in the future.
+You might also find it useful to add the Eclipse app to your dock,
+permanently, to make it easier to start up in the future.
 
-When you start up Eclipse, you will get a window asking you to choose a workspace.  The
-default is usually /Users/****/Documents/workspace.  This is fine, but you might want to
-choose someplace else.  Make sure to click the "Use this as the default ..." radio button
-so that you won't get asked this every time.
+When you start up Eclipse, you will get a window asking you to choose
+a workspace.  The default is usually /Users/****/Documents/workspace.
+This is fine, but you might want to choose someplace else.  Make sure
+to click the "Use this as the default ..." radio button so that you
+won't get asked this every time.
 
-When Eclipse finally starts up, you can click on the "X" on the welcome page, and it
-should take you to the Project Explorer page.  This is the main view that you will
-probably end up using most of the time.
+When Eclipse finally starts up, you can click on the "X" on the
+welcome page, and it should take you to the Project Explorer page.
+This is the main view that you will probably end up using most of the
+time.
 
 =========================
 
 2.  Install the SConsolidator Plugin
 
-In order for Eclipse to work with SCons, one has to install a plugin called SConsolidator.
-To do this, do the following:
+In order for Eclipse to work with SCons, one has to install a plugin
+called SConsolidator.  To do this, do the following:
 
 a) Go to Help->Install New Software
 b) In the Install window that comes up, in the "Work with" field, enter:
@@ -49,33 +53,35 @@ b) In the Install window that comes up, in the "Work with" field, enter:
 http://www.sconsolidator.com/update
 
 and click on "Add..."
+
 c) Specify the name as "SConsolidator"
-d) Check the Eclipse Plug-In for SCons radio button, then hit Next> and follow the
-installation through.
-e) After the installation, Eclipse will need to be restarted, which it should do
-automatically.
+d) Check the Eclipse Plug-In for SCons radio button, then hit Next>
+and follow the installation through.
+e) After the installation, Eclipse will need to be restarted, which it
+should do automatically.
 
-When Eclipse restarts, it will ask you about setting the path to SCons.  Set this up now.
-Check to see where SCons is installed by doing "which scons" from a terminal window.
-For me, it is in /usr/local/bin/scons, and so I entered that for the path to the SCons
-executable.  
+When Eclipse restarts, it will ask you about setting the path to
+SCons.  Set this up now.  Check to see where SCons is installed by
+doing "which scons" from a terminal window.  For me, it is in
+/usr/local/bin/scons, and so I entered that for the path to the SCons
+executable.
 
-To change the SCons build options (at any time), you can go to Eclipse->Preferences, and
-then expand the SCons tag, to reveal options for Build Settings, Performance vs. Accuracy,
-and Warnings.  In particular, if you want to build the standalone executables, you can add
-'standalone=1' to the SCons Options in Build Settings.
-
-=========================
+To change the SCons build options (at any time), you can go to
+Eclipse->Preferences, and then expand the SCons tag, to reveal options
+for Build Settings, Performance vs. Accuracy, and Warnings.  In
+particular, if you want to build the standalone executables, you can
+add 'standalone=1' to the SCons Options in Build Settings.
 
 3. Install PyDev for Python Support
 
-PyDev includes a nice Python editor with appropriate syntax highlighting, as well as
-providing the "mouse-over" documentation features of Eclipse for those things that
-are written in Python - namely SCons.
+PyDev includes a nice Python editor with appropriate syntax
+highlighting, as well as providing the "mouse-over" documentation
+features of Eclipse for those things that are written in Python -
+namely SCons.
 
-As of this writing, Eclipse Kepler does not play so nicely with PyDev-3.X, and so we
-will install PyDev-2.X instead.  The reason may be related to issues with Java 1.6 vs. 1.7,
-in fact.
+As of this writing, Eclipse Kepler does not play so nicely with
+PyDev-3.X, and so we will install PyDev-2.X instead.  The reason may
+be related to issues with Java 1.6 vs. 1.7, in fact.
 
 a) Go to Help->Install New Software
 b) In the Install window that comes up, in the "Work with" field, enter:
@@ -84,18 +90,19 @@ http://pydev.org/updates
 
 and click on "Add..."
 c) Specify the name as "PyDev" and hit return
-d) IMPORTANT:  Uncheck the radio button to show versions other than the latest version
-in the bottom portion of this window.
+d) IMPORTANT: Uncheck the radio button to show versions other than the
+latest version in the bottom portion of this window.
 e) Look for the PyDev for Eclipse Version 2.8.2, and check this radio button.
 d) Proceed with the installation.
-e) IMPORTANT:  At some point it may ask you to allow a certain security certificate - you
-actually have to check the radio button in the top part of the window and THEN accept the
-certificate.
-f) After the installation, Eclipse will need to be restarted, which it should do
-automatically.
+e) IMPORTANT: At some point it may ask you to allow a certain security
+certificate - you actually have to check the radio button in the top
+part of the window and THEN accept the certificate.
+f) After the installation, Eclipse will need to be restarted, which it
+should do automatically.
 
-Restart Eclipse; you should now have access to PyDev. You should see it by going to 
-Eclipse->About Eclipse->Installation Details->Installed Software
+Restart Eclipse; you should now have access to PyDev. You should see
+it by going to Eclipse->About Eclipse->Installation Details->Installed
+Software
 
 =========================
 
