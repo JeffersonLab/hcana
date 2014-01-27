@@ -34,6 +34,10 @@ When Eclipse finally starts up, you can click on the "X" on the welcome page, an
 should take you to the Project Explorer page.  This is the main view that you will
 probably end up using most of the time.
 
+
+=========================
+
+
 2.  Install the SConsolidator Plugin
 
 In order for Eclipse to work with SCons, one has to install a plugin called SConsolidator.
@@ -60,6 +64,10 @@ To change the SCons build options (at any time), you can go to Eclipse->Preferen
 then expand the SCons tag, to reveal options for Build Settings, Performance vs. Accuracy,
 and Warnings.  In particular, if you want to build the standalone executables, you can add
 'standalone=1' to the SCons Options in Build Settings.
+
+
+=========================
+
 
 3. Install PyDev for Python Support
 
@@ -91,6 +99,10 @@ automatically.
 Restart Eclipse; you should now have access to PyDev. You should see it by going to 
 Eclipse->About Eclipse->Installation Details->Installed Software
 
+
+=========================
+
+
 4. Setting up Git within Eclipse
 
 a)  Basic Configuration
@@ -120,6 +132,10 @@ c) Activate the Git Toolbar
 Select Window → Customize perspective... and check the command groups Git and Git Navigation Actions
 in the Command Groups Availability tab.  You should now see "Git" as one of the main pulldown menus
 of the Eclipse toolbar.
+
+
+=========================
+
  
 5. Opening hcana as a New Project from Exisiting Source within Eclipse
 
@@ -147,9 +163,15 @@ checkout a new branch, do commits and pushes, and/or fetch and merge from upstre
 configured Eclipse to show the Git Toolbar, you can also choose a number of oft-used git commands
 from the Git pulldown menu.
 
-Also, you can commit and push from the Git Staging window!!!
+Also, you can commit and push from the Git Staging window!!!  And, you show the commit history
+by right-clicking on the top level hcana folder, and choosing Team -> Show in History
+You should see now a tab in the Console area called History, with a table of commits for the repository.
 
-5.  Cloning hcana from within Eclipse
+
+=========================
+
+
+6.  Cloning hcana from within Eclipse
 
 This section details how to clone your forked copy of hcana directly from within Eclipse (without
 having done so at the command line already).
