@@ -22,6 +22,12 @@ config.log
 .sconsign.dblite
 .sconf_temp/
 
+#eclipse stuff
+.cproject
+.project
+.settings
+.pydevproject
+
 # Patterns
 *.[oad]
 *~
