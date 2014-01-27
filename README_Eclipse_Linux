@@ -240,7 +240,21 @@ j) Click the ‘Use New Project wizard’ radio button, and then click on ‘Fin
 k)  The final dialog will allow you to choose ‘New SCons project from existing source’, at 
 which point you can then continue from step b) in Section 5 above!! 
 
+l) The final step is to add the appropriate Jefferson Lab reposistory as an upstream remote.
 
+(i) Open the Git Repositories view (Select Window → Show View → Other... → Git → Git Repositories)
+(ii) From the Git Repositories tab in the Console area, expand the repository that you are trying
+to set up (hcana in this case), and then expand Remotes.  You should see that origin is present.
+(iii) Right-click on Remotes, and choose 'Create Remote'.  Specify the Remote Name as 'upstream'. Select
+'Configure Push', and Click OK.
+(iv) Click on "Change" next to the field where one specifies the URI ... in the new dialog, specify
+the remote URI as git@github.com:JeffersonLab/hcana.git.  Click on 'Save'.  You should now see that the
+remote called upstream has been added.
+(v)  The final step is to configure the upstream fetch so that it pulls from the develop branch.  Expand
+the upstream directory under Remotes.  You will see a fetch and a push specification for the upstream
+repository.  The fetch specification is indicated by a left green arrow.  Right-click on this, and 
+choose Configure Fetch.  From the next dialog, choose Add.  In the next dialog, for the Source, specify
+the develop branch, then click Save and Finish.
 
 
 
