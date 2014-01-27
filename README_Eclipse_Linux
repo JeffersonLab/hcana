@@ -3,8 +3,13 @@ Installation of Eclipse (Kepler) on Linux (Centos6.4/RHEL), with plugins for SCo
 1.  Install Eclipse
 
 There exists an Eclipse plugin for SCons, called SConsolidator.  As of January, 2014, this
-plugin works only with the Kepler version of Eclipse.  To download and install this version
-of Eclipse, go to:
+plugin works only with the Kepler version of Eclipse.  
+
+Most of this information can be found at:
+
+http://www.if-not-true-then-false.com/2010/linux-install-eclipse-on-fedora-centos-red-hat-rhel/
+
+To download and install this version of Eclipse, go to:
 
 http://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers/keplersr1
 

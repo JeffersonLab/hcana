@@ -190,6 +190,9 @@ j) Click the ‘Use New Project wizard’ radio button, and then click on ‘Fin
 k)  The final dialog will allow you to choose ‘New SCons project from existing source’, at 
 which point you can then continue from step b) in Section 5 above!! 
 
+l) The final step is to add the appropriate Jefferson Lab reposistory as an upstream remote.
+
+
 
 
 
