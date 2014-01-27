@@ -147,7 +147,13 @@ checkout a new branch, do commits and pushes, and/or fetch and merge from upstre
 configured Eclipse to show the Git Toolbar, you can also choose a number of oft-used git commands
 from the Git pulldown menu.
 
+Also, you can commit and push from the Git Staging window!!!
+
 5.  Cloning hcana from within Eclipse
+
+This section details how to clone your forked copy of hcana directly from within Eclipse (without
+having done so at the command line already).
+
 
 
 
