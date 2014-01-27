@@ -91,9 +91,39 @@ automatically.
 Restart Eclipse; you should now have access to PyDev. You should see it by going to 
 Eclipse->About Eclipse->Installation Details->Installed Software
 
-4. Opening hcana as a New Project within Eclipse
+4. Setting up Git within Eclipse
 
-This section assumes that you have cloned hcana (from the command line) somewhere on your system.
+a)  Basic Configuration
+
+Select Window → Preferences → Team → Git
+
+Under the field for Cloning Repositories, choose a location (locally) for storing respositories that
+you will eventually clone to create.
+
+Select Window → Preferences → Team → Git → Configuration
+
+Choose the User Settings Tab:
+
+If you have already been using git on your system, you should see that the user and email fields 
+are already filled out.  If they are now, you can fill them out now.  The 'location' field should
+be ($HOME)/.gitconfig, where ($HOME) is your normal home directory
+
+b)  Git Staging View
+
+Select Window → Show View → Other... → Git → Git Staging
+
+You should now see a Git Staging tab in the Console area of the main Eclipse window.  Basically, this
+window will give you all information that would be reported by 'git status' at the command line.
+
+c) Activate the Git Toolbar
+
+Select Window → Customize perspective... and check the command groups Git and Git Navigation Actions
+in the Command Groups Availability tab.  You should now see "Git" as one of the main pulldown menus
+of the Eclipse toolbar.
+ 
+5. Opening hcana as a New Project from Exisiting Source within Eclipse
+
+This section assumes that you have already cloned hcana (from the command line) somewhere on your system.
 
 a) Choose File->New->Other
 b) In the pop-up window, choose 'New SCons project from existing source', and click 'Next'
@@ -113,7 +143,11 @@ top-level hcana folder that is displayed in the Project Explorer window.
 
 If you right-click on the hcana folder in the Project Explorer window, and then choose "Team", you
 should see the various git commands available.  From here, you can switch to another branch,
-checkout a new branch, do commits and pushes, and/or fetch and merge from upstream.
+checkout a new branch, do commits and pushes, and/or fetch and merge from upstream.  If you have
+configured Eclipse to show the Git Toolbar, you can also choose a number of oft-used git commands
+from the Git pulldown menu.
+
+5.  Cloning hcana from within Eclipse
 
 
 
