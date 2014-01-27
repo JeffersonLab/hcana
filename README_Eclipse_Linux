@@ -255,7 +255,3 @@ the upstream directory under Remotes.  You will see a fetch and a push specifica
 repository.  The fetch specification is indicated by a left green arrow.  Right-click on this, and 
 choose Configure Fetch.  From the next dialog, choose Add.  In the next dialog, for the Source, specify
 the develop branch, then click Save and Finish.
-
-
-
-
