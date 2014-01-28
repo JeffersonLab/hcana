@@ -1,60 +1,62 @@
 Installation of Eclipse (Kepler) on Linux (Centos6.4/RHEL), with plugins for SCons, Git, GitHub, and Python
+===========================================================================================================
 
-1.  Install Eclipse
+Install Eclipse
+---------------
 
 There exists an Eclipse plugin for SCons, called SConsolidator.  As of January, 2014, this
 plugin works only with the Kepler version of Eclipse.  
 
 Most of this information can be found at:
 
-http://www.if-not-true-then-false.com/2010/linux-install-eclipse-on-fedora-centos-red-hat-rhel/
+[Installing Eclipse on Fedora/Centos6.4/RHEL](http://www.if-not-true-then-false.com/2010/linux-install-eclipse-on-fedora-centos-red-hat-rhel/).
 
 To download and install this version of Eclipse, go to:
 
-http://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers/keplersr1
+[Eclipse Kepler SR1 Downloads](http://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers/keplersr1)
 
 and download the Linux 64-bit version.  The file should be called:
 
 eclipse-cpp-kepler-SR1-linux-gtk-x86_64.tar.gz
 
 Before you install this version of eclipse, you may have to uninstall the (older) version that
-ships with Centos6.4/RHEL (The rpm's may have been installed depending on what choices you made
+ships with Centos6.4/RHEL (The rpms may have been installed depending on what choices you made
 during the system installation process).  If 'which eclipse' tells you that it has been installed,
 then uninstall the older version with the following series of commands:
 
-$ yum erase eclipse
-$ yum erase eclipse-cdt
-$ yum erase eclipse-rcp
-$ yum erase eclipse-swt
-$ yum erase jetty-eclipse
-$ yum erase icu4j-eclipse
+	$ yum erase eclipse
+	$ yum erase eclipse-cdt
+	$ yum erase eclipse-rcp
+	$ yum erase eclipse-swt
+	$ yum erase jetty-eclipse
+	$ yum erase icu4j-eclipse
 
-This worked for me.  You can check to see if all eclipse-related rpm's have been uninstalled
+This worked for me.  You can check to see if all eclipse-related rpms have been uninstalled
 with 
 
-$ rpm -qa | grep -i eclipse
+	$ rpm -qa | grep -i eclipse
 
-If there are other rpm's reported, you can uninstall them with commands similar to those above.
+If there are other rpms reported, you can uninstall them with commands similar to those above.
 
 We are going to install eclipse under /opt (of course, you can install it anywhere
 you like - modify the commands below as necessary).  The procedure below will 
 require superuser privileges.
 
-$ cd
-$ sudo tar -xvzf ~/Downloads/eclipse-cpp-kepler-SR1-linux-gtk-x86_64.tar.gz -C /opt
-$ chmod -R +r /opt/eclipse
+	$ cd
+	$ sudo tar -xvzf ~/Downloads/eclipse-cpp-kepler-SR1-linux-gtk-x86_64.tar.gz -C /opt
+	$ chmod -R +r /opt/eclipse
 
 Now, we want to add a script to /usr/bin to launch eclipse.
 
-$ sudo touch /usr/bin/eclipse
-$ sudo chmod 755 /usr/bin/eclipse
+	$ sudo touch /usr/bin/eclipse
+	$ sudo chmod 755 /usr/bin/eclipse
 
 With your favorite editor, create the /usr/bin/eclipse file with the following content:
 
-#!/bin/sh
-export ECLIPSE_HOME="/opt/eclipse"
+	#!/bin/sh
+	export ECLIPSE_HOME="/opt/eclipse"
  
-$ECLIPSE_HOME/eclipse $*
+	$ECLIPSE_HOME/eclipse $*
 
 You may also want to create the Gnome desktop launcher for eclipse.  Create the file
 
@@ -62,46 +64,49 @@ You may also want to create the Gnome desktop launcher for eclipse.  Create the 
 
 with the following content:
 
-[Desktop Entry]
-Encoding=UTF-8
-Name=Eclipse
-Comment=Eclipse SDK 4.3.1
-Exec=eclipse
-Icon=/opt/eclipse/icon.xpm
-Terminal=false
-Type=Application
-Categories=GNOME;Application;Development;
-StartupNotify=true
+	[Desktop Entry]
+	Encoding=UTF-8
+	Name=Eclipse
+	Comment=Eclipse SDK 4.3.1
+	Exec=eclipse
+	Icon=/opt/eclipse/icon.xpm
+	Terminal=false
+	Type=Application
+	Categories=GNOME;Application;Development;
+	StartupNotify=true
 
 Start up Eclipse from the command line with:
 
-$ eclipse
+	$ eclipse
 
 When you start up Eclipse, you will get a window asking you to choose a workspace.  The
 default is usually /Users/****/Documents/workspace.  This is fine, but you might want to
 choose someplace else.  Make sure to click the "Use this as the default ..." radio button
-so that you won't get asked this every time.
+so that you will not get asked this every time.
 
 When Eclipse finally starts up, you can click on the "X" on the welcome page, and it
 should take you to the Project Explorer page.  This is the main view that you will
 probably end up using most of the time.
 
-=========================
-
-2.  Install the SConsolidator Plugin
+Install the SConsolidator Plugin
+--------------------------------
 
 In order for Eclipse to work with SCons, one has to install a plugin called SConsolidator.
 To do this, do the following:
 
 a) Go to Help->Install New Software
+
 b) In the Install window that comes up, in the "Work with" field, enter:
 
 http://www.sconsolidator.com/update
 
 and click on "Add..."
+
 c) Specify the name as "SConsolidator"
+
 d) Check the Eclipse Plug-In for SCons radio button, then hit Next> and follow the
 installation through.
+
 e) After the installation, Eclipse will need to be restarted, which it should do
 automatically.
 
@@ -115,9 +120,8 @@ then expand the SCons tag, to reveal options for Build Settings, Performance vs.
 and Warnings.  In particular, if you want to build the standalone executables, you can add
 'standalone=1' to the SCons Options in Build Settings.
 
-=========================
-
-3. Install PyDev for Python Support
+Install PyDev for Python Support
+--------------------------------
 
 PyDev includes a nice Python editor with appropriate syntax highlighting, as well as
 providing the "mouse-over" documentation features of Eclipse for those things that
@@ -128,30 +132,36 @@ will install PyDev-2.X instead.  The reason may be related to issues with Java 1
 in fact.
 
 a) Go to Help->Install New Software
+
 b) In the Install window that comes up, in the "Work with" field, enter:
 
 http://pydev.org/updates
 
 and click on "Add..."
+
 c) Specify the name as "PyDev" and hit return
+
 d) IMPORTANT:  Uncheck the radio button to show versions other than the latest version
 in the bottom portion of this window.
+
 e) Look for the PyDev for Eclipse Version 2.8.2, and check this radio button.
+
 d) Proceed with the installation.
+
 e) IMPORTANT:  At some point it may ask you to allow a certain security certificate - you
 actually have to check the radio button in the top part of the window and THEN accept the
 certificate.
+
 f) After the installation, Eclipse will need to be restarted, which it should do
 automatically.
 
 Restart Eclipse; you should now have access to PyDev. You should see it by going to 
 Eclipse->About Eclipse->Installation Details->Installed Software
 
-=========================
+Setting up Git within Eclipse
+-----------------------------
 
-4. Setting up Git within Eclipse
-
-Much of this comes from http://www.vogella.com/tutorials/EclipseGit/article.html
+Much of this comes from [this article](http://www.vogella.com/tutorials/EclipseGit/article.html).
 
 a)  Basic Configuration
 
@@ -180,18 +190,20 @@ c) Activate the Git Toolbar
 Select Window → Customize perspective... and check the command groups Git and Git Navigation Actions
 in the Command Groups Availability tab.  You should now see "Git" as one of the main pulldown menus
 of the Eclipse toolbar.
-
-=========================
  
-5. Opening hcana as a New Project from Exisiting Source within Eclipse
+Opening hcana as a New Project from Exisiting Source within Eclipse
+------------------------------------------------------------------
 
 This section assumes that you have already cloned hcana (from the command line) somewhere on your system.
 
 a) Choose File->New->Other
+
 b) In the pop-up window, choose 'New SCons project from existing source', and click 'Next'
-c) Choose a project name (hcana is a good choice), specify the existing code location, and
+
+c) Choose a project name (hcana or hcana-1.6 are good choices), specify the existing code location, and
 then add any SCons Options (for example, debug=1 standalone=1 will compile the code in debug
 mode, and compile the standalone codes as well.
+
 d) Click 'Finish'
 
 You should now see the project within the Project Explorer window on the RHS of the Eclipse window.
@@ -213,43 +225,53 @@ Also, you can commit and push from the Git Staging window!!!  And, you show the 
 by right-clicking on the top level hcana folder, and choosing Team -> Show in History
 You should see now a tab in the Console area called History, with a table of commits for the repository.
 
-=========================
-
-6.  Cloning hcana from within Eclipse
+Cloning hcana from within Eclipse
+--------------------------------
 
 This section details how to clone your forked copy of hcana directly from within Eclipse (without
 having done so at the command line already).
 
 a) Select File → Import → Git → Project from Git.
+
 b) Select Clone URI in the next dialog.
+
 c) Enter the URI of your repository on github, for example:
 
 git@github.com:brash99/hcana.git
 
 d) Click on ‘Next’ to get the Branch Selection dialog
+
 e) The default is to clone all branches.  You may want to select only certain ones.  Do so, 
 if you please, and click on ‘Next’
+
 f) Choose the local destination for your cloned repository.  Note that Eclipse will
 warn you if there is already an existing repository clone there (which can happen as the 
 default is to choose your top-level directory plus the first part of the repository name, 
 i.e. hcana, and so this may already be used).
+
 g) Choose the initial branch that you want to work with.
-h) IMPORTANT!!!!  Click the radio button to Clone Submodules!!!!
-i) Click on ‘Next’ to get the Projects dialog.
-j) Click the ‘Use New Project wizard’ radio button, and then click on ‘Finish’
-k)  The final dialog will allow you to choose ‘New SCons project from existing source’, at 
+
+h) Click on ‘Next’ to get the Projects dialog.
+
+i) Click the ‘Use New Project wizard’ radio button, and then click on ‘Finish’
+
+j)  The final dialog will allow you to choose ‘New SCons project from existing source’, at 
 which point you can then continue from step b) in Section 5 above!! 
 
-l) The final step is to add the appropriate Jefferson Lab reposistory as an upstream remote.
+k) The final step is to add the appropriate Jefferson Lab reposistory as an upstream remote.
 
 (i) Open the Git Repositories view (Select Window → Show View → Other... → Git → Git Repositories)
+
 (ii) From the Git Repositories tab in the Console area, expand the repository that you are trying
 to set up (hcana in this case), and then expand Remotes.  You should see that origin is present.
+
 (iii) Right-click on Remotes, and choose 'Create Remote'.  Specify the Remote Name as 'upstream'. Select
 'Configure Push', and Click OK.
+
 (iv) Click on "Change" next to the field where one specifies the URI ... in the new dialog, specify
 the remote URI as git@github.com:JeffersonLab/hcana.git.  Click on 'Save'.  You should now see that the
 remote called upstream has been added.
+
 (v)  The final step is to configure the upstream fetch so that it pulls from the develop branch.  Expand
 the upstream directory under Remotes.  You will see a fetch and a push specification for the upstream
 repository.  The fetch specification is indicated by a left green arrow.  Right-click on this, and 
