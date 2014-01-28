@@ -58,9 +58,8 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
   THaNonTrackingDetector(name,description,apparatus)
 {
   // Normal constructor with name and description
-  fPosADCHits = new TClonesArray("THcSignalHit",16);
+  fADCHits = new TClonesArray("THcSignalHit",16);
 
-//  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
 }
 
 //_____________________________________________________________________________
@@ -74,9 +73,15 @@ THcCherenkov::THcCherenkov( ) :
 THcCherenkov::~THcCherenkov()
 {
   // Destructor
-  delete [] fPosGain;
-  delete [] fPosPedLimit;
-  delete [] fPosPedMean;
+  delete [] fNPMT;
+  delete [] fADC;
+  delete [] fADC_P;
+  delete [] fNPE;
+
+  delete [] fCerWidth;
+  delete [] fGain;
+  delete [] fPedLimit;
+  delete [] fPedMean;
 }
 
 //_____________________________________________________________________________
@@ -114,21 +119,34 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   cout << "THcCherenkov::ReadDatabase " << GetName() << endl; // Ahmed
 
   char prefix[2];
+  char parname[100];
 
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
 
-  fNelem = 2;      // Default if not defined                                                                    
-  
-  fPosGain = new Double_t[fNelem];
-  fPosPedLimit = new Int_t[fNelem];
-  fPosPedMean = new Double_t[fNelem];
+  strcpy(parname,prefix);                              // This is taken from 
+  strcat(parname,"cer_tot_pmts");                      // THcScintillatorPlane
+  fNelem = (Int_t)gHcParms->Find(parname)->GetValue(); // class.
+
+  //    fNelem = 2;      // Default if not defined                                                                    
+
+  fNPMT = new Int_t[fNelem];
+  fADC = new Double_t[fNelem];
+  fADC_P = new Double_t[fNelem];
+  fNPE = new Double_t[fNelem];
+
+  fCerWidth = new Double_t[fNelem];
+  fGain = new Double_t[fNelem];
+  fPedLimit = new Int_t[fNelem];
+  fPedMean = new Double_t[fNelem];
   
   DBRequest list[]={
-    {"cer_adc_to_npe", fPosGain, kDouble, fNelem},              // Ahmed
-    {"cer_ped_limit", fPosPedLimit, kInt, fNelem},              // Ahmed
+    {"cer_adc_to_npe", fGain,     kDouble, fNelem},              // Ahmed
+    {"cer_ped_limit",  fPedLimit, kInt,    fNelem},              // Ahmed
+    {"cer_width",      fCerWidth, kDouble, fNelem},              // Ahmed
     {0}
   };
+
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   fIsInit = true;
@@ -155,13 +173,12 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
   // No.  They show up in tree as Ndata.H.aero.postdchits for example
 
   RVarDef vars[] = {
-    {"adc_1",  "Raw First ADC Amplitudes",    "fA_1"},
-    {"adc_2",  "Raw Second ADC Amplitudes",   "fA_2"},
-    {"adc_p_1",  "Raw First ADC Amplitudes",  "fA_p_1"},
-    {"adc_p_2",  "Raw Second ADC Amplitudes", "fA_p_2"},
-    {"npe_1","PEs First Tube", "fNpe_1"},
-    {"npe_2","PEs Second Tube","fNpe_2"},
-    {"posadchits", "List of Positive ADC hits","fPosADCHits.THcSignalHit.GetPaddleNumber()"},
+    {"PhotoTubes",  "Nuber of Cherenkov photo tubes",            "fNPMT"},
+    {"ADC",         "Raw ADC values",                            "fADC"},
+    {"ADC_P",       "Pedestal Subtracted ADC values",            "fADC_P"},
+    {"NPE",         "Number of Photo electrons",                 "fNPE"},
+    {"NPEsum",      "Sum of Number of Photo electrons",          "fNPEsum"},
+    {"NCherHit",    "Number of Hits(Cherenkov)",                 "fNCherHit"},
     { 0 }
   };
 
@@ -172,18 +189,20 @@ inline
 void THcCherenkov::Clear(Option_t* opt)
 {
   // Clear the hit lists
-  fPosADCHits->Clear();
+  fADCHits->Clear();
 
   // Clear Cherenkov variables  from h_trans_cer.f
   
   fNhits = 0;	     // Don't really need to do this.  (Be sure this called before Decode)
+  fNPEsum = 0;
+  fNCherHit = 0;
 
-  fA_1 = 0;
-  fA_2 = 0;
-  fA_p_1 = 0;
-  fA_p_2 = 0;
-  fNpe_1 = 0;
-  fNpe_2 = 0;
+  for(Int_t itube = 0;itube < fNelem;itube++) {
+    fNPMT[itube] = 0;
+    fADC[itube] = 0;
+    fADC_P[itube] = 0;
+    fNPE[itube] = 0;
+  }
 
 }
 
@@ -194,29 +213,25 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
   fNhits = THcHitList::DecodeToHitList(evdata);
 
   if(gHaCuts->Result("Pedestal_event")) {
-
     AccumulatePedestals(fRawHitList);
-
     fAnalyzePedestals = 1;	// Analyze pedestals first normal events
     return(0);
   }
 
   if(fAnalyzePedestals) {
-     
     CalculatePedestals();
-   
     fAnalyzePedestals = 0;	// Don't analyze pedestals next event
   }
 
 
   Int_t ihit = 0;
-  Int_t nPosADCHits=0;
+  Int_t nADCHits=0;
   while(ihit < fNhits) {
     THcCherenkovHit* hit = (THcCherenkovHit *) fRawHitList->At(ihit);
     
-    // ADC positive hit
+    // ADC hit
     if(hit->fADC_pos >  0) {
-      THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
+      THcSignalHit *sighit = (THcSignalHit*) fADCHits->ConstructedAt(nADCHits++);
       sighit->Set(hit->fCounter, hit->fADC_pos);
     }
 
@@ -275,31 +290,23 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
     if ( ihit != npmt )
       cout << "ihit != npmt " << endl;
 
-    if ( npmt == 0 ) {
-      fA_1 = hit->fADC_pos;
-      fA_p_1 = hit->fADC_pos - fPosPedMean[npmt];
-      if ( ( fA_p_1 > 50 ) && ( hit->fADC_pos < 8000 ) ) {
-	fNpe_1 = fPosGain[npmt]*fA_p_1;
-      } else if (  hit->fADC_pos > 8000 ) {
-	fNpe_1 = 100.0;
-      } else {
-	fNpe_1 = 0.0;
-      }
+    fNPMT[npmt] = hit->fCounter;
+    fADC[npmt] = hit->fADC_pos;
+    fADC_P[npmt] = hit->fADC_pos - fPedMean[npmt];
+    
+    if ( ( fADC_P[npmt] > fCerWidth[npmt] ) && ( hit->fADC_pos < 8000 ) ) {
+      fNPE[npmt] = fGain[npmt]*fADC_P[npmt];
+      fNCherHit ++;
+    } else if (  hit->fADC_pos > 8000 ) {
+      fNPE[npmt] = 100.0;
+    } else {
+      fNPE[npmt] = 0.0;
     }
     
-    if ( npmt == 1 ) {
-      fA_2 = hit->fADC_pos;
-      fA_p_2 = hit->fADC_pos - fPosPedMean[npmt];
-      if ( ( fA_p_2 > 50 ) && ( hit->fADC_pos < 8000 ) ) {
-	fNpe_2 = fPosGain[npmt]*fA_p_2;
-      } else if (  hit->fADC_pos > 8000 ) {
-	fNpe_2 = 100.0;
-      } else {
-	fNpe_2 = 0.0;
-      }
-    }
+    fNPEsum += fNPE[npmt];
+
   }
-      
+
   ApplyCorrections();
 
   return 0;
@@ -317,18 +324,16 @@ void THcCherenkov::InitializePedestals( )
 {
   fNPedestalEvents = 0;
   fMinPeds = 500; 		// In engine, this is set in parameter file
-  fPosPedSum = new Int_t [fNelem];
-  fPosPedSum2 = new Int_t [fNelem];
-  fPosPedLimit = new Int_t [fNelem];
-  fPosPedCount = new Int_t [fNelem];
+  fPedSum = new Int_t [fNelem];
+  fPedSum2 = new Int_t [fNelem];
+  fPedCount = new Int_t [fNelem];
 
-  fPosPed = new Double_t [fNelem];
-  fPosThresh = new Double_t [fNelem];
+  fPed = new Double_t [fNelem];
+  fThresh = new Double_t [fNelem];
   for(Int_t i=0;i<fNelem;i++) {
-    fPosPedSum[i] = 0;
-    fPosPedSum2[i] = 0;
-    fPosPedLimit[i] = 1000;	// In engine, this are set in parameter file
-    fPosPedCount[i] = 0;
+    fPedSum[i] = 0;
+    fPedSum2[i] = 0;
+    fPedCount[i] = 0;
   }
 
 }
@@ -346,13 +351,13 @@ void THcCherenkov::AccumulatePedestals(TClonesArray* rawhits)
     THcCherenkovHit* hit = (THcCherenkovHit *) rawhits->At(ihit);
 
     Int_t element = hit->fCounter - 1;
-    Int_t adcpos = hit->fADC_pos;
-    if(adcpos <= fPosPedLimit[element]) {
-      fPosPedSum[element] += adcpos;
-      fPosPedSum2[element] += adcpos*adcpos;
-      fPosPedCount[element]++;
-      if(fPosPedCount[element] == fMinPeds/5) {
-	fPosPedLimit[element] = 100 + fPosPedSum[element]/fPosPedCount[element];
+    Int_t nadc = hit->fADC_pos;
+    if(nadc <= fPedLimit[element]) {
+      fPedSum[element] += nadc;
+      fPedSum2[element] += nadc*nadc;
+      fPedCount[element]++;
+      if(fPedCount[element] == fMinPeds/5) {
+	fPedLimit[element] = 100 + fPedSum[element]/fPedCount[element];
       }
     }
     ihit++;
@@ -371,19 +376,17 @@ void THcCherenkov::CalculatePedestals( )
   //  cout << "Plane: " << fPlaneNum << endl;
   for(Int_t i=0; i<fNelem;i++) {
     
-    // Positive tubes
-    fPosPed[i] = ((Double_t) fPosPedSum[i]) / TMath::Max(1, fPosPedCount[i]);
-    fPosThresh[i] = fPosPed[i] + 15;
-
-    //    cout << i+1 << " " << fPosPed[i] << " " << fNegPed[i] << endl;
+    // PMT tubes
+    fPed[i] = ((Double_t) fPedSum[i]) / TMath::Max(1, fPedCount[i]);
+    fThresh[i] = fPed[i] + 15;
 
     // Just a copy for now, but allow the possibility that fXXXPedMean is set
     // in a parameter file and only overwritten if there is a sufficient number of
     // pedestal events.  (So that pedestals are sensible even if the pedestal events were
     // not acquired.)
     if(fMinPeds > 0) {
-      if(fPosPedCount[i] > fMinPeds) {
-	fPosPedMean[i] = fPosPed[i];
+      if(fPedCount[i] > fMinPeds) {
+	fPedMean[i] = fPed[i];
       }
     }
   }
@@ -399,9 +402,9 @@ void THcCherenkov::Print( const Option_t* opt) const {
   cout << "Cherenkov Pedestals" << endl;
 
   // Ahmed
-  cout << "No.   Pos" << endl;
+  cout << "No.   ADC" << endl;
   for(Int_t i=0; i<fNelem; i++){
-    cout << " " << i << "    " << fPosPed[i] << endl;
+    cout << " " << i << "    " << fPed[i] << endl;
   }
 
   cout << endl;

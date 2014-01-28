@@ -6,6 +6,7 @@
   //
   
   Int_t RunNumber=50017;
+  //  char* RunFileNamePattern="/home/zahmed/Hallc/RawData/daq04_%d.log.0";
   char* RunFileNamePattern="daq04_%d.log.0";
   
   gHcParms->Define("gen_run_number", "Run Number", RunNumber);

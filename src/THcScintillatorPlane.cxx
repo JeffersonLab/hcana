@@ -127,28 +127,13 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   prefix[0]=tolower(GetParent()->GetPrefix()[0]);
   prefix[1]='\0';
 
-  /*  strcpy(parname,prefix);
-  strcat(parname,"scin_");
-  strcat(parname,GetName());
-  Int_t plen=strlen(parname);
-
-  strcat(parname,"_nr");
-  cout << " Getting value of " << parname << endl;
-  fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
-
-  parname[plen]='\0';
-  strcat(parname,"_spacing");
-
-  fSpacing =  gHcParms->Find(parname)->GetValue(0);
-  cout <<"fSpacing = "<<fSpacing<<endl;
-  */
-
   // need this further down so read them first! GN
   strcpy(parname,prefix);
   strcat(parname,"scin_");
   strcat(parname,GetName());
   strcat(parname,"_nr");
   fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+  cout << "Value of parameter: " << parname << "   = " << fNelem << endl;
   //
   // Based on the signs of these quantities in the .pos file the correspondence 
   // should be bot=>left  and top=>right when comparing x and y-type scintillators
