@@ -36,78 +36,39 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
 
   THcCherenkov();  // for ROOT I/O		
  protected:
-  Int_t fAnalyzePedestals;
+  Int_t         fAnalyzePedestals;
 
   // Parameters
-  Double_t* fPosGain;
-  Double_t* fNegGain;
+  Double_t*     fGain;
+  Double_t*     fCerWidth;
 
   // Event information
-  Int_t fNhits;
-
-  Float_t*   fA_Pos;         // [fNelem] Array of ADC amplitudes
-  Float_t*   fA_Neg;         // [fNelem] Array of ADC amplitudes
-  Float_t*   fA_Pos_p;	     // [fNelem] Array of ped-subtracted ADC amplitudes
-  Float_t*   fA_Neg_p;	     // [fNelem] Array of ped-subtracted ADC amplitudes
-  Float_t*   fT_Pos;         // [fNelem] Array of TDCs
-  Float_t*   fT_Neg;         // [fNelem] Array of TDCs
-
-  Double_t  fA_1;         // Ahmed
-  Double_t  fA_2;         // Ahmed
-  Double_t  fNHits_1;     // Ahmed
-  Double_t  fNHits_2;     // Ahmed
-  Double_t  fNHits;       // Ahmed
-  Double_t  fA_p_1;       // Ahmed
-  Double_t  fA_p_2;       // Ahmed
-  Double_t  fNpe_1;       // Ahmed
-  Double_t  fNpe_2;       // Ahmed
-  Double_t  fNpe;         // Ahmed
-
-  Double_t fPosNpeSum;
-  Double_t fNegNpeSum;
-  Double_t fNpeSum;
-  Int_t fNGoodHits;
-  Int_t fNADCPosHits;
-  Int_t fNADCNegHits;
-  Int_t fNTDCPosHits;
-  Int_t fNTDCNegHits;
-
-  Double_t* fPosNpe;		// [fNelem] # Photoelectrons per positive tube
-  Double_t* fNegNpe;		// [fNelem] # Photoelectrons per negative tube
-
+  Int_t         fNhits;
+  Int_t*        fNPMT;            // [fNelem] Array of ADC amplitudes
+  Double_t*     fADC;             // [fNelem] Array of ADC amplitudes
+  Double_t*     fADC_P;           // [fNelem] Array of ADC amplitudes
+  Double_t*     fNPE;             // [fNelem] Array of ADC amplitudes
+  Double_t      fNPEsum;          // [fNelem] Array of ADC amplitudes
+  Double_t      fNCherHit;        // [fNelem] Array of ADC amplitudes
 
   // Hits
-  TClonesArray* fPosTDCHits;
-  TClonesArray* fNegTDCHits;
-  TClonesArray* fPosADCHits;
-  TClonesArray* fNegADCHits;
+  TClonesArray* fADCHits;
 
   // Pedestals
-  Int_t fNPedestalEvents;
-  Int_t fMinPeds;
-  Int_t *fPosPedSum;		/* Accumulators for pedestals */
-  Int_t *fPosPedSum2;
-  Int_t *fPosPedLimit;
-  Int_t *fPosPedCount;
-  Int_t *fNegPedSum;
-  Int_t *fNegPedSum2;
-  Int_t *fNegPedLimit;
-  Int_t *fNegPedCount;
-
-  Double_t *fPosPed;
-  Double_t *fPosSig;
-  Double_t *fPosThresh;
-  Double_t *fNegPed;
-  Double_t *fNegSig;
-  Double_t *fNegThresh;
-
-  Double_t *fPosPedMean; 	/* Can be supplied in parameters and then */
-  Double_t *fNegPedMean;	/* be overwritten from ped analysis */
+  Int_t         fNPedestalEvents;
+  Int_t         fMinPeds;
+  Int_t*        fPedSum;	  /* Accumulators for pedestals */
+  Int_t*        fPedSum2;
+  Int_t*        fPedLimit; 
+  Double_t*     fPedMean; 	  /* Can be supplied in parameters and then */ 
+  Int_t*        fPedCount; 
+  Double_t*     fPed;
+  Double_t*     fThresh;
   
   void Setup(const char* name, const char* description);
   virtual void  InitializePedestals( );
 
-  ClassDef(THcCherenkov,0)   // Generic cherenkov class
+  ClassDef(THcCherenkov,0)        // Generic cherenkov class
 };
 
 #endif
