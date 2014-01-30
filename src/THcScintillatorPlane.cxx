@@ -133,6 +133,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   strcat(parname,GetName());
   strcat(parname,"_nr");
   fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
+  cout << "Value of parameter: " << parname << "   = " << fNelem << endl;
   //
   // Based on the signs of these quantities in the .pos file the correspondence 
   // should be bot=>left  and top=>right when comparing x and y-type scintillators
