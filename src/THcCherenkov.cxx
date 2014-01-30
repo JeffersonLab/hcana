@@ -2,20 +2,23 @@
 //                                                                                   //
 // THcCherenkov                                                                      //
 //                                                                                   //
-// Class for an Cherenkov detector consisting of onw pair of PMT's                   //
+// Class for an Cherenkov detector consisting of two PMT's                           //
 //                                                                                   //
-// Zafar Ahmed. Second attempt. November 14 2013.                                    //
-// Comment:No need to cahnge the Map file but may need to change the parameter file  //
+// Zafar Ahmed. Fourth pull request. January 30 2014.                                //
+// Comment: No need to cahnge the Map file.                                          //
+// Comment  New parameter hcer_tot_pmts = 2 is added to the hcana.param file         //
 //                                                                                   //
-// This code is written for following variables:                                     //
+// This code is for the coarse process of THcCherenkov class.                        //
 //                                                                                   //
-// Variable Name     Description                                                     //
-// adc_1             Raw value of adc 1                                              //
-// adc_2             Raw value of adc 2                                              //
-// adc_p_1           Pedestal substracted value of adc 1                             //
-// adc_p_2           Pedestal substracted value of adc 2                             //
-// npe_1             Number of photo electrons of adc 1                              //
-// npe_2             Number of photo electrons of adc 2                              //
+//                                                                                   //
+// Variable Name   Description                                                       //
+//                                                                                   //
+// phototubes      Nuber of Cherenkov photo tubes                                    //
+// adc             Raw ADC values                                                    //
+// adc_p           Pedestal Subtracted ADC values                                    //
+// npe             Number of Photo electrons                                         //
+// npesum          Sum of Number of Photo electrons                                  //
+// ncherhit        Number of Hits(Cherenkov)                                         //
 //                                                                                   //
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -173,12 +176,12 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
   // No.  They show up in tree as Ndata.H.aero.postdchits for example
 
   RVarDef vars[] = {
-    {"PhotoTubes",  "Nuber of Cherenkov photo tubes",            "fNPMT"},
-    {"ADC",         "Raw ADC values",                            "fADC"},
-    {"ADC_P",       "Pedestal Subtracted ADC values",            "fADC_P"},
-    {"NPE",         "Number of Photo electrons",                 "fNPE"},
-    {"NPEsum",      "Sum of Number of Photo electrons",          "fNPEsum"},
-    {"NCherHit",    "Number of Hits(Cherenkov)",                 "fNCherHit"},
+    {"phototubes",  "Nuber of Cherenkov photo tubes",            "fNPMT"},
+    {"adc",         "Raw ADC values",                            "fADC"},
+    {"adc_p",       "Pedestal Subtracted ADC values",            "fADC_P"},
+    {"npe",         "Number of Photo electrons",                 "fNPE"},
+    {"npesum",      "Sum of Number of Photo electrons",          "fNPEsum"},
+    {"ncherhit",    "Number of Hits(Cherenkov)",                 "fNCherHit"},
     { 0 }
   };
 
