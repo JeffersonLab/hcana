@@ -341,7 +341,7 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "nsp", "Number of Space Points", "fNSp" },
     { "x", "X at focal plane", "fDCTracks.THcDCTrack.GetX()"},
     { "y", "Y at focal plane", "fDCTracks.THcDCTrack.GetY()"},
-    { "xp", "YP at focal plane", "fDCTracks.THcDCTrack.GetXP()"},
+    { "xp", "XP at focal plane", "fDCTracks.THcDCTrack.GetXP()"},
     { "yp", "YP at focal plane", "fDCTracks.THcDCTrack.GetYP()"},
     { "residual", "Residuals", "fResiduals"},
     { 0 }
