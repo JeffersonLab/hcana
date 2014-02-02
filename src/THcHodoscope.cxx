@@ -116,21 +116,6 @@ void THcHodoscope::Setup(const char* name, const char* description)
   }
 }
 
-#if 0
-//_____________________________________________________________________________
-void THcHodoscope::SetApparatus( THaApparatus* app )
-{
-  // Set the apparatus of this detector as well as the subdetectors
-
-  cout << "In THcHodoscope::SetApparatus" << endl;
-  THaDetector::SetApparatus( app );
-  for(Int_t i=0;i < fNPlanes;i++) {
-    fPlanes[i]->SetApparatus( app );
-  }
-  return;
-}
-#endif
-
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 {
@@ -338,25 +323,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   }
 
-/*
-#if 0
-  fCenter = new Double_t* [fNPlanes];
-  for(Int_t i=0;i<fNPlanes;i++) {
-    parname[plen] = '\0';
-    strcat(parname,fPlaneNames[i]);
-    strcat(parname,"_center");
-    cout << parname << endl;
-    Double_t* p = (Double_t *)gHcParms->Find(parname)->GetValuePointer();
-    fCenter[i] = new Double_t [fNPaddle[i]];
-    cout << parname;
-    for(Int_t ipad=0;ipad<fNPaddle[i];ipad++) {
-      fCenter[i][ipad] = p[ipad];
-      if (fDebug>=1)    cout << " " << fCenter[i][ipad];
-    }
-    if (fDebug>=1)  cout << endl;
-  }
-#endif
-*/
   // GN added
   // reading variables from *hodo.param
   fMaxScinPerPlane=fNPaddle[0];
@@ -639,17 +605,6 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     fStartTime=fStartTimeCenter;
   }
   fStartTime=32.; // mkj force to constant
-  //  cout <<" stats = "<<fGoodStartTime<<" "<<nfptimes<<" fStartTime = "<<fStartTime<<endl;
-  // fRawHitList is TClones array of THcHodoscopeHit objects
-#if 0
-  for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
-    THcHodoscopeHit* hit = (THcHodoscopeHit *) fRawHitList->At(ihit);
-    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
-	 << hit->fADC_pos << " " << hit->fADC_neg << " "  <<  hit->fTDC_pos
-	 << " " <<  hit->fTDC_neg << endl;
-  }
-  cout << endl;
-#endif
 
   ///  fStartTime = 500;		// Drift Chamber will need this
 

@@ -43,27 +43,6 @@ Int_t THcHodoscopeHit::GetData(Int_t signal) {
   return(-1); // Actually should throw exception
 }
 
-#if 0
-Int_t THcHodoscopeHit::Compare(const TObject* obj) const
-{
-  // Compare to sort by plane and counter
-
-  const THcHodoscopeHit* hit = dynamic_cast<const THcHodoscopeHit*>(obj);
-
-  if(!hit) return -1;
-  Int_t p1 = fPlane;
-  Int_t p2 = hit->fPlane;
-  if(p1 < p2) return -1;
-  else if(p1 > p2) return 1;
-  else {
-    Int_t c1 = fCounter;
-    Int_t c2 = hit->fCounter;
-    if(c1 < c2) return -1;
-    else if (c1 == c2) return 0;
-    else return 1;
-  }
-}
-#endif
 //_____________________________________________________________________________
 THcHodoscopeHit& THcHodoscopeHit::operator=( const THcHodoscopeHit& rhs )
 {

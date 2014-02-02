@@ -208,13 +208,6 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
     }
   }
 
-#if 0  
-  for(map<int,TMatrixD*>::iterator pm=fHaa3map.begin();
-      pm != fHaa3map.end(); pm++) {
-    fAA3Inv[pm->first]->Print();
-  }
-#endif
-
   fIsInit = true;
   return kOK;
 }
@@ -322,21 +315,6 @@ Int_t THcDriftChamber::FindSpacePoints( void )
       //      if(fNSpacePoints == 0) if (fhdebugflagpr) cout << "SelectSpacePoints() killed SP" << endl;
     }
     //    if (fhdebugflagpr) cout << fNSpacePoints << " Space Points remain" << endl;
-    // Add these space points to the total list of space points for the
-    // the DC package.  Do this in THcDC.cxx.
-#if 0
-    for(Int_t ip=0;ip<fNPlanes;ip++) {
-      Int_t np = fPlanes[ip]->GetPlaneNum(); // Actuall plane number of this plane
-      // (0-11) or (1-12)?
-      TClonesArray* fHits = fPlanes[ip]->GetHits();
-
-      for(Int_t ihit=0;ihit<fNhits;ihit++) { // Looping over all hits in all planes of the chamber
-	THcDCHit* hit = static_cast<THcDCHit*>(fHits->At(ihit));
-	// 
-
-      }
-    }
-#endif
   }
   return(fNSpacePoints);
 }
@@ -734,7 +712,6 @@ Int_t THcDriftChamber::SpacePointMultiWire()
 	  }
 	}
       }
-      //if (fhdebugflagpr) cout << " Max plane  and hits " << maxplane[0] << " " << nhitsperplane[maxplane[0]]<< " " << maxplane[1] << " " << nhitsperplane[maxplane[1]]<< " "<< maxplane[2] << " " << nhitsperplane[maxplane[2]]<< endl;      
       // First fill clones with 1 hit each from the 3 planes with the most hits
       for(Int_t n1=0;n1<nhitsperplane[maxplane[0]];n1++) {
 	for(Int_t n2=0;n2<nhitsperplane[maxplane[1]];n2++) {
@@ -752,16 +729,16 @@ Int_t THcDriftChamber::SpacePointMultiWire()
 	      newsp->Clear();	// Clear doesn't clear X, Y
 	      // if (fhdebugflagpr) cout << " original sp #hits combos X y " << sp->GetCombos() << sp->GetNHits() << sp->GetX() << " " <<  sp->GetY() << endl;
               newsp->SetXY(sp->GetX(), sp->GetY());
-	    newsp->SetCombos(combos_save);
-	    newsp->AddHit(hits_plane[maxplane[0]][n1]);
-	    newsp->AddHit(hits_plane[maxplane[1]][n2]);
-	    newsp->AddHit(hits_plane[maxplane[2]][n3]);
-	    newsp->AddHit(hits_plane[maxplane[3]][0]);
-	    if(nhitsperplane[maxplane[4]] == 1) {
-	      newsp->AddHit(hits_plane[maxplane[4]][0]);
-	      if(nhitsperplane[maxplane[5]] == 1) 
-		newsp->AddHit(hits_plane[maxplane[5]][0]);
-	    }
+	      newsp->SetCombos(combos_save);
+	      newsp->AddHit(hits_plane[maxplane[0]][n1]);
+	      newsp->AddHit(hits_plane[maxplane[1]][n2]);
+	      newsp->AddHit(hits_plane[maxplane[2]][n3]);
+	      newsp->AddHit(hits_plane[maxplane[3]][0]);
+	      if(nhitsperplane[maxplane[4]] == 1) {
+		newsp->AddHit(hits_plane[maxplane[4]][0]);
+		if(nhitsperplane[maxplane[5]] == 1) 
+		  newsp->AddHit(hits_plane[maxplane[5]][0]);
+	      }
 	    } else {
 	      // if (fhdebugflagpr) cout << " setting other sp " << "# space pts now = " << fNSpacePoints << endl;
 	      THcSpacePoint* newsp = (THcSpacePoint*)fSpacePoints->ConstructedAt(newsp_num);
@@ -769,39 +746,23 @@ Int_t THcDriftChamber::SpacePointMultiWire()
 	      Int_t combos_save=sp->GetCombos();
 	      newsp->Clear();
 	      newsp->SetXY(sp->GetX(), sp->GetY());
-	    newsp->SetCombos(combos_save);
-	    newsp->AddHit(hits_plane[maxplane[0]][n1]);
-	    newsp->AddHit(hits_plane[maxplane[1]][n2]);
-	    newsp->AddHit(hits_plane[maxplane[2]][n3]);
-	    newsp->AddHit(hits_plane[maxplane[3]][0]);
-	    if(nhitsperplane[maxplane[4]] == 1) {
-	      newsp->AddHit(hits_plane[maxplane[4]][0]);
-	      if(nhitsperplane[maxplane[5]] == 1) 
-		newsp->AddHit(hits_plane[maxplane[5]][0]);
-	    }
-           }
-	  }
-	}
-      }
-#if 0
-      // Loop over clones and order hits in the same way as parent SP
-      // Why do we have to order the hits.
-      for(Int_t i=0;i<ntot;i++) {
-	Int_t newsp_num= nsp_tot + i;
-	if(i == 1) newsp_num = isp;
-	for(Int_t j=0;j<nplanes_hit;j++) {
-	  for(Int_t k=0;k<nplanes_hit;k++) {
-	    THcDCHit* hit1 = fSpacePointHits[newsp_num][j];
-	    THcDCHit* hit2 = fSpacePointHits[newsp_num][k];
-	    if(hit_order(hit1) > hit_order(hit2)) {
-	      THcDCHit* temp = fSpacePoints[newsp_num].hits[k];
-	      fSpacePoints[newsp_num].hits[k] = fSpacePoints[newsp_num].hits[j];
-	      fSpacePoints[newsp_num].hits[j] = temp;
+	      newsp->SetCombos(combos_save);
+	      newsp->AddHit(hits_plane[maxplane[0]][n1]);
+	      newsp->AddHit(hits_plane[maxplane[1]][n2]);
+	      newsp->AddHit(hits_plane[maxplane[2]][n3]);
+	      newsp->AddHit(hits_plane[maxplane[3]][0]);
+	      if(nhitsperplane[maxplane[4]] == 1) {
+		newsp->AddHit(hits_plane[maxplane[4]][0]);
+		if(nhitsperplane[maxplane[5]] == 1) 
+		  newsp->AddHit(hits_plane[maxplane[5]][0]);
+	      }
 	    }
 	  }
 	}
       }
-#endif
+      // In the ENGINE, we loop over the clones and order the hits in the
+      // same order as the parent SP.  It is not done here because it is a little
+      // tricky.  Is it necessary?
       nsp_tot += (ntot-1);
     } else {
       ntot=1; // space point not to be cloned
