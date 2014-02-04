@@ -36,6 +36,9 @@ config.log
 *.os
 \#*\#
 
+# THtml generated documentation directory
+docs/htmldoc
+
 # Examples directory
 examples/*.root
 examples/*.log.*
