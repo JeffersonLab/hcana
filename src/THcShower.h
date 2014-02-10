@@ -148,6 +148,13 @@ protected:
   Double_t* fTREpl_pos_cor;  // Y-corrected track positive energy per plane
   Double_t* fTREpl_neg_cor;  // Y-corrected track negative energy per plane
 
+  // Additional quantities for calibration. Revise later on.
+  Double_t fTRDeltaP;          // track delta(P), %.
+  Double_t fTRBeta;            // track beta from scint's.
+  Double_t fTRP;               // Track momentum.
+  Double_t fTRXp;              // Track x slope.
+  Double_t fTRYp;              // Track y slope.
+
   // Potential Hall C parameters.  Mostly here for demonstration
 
   char** fLayerNames;
