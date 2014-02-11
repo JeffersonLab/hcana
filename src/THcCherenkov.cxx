@@ -190,6 +190,7 @@ void THcCherenkov::Clear(Option_t* opt)
 //_____________________________________________________________________________
 Int_t THcCherenkov::Decode( const THaEvData& evdata )
 {
+
   // Get the Hall C style hitlist (fRawHitList) for this event
   fNhits = THcHitList::DecodeToHitList(evdata);
 
