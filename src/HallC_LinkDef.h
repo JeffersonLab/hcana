@@ -48,5 +48,8 @@
 #pragma link C++ class THcCherenkov+;
 #pragma link C++ class THcCherenkovHit+;
 #pragma link C++ class THcFormula+;
+#pragma link C++ class THcRaster+;
+#pragma link C++ class THcRasteredBeam+;
+#pragma link C++ class THcRasterRawHit+;
 
 #endif
