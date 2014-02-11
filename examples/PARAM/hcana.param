@@ -8,6 +8,8 @@ hhodo_plane_names = "1x 1y 2x 2y"
 
 hcal_num_layers = 4
 
+rraster_num_signals = 4
+
 # Exclusion band width for the calorimeter's fiducial volume.
 hcal_fv_delta = 5.
 
@@ -83,4 +85,5 @@ hcer_tot_pmts = 2
 
 # parameter list for the raster
 # Maybe we can add this to geabm.param later ?
-graster_channels = "xsync xsig ysync ysig"
+
+rraster_signal_names = "xsync xsig ysync ysig"
