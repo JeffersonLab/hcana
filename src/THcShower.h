@@ -127,6 +127,8 @@ protected:
 
   Int_t fNhits;              // Total number of hits
   Int_t fNclust;             // Number of clusters
+  Int_t fNtracks;            // Number of shower tracks, i.e. tracks with
+                             // associated clusters
   Double_t fE;               // Energy of the largest cluster
   Double_t fEpr;             // Preshower Energy of the largest cluster
   Double_t fX;               // x-position (cm) of the largest cluster

@@ -425,6 +425,7 @@ Int_t THcShower::DefineVariables( EMode mode )
  //   { "asum_p", "Sum of ped-subtracted ADCs",         "fAsum_p" },
  //   { "asum_c", "Sum of calibrated ADCs",             "fAsum_c" },
     { "nclust", "Number of clusters",                            "fNclust" },
+    { "ntracks", "Number of shower tracks",                      "fNtracks" },
     { "emax",   "Energy of largest cluster",                     "fE" },
     { "eprmax",   "Preshower Energy of largest cluster",         "fEpr" },
     { "xmax",      "x-position (cm) of largest cluster",         "fX" },
@@ -501,6 +502,7 @@ void THcShower::Clear(Option_t* opt)
 
   fNhits = 0;
   fNclust = 0;
+  fNtracks = 0;
   fMult = 0;
   fE = 0.;
   fEpr = 0.;
@@ -756,6 +758,8 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
     // Associate a cluster to the track.
 
     Int_t mclust = MatchCluster(theTrack, ClusterList, Xtr, Ytr);
+
+    if (mclust >= 0) fNtracks++;  // number of shower tracks
 
     // Do this for the 1-st track only for now.
     //
