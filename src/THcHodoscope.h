@@ -32,6 +32,7 @@ public:
   virtual Int_t      ApplyCorrections( void );
   Double_t GetStartTime() const { return fStartTime; }
   Bool_t IsStartTimeGood() const {return fGoodStartTime;};
+  Int_t GetNfptimes() const {return fNfptimes;};
   Int_t GetScinIndex(Int_t nPlane, Int_t nPaddle);
   Int_t GetScinIndex(Int_t nSide, Int_t nPlane, Int_t nPaddle);
   Double_t GetPathLengthCentral();
@@ -47,6 +48,12 @@ public:
   Double_t GetHodoPosTimeOffset(Int_t iii) const {return fHodoPosTimeOffset[iii];}
   Double_t GetHodoNegTimeOffset(Int_t iii) const {return fHodoNegTimeOffset[iii];}
   Double_t GetHodoVelLight(Int_t iii) const {return fHodoVelLight[iii];}
+  Double_t GetStartTimeCenter() const {return fStartTimeCenter;}
+  Double_t GetStartTimeSlop() const {return fStartTimeSlop;}
+  Double_t GetBetaNotrk() const {return fBetaNotrk;}
+  Double_t GetBeta() const {return fBeta;}
+  Double_t GetHodoPosSigma(Int_t iii) const {return fHodoPosSigma[iii];}
+  Double_t GetHodoNegSigma(Int_t iii) const {return fHodoNegSigma[iii];}
 
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
   
@@ -61,8 +68,11 @@ protected:
 
   // Per-event data
   Bool_t fGoodStartTime;
-  Double_t fStartTime;
-  
+  Double_t fStartTime; 
+  Int_t fNfptimes;
+
+  Double_t fBetaNotrk;
+  Double_t fBeta;  
   // Per-event data
 
   // Potential Hall C parameters.  Mostly here for demonstration

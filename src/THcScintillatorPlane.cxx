@@ -46,6 +46,10 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   //
   fMaxHits=53;
   fpTime = -1.e5;
+  fpTimes = new Double_t [fMaxHits];
+  fScinTime = new Double_t [fMaxHits];
+  fScinSigma = new Double_t [fMaxHits];
+  fScinZpos = new Double_t [fMaxHits];
 }
 //______________________________________________________________________________
 THcScintillatorPlane::THcScintillatorPlane( const char* name, 
@@ -70,7 +74,10 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   //
   fMaxHits=53;
   fpTime = -1.e5;
-
+  fpTimes = new Double_t [fMaxHits];
+  fScinTime = new Double_t [fMaxHits];
+  fScinSigma = new Double_t [fMaxHits];
+  fScinZpos = new Double_t [fMaxHits];
 }
 
 //______________________________________________________________________________
@@ -85,6 +92,10 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete frNegTDCHits;
   delete frPosADCHits;
   delete frNegADCHits;
+  delete fpTimes;
+  delete fScinTime;
+  delete fScinSigma;
+  delete fScinZpos;
 }
 
 //______________________________________________________________________________
@@ -492,14 +503,29 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
       postime[i]=postime[i]-(fPosLeft-hit_position)/((THcHodoscope *)GetParent())->GetHodoVelLight(index);
       negtime[i]=negtime[i]-(hit_position-fPosRight)/((THcHodoscope *)GetParent())->GetHodoVelLight(index);
       scin_corrected_time[i]=0.5*(postime[i]+negtime[i]);
-      fpTime=scin_corrected_time[i]-(fZpos+(j%2)*fDzpos)/(29.979*hbeta_pcent);
     }
     else { // only one tube fired
       scin_corrected_time[i]=0.0; // not a very good "flag" but there is the logical two_good_hits...
+      // no fpTimes for U!
     }
   }
-  // Start time calculation, assume xp=yp=0 radians. project all
-  // time values to focal plane. use average for start time.
+  //start time calculation.  assume xp=yp=0 radians.  project all
+  //time values to focal plane.  use average for start time.
+
+  fNScinGoodHits=0;
+  for (i=0;i<fNScinHits;i++) {
+    j=((THcSignalHit*)fNegTDCHits->At(i))->GetPaddleNumber()-1;  
+    index=((THcHodoscope *)GetParent())->GetScinIndex(fPlaneNum-1,j);
+    if (two_good_times[i]) { // both tubes fired
+      fpTimes[fNScinGoodHits]=scin_corrected_time[i]-(fZpos+(j%2)*fDzpos)/(29.979*hbeta_pcent);
+      fScinTime[fNScinGoodHits]=scin_corrected_time[i];
+      fScinSigma[fNScinGoodHits]=TMath::Sqrt(((THcHodoscope *)GetParent())->GetHodoPosSigma(index)*((THcHodoscope *)GetParent())->GetHodoPosSigma(index)+((THcHodoscope *)GetParent())->GetHodoNegSigma(index)*((THcHodoscope *)GetParent())->GetHodoNegSigma(index)); // not ideal by any stretch!!!
+      fScinZpos[fNScinGoodHits]=fZpos+(j%2)*fDzpos; // see comment above
+      //        h_rfptime(hscin_plane_num(ihit))=fptime
+      fNScinGoodHits++; // increment the number of good hits
+    }
+  }
+  CalcFpTime();
   return 0;
 }
 //_____________________________________________________________________________
@@ -600,7 +626,8 @@ void THcScintillatorPlane::InitializePedestals( )
 Int_t THcScintillatorPlane::GetNelem() 
 {
   return fNelem;
-}//____________________________________________________________________________
+}
+//____________________________________________________________________________
 Int_t THcScintillatorPlane::GetNScinHits() 
 {
   return fNScinHits;
@@ -645,6 +672,24 @@ Double_t THcScintillatorPlane::GetPosOffset() {
 //____________________________________________________________________________
 Double_t THcScintillatorPlane::GetPosCenter(Int_t PaddleNo) {
   return fPosCenter[PaddleNo];
+}
+//____________________________________________________________________________
+Double_t THcScintillatorPlane::CalcFpTime() 
+{
+  Double_t tmp=0;
+  Int_t i,counter=0;
+  for (i=0;i<fNScinHits;i++) {
+    if (TMath::Abs(fpTimes[i]-((THcHodoscope *)GetParent())->GetStartTimeCenter())<=((THcHodoscope *)GetParent())->GetStartTimeSlop()) {
+      tmp+=fpTimes[i];
+      counter++;
+    }
+  }
+  if (counter>0) {
+    fpTime=tmp/counter;
+  } else {
+    fpTime=((THcHodoscope *)GetParent())->GetStartTimeCenter();
+  }
+  return fpTime;
 }
 //____________________________________________________________________________
 ClassImp(THcScintillatorPlane)

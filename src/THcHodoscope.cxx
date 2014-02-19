@@ -563,6 +563,9 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = DecodeToHitList(evdata);
+  //
+  // GN: print event number so we can cross-check with engine
+  // if (evdata.GetEvNum()>1000) cout <<"hcana event no = "<<evdata.GetEvNum()<<endl;
 
   if(gHaCuts->Result("Pedestal_event")) {
     Int_t nexthit = 0;
@@ -581,9 +584,9 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 
   // Let each plane get its hits
   Int_t nexthit = 0;
-  Int_t nfptimes=0;
 
   fStartTime=0;
+  fNfptimes=0;
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     //    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
     // GN: select only events that have reasonable TDC values to start with
@@ -591,14 +594,19 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList,nexthit);
     if (fPlanes[ip]->GetNScinHits()>0) {
       fPlanes[ip]->PulseHeightCorrection();
-      if (TMath::Abs(fPlanes[ip]->GetFpTime()-fStartTimeCenter)<=fStartTimeSlop) {
-	fStartTime=fStartTime+fPlanes[ip]->GetFpTime();
-	nfptimes++;
+      // GN: allow for more than one fptime per plane!!
+      for (Int_t i=0;i<fPlanes[ip]->GetNScinGoodHits();i++) {
+	if (TMath::Abs(fPlanes[ip]->GetFpTime(i)-fStartTimeCenter)<=fStartTimeSlop) {
+	  fStartTime=fStartTime+fPlanes[ip]->GetFpTime(i);
+	  // GN write stuff out so I can compare with engine
+	  ///	  cout<<"hcana event= "<<evdata.GetEvNum()<<" fNfptimes= "<<fNfptimes<<" fptime= "<<fPlanes[ip]->GetFpTime(i)<<endl;
+	  fNfptimes++;
+	}
       }
     }
   }
-  if (nfptimes>0) {
-    fStartTime=fStartTime/nfptimes;
+  if (fNfptimes>0) {
+    fStartTime=fStartTime/fNfptimes;
     fGoodStartTime=kTRUE;
   } else {
     fGoodStartTime=kFALSE;
@@ -606,6 +614,18 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   }
   fStartTime=32.; // mkj force to constant
 
+///  fStartTime=32.; // mkj force to constant
+///  if (fGoodStartTime) cout <<"hcana event= "<<evdata.GetEvNum()<<" fNfptimes= "<<fNfptimes<<" fStartTime= "<<fStartTime<<endl<<endl;
+  // fRawHitList is TClones array of THcHodoscopeHit objects
+#if 0
+  for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
+    THcHodoscopeHit* hit = (THcHodoscopeHit *) fRawHitList->At(ihit);
+    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
+	 << hit->fADC_pos << " " << hit->fADC_neg << " "  <<  hit->fTDC_pos
+	 << " " <<  hit->fTDC_neg << endl;
+  }
+  cout << endl;
+#endif
   ///  fStartTime = 500;		// Drift Chamber will need this
 
   return nhits;
