@@ -1,0 +1,18 @@
+#
+# Output definition for the HMS calorimeter calibration.
+#
+
+#block H.dc.*
+#block H.hod.*
+#block H.cal.*
+#block H.aero.*
+#block H.cer.*
+#block g.evtyp
+
+block H.cal.*
+variable H.cer.npesum
+variable H.dc.ntrack
+
+#variable H.dc.delta
+#variable H.dc.P
+#variable H.hod.beta
