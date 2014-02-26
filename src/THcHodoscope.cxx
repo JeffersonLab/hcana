@@ -612,11 +612,6 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     fGoodStartTime=kFALSE;
     fStartTime=fStartTimeCenter;
   }
-  fStartTime=32.; // mkj force to constant
-
-///  fStartTime=32.; // mkj force to constant
-///  if (fGoodStartTime) cout <<"hcana event= "<<evdata.GetEvNum()<<" fNfptimes= "<<fNfptimes<<" fStartTime= "<<fStartTime<<endl<<endl;
-  // fRawHitList is TClones array of THcHodoscopeHit objects
 #if 0
   for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
     THcHodoscopeHit* hit = (THcHodoscopeHit *) fRawHitList->At(ihit);
