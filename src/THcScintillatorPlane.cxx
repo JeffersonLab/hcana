@@ -45,7 +45,6 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fNScinHits = 0; 
   //
   fMaxHits=53;
-  fpTime = -1.e5;
   fpTimes = new Double_t [fMaxHits];
   fScinTime = new Double_t [fMaxHits];
   fScinSigma = new Double_t [fMaxHits];
@@ -73,7 +72,6 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fNScinHits = 0;
   //
   fMaxHits=53;
-  fpTime = -1.e5;
   fpTimes = new Double_t [fMaxHits];
   fScinTime = new Double_t [fMaxHits];
   fScinSigma = new Double_t [fMaxHits];
@@ -241,6 +239,7 @@ void THcScintillatorPlane::Clear( Option_t* )
   frNegTDCHits->Clear();
   frPosADCHits->Clear();
   frNegADCHits->Clear();
+  fpTime = -1.e4;
 }
 
 //_____________________________________________________________________________
@@ -678,7 +677,7 @@ Double_t THcScintillatorPlane::CalcFpTime()
 {
   Double_t tmp=0;
   Int_t i,counter=0;
-  for (i=0;i<fNScinHits;i++) {
+  for (i=0;i<fNScinGoodHits;i++) {
     if (TMath::Abs(fpTimes[i]-((THcHodoscope *)GetParent())->GetStartTimeCenter())<=((THcHodoscope *)GetParent())->GetStartTimeSlop()) {
       tmp+=fpTimes[i];
       counter++;
@@ -687,7 +686,7 @@ Double_t THcScintillatorPlane::CalcFpTime()
   if (counter>0) {
     fpTime=tmp/counter;
   } else {
-    fpTime=((THcHodoscope *)GetParent())->GetStartTimeCenter();
+    fpTime=-10000.;
   }
   return fpTime;
 }
