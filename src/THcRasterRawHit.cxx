@@ -32,9 +32,16 @@ void THcRasterRawHit::SetData(Int_t signal, Int_t data) {
   } else if (signal==3) {
     fADC_ysig = data;
   }
+
+  // std::cout<<" xsync = "<<fADC_xsync
+  // 	   <<" xsig  = "<<fADC_xsig
+  // 	   <<" ysync  = "<<fADC_ysync
+  // 	   <<" ysig  = "<<fADC_ysig << std::endl;
+
 }
 
 Int_t THcRasterRawHit::GetData(Int_t signal) {
+
   if(signal==1) {
     return(fADC_xsync);
   } else if (signal==2) {
@@ -44,7 +51,7 @@ Int_t THcRasterRawHit::GetData(Int_t signal) {
   } else if (signal==4) {
     return(fADC_ysig);
   }
-  return(-1); // Actually should throw exception
+  return(-1); 
 }
 
 // Int_t THcRasterRawHit::Compare(const TObject* obj) const

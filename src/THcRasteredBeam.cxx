@@ -21,7 +21,7 @@
 THcRasteredBeam::THcRasteredBeam( const char* name, const char* description ) :
     THaBeam( name, description ) 
 {
-  AddDetector( new THcRaster("Raster","raster",this) );
+  AddDetector( new THcRaster("raster","raster",this) );
 }
 
 

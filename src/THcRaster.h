@@ -35,26 +35,33 @@ class THcRaster : public THaBeamDet, public THcHitList {
 
  protected:
 
-  void InitializeReconstruction();
-  void           ClearEvent();
+  /* void InitializeReconstruction(); */
   Int_t  ReadDatabase( const TDatime& date );
+  Int_t DefineVariables( EMode mode );
 
+  Double_t       fXADC;     // X current
+  Double_t       fYADC;     // Y current
+  Double_t       fXpos;     // X position
+  Double_t       fYpos;     // Y position
+  
   Double_t       fRawADC[2];     // raw ADC values
   Double_t       fPedADC[2];     // ADC poedestals 
+  Double_t       fAvgPedADC[2];     // Avergage ADC poedestals 
 
   Double_t       fRawPos[2];     // current in Raster ADCs for position
   TVector3       fPosition[2];   // Beam position at 1st, 2nd BPM or at the target (meters)
-  TVector3  fPosPed[2]; // pedestals 
-  TVector3  fDirection;  // Beam angle at the target (meters)
-
-
-  // Array to store channel numbers corresponding to X and Ysignals. 0 - X, 1 - Y.
-  Double_t fChN0[2]; 
+  TVector3       fDirection;
 
  private:
-  Bool_t fAnalyzePedestals;
-  void CalculatePedestals();
-  void AccumulatePedestals(TClonesArray* rawhits);
+  Bool_t    fAnalyzePedestals;
+  Int_t     fNPedestalEvents;
+  Double_t  fFrCalMom;
+  Double_t  fFrXADCperCM;
+  Double_t  fFrYADCperCM;
+
+
+  void   CalculatePedestals();
+  void   AccumulatePedestals(TClonesArray* rawhits);
 
   ClassDef(THcRaster, 0);	// add THcRaster to ROOT library
 };  

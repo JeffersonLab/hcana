@@ -27,7 +27,6 @@ class THcRasterRawHit : public THcRawHit {
   
   void SetData(Int_t signal, Int_t data);
   Int_t GetData(Int_t signal);
-  //Int_t Compare(TObject* obj);
 
   // signals
   Int_t fADC_xsig;
