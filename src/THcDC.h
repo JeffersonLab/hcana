@@ -77,6 +77,8 @@ public:
 protected:
   Int_t fdebuglinkstubs;
   Int_t fdebugprintrawdc;
+  Int_t fdebugflagpr;
+  Int_t fdebugflagstubs;
   Int_t fdebugtrackprint;
   Int_t fdebugprintdecodeddc;
   Int_t fHMSStyleChambers;
@@ -172,6 +174,7 @@ protected:
 
   void Setup(const char* name, const char* description);
   void PrintSpacePoints();
+  void PrintStubs();
 
   ClassDef(THcDC,0)   // Set of Drift Chambers detector
 };
