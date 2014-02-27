@@ -12,7 +12,7 @@
   // Open the database
   //
   gHcParms->Define("gen_run_number", "Run Number", RunNumber);
-  gHcParms->AddString("g_ctp_database_filename", "DBASE/test.database");
+  gHcParms->AddString("g_ctp_database_filename", "DBASE/raster_test.database");
   gHcParms->Load(gHcParms->GetString("g_ctp_database_filename"), RunNumber);
 
   
@@ -52,7 +52,7 @@
 
 
   // Beamline and its detectors
-  THaApparatus * BEAM = new THcRasteredBeam("rb","Beamline");
+  THaApparatus * BEAM = new THcRasteredBeam("RB","Rastered Beamline");
   gHaApps->Add( BEAM );
 
 
@@ -83,15 +83,15 @@
   // Eventually need to learn to skip over, or properly analyze
   // the pedestal events
   //
-  run->SetEventRange(1,2);//  Physics Event number, does not
+  run->SetEventRange(1,2000);//  Physics Event number, does not
                            // include scaler or control events
 
   // Define the analysis parameters
   //
   analyzer->SetEvent(event);
   analyzer->SetOutFile("raster_test.root");
-  analyzer->SetOdefFile("output.def");
-  // analyzer->SetCutFile("rastertest_cuts.def");        // optional
+  analyzer->SetOdefFile("output_bpw.def");
+  analyzer->SetCutFile("hodtest_cuts.def");        // optional
   analyzer->SetCountMode(2);// Counter event number same as gen_event_ID_number
   
   // File to record cuts accounting information

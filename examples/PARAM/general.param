@@ -13,6 +13,7 @@ raddeg=3.14159265/180
 #include "PARAM/stracking.param"
 
 #include "PARAM/gtarget.param"
+#include "PARAM/gbeam.param"
 ;  Can't quite handle this one
 #include "PARAM/hdc_offsets.param"
 #include "PARAM/hdc.pos"
