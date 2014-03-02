@@ -1,8 +1,10 @@
 #include <iostream>
 
+// HMS calorimeter hit class for calibration.
+
 class THcShHit {
 
-  Double_t ADCpos, ADCneg;
+  Double_t ADCpos, ADCneg;   // pedestal subtracted ADC signals.
   Double_t Epos, Eneg;
   UInt_t BlkNumber;
 
