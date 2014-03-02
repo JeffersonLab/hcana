@@ -7,6 +7,10 @@
 
 using namespace std;
 
+// Track class for the HMS calorimeter calibration.
+// Comprises the spectrometer track parameters and calorimeter hits.
+//
+
 // Container (collection) of hits and its iterator.
 //
 typedef vector<THcShHit*> THcShHitList;
@@ -15,11 +19,11 @@ typedef THcShHitList::iterator THcShHitIt;
 class THcShTrack {
 
   UInt_t Nhits;
-  Double_t P;
-  Double_t X;
-  Double_t Xp;
-  Double_t Y;
-  Double_t Yp;
+  Double_t P;   // track momentum
+  Double_t X;   // at the calorimater face
+  Double_t Xp;  // slope
+  Double_t Y;   // at the calorimater face
+  Double_t Yp;  // slope
 
   THcShHitList Hits;
 
@@ -28,32 +32,45 @@ class THcShTrack {
   THcShTrack(UInt_t nh, Double_t p,
 	     Double_t x, Double_t xp, Double_t y, Double_t yp);
   ~THcShTrack();
+
   void SetTrack(UInt_t nh, Double_t p,
 		Double_t x, Double_t xp, Double_t y, Double_t yp);
+
   void AddHit(Double_t adc_pos, Double_t adc_neg,
 	      Double_t e_pos, Double_t e_neg,
 	      UInt_t blk_number);
+
   THcShHit* GetHit(UInt_t k);
+
   UInt_t GetNhits() {return Nhits;};
+
   void Print();
+
   Bool_t CheckHitNumber();
+
   void SetEs(Double_t* alpha);
+
   Double_t Enorm();
+
   Double_t GetP() {return P*1000.;}      //MeV
 
-  Float_t Ycor(Double_t);
-  Float_t Ycor(Double_t, Int_t);
+  Float_t Ycor(Double_t);         // coord. corection for single PMT module
+  Float_t Ycor(Double_t, Int_t);  // coord. correction for double PMT module
 
+  // Coordinate correction constants from hcana.param.
+  //
   static const Double_t fAcor = 200.;
   static const Double_t fBcor = 8000.;
   static const Double_t fCcor = 64.36;
   static const Double_t fDcor = 1.66;
 
-  static const Double_t fZbl = 10;
+  // Calorimeter geometry constants.
+  //
+  static const Double_t fZbl = 10;   //cm, block transverse size
   static const UInt_t fNrows = 13;
   static const UInt_t fNcols =  4;
-  static const UInt_t fNnegs = 26;
-  static const UInt_t fNpmts = 78;
+  static const UInt_t fNnegs = 26;   // number of blocks with neg. side PMTs.
+  static const UInt_t fNpmts = 78;   // total number of PMTs.
   static const UInt_t fNblks = fNrows*fNcols;
 
 };
@@ -107,6 +124,8 @@ void THcShTrack::Print() {
 
 };
 
+// Check hit number with the size of hit collection.
+//
 Bool_t THcShTrack::CheckHitNumber() {
   return (Nhits == Hits.size());
 };
@@ -121,6 +140,9 @@ THcShTrack::~THcShTrack() {
 //------------------------------------------------------------------------------
 
 void THcShTrack::SetEs(Double_t* alpha) {
+
+  // Set hit energy depositions seen from postive and negative sides,
+  // by use of calibration (gain) constants alpha.
   
   for (THcShHitIt iter = Hits.begin(); iter != Hits.end(); iter++) {
   
@@ -147,6 +169,8 @@ void THcShTrack::SetEs(Double_t* alpha) {
 //------------------------------------------------------------------------------
 
 Double_t THcShTrack::Enorm() {
+
+  // Normalized to track momentum energy depostion in the calorimeter.
 
   Double_t sum = 0;
 
