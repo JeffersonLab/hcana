@@ -43,6 +43,7 @@ void hcal_calib(Int_t RunNumber) {
  // Momentum versus the calibrated energy deposition.
 
  Canvas->cd(4);
- theShowerCalib.hPvsEcal->Draw();
+ // theShowerCalib.hPvsEcal->Draw();
+ theShowerCalib.hDPvsEcal->Draw();
 
 }
