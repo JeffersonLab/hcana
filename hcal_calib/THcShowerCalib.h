@@ -29,7 +29,7 @@ class THcShowerCalib {
 
   void ExtractData();
   void Init();
-  Bool_t ReadShRawTrack(THcShTrack &trk);
+  void ReadShRawTrack(THcShTrack &trk, UInt_t ientry);
   void CalcThresholds();
   void ComposeVMs();
   void SolveAlphas();
@@ -49,7 +49,8 @@ class THcShowerCalib {
   static const UInt_t fMinHitCount = 200;   // Minimum number of hits for a PMT
                                             // to be calibrated.
 
-  ifstream fDataStream;                     // Output data stream
+  TTree* fTree;
+  UInt_t fNentries;
 
   // Quantities for calculations of the calibration constants.
 
@@ -94,10 +95,11 @@ void THcShowerCalib::ExtractData() {
 
   //Reset ROOT and connect tree file
   gROOT->Reset();
-  TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(fname);
-  if (!f) {
-    f = new TFile(fname);
-  }
+  //  TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(fname);
+  TFile *f = new TFile(fname);
+  //  if (!f) {
+  //    f = new TFile(fname);
+  //  }
   TTree* tree;
   f->GetObject("T",tree);
 
@@ -193,6 +195,7 @@ void THcShowerCalib::ExtractData() {
 
   }   // over entries
 
+  f->Close();
   output.close();
   cout << "THcShowerCalib::ExtractData: nbytes= " << nbytes << endl;
 }
@@ -203,9 +206,21 @@ void THcShowerCalib::Init() {
 
   // Open the raw data file.
 
-  char* FName = Form("raw_data/%d_raw.dat",fRunNumber);
-  cout << "Init: FName=" << FName << endl;
-  fDataStream.open(FName,ios::in);
+  //  char* FName = Form("raw_data/%d_raw.dat",fRunNumber);
+  //  cout << "Init: FName=" << FName << endl;
+  //  //  fDataStream.open(FName,ios::in);
+
+  //Reset ROOT and connect tree file
+  gROOT->Reset();
+
+  char* fname = Form("Root_files/hcal_calib_%d.root",fRunNumber);
+  cout << "THcShowerCalib::Init: Root file name = " << fname << endl;
+
+  TFile *f = new TFile(fname);
+  f->GetObject("T",fTree);
+
+  fNentries = fTree->GetEntries();
+  cout << "THcShowerCalib::Init: fNentries= " << fNentries << endl;
 
   // Histogram declarations.
 
@@ -262,12 +277,15 @@ void THcShowerCalib::CalcThresholds() {
   // hadronic events due to the gas Cherenkov inefficiency.
 
   Int_t nev = 0;
-
   THcShTrack trk;
 
-  while (ReadShRawTrack(trk)) {
+  //  while (ReadShRawTrack(trk)) {
+  for (UInt_t ientry=0; ientry<fNentries; ientry++) {
+
+    ReadShRawTrack(trk, ientry);
 
     //    trk.Print();
+    //    getchar();
 
     trk.SetEs(falpha0);
     Double_t Enorm = trk.Enorm();
@@ -306,35 +324,96 @@ void THcShowerCalib::CalcThresholds() {
 
 //------------------------------------------------------------------------------
 
-Bool_t THcShowerCalib::ReadShRawTrack(THcShTrack &trk) {
+void THcShowerCalib::ReadShRawTrack(THcShTrack &trk, UInt_t ientry) {
 
-  //  Set a Shower track event from the read raw data.
+  //  Set a Shower track event from the raw data.
 
-  UInt_t nhit;
-  Double_t p, x,xp, y,yp;
+  //Declaration of leaves types
 
-  if (fDataStream >> nhit >> p >> x >> xp >> y >> yp) {
-    //    cout << nhit << " " << p << " " << x << " " << xp << " " << y << " "
-    //	 << yp << endl;
+  // Calorimeter ADC signals.
 
-    trk.SetTrack(nhit, p, x, xp, y, yp);
+  Double_t        H_cal_1pr_aneg_p[THcShTrack::fNrows];
+  Double_t        H_cal_1pr_apos_p[THcShTrack::fNrows];
 
-    for (UInt_t i=0; i<nhit; i++) {
+  Double_t        H_cal_2ta_aneg_p[THcShTrack::fNrows];
+  Double_t        H_cal_2ta_apos_p[THcShTrack::fNrows];
+
+  Double_t        H_cal_3ta_aneg_p[THcShTrack::fNrows];
+  Double_t        H_cal_3ta_apos_p[THcShTrack::fNrows];
+
+  Double_t        H_cal_4ta_aneg_p[THcShTrack::fNrows];
+  Double_t        H_cal_4ta_apos_p[THcShTrack::fNrows];
+
+  // Track parameters.
+
+  Double_t        H_cal_trp;
+  Double_t        H_cal_trx;
+  Double_t        H_cal_trxp;
+  Double_t        H_cal_try;
+  Double_t        H_cal_tryp;
+
+  // Set branch addresses.
+
+  fTree->SetBranchAddress("H.cal.1pr.aneg_p",H_cal_1pr_aneg_p);
+  fTree->SetBranchAddress("H.cal.1pr.apos_p",H_cal_1pr_apos_p);
+
+  fTree->SetBranchAddress("H.cal.2ta.aneg_p",H_cal_2ta_aneg_p);
+  fTree->SetBranchAddress("H.cal.2ta.apos_p",H_cal_2ta_apos_p);
+
+  fTree->SetBranchAddress("H.cal.3ta.aneg_p",H_cal_3ta_aneg_p);
+  fTree->SetBranchAddress("H.cal.3ta.apos_p",H_cal_3ta_apos_p);
+
+  fTree->SetBranchAddress("H.cal.4ta.aneg_p",H_cal_4ta_aneg_p);
+  fTree->SetBranchAddress("H.cal.4ta.apos_p",H_cal_4ta_apos_p);
+
+  fTree->SetBranchAddress("H.cal.trp",&H_cal_trp);
+  fTree->SetBranchAddress("H.cal.trx",&H_cal_trx);
+  fTree->SetBranchAddress("H.cal.trxp",&H_cal_trxp);
+  fTree->SetBranchAddress("H.cal.try",&H_cal_try);
+  fTree->SetBranchAddress("H.cal.tryp",&H_cal_tryp);
+
+  fTree->GetEntry(ientry);
+
+  trk.Reset(H_cal_trp, H_cal_trx, H_cal_trxp, H_cal_try, H_cal_tryp);
+
+  //  UInt_t nhit = 0;
+
+  for (UInt_t j=0; j<THcShTrack::fNrows; j++) {
+    for (UInt_t k=0; k<THcShTrack::fNcols; k++) {
 
       Double_t adc_pos, adc_neg;
-      UInt_t nb;
 
-      fDataStream >> adc_pos >> adc_neg >> nb;
-      //      cout << adc_pos << " " << adc_neg << " " << nb << endl;
+      switch (k) {
+      case 0 : 
+	adc_pos = H_cal_1pr_apos_p[j];
+	adc_neg = H_cal_1pr_aneg_p[j];
+	break;
+      case 1 : 
+	adc_pos = H_cal_2ta_apos_p[j];
+	adc_neg = H_cal_2ta_aneg_p[j];
+	break;
+      case 2 : 
+	adc_pos = H_cal_3ta_apos_p[j];
+	adc_neg = H_cal_3ta_aneg_p[j];
+	break;
+      case 3 : 
+	adc_pos = H_cal_4ta_apos_p[j];
+	adc_neg = H_cal_4ta_aneg_p[j];
+	break;
+      default:
+	cout << "*** ReadShRawTrack: column number k=" << k
+	     << " out of range! ***" << endl;
+      };
 
-      trk.AddHit(adc_pos, adc_neg, 0., 0., nb);
-    };
-    return 1;
+      UInt_t nb = j+1 + k*THcShTrack::fNrows;
 
+      if (adc_pos>0. || adc_neg>0.) {
+	trk.AddHit(adc_pos, adc_neg, 0., 0., nb);
+	//	nhit++;
+      }
+
+    }
   }
-  else {
-    return 0;
-  };
 
 }
 
@@ -348,92 +427,92 @@ void THcShowerCalib::ComposeVMs() {
 
   // Reset the raw data stream.
 
-  fDataStream.clear() ;
-  fDataStream.seekg(0, ios::beg) ;
+  //  fDataStream.clear() ;
+  //  fDataStream.seekg(0, ios::beg) ;
 
   fNev = 0;
   THcShTrack trk;
 
   // Loop over the shower track events in the raw data stream.
 
-  while (ReadShRawTrack(trk)) {
+  //  while (ReadShRawTrack(trk)) {
+  for (UInt_t ientry=0; ientry<fNentries; ientry++) {
 
-    // Check consistency of the track event.
+    ReadShRawTrack(trk, ientry);
 
-    if (trk.CheckHitNumber()) {
+    // Set energy depositions with default gains.
+    // Calculate normalized to the track momentum total energy deposition,
+    // check it against the thresholds.
 
-      // Set energy depositions with default gains.
-      // Calculate normalized to the track momentum total energy deposition,
-      // check it against the thresholds.
+    trk.SetEs(falpha0);
+    Double_t Enorm = trk.Enorm();
+    if (Enorm>fLoThr && Enorm<fHiThr) {
 
-      trk.SetEs(falpha0);
-      Double_t Enorm = trk.Enorm();
-      if (Enorm>fLoThr && Enorm<fHiThr) {
+      trk.SetEs(falpha1);   // Set energies with unit gains for now.
+      // trk.Print();
 
-	trk.SetEs(falpha1);   // Set energies with unit gains for now.
-	// trk.Print();
+      fe0 += trk.GetP();    // Accumulate track momenta.
 
-	fe0 += trk.GetP();    // Accumulate track momenta.
+      vector<pmt_hit> pmt_hit_list;     // Container to save PMT hits
 
-	vector<pmt_hit> pmt_hit_list;     // Container to save PMT hits
+      // Loop over hits.
 
-	// Loop over hits.
+      for (UInt_t i=0; i<trk.GetNhits(); i++) {
 
-	for (UInt_t i=0; i<trk.GetNhits(); i++) {
+	THcShHit* hit = trk.GetHit(i);
+	// hit->Print();
 
-	  THcShHit* hit = trk.GetHit(i);
-	  // hit->Print();
+	UInt_t nb = hit->GetBlkNumber();
 
-	  UInt_t nb = hit->GetBlkNumber();
+	// Fill the qe and q0 vectors (for positive side PMT).
 
-	  // Fill the qe and q0 vectors (for positive side PMT).
+	fqe[nb-1] += hit->GetEpos() * trk.GetP();
+	fq0[nb-1] += hit->GetEpos();
 
-	  fqe[nb-1] += hit->GetEpos() * trk.GetP();
-	  fq0[nb-1] += hit->GetEpos();
+	// Save the PMT hit.
 
-	  // Save the PMT hit.
+	pmt_hit_list.push_back( pmt_hit{hit->GetEpos(), nb} );
 
-	  pmt_hit_list.push_back( pmt_hit{hit->GetEpos(), nb} );
+	fHitCount[nb-1]++;   //Accrue the hit counter.
 
-	  fHitCount[nb-1]++;   //Accrue the hit counter.
+	// Do the same for the negative side PMTs.
 
-	  // Do the same for the negative side PMTs.
+	if (nb <= THcShTrack::fNnegs) {
+	  fqe[THcShTrack::fNblks+nb-1] += hit->GetEneg() * trk.GetP();
+	  fq0[THcShTrack::fNblks+nb-1] += hit->GetEneg();
 
-	  if (nb <= THcShTrack::fNnegs) {
-	    fqe[THcShTrack::fNblks+nb-1] += hit->GetEneg() * trk.GetP();
-	    fq0[THcShTrack::fNblks+nb-1] += hit->GetEneg();
+	  pmt_hit_list.push_back(pmt_hit{hit->GetEneg(),
+		THcShTrack::fNblks+nb} );
 
-	    pmt_hit_list.push_back(pmt_hit{hit->GetEneg(),
-		  THcShTrack::fNblks+nb} );
+	  fHitCount[THcShTrack::fNblks+nb-1]++;
+	};
 
-	    fHitCount[THcShTrack::fNblks+nb-1]++;
-	  };
+      }      //over hits
 
-	}      //over hits
+      // Fill in the correlation matrix Q by retrieving the PMT hits.
 
-	// Fill in the correlation matrix Q by retrieving the PMT hits.
+      for (vector<pmt_hit>::iterator i=pmt_hit_list.begin();
+	   i < pmt_hit_list.end(); i++) {
 
-	for (vector<pmt_hit>::iterator i=pmt_hit_list.begin();
-	     i < pmt_hit_list.end(); i++) {
+	UInt_t ic = (*i).channel;
+	Double_t is = (*i).signal;
 
-	  UInt_t ic = (*i).channel;
-	  Double_t is = (*i).signal;
+	for (vector<pmt_hit>::iterator j=i;
+	     j < pmt_hit_list.end(); j++) {
 
-	  for (vector<pmt_hit>::iterator j=i;
-	       j < pmt_hit_list.end(); j++) {
+	  UInt_t jc = (*j).channel;
+	  Double_t js = (*j).signal;
 
-	    UInt_t jc = (*j).channel;
-	    Double_t js = (*j).signal;
-
-	    fQ[ic-1][jc-1] += is*js;
-	    if (jc != ic) fQ[jc-1][ic-1] += is*js;
-	  }
+	  fQ[ic-1][jc-1] += is*js;
+	  if (jc != ic) fQ[jc-1][ic-1] += is*js;
 	}
+      }
 
-	fNev++;
-      };
-    };
-  };
+      fNev++;
+
+    };   // if within thresholds
+
+  };     // over entries
 
   // Take averages.
 
@@ -627,8 +706,8 @@ void THcShowerCalib::FillHEcal() {
   //
 
   // Reset.
-  fDataStream.clear() ;
-  fDataStream.seekg(0, ios::beg) ;
+  //  fDataStream.clear() ;
+  //  fDataStream.seekg(0, ios::beg) ;
 
   ofstream output;
   output.open("calibrated.d",ios::out);
@@ -637,8 +716,10 @@ void THcShowerCalib::FillHEcal() {
 
   THcShTrack trk;
 
-  while (ReadShRawTrack(trk)) {
+  //  while (ReadShRawTrack(trk)) {
+  for (UInt_t ientry=0; ientry<fNentries; ientry++) {
 
+    ReadShRawTrack(trk, ientry);
     //    trk.Print();
 
     trk.SetEs(falphaC);          // use 'constrained' calibration constants

@@ -18,7 +18,7 @@ typedef THcShHitList::iterator THcShHitIt;
 
 class THcShTrack {
 
-  UInt_t Nhits;
+  //  UInt_t Nhits;
   Double_t P;   // track momentum
   Double_t X;   // at the calorimater face
   Double_t Xp;  // slope
@@ -29,12 +29,14 @@ class THcShTrack {
 
  public:
   THcShTrack();
-  THcShTrack(UInt_t nh, Double_t p,
-	     Double_t x, Double_t xp, Double_t y, Double_t yp);
+  //  THcShTrack(UInt_t nh, Double_t p,
+  //	     Double_t x, Double_t xp, Double_t y, Double_t yp);
+  THcShTrack(Double_t p, Double_t x, Double_t xp, Double_t y, Double_t yp);
   ~THcShTrack();
 
-  void SetTrack(UInt_t nh, Double_t p,
-		Double_t x, Double_t xp, Double_t y, Double_t yp);
+  //  void SetTrack(UInt_t nh, Double_t p,
+  //		Double_t x, Double_t xp, Double_t y, Double_t yp);
+  void Reset(Double_t p, Double_t x, Double_t xp, Double_t y, Double_t yp);
 
   void AddHit(Double_t adc_pos, Double_t adc_neg,
 	      Double_t e_pos, Double_t e_neg,
@@ -42,11 +44,11 @@ class THcShTrack {
 
   THcShHit* GetHit(UInt_t k);
 
-  UInt_t GetNhits() {return Nhits;};
+  UInt_t GetNhits() {return Hits.size();};
 
   void Print();
 
-  Bool_t CheckHitNumber();
+  //  Bool_t CheckHitNumber();
 
   void SetEs(Double_t* alpha);
 
@@ -77,9 +79,10 @@ class THcShTrack {
 
 THcShTrack::THcShTrack() { };
 
-THcShTrack::THcShTrack(UInt_t nh, Double_t p,
+//THcShTrack::THcShTrack(UInt_t nh, Double_t p,
+THcShTrack::THcShTrack(Double_t p,
 		       Double_t x, Double_t xp, Double_t y, Double_t yp) {
-  Nhits = nh;
+  //  Nhits = nh;
   P = p;
   X = x;
   Xp = xp;
@@ -87,9 +90,19 @@ THcShTrack::THcShTrack(UInt_t nh, Double_t p,
   Yp =yp;
 };
 
-void THcShTrack::SetTrack(UInt_t nh, Double_t p,
-			  Double_t x, Double_t xp, Double_t y, Double_t yp) {
-  Nhits = nh;
+//void THcShTrack::SetTrack(UInt_t nh, Double_t p,
+//			  Double_t x, Double_t xp, Double_t y, Double_t yp) {
+//  Nhits = nh;
+//  P = p;
+//  X = x;
+//  Xp = xp;
+//  Y = y;
+//  Yp =yp;
+//  //  Hits.clear();
+//};
+
+void THcShTrack::Reset(Double_t p,
+		       Double_t x, Double_t xp, Double_t y, Double_t yp) {
   P = p;
   X = x;
   Xp = xp;
@@ -115,7 +128,8 @@ THcShHit* THcShTrack::GetHit(UInt_t k) {
 
 void THcShTrack::Print() {
   cout << "ShTrack: P=" << P << "  X=" << X << "  Xp=" << Xp 
-       << "  Y=" << Y << "  Yp=" << Yp << "  Nhits=" << Nhits << endl;
+       << "  Y=" << Y << "  Yp=" << Yp << endl;
+    //       << "  Y=" << Y << "  Yp=" << Yp << "  Nhits=" << Nhits << endl;
   cout << "Hits size=" << Hits.size() << endl;
 
   for (THcShHitIt iter = Hits.begin(); iter != Hits.end(); iter++) {
@@ -126,9 +140,9 @@ void THcShTrack::Print() {
 
 // Check hit number with the size of hit collection.
 //
-Bool_t THcShTrack::CheckHitNumber() {
-  return (Nhits == Hits.size());
-};
+//Bool_t THcShTrack::CheckHitNumber() {
+//  return (Nhits == Hits.size());
+//};
 
 THcShTrack::~THcShTrack() {
   for (THcShHitIt i = Hits.begin(); i != Hits.end(); ++i) {

@@ -11,7 +11,7 @@ void hcal_calib(Int_t RunNumber) {
 
  THcShowerCalib theShowerCalib(RunNumber);
 
- theShowerCalib.ExtractData();      // Extract data from the Root file
+ // theShowerCalib.ExtractData();      // Extract data from the Root file
  theShowerCalib.Init();             // Initialize constants adn variables
  theShowerCalib.CalcThresholds();   // Thresholds on the uncalibrated Edep/P
  theShowerCalib.ComposeVMs();       // Compute vectors amd matrices for calib.
@@ -20,7 +20,7 @@ void hcal_calib(Int_t RunNumber) {
  theShowerCalib.SaveAlphas();       // Save the constants
 
  // Plot histograms
- 
+
  TCanvas* Canvas =
    new TCanvas("Canvas", "HMS Shower Counter calibration", 1000, 667);
  Canvas->Divide(2,2);
