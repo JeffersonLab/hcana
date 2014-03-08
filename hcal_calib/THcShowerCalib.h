@@ -39,7 +39,8 @@ class THcShowerCalib {
   TH1F* hEunc;
   TH1F* hEuncSel;
   TH1F* hEcal;
-  TH2F* hPvsEcal;
+  //  TH2F* hPvsEcal;
+  TH2F* hDPvsEcal;
 
  private:
   Int_t fRunNumber;
@@ -226,7 +227,9 @@ void THcShowerCalib::Init() {
 
   hEunc = new TH1F("hEunc", "Edep/P uncalibrated", 500, 0., 5.);
   hEcal = new TH1F("hEcal", "Edep/P calibrated", 150, 0., 1.5);
-  hPvsEcal = new TH2F("hPvsEcal", "P versus Edep/P ",150,0.,1.5, 100,0.7,0.9);
+  //  hPvsEcal = new TH2F("hPvsEcal", "P versus Edep/P ",150,0.,1.5, 100,0.7,0.9);
+  hDPvsEcal = new TH2F("hDPvsEcal", "#DeltaP versus Edep/P ",
+		       150,0.,1.5, 250,-12.5,12.5);
 
   // Initialize qumulative quantities.
   
@@ -728,7 +731,11 @@ void THcShowerCalib::FillHEcal() {
     Double_t Enorm = trk.Enorm();
 
     hEcal->Fill(Enorm);
-    hPvsEcal->Fill(Enorm,P/1000.,1.);
+
+    Double_t delta;
+    fTree->SetBranchAddress("H.cal.trdelta",&delta);
+    //    hPvsEcal->Fill(Enorm,P/1000.,1.);
+    hDPvsEcal->Fill(Enorm,delta,1.);
 
     output << Enorm*P/1000. << " " << P/1000. << endl;
 
