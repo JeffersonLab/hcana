@@ -27,7 +27,6 @@ class THcShowerCalib {
   THcShowerCalib();
   ~THcShowerCalib();
 
-  void ExtractData();
   void Init();
   void ReadShRawTrack(THcShTrack &trk, UInt_t ientry);
   void CalcThresholds();
@@ -35,6 +34,7 @@ class THcShowerCalib {
   void SolveAlphas();
   void FillHEcal();
   void SaveAlphas();
+  void SaveRawData();
 
   TH1F* hEunc;
   TH1F* hEuncSel;
@@ -85,120 +85,25 @@ THcShowerCalib::~THcShowerCalib() {
 
 //------------------------------------------------------------------------------
 
-void THcShowerCalib::ExtractData() {
+void THcShowerCalib::SaveRawData() {
 
-  // Extract data for calibration from the Root file.
-  // Loop over ntuples to get track parameters and calorimeter
-  // hit quantities.
+  // Output raw data into file for debug purposes.
 
-  char* fname = Form("Root_files/hcal_calib_%d.root",fRunNumber);
-  cout << "THcShowerCalib::ExtractData: fname= " << fname << endl;
+  cout << "SaveRawData: Output raw data into hcal_calib.raw_data." << endl;
 
-  //Reset ROOT and connect tree file
-  gROOT->Reset();
-  //  TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject(fname);
-  TFile *f = new TFile(fname);
-  //  if (!f) {
-  //    f = new TFile(fname);
-  //  }
-  TTree* tree;
-  f->GetObject("T",tree);
+  ofstream fout;
+  fout.open("hcal_calib.raw_data",ios::out);
 
-  //Declaration of leaves types
+  THcShTrack trk;
 
-  // Calorimeter ADC signals.
+  for (UInt_t ientry=0; ientry<fNentries; ientry++) {
+    ReadShRawTrack(trk, ientry);
+    trk.SetEs(falphaC);
+    trk.Print(fout);
+  }
 
-  Double_t        H_cal_1pr_aneg_p[THcShTrack::fNrows];
-  Double_t        H_cal_1pr_apos_p[THcShTrack::fNrows];
+  fout.close();
 
-  Double_t        H_cal_2ta_aneg_p[THcShTrack::fNrows];
-  Double_t        H_cal_2ta_apos_p[THcShTrack::fNrows];
-
-  Double_t        H_cal_3ta_aneg_p[THcShTrack::fNrows];
-  Double_t        H_cal_3ta_apos_p[THcShTrack::fNrows];
-
-  Double_t        H_cal_4ta_aneg_p[THcShTrack::fNrows];
-  Double_t        H_cal_4ta_apos_p[THcShTrack::fNrows];
-
-  // Track parameters.
-
-  Double_t        H_cal_trp;
-  Double_t        H_cal_trx;
-  Double_t        H_cal_trxp;
-  Double_t        H_cal_try;
-  Double_t        H_cal_tryp;
-
-  // Set branch addresses.
-
-  tree->SetBranchAddress("H.cal.1pr.aneg_p",H_cal_1pr_aneg_p);
-  tree->SetBranchAddress("H.cal.1pr.apos_p",H_cal_1pr_apos_p);
-
-  tree->SetBranchAddress("H.cal.2ta.aneg_p",H_cal_2ta_aneg_p);
-  tree->SetBranchAddress("H.cal.2ta.apos_p",H_cal_2ta_apos_p);
-
-  tree->SetBranchAddress("H.cal.3ta.aneg_p",H_cal_3ta_aneg_p);
-  tree->SetBranchAddress("H.cal.3ta.apos_p",H_cal_3ta_apos_p);
-
-  tree->SetBranchAddress("H.cal.4ta.aneg_p",H_cal_4ta_aneg_p);
-  tree->SetBranchAddress("H.cal.4ta.apos_p",H_cal_4ta_apos_p);
-
-  tree->SetBranchAddress("H.cal.trp",&H_cal_trp);
-  tree->SetBranchAddress("H.cal.trx",&H_cal_trx);
-  tree->SetBranchAddress("H.cal.trxp",&H_cal_trxp);
-  tree->SetBranchAddress("H.cal.try",&H_cal_try);
-  tree->SetBranchAddress("H.cal.tryp",&H_cal_tryp);
-
-  Long64_t nentries = tree->GetEntries();
-  cout << "THcShowerCalib::ExtractData: nentries= " << nentries << endl;
-
-  // Output stream.
-
-  char* FName = Form("raw_data/%d_raw.dat",fRunNumber);
-  cout << "ExtractData: FName=" << FName << endl;
-  ofstream output;
-  output.open(FName,ios::out);
-
-  // Loop over ntuples.
-
-  Long64_t nbytes = 0;
-  for (Long64_t i=0; i<nentries;i++) {
-    nbytes += tree->GetEntry(i);
-    Int_t nhit = 0;
-    for (Int_t j=0; j<THcShTrack::fNrows; j++) {
-      if (H_cal_1pr_apos_p[j]>0. || H_cal_1pr_aneg_p[j]>0.) nhit++;
-      if (H_cal_2ta_apos_p[j]>0. || H_cal_2ta_aneg_p[j]>0.) nhit++;
-      if (H_cal_3ta_apos_p[j]>0. || H_cal_3ta_aneg_p[j]>0.) nhit++;
-      if (H_cal_4ta_apos_p[j]>0. || H_cal_4ta_aneg_p[j]>0.) nhit++;
-    }
-    output << nhit << " " << H_cal_trp << " " 
-	   << H_cal_trx << " " << H_cal_trxp << " " 
-	   << H_cal_try << " " << H_cal_tryp << endl;
-    for (Int_t j=0; j<THcShTrack::fNrows; j++) {
-      if (H_cal_1pr_apos_p[j]>0. || H_cal_1pr_aneg_p[j]>0.)
-	output << H_cal_1pr_apos_p[j] << " " << H_cal_1pr_aneg_p[j] << " "
-	       << j+1 << endl;
-    }
-    for (Int_t j=0; j<THcShTrack::fNrows; j++) {
-      if (H_cal_2ta_apos_p[j]>0. || H_cal_2ta_aneg_p[j]>0.)
-	output << H_cal_2ta_apos_p[j] << " " << H_cal_2ta_aneg_p[j] << " "
-	       << j+1 + THcShTrack::fNrows << endl;
-    }
-    for (Int_t j=0; j<THcShTrack::fNrows; j++) {
-      if (H_cal_3ta_apos_p[j]>0. || H_cal_3ta_aneg_p[j]>0.)
-	output << H_cal_3ta_apos_p[j] << " " << H_cal_3ta_aneg_p[j] << " "
-	       << j+1 + 2*THcShTrack::fNrows << endl;
-    }
-    for (Int_t j=0; j<THcShTrack::fNrows; j++) {
-      if (H_cal_4ta_apos_p[j]>0. || H_cal_4ta_aneg_p[j]>0.)
-	output << H_cal_4ta_apos_p[j] << " " << H_cal_4ta_aneg_p[j] << " "
-	       << j+1 + 3*THcShTrack::fNrows << endl;
-    }
-
-  }   // over entries
-
-  f->Close();
-  output.close();
-  cout << "THcShowerCalib::ExtractData: nbytes= " << nbytes << endl;
 }
 
 //------------------------------------------------------------------------------
@@ -287,7 +192,7 @@ void THcShowerCalib::CalcThresholds() {
 
     ReadShRawTrack(trk, ientry);
 
-    //    trk.Print();
+    //    trk.Print(cout);
     //    getchar();
 
     trk.SetEs(falpha0);
@@ -452,7 +357,7 @@ void THcShowerCalib::ComposeVMs() {
     if (Enorm>fLoThr && Enorm<fHiThr) {
 
       trk.SetEs(falpha1);   // Set energies with unit gains for now.
-      // trk.Print();
+      // trk.Print(cout);
 
       fe0 += trk.GetP();    // Accumulate track momenta.
 
@@ -463,7 +368,7 @@ void THcShowerCalib::ComposeVMs() {
       for (UInt_t i=0; i<trk.GetNhits(); i++) {
 
 	THcShHit* hit = trk.GetHit(i);
-	// hit->Print();
+	// hit->Print(cout);
 
 	UInt_t nb = hit->GetBlkNumber();
 
@@ -723,7 +628,7 @@ void THcShowerCalib::FillHEcal() {
   for (UInt_t ientry=0; ientry<fNentries; ientry++) {
 
     ReadShRawTrack(trk, ientry);
-    //    trk.Print();
+    //    trk.Print(cout);
 
     trk.SetEs(falphaC);          // use 'constrained' calibration constants
     //    trk.SetEs(falphaU);

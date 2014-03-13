@@ -4,6 +4,7 @@
 #include <vector>
 #include <iterator>
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
@@ -46,7 +47,7 @@ class THcShTrack {
 
   UInt_t GetNhits() {return Hits.size();};
 
-  void Print();
+  void Print(ostream & ostrm);
 
   //  Bool_t CheckHitNumber();
 
@@ -126,14 +127,15 @@ THcShHit* THcShTrack::GetHit(UInt_t k) {
   return *it;
 }
 
-void THcShTrack::Print() {
-  cout << "ShTrack: P=" << P << "  X=" << X << "  Xp=" << Xp 
-       << "  Y=" << Y << "  Yp=" << Yp << endl;
-    //       << "  Y=" << Y << "  Yp=" << Yp << "  Nhits=" << Nhits << endl;
-  cout << "Hits size=" << Hits.size() << endl;
+void THcShTrack::Print(ostream & ostrm) {
+  //  ostrm << "ShTrack: P=" << P << "  X=" << X << "  Xp=" << Xp 
+  //	<< "  Y=" << Y << "  Yp=" << Yp << endl;
+  //  ostrm << "Hits size=" << Hits.size() << endl;
+  ostrm << P << " " << X << " " << Xp << " " << Y << " " << Yp << " "
+	<< Hits.size() << endl;
 
   for (THcShHitIt iter = Hits.begin(); iter != Hits.end(); iter++) {
-    (*iter)->Print();
+    (*iter)->Print(ostrm);
   };
 
 };
