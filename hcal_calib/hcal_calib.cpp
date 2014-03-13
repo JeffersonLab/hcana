@@ -11,13 +11,13 @@ void hcal_calib(Int_t RunNumber) {
 
  THcShowerCalib theShowerCalib(RunNumber);
 
- // theShowerCalib.ExtractData();      // Extract data from the Root file
- theShowerCalib.Init();             // Initialize constants adn variables
- theShowerCalib.CalcThresholds();   // Thresholds on the uncalibrated Edep/P
- theShowerCalib.ComposeVMs();       // Compute vectors amd matrices for calib.
- theShowerCalib.SolveAlphas();      // Solve for the calibration constants
- theShowerCalib.FillHEcal();        // Fill histograms
- theShowerCalib.SaveAlphas();       // Save the constants
+ theShowerCalib.Init();            // Initialize constants adn variables
+ theShowerCalib.CalcThresholds();  // Thresholds on the uncalibrated Edep/P
+ theShowerCalib.ComposeVMs();      // Compute vectors amd matrices for calib.
+ theShowerCalib.SolveAlphas();     // Solve for the calibration constants
+ theShowerCalib.SaveAlphas();      // Save the constants
+ theShowerCalib.SaveRawData();     // Save raw data into file for debug purposes
+ theShowerCalib.FillHEcal();       // Fill histograms
 
  // Plot histograms
 

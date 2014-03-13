@@ -35,7 +35,7 @@ class THcShHit {
   
   UInt_t GetBlkNumber() {return BlkNumber;}
 
-  void Print();
+  void Print(ostream & ostrm);
 };
 
 THcShHit::THcShHit() {
@@ -57,10 +57,12 @@ THcShHit::THcShHit(Double_t adc_pos, Double_t adc_neg,
 
 THcShHit::~THcShHit() { };
 
-void THcShHit::Print() {
-  cout << "Hit: ADCpos =" << ADCpos << "  ADCneg =" << ADCneg
-       << "  Epos =" << Epos << "  Eneg =" << Eneg
-       << "  BlkNumber=" << BlkNumber << endl;
+void THcShHit::Print(ostream & ostrm) {
+  //  ostrm << "Hit: ADCpos =" << ADCpos << "  ADCneg =" << ADCneg
+  //	<< "  Epos =" << Epos << "  Eneg =" << Eneg
+  //	<< "  BlkNumber=" << BlkNumber << endl;
+  ostrm << ADCpos << " " << ADCneg << " " << Epos << " " << Eneg << " "
+	<< BlkNumber << endl;
 };
 
 struct pmt_hit {Double_t signal; UInt_t channel;};
