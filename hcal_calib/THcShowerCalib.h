@@ -18,7 +18,9 @@
 
 using namespace std;
 
-// HMS Shower Counter calibration class
+//
+// HMS Shower Counter calibration class.
+//
 
 class THcShowerCalib {
 
@@ -39,7 +41,6 @@ class THcShowerCalib {
   TH1F* hEunc;
   TH1F* hEuncSel;
   TH1F* hEcal;
-  //  TH2F* hPvsEcal;
   TH2F* hDPvsEcal;
 
  private:
@@ -87,7 +88,8 @@ THcShowerCalib::~THcShowerCalib() {
 
 void THcShowerCalib::SaveRawData() {
 
-  // Output raw data into file for debug purposes.
+  // Output raw data into file for debug purposes. To be called after
+  // calibration constants are determined.
 
   cout << "SaveRawData: Output raw data into hcal_calib.raw_data." << endl;
 
@@ -110,13 +112,8 @@ void THcShowerCalib::SaveRawData() {
 
 void THcShowerCalib::Init() {
 
-  // Open the raw data file.
+  //Reset ROOT and connect tree file.
 
-  //  char* FName = Form("raw_data/%d_raw.dat",fRunNumber);
-  //  cout << "Init: FName=" << FName << endl;
-  //  //  fDataStream.open(FName,ios::in);
-
-  //Reset ROOT and connect tree file
   gROOT->Reset();
 
   char* fname = Form("Root_files/hcal_calib_%d.root",fRunNumber);
@@ -132,7 +129,6 @@ void THcShowerCalib::Init() {
 
   hEunc = new TH1F("hEunc", "Edep/P uncalibrated", 500, 0., 5.);
   hEcal = new TH1F("hEcal", "Edep/P calibrated", 150, 0., 1.5);
-  //  hPvsEcal = new TH2F("hPvsEcal", "P versus Edep/P ",150,0.,1.5, 100,0.7,0.9);
   hDPvsEcal = new TH2F("hDPvsEcal", "#DeltaP versus Edep/P ",
 		       150,0.,1.5, 250,-12.5,12.5);
 
@@ -152,7 +148,7 @@ void THcShowerCalib::Init() {
     }
   }
 
-  // Initial gains (0.5 for the 2 first columns, 1 for others),
+  // Initial gains (0.5 for the 2 first columns, 1 for others).
 
   for (UInt_t iblk=0; iblk<THcShTrack::fNblks; iblk++) {
     if (iblk < THcShTrack::fNnegs) {
@@ -170,24 +166,22 @@ void THcShowerCalib::Init() {
     falpha1[ipmt] = 1.;
   }
 
-  //  for (UInt_t ipmt=0; ipmt<THcShRawTrack::fNpmts; ipmt++) {
-  //    cout << "falpha0 " << ipmt << " = " << falpha0[ipmt] << endl;
-  //  }
-
 };
 
 //------------------------------------------------------------------------------
 
 void THcShowerCalib::CalcThresholds() {
 
-  // Calculate +/-3 sigma thresholds on the uncalibrated total energy
+  // Calculate +/-3 RMS thresholds on the uncalibrated total energy
   // depositions. These thresholds are used mainly to exclude potential
   // hadronic events due to the gas Cherenkov inefficiency.
+
+  // Histogram uncalibrated energy depositions, get mean and RMS from the
+  // histogram, establish +/-3 * RMS thresholds.
 
   Int_t nev = 0;
   THcShTrack trk;
 
-  //  while (ReadShRawTrack(trk)) {
   for (UInt_t ientry=0; ientry<fNentries; ientry++) {
 
     ReadShRawTrack(trk, ientry);
@@ -195,7 +189,7 @@ void THcShowerCalib::CalcThresholds() {
     //    trk.Print(cout);
     //    getchar();
 
-    trk.SetEs(falpha0);
+    trk.SetEs(falpha0);             //Use initial gain constants here.
     Double_t Enorm = trk.Enorm();
 
     nev++;
@@ -234,9 +228,11 @@ void THcShowerCalib::CalcThresholds() {
 
 void THcShowerCalib::ReadShRawTrack(THcShTrack &trk, UInt_t ientry) {
 
-  //  Set a Shower track event from the raw data.
+  //
+  // Set a Shower track event from ntuple ientry.
+  //
 
-  //Declaration of leaves types
+  // Declaration of leaves types
 
   // Calorimeter ADC signals.
 
@@ -284,8 +280,6 @@ void THcShowerCalib::ReadShRawTrack(THcShTrack &trk, UInt_t ientry) {
 
   trk.Reset(H_cal_trp, H_cal_trx, H_cal_trxp, H_cal_try, H_cal_tryp);
 
-  //  UInt_t nhit = 0;
-
   for (UInt_t j=0; j<THcShTrack::fNrows; j++) {
     for (UInt_t k=0; k<THcShTrack::fNcols; k++) {
 
@@ -317,7 +311,6 @@ void THcShowerCalib::ReadShRawTrack(THcShTrack &trk, UInt_t ientry) {
 
       if (adc_pos>0. || adc_neg>0.) {
 	trk.AddHit(adc_pos, adc_neg, 0., 0., nb);
-	//	nhit++;
       }
 
     }
@@ -333,17 +326,11 @@ void THcShowerCalib::ComposeVMs() {
   // Fill in vectors and matrixes for the gain constant calculations.
   //
 
-  // Reset the raw data stream.
-
-  //  fDataStream.clear() ;
-  //  fDataStream.seekg(0, ios::beg) ;
-
   fNev = 0;
   THcShTrack trk;
 
-  // Loop over the shower track events in the raw data stream.
+  // Loop over the shower track events in the ntuples.
 
-  //  while (ReadShRawTrack(trk)) {
   for (UInt_t ientry=0; ientry<fNentries; ientry++) {
 
     ReadShRawTrack(trk, ientry);
@@ -383,7 +370,7 @@ void THcShowerCalib::ComposeVMs() {
 
 	fHitCount[nb-1]++;   //Accrue the hit counter.
 
-	// Do the same for the negative side PMTs.
+	// Do same for the negative side PMTs.
 
 	if (nb <= THcShTrack::fNnegs) {
 	  fqe[THcShTrack::fNblks+nb-1] += hit->GetEneg() * trk.GetP();
@@ -418,7 +405,7 @@ void THcShowerCalib::ComposeVMs() {
 
       fNev++;
 
-    };   // if within thresholds
+    };   // if within the thresholds
 
   };     // over entries
 
@@ -462,7 +449,7 @@ void THcShowerCalib::ComposeVMs() {
 void THcShowerCalib::SolveAlphas() {
 
   //
-  // Solve the sought calibration constants, by use of the Root
+  // Solve for the sought calibration constants, by use of the Root
   // matrix algebra package.
   //
 
@@ -475,6 +462,8 @@ void THcShowerCalib::SolveAlphas() {
 
   cout << "Solving Alphas..." << endl;
   cout << endl;
+
+  // Print out hit numbers.
 
   cout << "Hit counts:" << endl;
   UInt_t j = 0;
@@ -497,6 +486,8 @@ void THcShowerCalib::SolveAlphas() {
     cout << setw(6) << fHitCount[j++] << ",";
   cout << endl;
 
+  // Initialize the vectors and the matrix of the Root algebra package.
+
   for (UInt_t i=0; i<THcShTrack::fNpmts; i++) {
     q0[i] = fq0[i];
     qe[i] = fqe[i];
@@ -509,7 +500,7 @@ void THcShowerCalib::SolveAlphas() {
 
   for (UInt_t i=0; i<THcShTrack::fNpmts; i++) {
 
-    // Check zero hit channels: the vector and matrix elements should equal 0.
+    // Check zero hit channels: the vector and matrix elements should be 0.
 
     if (fHitCount[i] == 0) {
 
@@ -539,7 +530,7 @@ void THcShowerCalib::SolveAlphas() {
   } //sanity check
 
   // Low hit number channels: exclude from calculation. Assign all the
-  // correspondent elements 0, except swelf-correalation Q(i,i)=1.
+  // correspondent elements 0, except self-correlation Q(i,i)=1.
 
   cout << endl;
   cout << "Channels with hit number less than " << fMinHitCount 
@@ -583,12 +574,12 @@ void THcShowerCalib::SolveAlphas() {
   Double_t t1 = fe0 - au * q0;         // temporary variable.
   //  cout << "t1 =" << t1 << endl;
 
-  TVectorD Qiq0(THcShTrack::fNpmts);   // intermittend result
+  TVectorD Qiq0(THcShTrack::fNpmts);   // an intermittent result
   Qiq0 = lu.Solve(q0,ok);
   cout << "Qiq0: ok=" << ok << endl;
   //  Qiq0.Print();
 
-  Double_t t2 = q0 * Qiq0;             // another tempoary variable
+  Double_t t2 = q0 * Qiq0;             // another temporary variable
   //  cout << "t2 =" << t2 << endl;
 
   ac = (t1/t2) *Qiq0 + au;             // the sought gain constants
@@ -610,12 +601,8 @@ void THcShowerCalib::FillHEcal() {
 
   //
   // Fill histogram of the normalized energy deposition, 2-d histogram
-  // of momentum versus normalized energy deposition.
+  // of momentum deviation versus normalized energy deposition.
   //
-
-  // Reset.
-  //  fDataStream.clear() ;
-  //  fDataStream.seekg(0, ios::beg) ;
 
   ofstream output;
   output.open("calibrated.d",ios::out);
@@ -624,14 +611,12 @@ void THcShowerCalib::FillHEcal() {
 
   THcShTrack trk;
 
-  //  while (ReadShRawTrack(trk)) {
   for (UInt_t ientry=0; ientry<fNentries; ientry++) {
 
     ReadShRawTrack(trk, ientry);
     //    trk.Print(cout);
 
-    trk.SetEs(falphaC);          // use 'constrained' calibration constants
-    //    trk.SetEs(falphaU);
+    trk.SetEs(falphaC);          // use the 'constrained' calibration constants
     Double_t P = trk.GetP();
     Double_t Enorm = trk.Enorm();
 
@@ -639,7 +624,6 @@ void THcShowerCalib::FillHEcal() {
 
     Double_t delta;
     fTree->SetBranchAddress("H.cal.trdelta",&delta);
-    //    hPvsEcal->Fill(Enorm,P/1000.,1.);
     hDPvsEcal->Fill(Enorm,delta,1.);
 
     output << Enorm*P/1000. << " " << P/1000. << endl;

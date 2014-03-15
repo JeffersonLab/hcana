@@ -19,7 +19,6 @@ typedef THcShHitList::iterator THcShHitIt;
 
 class THcShTrack {
 
-  //  UInt_t Nhits;
   Double_t P;   // track momentum
   Double_t X;   // at the calorimater face
   Double_t Xp;  // slope
@@ -30,13 +29,9 @@ class THcShTrack {
 
  public:
   THcShTrack();
-  //  THcShTrack(UInt_t nh, Double_t p,
-  //	     Double_t x, Double_t xp, Double_t y, Double_t yp);
   THcShTrack(Double_t p, Double_t x, Double_t xp, Double_t y, Double_t yp);
   ~THcShTrack();
 
-  //  void SetTrack(UInt_t nh, Double_t p,
-  //		Double_t x, Double_t xp, Double_t y, Double_t yp);
   void Reset(Double_t p, Double_t x, Double_t xp, Double_t y, Double_t yp);
 
   void AddHit(Double_t adc_pos, Double_t adc_neg,
@@ -48,8 +43,6 @@ class THcShTrack {
   UInt_t GetNhits() {return Hits.size();};
 
   void Print(ostream & ostrm);
-
-  //  Bool_t CheckHitNumber();
 
   void SetEs(Double_t* alpha);
 
@@ -78,12 +71,12 @@ class THcShTrack {
 
 };
 
+//------------------------------------------------------------------------------
+
 THcShTrack::THcShTrack() { };
 
-//THcShTrack::THcShTrack(UInt_t nh, Double_t p,
 THcShTrack::THcShTrack(Double_t p,
 		       Double_t x, Double_t xp, Double_t y, Double_t yp) {
-  //  Nhits = nh;
   P = p;
   X = x;
   Xp = xp;
@@ -91,19 +84,13 @@ THcShTrack::THcShTrack(Double_t p,
   Yp =yp;
 };
 
-//void THcShTrack::SetTrack(UInt_t nh, Double_t p,
-//			  Double_t x, Double_t xp, Double_t y, Double_t yp) {
-//  Nhits = nh;
-//  P = p;
-//  X = x;
-//  Xp = xp;
-//  Y = y;
-//  Yp =yp;
-//  //  Hits.clear();
-//};
+//------------------------------------------------------------------------------
 
 void THcShTrack::Reset(Double_t p,
 		       Double_t x, Double_t xp, Double_t y, Double_t yp) {
+
+  // Reset track parameters, clear hit list.
+
   P = p;
   X = x;
   Xp = xp;
@@ -112,14 +99,21 @@ void THcShTrack::Reset(Double_t p,
   Hits.clear();
 };
 
+//------------------------------------------------------------------------------
+
 void THcShTrack::AddHit(Double_t adc_pos, Double_t adc_neg,
 			Double_t e_pos, Double_t e_neg,
 			UInt_t blk_number) {
+
+  // Add a hit to the hit list.
+
   THcShHit* hit = new THcShHit(adc_pos, adc_neg, blk_number);
   hit->SetEpos(e_pos);
   hit->SetEneg(e_neg);
   Hits.push_back(hit);
 };
+
+//------------------------------------------------------------------------------
 
 THcShHit* THcShTrack::GetHit(UInt_t k) {
   THcShHitIt it = Hits.begin();
@@ -128,9 +122,9 @@ THcShHit* THcShTrack::GetHit(UInt_t k) {
 }
 
 void THcShTrack::Print(ostream & ostrm) {
-  //  ostrm << "ShTrack: P=" << P << "  X=" << X << "  Xp=" << Xp 
-  //	<< "  Y=" << Y << "  Yp=" << Yp << endl;
-  //  ostrm << "Hits size=" << Hits.size() << endl;
+
+  // Output the track parameters and hit list through the stream ostrm.
+
   ostrm << P << " " << X << " " << Xp << " " << Y << " " << Yp << " "
 	<< Hits.size() << endl;
 
@@ -140,11 +134,7 @@ void THcShTrack::Print(ostream & ostrm) {
 
 };
 
-// Check hit number with the size of hit collection.
-//
-//Bool_t THcShTrack::CheckHitNumber() {
-//  return (Nhits == Hits.size());
-//};
+//------------------------------------------------------------------------------
 
 THcShTrack::~THcShTrack() {
   for (THcShHitIt i = Hits.begin(); i != Hits.end(); ++i) {
@@ -186,7 +176,7 @@ void THcShTrack::SetEs(Double_t* alpha) {
 
 Double_t THcShTrack::Enorm() {
 
-  // Normalized to track momentum energy depostion in the calorimeter.
+  // Normalized to the track momentum energy depostion in the calorimeter.
 
   Double_t sum = 0;
 

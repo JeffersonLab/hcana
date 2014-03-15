@@ -11,12 +11,12 @@ void hcal_calib(Int_t RunNumber) {
 
  THcShowerCalib theShowerCalib(RunNumber);
 
- theShowerCalib.Init();            // Initialize constants adn variables
+ theShowerCalib.Init();            // Initialize constants and variables
  theShowerCalib.CalcThresholds();  // Thresholds on the uncalibrated Edep/P
  theShowerCalib.ComposeVMs();      // Compute vectors amd matrices for calib.
  theShowerCalib.SolveAlphas();     // Solve for the calibration constants
  theShowerCalib.SaveAlphas();      // Save the constants
- theShowerCalib.SaveRawData();     // Save raw data into file for debug purposes
+ // theShowerCalib.SaveRawData();  // Save raw data into file for debug purposes
  theShowerCalib.FillHEcal();       // Fill histograms
 
  // Plot histograms
@@ -37,13 +37,11 @@ void hcal_calib(Int_t RunNumber) {
  // Normalized energy deposition after calibration.
 
  Canvas->cd(3);
- // theShowerCalib.hEcal->Draw();
  theShowerCalib.hEcal->Fit("gaus");
 
- // Momentum versus the calibrated energy deposition.
+ // HMS delta(P) versus the calibrated energy deposition.
 
  Canvas->cd(4);
- // theShowerCalib.hPvsEcal->Draw();
  theShowerCalib.hDPvsEcal->Draw();
 
 }

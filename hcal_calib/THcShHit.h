@@ -5,7 +5,7 @@
 class THcShHit {
 
   Double_t ADCpos, ADCneg;   // pedestal subtracted ADC signals.
-  Double_t Epos, Eneg;
+  Double_t Epos, Eneg;       // Energy depositions seen from pos. & neg. sides
   UInt_t BlkNumber;
 
  public:
@@ -38,6 +38,8 @@ class THcShHit {
   void Print(ostream & ostrm);
 };
 
+//------------------------------------------------------------------------------
+
 THcShHit::THcShHit() {
   ADCpos = -99999.;
   ADCneg = -99999.;
@@ -57,10 +59,12 @@ THcShHit::THcShHit(Double_t adc_pos, Double_t adc_neg,
 
 THcShHit::~THcShHit() { };
 
+//------------------------------------------------------------------------------
+
 void THcShHit::Print(ostream & ostrm) {
-  //  ostrm << "Hit: ADCpos =" << ADCpos << "  ADCneg =" << ADCneg
-  //	<< "  Epos =" << Epos << "  Eneg =" << Eneg
-  //	<< "  BlkNumber=" << BlkNumber << endl;
+
+  // Output hit data through the stream ostrm.
+
   ostrm << ADCpos << " " << ADCneg << " " << Epos << " " << Eneg << " "
 	<< BlkNumber << endl;
 };
