@@ -58,8 +58,8 @@ THcRaster::THcRaster( const char* name, const char* description,
 //_____________________________________________________________________________
 THcRaster::~THcRaster()
 {
-  delete [] fPedADC;
-  delete [] fAvgPedADC;
+  //  delete [] fPedADC;
+  //  delete [] fAvgPedADC;
 
 }
 
