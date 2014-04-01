@@ -311,6 +311,8 @@ Int_t THcRaster::Process( ){
   fYpos = (fYADC/fFrYADCperCM)*(fFrCalMom/eBeam);
 
   // std::cout<<" X = "<<fXpos<<" Y = "<<fYpos<<std::endl;
+  
+  fDirection.SetXYZ(0.0,0.0,1.0); // Set arbitrarily to avoid run time warnings
 
   return 0;
 }
