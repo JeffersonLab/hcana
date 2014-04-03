@@ -27,7 +27,8 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Int_t      Decode( const THaEvData& );
   Int_t      Process();
 
-  TVector3 GetPosition()  const { return fPosition[2]; }
+  //  TVector3 GetPosition()  const { return fPosition[2]; }
+  TVector3 GetPosition()  const { return fPosition[0]; }
   TVector3 GetDirection() const { return fDirection; } // Hall C we don't use raster direction yet.
 
   Double_t GetCurrentX() { return fRawPos[0]; }
