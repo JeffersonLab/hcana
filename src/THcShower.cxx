@@ -957,13 +957,17 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 
   // Additional quantities for calibration, taken from the 1-st track currently.
 
-  THaTrack* theTrack = static_cast<THaTrack*>( tracks[0] );
-  fTRDeltaP = theTrack->GetDp();
-  fTRBeta   = theTrack->GetBeta();
-  fTRP      = theTrack->GetP();
-  fTRXp     = theTrack->GetTheta();
-  fTRYp     = theTrack->GetPhi();
- 
+  Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
+
+  if(Ntracks > 0) {
+    THaTrack* theTrack = static_cast<THaTrack*>( tracks[0] );
+    fTRDeltaP = theTrack->GetDp();
+    fTRBeta   = theTrack->GetBeta();
+    fTRP      = theTrack->GetP();
+    fTRXp     = theTrack->GetTheta();
+    fTRYp     = theTrack->GetPhi();
+  };
+
   return 0;
 }
 
