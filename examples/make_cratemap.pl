@@ -4,6 +4,7 @@
 # Hall A style crate map DB file.
 #
 # 22.03.2012 (saw)
+# 11.04.2014 (saw) Perl cleanup
 
 %crates=();
 
@@ -13,8 +14,8 @@ $bsub = 0;
 $modtype = 0;
 $slot = 0;
 while(<>) {
-    $line=chomp;
-    if($line=/^\s*ROC=\s*(\d*)/i) {
+    chomp($line=$_);
+    if($line=~/^\s*ROC=\s*(\d*)/i) {
 	$i++;
 	$crate = $1;
 	if(not $crates{$crate}) {
@@ -23,16 +24,16 @@ while(<>) {
 	}
 	$modtype = 0;
 	$slot = 0;
-    } elsif ($line=/^\s*nsubadd=\s*(\d*)/i) {
+    } elsif ($line=~/^\s*nsubadd=\s*(\d*)/i) {
 	$nsubadd = $1;
 	$modtype = 0;
-    } elsif ($line=/^\s*bsub=\s*(\d*)/i) {
+    } elsif ($line=~/^\s*bsub=\s*(\d*)/i) {
 	$bsub = $1;
 	$modtype = 0;
-    } elsif ($line=/^\s*slot=\s*(\d*)/i) {
+    } elsif ($line=~/^\s*slot=\s*(\d*)/i) {
 	$slot = $1;
 	$modtype = 0;
-    } elsif ($line=/^\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)/) {
+    } elsif ($line=~/^\s*(\d*)\s*,\s*(\d*)\s*,\s*(\d*)/) {
 	if($modtype == 0) {	# Slot not yet registered
 	    if($nsubadd == 96) {
 		$modtype = 1877;
