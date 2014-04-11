@@ -1,0 +1,20 @@
+Instructions for calibration the HMS calorimeter under hcana.
+
+1. Go to hcana/hcal_calib directory.
+
+2. Copy (or link) DBASE, MAPS and PARAM directories into the hcal_calib.
+
+3. Create Root_files directory.
+
+4. Copy (or link) the raw data log file of the run to be calibrated into the
+   hcal_calib.
+
+5. Under hcana, replay the run by runnning hcal_replay.C for a number of events
+   (e.g. hcal_replay.cpp(52949,100000)). This will create an output Root file
+   in the Root_files directory.
+
+6. Calibrate the run by compiling and running hcal_calib.C under hcana
+   (e.g. hcal_calib.C+(52949)). This will output calibration constants in a
+   hcal.param.<RunNumber> file. Also, it will display Canvas with histograms of
+   uncalibated and calibrated normalized energy depositions, and a scattered
+   plot of momentum variation versus the normalized energy deposition.
