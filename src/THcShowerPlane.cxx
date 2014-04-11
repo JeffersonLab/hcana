@@ -345,9 +345,6 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     fA_Pos[hit->fCounter-1] = hit->fADC_pos;
     fA_Neg[hit->fCounter-1] = hit->fADC_neg;
 
-    fA_Pos_p[hit->fCounter-1] = hit->fADC_pos - fPosPed[hit->fCounter -1];
-    fA_Neg_p[hit->fCounter-1] = hit->fADC_neg - fNegPed[hit->fCounter -1];
-
     // Sparsify positive side hits, fill the hit list, compute the
     // energy depostion from positive side for the counter.
 
@@ -357,6 +354,8 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       THcSignalHit *sighit =
 	(THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
       sighit->Set(hit->fCounter, hit->fADC_pos);
+
+      fA_Pos_p[hit->fCounter-1] = hit->fADC_pos - fPosPed[hit->fCounter -1];
 
       fEpos[hit->fCounter-1] += fA_Pos_p[hit->fCounter-1]*
 	fParent->GetGain(hit->fCounter-1,fLayerNum-1,0);
@@ -371,6 +370,8 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       THcSignalHit *sighit = 
 	(THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
       sighit->Set(hit->fCounter, hit->fADC_neg);
+
+      fA_Neg_p[hit->fCounter-1] = hit->fADC_neg - fNegPed[hit->fCounter -1];
 
       fEneg[hit->fCounter-1] += fA_Neg_p[hit->fCounter-1]*
 	fParent->GetGain(hit->fCounter-1,fLayerNum-1,1);
