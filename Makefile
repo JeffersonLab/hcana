@@ -139,6 +139,13 @@ ifdef WITH_DEBUG
 CXXFLAGS     += -DWITH_DEBUG
 endif
 
+CCDBLIBS = 
+CCDBFLAGS = 
+ifdef CCDB_HOME
+CCDBLIBS     += -L$(CCDB_HOME)/lib -lccdb
+CCDBFLAGS  += -I$(CCDB_HOME)/include -DWITH_CCDB
+endif
+
 ifdef PROFILE
 CXXFLAGS     += -pg
 LDFLAGS      += -pg
@@ -171,7 +178,8 @@ HALLALIBS    := -L$(LIBDIR) -lHallA -ldc -lscaler
 src/THcInterface.d:  $(HDR_COMPILEDATA)
 
 hcana:		src/main.o $(LIBDC) $(LIBSCALER) $(LIBHALLA) $(USERLIB)
-		$(LD) $(LDFLAGS) $< $(HALLALIBS) -L. -lHallC $(GLIBS) -o $@
+		$(LD) $(LDFLAGS) $< $(HALLALIBS) -L. -lHallC $(CCDBLIBS) \
+		$(GLIBS) -o $@
 
 $(USERLIB):	$(HDR) $(OBJS)
 		$(LD) $(LDFLAGS) $(SOFLAGS) -o $@ $(OBJS)
@@ -183,7 +191,7 @@ $(HDR_COMPILEDATA) $(LIBHALLA) $(LIBDC) $(LIBSCALER): $(ANALYZER)/Makefile
 
 $(USERDICT).cxx: $(RCHDR) $(HDR) $(LINKDEF)
 	@echo "Generating dictionary $(USERDICT)..."
-	$(ROOTBIN)/rootcint -f $@ -c $(INCLUDES) $^
+	$(ROOTBIN)/rootcint -f $@ -c $(INCLUDES) $(CCDBFLAGS) $^
 
 install:	all
 	cp -p $(USERLIB) $(HOME)/cue/SRC/ana
@@ -211,7 +219,7 @@ srcdist:
 .SUFFIXES: .c .cc .cpp .cxx .C .o .d
 
 %.o:	%.cxx
-	$(CXX) $(CXXFLAGS) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(CCDBFLAGS) -o $@ -c $<
 
 # FIXME: this only works with gcc
 %.d:	%.cxx

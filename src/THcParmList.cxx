@@ -10,13 +10,13 @@
 
 #include "TObjArray.h"
 #include "TObjString.h"
+#include "TSystem.h"
 
 #include "THcParmList.h"
 #include "THaVar.h"
 #include "THaFormula.h"
 
 #include "TMath.h"
-
 
 /* #incluce <algorithm> include <fstream> include <cstring> */
 #include <iostream>
@@ -579,3 +579,91 @@ void THcParmList::PrintFull( Option_t* option ) const
   THaVarList::PrintFull(option);
   TextList->Print();
 }
+#ifdef WITH_CCDB
+//_____________________________________________________________________________
+Int_t THcParmList::OpenCCDB(Int_t runnum)
+{
+  // Use the Environment variable "CCDB_CONNECTION" as the
+  // connection string
+  const char* connection_string = gSystem->Getenv("CCDB_CONNECTION");
+
+  return(OpenCCDB(runnum,connection_string));
+}
+Int_t THcParmList::OpenCCDB(Int_t runnum, const char* connection_string)
+{
+  // Connect to a CCDB database pointed to by connection_string
+
+  std::string s (connection_string);
+  CCDB_obj = new SQLiteCalibration(runnum);
+  Int_t result = CCDB_obj->Connect(s);
+  if(!result) return -1;	// Need some error codes
+  cout << "Opened " << s << " for run " << runnum << endl;
+  return 0;
+}
+Int_t THcParmList::CloseCCDB()
+{
+  delete CCDB_obj;
+  return(0);
+}
+Int_t THcParmList::LoadCCDBDirectory(const char* directory, 
+				     const char* prefix)
+{
+  // Load all parameters in directory
+  // Prepend prefix onto the name of each
+
+  std::string dirname (directory);
+
+  if(dirname[dirname.length()-1]!='/') {
+    dirname.append("/");
+  }
+  Int_t dirlen=dirname.length();
+
+  vector<string> namepaths;
+  CCDB_obj->GetListOfNamepaths(namepaths);
+  for(UInt_t iname=0;iname<namepaths.size();iname++) {
+    std::string varname (namepaths[iname]);
+    if(varname.compare(0,dirlen,dirname) == 0) {
+      varname.replace(0,dirlen,prefix);
+      //      cout << namepaths[iname] << " -> " << varname << endl;
+
+      // To what extent is there duplication here with Load() method?
+
+      // Retrieve the data as floats
+      vector<vector<double> > data;
+      CCDB_obj->GetCalib(data, namepaths[iname]);
+      for(UInt_t row=0; row<data.size(); row++) {
+      	for(UInt_t col=0;col<data[0].size(); col++) {
+      	  cout << data[row][col] << "\t";
+      	}
+      	cout << endl;
+      }
+      
+      if(data[0].size()==1) {	// Only handle single column tables
+	// Could stuff 2d arrays in, and assume that the application knows
+	// the number of columns.  Then the matrix stuff would just need to
+	// see if the variable exists, then copy the data into the right kind
+	// of structure instead of reading from the recon files.
+	THaVar* existingvar=Find(varname.c_str());
+	if(existingvar) {
+	  // Does the array of data need to deleted too?
+	  RemoveName(varname.c_str());
+	}
+	Double_t* fp = new Double_t[data.size()];
+	for(UInt_t row=0;row<data.size(); row++) {
+	  fp[row] = data[row][0];
+	}
+	// Need to append [size] to end of varname
+	char sizestring[20];
+	sprintf(sizestring,"[%d]",(Int_t) data.size());
+	std::string size_str (sizestring);
+	varname.append(size_str);
+	Define(varname.c_str(), "comment", *fp);
+      }
+
+    }
+  }
+  return 0;
+}
+
+#endif
+  
