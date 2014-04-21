@@ -628,39 +628,65 @@ Int_t THcParmList::LoadCCDBDirectory(const char* directory,
 
       // To what extent is there duplication here with Load() method?
 
-      // Retrieve the data as floats
-      vector<vector<double> > data;
-      CCDB_obj->GetCalib(data, namepaths[iname]);
-      for(UInt_t row=0; row<data.size(); row++) {
-      	for(UInt_t col=0;col<data[0].size(); col++) {
-      	  cout << data[row][col] << "\t";
-      	}
-      	cout << endl;
-      }
-      
-      if(data[0].size()==1) {	// Only handle single column tables
-	// Could stuff 2d arrays in, and assume that the application knows
-	// the number of columns.  Then the matrix stuff would just need to
-	// see if the variable exists, then copy the data into the right kind
-	// of structure instead of reading from the recon files.
+      // Retrieve assignment
+      Assignment* assignment = CCDB_obj->GetAssignment(namepaths[iname], true);
+      ConstantsTypeColumn::ColumnTypes ccdbtype=assignment->GetValueType(0);
+      Int_t ccdbncolumns=assignment->GetTypeTable()->GetNColumns();
+      Int_t ccdbnrows=assignment->GetTypeTable()->GetNRows();
+      std::string title = assignment->GetTypeTable()->GetComment();
+
+      // Only load single column tables
+      if(ccdbncolumns == 1) {
+
 	THaVar* existingvar=Find(varname.c_str());
-	if(existingvar) {
-	  // Does the array of data need to deleted too?
-	  RemoveName(varname.c_str());
-	}
-	Double_t* fp = new Double_t[data.size()];
-	for(UInt_t row=0;row<data.size(); row++) {
-	  fp[row] = data[row][0];
-	}
 	// Need to append [size] to end of varname
 	char sizestring[20];
-	sprintf(sizestring,"[%d]",(Int_t) data.size());
+	sprintf(sizestring,"[%d]",ccdbnrows);
 	std::string size_str (sizestring);
 	varname.append(size_str);
-	Define(varname.c_str(), "comment", *fp);
-      }
 
-    }
+	// Select data type
+	if(ccdbtype==ConstantsTypeColumn::cIntColumn) {
+	  vector<vector<int> > data;
+	  CCDB_obj->GetCalib(data, namepaths[iname]);
+
+	  if(existingvar) {
+	    RemoveName(varname.c_str());
+	  }
+
+	  Int_t* ip = new Int_t[data.size()];
+	  for(UInt_t row=0;row<data.size(); row++) {
+	    ip[row] = data[row][0];
+	  }
+	  Define(varname.c_str(), title.c_str(), *ip);
+
+	} else if (ccdbtype==ConstantsTypeColumn::cDoubleColumn) {
+	  vector<vector<double> > data;
+	  CCDB_obj->GetCalib(data, namepaths[iname]);
+
+	  if(existingvar) {
+	    RemoveName(varname.c_str());
+	  }
+
+	  Double_t* fp = new Double_t[data.size()];
+	  for(UInt_t row=0;row<data.size(); row++) {
+	    fp[row] = data[row][0];
+	  }
+	  Define(varname.c_str(), title.c_str(), *fp);
+	} else if (ccdbtype==ConstantsTypeColumn::cStringColumn) {
+	  if(ccdbnrows > 1) {
+	    cout << namepaths[iname] << ": Only first element of CCDB string array loaded."  << endl;
+	  }
+	  vector<vector<string> > data;
+	  CCDB_obj->GetCalib(data, namepaths[iname]);
+	  AddString(varname, data[0][0]);
+	} else {
+	  cout << namepaths[iname] << ": Unsupported CCDB data type: " << ccdbtype << endl;
+	}
+      } else {
+	cout << namepaths[iname] << ": Multicolumn CCDB variables not supported" << endl;
+      }
+    }	
   }
   return 0;
 }
