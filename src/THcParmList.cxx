@@ -631,8 +631,8 @@ Int_t THcParmList::LoadCCDBDirectory(const char* directory,
       // Retrieve assignment
       Assignment* assignment = CCDB_obj->GetAssignment(namepaths[iname], true);
       ConstantsTypeColumn::ColumnTypes ccdbtype=assignment->GetValueType(0);
-      Int_t ccdbncolumns=assignment->GetTypeTable()->GetNColumns();
-      Int_t ccdbnrows=assignment->GetTypeTable()->GetNRows();
+      Int_t ccdbncolumns=assignment->GetColumnsCount();
+      Int_t ccdbnrows=assignment->GetRowsCount();
       std::string title = assignment->GetTypeTable()->GetComment();
 
       // Only load single column tables
@@ -643,7 +643,8 @@ Int_t THcParmList::LoadCCDBDirectory(const char* directory,
 	char sizestring[20];
 	sprintf(sizestring,"[%d]",ccdbnrows);
 	std::string size_str (sizestring);
-	varname.append(size_str);
+	std::string varnamearray (varname);
+	varnamearray.append(size_str);
 
 	// Select data type
 	if(ccdbtype==ConstantsTypeColumn::cIntColumn) {
@@ -658,7 +659,7 @@ Int_t THcParmList::LoadCCDBDirectory(const char* directory,
 	  for(UInt_t row=0;row<data.size(); row++) {
 	    ip[row] = data[row][0];
 	  }
-	  Define(varname.c_str(), title.c_str(), *ip);
+	  Define(varnamearray.c_str(), title.c_str(), *ip);
 
 	} else if (ccdbtype==ConstantsTypeColumn::cDoubleColumn) {
 	  vector<vector<double> > data;
@@ -672,7 +673,7 @@ Int_t THcParmList::LoadCCDBDirectory(const char* directory,
 	  for(UInt_t row=0;row<data.size(); row++) {
 	    fp[row] = data[row][0];
 	  }
-	  Define(varname.c_str(), title.c_str(), *fp);
+	  Define(varnamearray.c_str(), title.c_str(), *fp);
 	} else if (ccdbtype==ConstantsTypeColumn::cStringColumn) {
 	  if(ccdbnrows > 1) {
 	    cout << namepaths[iname] << ": Only first element of CCDB string array loaded."  << endl;
