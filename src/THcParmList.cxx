@@ -210,6 +210,7 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 	    InRunRange = 0;
 	  }
 	}
+	continue;		// Skip to next line
       }
     }
 
