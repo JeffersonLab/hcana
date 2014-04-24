@@ -1988,9 +1988,9 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
 !              3-->ADC Y-signal
 
   12, 1, 1, 0 !ADC ROC#1 Sl#13 Ch#12 Fast Raster X-sync
-  13, 2, 1, 1 !ADC ROC#1 Sl#13 Ch#13 Fast Raster X-signal
-  14, 3, 1, 2 !ADC ROC#1 Sl#13 Ch#14 Fast Raster Y-sync
-  15, 4, 1, 3 !ADC ROC#1 Sl#13 Ch#15 Fast Raster Y-signal
+  13, 1, 1, 1 !ADC ROC#1 Sl#13 Ch#13 Fast Raster X-signal
+  14, 1, 1, 2 !ADC ROC#1 Sl#13 Ch#14 Fast Raster Y-sync
+  15, 1, 1, 3 !ADC ROC#1 Sl#13 Ch#15 Fast Raster Y-signal
 !
   detector= 6 ! GMISC
 !
