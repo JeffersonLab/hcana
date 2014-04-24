@@ -18,6 +18,7 @@
   
   // Open and load parameter files
   //
+  gHcParms->Load(gHcParms->GetString("g_ctp_kinematics_filename"), RunNumber);
   gHcParms->Load(gHcParms->GetString("g_ctp_parm_filename"));
   // parameters not found in usual engine parameter files
   gHcParms->Load("PARAM/hcana.param");

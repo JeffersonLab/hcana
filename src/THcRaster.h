@@ -40,6 +40,8 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Int_t  ReadDatabase( const TDatime& date );
   Int_t DefineVariables( EMode mode );
 
+  Double_t       fgpbeam;     //
+
   Double_t       fXADC;     // X current
   Double_t       fYADC;     // Y current
   Double_t       fXpos;     // X position

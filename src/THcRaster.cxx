@@ -96,6 +96,7 @@ Int_t THcRaster::ReadDatabase( const TDatime& date )
     {"fr_cal_mom",&fFrCalMom, kDouble},
     {"frx_adcpercm",&fFrXADCperCM, kDouble},
     {"fry_adcpercm",&fFrYADCperCM, kDouble},
+    {"pbeam",&fgpbeam, kDouble},
     {0}
   };
 
@@ -301,12 +302,13 @@ Int_t THcRaster::Process( ){
     gfry = (gfry_adc/gfry_adcpercm)*(gfr_cal_mom/ebeam)
   */
   // bpw- Iam not sure how to access the global variables. the below code doesnt work. so for now, hard code the beam energy.
-  if(gHcParms->Find("ebeam")){
-    tmp=*(Double_t *)gHcParms->Find("ebeam")->GetValuePointer();
-    cout <<"e Beam  = "<< tmp << endl;
+  eBeam=0.0001;
+  if(gHcParms->Find("gpbeam")){
+    eBeam=*(Double_t *)gHcParms->Find("gpbeam")->GetValuePointer();
   }
+  //  cout <<"e Beam  = "<< eBeam << " " << fgpbeam << endl;
   
-  eBeam = 4.02187;
+  //  eBeam = 4.02187;
   fXpos = (fXADC/fFrXADCperCM)*(fFrCalMom/eBeam);
   fYpos = (fYADC/fFrYADCperCM)*(fFrCalMom/eBeam);
 
