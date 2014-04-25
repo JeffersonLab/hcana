@@ -83,7 +83,3 @@ sdc_fix_propcorr = 0
 # Total number of PMTs in Gas Cherenkov detector.
 hcer_tot_pmts = 2
 
-# parameter list for the raster
-# Maybe we can add this to geabm.param later ?
-
-rraster_signal_names = "xsync xsig ysync ysig"
