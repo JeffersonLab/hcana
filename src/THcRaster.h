@@ -40,14 +40,16 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Int_t  ReadDatabase( const TDatime& date );
   Int_t DefineVariables( EMode mode );
 
-  Double_t       fgpbeam;     //
+  Double_t       fgpbeam;   //beam momentum
 
-  Double_t       fXADC;     // X current
-  Double_t       fYADC;     // Y current
+  Double_t       fRawXADC;  // X raw ADC
+  Double_t       fRawYADC;  // Y raw ADC
+  Double_t       fXADC;     // X ADC
+  Double_t       fYADC;     // Y ADC
   Double_t       fXpos;     // X position
   Double_t       fYpos;     // Y position
   
-  Double_t       fRawADC[2];     // raw ADC values
+
   Double_t       fPedADC[2];     // ADC poedestals 
   Double_t       fAvgPedADC[2];     // Avergage ADC poedestals 
 

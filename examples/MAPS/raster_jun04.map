@@ -1980,17 +1980,18 @@ Slot= 5 ! ADC  Second set of tubes on first two layers
 !
   detector= 18 ! RASTER
 !
-! buddhini-w :To make things easier and consistent between detectors, we now use the plane and signal to identify the different raster signals 02-12-2014
+! buddhini-w :To make things easier and consistent between detectors, 
+! we now use the plane and signal to identify the different raster signals 02-12-2014
 !..............................................................................
 ! For raster : 0-->ADC X-sync
 !	       1-->ADC Y-signal
 !              2-->ADC Y-sync
 !              3-->ADC Y-signal
 
-  12, 1, 1, 0 !ADC ROC#1 Sl#13 Ch#12 Fast Raster X-sync
+  12, 2, 1, 0 !ADC ROC#1 Sl#13 Ch#12 Fast Raster X-sync
   13, 2, 1, 1 !ADC ROC#1 Sl#13 Ch#13 Fast Raster X-signal
-  14, 3, 1, 2 !ADC ROC#1 Sl#13 Ch#14 Fast Raster Y-sync
-  15, 4, 1, 3 !ADC ROC#1 Sl#13 Ch#15 Fast Raster Y-signal
+  14, 2, 1, 2 !ADC ROC#1 Sl#13 Ch#14 Fast Raster Y-sync
+  15, 2, 1, 3 !ADC ROC#1 Sl#13 Ch#15 Fast Raster Y-signal
 !
   detector= 6 ! GMISC
 !
