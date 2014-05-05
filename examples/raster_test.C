@@ -5,9 +5,9 @@
   //  Steering script to test raster signal decoding
   //
   
-  Int_t RunNumber=50017;
-  char* RunFileNamePattern="daq04_%d.log.0";
-  
+  Int_t RunNumber=52947;
+  char* RunFileNamePattern="/cache/mss/hallc/daq04/raw/daq04_52947.log.0";
+    
  
   // Open the database
   //
@@ -90,7 +90,7 @@
   // Define the analysis parameters
   //
   analyzer->SetEvent(event);
-  analyzer->SetOutFile("raster_test.root");
+  analyzer->SetOutFile("raster_compare_52947.root");
   analyzer->SetOdefFile("output_bpw.def");
   analyzer->SetCutFile("hodtest_cuts.def");        // optional
   analyzer->SetCountMode(2);// Counter event number same as gen_event_ID_number

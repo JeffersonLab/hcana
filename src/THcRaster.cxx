@@ -280,8 +280,7 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
 //_____________________________________________________________________________
 Int_t THcRaster::Process( ){
 
-  Double_t tmp = 0;
-  Double_t eBeam = 0;
+  Double_t eBeam = 0.001;
   /*
     calculate raster position from ADC value.
     From ENGINE/g_analyze_misc.f -
@@ -301,14 +300,10 @@ Int_t THcRaster::Process( ){
     gfrx = (gfrx_adc/gfrx_adcpercm)*(gfr_cal_mom/ebeam)
     gfry = (gfry_adc/gfry_adcpercm)*(gfr_cal_mom/ebeam)
   */
-  // bpw- Iam not sure how to access the global variables. the below code doesnt work. so for now, hard code the beam energy.
-  eBeam=0.0001;
+ 
   if(gHcParms->Find("gpbeam")){
     eBeam=*(Double_t *)gHcParms->Find("gpbeam")->GetValuePointer();
   }
-  //  cout <<"e Beam  = "<< eBeam << " " << fgpbeam << endl;
-  
-  //  eBeam = 4.02187;
   fXpos = (fXADC/fFrXADCperCM)*(fFrCalMom/eBeam);
   fYpos = (fYADC/fFrYADCperCM)*(fFrCalMom/eBeam);
 
