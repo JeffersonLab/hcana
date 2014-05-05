@@ -40,6 +40,8 @@ THcRaster::THcRaster( const char* name, const char* description,
 
   fAnalyzePedestals = 0;
   fNPedestalEvents = 0;
+  fRawXADC = 0;
+  fRawYADC = 0;
   fXADC = 0;
   fYADC = 0;
   fXpos = 0;
@@ -58,29 +60,19 @@ THcRaster::THcRaster( const char* name, const char* description,
 //_____________________________________________________________________________
 THcRaster::~THcRaster()
 {
-  //  delete [] fPedADC;
-  //  delete [] fAvgPedADC;
-
+  delete [] fPedADC;
+  delete [] fAvgPedADC;
 }
 
 
-
-//____________________________________________________________________________// _
-// void THcRaster::InitializeReconstruction()
-// {
-
-// }
-  
-
+ 
 
 //_____________________________________________________________________________
 Int_t THcRaster::ReadDatabase( const TDatime& date )
 {
 
   // Read parameters such as calibration factor, of this detector from the database.
-  // static const char* const here = "THcRaster::ReadDatabase";
- 
-  // InitializeReconstruction();
+  cout << "THcRaster::ReadDatabase()" << endl;
 
   char prefix[2];
 
@@ -121,10 +113,12 @@ Int_t THcRaster::DefineVariables( EMode mode )
   // Register variables in global list
 
   RVarDef vars[] = {
-    {"xcurrent",  "Raster X current",    "fXADC"},
-    {"ycurrent",  "Raster Y current",    "fYADC"},
-    {"xpos",  "Raster X position",    "fXpos"},
-    {"ypos",  "Raster Y position",    "fYpos"},
+    {"frx_raw_adc",  "Raster X raw ADC",    "fRawXADC"},
+    {"fry_raw_adc",  "Raster Y raw ADC",    "fRawYADC"},
+    {"frx_adc",  "Raster X ADC",    "fXADC"},
+    {"fry_adc",  "Raster Y ADC",    "fYADC"},
+    {"frx",  "Raster X position",    "fXpos"},
+    {"fry",  "Raster Y position",    "fYpos"},
     { 0 }
   };
 
@@ -258,13 +252,13 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
     THcRasterRawHit* hit = (THcRasterRawHit *) fRawHitList->At(ihit);
     
     if(hit->fADC_xsig>0) {
-      fRawADC[0] = hit->fADC_xsig;
-      // std::cout<<" Raw X = "<<fRawADC[0]<<std::endl;
+      fRawXADC = hit->fADC_xsig;
+      //std::cout<<" Raw X ADC = "<<fRawXADC<<std::endl;
     }
     
     if(hit->fADC_ysig>0) {
-      fRawADC[1] = hit->fADC_ysig;
-      // std::cout<<" Raw Y ADC = "<<fRawADC[1]<<std::endl;
+      fRawYADC = hit->fADC_ysig;
+      //std::cout<<" Raw Y ADC = "<<fRawYADC<<std::endl;
     } 
     ihit++;
   }  
@@ -290,8 +284,8 @@ Int_t THcRaster::Process( ){
   */
 
   // calculate the raster currents
-  fXADC =  fRawADC[0]-fAvgPedADC[0];
-  fYADC =  fRawADC[1]-fAvgPedADC[1];
+  fXADC =  fRawXADC-fAvgPedADC[0];
+  fYADC =  fRawYADC-fAvgPedADC[1];
   //std::cout<<" Raw X ADC = "<<fXADC<<" Raw Y ADC = "<<fYADC<<std::endl;
 
   /*
