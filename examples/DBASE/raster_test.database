@@ -5,6 +5,12 @@
 g_ctp_parm_filename ="PARAM/general.param"
 g_decode_map_filename ="MAPS/raster_jun04.map"
 g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52947
+g_ctp_parm_filename ="PARAM/general.param"
+g_decode_map_filename ="MAPS/raster_jun04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
 52426
 g_ctp_parm_filename ="DBASE/52426.param"
 g_decode_map_filename ="HCANA_MAPS/july04.map"

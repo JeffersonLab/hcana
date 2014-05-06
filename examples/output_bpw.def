@@ -175,7 +175,9 @@ TH1F hs2yfptime 'HODO s2y fptime' H.hod.2y.fptime 80 0 80 H.hod.hgoodstarttime
 TH1F starttime  'HODO start time' H.hod.starttime 80 0 80 H.hod.hgoodstarttime
 
 # Beam related ADC channels. eg. raster
-TH1F rstrx_i 'Raster X Current' RB.raster.xcurrent 4000 -2000 2000
-TH1F rstry_i 'Raster Y Current' RB.raster.ycurrent 4000 -2000 2000
-TH1F rstrx_p 'Raster X Position' RB.raster.xpos 40 -20   20
-TH1F rstry_p 'Raster Y Position' RB.raster.ypos 40 -20   20
+TH1F frx_raw_adc 'Raster X Raw ADC' RB.raster.frx_raw_adc 1200 3200 4400
+TH1F fry_raw_adc 'Raster Y Raw ADC' RB.raster.fry_raw_adc 1200 3200 4400
+TH1F frx_adc 'Raster X ADC' RB.raster.frx_adc 1000 -500 500
+TH1F fry_adc 'Raster Y ADC' RB.raster.fry_adc 1000 -500 500
+TH1F frx 'Raster X Position' RB.raster.frx 100 -0.5   0.5
+TH1F fry 'Raster Y Position' RB.raster.fry 100 -0.5   0.5

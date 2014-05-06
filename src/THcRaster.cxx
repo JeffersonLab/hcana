@@ -40,6 +40,8 @@ THcRaster::THcRaster( const char* name, const char* description,
 
   fAnalyzePedestals = 0;
   fNPedestalEvents = 0;
+  fRawXADC = 0;
+  fRawYADC = 0;
   fXADC = 0;
   fYADC = 0;
   fXpos = 0;
@@ -58,29 +60,19 @@ THcRaster::THcRaster( const char* name, const char* description,
 //_____________________________________________________________________________
 THcRaster::~THcRaster()
 {
-  //  delete [] fPedADC;
-  //  delete [] fAvgPedADC;
-
+  delete [] fPedADC;
+  delete [] fAvgPedADC;
 }
 
 
-
-//____________________________________________________________________________// _
-// void THcRaster::InitializeReconstruction()
-// {
-
-// }
-  
-
+ 
 
 //_____________________________________________________________________________
 Int_t THcRaster::ReadDatabase( const TDatime& date )
 {
 
   // Read parameters such as calibration factor, of this detector from the database.
-  // static const char* const here = "THcRaster::ReadDatabase";
- 
-  // InitializeReconstruction();
+  cout << "THcRaster::ReadDatabase()" << endl;
 
   char prefix[2];
 
@@ -121,10 +113,12 @@ Int_t THcRaster::DefineVariables( EMode mode )
   // Register variables in global list
 
   RVarDef vars[] = {
-    {"xcurrent",  "Raster X current",    "fXADC"},
-    {"ycurrent",  "Raster Y current",    "fYADC"},
-    {"xpos",  "Raster X position",    "fXpos"},
-    {"ypos",  "Raster Y position",    "fYpos"},
+    {"frx_raw_adc",  "Raster X raw ADC",    "fRawXADC"},
+    {"fry_raw_adc",  "Raster Y raw ADC",    "fRawYADC"},
+    {"frx_adc",  "Raster X ADC",    "fXADC"},
+    {"fry_adc",  "Raster Y ADC",    "fYADC"},
+    {"frx",  "Raster X position",    "fXpos"},
+    {"fry",  "Raster Y position",    "fYpos"},
     { 0 }
   };
 
@@ -258,13 +252,13 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
     THcRasterRawHit* hit = (THcRasterRawHit *) fRawHitList->At(ihit);
     
     if(hit->fADC_xsig>0) {
-      fRawADC[0] = hit->fADC_xsig;
-      // std::cout<<" Raw X = "<<fRawADC[0]<<std::endl;
+      fRawXADC = hit->fADC_xsig;
+      //std::cout<<" Raw X ADC = "<<fRawXADC<<std::endl;
     }
     
     if(hit->fADC_ysig>0) {
-      fRawADC[1] = hit->fADC_ysig;
-      // std::cout<<" Raw Y ADC = "<<fRawADC[1]<<std::endl;
+      fRawYADC = hit->fADC_ysig;
+      //std::cout<<" Raw Y ADC = "<<fRawYADC<<std::endl;
     } 
     ihit++;
   }  
@@ -280,8 +274,7 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
 //_____________________________________________________________________________
 Int_t THcRaster::Process( ){
 
-  Double_t tmp = 0;
-  Double_t eBeam = 0;
+  Double_t eBeam = 0.001;
   /*
     calculate raster position from ADC value.
     From ENGINE/g_analyze_misc.f -
@@ -291,8 +284,8 @@ Int_t THcRaster::Process( ){
   */
 
   // calculate the raster currents
-  fXADC =  fRawADC[0]-fAvgPedADC[0];
-  fYADC =  fRawADC[1]-fAvgPedADC[1];
+  fXADC =  fRawXADC-fAvgPedADC[0];
+  fYADC =  fRawYADC-fAvgPedADC[1];
   //std::cout<<" Raw X ADC = "<<fXADC<<" Raw Y ADC = "<<fYADC<<std::endl;
 
   /*
@@ -301,14 +294,10 @@ Int_t THcRaster::Process( ){
     gfrx = (gfrx_adc/gfrx_adcpercm)*(gfr_cal_mom/ebeam)
     gfry = (gfry_adc/gfry_adcpercm)*(gfr_cal_mom/ebeam)
   */
-  // bpw- Iam not sure how to access the global variables. the below code doesnt work. so for now, hard code the beam energy.
-  eBeam=0.0001;
+ 
   if(gHcParms->Find("gpbeam")){
     eBeam=*(Double_t *)gHcParms->Find("gpbeam")->GetValuePointer();
   }
-  //  cout <<"e Beam  = "<< eBeam << " " << fgpbeam << endl;
-  
-  //  eBeam = 4.02187;
   fXpos = (fXADC/fFrXADCperCM)*(fFrCalMom/eBeam);
   fYpos = (fYADC/fFrYADCperCM)*(fFrCalMom/eBeam);
 
