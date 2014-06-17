@@ -141,6 +141,11 @@ protected:
 
   void Setup(const char* name, const char* description);
 
+  TClonesArray* scinPosADC; // Ahmed
+  TClonesArray* scinNegADC; // Ahmed
+  TClonesArray* scinPosTDC; // Ahmed
+  TClonesArray* scinNegTDC; // Ahmed
+
   ClassDef(THcHodoscope,0)   // Hodoscope detector
 };
 
