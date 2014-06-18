@@ -468,7 +468,6 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
   //    { "time",   "Time of hit at plane (s)",          "fTime" },
   //    { "dtime",  "Est. uncertainty of time (s)",      "fdTime" },
   //    { "dedx",   "dEdX-like deposited in paddle",     "fAmpl" },
-    { "dedx",   "dEdX-like deposited in paddle",     "fdEdX" },
   //    { "troff",  "Trigger offset for paddles",        "fTrigOff"},
   //    { "trn",    "Number of tracks for hits",         "GetNTracks()" },
   //    { "trx",    "x-position of track in det plane",  "fTrackProj.THaTrackProj.fX" },
