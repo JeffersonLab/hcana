@@ -205,7 +205,7 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
-
+  
   // Register variables in global list
   RVarDef vars[] = {
     {"posadchits", "List of Positive ADC hits","fPosADCHits.THcSignalHit.GetPaddleNumber()"},

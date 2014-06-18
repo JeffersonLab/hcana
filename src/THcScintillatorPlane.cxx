@@ -210,16 +210,11 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 
   // Register variables in global list
   RVarDef vars[] = {
-    {"postdchits", "List of Positive TDC hits", 
-     "frPosTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negtdchits", "List of Negative TDC hits", 
-     "frNegTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"posadchits", "List of Positive ADC hits", 
-     "frPosADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negadchits", "List of Negative ADC hits", 
-     "frNegADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"fptime", "Time at focal plane", 
-     "GetFpTime()"},
+    {"postdchits", "List of Positive TDC hits",      "frPosTDCHits.THcSignalHit.GetPaddleNumber()"},
+    {"negtdchits", "List of Negative TDC hits",      "frNegTDCHits.THcSignalHit.GetPaddleNumber()"},
+    {"posadchits", "List of Positive ADC hits",      "frPosADCHits.THcSignalHit.GetPaddleNumber()"},
+    {"negadchits", "List of Negative ADC hits",      "frNegADCHits.THcSignalHit.GetPaddleNumber()"},
+    {"fptime", "Time at focal plane",                "GetFpTime()"},
     { 0 }
   };
 

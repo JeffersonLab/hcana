@@ -168,14 +168,10 @@ Int_t THcAerogel::DefineVariables( EMode mode )
   // No.  They show up in tree as Ndata.H.aero.postdchits for example
 
   RVarDef vars[] = {
-    {"postdchits", "List of Positive TDC hits", 
-     "fPosTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negtdchits", "List of Negative TDC hits", 
-     "fNegTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"posadchits", "List of Positive ADC hits", 
-     "fPosADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negadchits", "List of Negative ADC hits", 
-     "fNegADCHits.THcSignalHit.GetPaddleNumber()"},
+    {"postdchits", "List of Positive TDC hits",      "fPosTDCHits.THcSignalHit.GetPaddleNumber()"},
+    {"negtdchits", "List of Negative TDC hits",      "fNegTDCHits.THcSignalHit.GetPaddleNumber()"},
+    {"posadchits", "List of Positive ADC hits",      "fPosADCHits.THcSignalHit.GetPaddleNumber()"},
+    {"negadchits", "List of Negative ADC hits",      "fNegADCHits.THcSignalHit.GetPaddleNumber()"},
     {"apos",  "Raw Positive ADC Amplitudes",   "fA_Pos"},
     {"aneg",  "Raw Negative ADC Amplitudes",   "fA_Neg"},
     {"apos_p",  "Ped-subtracted Positive ADC Amplitudes",   "fA_Pos_p"},
