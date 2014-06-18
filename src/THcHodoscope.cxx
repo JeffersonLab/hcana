@@ -563,8 +563,8 @@ void THcHodoscope::Clear( Option_t* opt)
 Int_t THcHodoscope::Decode( const THaEvData& evdata )
 {
 
-  if ( evdata.GetEvNum() > 1000 )
-    cout << "\nhcana event = " << evdata.GetEvNum() << endl;
+  //  if ( evdata.GetEvNum() > 1000 )
+  //    cout << "\nhcana event = " << evdata.GetEvNum() << endl;
 
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = DecodeToHitList(evdata);
@@ -647,7 +647,7 @@ Double_t THcHodoscope::TimeWalkCorrection(const Int_t& paddle,
 Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 {
 
-  cout << "------------------------------------" << endl;
+  //  cout << "------------------------------------" << endl;
   // Loop over tracks then loop over scintillator planes
   // **MAIN LOOP: Loop over all tracks and get corrected time, tof, beta...
   Int_t Ntracks = tracks.GetLast()+1; // Number of reconstructed tracks
@@ -992,10 +992,10 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      }
 	    } // time at focal plane condition
 	    
-	    cout << "num pmt hit = " << numPmtHit[itrack]
-		 << " fp time = " << scinFPTime[itrack][numScinHit[itrack]]
-		 << " dedx = " << dedX[itrack][numScinHit[itrack]]
-		 << endl;
+	    //	    cout << "num pmt hit = " << numPmtHit[itrack]
+	    //		 << " fp time = " << scinFPTime[itrack][numScinHit[itrack]]
+	    //		 << " dedx = " << dedX[itrack][numScinHit[itrack]]
+	    //		 << endl;
 	    
 	  } // on track else condition
 	  
@@ -1042,7 +1042,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
     } // Main loop over tracks ends here.
   } // If condition for at least one track
   
-  cout << endl;
+  // cout << endl;
   
   // Calculation of coordinates of particle track cross point with scint
   // plane in the detector coordinate system. For this, parameters of track 
