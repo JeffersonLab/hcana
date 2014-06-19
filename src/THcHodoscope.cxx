@@ -89,7 +89,8 @@ void THcHodoscope::Setup(const char* name, const char* description)
   vector<string> plane_names = vsplit(planenamelist);
   // Plane names  
   if(plane_names.size() != (UInt_t) fNPlanes) {
-    cout << "ERROR: Number of planes " << fNPlanes << " doesn't agree with number of plane names " << plane_names.size() << endl;
+    cout << "ERROR: Number of planes " << fNPlanes 
+	 << " doesn't agree with number of plane names " << plane_names.size() << endl;
     // Should quit.  Is there an official way to quit?
   }
   fPlaneNames = new char* [fNPlanes];
@@ -312,6 +313,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   // An alternate way to get these variables
   // Can add Xscin_P_center when LoadParmValues supports arrays
   
+  FPTime     = new Double_t[fNPlanes];
+
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   //
   prefix[1]='\0';
@@ -445,6 +448,13 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
     //    hnegtdc4 HMS s2y- TDC hits
 
   RVarDef vars[] = {
+    {"fpHitsTime","Time at focal plane from all hits","FPTime"},
+    {"fpTimeDif1","Time differnce betwwen plane 1 & 2","FPTimeDif1"},
+    {"fpTimeDif2","Time differnce betwwen plane 1 & 3","FPTimeDif2"},
+    {"fpTimeDif3","Time differnce betwwen plane 1 & 4","FPTimeDif3"},
+    {"fpTimeDif4","Time differnce betwwen plane 2 & 3","FPTimeDif4"},
+    {"fpTimeDif5","Time differnce betwwen plane 2 & 4","FPTimeDif5"},
+    {"fpTimeDif6","Time differnce betwwen plane 3 & 4","FPTimeDif6"},
     {"starttime","Hodoscope Start Time","fStartTime"},
     {"hgoodstarttime","Hodoscope Good Start Time","fGoodStartTime"},
   //    { "nlthit", "Number of Left paddles TDC times",  "fLTNhit" },
@@ -485,6 +495,8 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
 THcHodoscope::~THcHodoscope()
 {
   // Destructor. Remove variables from global list.
+
+  delete [] FPTime;
 
   if( fIsSetup )
     RemoveVariables();
@@ -556,6 +568,13 @@ void THcHodoscope::Clear( Option_t* opt)
   // Reset per-event data.
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     fPlanes[ip]->Clear(opt);
+    FPTime[ip]=0.;
+    FPTimeDif1=0.;
+    FPTimeDif2=0.;
+    FPTimeDif3=0.;
+    FPTimeDif4=0.;
+    FPTimeDif5=0.;
+    FPTimeDif6=0.;
   }
 }
 
@@ -698,11 +717,10 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
       
       nFound = 0;
       Int_t numPlaneTime[fNPlanes];
-      Double_t sumPlaneTime[fNPlanes],FPTime[fNPlanes];
+      Double_t sumPlaneTime[fNPlanes];
       for ( Int_t dp = 0; dp <  fNPlanes; dp++ ){ 
 	numPlaneTime[dp] = 0;
 	sumPlaneTime[dp] = 0.;
-	FPTime[dp] = 0.;
       }
       // Loop over scintillator planes.
       // In ENGINE, its loop over good scintillator hits.
@@ -1006,7 +1024,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	  }
 	  
 	} // Second loop over hits of a scintillator plane ends here
-      } // Loop over scintillator planes
+      } // Loop over scintillator planes ends here
       
       // * * Fit beta if there are enough time measurements (one upper, one lower)
       if ( ( goodPlaneTime[itrack][0] ) || ( goodPlaneTime[itrack][1] ) ||
@@ -1032,14 +1050,22 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	//	cout << "plane = " << ind + 1 << "  fptime = " << FPTime[ind] << endl;
       }
       
+
+      FPTimeDif1 = FPTime[0] - FPTime[1];
+      FPTimeDif2 = FPTime[0] - FPTime[2];
+      FPTimeDif3 = FPTime[0] - FPTime[3];
+      FPTimeDif4 = FPTime[1] - FPTime[2];
+      FPTimeDif5 = FPTime[1] - FPTime[3];
+      FPTimeDif6 = FPTime[2] - FPTime[3];
       
-      // h_fptimedif(1)=h_fptime(1)-h_fptime(2);
-      // h_fptimedif(2)=h_fptime(1)-h_fptime(3);
-      // h_fptimedif(3)=h_fptime(1)-h_fptime(4);
-      // h_fptimedif(4)=h_fptime(2)-h_fptime(3);
-      // h_fptimedif(5)=h_fptime(2)-h_fptime(4);
-      // h_fptimedif(6)=h_fptime(3)-h_fptime(4);
-      
+      // cout << "time dif 1 = " << FPTimeDif1
+      // 	   << "  time dif 2 = " << FPTimeDif2
+      // 	   << "  time dif 3 = " << FPTimeDif3
+      // 	   << "  time dif 4 = " << FPTimeDif4
+      // 	   << "  time dif 5 = " << FPTimeDif5
+      // 	   << "  time dif 6 = " << FPTimeDif6
+      // 	   << endl;
+
       
     } // Main loop over tracks ends here.
   } // If condition for at least one track

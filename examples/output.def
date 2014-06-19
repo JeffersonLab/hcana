@@ -12,7 +12,7 @@ block S.cal.*
 block g.evtyp
 
 # TDC hits per paddle
-TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.postdchits 16 0.5 16.5
+#TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.postdchits 16 0.5 16.5
 TH1F hnegtdc1 'HMS s1x- TDC hits' H.hod.1x.negtdchits 16 0.5 16.5
 TH1F hpostdc2 'HMS s1y+ TDC hits' H.hod.1y.postdchits 10 0.5 10.5
 TH1F hnegtdc2 'HMS s1y- TDC hits' H.hod.1y.negtdchits 10 0.5 10.5

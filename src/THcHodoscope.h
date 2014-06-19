@@ -56,11 +56,19 @@ public:
   Double_t GetHodoNegSigma(Int_t iii) const {return fHodoNegSigma[iii];}
 
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
-  
+
   friend class THaScCalib;
 
   THcHodoscope();  // for ROOT I/O
 protected:
+
+  Double_t*    FPTime;     // !time at fp from all hits in 1 scintillator plane
+  Double_t     FPTimeDif1; // !time difference at fp between scintillator planes 1 & 2
+  Double_t     FPTimeDif2; // !time difference at fp between scintillator planes 1 & 3
+  Double_t     FPTimeDif3; // !time difference at fp between scintillator planes 1 & 4
+  Double_t     FPTimeDif4; // !time difference at fp between scintillator planes 2 & 3
+  Double_t     FPTimeDif5; // !time difference at fp between scintillator planes 2 & 4
+  Double_t     FPTimeDif6; // !time difference at fp between scintillator planes 3 & 4
 
   Int_t fAnalyzePedestals;
 
