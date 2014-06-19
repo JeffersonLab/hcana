@@ -582,8 +582,8 @@ void THcHodoscope::Clear( Option_t* opt)
 Int_t THcHodoscope::Decode( const THaEvData& evdata )
 {
 
-  // if ( evdata.GetEvNum() > 1000 )
-  //   cout << "\nhcana event = " << evdata.GetEvNum() << endl;
+  if ( evdata.GetEvNum() > 1000 )
+    cout << "\nhcana event = " << evdata.GetEvNum() << endl;
 
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = DecodeToHitList(evdata);
@@ -666,7 +666,7 @@ Double_t THcHodoscope::TimeWalkCorrection(const Int_t& paddle,
 Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 {
 
-  // cout << "------------------------------------" << endl;
+  cout << "------------------------------------" << endl;
   // Loop over tracks then loop over scintillator planes
   // **MAIN LOOP: Loop over all tracks and get corrected time, tof, beta...
   Int_t Ntracks = tracks.GetLast()+1; // Number of reconstructed tracks
@@ -772,9 +772,10 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	  scinCenter = fPlanes[ip]->GetPosCenter(hitPaddle) + fPlanes[ip]->GetPosOffset();
 	  sIndex = fNPlanes * hitPaddle + ip;
 	  
-	  if ( TMath::Abs( ( scinCenter - scinTrnsCoord ) <
-			   ( fPlanes[ip]->GetSize() / 2 ) + fPlanes[ip]->GetHodoSlop() ) ){ // Line 197
-	    
+
+	  if ( TMath::Abs( scinCenter - scinTrnsCoord ) <
+	       ( fPlanes[ip]->GetSize() * 0.5 + fPlanes[ip]->GetHodoSlop() ) ){ // Line 293
+	    scinOnTrack[itrack][ihit] = kFALSE;   
 	    
 	    if ( ( ((THcSignalHit*)scinPosTDC->At(ihit))->GetData() > fScinTdcMin ) &&
 		 ( ((THcSignalHit*)scinPosTDC->At(ihit))->GetData() < fScinTdcMax ) ) { // Line 199
@@ -894,9 +895,12 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	  scinCenter = fPlanes[ip]->GetPosCenter(hitPaddle) + fPlanes[ip]->GetPosOffset();
 	  sIndex = fNPlanes * hitPaddle + ip;
 	  
+	  // cout << "Track = " << itrack + 1 << " plane = " << ip + 1 << " hit = " << ihit + 1
+	  //      << "  scincener = " << 
+
 	  // ** Check if scin is on track
-	  if ( TMath::Abs( ( scinCenter - scinTrnsCoord ) >
-			   ( fPlanes[ip]->GetSize() / 2 ) + fPlanes[ip]->GetHodoSlop() ) ){ // Line 293
+	    if ( TMath::Abs( scinCenter - scinTrnsCoord ) >
+		 ( fPlanes[ip]->GetSize() * 0.5 + fPlanes[ip]->GetHodoSlop() ) ){ // Line 293
 	    scinOnTrack[itrack][ihit] = kFALSE;
 	  }
 	  else{
@@ -968,7 +972,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      }
 	    } // In h_tof.f this is includes the following if condition for time at focal plane
 	    // // because it is written in FORTRAN code
-	    
+
 	    if ( goodScinTime[itrack][ihit] ){
 	      
 	      scinTimeFP[ihit] = scinTime[ihit] -
@@ -984,6 +988,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      scinHit[itrack][numScinHit[itrack]] = ihit;
 	      scinFPTime[itrack][numScinHit[itrack]] = scinTimeFP[ihit];
 	      
+
 	      if ( ( goodTDCPos[itrack][ihit] ) && ( goodTDCNeg[itrack][ihit] ) ){
 		numPmtHit[itrack] = numPmtHit[itrack] + 2;
 	      }
@@ -1018,11 +1023,11 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	  if ( goodScinTime[itrack][ihit] ){
 	    goodPlaneTime[itrack][ip] = kTRUE;
 	  }
-
-	  // cout << "Track = " << itrack << " plane = " << ip+1 << " hit = " << ihit
-	  //      << endl;
 	  
-	  
+	  cout << "Track = " << itrack + 1 << " plane = " << ip + 1 << " hit = " << ihit + 1
+	       << "  num pmt hit = " << numPmtHit[itrack]
+	       << "  dedx = " << dedX[itrack][numScinHit[itrack]]
+	       << endl;
 	  
 	} // Second loop over hits of a scintillator plane ends here
       } // Loop over scintillator planes ends here
@@ -1048,7 +1053,6 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	else{
 	  FPTime[ind] = 1000. * ( ind + 1 );
 	}
-	//	cout << "plane = " << ind + 1 << "  fptime = " << FPTime[ind] << endl;
       }
       
 
@@ -1071,7 +1075,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
     } // Main loop over tracks ends here.
   } // If condition for at least one track
   
-  // cout << endl;
+  cout << endl;
   
   // Calculation of coordinates of particle track cross point with scint
   // plane in the detector coordinate system. For this, parameters of track 
