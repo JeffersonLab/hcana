@@ -170,6 +170,12 @@ TH1F hdc2y2_dd 'HDC 2Y2 Drift Distance' H.dc.2y2.dist 300 -0.1 0.6
 TH1F hdc2x2_dd 'HDC 2X2 Drift Distance' H.dc.2x2.dist 300 -0.1 0.6
 
 # Focal Plane times
+TH1F htimedif1 ' Time dif of plane 1 and 2' H.hod.fpTimeDif1 80 -40. 40.
+TH1F htimedif2 ' Time dif of plane 1 and 3' H.hod.fpTimeDif2 80 -40. 40.
+TH1F htimedif3 ' Time dif of plane 1 and 4' H.hod.fpTimeDif3 80 -40. 40.
+TH1F htimedif4 ' Time dif of plane 2 and 3' H.hod.fpTimeDif4 80 -40. 40.
+TH1F htimedif5 ' Time dif of plane 2 and 4' H.hod.fpTimeDif5 80 -40. 40.
+TH1F htimedif6 ' Time dif of plane 3 and 4' H.hod.fpTimeDif6 80 -40. 40.
 TH1F hs1xfptime 'HODO s1x fptime' H.hod.1x.fptime 80 0 80 H.hod.hgoodstarttime
 TH1F hs1yfptime 'HODO s1y fptime' H.hod.1y.fptime 80 0 80 H.hod.hgoodstarttime
 TH1F hs2xfptime 'HODO s2x fptime' H.hod.2x.fptime 80 0 80 H.hod.hgoodstarttime

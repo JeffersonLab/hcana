@@ -666,7 +666,7 @@ Double_t THcHodoscope::TimeWalkCorrection(const Int_t& paddle,
 Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 {
 
-  //  cout << "------------------------------------" << endl;
+  // cout << "------------------------------------" << endl;
   // Loop over tracks then loop over scintillator planes
   // **MAIN LOOP: Loop over all tracks and get corrected time, tof, beta...
   Int_t Ntracks = tracks.GetLast()+1; // Number of reconstructed tracks
@@ -681,7 +681,6 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
   Bool_t keepPos[53], keepNeg[53], goodPlaneTime[Ntracks][fNPlanes];
   Bool_t goodScinTime[Ntracks][53],scinOnTrack[Ntracks][53];
   Double_t beta[Ntracks], betaChisq[Ntracks];
-  
   
   // Double_t sumPlaneTime[fNPlanes], , sum_fp_time, num_fp_time;
   
@@ -747,11 +746,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	  scinPosTDC = fPlanes[ip]->GetPosTDC();
 	  scinNegTDC = fPlanes[ip]->GetNegTDC();
 	  
-	  // cout << "Track = " << itrack << " plane = " << ip+1 << " hit = " << ihit
-	  // << " pos adc hit = " << ((THcSignalHit*)scinPosADC->At(ihit))->GetData() << endl;
 	  
-	  
-	  hitPaddle = ((THcSignalHit*)scinPosADC->At(ihit))->GetPaddleNumber()-1;
+	  hitPaddle = ((THcSignalHit*)scinPosTDC->At(ihit))->GetPaddleNumber()-1;
 	  
 	  xhitCoord = theTrack->GetX() + theTrack->GetTheta() *
 	    ( fPlanes[ip]->GetZpos() +
@@ -787,11 +783,11 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      path[ihit] = fPlanes[ip]->GetPosLeft() - scinLongCoord;
 	      time[ihit] = ((THcSignalHit*)scinPosTDC->At(ihit))->GetData() * fScinTdcToTime;
 	      time[ihit] = time[ihit] - fHodoPosPhcCoeff[sIndex] *
-		TMath::Sqrt( TMath::Max( 0., ( ( adcPh[ihit] / fHodoPosMinPh[sIndex] ) - 1 ) ) );
-	      time[ihit] = time[ihit] - ( path[ihit] / fHodoVelLight[sIndex] ) - ( fPlanes[ip]->GetZpos() +
-										   ( hitPaddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betaPcent ) *
-		TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
-			     theTrack->GetPhi() * theTrack->GetPhi() );
+		           TMath::Sqrt( TMath::Max( 0., ( ( adcPh[ihit] / fHodoPosMinPh[sIndex] ) - 1 ) ) );
+	      time[ihit] = time[ihit] - ( path[ihit] / fHodoVelLight[sIndex] ) - ( fPlanes[ip]->GetZpos() +  
+			   ( hitPaddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betaPcent ) *
+		           TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
+			   theTrack->GetPhi() * theTrack->GetPhi() );
 	      timePos[ihit] = time[ihit] - fHodoPosTimeOffset[sIndex];
 	      nFound ++; // Line 210
 	      
@@ -810,11 +806,11 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      path[ihit] = scinLongCoord - fPlanes[ip]->GetPosRight();
 	      time[ihit] = ((THcSignalHit*)scinNegTDC->At(ihit))->GetData() * fScinTdcToTime;
 	      time[ihit] = time[ihit] - fHodoNegPhcCoeff[sIndex] *
-		TMath::Sqrt( TMath::Max( 0., ( ( adcPh[ihit] / fHodoNegMinPh[sIndex] ) - 1 ) ) );
+                           TMath::Sqrt( TMath::Max( 0., ( ( adcPh[ihit] / fHodoNegMinPh[sIndex] ) - 1 ) ) );
 	      time[ihit] = time[ihit] - ( path[ihit] / fHodoVelLight[sIndex] ) - ( fPlanes[ip]->GetZpos() +
-										   ( hitPaddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betaPcent ) *
-		TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
-			     theTrack->GetPhi() * theTrack->GetPhi() );
+			   ( hitPaddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betaPcent ) *
+		           TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
+			   theTrack->GetPhi() * theTrack->GetPhi() );
 	      timeNeg[ihit] = time[ihit] - fHodoNegTimeOffset[sIndex];
 	      nFound ++; // Line 229
 	      
@@ -875,7 +871,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	Double_t scinPosTime[scinHits], scinNegTime[scinHits];
 	for ( ihit = 0; ihit < scinHits; ihit++ ){
 	  
-	  hitPaddle = ((THcSignalHit*)scinPosADC->At(ihit))->GetPaddleNumber()-1;
+	  hitPaddle = ((THcSignalHit*)scinPosTDC->At(ihit))->GetPaddleNumber()-1;
 	  
 	  xhitCoord = theTrack->GetX() + theTrack->GetTheta() *
 	    ( fPlanes[ip]->GetZpos() +
@@ -922,7 +918,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      
 	      time[ihit] = ((THcSignalHit*)scinPosTDC->At(ihit))->GetData() * fScinTdcToTime;
 	      time[ihit] = time[ihit] - ( fHodoPosPhcCoeff[sIndex] *
-					  TMath::Sqrt( TMath::Max( 0. , ( ( adcPh[ihit] / fHodoPosMinPh[sIndex] ) - 1 ) ) ) );
+			   TMath::Sqrt( TMath::Max( 0. , ( ( adcPh[ihit] / fHodoPosMinPh[sIndex] ) - 1 ) ) ) );
 	      time[ihit] = time[ihit] - ( path[ihit] / fHodoVelLight[sIndex] );
 	      scinPosTime[ihit] = time[ihit] - fHodoPosTimeOffset[sIndex];
 	      
@@ -943,7 +939,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      //* propogation of light thru scintillator, and offset.
 	      time[ihit] = ((THcSignalHit*)scinNegTDC->At(ihit))->GetData() * fScinTdcToTime;
 	      time[ihit] = time[ihit] - ( fHodoNegPhcCoeff[sIndex] *
-					  TMath::Sqrt( TMath::Max( 0. , ( ( adcPh[ihit] / fHodoNegMinPh[sIndex] ) - 1 ) ) ) );
+			   TMath::Sqrt( TMath::Max( 0. , ( ( adcPh[ihit] / fHodoNegMinPh[sIndex] ) - 1 ) ) ) );
 	      time[ihit] = time[ihit] - ( path[ihit] / fHodoVelLight[sIndex] );
 	      scinNegTime[ihit] = time[ihit] - fHodoNegTimeOffset[sIndex];
 	      
@@ -1022,6 +1018,11 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	  if ( goodScinTime[itrack][ihit] ){
 	    goodPlaneTime[itrack][ip] = kTRUE;
 	  }
+
+	  // cout << "Track = " << itrack << " plane = " << ip+1 << " hit = " << ihit
+	  //      << endl;
+	  
+	  
 	  
 	} // Second loop over hits of a scintillator plane ends here
       } // Loop over scintillator planes ends here
@@ -1045,7 +1046,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	  FPTime[ind] = ( sumPlaneTime[ind] / numPlaneTime[ind] );
 	}
 	else{
-	  FPTime[ind] = 1000. * ind;
+	  FPTime[ind] = 1000. * ( ind + 1 );
 	}
 	//	cout << "plane = " << ind + 1 << "  fptime = " << FPTime[ind] << endl;
       }
@@ -1059,18 +1060,18 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
       FPTimeDif6 = FPTime[2] - FPTime[3];
       
       // cout << "time dif 1 = " << FPTimeDif1
-      // 	   << "  time dif 2 = " << FPTimeDif2
-      // 	   << "  time dif 3 = " << FPTimeDif3
-      // 	   << "  time dif 4 = " << FPTimeDif4
-      // 	   << "  time dif 5 = " << FPTimeDif5
-      // 	   << "  time dif 6 = " << FPTimeDif6
-      // 	   << endl;
+      //  	   << "  time dif 2 = " << FPTimeDif2
+      //  	   << "  time dif 3 = " << FPTimeDif3
+      //  	   << "  time dif 4 = " << FPTimeDif4
+      //  	   << "  time dif 5 = " << FPTimeDif5
+      //  	   << "  time dif 6 = " << FPTimeDif6
+      //  	   << endl;
 
       
     } // Main loop over tracks ends here.
   } // If condition for at least one track
   
-  //  cout << endl;
+  // cout << endl;
   
   // Calculation of coordinates of particle track cross point with scint
   // plane in the detector coordinate system. For this, parameters of track 
