@@ -69,7 +69,6 @@ protected:
   Double_t     FPTimeDif4; // !time difference at fp between scintillator planes 2 & 3
   Double_t     FPTimeDif5; // !time difference at fp between scintillator planes 2 & 4
   Double_t     FPTimeDif6; // !time difference at fp between scintillator planes 3 & 4
-  Int_t        checkEvent;
 
   Int_t fAnalyzePedestals;
 
