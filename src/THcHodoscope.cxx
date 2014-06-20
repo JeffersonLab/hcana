@@ -575,6 +575,7 @@ void THcHodoscope::Clear( Option_t* opt)
     FPTimeDif4=0.;
     FPTimeDif5=0.;
     FPTimeDif6=0.;
+    checkEvent=0;
   }
 }
 
@@ -582,9 +583,9 @@ void THcHodoscope::Clear( Option_t* opt)
 Int_t THcHodoscope::Decode( const THaEvData& evdata )
 {
 
-  if ( evdata.GetEvNum() > 1000 )
-    cout << "\nhcana event = " << evdata.GetEvNum() << endl;
-
+  if ( evdata.GetEvNum() > 1000 ) cout << "\nhcana event = " << evdata.GetEvNum() << endl;
+  checkEvent = evdata.GetEvNum();
+  //  if ( checkEvent == 2016 ) cout << "hcana event = " << checkEvent << endl;
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = DecodeToHitList(evdata);
   //
@@ -666,12 +667,11 @@ Double_t THcHodoscope::TimeWalkCorrection(const Int_t& paddle,
 Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 {
 
-  cout << "------------------------------------" << endl;
+  //  cout << "------------------------------------" << endl;
   // Loop over tracks then loop over scintillator planes
   // **MAIN LOOP: Loop over all tracks and get corrected time, tof, beta...
   Int_t Ntracks = tracks.GetLast()+1; // Number of reconstructed tracks
   Double_t dedX[Ntracks][53];
-  Double_t hpartmass=1; // Fiex it
   Double_t p, betap, sumFPTime, hBetaPcent, xhitCoord, yhitCoord, tmin;
   Int_t numScinHit[Ntracks], numPmtHit[Ntracks], scinHit[Ntracks][53] ; // check the second index
   Int_t padNum,nFound, timeHist[200], hitPaddle, sIndex,k, jmax, maxhit, ihit;
@@ -682,6 +682,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
   Bool_t goodScinTime[Ntracks][53],scinOnTrack[Ntracks][53];
   Double_t beta[Ntracks], betaChisq[Ntracks];
   
+  Double_t hpartmass=0.00051099; // Fix it
+
   // Double_t sumPlaneTime[fNPlanes], , sum_fp_time, num_fp_time;
   
   if (tracks.GetLast()+1 > 0 ) {
@@ -696,9 +698,16 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
       sumFPTime = 0.; // Line 138
       numScinHit[itrack] = 0; // Line 140
       numPmtHit[itrack] = 0; // Line 141
-      p = theTrack->GetP(); // Line 142
+      p = theTrack->GetP(); // Line 142 Fix it
+      //      p = 0.78;
       betap = p/( TMath::Sqrt( p * p + hpartmass * hpartmass) );
       
+      // if ( checkEvent == 2016 ) { 
+      // cout << "THcHodoscope:   Momentum = " << p << "   part mass = " << hpartmass << endl;
+      // }
+
+      cout << "THcHodoscope:   Momentum = " << p << "   part mass = " << hpartmass << endl;
+
       //! Calculate all corrected hit times and histogram
       //! This uses a copy of code below. Results are save in time_pos,neg
       //! including the z-pos. correction assuming nominal value of betap
@@ -786,7 +795,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      time[ihit] = time[ihit] - fHodoPosPhcCoeff[sIndex] *
 		           TMath::Sqrt( TMath::Max( 0., ( ( adcPh[ihit] / fHodoPosMinPh[sIndex] ) - 1 ) ) );
 	      time[ihit] = time[ihit] - ( path[ihit] / fHodoVelLight[sIndex] ) - ( fPlanes[ip]->GetZpos() +  
-			   ( hitPaddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betaPcent ) *
+			   ( hitPaddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betap ) *
+		//( hitPaddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betaPcent ) *
 		           TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
 			   theTrack->GetPhi() * theTrack->GetPhi() );
 	      timePos[ihit] = time[ihit] - fHodoPosTimeOffset[sIndex];
@@ -809,7 +819,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      time[ihit] = time[ihit] - fHodoNegPhcCoeff[sIndex] *
                            TMath::Sqrt( TMath::Max( 0., ( ( adcPh[ihit] / fHodoNegMinPh[sIndex] ) - 1 ) ) );
 	      time[ihit] = time[ihit] - ( path[ihit] / fHodoVelLight[sIndex] ) - ( fPlanes[ip]->GetZpos() +
-			   ( hitPaddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betaPcent ) *
+			   //( hitPaddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betaPcent ) *
+			   ( hitPaddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betap ) *
 		           TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
 			   theTrack->GetPhi() * theTrack->GetPhi() );
 	      timeNeg[ihit] = time[ihit] - fHodoNegTimeOffset[sIndex];
@@ -873,6 +884,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	for ( ihit = 0; ihit < scinHits; ihit++ ){
 	  
 	  hitPaddle = ((THcSignalHit*)scinPosTDC->At(ihit))->GetPaddleNumber()-1;
+	  //if ( checkEvent == 2016 ) cout << "paddle = " << hitPaddle << endl;
 	  
 	  xhitCoord = theTrack->GetX() + theTrack->GetTheta() *
 	    ( fPlanes[ip]->GetZpos() +
@@ -973,13 +985,29 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	    } // In h_tof.f this is includes the following if condition for time at focal plane
 	    // // because it is written in FORTRAN code
 
+	    // c     Get time at focal plane
 	    if ( goodScinTime[itrack][ihit] ){
-	      
 	      scinTimeFP[ihit] = scinTime[ihit] -
 		( fPlanes[ip]->GetZpos() + ( hitPaddle % 2 ) * fPlanes[ip]->GetDzpos() ) /
-		( 29.979 * betaPcent ) *
+		//( 29.979 * betaPcent ) *
+		( 29.979 * betap ) *
 		TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
 			     theTrack->GetPhi() * theTrack->GetPhi() );
+
+
+	      // if ( checkEvent == 2016 ) { 
+	       	cout << "plane = " << ip+1 
+	       	     << "   scin time = " << scinTime[ihit]
+	       	     << "   29.97 * beta = " << ( 29.979 * betap )
+	       	     << "   betap = " << betap
+		     << "   momentum = " << p
+	       	     << "   zpos = " << ( fPlanes[ip]->GetZpos() + ( hitPaddle % 2 ) * fPlanes[ip]->GetDzpos() )
+	       	     << "   sqrt = " << TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
+	       					     theTrack->GetPhi() * theTrack->GetPhi() )
+	       	     << "   scin time fp = " << scinTimeFP[ihit]
+	       	     << endl;
+		// }
+
 	      sumFPTime = sumFPTime + scinTimeFP[ihit];
 	      numFPTime ++;
 	      sumPlaneTime[ip] = sumPlaneTime[ip] + scinTimeFP[ihit];
@@ -1024,10 +1052,10 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	    goodPlaneTime[itrack][ip] = kTRUE;
 	  }
 	  
-	  cout << "Track = " << itrack + 1 << " plane = " << ip + 1 << " hit = " << ihit + 1
-	       << "  num pmt hit = " << numPmtHit[itrack]
-	       << "  dedx = " << dedX[itrack][numScinHit[itrack]]
-	       << endl;
+	  // cout << "Track = " << itrack + 1 << " plane = " << ip + 1 << " hit = " << ihit + 1
+	  //      << "  num pmt hit = " << numPmtHit[itrack]
+	  //      << "  dedx = " << dedX[itrack][numScinHit[itrack]]
+	  //      << endl;
 	  
 	} // Second loop over hits of a scintillator plane ends here
       } // Loop over scintillator planes ends here
@@ -1049,10 +1077,16 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
       for ( Int_t ind = 0; ind < fNPlanes; ind++ ){
 	if ( numPlaneTime[ind] != 0 ){
 	  FPTime[ind] = ( sumPlaneTime[ind] / numPlaneTime[ind] );
+	  if ( checkEvent == 2016 ) {  
+	    cout << "sum plane time = " << sumPlaneTime[ind] 
+		 << "    num plane time  = " << numPlaneTime[ind] << endl; 
+	  }
+
 	}
 	else{
 	  FPTime[ind] = 1000. * ( ind + 1 );
 	}
+	//	if ( checkEvent == 2016 ) {  cout << "plane = " << ind+1 << "  fptime = " <<  FPTime[ind] << endl; }
       }
       
 
@@ -1063,19 +1097,21 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
       FPTimeDif5 = FPTime[1] - FPTime[3];
       FPTimeDif6 = FPTime[2] - FPTime[3];
       
-      // cout << "time dif 1 = " << FPTimeDif1
-      //  	   << "  time dif 2 = " << FPTimeDif2
-      //  	   << "  time dif 3 = " << FPTimeDif3
-      //  	   << "  time dif 4 = " << FPTimeDif4
-      //  	   << "  time dif 5 = " << FPTimeDif5
-      //  	   << "  time dif 6 = " << FPTimeDif6
-      //  	   << endl;
-
+      // if ( checkEvent == 2016 ) {      
+      // 	cout << "time dif 1 = " << FPTimeDif1
+      // 	     << "         time dif 2 = " << FPTimeDif2
+      // 	     << "         time dif 3 = " << FPTimeDif3
+      // 	     << "         time dif 4 = " << FPTimeDif4
+      // 	     << "         time dif 5 = " << FPTimeDif5
+      // 	     << "         time dif 6 = " << FPTimeDif6
+      // 	     << endl;
+      // }
+      
       
     } // Main loop over tracks ends here.
   } // If condition for at least one track
   
-  cout << endl;
+  //  cout << endl;
   
   // Calculation of coordinates of particle track cross point with scint
   // plane in the detector coordinate system. For this, parameters of track 

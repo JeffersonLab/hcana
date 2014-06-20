@@ -535,6 +535,7 @@ Int_t THcShower::Decode( const THaEvData& evdata )
   Clear();
 
   // Get the Hall C style hitlist (fRawHitList) for this event
+  //  if ( evdata.GetEvNum() > 1000 ) cout << "\nTHcShower: hcana event = " << evdata.GetEvNum() << endl;
   Int_t nhits = DecodeToHitList(evdata);
 
   if(gHaCuts->Result("Pedestal_event")) {
@@ -964,6 +965,7 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
     fTRDeltaP = theTrack->GetDp();
     fTRBeta   = theTrack->GetBeta();
     fTRP      = theTrack->GetP();
+    //    cout << "THcShower: fTRP = " << theTrack->GetP() << endl;
     fTRXp     = theTrack->GetTheta();
     fTRYp     = theTrack->GetPhi();
   };
