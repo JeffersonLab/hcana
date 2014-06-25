@@ -444,18 +444,6 @@ Int_t THcShower::DefineVariables( EMode mode )
   };
   DefineVarsFromList( vars, mode );
 
-  // Additional quantities for calibration. Revise later on.
-
-  RVarDef cvars[] = {
-    { "trdelta", "Track momentum deviation, %", "fTRDeltaP" },
-    { "trbeta",  "Track beta from scint's",     "fTRBeta"},
-    { "trp",     "Track momentum",              "fTRP"},
-    { "trxp",    "Track x-slope",               "fTRXp"},
-    { "tryp",    "Track y-slope",                "fTRYp"},
-    { 0 }
-  };
-  return DefineVarsFromList( cvars, mode );
-
 }
 
 //_____________________________________________________________________________
@@ -519,13 +507,6 @@ void THcShower::Clear(Option_t* opt)
     fTREpl_neg_cor[ip] = -0.;
   }
 
-  // Additional quantities for calibration purposes.
-
-  fTRDeltaP = -25.;  //out of acceptance
-  fTRBeta = -1.;
-  fTRP = -1.;
-  fTRXp = -0.5;
-  fTRYp = -0.15;
 }
 
 //_____________________________________________________________________________
@@ -954,19 +935,6 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
   // Calculation of coordinates of particle track cross point with shower
   // plane in the detector coordinate system. For this, parameters of track 
   // reconstructed in THaVDC::FineTrack() are used.
-
-  // Additional quantities for calibration, taken from the 1-st track currently.
-
-  Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
-
-  if(Ntracks > 0) {
-    THaTrack* theTrack = static_cast<THaTrack*>( tracks[0] );
-    fTRDeltaP = theTrack->GetDp();
-    fTRBeta   = theTrack->GetBeta();
-    fTRP      = theTrack->GetP();
-    fTRXp     = theTrack->GetTheta();
-    fTRYp     = theTrack->GetPhi();
-  };
 
   return 0;
 }

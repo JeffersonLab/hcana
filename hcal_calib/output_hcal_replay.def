@@ -2,17 +2,11 @@
 # Output definition for the HMS calorimeter calibration.
 #
 
-#block H.dc.*
-#block H.hod.*
-#block H.cal.*
-#block H.aero.*
-#block H.cer.*
-#block g.evtyp
-
 block H.cal.*
 variable H.cer.npesum
-variable H.dc.ntrack
-
-#variable H.dc.delta
-#variable H.dc.P
-#variable H.hod.beta
+variable H.tr.beta
+variable H.tr.p
+variable H.tr.tg_dp
+variable H.tr.ph	#tan(phi), wrt Y axis
+variable H.tr.th	#tan(theta), wrt X axis
+variable H.tr.n		#number of tracks
