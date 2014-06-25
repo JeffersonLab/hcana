@@ -270,11 +270,11 @@ void THcShowerCalib::ReadShRawTrack(THcShTrack &trk, UInt_t ientry) {
   fTree->SetBranchAddress("H.cal.4ta.aneg_p",H_cal_4ta_aneg_p);
   fTree->SetBranchAddress("H.cal.4ta.apos_p",H_cal_4ta_apos_p);
 
-  fTree->SetBranchAddress("H.cal.trp",&H_cal_trp);
   fTree->SetBranchAddress("H.cal.trx",&H_cal_trx);
-  fTree->SetBranchAddress("H.cal.trxp",&H_cal_trxp);
   fTree->SetBranchAddress("H.cal.try",&H_cal_try);
-  fTree->SetBranchAddress("H.cal.tryp",&H_cal_tryp);
+  fTree->SetBranchAddress("H.tr.th",&H_cal_trxp);
+  fTree->SetBranchAddress("H.tr.ph",&H_cal_tryp);
+  fTree->SetBranchAddress("H.tr.p",&H_cal_trp);
 
   fTree->GetEntry(ientry);
 
@@ -623,7 +623,7 @@ void THcShowerCalib::FillHEcal() {
     hEcal->Fill(Enorm);
 
     Double_t delta;
-    fTree->SetBranchAddress("H.cal.trdelta",&delta);
+    fTree->SetBranchAddress("H.tr.tg_dp",&delta);
     hDPvsEcal->Fill(Enorm,delta,1.);
 
     output << Enorm*P/1000. << " " << P/1000. << endl;
