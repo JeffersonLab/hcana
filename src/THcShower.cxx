@@ -451,7 +451,7 @@ Int_t THcShower::DefineVariables( EMode mode )
     { "trbeta",  "Track beta from scint's",     "fTRBeta"},
     { "trp",     "Track momentum",              "fTRP"},
     { "trxp",    "Track x-slope",               "fTRXp"},
-    { "tryp",    "Track y-slope",                "fTRYp"},
+    { "tryp",    "Track y-slope",               "fTRYp"},
     { 0 }
   };
   return DefineVarsFromList( cvars, mode );

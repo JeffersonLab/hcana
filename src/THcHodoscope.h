@@ -156,6 +156,8 @@ protected:
   TClonesArray* scinPosTDC; // Ahmed
   TClonesArray* scinNegTDC; // Ahmed
 
+  //  Bool_t goodScinTime[Ntracks][53] // Ahmed
+
   ClassDef(THcHodoscope,0)   // Hodoscope detector
 };
 

@@ -47,6 +47,7 @@ THcHodoscope::THcHodoscope( const char* name, const char* description,
   fNPlanes = 0;			// No planes until we make them
   fStartTime=-1e5;
   fGoodStartTime=kFALSE;
+
 }
 
 //_____________________________________________________________________________
@@ -724,6 +725,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
       for( Int_t ip = 0; ip < fNPlanes; ip++ ) {
 	
 	Int_t scinHits = fPlanes[ip]->GetNScinHits();
+
 	Double_t adcPh[scinHits], path[scinHits], time[scinHits], betaPcent;
 	Double_t timePos[scinHits], timeNeg[scinHits];
 	Bool_t goodScinTime[Ntracks][scinHits],scinOnTrack[Ntracks][scinHits];
@@ -1091,6 +1093,29 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   // Calculation of coordinates of particle track cross point with scint
   // plane in the detector coordinate system. For this, parameters of track 
   // reconstructed in THaVDC::FineTrack() are used.
+
+
+  Double_t sumw, sumt, sumz, sumzz, sumtz;
+  Double_t scinWeight, tmp, t0, tmpDenom, parthNorm;
+  Int_t i, itrack;
+
+  sumw = 0.;
+  sumt = 0.;
+  sumz = 0.;
+  sumzz = 0.;
+  sumtz = 0.;
+
+  Int_t Ntracks = tracks.GetLast()+1; // Number of reconstructed tracks
+
+  if ( Ntracks > 0 )
+    cout << "scin good time = " << endl; // goodScinTime[0][0] << endl;
+
+  //  Int_t scinHits = fPlanes[ip]->GetNScinHits();
+
+  // for ( i = 0; i < scinHits; i++ ){
+
+  // }
+
 
   return 0;
 }
