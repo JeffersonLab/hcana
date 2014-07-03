@@ -7,6 +7,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <vector>
+
 #include "TClonesArray.h"
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
@@ -69,6 +71,12 @@ protected:
   Double_t     FPTimeDif4; // !time difference at fp between scintillator planes 2 & 3
   Double_t     FPTimeDif5; // !time difference at fp between scintillator planes 2 & 4
   Double_t     FPTimeDif6; // !time difference at fp between scintillator planes 3 & 4
+
+  Int_t fGoodTimeIndex;
+  Double_t* scinSigma;               // Ahmed
+  Bool_t fScinGoodTime[53];            // Ahmed
+  Double_t fScinSigma[53];
+  std::vector<bool> myScinGoodTime;  // Ahmed
 
   Int_t fAnalyzePedestals;
 
@@ -156,7 +164,10 @@ protected:
   TClonesArray* scinPosTDC; // Ahmed
   TClonesArray* scinNegTDC; // Ahmed
 
-  //  Bool_t goodScinTime[Ntracks][53] // Ahmed
+  // Ahmed
+  /* Int_t MapIndex( Int_t trackNum, Int_t planeNum, Int_t hitNum){ */
+  /*   return   hitNum + planeNum * 53 + trackNum *  53 * 4;   */
+  /* } */
 
   ClassDef(THcHodoscope,0)   // Hodoscope detector
 };
