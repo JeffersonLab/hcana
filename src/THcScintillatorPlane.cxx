@@ -506,14 +506,17 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
   //start time calculation.  assume xp=yp=0 radians.  project all
   //time values to focal plane.  use average for start time.
 
-  fNScinGoodHits=0;
-  for (i=0;i<fNScinHits;i++) {
+  fNScinGoodHits=0; 
+  for (i=0;i<fNScinHits;i++) {                                                 // Line 319
     j=((THcSignalHit*)fNegTDCHits->At(i))->GetPaddleNumber()-1;  
     index=((THcHodoscope *)GetParent())->GetScinIndex(fPlaneNum-1,j);
     if (two_good_times[i]) { // both tubes fired
       fpTimes[fNScinGoodHits]=scin_corrected_time[i]-(fZpos+(j%2)*fDzpos)/(29.979*hbeta_pcent);
       fScinTime[fNScinGoodHits]=scin_corrected_time[i];
-      fScinSigma[fNScinGoodHits]=TMath::Sqrt(((THcHodoscope *)GetParent())->GetHodoPosSigma(index)*((THcHodoscope *)GetParent())->GetHodoPosSigma(index)+((THcHodoscope *)GetParent())->GetHodoNegSigma(index)*((THcHodoscope *)GetParent())->GetHodoNegSigma(index)); // not ideal by any stretch!!!
+      fScinSigma[fNScinGoodHits]=TMath::Sqrt(((THcHodoscope *)GetParent())->GetHodoPosSigma(index)*
+					     ((THcHodoscope *)GetParent())->GetHodoPosSigma(index)+
+					     ((THcHodoscope *)GetParent())->GetHodoNegSigma(index)*
+					     ((THcHodoscope *)GetParent())->GetHodoNegSigma(index)); // not ideal by any stretch!!!
       fScinZpos[fNScinGoodHits]=fZpos+(j%2)*fDzpos; // see comment above
       //        h_rfptime(hscin_plane_num(ihit))=fptime
       fNScinGoodHits++; // increment the number of good hits

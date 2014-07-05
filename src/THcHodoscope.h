@@ -53,7 +53,11 @@ public:
   Double_t GetStartTimeCenter() const {return fStartTimeCenter;}
   Double_t GetStartTimeSlop() const {return fStartTimeSlop;}
   Double_t GetBetaNotrk() const {return fBetaNotrk;}
-  Double_t GetBeta() const {return fBeta;}
+
+  //  Double_t GetBeta() const {return fBeta[];}
+
+  Double_t GetBeta(Int_t iii) const {return fBeta[iii];} // Ahmed
+
   Double_t GetHodoPosSigma(Int_t iii) const {return fHodoPosSigma[iii];}
   Double_t GetHodoNegSigma(Int_t iii) const {return fHodoNegSigma[iii];}
 
@@ -72,10 +76,15 @@ protected:
   Double_t     FPTimeDif5; // !time difference at fp between scintillator planes 2 & 4
   Double_t     FPTimeDif6; // !time difference at fp between scintillator planes 3 & 4
 
-  Int_t fGoodTimeIndex;
-  Double_t* scinSigma;               // Ahmed
-  Bool_t fScinGoodTime[53];            // Ahmed
-  Double_t fScinSigma[53];
+  Int_t fGoodTimeIndex;              // Ahmed
+  Bool_t fScinGoodTime[53];          // Ahmed
+  Double_t fScinSigma[53];           // Ahmed
+  Double_t fScinTime[53];            // Ahmed
+  Double_t time[53];                 // Ahmed
+  Double_t adcPh[53];                // Ahmed
+  Double_t* fBeta;                   // Ahmed
+  Double_t* fBetaChisq;              // Ahmed
+  Int_t fHitPaddle[53];                 // Ahmed
   std::vector<bool> myScinGoodTime;  // Ahmed
 
   Int_t fAnalyzePedestals;
@@ -90,7 +99,7 @@ protected:
   Double_t fdEdX;
 
   Double_t fBetaNotrk;
-  Double_t fBeta;  
+  //  Double_t fBeta;  
   // Per-event data
 
   // Potential Hall C parameters.  Mostly here for demonstration
@@ -163,6 +172,8 @@ protected:
   TClonesArray* scinNegADC; // Ahmed
   TClonesArray* scinPosTDC; // Ahmed
   TClonesArray* scinNegTDC; // Ahmed
+
+  TClonesArray* scinTofPosTDC; // Ahmed
 
   // Ahmed
   /* Int_t MapIndex( Int_t trackNum, Int_t planeNum, Int_t hitNum){ */
