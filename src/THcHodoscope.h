@@ -79,12 +79,13 @@ protected:
   Int_t fGoodTimeIndex;              // Ahmed
   Bool_t fScinGoodTime[53];          // Ahmed
   Double_t fScinSigma[53];           // Ahmed
+  Double_t fGoodScinTime[53];         // Ahmed
   Double_t fScinTime[53];            // Ahmed
   Double_t time[53];                 // Ahmed
   Double_t adcPh[53];                // Ahmed
   Double_t* fBeta;                   // Ahmed
   Double_t* fBetaChisq;              // Ahmed
-  Int_t fHitPaddle[53];                 // Ahmed
+  Int_t fHitPaddle[53];              // Ahmed
   std::vector<bool> myScinGoodTime;  // Ahmed
 
   Int_t fAnalyzePedestals;
