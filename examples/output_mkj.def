@@ -4,6 +4,7 @@ block H.dc.*
 block H.hod.*
 block H.cal.*
 block H.aero.*
+block H.tr.*
 block g.evtyp
 
 # TDC spectra
