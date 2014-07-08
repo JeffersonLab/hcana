@@ -76,17 +76,21 @@ protected:
   Double_t     FPTimeDif5; // !time difference at fp between scintillator planes 2 & 4
   Double_t     FPTimeDif6; // !time difference at fp between scintillator planes 3 & 4
 
-  Int_t fGoodTimeIndex;              // Ahmed
-  Bool_t fScinGoodTime[53];          // Ahmed
-  Double_t fScinSigma[53];           // Ahmed
-  Double_t fGoodScinTime[53];         // Ahmed
-  Double_t fScinTime[53];            // Ahmed
-  Double_t time[53];                 // Ahmed
-  Double_t adcPh[53];                // Ahmed
-  Double_t* fBeta;                   // Ahmed
-  Double_t* fBetaChisq;              // Ahmed
-  Int_t fHitPaddle[53];              // Ahmed
-  std::vector<bool> myScinGoodTime;  // Ahmed
+  Int_t fGoodTimeIndex;                  // Ahmed
+  Bool_t fScinGoodTime[53];              // Ahmed
+  Double_t fScinSigma[53];               // Ahmed
+  Double_t fGoodScinTime[53];            // Ahmed
+  Double_t fScinTime[53];                // Ahmed
+  Double_t time[53];                     // Ahmed
+  Double_t adcPh[53];                    // Ahmed
+  Double_t* fBeta;                       // Ahmed
+  Double_t* fBetaChisq;                  // Ahmed
+  Int_t fHitPaddle[53];                  // Ahmed
+  Int_t fNScinHit[53];                   // Ahmed
+  Int_t fNPmtHit[53];                    // Ahmed
+  Int_t fTimeHist[200];                  // Ahmed
+  Double_t  fTimeAtFP[53];               // Ahmed
+  //  std::vector<bool> myScinGoodTime;  // Ahmed
 
   Int_t fAnalyzePedestals;
 
