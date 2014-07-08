@@ -68,6 +68,8 @@ public:
   THcHodoscope();  // for ROOT I/O
 protected:
 
+  //  static int MAXHITS = 53;
+
   Double_t*    FPTime;     // !time at fp from all hits in 1 scintillator plane
   Double_t     FPTimeDif1; // !time difference at fp between scintillator planes 1 & 2
   Double_t     FPTimeDif2; // !time difference at fp between scintillator planes 1 & 3
@@ -76,20 +78,44 @@ protected:
   Double_t     FPTimeDif5; // !time difference at fp between scintillator planes 2 & 4
   Double_t     FPTimeDif6; // !time difference at fp between scintillator planes 3 & 4
 
-  Int_t fGoodTimeIndex;                  // Ahmed
-  Bool_t fScinGoodTime[53];              // Ahmed
-  Double_t fScinSigma[53];               // Ahmed
-  Double_t fGoodScinTime[53];            // Ahmed
-  Double_t fScinTime[53];                // Ahmed
-  Double_t time[53];                     // Ahmed
-  Double_t adcPh[53];                    // Ahmed
-  Double_t* fBeta;                       // Ahmed
-  Double_t* fBetaChisq;                  // Ahmed
-  Int_t fHitPaddle[53];                  // Ahmed
-  Int_t fNScinHit[53];                   // Ahmed
-  Int_t fNPmtHit[53];                    // Ahmed
-  Int_t fTimeHist[200];                  // Ahmed
-  Double_t  fTimeAtFP[53];               // Ahmed
+  Double_t* fScinSigma;               // Ahmed
+  Double_t* fGoodScinTime;            // Ahmed
+  Double_t* fScinTime;                // Ahmed
+  Double_t* fTime;                    // Ahmed
+  Double_t* adcPh;                    // Ahmed
+  Double_t* fBeta;                    // Ahmed
+  Double_t* fBetaChisq;               // Ahmed
+  Double_t* fTimeAtFP;                // Ahmed
+  Double_t* fPath;                    // Ahmed
+  Double_t* fTimePos;                 // Ahmed
+  Double_t* fTimeNeg;                 // Ahmed
+  Double_t* fScinTimefp;              // Ahmed
+  Double_t* fScinPosTime;             // Ahmed
+  Double_t* fScinNegTime;             // Ahmed
+  Double_t* fSumPlaneTime;            // Ahmed
+
+  Int_t* fHitPaddle;                  // Ahmed
+  Int_t* fNScinHit;                   // Ahmed
+  Int_t* fNPmtHit;                    // Ahmed
+  Int_t* fTimeHist;                   // Ahmed
+  Int_t* fNPlaneTime;                 // Ahmed
+
+  Bool_t* fScinGoodTime;              // Ahmed
+  Bool_t* fKeepPos;                   // Ahmed
+  Bool_t* fKeepNeg;                   // Ahmed
+  Bool_t* fGoodPlaneTime;             // Ahmed
+  Bool_t* fGoodTDCPos;                // Ahmed
+  Bool_t* fGoodTDCNeg;                // Ahmed
+
+  Int_t fGoodTimeIndex;               // Ahmed
+
+  TClonesArray* scinPosADC; // Ahmed
+  TClonesArray* scinNegADC; // Ahmed
+  TClonesArray* scinPosTDC; // Ahmed
+  TClonesArray* scinNegTDC; // Ahmed
+
+  TClonesArray* scinTofPosTDC; // Ahmed
+
   //  std::vector<bool> myScinGoodTime;  // Ahmed
 
   Int_t fAnalyzePedestals;
@@ -170,20 +196,7 @@ protected:
   
   virtual  Double_t TimeWalkCorrection(const Int_t& paddle,
 					   const ESide side);
-
   void Setup(const char* name, const char* description);
-
-  TClonesArray* scinPosADC; // Ahmed
-  TClonesArray* scinNegADC; // Ahmed
-  TClonesArray* scinPosTDC; // Ahmed
-  TClonesArray* scinNegTDC; // Ahmed
-
-  TClonesArray* scinTofPosTDC; // Ahmed
-
-  // Ahmed
-  /* Int_t MapIndex( Int_t trackNum, Int_t planeNum, Int_t hitNum){ */
-  /*   return   hitNum + planeNum * 53 + trackNum *  53 * 4;   */
-  /* } */
 
   ClassDef(THcHodoscope,0)   // Hodoscope detector
 };
