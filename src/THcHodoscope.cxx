@@ -7,6 +7,11 @@
 // This differs from Hall A scintillator class in that it is the whole       //
 // hodoscope array, not just one plane.                                      //
 //                                                                           //
+// Date July 8 2014:                                                         //
+// Zafr Ahmed                                                                //
+// Beta and chis square are calculated for each of the hodoscope track.      //
+// Two new variables are added. fBeta and fBetaChisq                         //
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "THcSignalHit.h"
@@ -1103,26 +1108,30 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      // ---------------------------------------------------------------------------
 
 
+	      // --------------------------------------------------------------------------------------------
+	      // Date: July 8 201  May be we need this, not sure.
+	      //
 	      // if ( fGoodTDCPos[itrack][ihit] ){
 	      // 	if ( fGoodTDCNeg[itrack][ihit] ){
-	      // 	  //		  dedX[itrack][fNScinHit[itrack]] =
-	      // 	  //		    TMath::Sqrt( TMath::Max( 0., ((THcSignalHit*)scinPosADC->At(ihit))->GetData() *
-	      // 	  //					     ((THcSignalHit*)scinNegADC->At(ihit))->GetData() ) );
+	      // 	   dedX[itrack][fNScinHit[itrack]] =
+	      // 	   TMath::Sqrt( TMath::Max( 0., ((THcSignalHit*)scinPosADC->At(ihit))->GetData() *
+	      // 	   ((THcSignalHit*)scinNegADC->At(ihit))->GetData() ) );
 	      // 	}
 	      // 	else{
-	      // 	  //		  dedX[itrack][fNScinHit[itrack]] =
-	      // 	  //		    TMath::Max( 0., ((THcSignalHit*)scinPosADC->At(ihit))->GetData() );
+	      // 	  dedX[itrack][fNScinHit[itrack]] =
+	      // 	  TMath::Max( 0., ((THcSignalHit*)scinPosADC->At(ihit))->GetData() );
 	      // 	}
 	      // }
 	      // else{
 	      // 	if ( fGoodTDCNeg[itrack][ihit] ){
-	      // 	  //		  dedX[itrack][fNScinHit[itrack]] =
-	      // 	  //		    TMath::Max( 0., ((THcSignalHit*)scinNegADC->At(ihit))->GetData() );
+	      // 	  dedX[itrack][fNScinHit[itrack]] =
+	      // 	  TMath::Max( 0., ((THcSignalHit*)scinNegADC->At(ihit))->GetData() );
 	      // 	}
 	      // 	else{
-	      // 	  //		  dedX[itrack][fNScinHit[itrack]] = 0.;
+	      // 	  dedX[itrack][fNScinHit[itrack]] = 0.;
 	      // 	}
 	      // }
+	      // --------------------------------------------------------------------------------------------
 
 
 	    } // time at focal plane condition
@@ -1247,7 +1256,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
       // Right now we do not need this code for beta and chisquare
       //
       // if ( fNfpTime != 0 ){
-      // 	// fTimeAtFP[itrack] = ( fSumfpTime / fNfpTime ); // Right now we don't need fTimeAtFP
+      // 	// fTimeAtFP[itrack] = ( fSumfpTime / fNfpTime ); 
       // }
       //
       // ---------------------------------------------------------------------------
