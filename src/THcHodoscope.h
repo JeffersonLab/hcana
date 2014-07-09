@@ -7,6 +7,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <vector>
+
 #include "TClonesArray.h"
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
@@ -51,16 +53,70 @@ public:
   Double_t GetStartTimeCenter() const {return fStartTimeCenter;}
   Double_t GetStartTimeSlop() const {return fStartTimeSlop;}
   Double_t GetBetaNotrk() const {return fBetaNotrk;}
-  Double_t GetBeta() const {return fBeta;}
+
+  //  Double_t GetBeta() const {return fBeta[];}
+
+  Double_t GetBeta(Int_t iii) const {return fBeta[iii];} // Ahmed
+
   Double_t GetHodoPosSigma(Int_t iii) const {return fHodoPosSigma[iii];}
   Double_t GetHodoNegSigma(Int_t iii) const {return fHodoNegSigma[iii];}
 
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
-  
+
   friend class THaScCalib;
 
   THcHodoscope();  // for ROOT I/O
 protected:
+
+  //  static int MAXHITS = 53;
+
+  Double_t*    FPTime;     // !time at fp from all hits in 1 scintillator plane
+  Double_t     FPTimeDif1; // !time difference at fp between scintillator planes 1 & 2
+  Double_t     FPTimeDif2; // !time difference at fp between scintillator planes 1 & 3
+  Double_t     FPTimeDif3; // !time difference at fp between scintillator planes 1 & 4
+  Double_t     FPTimeDif4; // !time difference at fp between scintillator planes 2 & 3
+  Double_t     FPTimeDif5; // !time difference at fp between scintillator planes 2 & 4
+  Double_t     FPTimeDif6; // !time difference at fp between scintillator planes 3 & 4
+
+  Double_t* fScinSigma;               // Ahmed
+  Double_t* fGoodScinTime;            // Ahmed
+  Double_t* fScinTime;                // Ahmed
+  Double_t* fTime;                    // Ahmed
+  Double_t* adcPh;                    // Ahmed
+  Double_t* fBeta;                    // Ahmed
+  Double_t* fBetaChisq;               // Ahmed
+  Double_t* fTimeAtFP;                // Ahmed
+  Double_t* fPath;                    // Ahmed
+  Double_t* fTimePos;                 // Ahmed
+  Double_t* fTimeNeg;                 // Ahmed
+  Double_t* fScinTimefp;              // Ahmed
+  Double_t* fScinPosTime;             // Ahmed
+  Double_t* fScinNegTime;             // Ahmed
+  Double_t* fSumPlaneTime;            // Ahmed
+
+  Int_t* fHitPaddle;                  // Ahmed
+  Int_t* fNScinHit;                   // Ahmed
+  Int_t* fNPmtHit;                    // Ahmed
+  Int_t* fTimeHist;                   // Ahmed
+  Int_t* fNPlaneTime;                 // Ahmed
+
+  Bool_t* fScinGoodTime;              // Ahmed
+  Bool_t* fKeepPos;                   // Ahmed
+  Bool_t* fKeepNeg;                   // Ahmed
+  Bool_t* fGoodPlaneTime;             // Ahmed
+  Bool_t* fGoodTDCPos;                // Ahmed
+  Bool_t* fGoodTDCNeg;                // Ahmed
+
+  Int_t fGoodTimeIndex;               // Ahmed
+
+  TClonesArray* scinPosADC; // Ahmed
+  TClonesArray* scinNegADC; // Ahmed
+  TClonesArray* scinPosTDC; // Ahmed
+  TClonesArray* scinNegTDC; // Ahmed
+
+  TClonesArray* scinTofPosTDC; // Ahmed
+
+  //  std::vector<bool> myScinGoodTime;  // Ahmed
 
   Int_t fAnalyzePedestals;
 
@@ -71,8 +127,10 @@ protected:
   Double_t fStartTime; 
   Int_t fNfptimes;
 
+  Double_t fdEdX;
+
   Double_t fBetaNotrk;
-  Double_t fBeta;  
+  //  Double_t fBeta;  
   // Per-event data
 
   // Potential Hall C parameters.  Mostly here for demonstration
@@ -138,13 +196,12 @@ protected:
   
   virtual  Double_t TimeWalkCorrection(const Int_t& paddle,
 					   const ESide side);
-
   void Setup(const char* name, const char* description);
 
-  TClonesArray* scinPosADC; // Ahmed
-  TClonesArray* scinNegADC; // Ahmed
-  TClonesArray* scinPosTDC; // Ahmed
-  TClonesArray* scinNegTDC; // Ahmed
+  //  TClonesArray* scinPosADC; // Ahmed
+  //  TClonesArray* scinNegADC; // Ahmed
+  //  TClonesArray* scinPosTDC; // Ahmed
+  //  TClonesArray* scinNegTDC; // Ahmed
 
   ClassDef(THcHodoscope,0)   // Hodoscope detector
 };
