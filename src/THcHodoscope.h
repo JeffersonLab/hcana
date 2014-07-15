@@ -68,54 +68,6 @@ public:
   THcHodoscope();  // for ROOT I/O
 protected:
 
-  //  static int MAXHITS = 53;
-
-  Double_t*    FPTime;     // !time at fp from all hits in 1 scintillator plane
-  Double_t     FPTimeDif1; // !time difference at fp between scintillator planes 1 & 2
-  Double_t     FPTimeDif2; // !time difference at fp between scintillator planes 1 & 3
-  Double_t     FPTimeDif3; // !time difference at fp between scintillator planes 1 & 4
-  Double_t     FPTimeDif4; // !time difference at fp between scintillator planes 2 & 3
-  Double_t     FPTimeDif5; // !time difference at fp between scintillator planes 2 & 4
-  Double_t     FPTimeDif6; // !time difference at fp between scintillator planes 3 & 4
-
-  Double_t* fScinSigma;               // Ahmed
-  Double_t* fGoodScinTime;            // Ahmed
-  Double_t* fScinTime;                // Ahmed
-  Double_t* fTime;                    // Ahmed
-  Double_t* adcPh;                    // Ahmed
-  Double_t* fBeta;                    // Ahmed
-  Double_t* fBetaChisq;               // Ahmed
-  Double_t* fTimeAtFP;                // Ahmed
-  Double_t* fPath;                    // Ahmed
-  Double_t* fTimePos;                 // Ahmed
-  Double_t* fTimeNeg;                 // Ahmed
-  Double_t* fScinTimefp;              // Ahmed
-  Double_t* fScinPosTime;             // Ahmed
-  Double_t* fScinNegTime;             // Ahmed
-  Double_t* fSumPlaneTime;            // Ahmed
-
-  Int_t* fHitPaddle;                  // Ahmed
-  Int_t* fNScinHit;                   // Ahmed
-  Int_t* fNPmtHit;                    // Ahmed
-  Int_t* fTimeHist;                   // Ahmed
-  Int_t* fNPlaneTime;                 // Ahmed
-
-  Bool_t* fScinGoodTime;              // Ahmed
-  Bool_t* fKeepPos;                   // Ahmed
-  Bool_t* fKeepNeg;                   // Ahmed
-  Bool_t* fGoodPlaneTime;             // Ahmed
-  Bool_t* fGoodTDCPos;                // Ahmed
-  Bool_t* fGoodTDCNeg;                // Ahmed
-
-  Int_t fGoodTimeIndex;               // Ahmed
-
-  TClonesArray* scinPosADC; // Ahmed
-  TClonesArray* scinNegADC; // Ahmed
-  TClonesArray* scinPosTDC; // Ahmed
-  TClonesArray* scinNegTDC; // Ahmed
-
-  TClonesArray* scinTofPosTDC; // Ahmed
-
   //  std::vector<bool> myScinGoodTime;  // Ahmed
 
   Int_t fAnalyzePedestals;
@@ -166,6 +118,58 @@ protected:
 
   TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
                               // and estimated match to TOF paddle
+
+  //--------------------------   Ahmed   -----------------------------
+
+  Int_t MAXHODHITS;                   
+
+  Double_t*    fTestArr;              // [MAXHODHITS] Array
+  Double_t*    fFPTime;               // [fNPlanes] Array 
+  Double_t     fFPTimeDif1;           // [fTestSize] Array 
+  Double_t     fFPTimeDif2;           // [fTestSize] Array 
+  Double_t     fFPTimeDif3;           // [fTestSize] Array 
+  Double_t     fFPTimeDif4;           // [fTestSize] Array 
+  Double_t     fFPTimeDif5;           // [fTestSize] Array 
+  Double_t     fFPTimeDif6;           // [fTestSize] Array 
+
+  Double_t* fScinSigma;               
+  Double_t* fGoodScinTime;            
+  Double_t* fScinTime;                
+  Double_t* fTime;                    
+  Double_t* adcPh;                    
+  Double_t* fBeta;                    
+  Double_t* fBetaChisq;               
+  Double_t* fTimeAtFP;                
+  Double_t* fPath;                    
+  Double_t* fTimePos;                 
+  Double_t* fTimeNeg;                 
+  Double_t* fScinTimefp;              
+  Double_t* fScinPosTime;             
+  Double_t* fScinNegTime;             
+  Double_t* fSumPlaneTime;            
+
+  Int_t* fHitPaddle;                  
+  Int_t* fNScinHit;                   
+  Int_t* fNPmtHit;                    
+  Int_t* fTimeHist;                   
+  Int_t* fNPlaneTime;                 
+
+  Bool_t* fScinGoodTime;              
+  Bool_t* fKeepPos;                   
+  Bool_t* fKeepNeg;                   
+  Bool_t* fGoodPlaneTime;             
+  Bool_t* fGoodTDCPos;                
+  Bool_t* fGoodTDCNeg;                
+
+  Int_t fGoodTimeIndex;               
+
+  TClonesArray* scinPosADC; 
+  TClonesArray* scinNegADC; 
+  TClonesArray* scinPosTDC; 
+  TClonesArray* scinNegTDC; 
+
+  //----------------------------------------------------------------
+
   // Useful derived quantities
   // double tan_angle, sin_angle, cos_angle;
   

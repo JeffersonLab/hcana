@@ -165,9 +165,13 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
 {
   // Initialize global variables for histogramming and tree
 
-  cout << "THcCherenkov::DefineVariables called " << GetName() << endl;
+  cout << "\n\n\n\n\n\nTHcCherenkov::DefineVariables called " << GetName() << endl;
 
-  if( mode == kDefine && fIsSetup ) return kOK;
+  if( mode == kDefine && fIsSetup ){     
+    cout << "\n\n\n\n\n\n\nTHcHodoscope mode is ok" << endl;
+    return kOK;
+  }
+  
   fIsSetup = ( mode == kDefine );
   
   // Register variables in global list

@@ -48,14 +48,13 @@ THcHodoscope::THcHodoscope( const char* name, const char* description,
   THaNonTrackingDetector(name,description,apparatus)
 {
   // Constructor
-
+  
   //fTrackProj = new TClonesArray( "THaTrackProj", 5 );
   // Construct the planes
   fNPlanes = 0;			// No planes until we make them
   fStartTime=-1e5;
   fGoodStartTime=kFALSE;
-
-
+  
 }
 
 //_____________________________________________________________________________
@@ -292,6 +291,10 @@ void THcHodoscope::DefineArray(const char* fName, char** Suffix, const Int_t ind
 //_____________________________________________________________________________
 Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 {
+
+  MAXHODHITS = 53;
+  fTestArr = new Double_t[ MAXHODHITS ];
+
   // Read this detector's parameters from the database file 'fi'.
   // This function is called by THaDetectorBase::Init() once at the
   // beginning of the analysis.
@@ -315,14 +318,16 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   strcat(parname,"scin_");
   //  Int_t plen=strlen(parname);
   cout << " readdatabse hodo fnplanes = " << fNPlanes << endl;
+
   fNPaddle = new Int_t [fNPlanes];
+  fFPTime = new Double_t [fNPlanes];        
+
   //  fSpacing = new Double_t [fNPlanes];
   //fCenter = new Double_t* [fNPlanes];
 
   // An alternate way to get these variables
   // Can add Xscin_P_center when LoadParmValues supports arrays
   
-  FPTime     = new Double_t[fNPlanes];
 
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   //
@@ -437,6 +442,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     cout << "*** USING DEFAULT 3 NSEC WINDOW FOR FP NO_TRACK CALCULATIONS!! ***\n";
   }
   fIsInit = true;
+
   return kOK;
 }
 
@@ -450,54 +456,49 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
 
   // Register variables in global list
 
-  //  RVarDef vars[] = {
-    //    hpostdc1 HMS s1x+ TDC hits
-    //    hnegtdc1 HMS s1x+ TDC hits
-    //...
-    //    hnegtdc4 HMS s2y- TDC hits
-
   RVarDef vars[] = {
     {"fpBeta","Beta of the track","fBeta"},
     {"fpBetaChisq","Chi square of the track","fBetaChisq"},
-    {"fpHitsTime","Time at focal plane from all hits","FPTime"},
-    {"fpTimeDif1","Time differnce betwwen plane 1 & 2","FPTimeDif1"},
-    {"fpTimeDif2","Time differnce betwwen plane 1 & 3","FPTimeDif2"},
-    {"fpTimeDif3","Time differnce betwwen plane 1 & 4","FPTimeDif3"},
-    {"fpTimeDif4","Time differnce betwwen plane 2 & 3","FPTimeDif4"},
-    {"fpTimeDif5","Time differnce betwwen plane 2 & 4","FPTimeDif5"},
-    {"fpTimeDif6","Time differnce betwwen plane 3 & 4","FPTimeDif6"},
+    {"fpHitsTime","Time at focal plane from all hits","fFPTime"},
+    {"fpTimeDif1","Time differnce betwwen plane 1 & 2","fFPTimeDif1"},
+    {"fpTimeDif2","Time differnce betwwen plane 1 & 3","fFPTimeDif2"},
+    {"fpTimeDif3","Time differnce betwwen plane 1 & 4","fFPTimeDif3"},
+    {"fpTimeDif4","Time differnce betwwen plane 2 & 3","fFPTimeDif4"},
+    {"fpTimeDif5","Time differnce betwwen plane 2 & 4","fFPTimeDif5"},
+    {"fpTimeDif6","Time differnce betwwen plane 3 & 4","fFPTimeDif6"},
     {"starttime","Hodoscope Start Time","fStartTime"},
     {"hgoodstarttime","Hodoscope Good Start Time","fGoodStartTime"},
-  //    { "nlthit", "Number of Left paddles TDC times",  "fLTNhit" },
-  //    { "nrthit", "Number of Right paddles TDC times", "fRTNhit" },
-  //    { "nlahit", "Number of Left paddles ADCs amps",  "fLANhit" },
-  //    { "nrahit", "Number of Right paddles ADCs amps", "fRANhit" },
-  //    { "lt",     "TDC values left side",              "fLT" },
-  //    { "lt_c",   "Corrected times left side",         "fLT_c" },
-  //    { "rt",     "TDC values right side",             "fRT" },
-  //    { "rt_c",   "Corrected times right side",        "fRT_c" },
-  //    { "la",     "ADC values left side",              "fLA" },
-  //    { "la_p",   "Corrected ADC values left side",    "fLA_p" },
-  //    { "la_c",   "Corrected ADC values left side",    "fLA_c" },
-  //    { "ra",     "ADC values right side",             "fRA" },
-  //    { "ra_p",   "Corrected ADC values right side",   "fRA_p" },
-  //    { "ra_c",   "Corrected ADC values right side",   "fRA_c" },
-  //    { "nthit",  "Number of paddles with l&r TDCs",   "fNhit" },
-  //    { "t_pads", "Paddles with l&r coincidence TDCs", "fHitPad" },
-  //    { "y_t",    "y-position from timing (m)",        "fYt" },
-  //    { "y_adc",  "y-position from amplitudes (m)",    "fYa" },
-  //    { "time",   "Time of hit at plane (s)",          "fTime" },
-  //    { "dtime",  "Est. uncertainty of time (s)",      "fdTime" },
-  //    { "dedx",   "dEdX-like deposited in paddle",     "fAmpl" },
-  //    { "troff",  "Trigger offset for paddles",        "fTrigOff"},
-  //    { "trn",    "Number of tracks for hits",         "GetNTracks()" },
-  //    { "trx",    "x-position of track in det plane",  "fTrackProj.THaTrackProj.fX" },
-  //    { "try",    "y-position of track in det plane",  "fTrackProj.THaTrackProj.fY" },
-  //    { "trpath", "TRCS pathlen of track to det plane","fTrackProj.THaTrackProj.fPathl" },
-  //    { "trdx",   "track deviation in x-position (m)", "fTrackProj.THaTrackProj.fdX" },
-  //    { "trpad",  "paddle-hit associated with track",  "fTrackProj.THaTrackProj.fChannel" },
-        { 0 }
-   };
+    {"fTest","A test array","fTestArr"},
+    //    { "nlthit", "Number of Left paddles TDC times",  "fLTNhit" },
+    //    { "nrthit", "Number of Right paddles TDC times", "fRTNhit" },
+    //    { "nlahit", "Number of Left paddles ADCs amps",  "fLANhit" },
+    //    { "nrahit", "Number of Right paddles ADCs amps", "fRANhit" },
+    //    { "lt",     "TDC values left side",              "fLT" },
+    //    { "lt_c",   "Corrected times left side",         "fLT_c" },
+    //    { "rt",     "TDC values right side",             "fRT" },
+    //    { "rt_c",   "Corrected times right side",        "fRT_c" },
+    //    { "la",     "ADC values left side",              "fLA" },
+    //    { "la_p",   "Corrected ADC values left side",    "fLA_p" },
+    //    { "la_c",   "Corrected ADC values left side",    "fLA_c" },
+    //    { "ra",     "ADC values right side",             "fRA" },
+    //    { "ra_p",   "Corrected ADC values right side",   "fRA_p" },
+    //    { "ra_c",   "Corrected ADC values right side",   "fRA_c" },
+    //    { "nthit",  "Number of paddles with l&r TDCs",   "fNhit" },
+    //    { "t_pads", "Paddles with l&r coincidence TDCs", "fHitPad" },
+    //    { "y_t",    "y-position from timing (m)",        "fYt" },
+    //    { "y_adc",  "y-position from amplitudes (m)",    "fYa" },
+    //    { "time",   "Time of hit at plane (s)",          "fTime" },
+    //    { "dtime",  "Est. uncertainty of time (s)",      "fdTime" },
+    //    { "dedx",   "dEdX-like deposited in paddle",     "fAmpl" },
+    //    { "troff",  "Trigger offset for paddles",        "fTrigOff"},
+    //    { "trn",    "Number of tracks for hits",         "GetNTracks()" },
+    //    { "trx",    "x-position of track in det plane",  "fTrackProj.THaTrackProj.fX" },
+    //    { "try",    "y-position of track in det plane",  "fTrackProj.THaTrackProj.fY" },
+    //    { "trpath", "TRCS pathlen of track to det plane","fTrackProj.THaTrackProj.fPathl" },
+    //    { "trdx",   "track deviation in x-position (m)", "fTrackProj.THaTrackProj.fdX" },
+    //    { "trpad",  "paddle-hit associated with track",  "fTrackProj.THaTrackProj.fChannel" },
+    { 0 }
+  };
   return DefineVarsFromList( vars, mode );
   //  return kOK;
 }
@@ -506,6 +507,9 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
 THcHodoscope::~THcHodoscope()
 {
   // Destructor. Remove variables from global list.
+
+  delete [] fTestArr;
+  delete [] fFPTime;
 
   if( fIsSetup )
     RemoveVariables();
@@ -540,7 +544,6 @@ void THcHodoscope::DeleteArrays()
   delete [] fHodoNegInvAdcLinear; fHodoNegInvAdcLinear = NULL;
   delete [] fHodoPosInvAdcAdc;    fHodoPosInvAdcAdc = NULL;
 
-  delete [] FPTime;               fNPaddle = NULL;           // Ahmed
   delete [] fBeta;                fBeta = NULL;              // Ahmed
   delete [] fBetaChisq;           fBetaChisq = NULL;         // Ahmed
   delete [] fHitPaddle;           fHitPaddle = NULL;         // Ahmed
@@ -603,20 +606,23 @@ inline
 void THcHodoscope::Clear( Option_t* opt)
 {
   // Reset per-event data.
-  for(Int_t ip=0;ip<fNPlanes;ip++) {
-    
-    // if ( !fPlanes[ip] )     // Ahmed
-    //   return;               // Ahmed
-    
-    fPlanes[ip]->Clear(opt);
-    FPTime[ip]=0.;
-    FPTimeDif1=0.;
-    FPTimeDif2=0.;
-    FPTimeDif3=0.;
-    FPTimeDif4=0.;
-    FPTimeDif5=0.;
-    FPTimeDif6=0.;
+
+  for ( Int_t imaxhit = 0; imaxhit < MAXHODHITS; imaxhit++ ){
+    fTestArr[imaxhit] = 0.;
   }
+  
+  for(Int_t ip=0;ip<fNPlanes;ip++) {    
+    fPlanes[ip]->Clear(opt);
+    fFPTime[ip]=0.;
+  }
+  
+  fFPTimeDif1=0.;
+  fFPTimeDif2=0.;
+  fFPTimeDif3=0.;
+  fFPTimeDif4=0.;
+  fFPTimeDif5=0.;
+  fFPTimeDif6=0.;
+  
 }
 
 //_____________________________________________________________________________
@@ -728,12 +734,12 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
   fBetaChisq = new Double_t [53];
   fBeta = new Double_t [53];
   
+
   fKeepPos = new Bool_t [53]; 
   fKeepNeg = new Bool_t [53]; 
   fGoodTDCPos = new Bool_t [53];
   fGoodTDCNeg = new Bool_t [53];
 
-  FPTime = new Double_t [53];        
   fHitPaddle = new Int_t [53];    
   fNScinHit = new Int_t [53];     
   fNPmtHit = new Int_t [53];      
@@ -758,6 +764,9 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
   Double_t hpartmass=0.00051099; // Fix it
  
   for ( Int_t m = 0; m < 53; m++ ){
+
+
+    fTestArr[m] = m;
 
     fScinSigma[m] = 0.;
     fHitPaddle[m] = 0.;
@@ -1092,7 +1101,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      fNPlaneTime[ip] ++;
 	      fNScinHit[itrack] ++;
 	      //	      scinHit[itrack][fNScinHit[itrack]] = ihit;
-	      //	      scinFPTime[itrack][fNScinHit[itrack]] = fScinTimefp[ihit];
+	      //	      scinfFPTime[itrack][fNScinHit[itrack]] = fScinTimefp[ihit];
 	      
 
 	      // ---------------------------------------------------------------------------
@@ -1264,19 +1273,19 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
       
       for ( Int_t ind = 0; ind < fNPlanes; ind++ ){
 	if ( fNPlaneTime[ind] != 0 ){
-	  FPTime[ind] = ( fSumPlaneTime[ind] / fNPlaneTime[ind] );
+	  fFPTime[ind] = ( fSumPlaneTime[ind] / fNPlaneTime[ind] );
 	}
 	else{
-	  FPTime[ind] = 1000. * ( ind + 1 );
+	  fFPTime[ind] = 1000. * ( ind + 1 ) + 50;
 	}
       }
 
-      FPTimeDif1 = FPTime[0] - FPTime[1];
-      FPTimeDif2 = FPTime[0] - FPTime[2];
-      FPTimeDif3 = FPTime[0] - FPTime[3];
-      FPTimeDif4 = FPTime[1] - FPTime[2];
-      FPTimeDif5 = FPTime[1] - FPTime[3];
-      FPTimeDif6 = FPTime[2] - FPTime[3];
+      fFPTimeDif1 = fFPTime[0] - fFPTime[1];
+      fFPTimeDif2 = fFPTime[0] - fFPTime[2];
+      fFPTimeDif3 = fFPTime[0] - fFPTime[3];
+      fFPTimeDif4 = fFPTime[1] - fFPTime[2];
+      fFPTimeDif5 = fFPTime[1] - fFPTime[3];
+      fFPTimeDif6 = fFPTime[2] - fFPTime[3];
 
     } // Main loop over tracks ends here.            
     
