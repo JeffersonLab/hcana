@@ -169,12 +169,12 @@ TH1F hdc2v1_dd 'HDC 2V1 Drift Distance' H.dc.2v1.dist 300 -0.1 0.6
 TH1F hdc2y2_dd 'HDC 2Y2 Drift Distance' H.dc.2y2.dist 300 -0.1 0.6
 TH1F hdc2x2_dd 'HDC 2X2 Drift Distance' H.dc.2x2.dist 300 -0.1 0.6
 
-TFormula Hhodtdif1 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[1]
-TFormula Hhodtdif2 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[2]
-TFormula Hhodtdif3 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[3]
-TFormula Hhodtdif4 H.hod.fpHitsTime[1]-H.hod.fpHitsTime[2]
-TFormula Hhodtdif5 H.hod.fpHitsTime[1]-H.hod.fpHitsTime[3]
-TFormula Hhodtdif6 H.hod.fpHitsTime[2]-H.hod.fpHitsTime[3]
+formula Hhodtdif1 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[1]
+formula Hhodtdif2 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[2]
+formula Hhodtdif3 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[3]
+formula Hhodtdif4 H.hod.fpHitsTime[1]-H.hod.fpHitsTime[2]
+formula Hhodtdif5 H.hod.fpHitsTime[1]-H.hod.fpHitsTime[3]
+formula Hhodtdif6 H.hod.fpHitsTime[2]-H.hod.fpHitsTime[3]
 
 # Focal Plane times
 TH1F htimedif1 ' Time dif of plane 1 and 2' H.hod.fpTimeDif1 80 -40. 40.

@@ -293,7 +293,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 {
 
   MAXHODHITS = 53;
-  fTestArr = new Double_t[ MAXHODHITS ];
+  fBeta = new Double_t[ MAXHODHITS ];
+  fBetaChisq = new Double_t[ MAXHODHITS ];
 
   // Read this detector's parameters from the database file 'fi'.
   // This function is called by THaDetectorBase::Init() once at the
@@ -457,18 +458,17 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
   // Register variables in global list
 
   RVarDef vars[] = {
-    {"fpBeta","Beta of the track","fBeta"},
-    {"fpBetaChisq","Chi square of the track","fBetaChisq"},
-    {"fpHitsTime","Time at focal plane from all hits","fFPTime"},
-    {"fpTimeDif1","Time differnce betwwen plane 1 & 2","fFPTimeDif1"},
-    {"fpTimeDif2","Time differnce betwwen plane 1 & 3","fFPTimeDif2"},
-    {"fpTimeDif3","Time differnce betwwen plane 1 & 4","fFPTimeDif3"},
-    {"fpTimeDif4","Time differnce betwwen plane 2 & 3","fFPTimeDif4"},
-    {"fpTimeDif5","Time differnce betwwen plane 2 & 4","fFPTimeDif5"},
-    {"fpTimeDif6","Time differnce betwwen plane 3 & 4","fFPTimeDif6"},
-    {"starttime","Hodoscope Start Time","fStartTime"},
-    {"hgoodstarttime","Hodoscope Good Start Time","fGoodStartTime"},
-    {"fTest","A test array","fTestArr"},
+    {"fpBeta",          "Beta of the track",                    "fBeta"},
+    {"fpBetaChisq",     "Chi square of the track",              "fBetaChisq"},
+    {"fpHitsTime",      "Time at focal plane from all hits",    "fFPTime"},
+    {"fpTimeDif1",      "Time differnce betwwen plane 1 & 2",   "fFPTimeDif1"},
+    {"fpTimeDif2",      "Time differnce betwwen plane 1 & 3",   "fFPTimeDif2"},
+    {"fpTimeDif3",      "Time differnce betwwen plane 1 & 4",   "fFPTimeDif3"},
+    {"fpTimeDif4",      "Time differnce betwwen plane 2 & 3",   "fFPTimeDif4"},
+    {"fpTimeDif5",      "Time differnce betwwen plane 2 & 4",   "fFPTimeDif5"},
+    {"fpTimeDif6",      "Time differnce betwwen plane 3 & 4",   "fFPTimeDif6"},
+    {"starttime",       "Hodoscope Start Time",                 "fStartTime"},
+    {"hgoodstarttime",  "Hodoscope Good Start Time",            "fGoodStartTime"},
     //    { "nlthit", "Number of Left paddles TDC times",  "fLTNhit" },
     //    { "nrthit", "Number of Right paddles TDC times", "fRTNhit" },
     //    { "nlahit", "Number of Left paddles ADCs amps",  "fLANhit" },
@@ -508,8 +508,9 @@ THcHodoscope::~THcHodoscope()
 {
   // Destructor. Remove variables from global list.
 
-  delete [] fTestArr;
   delete [] fFPTime;
+  delete [] fBeta;
+  delete [] fBetaChisq;
 
   if( fIsSetup )
     RemoveVariables();
@@ -544,8 +545,6 @@ void THcHodoscope::DeleteArrays()
   delete [] fHodoNegInvAdcLinear; fHodoNegInvAdcLinear = NULL;
   delete [] fHodoPosInvAdcAdc;    fHodoPosInvAdcAdc = NULL;
 
-  delete [] fBeta;                fBeta = NULL;              // Ahmed
-  delete [] fBetaChisq;           fBetaChisq = NULL;         // Ahmed
   delete [] fHitPaddle;           fHitPaddle = NULL;         // Ahmed
   delete [] fNScinHit;            fNScinHit = NULL;          // Ahmed
   delete [] fNPmtHit;             fNPmtHit = NULL;           // Ahmed
@@ -608,7 +607,8 @@ void THcHodoscope::Clear( Option_t* opt)
   // Reset per-event data.
 
   for ( Int_t imaxhit = 0; imaxhit < MAXHODHITS; imaxhit++ ){
-    fTestArr[imaxhit] = 0.;
+    fBeta[imaxhit] = 0.;
+    fBetaChisq[imaxhit] = 0.;
   }
   
   for(Int_t ip=0;ip<fNPlanes;ip++) {    
@@ -731,10 +731,6 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
   //  Int_t fNtof, fNtofPairs;
   // -------------------------------------------------
 
-  fBetaChisq = new Double_t [53];
-  fBeta = new Double_t [53];
-  
-
   fKeepPos = new Bool_t [53]; 
   fKeepNeg = new Bool_t [53]; 
   fGoodTDCPos = new Bool_t [53];
@@ -765,17 +761,12 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
  
   for ( Int_t m = 0; m < 53; m++ ){
 
-
-    fTestArr[m] = m;
-
     fScinSigma[m] = 0.;
     fHitPaddle[m] = 0.;
     fScinTime[m] = 0.;
 
     fTime[m] = 0.;
     adcPh[m] = 0.;
-    fBetaChisq[m] = 0.;
-    fBeta[m] = 0.;
     fPath[m] = 0.;
     fTimePos[m] = 0.;
     fTimeNeg[m] = 0.;
@@ -1077,20 +1068,21 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      }
 	    } // In h_tof.f this includes the following if condition for time at focal plane
 	    // // because it is written in FORTRAN code
-
+	    
 	    // c     Get time at focal plane
 	    if ( fGoodScinTime[fGoodTimeIndex] ){
-
+	      
+	      fScinTimefp[ihit] = fScinTime[fGoodTimeIndex] -
+	       	( fPlanes[ip]->GetZpos() + ( fPaddle % 2 ) * fPlanes[ip]->GetDzpos() ) /
+	       	( 29.979 * fBetaP ) *
+	       	TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
+	       		     theTrack->GetPhi() * theTrack->GetPhi() );
+	      
 	      // ---------------------------------------------------------------------------
 	      // Date: July 8 2014
 	      //
 	      // Right now we do not need this code for beta and chisquare
 	      //
-	      // fScinTimefp[ihit] = fScinTime[fGoodTimeIndex] -
-	      // 	( fPlanes[ip]->GetZpos() + ( fPaddle % 2 ) * fPlanes[ip]->GetDzpos() ) /
-	      // 	( 29.979 * fBetaP ) *
-	      // 	TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
-	      // 		     theTrack->GetPhi() * theTrack->GetPhi() );
 	      //
 	      // fSumfpTime = fSumfpTime + fScinTimefp[ihit];
 	      // fNfpTime ++;
@@ -1276,7 +1268,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	  fFPTime[ind] = ( fSumPlaneTime[ind] / fNPlaneTime[ind] );
 	}
 	else{
-	  fFPTime[ind] = 1000. * ( ind + 1 ) + 50;
+	  fFPTime[ind] = 1000. * ( ind + 1 );
 	}
       }
 
@@ -1288,11 +1280,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
       fFPTimeDif6 = fFPTime[2] - fFPTime[3];
 
     } // Main loop over tracks ends here.            
-    
   } // If condition for at least one track
-  
-
-
 
   ApplyCorrections();
 

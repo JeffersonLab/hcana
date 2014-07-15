@@ -124,21 +124,22 @@ protected:
   Int_t MAXHODHITS;                   
 
   Double_t*    fTestArr;              // [MAXHODHITS] Array
+  Double_t*    fBeta;                 // [MAXHODHITS] Array
+  Double_t*    fBetaChisq;            // [MAXHODHITS] Array
+
   Double_t*    fFPTime;               // [fNPlanes] Array 
-  Double_t     fFPTimeDif1;           // [fTestSize] Array 
-  Double_t     fFPTimeDif2;           // [fTestSize] Array 
-  Double_t     fFPTimeDif3;           // [fTestSize] Array 
-  Double_t     fFPTimeDif4;           // [fTestSize] Array 
-  Double_t     fFPTimeDif5;           // [fTestSize] Array 
-  Double_t     fFPTimeDif6;           // [fTestSize] Array 
+  Double_t     fFPTimeDif1;
+  Double_t     fFPTimeDif2;
+  Double_t     fFPTimeDif3;
+  Double_t     fFPTimeDif4;
+  Double_t     fFPTimeDif5;
+  Double_t     fFPTimeDif6;
 
   Double_t* fScinSigma;               
   Double_t* fGoodScinTime;            
   Double_t* fScinTime;                
   Double_t* fTime;                    
   Double_t* adcPh;                    
-  Double_t* fBeta;                    
-  Double_t* fBetaChisq;               
   Double_t* fTimeAtFP;                
   Double_t* fPath;                    
   Double_t* fTimePos;                 
