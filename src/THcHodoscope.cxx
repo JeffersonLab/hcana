@@ -461,12 +461,6 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
     {"fpBeta",          "Beta of the track",                    "fBeta"},
     {"fpBetaChisq",     "Chi square of the track",              "fBetaChisq"},
     {"fpHitsTime",      "Time at focal plane from all hits",    "fFPTime"},
-    {"fpTimeDif1",      "Time differnce betwwen plane 1 & 2",   "fFPTimeDif1"},
-    {"fpTimeDif2",      "Time differnce betwwen plane 1 & 3",   "fFPTimeDif2"},
-    {"fpTimeDif3",      "Time differnce betwwen plane 1 & 4",   "fFPTimeDif3"},
-    {"fpTimeDif4",      "Time differnce betwwen plane 2 & 3",   "fFPTimeDif4"},
-    {"fpTimeDif5",      "Time differnce betwwen plane 2 & 4",   "fFPTimeDif5"},
-    {"fpTimeDif6",      "Time differnce betwwen plane 3 & 4",   "fFPTimeDif6"},
     {"starttime",       "Hodoscope Start Time",                 "fStartTime"},
     {"hgoodstarttime",  "Hodoscope Good Start Time",            "fGoodStartTime"},
     //    { "nlthit", "Number of Left paddles TDC times",  "fLTNhit" },
@@ -615,14 +609,7 @@ void THcHodoscope::Clear( Option_t* opt)
     fPlanes[ip]->Clear(opt);
     fFPTime[ip]=0.;
   }
-  
-  fFPTimeDif1=0.;
-  fFPTimeDif2=0.;
-  fFPTimeDif3=0.;
-  fFPTimeDif4=0.;
-  fFPTimeDif5=0.;
-  fFPTimeDif6=0.;
-  
+    
 }
 
 //_____________________________________________________________________________
@@ -731,27 +718,27 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
   //  Int_t fNtof, fNtofPairs;
   // -------------------------------------------------
 
-  fKeepPos = new Bool_t [53]; 
-  fKeepNeg = new Bool_t [53]; 
-  fGoodTDCPos = new Bool_t [53];
-  fGoodTDCNeg = new Bool_t [53];
+  fKeepPos = new Bool_t [MAXHODHITS]; 
+  fKeepNeg = new Bool_t [MAXHODHITS]; 
+  fGoodTDCPos = new Bool_t [MAXHODHITS];
+  fGoodTDCNeg = new Bool_t [MAXHODHITS];
 
-  fHitPaddle = new Int_t [53];    
-  fNScinHit = new Int_t [53];     
-  fNPmtHit = new Int_t [53];      
-  fTimeHist = new Int_t [53];     
-  fTimeAtFP = new Double_t [53];     
+  fHitPaddle = new Int_t [MAXHODHITS];    
+  fNScinHit = new Int_t [MAXHODHITS];     
+  fNPmtHit = new Int_t [MAXHODHITS];      
+  fTimeHist = new Int_t [MAXHODHITS];     
+  fTimeAtFP = new Double_t [MAXHODHITS];     
   
-  fScinSigma = new Double_t [53];    
-  fGoodScinTime = new Double_t [53]; 
-  fScinTime = new Double_t [53];     
-  fTime = new Double_t [53];         
-  adcPh = new Double_t [53];  
+  fScinSigma = new Double_t [MAXHODHITS];    
+  fGoodScinTime = new Double_t [MAXHODHITS]; 
+  fScinTime = new Double_t [MAXHODHITS];     
+  fTime = new Double_t [MAXHODHITS];         
+  adcPh = new Double_t [MAXHODHITS];  
 
-  fPath = new Double_t [53];
-  fTimePos = new Double_t [53];
-  fTimeNeg = new Double_t [53];
-  fScinTimefp = new Double_t [53];	
+  fPath = new Double_t [MAXHODHITS];
+  fTimePos = new Double_t [MAXHODHITS];
+  fTimeNeg = new Double_t [MAXHODHITS];
+  fScinTimefp = new Double_t [MAXHODHITS];	
        
   fTimeHist = new Int_t [200];
 
@@ -759,7 +746,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 
   Double_t hpartmass=0.00051099; // Fix it
  
-  for ( Int_t m = 0; m < 53; m++ ){
+  for ( Int_t m = 0; m < MAXHODHITS; m++ ){
 
     fScinSigma[m] = 0.;
     fHitPaddle[m] = 0.;
@@ -915,16 +902,12 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      }
 	    } // TDC neg hit condition
 	  } // condition for cenetr on a paddle
-	} // Loop over hits in a plane
 
+	} // First loop over hits in a plane <---------
+
+	//-----------------------------------------------------------------------------------------------
 	//------------- First large loop over scintillator hits in a plane ends here --------------------
-	//------------- First large loop over scintillator hits in a plane ends here --------------------
-	//------------- First large loop over scintillator hits in a plane ends here --------------------
-	//------------- First large loop over scintillator hits in a plane ends here --------------------
-	//------------- First large loop over scintillator hits in a plane ends here --------------------
-	//------------- First large loop over scintillator hits in a plane ends here --------------------
-	//------------- First large loop over scintillator hits in a plane ends here --------------------
-	//------------- First large loop over scintillator hits in a plane ends here --------------------
+	//-----------------------------------------------------------------------------------------------
 	
 	fJMax = 0; // Line 240
 	fMaxHit = 0;
@@ -948,22 +931,17 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	  }
 	} // fJMax > 0 condition
 	
-	fScinPosTime = new Double_t [53];
-	fScinNegTime = new Double_t [53];
+	fScinPosTime = new Double_t [MAXHODHITS];
+	fScinNegTime = new Double_t [MAXHODHITS];
 
-	for ( k = 0; k < 53; k++ ){
+	for ( k = 0; k < MAXHODHITS; k++ ){
 	  fScinPosTime[k] = 0;
 	  fScinNegTime[k] = 0;
 	}
 
-	//---------------------------------------------------------------------------------------------
 	//---------------------------------------------------------------------------------------------	
 	// ---------------------- Scond loop over scint. hits in a plane ------------------------------
 	//---------------------------------------------------------------------------------------------
-	//---------------------------------------------------------------------------------------------
-
-
-	// Second loop over hits with in a single plane
 
 	for ( ihit = 0; ihit < fNScinHits; ihit++ ){
 	  
@@ -1271,13 +1249,6 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	  fFPTime[ind] = 1000. * ( ind + 1 );
 	}
       }
-
-      fFPTimeDif1 = fFPTime[0] - fFPTime[1];
-      fFPTimeDif2 = fFPTime[0] - fFPTime[2];
-      fFPTimeDif3 = fFPTime[0] - fFPTime[3];
-      fFPTimeDif4 = fFPTime[1] - fFPTime[2];
-      fFPTimeDif5 = fFPTime[1] - fFPTime[3];
-      fFPTimeDif6 = fFPTime[2] - fFPTime[3];
 
     } // Main loop over tracks ends here.            
   } // If condition for at least one track

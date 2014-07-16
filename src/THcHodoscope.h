@@ -128,12 +128,6 @@ protected:
   Double_t*    fBetaChisq;            // [MAXHODHITS] Array
 
   Double_t*    fFPTime;               // [fNPlanes] Array 
-  Double_t     fFPTimeDif1;
-  Double_t     fFPTimeDif2;
-  Double_t     fFPTimeDif3;
-  Double_t     fFPTimeDif4;
-  Double_t     fFPTimeDif5;
-  Double_t     fFPTimeDif6;
 
   Double_t* fScinSigma;               
   Double_t* fGoodScinTime;            
