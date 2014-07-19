@@ -7,6 +7,8 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <vector>
+
 #include "TClonesArray.h"
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
@@ -51,16 +53,22 @@ public:
   Double_t GetStartTimeCenter() const {return fStartTimeCenter;}
   Double_t GetStartTimeSlop() const {return fStartTimeSlop;}
   Double_t GetBetaNotrk() const {return fBetaNotrk;}
-  Double_t GetBeta() const {return fBeta;}
+
+  //  Double_t GetBeta() const {return fBeta[];}
+
+  Double_t GetBeta(Int_t iii) const {return fBeta[iii];} // Ahmed
+
   Double_t GetHodoPosSigma(Int_t iii) const {return fHodoPosSigma[iii];}
   Double_t GetHodoNegSigma(Int_t iii) const {return fHodoNegSigma[iii];}
 
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
-  
+
   friend class THaScCalib;
 
   THcHodoscope();  // for ROOT I/O
 protected:
+
+  //  std::vector<bool> myScinGoodTime;  // Ahmed
 
   Int_t fAnalyzePedestals;
 
@@ -71,8 +79,10 @@ protected:
   Double_t fStartTime; 
   Int_t fNfptimes;
 
+  Double_t fdEdX;
+
   Double_t fBetaNotrk;
-  Double_t fBeta;  
+  //  Double_t fBeta;  
   // Per-event data
 
   // Potential Hall C parameters.  Mostly here for demonstration
@@ -108,6 +118,53 @@ protected:
 
   TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
                               // and estimated match to TOF paddle
+
+  //--------------------------   Ahmed   -----------------------------
+
+  Int_t MAXHODHITS;
+
+  Double_t*    fTestArr;              // [MAXHODHITS] Array
+  Double_t*    fBeta;                 // [MAXHODHITS] Array
+  Double_t*    fBetaChisq;            // [MAXHODHITS] Array
+
+  Double_t*    fFPTime;               // [fNPlanes] Array 
+
+  Double_t* fScinSigma;
+  Double_t* fGoodScinTime;
+  Double_t* fScinTime;
+  Double_t* fTime;
+  Double_t* adcPh;
+  Double_t* fTimeAtFP;
+  Double_t* fPath;
+  Double_t* fTimePos;
+  Double_t* fTimeNeg;
+  Double_t* fScinTimefp;
+  Double_t* fScinPosTime;
+  Double_t* fScinNegTime;
+  Double_t* fSumPlaneTime;
+
+  Int_t* fHitPaddle;
+  Int_t* fNScinHit;
+  Int_t* fNPmtHit;
+  Int_t* fTimeHist;
+  Int_t* fNPlaneTime;
+
+  Bool_t* fScinGoodTime;
+  Bool_t* fKeepPos;
+  Bool_t* fKeepNeg;
+  Bool_t* fGoodPlaneTime;
+  Bool_t* fGoodTDCPos;
+  Bool_t* fGoodTDCNeg;
+
+  Int_t fGoodTimeIndex;
+
+  TClonesArray* scinPosADC;
+  TClonesArray* scinNegADC;
+  TClonesArray* scinPosTDC;
+  TClonesArray* scinNegTDC;
+
+  //----------------------------------------------------------------
+
   // Useful derived quantities
   // double tan_angle, sin_angle, cos_angle;
   
@@ -138,13 +195,7 @@ protected:
   
   virtual  Double_t TimeWalkCorrection(const Int_t& paddle,
 					   const ESide side);
-
   void Setup(const char* name, const char* description);
-
-  TClonesArray* scinPosADC; // Ahmed
-  TClonesArray* scinNegADC; // Ahmed
-  TClonesArray* scinPosTDC; // Ahmed
-  TClonesArray* scinNegTDC; // Ahmed
 
   ClassDef(THcHodoscope,0)   // Hodoscope detector
 };
