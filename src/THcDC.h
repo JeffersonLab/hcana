@@ -104,6 +104,8 @@ protected:
 
   // Per-event data
   Int_t fNhits;
+  Int_t fNthits;
+  Int_t fN_True_RawHits;
   Int_t fNSp;                   // Number of space points
   Double_t* fResiduals;         //[fNPlanes] Array of residuals
 

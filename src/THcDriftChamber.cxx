@@ -221,12 +221,13 @@ Int_t THcDriftChamber::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
   // Register variables in global list
 
-  //  RVarDef vars[] = {
-  //    { "nhit", "Number of DC hits",  "fNhits" },
-  //    { 0 }
-  //  };
-  //  return DefineVarsFromList( vars, mode );
-  return kOK;
+   RVarDef vars[] = {
+     { "nhit", "Number of DC hits",  "fNhits" },
+     { "trawhit", "Number of True Raw hits", "fN_True_RawHits" },
+     { 0 }
+   };
+   return DefineVarsFromList( vars, mode );
+  //return kOK;
 
 }
 void THcDriftChamber::ProcessHits( void)

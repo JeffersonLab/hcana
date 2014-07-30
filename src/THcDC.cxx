@@ -124,6 +124,7 @@ void THcDC::Setup(const char* name, const char* description)
   }
 
   char *desc = new char[strlen(description)+100];
+  char *desc1= new char[strlen(description)+100];
   fPlanes.clear();
 
   for(Int_t i=0;i<fNPlanes;i++) {
@@ -145,12 +146,12 @@ void THcDC::Setup(const char* name, const char* description)
 
   fChambers.clear();
   for(Int_t i=0;i<fNChambers;i++) {
-    sprintf(desc,"%s Chamber %d",description, i+1);
+    sprintf(desc1,"Ch%d",i+1);
 
     // Should construct a better chamber name
-    THcDriftChamber* newchamber = new THcDriftChamber(desc, desc, i+1, this);
+    THcDriftChamber* newchamber = new THcDriftChamber(desc1, desc, i+1, this);
     fChambers.push_back(newchamber);
-    cout << "Created Drift Chamber " << i+1 << ", " << desc << endl;
+    cout << "Created Drift Chamber " << i+1 << ", " << desc1 << endl;
     newchamber->SetHMSStyleFlag(fHMSStyleChambers); // Tell the chamber its style
   }
 }
@@ -339,6 +340,8 @@ Int_t THcDC::DefineVariables( EMode mode )
 
   RVarDef vars[] = {
     { "nhit", "Number of DC hits",  "fNhits" },
+    { "tnhit", "Number of good DC hits",  "fNthits" },
+    { "trawhit", "Number of true raw DC hits", "fN_True_RawHits" },
     { "ntrack", "Number of Tracks", "fNDCTracks" },
     { "nsp", "Number of Space Points", "fNSp" },
     { "x", "X at focal plane", "fDCTracks.THcDCTrack.GetX()"},
@@ -409,6 +412,8 @@ void THcDC::ClearEvent()
 {
   // Reset per-event data.
   fNhits = 0;
+  fNthits = 0;
+  fN_True_RawHits=0;
 
   for(Int_t i=0;i<fNChambers;i++) {
     fChambers[i]->Clear();
@@ -435,20 +440,25 @@ Int_t THcDC::Decode( const THaEvData& evdata )
   Int_t nexthit = 0;
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
+    fN_True_RawHits += fPlanes[ip]->GetNRawhits();
+      
   }
 
   // Let each chamber get its hits
   for(Int_t ic=0;ic<fNChambers;ic++) {
     fChambers[ic]->ProcessHits();
+    fNthits += fChambers[ic]->GetNHits();
   }
   // fRawHitList is TClones array of THcRawDCHit objects
+  Int_t counter=0;
   if (fdebugprintrawdc) {
     cout << " RAW_TOT_HITS = " <<  fNRawHits << endl;
     cout << " Hit #  " << "Plane  " << " Wire " <<  " Raw TDC " << endl; 
     for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
     THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
-      for(Int_t imhit = 0; imhit < hit->fNHits; imhit++) {
-    cout << ihit+imhit+1 << "      " << hit->fPlane << "     " << hit->fCounter << "     " << hit->fTDC[imhit]	   << endl;
+    for(Int_t imhit = 0; imhit < hit->fNHits; imhit++) {
+      counter++;
+      cout << counter << "      " << hit->fPlane << "     " << hit->fCounter << "     " << hit->fTDC[imhit]	   << endl;
       }
   }
     cout << endl;
