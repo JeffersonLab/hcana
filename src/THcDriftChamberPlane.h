@@ -49,6 +49,7 @@ public:
     return (THcDCWire*)fWires->UncheckedAt(i-1); }
 
   Int_t         GetNHits() const { return fHits->GetLast()+1; }
+  Int_t         GetNRawhits() const {return fNRawhits; }
   TClonesArray* GetHits()  const { return fHits; }
 
   Int_t        GetPlaneNum() const { return fPlaneNum; }
@@ -78,6 +79,7 @@ protected:
   Int_t fPlaneNum;
   Int_t fPlaneIndex;		/* Index of this plane within it's chamber */
   Int_t fChamberNum;
+  Int_t fNRawhits;
   Int_t fNWires;
   Int_t fWireOrder;
   Int_t fTdcWinMin;

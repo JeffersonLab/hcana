@@ -290,7 +290,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   Int_t nrawhits = rawhits->GetLast()+1;
   // cout << "THcDriftChamberPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
-
+  fNRawhits=0;
   Int_t ihit = nexthit;
   Int_t nextHit = 0;
   while(ihit < nrawhits) {
@@ -302,6 +302,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     THcDCWire* wire = GetWire(wireNum);
     Int_t wire_last = -1;
     for(Int_t mhit=0; mhit<hit->fNHits; mhit++) {
+      fNRawhits++;
       /* Sort into early, late and ontime */
       Int_t rawtdc = hit->fTDC[mhit];
       if(rawtdc < fTdcWinMin) {
