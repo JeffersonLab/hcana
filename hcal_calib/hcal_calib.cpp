@@ -16,7 +16,7 @@ void hcal_calib(Int_t RunNumber) {
  theShowerCalib.ComposeVMs();      // Compute vectors amd matrices for calib.
  theShowerCalib.SolveAlphas();     // Solve for the calibration constants
  theShowerCalib.SaveAlphas();      // Save the constants
- // theShowerCalib.SaveRawData();  // Save raw data into file for debug purposes
+ theShowerCalib.SaveRawData();  // Save raw data into file for debug purposes
  theShowerCalib.FillHEcal();       // Fill histograms
 
  // Plot histograms
