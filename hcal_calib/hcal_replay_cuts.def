@@ -24,17 +24,23 @@ RawCoarseReconstruct !Pedestal_event
 Block: Reconstruct
 
 one_track H.tr.n==1
-#one_clust H.cal.nclust==1
+one_clust H.cal.nclust==1
 one_sh_track H.cal.ntracks==1
 in_delta  H.tr.tg_dp>-10.&&H.tr.tg_dp<10.
 good_cer H.cer.npesum>3.
-good_beta H.tr.beta>0.9&&H.tr.beta<1.1
-in_calx   H.cal.trx>-60.&&H.cal.trx<60.
-in_caly   H.cal.try>-30.&&H.cal.try<30.
+#good_beta H.tr.beta>0.9&&H.tr.beta<1.1
+good_beta H.hod.fpBeta>0.740&&H.hod.fpBeta<0.935   # 3sigma cut for run 52949
+in_calx   H.cal.trx>-65.4&&H.cal.trx<54.6    #top+5cm, bottom-5cm (see hcal.pos)
+in_caly   H.cal.try>-30.&&H.cal.try<30.      #left+5cm, right-5cm.(see hcal.pos)
 in_cal    in_calx&&in_caly
 
-# This version matches engine
+# This version is for calibration from scratch (no calibration constants exist,
+# first time calibration).
+Reconstruct_master one_track && one_clust && in_delta && good_cer && good_beta && in_cal
+
+# This version can be used for iterative calibration (improve existing
+# constants).
 #Reconstruct_master one_track && one_sh_track && in_delta && good_cer && good_beta && in_cal
 
-# Drop beta, which is not present yet
-Reconstruct_master one_track && one_sh_track && in_delta && good_cer && in_cal
+
+
