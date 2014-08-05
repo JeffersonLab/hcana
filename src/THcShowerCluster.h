@@ -169,6 +169,12 @@ class THcShowerClusterList : private THcShClusterList {
     }
   }
 
+  // Clear cluster list
+  //
+  void clear() {
+    THcShClusterList::clear();
+  }
+
   //Put a cluster in the cluster list
   //
   void grow(THcShowerCluster* cluster) {
