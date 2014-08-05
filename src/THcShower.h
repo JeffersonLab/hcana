@@ -109,6 +109,11 @@ public:
     return (fCcor + sign*y)/(fCcor + sign*y/fDcor);
   }
 
+  // Get total energy deposited in the cluster matched to the given
+  // spectrometer Track.
+
+  Float_t GetShEnergy(THaTrack*);
+
   THcShower();  // for ROOT I/O
 
 protected:
@@ -136,6 +141,8 @@ protected:
   Int_t fMult;               // # of hits in the largest cluster
   //  Int_t fNblk;           // Number of blocks in main cluster
   //  Double_t* fEblk;       // Energies of blocks in main cluster
+
+  THcShowerClusterList* fClusterList;   // List of hit clusters
 
   // Track quantities, are here for test purposes. Better to move
   // to the track class(es) later on.
@@ -195,7 +202,7 @@ protected:
 
   // cluster to track association method.
 
-  Int_t MatchCluster(THaTrack*, THcShowerClusterList*, Double_t&, Double_t&);
+  Int_t MatchCluster(THaTrack*, Double_t&, Double_t&);
 
   friend class THcShowerPlane;   //to access debug flags.
 
