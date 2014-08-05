@@ -740,7 +740,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
     Int_t mclust = MatchCluster(theTrack, ClusterList, Xtr, Ytr);
 
-    if (mclust >= 0) fNtracks++;  // number of shower tracks
+    //    if (mclust >= 0) fNtracks++;  // number of shower tracks (This is not consistent with engine!)
 
     // Do this for the 1-st track only for now.
     //
@@ -907,7 +907,7 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
       Double_t dx = TMath::Abs( (*cluster).clX() - XTrFront );
 
       if (dx <= (0.5*BlockThick[0] + fSlop)) {
-
+	fNtracks++;  // number of shower tracks (Consistent with engine)
 	if (dx <= deltaX) {
 	  mclust = i;
 	  deltaX = dx;
