@@ -63,14 +63,16 @@ class THcScintillatorPlane : public THaSubDetector {
 
   TClonesArray* fParentHitList;
 
-  TClonesArray* GetPosADC() { return fPosADCHits;}; // Ahmed
-  TClonesArray* GetNegADC() { return fNegADCHits;}; // Ahmed
-  TClonesArray* GetPosTDC() { return fPosTDCHits;}; // Ahmed
-  TClonesArray* GetNegTDC() { return fNegTDCHits;}; // Ahmed
+  TClonesArray* GetPosADC() { return fPosADCHits;};  // Ahmed
+  TClonesArray* GetNegADC() { return fNegADCHits;};  // Ahmed
+  TClonesArray* GetPosTDC() { return fPosTDCHits;};  // Ahmed
+  TClonesArray* GetNegTDC() { return fNegTDCHits;};  // Ahmed
 
-
+  Int_t GetGoodRawPadNum(Int_t index) {return fGoodRawPadNum[index];};
 
  protected:
+
+  Int_t *fGoodRawPadNum; // array
 
   TClonesArray* frPosTDCHits;
   TClonesArray* frNegTDCHits;
