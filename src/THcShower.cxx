@@ -949,13 +949,13 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
       cout << " no matched cluster found" << endl;
   }
 
-  // Get matched cluster.
-  THcShowerCluster* cluster = (*fClusterList).ListedCluster(mclust);
-
   // Coordinate corrected total energy deposition in the cluster.
 
   Float_t Etrk = 0.;
   if (mclust >= 0) {         // if there is a matched cluster
+
+    // Get matched cluster.
+    THcShowerCluster* cluster = (*fClusterList).ListedCluster(mclust);
 
     // Correct track energy depositions for the impact coordinate.
 
