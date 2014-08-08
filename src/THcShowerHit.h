@@ -6,6 +6,7 @@
 #include <vector>
 #include <iterator>
 #include <iostream>
+#include <memory>
 
 using namespace std;
 
@@ -95,5 +96,7 @@ public:
 //
 typedef vector<THcShowerHit*> THcShowerHitList;
 typedef THcShowerHitList::iterator THcShowerHitIt;
+
+//typedef vector< std::auto_ptr<THcShowerHit> > THcShowerHitList;
 
 #endif

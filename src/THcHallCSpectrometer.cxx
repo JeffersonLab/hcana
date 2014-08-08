@@ -313,7 +313,7 @@ Int_t THcHallCSpectrometer::TrackCalc()
 {
   // Additioal track calculations. At present, we only calculate beta here.
 
-  cout << "THcHallCSpectrometer::TrackCalc is called xxxxxxxxxxxxxxxxx" << endl;
+  // cout << "THcHallCSpectrometer::TrackCalc is called xxxxxxxxxxxxxxxxx\n";
 
   TrackEnergies(fTracks);
 
@@ -349,7 +349,7 @@ Int_t THcHallCSpectrometer::TrackEnergies( TClonesArray* Tracks ) {
     }
 
     track->SetEnergy(energy);
-    cout << "track " << itrk << "   energy = " << track->GetEnergy() << endl;
+    // cout << "track " << itrk << "   energy = " << track->GetEnergy() << endl;
   }
 
   return ntrack;
