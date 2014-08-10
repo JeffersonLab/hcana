@@ -162,16 +162,17 @@ class THcShowerClusterList : private THcShClusterList {
   }
 
   ~THcShowerClusterList() {
+    purge();
+  }
+
+  // Purge cluster list
+  //
+  void purge() {
     for (THcShClusterIt i = THcShClusterList::begin();
-    	 i != THcShClusterList::end(); ++i) {
+	 i != THcShClusterList::end(); ++i) {
       delete *i;
       *i = 0;
     }
-  }
-
-  // Clear cluster list
-  //
-  void clear() {
     THcShClusterList::clear();
   }
 
@@ -193,50 +194,50 @@ class THcShowerClusterList : private THcShClusterList {
     return THcShClusterList::size();
   }
 
-//_____________________________________________________________________________
+  //____________________________________________________________________________
 
-void ClusterHits(THcShowerHitList HitList) {
+  void ClusterHits(THcShowerHitList HitList) {
 
-// Collect hits from the HitList into the clusters. The resultant clusters
-// of hits are saved in the ClusterList.
+    // Collect hits from the HitList into the clusters. The resultant clusters
+    // of hits are saved in the ClusterList.
 
-  while (HitList.size() != 0) {
+    while (HitList.size() != 0) {
 
-    THcShowerCluster* cluster = new THcShowerCluster;
+      THcShowerCluster* cluster = new THcShowerCluster;
 
-    (*cluster).grow(*(HitList.end()-1)); //Move the last hit from the hit list
-    HitList.erase(HitList.end()-1);      //into the 1st cluster
-    bool clustered = true;
+      (*cluster).grow(*(HitList.end()-1)); //Move the last hit from the hit list
+      HitList.erase(HitList.end()-1);      //into the 1st cluster
+      bool clustered = true;
 
-    while (clustered) {                   //Proceed while a hit is clustered
+      while (clustered) {                   //Proceed while a hit is clustered
 
-      clustered = false;
+	clustered = false;
 
-      for (THcShowerHitIt i=HitList.begin(); i!=HitList.end(); ++i) {
+	for (THcShowerHitIt i=HitList.begin(); i!=HitList.end(); ++i) {
 
-	for (UInt_t k=0; k!=(*cluster).clSize(); k++) {
+	  for (UInt_t k=0; k!=(*cluster).clSize(); k++) {
 
-	  if ((**i).isNeighbour((*cluster).ClusteredHit(k))) {
+	    if ((**i).isNeighbour((*cluster).ClusteredHit(k))) {
 
-	    (*cluster).grow(*i);          //If the hit #i is neighbouring a hit
-	    HitList.erase(i);             //in the cluster, then move it
+	      (*cluster).grow(*i);        //If the hit #i is neighbouring a hit
+	      HitList.erase(i);           //in the cluster, then move it
 	                                  //into the cluster.
-	    clustered = true;
-	  }
+	      clustered = true;
+	    }
+
+	    if (clustered) break;
+	  }                               //k
 
 	  if (clustered) break;
-	}                                 //k
+	}                                 //i
 
-	if (clustered) break;
-      }                                   //i
+      }                                   //while clustered
 
-    }                                     //while clustered
+      grow(cluster);                      //Put the cluster in the cluster list
 
-    grow(cluster);                        //Put the cluster in the cluster list
+    }                                     //While hit_list not exhausted
 
-  }                                       //While hit_list not exhausted
-
-}
+  }
 
 };
 
