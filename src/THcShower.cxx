@@ -509,7 +509,7 @@ void THcShower::Clear(Option_t* opt)
     fTREpl_neg_cor[ip] = -0.;
   }
 
-  fClusterList->clear();
+  fClusterList->purge();
 
 }
 
