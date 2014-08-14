@@ -21,7 +21,6 @@ public:
   virtual Int_t   FindVertices( TClonesArray& tracks );
   virtual Int_t   TrackCalc();
   virtual Int_t   TrackTimes( TClonesArray* tracks );
-  Int_t TrackEnergies( TClonesArray* tracks );
 
   virtual Int_t   ReadRunDatabase( const TDatime& date );
 

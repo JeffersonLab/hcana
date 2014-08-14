@@ -313,46 +313,7 @@ Int_t THcHallCSpectrometer::TrackCalc()
 {
   // Additioal track calculations. At present, we only calculate beta here.
 
-  // cout << "THcHallCSpectrometer::TrackCalc is called xxxxxxxxxxxxxxxxx\n";
-
-  TrackEnergies(fTracks);
-
   return TrackTimes( fTracks );
-}
-
-//_____________________________________________________________________________
-Int_t THcHallCSpectrometer::TrackEnergies( TClonesArray* Tracks ) {
-
-  // Example code for track energy assignments from shower counter.
-
-  //  cout << "THcHallCSpectrometer::TrackEnergies called -----------------\n" ;
-  
-  if ( !Tracks ) return -1;
-  
-  THaTrack *track=0;
-  Int_t ntrack = GetNTracks();
-
-  //  cout << "     number of tracks " << ntrack << endl;
-
-  for ( Int_t itrk=0; itrk < ntrack; itrk++ ) {
-
-    Double_t energy = kBig;
-
-    track = static_cast<THaTrack*>(Tracks->At(itrk));
-
-    TIter nextDet( fNonTrackingDetectors );
-    THaNonTrackingDetector *det;
-    while ((det = static_cast<THaNonTrackingDetector*>(nextDet()))) {
-      
-      THcShower *sh = dynamic_cast<THcShower*>(det);
-      if ( sh ) energy = sh->GetShEnergy(track);
-    }
-
-    track->SetEnergy(energy);
-    // cout << "track " << itrk << "   energy = " << track->GetEnergy() << endl;
-  }
-
-  return ntrack;
 }
 
 //_____________________________________________________________________________
