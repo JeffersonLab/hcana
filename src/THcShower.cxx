@@ -996,14 +996,35 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
 //_____________________________________________________________________________
 Int_t THcShower::FineProcess( TClonesArray& tracks )
 {
-  // Reconstruct coordinates of particle track cross point with shower
-  // plane, and copy the data into the following local data structure:
-  //
-  // Units of measurements are meters.
 
-  // Calculation of coordinates of particle track cross point with shower
-  // plane in the detector coordinate system. For this, parameters of track 
-  // reconstructed in THaVDC::FineTrack() are used.
+  // Shower energy assignment to the spectrometer tracks.
+  //
+
+  Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
+
+  if (fdbg_tracks_cal) {
+    cout << endl;
+    cout << "THcShower::FineProcess: Number of tracks = " << Ntracks << endl;
+  }
+
+  for (Int_t itrk=0; itrk<Ntracks; itrk++) {
+
+    THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
+
+    Float_t energy = GetShEnergy(theTrack);
+    theTrack->SetEnergy(energy);
+
+    if (fdbg_tracks_cal) {
+      cout << "THcShower::FineProcess, Track " << itrk << ": "
+	   << "  X = " << theTrack->GetX()
+	   << "  Y = " << theTrack->GetY()
+	   << "  Theta = " << theTrack->GetTheta()
+	   << "  Phi = " << theTrack->GetPhi()
+	   << "  Enegy = " << energy << endl;
+    }
+
+
+  }       //over tracks
 
   return 0;
 }
