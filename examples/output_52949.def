@@ -12,6 +12,9 @@ TH1F hfptime1x ' HMS s1x fptime' H.hod.1x.fptime 80 0. 80.
 TH1F hfptime1y ' HMS s1y fptime' H.hod.1y.fptime 80 0. 80.
 TH1F hfptime2x ' HMS s2x fptime' H.hod.2x.fptime 80 0. 80.
 TH1F hfptime2y ' HMS s2y fptime' H.hod.2y.fptime 80 0. 80.
+# Beta
+TH1F hfpBeta      'HMS Hodo Beta'  H.hod.fpBeta      250 -0.5 2.0
+TH1F hfpBetaChisq 'HMS Hodo Chisq' H.hod.fpBetaChisq 550 -5. 50.
 # TDC hits per paddle
 TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.postdchits 16 0.5 16.5
 TH1F hnegtdc1 'HMS s1x- TDC hits' H.hod.1x.negtdchits 16 0.5 16.5

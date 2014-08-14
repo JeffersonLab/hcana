@@ -40,6 +40,8 @@ THcShower::THcShower( const char* name, const char* description,
 {
   // Constructor
   fNLayers = 0;			// No layers until we make them
+
+  fClusterList = new THcShowerClusterList;
 }
 
 //_____________________________________________________________________________
@@ -507,6 +509,8 @@ void THcShower::Clear(Option_t* opt)
     fTREpl_neg_cor[ip] = -0.;
   }
 
+  fClusterList->purge();
+
 }
 
 //_____________________________________________________________________________
@@ -645,10 +649,10 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   // Create list of clusters and fill it.
 
-  THcShowerClusterList* ClusterList = new THcShowerClusterList;
-  ClusterList->ClusterHits(HitList);
+  //  fClusterList = new THcShowerClusterList; //shall be allocated before
+  fClusterList->ClusterHits(HitList);
 
-  fNclust = (*ClusterList).NbClusters();   //number of clusters
+  fNclust = (*fClusterList).NbClusters();   //number of clusters
 
   //Print out the cluster list.
 
@@ -658,7 +662,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
     for (Int_t i=0; i!=fNclust; i++) {
 
-      THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
+      THcShowerCluster* cluster = (*fClusterList).ListedCluster(i);
 
       //cout << "Cluster #" << i 
 	   //<<":  E=" << (*cluster).clE() 
@@ -683,13 +687,13 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   if (fNclust != 0) {
 
-    THcShowerCluster* MaxCluster =  (*ClusterList).ListedCluster(0);
+    THcShowerCluster* MaxCluster =  (*fClusterList).ListedCluster(0);
     fE = (*MaxCluster).clE();
 
     for (Int_t i=1; i<fNclust; i++) {
 
 
-      THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
+      THcShowerCluster* cluster = (*fClusterList).ListedCluster(i);
 
       Double_t E = (*cluster).clE();
 
@@ -738,9 +742,9 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
     // Associate a cluster to the track.
 
-    Int_t mclust = MatchCluster(theTrack, ClusterList, Xtr, Ytr);
+    Int_t mclust = MatchCluster(theTrack, Xtr, Ytr);
 
-    if (mclust >= 0) fNtracks++;  // number of shower tracks
+    //    if (mclust >= 0) fNtracks++;  // number of shower tracks (This is not consistent with engine!)
 
     // Do this for the 1-st track only for now.
     //
@@ -752,7 +756,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
       if (mclust >= 0) {         // if there is a matched cluster
 
 	//Assign energies (not Y corrected) of the matched cluster to the track.
-	THcShowerCluster* cluster = (*ClusterList).ListedCluster(mclust);
+	THcShowerCluster* cluster = (*fClusterList).ListedCluster(mclust);
 	fTRE = (*cluster).clE();
 	fTREpr = (*cluster).clEpr();
 
@@ -820,7 +824,6 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 //-----------------------------------------------------------------------------
 
 Int_t THcShower::MatchCluster(THaTrack* Track,
-			      THcShowerClusterList* ClusterList,
 			      Double_t& XTrFront, Double_t& YTrFront)
 {
   // Match a cluster to a given track. Return the cluster number,
@@ -902,12 +905,12 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 
     for (Int_t i=0; i<fNclust; i++) {
 
-      THcShowerCluster* cluster = (*ClusterList).ListedCluster(i);
+      THcShowerCluster* cluster = (*fClusterList).ListedCluster(i);
 
       Double_t dx = TMath::Abs( (*cluster).clX() - XTrFront );
 
       if (dx <= (0.5*BlockThick[0] + fSlop)) {
-
+	fNtracks++;  // number of shower tracks (Consistent with engine)
 	if (dx <= deltaX) {
 	  mclust = i;
 	  deltaX = dx;
@@ -923,18 +926,105 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
   return mclust;
 }
 
+//_____________________________________________________________________________
+Float_t THcShower::GetShEnergy(THaTrack* Track) {
+
+  // Get total energy deposited in the cluster matched to the given
+  // spectrometer Track.
+
+  // Track coordinates at front of the calorimeter, initialize out of
+  // acceptance.
+  Double_t Xtr = -75.;
+  Double_t Ytr = -40.;
+
+  // Associate a cluster to the track.
+
+  Int_t mclust = MatchCluster(Track, Xtr, Ytr);
+
+  if (fdbg_tracks_cal) {
+    cout << "GetShEnergy: Track X = " << Xtr << "  Y = " << Ytr;
+    if (mclust >= 0)
+      cout << "  matched cluster # " << mclust << endl;
+    else
+      cout << " no matched cluster found" << endl;
+  }
+
+  // Coordinate corrected total energy deposition in the cluster.
+
+  Float_t Etrk = 0.;
+  if (mclust >= 0) {         // if there is a matched cluster
+
+    // Get matched cluster.
+    THcShowerCluster* cluster = (*fClusterList).ListedCluster(mclust);
+
+    // Correct track energy depositions for the impact coordinate.
+
+    for (Int_t ip=0; ip<fNLayers; ip++) {
+
+      // Coordinate correction factors for positive and negative sides,
+      // different for single PMT counters in the 1-st two layes and for
+      // 2 PMT counters in the rear two layers.
+      Float_t corpos = 1.;   
+      Float_t corneg = 1.;
+      if (ip < fNegCols) {
+	corpos = Ycor(Ytr,0);
+	corneg = Ycor(Ytr,1);
+      }
+      else {
+	corpos = Ycor(Ytr);
+	corneg = 0.;
+      }
+
+      if (fdbg_tracks_cal) {
+	cout << "   Plane " << ip << "  Ytr = " << Ytr 
+	     << "  corpos = " << corpos 
+	     << "  corneg = " << corneg << endl;
+      }
+
+      Etrk += (*cluster).clEplane(ip,0) * corpos;
+      Etrk += (*cluster).clEplane(ip,1) * corneg;;
+
+    }   //over planes
+
+  }   //mclust>=0
+
+  if (fdbg_tracks_cal) cout << "   Etrk = " << Etrk << endl;
+
+  return Etrk;
+}
 
 //_____________________________________________________________________________
 Int_t THcShower::FineProcess( TClonesArray& tracks )
 {
-  // Reconstruct coordinates of particle track cross point with shower
-  // plane, and copy the data into the following local data structure:
-  //
-  // Units of measurements are meters.
 
-  // Calculation of coordinates of particle track cross point with shower
-  // plane in the detector coordinate system. For this, parameters of track 
-  // reconstructed in THaVDC::FineTrack() are used.
+  // Shower energy assignment to the spectrometer tracks.
+  //
+
+  Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
+
+  if (fdbg_tracks_cal) {
+    cout << endl;
+    cout << "THcShower::FineProcess: Number of tracks = " << Ntracks << endl;
+  }
+
+  for (Int_t itrk=0; itrk<Ntracks; itrk++) {
+
+    THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
+
+    Float_t energy = GetShEnergy(theTrack);
+    theTrack->SetEnergy(energy);
+
+    if (fdbg_tracks_cal) {
+      cout << "THcShower::FineProcess, Track " << itrk << ": "
+	   << "  X = " << theTrack->GetX()
+	   << "  Y = " << theTrack->GetY()
+	   << "  Theta = " << theTrack->GetTheta()
+	   << "  Phi = " << theTrack->GetPhi()
+	   << "  Enegy = " << energy << endl;
+    }
+
+
+  }       //over tracks
 
   return 0;
 }

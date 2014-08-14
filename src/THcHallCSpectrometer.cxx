@@ -51,6 +51,7 @@
 #include "THaTriggerTime.h"
 #include "TMath.h"
 #include "TList.h"
+#include "THcShower.h"
 
 #include <iostream>
 #include <fstream>
