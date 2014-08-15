@@ -754,6 +754,9 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 	//Assign energies (not Y corrected) of the matched cluster to the track.
 	THcShowerCluster* cluster = (*ClusterList).ListedCluster(mclust);
 	fTRE = (*cluster).clE();
+
+	theTrack->SetEnergy(fTRE);
+
 	fTREpr = (*cluster).clEpr();
 
 	// Correct track energy depositions for the impact coordinate.

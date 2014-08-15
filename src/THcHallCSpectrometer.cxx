@@ -52,9 +52,20 @@
 #include "TMath.h"
 #include "TList.h"
 
+#include "THcRawShowerHit.h"
+#include "THcSignalHit.h"
+#include "THcShower.h"
+#include "THcHitList.h"
+#include "THcHodoscope.h"
+
+#include <vector>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 
+using std::vector;
 using namespace std;
 
 //_____________________________________________________________________________
@@ -73,6 +84,13 @@ THcHallCSpectrometer::THcHallCSpectrometer( const char* name, const char* descri
 THcHallCSpectrometer::~THcHallCSpectrometer()
 {
   // Destructor
+
+  delete [] fX2D;                 fX2D = NULL;               // Ahmed
+  delete [] fY2D;                 fY2D = NULL;               // Ahmed
+  
+  delete [] f2XHits;              f2XHits = NULL;            // Ahmed  
+  delete [] f2YHits;              f2YHits = NULL;            // Ahmed  
+
 }
 
 //_____________________________________________________________________________
@@ -122,6 +140,33 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   cout << "In THcHallCSpectrometer::ReadDatabase()" << endl;
 #endif
 
+  MAXHODHITS = 30;
+  
+  fX2D           = new Double_t [MAXHODHITS];
+  fY2D           = new Double_t [MAXHODHITS];
+
+  f2XHits        = new Int_t [16];
+  f2YHits        = new Int_t [16];
+
+  // --------------- To get energy from THcShower ----------------------
+
+  const char* detector_name = "hod";  
+  //THaApparatus* app = GetDetector();
+  THaDetector* det = GetDetector("hod");
+  // THaDetector* det = app->GetDetector( shower_detector_name );
+  
+  if( !dynamic_cast<THcHodoscope*>(det) ) {
+    Error("THcHallCSpectrometer", "Cannot find hodoscope detector %s",
+    	  detector_name );
+     return fStatus = kInitError;
+  }
+  
+  fHodo = static_cast<THcHodoscope*>(det);     // fHodo is a membervariable
+  // fShower = static_cast<THcShower*>(det);     // fShower is a membervariable
+  
+  // --------------- To get energy from THcShower ----------------------
+
+
   // Get the matrix element filename from the variable store
   // Read in the matrix
 
@@ -136,19 +181,34 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
 
   string reconCoeffFilename;
   DBRequest list[]={
-    {"_recon_coeff_filename",&reconCoeffFilename,kString},
-    {"theta_offset",&fThetaOffset,kDouble},
-    {"phi_offset",&fPhiOffset,kDouble},
-    {"delta_offset",&fDeltaOffset,kDouble},
-    {"thetacentral_offset",&fThetaCentralOffset,kDouble},
-    {"_oopcentral_offset",&fOopCentralOffset,kDouble},
-    {"pcentral_offset",&fPCentralOffset,kDouble},
-    {"pcentral",&fPCentral,kDouble},
-    {"theta_lab",&fTheta_lab,kDouble},
+    {"_recon_coeff_filename", &reconCoeffFilename,     kString               },
+    {"theta_offset",          &fThetaOffset,           kDouble               },
+    {"phi_offset",            &fPhiOffset,             kDouble               },
+    {"delta_offset",          &fDeltaOffset,           kDouble               },
+    {"thetacentral_offset",   &fThetaCentralOffset,    kDouble               },
+    {"_oopcentral_offset",    &fOopCentralOffset,      kDouble               },
+    {"pcentral_offset",       &fPCentralOffset,        kDouble               },
+    {"pcentral",              &fPCentral,              kDouble               },
+    {"theta_lab",             &fTheta_lab,             kDouble               },
+    {"sel_using_scin",        &fSelUsingScin,          kInt,            0,  1},
+    {"sel_ndegreesmin",       &fSelNDegreesMin,        kDouble,         0,  1},
+    {"sel_dedx1min",          &fSeldEdX1Min,           kDouble,         0,  1},
+    {"sel_dedx1max",          &fSeldEdX1Max,           kDouble,         0,  1},
+    {"sel_betamin",           &fSelBetaMin,            kDouble,         0,  1},
+    {"sel_betamax",           &fSelBetaMax,            kDouble,         0,  1},
+    {"sel_etmin",             &fSelEtMin,              kDouble,         0,  1},
+    {"sel_etmax",             &fSelEtMax,              kDouble,         0,  1},
+    {"hodo_num_planes",       &fNPlanes,               kInt                  },
+    {"scin_2x_zpos",          &fScin2XZpos,            kDouble,         0,  1},
+    {"scin_2x_dzpos",         &fScin2XdZpos,           kDouble,         0,  1},
+    {"scin_2y_zpos",          &fScin2YZpos,            kDouble,         0,  1},
+    {"scin_2y_dzpos",         &fScin2YdZpos,           kDouble,         0,  1},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   //
+
+  cout << "\n\n\nhodo planes = " << fNPlanes << endl;
   cout << " fPcentral = " <<  fPCentral << " " <<fPCentralOffset << endl; 
   cout << " fThate_lab = " <<  fTheta_lab << " " <<fThetaCentralOffset << endl; 
   fPCentral= fPCentral*(1.+fPCentralOffset/100.);
@@ -227,6 +287,8 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
   // In Hall C, we do the target traceback here since the traceback should
   // not depend on which tracking detectors are used.
 
+  fNtracks = tracks.GetLast()+1;
+
   for (Int_t it=0;it<tracks.GetLast()+1;it++) {
     THaTrack* track = static_cast<THaTrack*>( tracks[it] );
 
@@ -280,6 +342,10 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     track->SetMomentum(fPCentral*(1+track->GetDp()/100.0));
   }
 
+
+  // ------------------ Moving it to TrackCalc --------------------
+
+  /*
   // If enabled, sort the tracks by chi2/ndof
   if( GetTrSorting() )
     fTracks->Sort();
@@ -304,13 +370,265 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
   } else
     fGoldenTrack = NULL;
 
+  */
+  // ------------------ Moving it to TrackCalc --------------------
+
   return 0;
 }
 
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::TrackCalc()
 {
-  // Additioal track calculations. At present, we only calculate beta here.
+
+  if ( fSelUsingScin == 0 ) {
+    
+    if( GetTrSorting() )
+      fTracks->Sort();
+    
+    // Find the "Golden Track". 
+    //  if( GetNTracks() > 0 ) {
+    if( fNtracks > 0 ) {
+      // Select first track in the array. If there is more than one track
+      // and track sorting is enabled, then this is the best fit track
+      // (smallest chi2/ndof).  Otherwise, it is the track with the best
+      // geometrical match (smallest residuals) between the U/V clusters
+      // in the upper and lower VDCs (old behavior).
+      // 
+      // Chi2/dof is a well-defined quantity, and the track selected in this
+      // way is immediately physically meaningful. The geometrical match
+      // criterion is mathematically less well defined and not usually used
+      // in track reconstruction. Hence, chi2 sortiing is preferable, albeit
+      // obviously slower.
+      
+      fGoldenTrack = static_cast<THaTrack*>( fTracks->At(0) );
+      fTrkIfo      = *fGoldenTrack;
+      fTrk         = fGoldenTrack;
+    } else
+      fGoldenTrack = NULL;
+  }
+
+
+  //  cout << endl; 
+  if ( fSelUsingScin == 1 ){
+    if( fNtracks > 0 ) {
+      
+      Double_t fY2Dmin, fX2Dmin, fZap, ft, fChi2PerDeg; //, fShowerEnergy;
+      Double_t fHitPos4, fHitPos3, fHitDist3, fHitDist4; //, fChi2Min;
+      Int_t i, j, itrack, ip, ihit; //, fGoodTimeIndex = -1;
+      Int_t  fHitCnt4, fHitCnt3, fRawIndex = -1, fGoodRawPad;
+      
+      fChi2Min = 10000000000.0;   fGoodTrack = -1;   fY2Dmin = 100.;
+      fX2Dmin = 100.;             fZap = 0.;
+
+
+      for ( itrack = 0; itrack < fNtracks; itrack++ ){
+	
+	THaTrack* goodTrack = static_cast<THaTrack*>( fTracks->At(itrack) );      
+        if (!goodTrack) return -1;
+        THaTrack* firstTrack = static_cast<THaTrack*>( fTracks->At(0) );      
+        if (!firstTrack) return -1;
+
+	
+	if ( goodTrack->GetNDoF() > fSelNDegreesMin ){
+	  fChi2PerDeg =  goodTrack->GetChi2() / goodTrack->GetNDoF();
+	  
+	  if( ( goodTrack->GetDedx()       > fSeldEdX1Min )   && 
+	      ( goodTrack->GetDedx()       < fSeldEdX1Max )   && 
+	      ( goodTrack->GetBeta()       > fSelBetaMin  )   &&
+	      ( goodTrack->GetBeta()       < fSelBetaMax  )   &&
+	      // ( goodTrack->GetEnergy()  > fSelEtMin    )   && 
+	      // ( goodTrack->GetEnergy()  < fSelEtMax    ) )  
+	      ( firstTrack->GetEnergy()    > fSelEtMin    )   && 
+	      ( firstTrack->GetEnergy()    < fSelEtMax    ) )  
+	    	    
+	    {
+	      
+	      for ( j = 0; j < 16; j++ ){ f2XHits[j] = 0; }
+	      for ( j = 0; j < 16; j++ ){ f2YHits[j] = 0; }
+	      
+	      for ( ip = 0; ip < fNPlanes; ip++ ){
+		for ( ihit = 0; ihit < fHodo->GetNScinHits(ip); ihit++ ){
+		  fRawIndex ++;		  
+		  fGoodRawPad = fHodo->GetGoodRawPad(fRawIndex)-1;
+
+		  if ( ip == 2 )
+		    f2XHits[fGoodRawPad] = 0;
+		  
+		  if ( ip == 3 )
+		    f2YHits[fGoodRawPad] = 0;
+		  
+		} // loop over hits of a plane
+	      } // loop over planes 
+	      
+	      fHitPos4  = goodTrack->GetY() + goodTrack->GetPhi() * ( fScin2YZpos + 0.5 * fScin2YdZpos );
+	      fHitCnt4  = TMath::Nint( ( fHodo->GetHodoCenter4() - fHitPos4 ) / fHodo->GetScin2YSpacing() ) + 1;
+	      fHitCnt4  = TMath::Max( TMath::Min(fHitCnt4,TMath::Nint(10) ) , 1); // scin_2y_nr = 10
+	      fHitDist4 = fHitPos4 - ( fHodo->GetHodoCenter4() - fHodo->GetScin2YSpacing() * ( fHitCnt4 - 1 ) );
+	      
+	      // if ( fHodo->GetEvent() == 1018 ){
+	      // 	cout << "1: event = " << fHodo->GetEvent()
+	      // 	     << "  track = " << itrack + 1 
+	      // 	     << "  chi/dof = " << fChi2PerDeg
+	      // 	     << "   cnt 4 = " << fHitCnt4
+	      // 	     << "  fy2d = " << fY2D[itrack] << "   fy2dmin = " << fY2Dmin
+	      // 	     << "  fx2d = " << fX2D[itrack] << "   fx2dmin = " << fX2Dmin
+	      // 	  //		     << "  chi2min = " << fChi2Min << "   fChi2PerDeg = " << fChi2PerDeg
+	      // 	     << endl;
+	      // }
+	      
+	      if ( fNtracks > 1 ){     // Plane 4		
+		fZap = 0.;
+		ft = 0;
+		
+		for ( i = 0; i < 10; i++ ){
+		  
+		  if ( f2YHits[fGoodRawPad] == 1 ) {
+		    
+		    fY2D[itrack] = TMath::Abs(fHitCnt4-i-1);
+		    ft ++;
+		    
+		    if   ( ft == 1 )                              fZap = fY2D[itrack];
+		    if ( ( ft == 2 ) && ( fY2D[itrack] < fZap ) ) fZap = fY2D[itrack]; 		    
+		    if ( ( ft == 3 ) && ( fY2D[itrack] < fZap ) ) fZap = fY2D[itrack]; 
+		    if ( ( ft == 4 ) && ( fY2D[itrack] < fZap ) ) fZap = fY2D[itrack]; 
+		    if ( ( ft == 5 ) && ( fY2D[itrack] < fZap ) ) fZap = fY2D[itrack]; 
+		    if ( ( ft == 6 ) && ( fY2D[itrack] < fZap ) ) fZap = fY2D[itrack]; 
+
+		  } // condition for fHodScinHit[4][i]
+		} // loop over 10
+		fY2D[itrack] = fZap; 
+	      } // condition for track. Plane 4
+
+	      if ( fNtracks == 1 ) fY2D[itrack] = 0.;
+
+	      // if ( fHodo->GetEvent() == 1018 ){
+	      // 	cout << "2: event = " << fHodo->GetEvent()
+	      // 	     << "  track = " << itrack + 1 
+	      // 	     << "  chi/dof = " << fChi2PerDeg
+	      // 	     << "  fy2d = " << fY2D[itrack] << "   fy2dmin = " << fY2Dmin
+	      // 	     << "  fx2d = " << fX2D[itrack] << "   fx2dmin = " << fX2Dmin
+	      // 	  //		     << "  chi2min = " << fChi2Min << "   fChi2PerDeg = " << fChi2PerDeg
+	      // 	     << endl;
+	      // }
+
+	      fHitPos3  = goodTrack->GetX() + goodTrack->GetTheta() * ( fScin2XZpos + 0.5 * fScin2XdZpos );
+	      fHitCnt3  = TMath::Nint( ( fHitPos3 - fHodo->GetHodoCenter3() ) / fHodo->GetScin2XSpacing() ) + 1;
+	      fHitCnt3  = TMath::Max( TMath::Min(fHitCnt3,TMath::Nint(16) ) , 1); // scin_2x_nr = 16
+	      fHitDist3 = fHitPos3 - ( fHodo->GetScin2XSpacing() * ( fHitCnt3 - 1 ) + fHodo->GetHodoCenter3() );
+
+	      //----------------------------------------------------------------
+
+	      if ( fNtracks > 1 ){     // Plane 3
+		fZap = 0.;
+		ft = 0;
+
+		for ( i = 0; i < 16; i++ ){
+		  if ( f2XHits[fGoodRawPad] == 1 ) {
+		    fX2D[itrack] = TMath::Abs(fHitCnt3-i-1);
+		    ft ++;
+		    if   ( ft == 1 )                              fZap = fX2D[itrack];
+		    if ( ( ft == 2 ) && ( fX2D[itrack] < fZap ) ) fZap = fX2D[itrack]; 		    
+		    if ( ( ft == 3 ) && ( fX2D[itrack] < fZap ) ) fZap = fX2D[itrack]; 
+		    if ( ( ft == 4 ) && ( fX2D[itrack] < fZap ) ) fZap = fX2D[itrack]; 
+		    if ( ( ft == 5 ) && ( fX2D[itrack] < fZap ) ) fZap = fX2D[itrack]; 
+		    if ( ( ft == 6 ) && ( fX2D[itrack] < fZap ) ) fZap = fX2D[itrack]; 
+		    
+		  } // condition for fHodScinHit[4][i]
+		} // loop over 16
+		fX2D[itrack] = fZap; 
+	      } // condition for track. Plane 3
+
+	      //----------------------------------------------------------------
+
+	      if ( fNtracks == 1 ) 
+		fX2D[itrack] = 0.;
+	      
+	      if ( fY2D[itrack] <= fY2Dmin ) {
+		if ( fY2D[itrack] < fY2Dmin ) {
+		  fX2Dmin = 100.;
+		  fChi2Min = 10000000000.;
+		} // fY2D min
+		
+		if ( fX2D[itrack] <= fX2Dmin ){
+		  if ( fX2D[itrack] < fX2Dmin ){
+		    fChi2Min = 10000000000.0;
+		  } // condition fX2D
+		  if ( fChi2PerDeg < fChi2Min ){
+
+		    // if ( fHodo->GetEvent() == 1018 ){
+		    //   cout << "event = " << fHodo->GetEvent()
+		    // 	   << "  track = " << itrack + 1 
+		    // 	   << "  fy2d = " << fY2D[itrack] << "   fy2dmin = " << fY2Dmin
+		    // 	   << "  fx2d = " << fX2D[itrack] << "   fx2dmin = " << fX2Dmin
+		    // 	   << "  chi2min = " << fChi2Min << "   fChi2PerDeg = " << fChi2PerDeg
+		    // 	   << endl;
+		    // }
+
+		    fGoodTrack = itrack; // fGoodTrack = itrack
+		    fY2Dmin = fY2D[itrack];
+		    fX2Dmin = fX2D[itrack];
+		    fChi2Min = fChi2PerDeg;
+
+		    fGoldenTrack = static_cast<THaTrack*>( fTracks->At( fGoodTrack ) );
+		    fTrkIfo      = *fGoldenTrack;
+		    fTrk         = fGoldenTrack;
+		  }		  
+		} // condition fX2D
+	      } // condition fY2D
+
+	      /*
+	      // if (  fHodo->GetEvent() == 1018 ){		      
+	      // 	cout << "event = " << fHodo->GetEvent() << "   track = " << itrack + 1 
+	      // 	     << "  chi2min = " << fChi2Min
+	      // 	     << endl;
+	      // }
+
+	      */
+	    } // conditions for dedx, beta and trac energy	  	  
+      
+
+	} // confition for fNFreeFP greater than fSelNDegreesMin
+
+	// if ( fHodo->GetEvent()  == 1433 ) {
+	//   cout << "hcana_event        " << fHodo->GetEvent()  
+	//        << "   golden_track        " << fGoodTrack + 1 
+	//        << "   chi2 = " << goodTrack->GetChi2() 
+	//        << "   dof = " << goodTrack->GetNDoF()
+	//        << "   chimin        " << fChi2Min << endl;
+	// }
+
+
+      } // loop over tracks      
+
+      if ( fGoodTrack == -1 ){
+	
+	fChi2Min = 10000000000.0;
+	for (Int_t iitrack = 0; iitrack < fNtracks; iitrack++ ){
+	  THaTrack* aTrack = dynamic_cast<THaTrack*>( fTracks->At(iitrack) );
+	  if (!aTrack) return -1;
+	  
+	  if ( aTrack->GetNDoF() > fSelNDegreesMin ){
+	    fChi2PerDeg =  aTrack->GetChi2() / aTrack->GetNDoF();
+	    
+	    if ( fChi2PerDeg < fChi2Min ){
+	      
+	      fGoodTrack = iitrack;
+	      fChi2Min = fChi2PerDeg;
+	      
+	      fGoldenTrack = static_cast<THaTrack*>( fTracks->At(fGoodTrack) );
+	      fTrkIfo      = *fGoldenTrack;
+	      fTrk         = fGoldenTrack;
+
+	    }
+	  }
+	} // loop over trakcs
+	
+      } // Condition for fNtrack > 0
+
+    } else //  condtion fSelUsingScin == 1
+      fGoldenTrack = NULL;
+    
+  }
 
   return TrackTimes( fTracks );
 }
@@ -322,6 +640,7 @@ Int_t THcHallCSpectrometer::TrackTimes( TClonesArray* Tracks ) {
   //
   // To be useful, a meaningful timing resolution should be assigned
   // to each Scintillator object (part of the database).
+
   
   return 0;
 }
