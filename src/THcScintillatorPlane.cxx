@@ -45,6 +45,9 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fNScinHits = 0; 
   //
   fMaxHits=53;
+
+  fGoodRawPadNum = new Int_t [fMaxHits]; // Ahmed
+
   fpTimes = new Double_t [fMaxHits];
   fScinTime = new Double_t [fMaxHits];
   fScinSigma = new Double_t [fMaxHits];
@@ -72,6 +75,9 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fNScinHits = 0;
   //
   fMaxHits=53;
+
+  fGoodRawPadNum = new Int_t [fMaxHits];
+
   fpTimes = new Double_t [fMaxHits];
   fScinTime = new Double_t [fMaxHits];
   fScinSigma = new Double_t [fMaxHits];
@@ -94,6 +100,10 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete fScinTime;
   delete fScinSigma;
   delete fScinZpos;
+
+  delete fGoodRawPadNum;
+
+
 }
 
 //______________________________________________________________________________
@@ -303,20 +313,31 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   mintdc=((THcHodoscope *)GetParent())->GetTdcMin();
   maxtdc=((THcHodoscope *)GetParent())->GetTdcMax();
   Int_t ihit = nexthit;
+
+  //  cout << "THcScintillatorPlane: raw htis = " << nrawhits << endl;
+  
   while(ihit < nrawhits) {
     THcHodoscopeHit* hit = (THcHodoscopeHit *) rawhits->At(ihit);
     if(hit->fPlane > fPlaneNum) {
       break;
     }
     Int_t padnum=hit->fCounter;
+
     Int_t index=padnum-1;
-    if (hit->fTDC_pos > 0) ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->fTDC_pos);
-    if (hit->fTDC_neg > 0) ((THcSignalHit*) frNegTDCHits->ConstructedAt(nrNegTDCHits++))->Set(padnum, hit->fTDC_neg);
-    if ((hit->fADC_pos-fPosPed[index]) >= 50) ((THcSignalHit*) frPosADCHits->ConstructedAt(nrPosADCHits++))->Set(padnum, hit->fADC_pos-fPosPed[index]);
-    if ((hit->fADC_neg-fNegPed[index]) >= 50) ((THcSignalHit*) frNegADCHits->ConstructedAt(nrNegADCHits++))->Set(padnum, hit->fADC_neg-fNegPed[index]);
+    if (hit->fTDC_pos > 0) 
+      ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->fTDC_pos);
+    if (hit->fTDC_neg > 0) 
+      ((THcSignalHit*) frNegTDCHits->ConstructedAt(nrNegTDCHits++))->Set(padnum, hit->fTDC_neg);
+    if ((hit->fADC_pos-fPosPed[index]) >= 50) 
+      ((THcSignalHit*) frPosADCHits->ConstructedAt(nrPosADCHits++))->Set(padnum, hit->fADC_pos-fPosPed[index]);
+    if ((hit->fADC_neg-fNegPed[index]) >= 50) 
+      ((THcSignalHit*) frNegADCHits->ConstructedAt(nrNegADCHits++))->Set(padnum, hit->fADC_neg-fNegPed[index]);
     // check TDC values
     if (((hit->fTDC_pos >= mintdc) && (hit->fTDC_pos <= maxtdc)) ||
 	((hit->fTDC_neg >= mintdc) && (hit->fTDC_neg <= maxtdc))) {
+
+      fGoodRawPadNum[fNScinHits] = hit->fCounter;
+      
       //TDC positive hit
       THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
       sighit->Set(padnum, hit->fTDC_pos);
@@ -332,12 +353,11 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       fNScinHits++;
     }
     else {
-      //cout <<"pos TDC "<<hit->fTDC_pos<<" "<<mintdc<<" "<<maxtdc<<endl;
-      //cout <<"neg TDC "<<hit->fTDC_neg<<" "<<mintdc<<" "<<maxtdc<<endl;
-      //cout <<"skipping BAD tdc event\n";
     }
     ihit++;
   }
+
+  //  cout << "THcScintillatorPlane: ihit = " << ihit << endl;
 
   return(ihit);
 }
