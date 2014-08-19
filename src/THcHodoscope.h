@@ -14,6 +14,21 @@
 #include "THcHitList.h"
 #include "THcHodoscopeHit.h"
 #include "THcScintillatorPlane.h"
+#include "THcShower.h"
+
+#include "THaTrackingDetector.h"
+#include "THcHitList.h"
+#include "THcRawDCHit.h"
+#include "THcSpacePoint.h"
+#include "THcDriftChamberPlane.h"
+#include "THcDriftChamber.h"
+#include "TMath.h"
+
+#include "THaSubDetector.h"
+#include "TClonesArray.h"
+#include <iostream>
+#include <fstream>
+
 
 class THaScCalib;
 
@@ -54,12 +69,21 @@ public:
   Double_t GetStartTimeSlop() const {return fStartTimeSlop;}
   Double_t GetBetaNotrk() const {return fBetaNotrk;}
 
+  Int_t GetGoodRawPad(Int_t iii){return fGoodRawPad[iii];}
+  Double_t GetNScinHits(Int_t iii){return fNScinHits[iii];}
+  Double_t GetHodoCenter3() { return fHodoCenter3;}
+  Double_t GetHodoCenter4() { return fHodoCenter4;}
+  Double_t GetScin2XSpacing() { return fScin2XSpacing;}
+  Double_t GetScin2YSpacing() { return fScin2YSpacing;}
+
   //  Double_t GetBeta() const {return fBeta[];}
 
   Double_t GetBeta(Int_t iii) const {return fBeta[iii];} // Ahmed
+  Int_t GetEvent(){ return fCheckEvent;}
 
   Double_t GetHodoPosSigma(Int_t iii) const {return fHodoPosSigma[iii];}
   Double_t GetHodoNegSigma(Int_t iii) const {return fHodoNegSigma[iii];}
+
 
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
 
@@ -79,7 +103,7 @@ protected:
   Double_t fStartTime; 
   Int_t fNfptimes;
 
-  Double_t fdEdX;
+  //  Double_t fdEdX;
 
   Double_t fBetaNotrk;
   //  Double_t fBeta;  
@@ -121,19 +145,43 @@ protected:
 
   //--------------------------   Ahmed   -----------------------------
 
-  Int_t MAXHODHITS;
+  THcShower* fShower;
 
-  Double_t*    fTestArr;              // [MAXHODHITS] Array
+  Int_t        fCheckEvent;
+
+  Int_t        fGoodTrack;
+  Int_t        MAXHODHITS;
+  //  Int_t        fSelUsingScin;
+  Int_t        fSelNDegreesMin;
+  Double_t     fSeldEdX1Min;
+  Double_t     fSeldEdX1Max;
+  Double_t     fSelBetaMin;
+  Double_t     fSelBetaMax;
+  Double_t     fSelEtMin;
+  Double_t     fSelEtMax;
+  Double_t     fScin2XZpos;
+  Double_t     fScin2XdZpos;
+  Double_t     fScin2YZpos;
+  Double_t     fScin2YdZpos;
+
+  Double_t     fChi2Min;
+  Double_t     fHodoCenter4, fHodoCenter3;
+  Double_t     fScin2YSpacing, fScin2XSpacing;
+
+  Double_t**   fdEdX;                   // [MAXHODHITS] Array
+  Double_t**   fScinHit;                // [fNPlanes] Array
+  Int_t*       fGoodRawPad;
   Double_t*    fBeta;                 // [MAXHODHITS] Array
   Double_t*    fBetaChisq;            // [MAXHODHITS] Array
 
   Double_t*    fFPTime;               // [fNPlanes] Array 
 
+
   Double_t* fScinSigma;
   Double_t* fGoodScinTime;
   Double_t* fScinTime;
   Double_t* fTime;
-  Double_t* adcPh;
+  Double_t* adcPh;                    // Correct it
   Double_t* fTimeAtFP;
   Double_t* fPath;
   Double_t* fTimePos;
@@ -145,6 +193,7 @@ protected:
 
   Int_t* fHitPaddle;
   Int_t* fNScinHit;
+  Int_t* fNScinHits;
   Int_t* fNPmtHit;
   Int_t* fTimeHist;
   Int_t* fNPlaneTime;
@@ -162,6 +211,10 @@ protected:
   TClonesArray* scinNegADC;
   TClonesArray* scinPosTDC;
   TClonesArray* scinNegTDC;
+
+  //test array
+  Double_t test_arr[53];
+  Double_t test_arr1[2];
 
   //----------------------------------------------------------------
 
