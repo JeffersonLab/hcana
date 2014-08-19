@@ -338,10 +338,6 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       fGoodRawPadNum[fNScinHits] = hit->fCounter;
       
-      // cout << "            plane = " << fPlaneNum << "   hit = " << fNScinHits + 1
-      // 	   << "   index = " << fNScinHits
-      // 	   << "   raw pad = " << fGoodRawPadNum[fNScinHits] << endl;
-
       //TDC positive hit
       THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
       sighit->Set(padnum, hit->fTDC_pos);
@@ -357,9 +353,6 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       fNScinHits++;
     }
     else {
-      //cout <<"pos TDC "<<hit->fTDC_pos<<" "<<mintdc<<" "<<maxtdc<<endl;
-      //cout <<"neg TDC "<<hit->fTDC_neg<<" "<<mintdc<<" "<<maxtdc<<endl;
-      //cout <<"skipping BAD tdc event\n";
     }
     ihit++;
   }
@@ -425,9 +418,6 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
 	  postime[i]=((THcSignalHit*) fPosTDCHits->At(i))->GetData()*tdctotime;
 	  j=((THcSignalHit*)fPosTDCHits->At(i))->GetPaddleNumber()-1;
 	  index=((THcHodoscope *)GetParent())->GetScinIndex(fPlaneNum-1,j);
-
-	  //	  cout << "THcScintillatorPlane: index = " << index << endl;
-
 	  postime[i]=postime[i]-((THcHodoscope *)GetParent())->GetHodoPosPhcCoeff(index)*
 	    TMath::Sqrt(TMath::Max(0.,(pos_ph[i]/((THcHodoscope *)GetParent())->GetHodoPosMinPh(index)-1)));
 	  postime[i]=postime[i]-((THcHodoscope *)GetParent())->GetHodoPosTimeOffset(index);
