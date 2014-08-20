@@ -153,7 +153,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   cout << "In THcHallCSpectrometer::ReadDatabase()" << endl;
 #endif
 
-  MAXHODHITS = 30;
+  MAXHODHITS = 53;
   
   fX2D           = new Double_t [MAXHODHITS];
   fY2D           = new Double_t [MAXHODHITS];
@@ -426,11 +426,12 @@ Int_t THcHallCSpectrometer::TrackCalc()
       Double_t fY2Dmin, fX2Dmin, fZap, ft, fChi2PerDeg; //, fShowerEnergy;
       Double_t fHitPos4, fHitPos3, fHitDist3, fHitDist4; //, fChi2Min;
       Int_t i, j, itrack, ip, ihit; //, fGoodTimeIndex = -1;
-      Int_t  fHitCnt4, fHitCnt3, fRawIndex = -1, fGoodRawPad;
+      Int_t  fHitCnt4, fHitCnt3, fRawIndex, fGoodRawPad;
       
       fChi2Min = 10000000000.0;   fGoodTrack = -1;   fY2Dmin = 100.;
       fX2Dmin = 100.;             fZap = 0.;
 
+      fRawIndex = -1;
       for ( itrack = 0; itrack < fNtracks; itrack++ ){
 	
 	THaTrack* goodTrack = static_cast<THaTrack*>( fTracks->At(itrack) );      
@@ -446,24 +447,31 @@ Int_t THcHallCSpectrometer::TrackCalc()
 	      ( goodTrack->GetEnergy()  > fSelEtMin    )   && 
 	      ( goodTrack->GetEnergy()  < fSelEtMax    ) )  	    	    
 	    {
-	      
-	      for ( j = 0; j < 16; j++ ){ f2XHits[j] = 0; }
-	      for ( j = 0; j < 16; j++ ){ f2YHits[j] = 0; }
+	      	      
+	      for ( j = 0; j < 16; j++ ){ 
+		f2XHits[j] = -1; 
+		f2YHits[j] = -1; 
+	      }
 	      
 	      for ( ip = 0; ip < fNPlanes; ip++ ){
 		for ( ihit = 0; ihit < fHodo->GetNScinHits(ip); ihit++ ){
 		  fRawIndex ++;		  
-		  fGoodRawPad = fHodo->GetGoodRawPad(fRawIndex)-1;
 
-		  if ( ip == 2 )
-		    f2XHits[fGoodRawPad] = 0;
-		  
-		  if ( ip == 3 )
-		    f2YHits[fGoodRawPad] = 0;
-		  
+		  //		  fGoodRawPad = fHodo->GetGoodRawPad(fRawIndex)-1;
+		  fGoodRawPad = fHodo->GetGoodRawPad(fRawIndex);
+
+		  if ( ip == 2 ){  
+		    f2XHits[fGoodRawPad] = 0;   		    
+		  }
+
+		  if ( ip == 3 ){  
+		    f2YHits[fGoodRawPad] = 0;   
+		    
+		  } 
+
 		} // loop over hits of a plane
 	      } // loop over planes 
-	      
+
 	      fHitPos4  = goodTrack->GetY() + goodTrack->GetPhi() * ( fScin2YZpos + 0.5 * fScin2YdZpos );
 	      fHitCnt4  = TMath::Nint( ( fHodo->GetHodoCenter4() - fHitPos4 ) / fHodo->GetScin2YSpacing() ) + 1;
 	      fHitCnt4  = TMath::Max( TMath::Min(fHitCnt4,TMath::Nint(10) ) , 1); // scin_2y_nr = 10
@@ -476,12 +484,10 @@ Int_t THcHallCSpectrometer::TrackCalc()
 		ft = 0;
 		
 		for ( i = 0; i < 10; i++ ){
-		  
-		  if ( f2YHits[fGoodRawPad] == 1 ) {
-		    
+		  if ( f2YHits[i] == 0 ) {		    
 		    fY2D[itrack] = TMath::Abs(fHitCnt4-i-1);
 		    ft ++;
-		    
+		    		    
 		    if   ( ft == 1 )                              fZap = fY2D[itrack];
 		    if ( ( ft == 2 ) && ( fY2D[itrack] < fZap ) ) fZap = fY2D[itrack]; 		    
 		    if ( ( ft == 3 ) && ( fY2D[itrack] < fZap ) ) fZap = fY2D[itrack]; 
@@ -503,13 +509,13 @@ Int_t THcHallCSpectrometer::TrackCalc()
 
 	      //----------------------------------------------------------------
 
-	      if ( fNtracks > 1 ){     // Plane 3
+	      if ( fNtracks > 1 ){     // Plane 3 (2X)
 		fZap = 0.;
 		ft = 0;
-
 		for ( i = 0; i < 16; i++ ){
-		  if ( f2XHits[fGoodRawPad] == 1 ) {
+		  if ( f2XHits[i] == 0 ) {
 		    fX2D[itrack] = TMath::Abs(fHitCnt3-i-1);
+		    
 		    ft ++;
 		    if   ( ft == 1 )                              fZap = fX2D[itrack];
 		    if ( ( ft == 2 ) && ( fX2D[itrack] < fZap ) ) fZap = fX2D[itrack]; 		    
@@ -527,7 +533,7 @@ Int_t THcHallCSpectrometer::TrackCalc()
 
 	      if ( fNtracks == 1 ) 
 		fX2D[itrack] = 0.;
-	      
+	      	      
 	      if ( fY2D[itrack] <= fY2Dmin ) {
 		if ( fY2D[itrack] < fY2Dmin ) {
 		  fX2Dmin = 100.;
@@ -551,8 +557,7 @@ Int_t THcHallCSpectrometer::TrackCalc()
 		  }		  
 		} // condition fX2D
 	      } // condition fY2D
-	    } // conditions for dedx, beta and trac energy	
-	  
+	    } // conditions for dedx, beta and trac energy		  
 	} // confition for fNFreeFP greater than fSelNDegreesMin
       } // loop over tracks      
 
@@ -586,6 +591,13 @@ Int_t THcHallCSpectrometer::TrackCalc()
     
   }
 
+  //  if ( fHodo->GetEvent() == 11351 ){
+    cout << "hcana_event   " << fHodo->GetEvent()
+	 << "     golden_track   " << fGoodTrack + 1
+	 << "     chimin   " << fChi2Min
+	 << endl;
+    //  }
+    
   return TrackTimes( fTracks );
 }
 

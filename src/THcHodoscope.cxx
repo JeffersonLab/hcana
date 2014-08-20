@@ -361,7 +361,7 @@ void THcHodoscope::DefineArray(const char* fName, char** Suffix, const Int_t ind
 Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 {
 
-  MAXHODHITS = 30;
+  MAXHODHITS = 53;
   fBeta = new Double_t[ MAXHODHITS ];
   fBetaChisq = new Double_t[ MAXHODHITS ];
 
@@ -441,8 +441,18 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fHodoNegInvAdcAdc=new Double_t [fMaxHodoScin];
   
 
+
   prefix[1]='\0';
   DBRequest list[]={
+    // {"scin_2x_zpos",          &fScin2XZpos,            kDouble,         0,  1},
+    // {"scin_2x_dzpos",         &fScin2XdZpos,           kDouble,         0,  1},
+    // {"scin_2y_zpos",          &fScin2YZpos,            kDouble,         0,  1},
+    // {"scin_2y_dzpos",         &fScin2YdZpos,           kDouble,         0,  1},
+    // {"sel_betamin",           &fSelBetaMin,            kDouble,         0,  1},
+    // {"sel_dedx1min",          &fSeldEdX1Min,           kDouble,         0,  1},
+    // {"sel_dedx1max",          &fSeldEdX1Max,           kDouble,         0,  1},
+    //    {"sel_using_scin",        &fSelUsingScin,          kInt,            0,  1},
+    //    {"sel_ndegreesmin",       &fSelNDegreesMin,        kDouble,         0,  1},
     {"start_time_center",     &fStartTimeCenter,                      kDouble},
     {"start_time_slop",       &fStartTimeSlop,                        kDouble},
     {"scin_tdc_to_time",      &fScinTdcToTime,                        kDouble},
@@ -467,6 +477,20 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fTofUsingInvAdc = 0;		// Default if not defined
   fTofTolerance = 3.0;		// Default if not defined
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+
+
+  cout << "\n\n\n\n\n\nPaddles1x = " << fNPaddle[0]
+       << "\nscin_2y_zpos = " << fScin2YZpos
+       << "\nscin_2y_dzpos = " << fScin2YdZpos
+       << endl;  
+  //      << "\ndedx max = " <<   fSeldEdX1Max 
+  //      << "\nbeta min = " <<   fSelBetaMin
+  //      << "\nbeta max = " <<   fSelBetaMax
+  //      << "\net min   = " <<   fSelEtMin
+  //      << "\net max   = " <<   fSelEtMax
+  
+  //      << endl;
+
 
   if (fTofUsingInvAdc) {
     DBRequest list2[]={
@@ -1039,9 +1063,10 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  fRawIndex ++;
 
 	  fPaddle = ((THcSignalHit*)scinPosTDC->At(ihit))->GetPaddleNumber()-1;
-	  fHitPaddle[fGoodTimeIndex] =  fPaddle;
+	  fHitPaddle[fGoodTimeIndex] = fPaddle;
 
-	  fGoodRawPad[fRawIndex] = fPlanes[ip]->GetGoodRawPadNum(ihit);
+	  //	  fGoodRawPad[fRawIndex] = fPlanes[ip]->GetGoodRawPadNum(ihit);
+	  fGoodRawPad[fRawIndex] = fPaddle;
 	  
 	  fXcoord = theTrack->GetX() + theTrack->GetTheta() *
 	    ( fPlanes[ip]->GetZpos() + ( fPaddle % 2 ) * fPlanes[ip]->GetDzpos() ); // Line 277
@@ -1178,6 +1203,14 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	      // }
 	      // ---------------------------------------------------------------------------
 
+
+	      //	      fdEdX[itrack][ihit] = 5.0;
+
+
+	      // --------------------------------------------------------------------------------------------
+	      // Date: July 8 201  May be we need this, not sure.
+	      //
+
 	      if ( fGoodTDCPos[fGoodTimeIndex] ){
 		if ( fGoodTDCNeg[fGoodTimeIndex] ){
 
@@ -1213,6 +1246,11 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	} // Second loop over hits of a scintillator plane ends here
       } // Loop over scintillator planes ends here
 
+      //------------------------------------------------------------------------------
+      //------------------------------------------------------------------------------
+      //------------------------------------------------------------------------------
+      //------------------------------------------------------------------------------
+      //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
@@ -1299,7 +1337,13 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	
 	// -------------------------------------------------------------------- 
 	// -------------------------------------------------------------------- 
-	// -------------------------------------------------------------------- 	
+	// -------------------------------------------------------------------- 
+	// -------------------------------------------------------------------- 
+	// -------------------------------------------------------------------- 
+	// -------------------------------------------------------------------- 
+	// -------------------------------------------------------------------- 
+	// -------------------------------------------------------------------- 
+	
 
       }
       else {
@@ -1327,6 +1371,10 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  fFPTime[ind] = 1000. * ( ind + 1 );
 	}
       }
+
+
+      // fBetaChisq[itrack]
+      // fFPTime[ind]
 
       theTrack->SetDedx(fdEdX[itrack][0]);
       theTrack->SetBeta(fBeta[itrack]);

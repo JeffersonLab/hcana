@@ -78,7 +78,7 @@ public:
 
   //  Double_t GetBeta() const {return fBeta[];}
 
-  Double_t GetBeta(Int_t iii) const {return fBeta[iii];} 
+  Double_t GetBeta(Int_t iii) const {return fBeta[iii];} // Ahmed
   Int_t GetEvent(){ return fCheckEvent;}
 
   Double_t GetHodoPosSigma(Int_t iii) const {return fHodoPosSigma[iii];}
@@ -91,6 +91,8 @@ public:
 
   THcHodoscope();  // for ROOT I/O
 protected:
+
+  //  std::vector<bool> myScinGoodTime;  // Ahmed
 
   Int_t fAnalyzePedestals;
 
@@ -141,7 +143,7 @@ protected:
   TClonesArray*  fTrackProj;  // projection of track onto scintillator plane
                               // and estimated match to TOF paddle
 
-  //--------------------------   Beta variables   -----------------------------
+  //--------------------------   Ahmed   -----------------------------
 
   THcShower* fShower;
 
