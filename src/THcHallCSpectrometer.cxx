@@ -591,12 +591,6 @@ Int_t THcHallCSpectrometer::TrackCalc()
     
   }
 
-  //  if ( fHodo->GetEvent() == 17465 ){
-    cout << "hcana_event   " << fHodo->GetEvent()
-	 << "     golden_track   " << fGoodTrack + 1
-	 << "     chimin   " << fChi2Min
-	 << endl;
-    //  }
     
   return TrackTimes( fTracks );
 }
