@@ -435,8 +435,8 @@ Int_t THcHallCSpectrometer::TrackCalc()
       for ( itrack = 0; itrack < fNtracks; itrack++ ){
 	
 	THaTrack* goodTrack = static_cast<THaTrack*>( fTracks->At(itrack) );      
-        if (!goodTrack) return -1;
-	
+        if (!goodTrack) return -1;	
+
 	if ( goodTrack->GetNDoF() > fSelNDegreesMin ){
 	  fChi2PerDeg =  goodTrack->GetChi2() / goodTrack->GetNDoF();
 	  
@@ -591,7 +591,7 @@ Int_t THcHallCSpectrometer::TrackCalc()
     
   }
 
-  //  if ( fHodo->GetEvent() == 11351 ){
+  //  if ( fHodo->GetEvent() == 17465 ){
     cout << "hcana_event   " << fHodo->GetEvent()
 	 << "     golden_track   " << fGoodTrack + 1
 	 << "     chimin   " << fChi2Min

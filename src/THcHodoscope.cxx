@@ -1065,7 +1065,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  fPaddle = ((THcSignalHit*)scinPosTDC->At(ihit))->GetPaddleNumber()-1;
 	  fHitPaddle[fGoodTimeIndex] = fPaddle;
 
-	  //	  fGoodRawPad[fRawIndex] = fPlanes[ip]->GetGoodRawPadNum(ihit);
 	  fGoodRawPad[fRawIndex] = fPaddle;
 	  
 	  fXcoord = theTrack->GetX() + theTrack->GetTheta() *

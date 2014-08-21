@@ -46,8 +46,6 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   //
   fMaxHits=53;
 
-  fGoodRawPadNum = new Int_t [fMaxHits]; // Ahmed
-
   fpTimes = new Double_t [fMaxHits];
   fScinTime = new Double_t [fMaxHits];
   fScinSigma = new Double_t [fMaxHits];
@@ -76,8 +74,6 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   //
   fMaxHits=53;
 
-  fGoodRawPadNum = new Int_t [fMaxHits];
-
   fpTimes = new Double_t [fMaxHits];
   fScinTime = new Double_t [fMaxHits];
   fScinSigma = new Double_t [fMaxHits];
@@ -100,9 +96,6 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete fScinTime;
   delete fScinSigma;
   delete fScinZpos;
-
-  delete fGoodRawPadNum;
-
 
 }
 
@@ -336,8 +329,6 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     if (((hit->fTDC_pos >= mintdc) && (hit->fTDC_pos <= maxtdc)) ||
 	((hit->fTDC_neg >= mintdc) && (hit->fTDC_neg <= maxtdc))) {
 
-      fGoodRawPadNum[fNScinHits] = hit->fCounter;
-      
       //TDC positive hit
       THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
       sighit->Set(padnum, hit->fTDC_pos);

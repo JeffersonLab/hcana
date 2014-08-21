@@ -118,6 +118,8 @@ public:
 
 protected:
 
+  Int_t fEvent;
+
   Int_t fAnalyzePedestals;   // Flag for pedestal analysis.
 
   Int_t* fShPosPedLimit;     // [fNtotBlocks] ADC limits for pedestal calc.-s.
