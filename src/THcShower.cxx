@@ -522,6 +522,8 @@ Int_t THcShower::Decode( const THaEvData& evdata )
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = DecodeToHitList(evdata);
 
+  fEvent = evdata.GetEvNum();
+
   if(gHaCuts->Result("Pedestal_event")) {
     Int_t nexthit = 0;
     for(Int_t ip=0;ip<fNLayers;ip++) {
@@ -1013,6 +1015,11 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 
     Float_t energy = GetShEnergy(theTrack);
     theTrack->SetEnergy(energy);
+
+    // if ( fEvent == 13252 )
+    //   cout << "THcShower: track = " << itrk + 1 
+    // 	   << "   energy = " << energy << endl;
+
 
     if (fdbg_tracks_cal) {
       cout << "THcShower::FineProcess, Track " << itrk << ": "

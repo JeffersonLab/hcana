@@ -15,6 +15,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "THcSignalHit.h"
+#include "THcShower.h"
+
+#include "THcHitList.h"
+#include "THcRawShowerHit.h"
+#include "TClass.h"
+#include "math.h"
+#include "THaSubDetector.h"
 
 #include "THcHodoscope.h"
 #include "THaEvData.h"
@@ -104,6 +111,9 @@ void THcHodoscope::Setup(const char* name, const char* description)
     fPlaneNames[i] = new char[plane_names[i].length()];
     strcpy(fPlaneNames[i], plane_names[i].c_str());
   }
+
+  //myShower = new THcShower("cal", "Shower" );
+
   /*  fPlaneNames = new char* [fNPlanes];
   for(Int_t i=0;i<fNPlanes;i++) {fPlaneNames[i] = new char[3];}
   // Should get the plane names from parameters.  
@@ -136,6 +146,23 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   // But it needs to happen before the sub detectors are initialized
   // so that they can get the pointer to the hitlist.
 
+  // --------------- To get energy from THcShower ----------------------
+
+  const char* shower_detector_name = "cal";  
+  THaApparatus* app = GetApparatus();
+  THaDetector* det = app->GetDetector( shower_detector_name );
+
+  if( !dynamic_cast<THcShower*>(det) ) {
+    Error("THcHodoscope", "Cannot find shower detector %s",
+   	  shower_detector_name );
+    return fStatus = kInitError;
+  }
+
+  fShower = static_cast<THcShower*>(det);     // fShower is a membervariable
+  
+  // --------------- To get energy from THcShower ----------------------
+
+
   InitHitList(fDetMap, "THcHodoscopeHit", 100);
 
   EStatus status;
@@ -164,6 +191,50 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 	     EngineDID);
       return kInitError;
   }
+
+  fKeepPos       = new Bool_t [MAXHODHITS];
+  fKeepNeg       = new Bool_t [MAXHODHITS];
+  fGoodTDCPos    = new Bool_t [MAXHODHITS];
+  fGoodTDCNeg    = new Bool_t [MAXHODHITS];
+
+  fGoodRawPad    = new Int_t [MAXHODHITS];
+  fHitPaddle     = new Int_t [MAXHODHITS];
+  fNScinHit      = new Int_t [MAXHODHITS];
+  fNPmtHit       = new Int_t [MAXHODHITS];
+  fTimeHist      = new Int_t [200];
+
+  fTimeAtFP      = new Double_t [MAXHODHITS];
+  fScinSigma     = new Double_t [MAXHODHITS];
+  fGoodScinTime  = new Double_t [MAXHODHITS];
+  fScinTime      = new Double_t [MAXHODHITS]; 
+  fTime          = new Double_t [MAXHODHITS];
+  adcPh          = new Double_t [MAXHODHITS];
+  fPath          = new Double_t [MAXHODHITS];
+  fTimePos       = new Double_t [MAXHODHITS];
+  fTimeNeg       = new Double_t [MAXHODHITS];
+  fScinTimefp    = new Double_t [MAXHODHITS];
+  fScinPosTime   = new Double_t [MAXHODHITS];
+  fScinNegTime   = new Double_t [MAXHODHITS];
+
+  fNScinHits     = new Int_t [fNPlanes];
+  fGoodPlaneTime = new Bool_t [fNPlanes];
+  fNPlaneTime    = new Int_t [fNPlanes];
+  fSumPlaneTime  = new Double_t [fNPlanes];
+
+  //  Double_t  fHitCnt4 = 0., fHitCnt3 = 0.;
+  
+  Int_t m = 0;
+  
+  fdEdX = new Double_t*[MAXHODHITS];         
+  for ( m = 0; m < MAXHODHITS; m++ ){
+    fdEdX[m] = new Double_t[MAXHODHITS];     
+  }
+  
+  fScinHit = new Double_t*[fNPlanes];         
+  for ( m = 0; m < fNPlanes; m++ ){
+    fScinHit[m] = new Double_t[fNPaddle[0]];
+  }
+  
 
   return fStatus = kOK;
 }
@@ -369,32 +440,58 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fHodoPosInvAdcAdc=new Double_t [fMaxHodoScin];
   fHodoNegInvAdcAdc=new Double_t [fMaxHodoScin];
   
+
+
   prefix[1]='\0';
   DBRequest list[]={
-    {"start_time_center", &fStartTimeCenter, kDouble},
-    {"start_time_slop", &fStartTimeSlop, kDouble},
-    {"scin_tdc_to_time", &fScinTdcToTime, kDouble},
-    {"scin_tdc_min", &fScinTdcMin, kDouble},
-    {"scin_tdc_max", &fScinTdcMax, kDouble},
-    {"tof_tolerance", &fTofTolerance, kDouble,0,1},
-    {"pathlength_central", &fPathLengthCentral, kDouble},
-    {"hodo_vel_light",&fHodoVelLight[0],kDouble,fMaxHodoScin},
-    {"hodo_pos_sigma",&fHodoPosSigma[0],kDouble,fMaxHodoScin},
-    {"hodo_neg_sigma",&fHodoNegSigma[0],kDouble,fMaxHodoScin},
-    {"hodo_pos_minph",&fHodoPosMinPh[0],kDouble,fMaxHodoScin},
-    {"hodo_neg_minph",&fHodoNegMinPh[0],kDouble,fMaxHodoScin},
-    {"hodo_pos_phc_coeff",&fHodoPosPhcCoeff[0],kDouble,fMaxHodoScin},
-    {"hodo_neg_phc_coeff",&fHodoNegPhcCoeff[0],kDouble,fMaxHodoScin},
-    {"hodo_pos_time_offset",&fHodoPosTimeOffset[0],kDouble,fMaxHodoScin},
-    {"hodo_neg_time_offset",&fHodoNegTimeOffset[0],kDouble,fMaxHodoScin},
-    {"hodo_pos_ped_limit",&fHodoPosPedLimit[0],kInt,fMaxHodoScin},
-    {"hodo_neg_ped_limit",&fHodoNegPedLimit[0],kInt,fMaxHodoScin},
-    {"tofusinginvadc",&fTofUsingInvAdc,kInt,0,1},
+    // {"scin_2x_zpos",          &fScin2XZpos,            kDouble,         0,  1},
+    // {"scin_2x_dzpos",         &fScin2XdZpos,           kDouble,         0,  1},
+    // {"scin_2y_zpos",          &fScin2YZpos,            kDouble,         0,  1},
+    // {"scin_2y_dzpos",         &fScin2YdZpos,           kDouble,         0,  1},
+    // {"sel_betamin",           &fSelBetaMin,            kDouble,         0,  1},
+    // {"sel_dedx1min",          &fSeldEdX1Min,           kDouble,         0,  1},
+    // {"sel_dedx1max",          &fSeldEdX1Max,           kDouble,         0,  1},
+    //    {"sel_using_scin",        &fSelUsingScin,          kInt,            0,  1},
+    //    {"sel_ndegreesmin",       &fSelNDegreesMin,        kDouble,         0,  1},
+    {"start_time_center",     &fStartTimeCenter,                      kDouble},
+    {"start_time_slop",       &fStartTimeSlop,                        kDouble},
+    {"scin_tdc_to_time",      &fScinTdcToTime,                        kDouble},
+    {"scin_tdc_min",          &fScinTdcMin,                           kDouble},
+    {"scin_tdc_max",          &fScinTdcMax,                           kDouble},
+    {"tof_tolerance",         &fTofTolerance,          kDouble,         0,  1},
+    {"pathlength_central",    &fPathLengthCentral,                    kDouble},
+    {"hodo_vel_light",        &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
+    {"hodo_pos_sigma",        &fHodoPosSigma[0],       kDouble,  fMaxHodoScin},
+    {"hodo_neg_sigma",        &fHodoNegSigma[0],       kDouble,  fMaxHodoScin},
+    {"hodo_pos_minph",        &fHodoPosMinPh[0],       kDouble,  fMaxHodoScin},
+    {"hodo_neg_minph",        &fHodoNegMinPh[0],       kDouble,  fMaxHodoScin},
+    {"hodo_pos_phc_coeff",    &fHodoPosPhcCoeff[0],    kDouble,  fMaxHodoScin},
+    {"hodo_neg_phc_coeff",    &fHodoNegPhcCoeff[0],    kDouble,  fMaxHodoScin},
+    {"hodo_pos_time_offset",  &fHodoPosTimeOffset[0],  kDouble,  fMaxHodoScin},
+    {"hodo_neg_time_offset",  &fHodoNegTimeOffset[0],  kDouble,  fMaxHodoScin},
+    {"hodo_pos_ped_limit",    &fHodoPosPedLimit[0],    kInt,     fMaxHodoScin},
+    {"hodo_neg_ped_limit",    &fHodoNegPedLimit[0],    kInt,     fMaxHodoScin},
+    {"tofusinginvadc",        &fTofUsingInvAdc,        kInt,            0,  1},
     {0}
   };
   fTofUsingInvAdc = 0;		// Default if not defined
   fTofTolerance = 3.0;		// Default if not defined
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+
+
+  cout << "\n\n\n\n\n\nPaddles1x = " << fNPaddle[0]
+       << "\nscin_2y_zpos = " << fScin2YZpos
+       << "\nscin_2y_dzpos = " << fScin2YdZpos
+       << endl;  
+  //      << "\ndedx max = " <<   fSeldEdX1Max 
+  //      << "\nbeta min = " <<   fSelBetaMin
+  //      << "\nbeta max = " <<   fSelBetaMax
+  //      << "\net min   = " <<   fSelEtMin
+  //      << "\net max   = " <<   fSelEtMax
+  
+  //      << endl;
+
+
   if (fTofUsingInvAdc) {
     DBRequest list2[]={
       {"hodo_pos_invadc_offset",&fHodoPosInvAdcOffset[0],kDouble,fMaxHodoScin},
@@ -480,7 +577,7 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
     //    { "y_adc",  "y-position from amplitudes (m)",    "fYa" },
     //    { "time",   "Time of hit at plane (s)",          "fTime" },
     //    { "dtime",  "Est. uncertainty of time (s)",      "fdTime" },
-    //    { "dedx",   "dEdX-like deposited in paddle",     "fAmpl" },
+    { "dedx",   "dEdX-like deposited in paddle",     "fdEdX" },
     //    { "troff",  "Trigger offset for paddles",        "fTrigOff"},
     //    { "trn",    "Number of tracks for hits",         "GetNTracks()" },
     //    { "trx",    "x-position of track in det plane",  "fTrackProj.THaTrackProj.fX" },
@@ -517,7 +614,17 @@ THcHodoscope::~THcHodoscope()
 void THcHodoscope::DeleteArrays()
 {
   // Delete member arrays. Used by destructor.
-
+  Int_t k;  
+  for( k = 0; k < MAXHODHITS; k++){
+    delete [] fdEdX[k];
+  }
+  delete [] fdEdX;
+  
+  for( k = 0; k < fNPlanes; k++){
+    delete [] fScinHit[k];
+  }
+  delete [] fScinHit;
+  
   delete [] fNPaddle;             fNPaddle = NULL;
   delete [] fHodoVelLight;        fHodoVelLight = NULL;
   delete [] fHodoPosSigma;        fHodoPosSigma = NULL;
@@ -536,11 +643,13 @@ void THcHodoscope::DeleteArrays()
   delete [] fHodoNegInvAdcLinear; fHodoNegInvAdcLinear = NULL;
   delete [] fHodoPosInvAdcAdc;    fHodoPosInvAdcAdc = NULL;
 
+  delete [] fGoodRawPad;          fGoodRawPad = NULL;        // Ahmed
   delete [] fHitPaddle;           fHitPaddle = NULL;         // Ahmed
   delete [] fNScinHit;            fNScinHit = NULL;          // Ahmed
   delete [] fNPmtHit;             fNPmtHit = NULL;           // Ahmed
   delete [] fTimeHist;            fTimeHist = NULL;          // Ahmed
   delete [] fTimeAtFP;            fTimeAtFP = NULL;          // Ahmed
+
 
   delete [] fScinSigma;           fScinSigma = NULL;         // Ahmed
   delete [] fGoodScinTime;        fGoodScinTime = NULL;      // Ahmed
@@ -560,6 +669,8 @@ void THcHodoscope::DeleteArrays()
   delete [] fScinNegTime;         fScinNegTime = NULL;       // Ahmed
   delete [] fNPlaneTime;          fNPlaneTime = NULL;        // Ahmed
   delete [] fSumPlaneTime;        fSumPlaneTime = NULL;      // Ahmed
+
+  delete [] fNScinHits;           fNScinHits = NULL;         // Ahmed
 
   //  delete [] fSpacing; fSpacing = NULL;
   //delete [] fCenter;  fCenter = NULL; // This 2D. What is correct way to delete?
@@ -616,8 +727,10 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   //
   // GN: print event number so we can cross-check with engine
   // if (evdata.GetEvNum()>1000) 
-  //   cout <<"\nhcana event = " << evdata.GetEvNum()<<endl;
+  //   cout <<"\nhcana_event " << evdata.GetEvNum()<<endl;
   
+  fCheckEvent = evdata.GetEvNum();
+
   if(gHaCuts->Result("Pedestal_event")) {
     Int_t nexthit = 0;
     for(Int_t ip=0;ip<fNPlanes;ip++) {
@@ -648,6 +761,15 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   fNfptimes=0;
   for(Int_t ip=0;ip<fNPlanes;ip++) {
 
+    if ( ip == 2 ){
+      fHodoCenter3 = fPlanes[ip]->GetPosCenter(0) + fPlanes[ip]->GetPosOffset();
+      fScin2XSpacing = fPlanes[ip]->GetSpacing();
+    }
+    if ( ip == 3 ){
+      fHodoCenter4 = fPlanes[ip]->GetPosCenter(0) + fPlanes[ip]->GetPosOffset();
+      fScin2YSpacing = fPlanes[ip]->GetSpacing();
+    }
+    
     // if ( !fPlanes[ip] )     // Ahmed
     //   return -1;               // Ahmed
     
@@ -705,45 +827,32 @@ Double_t THcHodoscope::TimeWalkCorrection(const Int_t& paddle,
 Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 {
 
+  ApplyCorrections();
+ 
+  return 0;
+}
+
+//_____________________________________________________________________________
+Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
+{
+
   Int_t Ntracks = tracks.GetLast()+1; // Number of reconstructed tracks
-  Int_t fPaddle = 0, fIndex, k, fJMax, fMaxHit, ip, ihit;
-  Int_t fNfpTime, fSumfpTime, fNScinHits; 
+  Int_t fPaddle = 0, fIndex, k, fJMax, fMaxHit, ip, ihit, itrack;
+  Int_t fNfpTime, fSumfpTime, fRawIndex = -1; //, fNScinHits[fNPlanes]; 
   Double_t fScinTrnsCoord, fScinLongCoord, fScinCenter;
   Double_t fP, fBetaP, fXcoord, fYcoord, fTMin;
-
-  //  Int_t fNtof, fNtofPairs;
-  // -------------------------------------------------
-
-  fKeepPos = new Bool_t [MAXHODHITS];
-  fKeepNeg = new Bool_t [MAXHODHITS];
-  fGoodTDCPos = new Bool_t [MAXHODHITS];
-  fGoodTDCNeg = new Bool_t [MAXHODHITS];
-
-  fHitPaddle = new Int_t [MAXHODHITS];
-  fNScinHit = new Int_t [MAXHODHITS];
-  fNPmtHit = new Int_t [MAXHODHITS];
-  fTimeHist = new Int_t [MAXHODHITS];
-  fTimeAtFP = new Double_t [MAXHODHITS];
-
-  fScinSigma = new Double_t [MAXHODHITS];
-  fGoodScinTime = new Double_t [MAXHODHITS];
-  fScinTime = new Double_t [MAXHODHITS]; 
-  fTime = new Double_t [MAXHODHITS];
-  adcPh = new Double_t [MAXHODHITS];
-
-  fPath = new Double_t [MAXHODHITS];
-  fTimePos = new Double_t [MAXHODHITS];
-  fTimeNeg = new Double_t [MAXHODHITS];
-  fScinTimefp = new Double_t [MAXHODHITS];
-       
-  fTimeHist = new Int_t [200];
 
   // -------------------------------------------------
 
   Double_t hpartmass=0.00051099; // Fix it
  
   for ( Int_t m = 0; m < MAXHODHITS; m++ ){
+    
+    for(k = 0; k < MAXHODHITS; k++){
+      fdEdX[m][k] = 0.;
+    }
 
+    fGoodRawPad[m] = 0;
     fScinSigma[m] = 0.;
     fHitPaddle[m] = 0.;
     fScinTime[m] = 0.;
@@ -764,24 +873,25 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 
   }
 
-
   if (tracks.GetLast()+1 > 0 ) {
 
     // **MAIN LOOP: Loop over all tracks and get corrected time, tof, beta...
-    for ( Int_t itrack = 0; itrack < Ntracks; itrack++ ) { // Line 133
+    for ( itrack = 0; itrack < Ntracks; itrack++ ) { // Line 133
 
       THaTrack* theTrack = dynamic_cast<THaTrack*>( tracks.At(itrack) );
       if (!theTrack) return -1;
       
-      fGoodPlaneTime = new Bool_t[4];
-      for ( ip = 0; ip < fNPlanes; ip++ ){ fGoodPlaneTime[ip] = kFALSE; }
-
+      for ( ip = 0; ip < fNPlanes; ip++ ){ 
+	fGoodPlaneTime[ip] = kFALSE; 
+	fNScinHits[ip] = 0;
+      }
+      
       fNfpTime = 0;
       fBetaChisq[itrack] = -3;
       fTimeAtFP[itrack] = 0.;
       fSumfpTime = 0.; // Line 138
       fNScinHit[itrack] = 0; // Line 140
-      fP = theTrack->GetP(); // Line 142 Fix it
+      fP = theTrack->GetP(); // Line 142 
       fBetaP = fP/( TMath::Sqrt( fP * fP + hpartmass * hpartmass) );
       
       //! Calculate all corrected hit times and histogram
@@ -799,12 +909,20 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
       
       for (Int_t j=0; j<200; j++) { fTimeHist[j]=0; } // Line 176
       
-      fNPlaneTime =  new Int_t [4];
-      fSumPlaneTime =  new Double_t [4];
+      // fNPlaneTime =  new Int_t [4];
+      // fSumPlaneTime =  new Double_t [4];
 
       for ( ip = 0; ip <  fNPlanes; ip++ ){ 
 	fNPlaneTime[ip] = 0;
 	fSumPlaneTime[ip] = 0.;
+	// if ( ip == 2 ){
+	//   fHodoCenter3 = fPlanes[ip]->GetPosCenter(0) + fPlanes[ip]->GetPosOffset();
+	//   fScin2XSpacing = fPlanes[ip]->GetSpacing();
+	// }
+	// if ( ip == 3 ){
+	//   fHodoCenter4 = fPlanes[ip]->GetPosCenter(0) + fPlanes[ip]->GetPosOffset();
+	//   fScin2YSpacing = fPlanes[ip]->GetSpacing();
+	// }
       }
       // Loop over scintillator planes.
       // In ENGINE, its loop over good scintillator hits.
@@ -812,10 +930,10 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
       fGoodTimeIndex = -1;
       for( ip = 0; ip < fNPlanes; ip++ ) {
 	
-	fNScinHits = fPlanes[ip]->GetNScinHits();
+	fNScinHits[ip] = fPlanes[ip]->GetNScinHits();
 
 	// first loop over hits with in a single plane
-	for ( ihit = 0; ihit < fNScinHits; ihit++ ){
+	for ( ihit = 0; ihit < fNScinHits[ip]; ihit++ ){
 	  	  
 	  fTimePos[ihit] = -99.;
 	  fTimeNeg[ihit] = -99.;
@@ -917,7 +1035,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	
 	if ( fJMax >= 0 ){ // Line 248. Here I followed the code of THcSCintilaltorPlane::PulseHeightCorrection
 	  fTMin = 0.5 * fJMax;
-	  for( ihit = 0; ihit < fNScinHits; ihit++) { // Loop over sinc. hits. in plane
+	  for( ihit = 0; ihit < fNScinHits[ip]; ihit++) { // Loop over sinc. hits. in plane
 	    if ( ( fTimePos[ihit] > fTMin ) && ( fTimePos[ihit] < ( fTMin + fTofTolerance ) ) ) {
 	      fKeepPos[ihit]=kTRUE;
 	    }	
@@ -927,8 +1045,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	  }
 	} // fJMax > 0 condition
 	
-	fScinPosTime = new Double_t [MAXHODHITS];
-	fScinNegTime = new Double_t [MAXHODHITS];
+	// fScinPosTime = new Double_t [MAXHODHITS];
+	// fScinNegTime = new Double_t [MAXHODHITS];
 
 	for ( k = 0; k < MAXHODHITS; k++ ){
 	  fScinPosTime[k] = 0;
@@ -939,12 +1057,15 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	// ---------------------- Scond loop over scint. hits in a plane ------------------------------
 	//---------------------------------------------------------------------------------------------
 
-	for ( ihit = 0; ihit < fNScinHits; ihit++ ){
+	for ( ihit = 0; ihit < fNScinHits[ip]; ihit++ ){
 	  
 	  fGoodTimeIndex ++;
+	  fRawIndex ++;
 
 	  fPaddle = ((THcSignalHit*)scinPosTDC->At(ihit))->GetPaddleNumber()-1;
-	  fHitPaddle[fGoodTimeIndex] =  fPaddle;
+	  fHitPaddle[fGoodTimeIndex] = fPaddle;
+
+	  fGoodRawPad[fRawIndex] = fPaddle;
 	  
 	  fXcoord = theTrack->GetX() + theTrack->GetTheta() *
 	    ( fPlanes[ip]->GetZpos() + ( fPaddle % 2 ) * fPlanes[ip]->GetDzpos() ); // Line 277
@@ -1069,7 +1190,6 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      //	      scinHit[itrack][fNScinHit[itrack]] = ihit;
 	      //	      scinfFPTime[itrack][fNScinHit[itrack]] = fScinTimefp[ihit];
 	      
-
 	      // ---------------------------------------------------------------------------
 	      // Date: July 8 2014
 	      // This counts the pmt hits. Right now we don't need it so it is commentd off
@@ -1083,29 +1203,34 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	      // ---------------------------------------------------------------------------
 
 
+	      //	      fdEdX[itrack][ihit] = 5.0;
+
+
 	      // --------------------------------------------------------------------------------------------
 	      // Date: July 8 201  May be we need this, not sure.
 	      //
-	      // if ( fGoodTDCPos[itrack][ihit] ){
-	      // 	if ( fGoodTDCNeg[itrack][ihit] ){
-	      // 	   dedX[itrack][fNScinHit[itrack]] =
-	      // 	   TMath::Sqrt( TMath::Max( 0., ((THcSignalHit*)scinPosADC->At(ihit))->GetData() *
-	      // 	   ((THcSignalHit*)scinNegADC->At(ihit))->GetData() ) );
-	      // 	}
-	      // 	else{
-	      // 	  dedX[itrack][fNScinHit[itrack]] =
-	      // 	  TMath::Max( 0., ((THcSignalHit*)scinPosADC->At(ihit))->GetData() );
-	      // 	}
-	      // }
-	      // else{
-	      // 	if ( fGoodTDCNeg[itrack][ihit] ){
-	      // 	  dedX[itrack][fNScinHit[itrack]] =
-	      // 	  TMath::Max( 0., ((THcSignalHit*)scinNegADC->At(ihit))->GetData() );
-	      // 	}
-	      // 	else{
-	      // 	  dedX[itrack][fNScinHit[itrack]] = 0.;
-	      // 	}
-	      // }
+
+	      if ( fGoodTDCPos[fGoodTimeIndex] ){
+		if ( fGoodTDCNeg[fGoodTimeIndex] ){
+
+		  fdEdX[itrack][fNScinHit[itrack]-1] =
+		    TMath::Sqrt( TMath::Max( 0., ((THcSignalHit*)scinPosADC->At(ihit))->GetData() *
+                                                 ((THcSignalHit*)scinNegADC->At(ihit))->GetData() ) );
+		}
+		else{
+		  fdEdX[itrack][fNScinHit[itrack]-1] =
+		    TMath::Max( 0., ((THcSignalHit*)scinPosADC->At(ihit))->GetData() );
+	       	}
+	      }
+	      else{
+		if ( fGoodTDCNeg[fGoodTimeIndex] ){
+		  fdEdX[itrack][fNScinHit[itrack]-1] =
+		    TMath::Max( 0., ((THcSignalHit*)scinNegADC->At(ihit))->GetData() );
+		}
+		else{
+		  fdEdX[itrack][fNScinHit[itrack]-1] = 0.;
+		}
+	      }
 	      // --------------------------------------------------------------------------------------------
 
 
@@ -1144,8 +1269,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	  if (!fPlanes[ip])
 	    return -1;
 	  
-	  fNScinHits = fPlanes[ip]->GetNScinHits();	  
-	  for (ihit = 0; ihit < fNScinHits; ihit++ ){
+	  fNScinHits[ip] = fPlanes[ip]->GetNScinHits();	  
+	  for (ihit = 0; ihit < fNScinHits[ip]; ihit++ ){
 	    fGoodTimeIndex ++;
 	    
 	    if ( fGoodScinTime[fGoodTimeIndex] ) {
@@ -1178,8 +1303,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	    if (!fPlanes[ip])
 	      return -1;
 	    
-	    fNScinHits = fPlanes[ip]->GetNScinHits();	  
-	    for (ihit = 0; ihit < fNScinHits; ihit++ ){                    // Loop over hits of a plane
+	    fNScinHits[ip] = fPlanes[ip]->GetNScinHits();	  
+	    for (ihit = 0; ihit < fNScinHits[ip]; ihit++ ){                    // Loop over hits of a plane
 	      fGoodTimeIndex ++;
 	      
 	      if ( fGoodScinTime[fGoodTimeIndex] ){
@@ -1246,19 +1371,20 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
 	}
       }
 
-    } // Main loop over tracks ends here.            
+
+      // fBetaChisq[itrack]
+      // fFPTime[ind]
+
+      theTrack->SetDedx(fdEdX[itrack][0]);
+      theTrack->SetBeta(fBeta[itrack]);
+      theTrack->SetBetaChi2( fBetaChisq[itrack] );
+
+    } // Main loop over tracks ends here.         
+   
   } // If condition for at least one track
 
-  ApplyCorrections();
-  
   return 0;
-}
-
-//_____________________________________________________________________________
-Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
-{
-  
-  return 0;
+   
 }
 //_____________________________________________________________________________
 Int_t THcHodoscope::GetScinIndex( Int_t nPlane, Int_t nPaddle ) {

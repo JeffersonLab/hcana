@@ -9,6 +9,29 @@
 
 #include "THaSpectrometer.h"
 
+#include <vector>
+
+#include "TClonesArray.h"
+#include "THaNonTrackingDetector.h"
+#include "THcHitList.h"
+#include "THcHodoscopeHit.h"
+#include "THcScintillatorPlane.h"
+#include "THcShower.h"
+
+//#include "THaTrackingDetector.h"
+//#include "THcHitList.h"
+#include "THcRawDCHit.h"
+#include "THcSpacePoint.h"
+#include "THcDriftChamberPlane.h"
+#include "THcDriftChamber.h"
+#include "TMath.h"
+
+#include "THaSubDetector.h"
+#include "TClonesArray.h"
+#include <iostream>
+#include <fstream>
+
+
 //class THaScintillator;
 
 class THcHallCSpectrometer : public THaSpectrometer {
@@ -29,6 +52,40 @@ public:
 
 protected:
   void InitializeReconstruction();
+
+  Int_t        MAXHODHITS;
+
+  Int_t        fGoodTrack;
+  Int_t        fSelUsingScin;
+  Int_t        fNPlanes;
+  Int_t        fNtracks;
+
+  Int_t*    f2XHits;
+  Int_t*    f2YHits;
+
+  Double_t*    fX2D;
+  Double_t*    fY2D;
+
+  Double_t     fChi2Min;
+  Double_t     fSelNDegreesMin;
+  Double_t     fSeldEdX1Min;
+  Double_t     fSeldEdX1Max;
+  Double_t     fSelBetaMin;
+  Double_t     fSelBetaMax;
+  Double_t     fSelEtMin;
+  Double_t     fSelEtMax;
+  Double_t     fScin2XZpos;
+  Double_t     fScin2XdZpos;
+  Double_t     fScin2YZpos;
+  Double_t     fScin2YdZpos;
+
+  Double_t     fHodoCenter4, fHodoCenter3;
+  Double_t     fScin2YSpacing, fScin2XSpacing;
+
+  //  Int_t**   fHodScinHit;                // [4] Array
+
+  THcShower* fShower;
+  THcHodoscope* fHodo;
 
   // Should look at the ThaMatrixElement class in THaVDC.h for better way
   // to store matrix element data
