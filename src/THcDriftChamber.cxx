@@ -41,6 +41,7 @@ THcDriftChamber::THcDriftChamber(
   // Constructor
 
   //  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
+  fTrackProj = NULL;
   fNPlanes = 0;			// No planes until we make them
 
   fChamberNum = chambernum;
@@ -61,7 +62,8 @@ THcDriftChamber::THcDriftChamber( ) :
   THaSubDetector()
 {
   // Constructor
-  fPlanes.clear();
+  //  fPlanes.clear();
+  fTrackProj = NULL;
   fSpacePoints = NULL;
 }
 //_____________________________________________________________________________
@@ -1242,6 +1244,14 @@ THcDriftChamber::~THcDriftChamber()
 void THcDriftChamber::DeleteArrays()
 {
   // Delete member arrays. Used by destructor.
+  delete fCosBeta; fCosBeta = NULL;
+  delete fSinBeta; fSinBeta = NULL;
+  delete fTanBeta; fTanBeta = NULL;
+  delete fSigma; fSigma = NULL;
+  delete fPsi0; fPsi0 = NULL;
+  delete fStubCoefs; fStubCoefs = NULL;
+
+  // Need to delete each element of the fAA3Inv map
 
 }
 
