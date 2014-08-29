@@ -71,6 +71,9 @@ THcDC::THcDC(
   fProjectToChamber = 0;  // Use 1 for SOS chambers
 
   fDCTracks = new TClonesArray( "THcDCTrack", 20 );
+
+  fNChamHits = 0;
+  fPlaneEvents = 0;
 }
 
 //_____________________________________________________________________________
@@ -403,6 +406,10 @@ void THcDC::DeleteArrays()
   delete [] fCentralWire;   fCentralWire = NULL;
   delete [] fPlaneTimeZero;   fPlaneTimeZero = NULL;
   delete [] fSigma;   fSigma = NULL;
+
+  // Efficiency arrays
+  delete [] fNChamHits; fNChamHits = NULL;
+  delete [] fPlaneEvents; fPlaneEvents = NULL;
 
 }
 
@@ -1083,7 +1090,7 @@ void THcDC::EffInit()
   // efficiencies.  Register the counters in gHcParms so that the
   // variables can be used in end of run reports.
 
-  delete [] fNChamHits;  fNChamHits = new Int_t [fNChambers];
+  delete [] fNChamHits; fNChamHits = new Int_t [fNChambers];
   delete [] fPlaneEvents; fPlaneEvents = new Int_t [fNPlanes];
   
   fTotEvents = 0;

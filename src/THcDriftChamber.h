@@ -55,7 +55,6 @@ public:
   //  friend class THaScCalib;
   void SetHMSStyleFlag(Int_t flag) {fHMSStyleChambers = flag;}
 
-  THcDriftChamber();  // for ROOT I/O // Why do we need this?
 protected:
   Int_t f;
 
