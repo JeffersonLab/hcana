@@ -58,15 +58,6 @@ void THcDriftChamber::Setup(const char* name, const char* description)
 }
 
 //_____________________________________________________________________________
-THcDriftChamber::THcDriftChamber( ) :
-  THaSubDetector()
-{
-  // Constructor
-  //  fPlanes.clear();
-  fTrackProj = NULL;
-  fSpacePoints = NULL;
-}
-//_____________________________________________________________________________
 Int_t THcDriftChamber::Decode( const THaEvData& evdata )
 {
   return 0;
