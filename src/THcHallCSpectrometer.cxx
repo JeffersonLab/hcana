@@ -428,9 +428,6 @@ Int_t THcHallCSpectrometer::TrackCalc()
       Int_t i, j, itrack, ip, ihit; //, fGoodTimeIndex = -1;
       Int_t  fHitCnt4, fHitCnt3, fRawIndex, fGoodRawPad;
 
-      // cout << "Paddles of plane 2X = " <<  fHodo->GetNPaddles(2) 
-      // 	   << "  paddles of plane 2Y = " <<  fHodo->GetNPaddles(3) << endl;
-
       fChi2Min = 10000000000.0;   fGoodTrack = -1;   fY2Dmin = 100.;
       fX2Dmin = 100.;             fZap = 0.;
 
