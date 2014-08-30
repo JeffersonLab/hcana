@@ -391,6 +391,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   fNPaddle = new Int_t [fNPlanes];
   fFPTime = new Double_t [fNPlanes];
+  fPlaneCenter = new Double_t[fNPlanes];
+  fPlaneSpacing = new Double_t[fNPlanes];
 
   //  fSpacing = new Double_t [fNPlanes];
   //fCenter = new Double_t* [fNPlanes];
@@ -444,15 +446,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   prefix[1]='\0';
   DBRequest list[]={
-    // {"scin_2x_zpos",          &fScin2XZpos,            kDouble,         0,  1},
-    // {"scin_2x_dzpos",         &fScin2XdZpos,           kDouble,         0,  1},
-    // {"scin_2y_zpos",          &fScin2YZpos,            kDouble,         0,  1},
-    // {"scin_2y_dzpos",         &fScin2YdZpos,           kDouble,         0,  1},
-    // {"sel_betamin",           &fSelBetaMin,            kDouble,         0,  1},
-    // {"sel_dedx1min",          &fSeldEdX1Min,           kDouble,         0,  1},
-    // {"sel_dedx1max",          &fSeldEdX1Max,           kDouble,         0,  1},
-    //    {"sel_using_scin",        &fSelUsingScin,          kInt,            0,  1},
-    //    {"sel_ndegreesmin",       &fSelNDegreesMin,        kDouble,         0,  1},
     {"start_time_center",     &fStartTimeCenter,                      kDouble},
     {"start_time_slop",       &fStartTimeSlop,                        kDouble},
     {"scin_tdc_to_time",      &fScinTdcToTime,                        kDouble},
@@ -477,19 +470,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fTofUsingInvAdc = 0;		// Default if not defined
   fTofTolerance = 3.0;		// Default if not defined
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-
-
-  cout << "\n\n\n\n\n\nPaddles1x = " << fNPaddle[0]
-       << "\nscin_2y_zpos = " << fScin2YZpos
-       << "\nscin_2y_dzpos = " << fScin2YdZpos
-       << endl;  
-  //      << "\ndedx max = " <<   fSeldEdX1Max 
-  //      << "\nbeta min = " <<   fSelBetaMin
-  //      << "\nbeta max = " <<   fSelBetaMax
-  //      << "\net min   = " <<   fSelEtMin
-  //      << "\net max   = " <<   fSelEtMax
-  
-  //      << endl;
 
 
   if (fTofUsingInvAdc) {
@@ -599,6 +579,8 @@ THcHodoscope::~THcHodoscope()
   delete [] fFPTime;
   delete [] fBeta;
   delete [] fBetaChisq;
+  delete [] fPlaneCenter;
+  delete [] fPlaneSpacing;
 
   if( fIsSetup )
     RemoveVariables();
@@ -716,6 +698,8 @@ void THcHodoscope::Clear( Option_t* opt)
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     fPlanes[ip]->Clear(opt);
     fFPTime[ip]=0.;
+    fPlaneCenter[ip]=0.;
+    fPlaneSpacing[ip]=0.;
   }
 }
 
@@ -734,10 +718,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   if(gHaCuts->Result("Pedestal_event")) {
     Int_t nexthit = 0;
     for(Int_t ip=0;ip<fNPlanes;ip++) {
-      
-      // if ( !fPlanes[ip] )     // Ahmed
-      // 	return -1;            // Ahmed
-      
+            
       nexthit = fPlanes[ip]->AccumulatePedestals(fRawHitList, nexthit);
     }
     fAnalyzePedestals = 1;	// Analyze pedestals first normal events
@@ -745,9 +726,6 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   }
   if(fAnalyzePedestals) {
     for(Int_t ip=0;ip<fNPlanes;ip++) {
-
-      // if ( !fPlanes[ip] )     // Ahmed
-      // 	return -1;            // Ahmed      
       
       fPlanes[ip]->CalculatePedestals();
     }
@@ -761,17 +739,8 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   fNfptimes=0;
   for(Int_t ip=0;ip<fNPlanes;ip++) {
 
-    if ( ip == 2 ){
-      fHodoCenter3 = fPlanes[ip]->GetPosCenter(0) + fPlanes[ip]->GetPosOffset();
-      fScin2XSpacing = fPlanes[ip]->GetSpacing();
-    }
-    if ( ip == 3 ){
-      fHodoCenter4 = fPlanes[ip]->GetPosCenter(0) + fPlanes[ip]->GetPosOffset();
-      fScin2YSpacing = fPlanes[ip]->GetSpacing();
-    }
-    
-    // if ( !fPlanes[ip] )     // Ahmed
-    //   return -1;               // Ahmed
+    fPlaneCenter[ip] = fPlanes[ip]->GetPosCenter(0) + fPlanes[ip]->GetPosOffset();
+    fPlaneSpacing[ip] = fPlanes[ip]->GetSpacing();
     
     //    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
     // GN: select only events that have reasonable TDC values to start with
@@ -915,14 +884,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       for ( ip = 0; ip <  fNPlanes; ip++ ){ 
 	fNPlaneTime[ip] = 0;
 	fSumPlaneTime[ip] = 0.;
-	// if ( ip == 2 ){
-	//   fHodoCenter3 = fPlanes[ip]->GetPosCenter(0) + fPlanes[ip]->GetPosOffset();
-	//   fScin2XSpacing = fPlanes[ip]->GetSpacing();
-	// }
-	// if ( ip == 3 ){
-	//   fHodoCenter4 = fPlanes[ip]->GetPosCenter(0) + fPlanes[ip]->GetPosOffset();
-	//   fScin2YSpacing = fPlanes[ip]->GetSpacing();
-	// }
       }
       // Loop over scintillator planes.
       // In ENGINE, its loop over good scintillator hits.

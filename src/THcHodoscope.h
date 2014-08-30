@@ -71,10 +71,10 @@ public:
 
   Int_t GetGoodRawPad(Int_t iii){return fGoodRawPad[iii];}
   Double_t GetNScinHits(Int_t iii){return fNScinHits[iii];}
-  Double_t GetHodoCenter3() { return fHodoCenter3;}
-  Double_t GetHodoCenter4() { return fHodoCenter4;}
-  Double_t GetScin2XSpacing() { return fScin2XSpacing;}
-  Double_t GetScin2YSpacing() { return fScin2YSpacing;}
+
+  Int_t GetNPaddles(Int_t iii) { return fNPaddle[iii];}
+  Double_t GetPlaneCenter(Int_t iii) { return fPlaneCenter[iii];}
+  Double_t GetPlaneSpacing(Int_t iii) { return fPlaneSpacing[iii];}
 
   //  Double_t GetBeta() const {return fBeta[];}
 
@@ -165,8 +165,8 @@ protected:
   Double_t     fScin2YdZpos;
 
   Double_t     fChi2Min;
-  Double_t     fHodoCenter4, fHodoCenter3;
-  Double_t     fScin2YSpacing, fScin2XSpacing;
+  Double_t*    fPlaneCenter;
+  Double_t*    fPlaneSpacing;
 
   Double_t**   fdEdX;                   // [MAXHODHITS] Array
   Double_t**   fScinHit;                // [fNPlanes] Array
