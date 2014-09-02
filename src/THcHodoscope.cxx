@@ -686,7 +686,7 @@ void THcHodoscope::DeleteArrays()
 
 //_____________________________________________________________________________
 inline 
-void THcHodoscope::Clear( Option_t* opt)
+void THcHodoscope::ClearEvent()
 {
   // Reset per-event data.
 
@@ -696,7 +696,7 @@ void THcHodoscope::Clear( Option_t* opt)
   }
 
   for(Int_t ip=0;ip<fNPlanes;ip++) {
-    fPlanes[ip]->Clear(opt);
+    fPlanes[ip]->Clear();
     fFPTime[ip]=0.;
     fPlaneCenter[ip]=0.;
     fPlaneSpacing[ip]=0.;
@@ -706,6 +706,7 @@ void THcHodoscope::Clear( Option_t* opt)
 //_____________________________________________________________________________
 Int_t THcHodoscope::Decode( const THaEvData& evdata )
 {
+  ClearEvent();
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = DecodeToHitList(evdata);
   //
