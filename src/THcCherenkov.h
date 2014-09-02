@@ -22,6 +22,8 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   virtual void 	     Clear( Option_t* opt="" );
   virtual Int_t      Decode( const THaEvData& );
   virtual EStatus    Init( const TDatime& run_time );
+  void               InitArrays();
+  void               DeleteArrays();
   virtual Int_t      ReadDatabase( const TDatime& date );
   virtual Int_t      DefineVariables( EMode mode = kDefine );
   virtual Int_t      CoarseProcess( TClonesArray& tracks );

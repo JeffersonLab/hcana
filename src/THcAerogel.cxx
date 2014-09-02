@@ -45,6 +45,8 @@ THcAerogel::THcAerogel( const char* name, const char* description,
   fPosADCHits = new TClonesArray("THcSignalHit",16);
   fNegADCHits = new TClonesArray("THcSignalHit",16);
 
+  InitArrays();
+
 //  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
 }
 
@@ -53,25 +55,87 @@ THcAerogel::THcAerogel( ) :
   THaNonTrackingDetector()
 {
   // Constructor
+  fPosTDCHits = NULL;
+  fNegTDCHits = NULL;
+  fPosADCHits = NULL;
+  fNegADCHits = NULL;
+
+  InitArrays();
+
 }
 
 //_____________________________________________________________________________
 THcAerogel::~THcAerogel()
 {
   // Destructor
-  delete [] fA_Pos;
-  delete [] fA_Neg;
-  delete [] fA_Pos_p;
-  delete [] fA_Neg_p;
-  delete [] fT_Pos;
-  delete [] fT_Neg;
-  delete [] fPosGain;
-  delete [] fNegGain;
-  delete [] fPosPedLimit;
-  delete [] fNegPedLimit;
-  delete [] fPosPedMean;
-  delete [] fNegPedMean;
+  DeleteArrays();
+
+  delete fPosTDCHits; fPosTDCHits = NULL;
+  delete fNegTDCHits; fNegTDCHits = NULL;
+  delete fPosADCHits; fPosADCHits = NULL;
+  delete fNegADCHits; fNegADCHits = NULL;
 }
+
+//_____________________________________________________________________________
+void THcAerogel::InitArrays()
+{
+  fA_Pos = NULL;
+  fA_Neg = NULL;
+  fA_Pos_p = NULL;
+  fA_Neg_p = NULL;
+  fT_Pos = NULL;
+  fT_Neg = NULL;
+  fPosGain = NULL;
+  fNegGain = NULL;
+  fPosPedLimit = NULL;
+  fNegPedLimit = NULL;
+  fPosPedMean = NULL;
+  fNegPedMean = NULL;
+  fPosNpe = NULL;
+  fNegNpe = NULL;
+  fPosPedSum = NULL;
+  fPosPedSum2 = NULL;
+  fPosPedCount = NULL;
+  fNegPedSum = NULL;
+  fNegPedSum2 = NULL;
+  fNegPedCount = NULL;
+  fPosPed = NULL;
+  fPosSig = NULL;
+  fPosThresh = NULL;
+  fNegPed = NULL;
+  fNegSig = NULL;
+  fNegThresh = NULL;
+}
+//_____________________________________________________________________________
+void THcAerogel::DeleteArrays()
+{
+  delete [] fA_Pos; fA_Pos = NULL;
+  delete [] fA_Neg; fA_Neg = NULL;
+  delete [] fA_Pos_p; fA_Pos_p = NULL;
+  delete [] fA_Neg_p; fA_Neg_p = NULL;
+  delete [] fT_Pos; fT_Pos = NULL;
+  delete [] fT_Neg; fT_Neg = NULL;
+  delete [] fPosGain; fPosGain = NULL;
+  delete [] fNegGain; fNegGain = NULL;
+  delete [] fPosPedLimit; fPosPedLimit = NULL;
+  delete [] fNegPedLimit; fNegPedLimit = NULL;
+  delete [] fPosPedMean; fPosPedMean = NULL;
+  delete [] fNegPedMean; fNegPedMean = NULL;
+  delete [] fPosNpe; fPosNpe = NULL;
+  delete [] fNegNpe; fNegNpe = NULL;
+  delete [] fPosPedSum; fPosPedSum = NULL;
+  delete [] fPosPedSum2; fPosPedSum2 = NULL;
+  delete [] fPosPedCount; fPosPedCount = NULL;
+  delete [] fNegPedSum; fNegPedSum = NULL;
+  delete [] fNegPedSum2; fNegPedSum2 = NULL;
+  delete [] fNegPedCount; fNegPedCount = NULL;
+  delete [] fPosPed; fPosPed = NULL;
+  delete [] fPosSig; fPosSig = NULL;
+  delete [] fPosThresh; fPosThresh = NULL;
+  delete [] fNegPed; fNegPed = NULL;
+  delete [] fNegSig; fNegSig = NULL;
+  delete [] fNegThresh; fNegThresh = NULL;
+}  
 
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )

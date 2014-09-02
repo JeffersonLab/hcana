@@ -21,6 +21,8 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   
   virtual void 	     Clear( Option_t* opt="" );
   virtual Int_t      Decode( const THaEvData& );
+  void               InitArrays();
+  void               DeleteArrays();
   virtual EStatus    Init( const TDatime& run_time );
   virtual Int_t      ReadDatabase( const TDatime& date );
   virtual Int_t      DefineVariables( EMode mode = kDefine );

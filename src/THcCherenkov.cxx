@@ -62,6 +62,7 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
 {
   // Normal constructor with name and description
   fADCHits = new TClonesArray("THcSignalHit",16);
+  InitArrays();
 
 }
 
@@ -70,21 +71,55 @@ THcCherenkov::THcCherenkov( ) :
   THaNonTrackingDetector()
 {
   // Constructor
+  fADCHits = NULL;
+
+  InitArrays();
 }
 
+//_____________________________________________________________________________
+void THcCherenkov::InitArrays()
+{
+  fGain = NULL;
+  fCerWidth = NULL;
+  fNPMT = NULL;
+  fADC = NULL;
+  fADC_P = NULL;
+  fNPE = NULL;
+  fADCHits = NULL;
+  fPedSum = NULL;
+  fPedSum2 = NULL;
+  fPedLimit = NULL;
+  fPedMean = NULL;
+  fPedCount = NULL;
+  fPed = NULL;
+  fThresh = NULL;
+}
+//_____________________________________________________________________________
+void THcCherenkov::DeleteArrays()
+{
+  delete [] fGain; fGain = NULL;
+  delete [] fCerWidth; fCerWidth = NULL;
+  delete [] fNPMT; fNPMT = NULL;
+  delete [] fADC; fADC = NULL;
+  delete [] fADC; fADC_P = NULL;
+  delete [] fNPE; fNPE = NULL;
+  delete [] fADCHits; fADCHits = NULL;
+  delete [] fPedSum; fPedSum = NULL;
+  delete [] fPedSum2; fPedSum2 = NULL;
+  delete [] fPedLimit; fPedLimit = NULL;
+  delete [] fPedMean; fPedMean = NULL;
+  delete [] fPedCount; fPedCount = NULL;
+  delete [] fPed; fPed = NULL;
+  delete [] fThresh; fThresh = NULL;
+}
 //_____________________________________________________________________________
 THcCherenkov::~THcCherenkov()
 {
   // Destructor
-  delete [] fNPMT;
-  delete [] fADC;
-  delete [] fADC_P;
-  delete [] fNPE;
+  delete fADCHits; fADCHits = NULL;
 
-  delete [] fCerWidth;
-  delete [] fGain;
-  delete [] fPedLimit;
-  delete [] fPedMean;
+  DeleteArrays();
+
 }
 
 //_____________________________________________________________________________
