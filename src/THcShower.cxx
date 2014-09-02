@@ -83,7 +83,7 @@ void THcShower::Setup(const char* name, const char* description)
 
   fLayerNames = new char* [fNLayers];
   for(Int_t i=0;i<fNLayers;i++) {
-    fLayerNames[i] = new char[layer_names[i].length()];
+    fLayerNames[i] = new char[layer_names[i].length()+1];
     strcpy(fLayerNames[i], layer_names[i].c_str());
   }
   

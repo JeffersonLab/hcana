@@ -112,8 +112,6 @@ void THcDriftChamber::AddPlane(THcDriftChamberPlane *plane)
    }
   }
   fNPlanes++;
-  cout << fHMSStyleChambers << "P" << fNPlanes << " " << YPlaneNum << " " << YPlanePNum << " "
-       << YPlaneInd << " " << YPlanePInd << endl;
   return;
 }
 

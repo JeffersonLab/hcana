@@ -122,7 +122,7 @@ void THcDC::Setup(const char* name, const char* description)
   }
   fPlaneNames = new char* [fNPlanes];
   for(Int_t i=0;i<fNPlanes;i++) {
-    fPlaneNames[i] = new char[plane_names[i].length()];
+    fPlaneNames[i] = new char[plane_names[i].length()+1];
     strcpy(fPlaneNames[i], plane_names[i].c_str());
   }
 
