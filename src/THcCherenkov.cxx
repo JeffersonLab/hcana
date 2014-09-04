@@ -62,7 +62,9 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
 {
   // Normal constructor with name and description
   fADCHits = new TClonesArray("THcSignalHit",16);
+  cout << "fADCHits " << fADCHits << endl;
   InitArrays();
+  cout << "fADCHits " << fADCHits << endl;
 
 }
 
@@ -85,7 +87,6 @@ void THcCherenkov::InitArrays()
   fADC = NULL;
   fADC_P = NULL;
   fNPE = NULL;
-  fADCHits = NULL;
   fPedSum = NULL;
   fPedSum2 = NULL;
   fPedLimit = NULL;
@@ -103,7 +104,6 @@ void THcCherenkov::DeleteArrays()
   delete [] fADC; fADC = NULL;
   delete [] fADC; fADC_P = NULL;
   delete [] fNPE; fNPE = NULL;
-  delete [] fADCHits; fADCHits = NULL;
   delete [] fPedSum; fPedSum = NULL;
   delete [] fPedSum2; fPedSum2 = NULL;
   delete [] fPedLimit; fPedLimit = NULL;
