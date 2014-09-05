@@ -134,7 +134,6 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
 	     EngineDID);
       return kInitError;
   }
-
   return fStatus = kOK;
 }
 
@@ -444,7 +443,7 @@ Int_t THcShower::DefineVariables( EMode mode )
     { "treplcor", "Y-corrected track Edep for planes",           "fTREpl_cor" },
     { 0 }
   };
-  DefineVarsFromList( vars, mode );
+  return DefineVarsFromList( vars, mode );
 
 }
 

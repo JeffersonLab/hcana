@@ -155,9 +155,9 @@ protected:
   Double_t fTREpr;           // Preshower Energy of the track's cluster
   Double_t fTRE_cor;         // Y-corrected track total energy
   Double_t fTREpr_cor;       // Y-corrected track Preshower energy
-  Double_t* fTREpl_cor;      // Y-corrected track energy per plane
-  Double_t* fTREpl_pos_cor;  // Y-corrected track positive energy per plane
-  Double_t* fTREpl_neg_cor;  // Y-corrected track negative energy per plane
+  Double_t* fTREpl_cor;      // [fNLayers] Y-corrected track energy per plane
+  Double_t* fTREpl_pos_cor;  // [fNLayers] Y-corrected track positive energy per plane
+  Double_t* fTREpl_neg_cor;  // [fNLayers] Y-corrected track negative energy per plane
 
   // Potential Hall C parameters.  Mostly here for demonstration
 
