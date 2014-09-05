@@ -99,6 +99,7 @@ void THcShower::Setup(const char* name, const char* description)
 
     cout << "Created Shower Plane " << fLayerNames[i] << ", " << desc << endl;
   }
+  delete [] desc;
 
   cout << "THcShower::Setup Return " << GetName() << endl;
 }

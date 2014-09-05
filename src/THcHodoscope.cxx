@@ -133,6 +133,7 @@ void THcHodoscope::Setup(const char* name, const char* description)
     fPlanes[i] = new THcScintillatorPlane(fPlaneNames[i], desc, i+1,fNPlanes,this); // Number planes starting from zero!!
     cout << "Created Scintillator Plane " << fPlaneNames[i] << ", " << desc << endl;
   }
+  delete [] desc;
 }
 
 //_____________________________________________________________________________

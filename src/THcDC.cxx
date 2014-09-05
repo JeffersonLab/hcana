@@ -157,6 +157,8 @@ void THcDC::Setup(const char* name, const char* description)
     cout << "Created Drift Chamber " << i+1 << ", " << desc1 << endl;
     newchamber->SetHMSStyleFlag(fHMSStyleChambers); // Tell the chamber its style
   }
+  delete [] desc;
+  delete [] desc1;
 }
 
 //_____________________________________________________________________________

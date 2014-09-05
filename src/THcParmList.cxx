@@ -135,12 +135,12 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 	current_comment.assign(line,pos+1,line.length());
 	line.erase(pos);	// Strip off comment
 	// Strip leading white space from comment
-	cout << "CommentA: " << current_comment << endl;
+	//cout << "CommentA: " << current_comment << endl;
 	pos = current_comment.find_first_not_of(whtspc);
 	if(pos!=string::npos && pos > 0 && pos < current_comment.length()) {
 	  current_comment.erase(0,pos);
 	}
-	cout << "CommentB: " << current_comment << endl;
+	//cout << "CommentB: " << current_comment << endl;
 	break;
       }
     }
@@ -348,6 +348,11 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 	}
 	currentindex += nvals;
 	// Remove old variable and recreate
+	if(existingtype == kDouble) {
+	  delete [] (Double_t*) existingvar->GetValuePointer();
+	} else if (existingtype == kInt) {
+	  delete [] (Int_t*) existingvar->GetValuePointer();
+	}
 	RemoveName(varname);
 	char *arrayname=new char [strlen(varname)+20];
 	sprintf(arrayname,"%s[%d]",varname,newlength);
@@ -416,6 +421,8 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
       }
       delete[] arrayname;
     }
+
+    delete vararr;		// Discard result of Tokenize
 
     //    cout << line << endl;
 

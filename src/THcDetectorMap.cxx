@@ -315,6 +315,7 @@ void THcDetectorMap::Load(const char *fname)
       if(nvals==4) {
 	signal= ((TObjString*)vararr->At(3))->GetString().Atoi();
       }
+      delete vararr;		// Discard result of Tokenize
 
       fTable[fNchans].roc=roc;
       fTable[fNchans].slot=slot;
