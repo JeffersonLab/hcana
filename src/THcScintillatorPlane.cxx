@@ -463,26 +463,19 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
       maxhit=timehist[i];
     }
   }
-  if (jmax>=0) {
-    tmin=0.5*jmax;
-    for (i=0;i<fNScinHits;i++) {
-      if ((time_pos[i]>tmin) && (time_pos[i]<tmin+toftolerance)) {
-	keep_pos[i]=kTRUE;
-      }
-      if ((time_neg[i]>tmin) && (time_neg[i]<tmin+toftolerance)) {
-	keep_neg[i]=kTRUE;
-      }
-    }
-  }
   // Resume regular tof code, now using time filer(?) from above
   // Check for TWO good TDC hits
   for (i=0;i<fNScinHits;i++) {
     if ((((THcSignalHit*) fPosTDCHits->At(i))->GetData()>=mintdc) &&
 	(((THcSignalHit*) fPosTDCHits->At(i))->GetData()<=maxtdc) &&
 	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()>=mintdc) &&
-	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()<=maxtdc) &&
-	keep_pos[i] && keep_neg[i]) {
-      two_good_times[i]=kTRUE;
+	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()<=maxtdc)) {
+      if(jmax>=0) {
+	tmin = 0.5*jmax;
+	if ((time_pos[i]>tmin) && (time_pos[i]<tmin+toftolerance) &&
+	    (time_neg[i]>tmin) && (time_neg[i]<tmin+toftolerance))
+	  two_good_times[i]=kTRUE;
+      }
     }
   } // end of loop that finds tube setting time
   for (i=0;i<fNScinHits;i++) {
