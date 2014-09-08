@@ -52,6 +52,16 @@ THcDriftChamber::THcDriftChamber(
 }
 
 //_____________________________________________________________________________
+THcDriftChamber::THcDriftChamber() :
+  THaSubDetector()
+{
+  // Constructor
+  fTrackProj = NULL;
+  fSpacePoints = NULL;
+  fIsInit = 0;
+
+}
+//_____________________________________________________________________________
 void THcDriftChamber::Setup(const char* name, const char* description)
 {
 
