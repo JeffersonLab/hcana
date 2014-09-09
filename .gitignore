@@ -35,6 +35,10 @@ config.log
 *.so.*
 *.os
 \#*\#
+*.swp
+
+# ROOT cruft
+.root_hist
 
 # THtml generated documentation directory
 docs/htmldoc
