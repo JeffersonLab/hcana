@@ -65,7 +65,7 @@
 ;  hdbg_clusters_cal   call h_prt_cal_clusters
    hdbg_clusters_cal = 0
 ;  hdbg_tracks_cal     call h_prt_cal_tracks
-   hdbg_tracks_cal = 1
+   hdbg_tracks_cal = 0
 ;  hdbg_tests_cal      call h_prt_cal_tests    HMS_TRACK_TESTS
    hdbg_tests_cal = 0
 ;
