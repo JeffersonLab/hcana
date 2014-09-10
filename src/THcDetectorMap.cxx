@@ -329,9 +329,9 @@ void THcDetectorMap::Load(const char *fname)
       fNchans++;
     }
   }
-  cout << endl << "   Detector ID Map" << endl << endl;
+  cout << endl << " Detector ID Map" << endl << endl;
   for(Int_t i=0; i < fNIDs; i++) {
-    cout << i << " ";
+    cout << "   ";
     cout << fIDMap[i].name << " " << fIDMap[i].id << endl;
   }
   cout << endl;

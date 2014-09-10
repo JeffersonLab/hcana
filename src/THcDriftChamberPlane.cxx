@@ -91,7 +91,6 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   Int_t NumDriftMapBins;
   Double_t DriftMapFirstBin;
   Double_t DriftMapBinSize;
-  Double_t DriftMap[1000];
   
   prefix[0]=tolower(GetParent()->GetPrefix()[0]);
   prefix[1]='\0';
@@ -99,10 +98,16 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
     {"driftbins", &NumDriftMapBins, kInt},
     {"drift1stbin", &DriftMapFirstBin, kDouble},
     {"driftbinsz", &DriftMapBinSize, kDouble},
-    {Form("wc%sfract",GetName()),DriftMap,kDouble,1000},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+
+  Double_t *DriftMap = new Double_t[NumDriftMapBins];
+  DBRequest list2[]={
+    {Form("wc%sfract",GetName()),DriftMap,kDouble,NumDriftMapBins},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list2,prefix);
 
   // Retrieve parameters we need from parent class
   THcDC* fParent;
@@ -194,10 +199,11 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   fPlaneCoef[7]=-hzchi*hxpsi + hxchi*hzpsi; // 0.
   fPlaneCoef[8]= hychi*hxpsi - hxchi*hypsi; // 1.
 
-  cout << fPlaneNum << " " << fNWires << " " << fWireOrder << endl;
+  //  cout << fPlaneNum << " " << fNWires << " " << fWireOrder << endl;
 
   fTTDConv = new THcDCLookupTTDConv(DriftMapFirstBin,fPitch/2,DriftMapBinSize,
 				    NumDriftMapBins,DriftMap);
+  delete [] DriftMap;
 
   Int_t nWires = fParent->GetNWires(fPlaneNum);
   // For HMS, wire numbers start with one, but arrays start with zero.

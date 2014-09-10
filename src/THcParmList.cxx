@@ -61,7 +61,7 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
   Int_t nfiles=0;
   ifiles[nfiles].open(fname);
   if(ifiles[nfiles].is_open()) {
-    cout << nfiles << ": " << "Opened \"" << fname << "\"" << endl;
+    cout << "Opening parameter file: [" << nfiles << "] " << fname << endl;
     nfiles++;
   }
 
@@ -94,7 +94,7 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
     if(!getline(ifiles[nfiles-1],line)) {
       ifiles[nfiles-1].close();
       nfiles--;
-      cout << nfiles << ": " << "Closed" << endl;
+      //      cout << nfiles << ": " << "Closed" << endl;
       continue;
     }
     // Look for include statement
@@ -112,10 +112,10 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
       } else {
 	line.erase(line.find_first_of(whtspc));
       }
-      cout << line << endl;
+      //      cout << line << endl;
       ifiles[nfiles].open(line.c_str());
       if(ifiles[nfiles].is_open()) {
-	cout << nfiles << ": " << "Opened \"" << line << "\"" << endl;
+	cout << "Opening parameter file: [" << nfiles << "] " << line << endl;
 	nfiles++;
       }
       continue;

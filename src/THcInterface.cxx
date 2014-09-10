@@ -86,8 +86,8 @@ THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
   //  gHaDB      = new THaFileDB();
   gHaTextvars = new THaTextvars;
 
-  cout << "In THcInterface ... " << endl;
-  cout << "Decoder => " << gHaDecoder << endl;
+  //  cout << "In THcInterface ... " << endl;
+  //  cout << "Decoder => " << gHaDecoder << endl;
 
   // Set the maximum size for a file written by Podd contained by the TTree
   //  putting it to 1.5 GB, down from the default 1.9 GB since something odd

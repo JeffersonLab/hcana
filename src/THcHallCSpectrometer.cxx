@@ -245,7 +245,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   int good=1;
   while(good && line[0]=='!') {
     good = getline(ifile,line).good();
-    cout << line << endl;
+    //    cout << line << endl;
   }
   // Read in focal plane rotation coefficients
   // Probably not used, so for now, just paste in fortran code as a comment
@@ -262,9 +262,9 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   // Read in reconstruction coefficients and exponents
   line=" ";
   good = getline(ifile,line).good();
-  cout << line << endl;
+  //  cout << line << endl;
   fNReconTerms = 0;
-  cout << "Reading matrix elements" << endl;
+  //cout << "Reading matrix elements" << endl;
   while(good && line.compare(0,4," ---")!=0) {
     if(fNReconTerms >= fMaxReconElements) {
       Error(here, "too much data in reconstruction coefficient file %s",reconCoeffFilename.c_str());
@@ -283,8 +283,9 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     fNReconTerms++;
     good = getline(ifile,line).good();    
   }
+  cout << "Read " << fNReconTerms << " matrix element terms" << endl;
   if(!good) {
-    Error(here, "error processing reconstruction coefficient file %s",reconCoeffFilename.c_str());
+    Error(here, "Error processing reconstruction coefficient file %s",reconCoeffFilename.c_str());
     return kInitError; // Is this the right return code?
   }
 
