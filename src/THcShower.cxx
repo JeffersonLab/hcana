@@ -54,7 +54,8 @@ THcShower::THcShower( ) :
 //_____________________________________________________________________________
 void THcShower::Setup(const char* name, const char* description)
 {
-  cout << "THcShower::Setup called " << GetName() << endl;
+  if (fdbg_init_cal) 
+    cout << "THcShower::Setup called " << GetName() << endl;
 
   char prefix[2];
 
@@ -69,13 +70,15 @@ void THcShower::Setup(const char* name, const char* description)
   };
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-  cout << layernamelist << endl;
-  cout << "Shower Counter: " << fNLayers << " layers" << endl;
+  if (fdbg_init_cal) {
+    cout << layernamelist << endl;
+    cout << "Shower Counter: " << fNLayers << " layers" << endl;
+  }
 
   vector<string> layer_names = vsplit(layernamelist);
 
   if(layer_names.size() != (UInt_t) fNLayers) {
-    cout << "ERROR: Number of layers " << fNLayers 
+    cout << "THcShower::Setup ERROR: Number of layers " << fNLayers 
 	 << " doesn't agree with number of layer names "
 	 << layer_names.size() << endl;
     // Should quit.  Is there an official way to quit?
@@ -97,18 +100,22 @@ void THcShower::Setup(const char* name, const char* description)
 
     fPlanes[i] = new THcShowerPlane(fLayerNames[i], desc, i+1, this); 
 
-    cout << "Created Shower Plane " << fLayerNames[i] << ", " << desc << endl;
+    if (fdbg_init_cal)
+      cout << "Created Shower Plane " << fLayerNames[i] << ", " << desc << endl;
   }
   delete [] desc;
 
-  cout << "THcShower::Setup Return " << GetName() << endl;
+  if (fdbg_init_cal) 
+    cout << "THcShower::Setup Return " << GetName() << endl;
 }
 
 
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
 {
-  cout << "THcShower::Init " << GetName() << endl;
+  if (fdbg_init_cal) 
+    cout << "THcShower::Init " << GetName() << endl;
+
   Setup(GetName(), GetTitle());
 
   // Should probably put this in ReadDatabase as we will know the
@@ -159,7 +166,8 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   // Will need to determine which spectrometer in order to construct
   // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
 
-  cout << "THcShower::ReadDatabase called " << GetName() << endl;
+  if (fdbg_init_cal) 
+    cout << "THcShower::ReadDatabase called " << GetName() << endl;
 
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
@@ -174,20 +182,23 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
       {"dbg_sparsified_cal", &fdbg_sparsified_cal, kInt},
       {"dbg_clusters_cal", &fdbg_clusters_cal, kInt},
       {"dbg_tracks_cal", &fdbg_tracks_cal, kInt},
+      {"debugflaggeometry", &fdbg_init_cal, kInt},
       {0}
     };
     fvTest = 0;			// Default if not defined
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
 
-  cout << "Number of neg. columns      = " << fNegCols << endl;
-  cout << "Slop parameter              = " << fSlop << endl;
-  cout << "Fiducial volume test flag   = " << fvTest << endl;
-  cout << "Fiducial volume excl. width = " << fvDelta << endl;
-  cout << "Decode debug flag           = " << fdbg_decoded_cal  << endl;
-  cout << "Sparsify debug flag         = " << fdbg_sparsified_cal  << endl;
-  cout << "Cluster debug flag          = " << fdbg_clusters_cal  << endl;
-  cout << "Tracking debug flag         = " << fdbg_tracks_cal  << endl;
+  if (fdbg_init_cal) {
+    cout << "Number of neg. columns      = " << fNegCols << endl;
+    cout << "Slop parameter              = " << fSlop << endl;
+    cout << "Fiducial volume test flag   = " << fvTest << endl;
+    cout << "Fiducial volume excl. width = " << fvDelta << endl;
+    cout << "Decode debug flag           = " << fdbg_decoded_cal  << endl;
+    cout << "Sparsify debug flag         = " << fdbg_sparsified_cal  << endl;
+    cout << "Cluster debug flag          = " << fdbg_clusters_cal  << endl;
+    cout << "Tracking debug flag         = " << fdbg_tracks_cal  << endl;
+  }
 
   {
     DBRequest list[]={
@@ -200,11 +211,13 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
 
-  cout << "HMS Calorimeter coordinate correction constants:" << endl;
-  cout << "    fAcor = " << fAcor << endl;
-  cout << "    fBcor = " << fBcor << endl;
-  cout << "    fCcor = " << fCcor << endl;
-  cout << "    fDcor = " << fDcor << endl;
+  if (fdbg_init_cal) {
+    cout << "HMS Calorimeter coordinate correction constants:" << endl;
+    cout << "    fAcor = " << fAcor << endl;
+    cout << "    fBcor = " << fBcor << endl;
+    cout << "    fCcor = " << fCcor << endl;
+    cout << "    fDcor = " << fDcor << endl;
+  }
 
   BlockThick = new Double_t [fNLayers];
   fNBlocks = new Int_t [fNLayers];
@@ -235,18 +248,20 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
 
-  for(Int_t i=0;i<fNLayers;i++) {
-    cout << "Plane " << fLayerNames[i] << ":" << endl;
-    cout << "    Block thickness: " << BlockThick[i] << endl;
-    cout << "    NBlocks        : " << fNBlocks[i] << endl;
-    cout << "    Z Position     : " << fNLayerZPos[i] << endl;
-    cout << "    Y Positions    : " << YPos[2*i] << ", " << YPos[2*i+1] <<endl;
-    cout << "    X Positions    :";
-    for(Int_t j=0; j<fNBlocks[i]; j++) {
-      cout << " " << XPos[i][j];
+  if (fdbg_init_cal) {
+    for(Int_t i=0;i<fNLayers;i++) {
+      cout << "Plane " << fLayerNames[i] << ":" << endl;
+      cout << "    Block thickness: " << BlockThick[i] << endl;
+      cout << "    NBlocks        : " << fNBlocks[i] << endl;
+      cout << "    Z Position     : " << fNLayerZPos[i] << endl;
+      cout << "    Y Positions    : " << YPos[2*i] << ", " << YPos[2*i+1]
+	   <<endl;
+      cout << "    X Positions    :";
+      for(Int_t j=0; j<fNBlocks[i]; j++) {
+	cout << " " << XPos[i][j];
+      }
+      cout << endl;
     }
-    cout << endl;
-
   }
 
   // Fiducial volume limits, based on Plane 1 positions.
@@ -257,16 +272,20 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   fvYmin = YPos[0] + fvDelta;
   fvYmax = YPos[1] - fvDelta;
 
-  cout << "Fiducial volume limits:" << endl;
-  cout << "   Xmin = " << fvXmin << "  Xmax = " << fvXmax << endl;
-  cout << "   Ymin = " << fvYmin << "  Ymax = " << fvYmax << endl;
+  if (fdbg_init_cal) {
+    cout << "Fiducial volume limits:" << endl;
+    cout << "   Xmin = " << fvXmin << "  Xmax = " << fvXmax << endl;
+    cout << "   Ymin = " << fvYmin << "  Ymax = " << fvYmax << endl;
+  }
 
   //Calibration related parameters (from hcal.param).
 
   fNtotBlocks=0;              //total number of blocks
   for (Int_t i=0; i<fNLayers; i++) fNtotBlocks += fNBlocks[i];
 
-  cout << "Total number of blocks in the calorimeter: " << fNtotBlocks << endl;
+  if (fdbg_init_cal) 
+    cout << "Total number of blocks in the calorimeter: " << fNtotBlocks
+	 << endl;
 
   //Pedestal limits from hcal.param.
   fShPosPedLimit = new Int_t [fNtotBlocks];
@@ -305,53 +324,57 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   };
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 
-  cout << "hcal_pos_cal_const:" << endl;
-  for (Int_t j=0; j<fNLayers; j++) {
-    for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << hcal_pos_cal_const[j*fNBlocks[j]+i] << " ";
-    };
-    cout <<  endl;
-  };
+  if (fdbg_init_cal) {
 
-  cout << "fShPosPedLimit:" << endl;
-  for (Int_t j=0; j<fNLayers; j++) {
-    for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << fShPosPedLimit[j*fNBlocks[j]+i] << " ";
+    cout << "hcal_pos_cal_const:" << endl;
+    for (Int_t j=0; j<fNLayers; j++) {
+      for (Int_t i=0; i<fNBlocks[j]; i++) {
+	cout << hcal_pos_cal_const[j*fNBlocks[j]+i] << " ";
+      };
+      cout <<  endl;
     };
-    cout <<  endl;
-  };
 
-  cout << "hcal_pos_gain_cor:" << endl;
-  for (Int_t j=0; j<fNLayers; j++) {
-    for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << hcal_pos_gain_cor[j*fNBlocks[j]+i] << " ";
+    cout << "fShPosPedLimit:" << endl;
+    for (Int_t j=0; j<fNLayers; j++) {
+      for (Int_t i=0; i<fNBlocks[j]; i++) {
+	cout << fShPosPedLimit[j*fNBlocks[j]+i] << " ";
+      };
+      cout <<  endl;
     };
-    cout <<  endl;
-  };
 
-  cout << "hcal_neg_cal_const:" << endl;
-  for (Int_t j=0; j<fNLayers; j++) {
-    for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << hcal_neg_cal_const[j*fNBlocks[j]+i] << " ";
+    cout << "hcal_pos_gain_cor:" << endl;
+    for (Int_t j=0; j<fNLayers; j++) {
+      for (Int_t i=0; i<fNBlocks[j]; i++) {
+	cout << hcal_pos_gain_cor[j*fNBlocks[j]+i] << " ";
+      };
+      cout <<  endl;
     };
-    cout <<  endl;
-  };
 
-  cout << "fShNegPedLimit:" << endl;
-  for (Int_t j=0; j<fNLayers; j++) {
-    for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << fShNegPedLimit[j*fNBlocks[j]+i] << " ";
+    cout << "hcal_neg_cal_const:" << endl;
+    for (Int_t j=0; j<fNLayers; j++) {
+      for (Int_t i=0; i<fNBlocks[j]; i++) {
+	cout << hcal_neg_cal_const[j*fNBlocks[j]+i] << " ";
+      };
+      cout <<  endl;
     };
-    cout <<  endl;
-  };
 
-  cout << "hcal_neg_gain_cor:" << endl;
-  for (Int_t j=0; j<fNLayers; j++) {
-    for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << hcal_neg_gain_cor[j*fNBlocks[j]+i] << " ";
+    cout << "fShNegPedLimit:" << endl;
+    for (Int_t j=0; j<fNLayers; j++) {
+      for (Int_t i=0; i<fNBlocks[j]; i++) {
+	cout << fShNegPedLimit[j*fNBlocks[j]+i] << " ";
+      };
+      cout <<  endl;
     };
-    cout <<  endl;
-  };
+
+    cout << "hcal_neg_gain_cor:" << endl;
+    for (Int_t j=0; j<fNLayers; j++) {
+      for (Int_t i=0; i<fNBlocks[j]; i++) {
+	cout << hcal_neg_gain_cor[j*fNBlocks[j]+i] << " ";
+      };
+      cout <<  endl;
+    };
+
+  }    // end of debug output
 
   // Calibration constants (GeV / ADC channel).
 
@@ -360,23 +383,27 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     fNegGain[i] = hcal_neg_cal_const[i] *  hcal_neg_gain_cor[i];
   }
 
-  cout << "fPosGain:" << endl;
-  for (Int_t j=0; j<fNLayers; j++) {
-    for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << fPosGain[j*fNBlocks[j]+i] << " ";
-    };
-    cout <<  endl;
-  };
+  if (fdbg_init_cal) {
 
-  cout << "fNegGain:" << endl;
-  for (Int_t j=0; j<fNLayers; j++) {
-    for (Int_t i=0; i<fNBlocks[j]; i++) {
-      cout << fNegGain[j*fNBlocks[j]+i] << " ";
+    cout << "fPosGain:" << endl;
+    for (Int_t j=0; j<fNLayers; j++) {
+      for (Int_t i=0; i<fNBlocks[j]; i++) {
+	cout << fPosGain[j*fNBlocks[j]+i] << " ";
+      };
+      cout <<  endl;
     };
-    cout <<  endl;
-  };
 
-  // Corrdiante corrected track energies per plane
+    cout << "fNegGain:" << endl;
+    for (Int_t j=0; j<fNLayers; j++) {
+      for (Int_t i=0; i<fNBlocks[j]; i++) {
+	cout << fNegGain[j*fNBlocks[j]+i] << " ";
+      };
+      cout <<  endl;
+    };
+
+  }
+
+  // Corrdinate corrected track energies per plane
 
   fTREpl_cor     = new Double_t [fNLayers];
   fTREpl_pos_cor = new Double_t [fNLayers];
@@ -391,11 +418,13 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
   fOrigin.SetXYZ(xOrig, yOrig, zOrig);
 
-  cout << "Origin of the Calorimeter:" << endl;
-  cout << "       Xorig = " << GetOrigin().X() << endl;
-  cout << "       Yorig = " << GetOrigin().Y() << endl;
-  cout << "       Zorig = " << GetOrigin().Z() << endl;
-  cout << endl;
+  if (fdbg_init_cal) {
+    cout << "Origin of the Calorimeter:" << endl;
+    cout << "       Xorig = " << GetOrigin().X() << endl;
+    cout << "       Yorig = " << GetOrigin().Y() << endl;
+    cout << "       Zorig = " << GetOrigin().Z() << endl;
+    cout << endl;
+  }
 
   // Detector axes. Assume no rotation.
   //
@@ -415,7 +444,8 @@ Int_t THcShower::DefineVariables( EMode mode )
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
 
-  cout << "THcShower::DefineVariables called " << GetName() << endl;
+  if (fdbg_init_cal)
+    cout << "THcShower::DefineVariables called " << GetName() << endl;
 
   // Register variables in global list
 

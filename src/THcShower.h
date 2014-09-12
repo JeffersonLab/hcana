@@ -185,6 +185,8 @@ protected:
   Int_t fdbg_sparsified_cal;
   Int_t fdbg_clusters_cal;
   Int_t fdbg_tracks_cal;
+  Int_t fdbg_init_cal;         // No counterpart in engine, added to debug
+                               // calorimeter initialization
 
   Double_t fAcor;               // Coordinate correction constants
   Double_t fBcor;
