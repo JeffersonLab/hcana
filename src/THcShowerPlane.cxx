@@ -65,11 +65,13 @@ THcShowerPlane::~THcShowerPlane()
   delete [] fEmean;
 }
 
+//_____________________________________________________________________________
 THaAnalysisObject::EStatus THcShowerPlane::Init( const TDatime& date )
 {
   // Extra initialization for shower layer: set up DataDest map
 
-  cout << "THcShowerPlane::Init called " << GetName() << endl;
+  if ( ((THcShower*) GetParent())->fdbg_init_cal )
+    cout << "THcShowerPlane::Init called " << GetName() << endl;
 
   if( IsZombie())
     return fStatus = kInitError;
@@ -104,17 +106,19 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   strcat(parname,GetName());
 
   strcat(parname,"_nr");
-  cout << " Getting value of SHOWER!!!" << parname << endl;
 
   // Retrieve parameters we need from parent class
   THcShower* fParent;
-
   fParent = (THcShower*) GetParent();
+
+  if (fParent->fdbg_init_cal)
+    cout << " Getting value of SHOWER!!!" << parname << endl;
 
   fNelem = fParent->GetNBlocks(fLayerNum-1);
 
-  //  cout << "THcShowerPlane::ReadDatabase: fLayerNum=" << fLayerNum 
-  //       << "  fNelem=" << fNelem << endl;
+  if (fParent->fdbg_init_cal)
+    cout << "THcShowerPlane::ReadDatabase: fLayerNum=" << fLayerNum 
+         << "  fNelem=" << fNelem << endl;
 
   // Origin of the plane:
   //
@@ -136,8 +140,9 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   fOrigin.SetXYZ(xOrig, yOrig, zOrig);
 
-  cout << "Origin of Layer " << fLayerNum << ": "
-       << fOrigin.X() << " " << fOrigin.Y() << " " << fOrigin.Z() << endl;
+  if (fParent->fdbg_init_cal)
+    cout << "Origin of Layer " << fLayerNum << ": "
+	 << fOrigin.X() << " " << fOrigin.Y() << " " << fOrigin.Z() << endl;
 
   // Detector axes. Assume no rotation.
   //
@@ -168,15 +173,17 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
     fNegPedLimit[i] = fParent->GetPedLimit(i,fLayerNum-1,1);
   }
 
-  cout << "   fPosPedLimit:";
-  for(Int_t i=0;i<fNelem;i++) cout << " " << fPosPedLimit[i];
-  cout << endl;
-  cout << "   fNegPedLimit:";
-  for(Int_t i=0;i<fNelem;i++) cout << " " << fNegPedLimit[i];
-  cout << endl;
+  if (fParent->fdbg_init_cal) {
+    cout << "   fPosPedLimit:";
+    for(Int_t i=0;i<fNelem;i++) cout << " " << fPosPedLimit[i];
+    cout << endl;
+    cout << "   fNegPedLimit:";
+    for(Int_t i=0;i<fNelem;i++) cout << " " << fNegPedLimit[i];
+    cout << endl;
+  }
 
   fMinPeds = fParent->GetMinPeds();
-  cout << "   fMinPeds = " << fMinPeds << endl;
+  if (fParent->fdbg_init_cal) cout << "   fMinPeds = " << fMinPeds << endl;
 
   InitializePedestals();
 
@@ -201,7 +208,8 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
 {
   // Initialize global variables and lookup table for decoder
 
-  cout << "THcShowerPlane::DefineVariables called " << GetName() << endl;
+  if ( ((THcShower*) GetParent())->fdbg_init_cal )
+    cout << "THcShowerPlane::DefineVariables called " << GetName() << endl;
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
@@ -229,7 +237,9 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
 //_____________________________________________________________________________
 void THcShowerPlane::Clear( Option_t* )
 {
-  //cout << " Calling THcShowerPlane::Clear " << GetName() << endl;
+  if ( ((THcShower*) GetParent())->fdbg_decoded_cal )
+    cout << " Calling THcShowerPlane::Clear " << GetName() << endl;
+
   // Clears the hit lists
   fPosADCHits->Clear();
   fNegADCHits->Clear();
@@ -239,7 +249,8 @@ void THcShowerPlane::Clear( Option_t* )
 Int_t THcShowerPlane::Decode( const THaEvData& evdata )
 {
   // Doesn't actually get called.  Use Fill method instead
-  cout << " Calling THcShowerPlane::Decode " << GetName() << endl;
+  if ( ((THcShower*) GetParent())->fdbg_decoded_cal )
+    cout << " Calling THcShowerPlane::Decode " << GetName() << endl;
 
   return 0;
 }
@@ -251,27 +262,8 @@ Int_t THcShowerPlane::CoarseProcess( TClonesArray& tracks )
   // Nothing is done here. See ProcessHits method instead.
   //  
 
-  //  HitCount();
-
-  /*
-    if (THcShower::fdbg_tracks_cal)
-  cout << "THcShowerPlane::CoarseProcess called ---------------------" << endl;
-
-  Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
-
-  if (THcShower::fdbg_tracks_cal)
-  cout << "   Number of reconstructed tracks = " << Ntracks << endl;
-
-  for (Int_t i=0; i<Ntracks; i++) {
-
-    THaTrack* theTrack = static_cast<THaTrack*>( tracks[i] );
-
-    Double_t pathl;
-    Double_t xtrk;
-    Double_t ytrk;
-    CalcTrackIntercept(theTrack, pathl, xtrk, ytrk);
-  }
-  */
+  if ( ((THcShower*) GetParent())->fdbg_tracks_cal )
+    cout << "THcShowerPlane::CoarseProcess called --------------------" << endl;
 
  return 0;
 }
@@ -404,15 +396,17 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 
   Int_t nrawhits = rawhits->GetLast()+1;
 
-  //  cout << "THcScintillatorPlane::AcculatePedestals " << fLayerNum << " " 
-  //  << nexthit << "/" << nrawhits << endl;
+  if ( ((THcShower*) GetParent())->fdbg_raw_cal )
+    cout << "THcShowerPlane::AcculatePedestals " << fLayerNum << " " 
+	 << nexthit << "/" << nrawhits << endl;
 
   Int_t ihit = nexthit;
   while(ihit < nrawhits) {
 
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
 
-    //cout << "fPlane =  " << hit->fPlane << " Limit = " << fLayerNum << endl;
+    if ( ((THcShower*) GetParent())->fdbg_raw_cal )
+      cout << "fPlane =  " << hit->fPlane << " Limit = " << fLayerNum << endl;
 
     // OK for hit list sorted by layer.
     if(hit->fPlane > fLayerNum) {
@@ -466,10 +460,12 @@ void THcShowerPlane::CalculatePedestals( )
 		      - fNegPed[i]*fNegPed[i]);
     fNegThresh[i] = fNegPed[i] + TMath::Min(50., TMath::Max(10., 3.*fNegSig[i]));
 
-    //    cout << "Ped&Thr: " << fPosPed[i] << " " << fPosThresh[i] << " " <<
-    //      fNegPed[i] << " " << fNegThresh[i] << " " << i+1 << endl;
+    if ( ((THcShower*) GetParent())->fdbg_raw_cal )
+      cout << "Ped&Thr: " << fPosPed[i] << " " << fPosThresh[i] << " "
+	   << fNegPed[i] << " " << fNegThresh[i] << " " << i+1 << endl;
   }
-  //  cout << " " << endl;
+
+  //  if ( ((THcShower*) GetParent())->fdbg_raw_cal ) cout << " " << endl;
   
 }
 

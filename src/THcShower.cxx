@@ -178,6 +178,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
       {"cal_slop", &fSlop, kDouble},
       {"cal_fv_test", &fvTest, kInt,0,1},
       {"cal_fv_delta", &fvDelta, kDouble},
+      {"dbg_raw_cal", &fdbg_raw_cal, kInt},
       {"dbg_decoded_cal", &fdbg_decoded_cal, kInt},
       {"dbg_sparsified_cal", &fdbg_sparsified_cal, kInt},
       {"dbg_clusters_cal", &fdbg_clusters_cal, kInt},

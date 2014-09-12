@@ -180,8 +180,8 @@ protected:
   Double_t fvYmin;
   Double_t fvYmax;
 
-
-  Int_t fdbg_decoded_cal;      // Shower debug flags
+  Int_t fdbg_raw_cal;          // Shower debug flags
+  Int_t fdbg_decoded_cal;
   Int_t fdbg_sparsified_cal;
   Int_t fdbg_clusters_cal;
   Int_t fdbg_tracks_cal;
