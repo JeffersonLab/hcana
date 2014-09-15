@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// THcHodoscopeHit                                                           //
+// THcRawHodoHit                                                           //
 //                                                                           //
 // Class representing a single raw hit for a hodoscope paddle                //
 //                                                                           //
@@ -13,12 +13,12 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "THcHodoscopeHit.h"
+#include "THcRawHodoHit.h"
 
 using namespace std;
 
 
-void THcHodoscopeHit::SetData(Int_t signal, Int_t data) {
+void THcRawHodoHit::SetData(Int_t signal, Int_t data) {
   if(signal==0) {
     fADC_pos = data;
   } else if (signal==1) {
@@ -30,7 +30,7 @@ void THcHodoscopeHit::SetData(Int_t signal, Int_t data) {
   }
 }
 
-Int_t THcHodoscopeHit::GetData(Int_t signal) {
+Int_t THcRawHodoHit::GetData(Int_t signal) {
   if(signal==0) {
     return(fADC_pos);
   } else if (signal==1) {
@@ -44,7 +44,7 @@ Int_t THcHodoscopeHit::GetData(Int_t signal) {
 }
 
 //_____________________________________________________________________________
-THcHodoscopeHit& THcHodoscopeHit::operator=( const THcHodoscopeHit& rhs )
+THcRawHodoHit& THcRawHodoHit::operator=( const THcRawHodoHit& rhs )
 {
   // Assignment operator.
 
@@ -62,5 +62,5 @@ THcHodoscopeHit& THcHodoscopeHit::operator=( const THcHodoscopeHit& rhs )
 
 
 //////////////////////////////////////////////////////////////////////////
-ClassImp(THcHodoscopeHit)
+ClassImp(THcRawHodoHit)
 

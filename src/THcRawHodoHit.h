@@ -1,19 +1,19 @@
-#ifndef ROOT_THcHodoscopeHit
-#define ROOT_THcHodoscopeHit
+#ifndef ROOT_THcRawHodoHit
+#define ROOT_THcRawHodoHit
 
 #include "THcRawHit.h"
 
-class THcHodoscopeHit : public THcRawHit {
+class THcRawHodoHit : public THcRawHit {
 
  public:
   friend class THcScintillatorPlane;
 
-  THcHodoscopeHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
+  THcRawHodoHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
     fADC_pos(-1), fADC_neg(-1),
     fTDC_pos(-1), fTDC_neg(-1) {
   }
-  THcHodoscopeHit& operator=( const THcHodoscopeHit& );
-  virtual ~THcHodoscopeHit() {}
+  THcRawHodoHit& operator=( const THcRawHodoHit& );
+  virtual ~THcRawHodoHit() {}
 
   virtual void Clear( Option_t* opt="" )
     { fADC_pos = -1; fADC_neg = -1; fTDC_pos = -1; fTDC_neg = -1; }
@@ -32,7 +32,7 @@ class THcHodoscopeHit : public THcRawHit {
 
  private:
 
-  ClassDef(THcHodoscopeHit, 0);	// Raw Hodoscope hit
+  ClassDef(THcRawHodoHit, 0);	// Raw Hodoscope hit
 };  
 
 #endif

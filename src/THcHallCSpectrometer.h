@@ -14,7 +14,7 @@
 #include "TClonesArray.h"
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
-#include "THcHodoscopeHit.h"
+#include "THcRawHodoHit.h"
 #include "THcScintillatorPlane.h"
 #include "THcShower.h"
 

@@ -310,7 +310,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   //  cout << "THcScintillatorPlane: raw htis = " << nrawhits << endl;
   
   while(ihit < nrawhits) {
-    THcHodoscopeHit* hit = (THcHodoscopeHit *) rawhits->At(ihit);
+    THcRawHodoHit* hit = (THcRawHodoHit *) rawhits->At(ihit);
     if(hit->fPlane > fPlaneNum) {
       break;
     }
@@ -542,7 +542,7 @@ Int_t THcScintillatorPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nex
 
   Int_t ihit = nexthit;
   while(ihit < nrawhits) {
-    THcHodoscopeHit* hit = (THcHodoscopeHit *) rawhits->At(ihit);
+    THcRawHodoHit* hit = (THcRawHodoHit *) rawhits->At(ihit);
     if(hit->fPlane > fPlaneNum) {
       break;
     }

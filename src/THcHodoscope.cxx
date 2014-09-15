@@ -164,7 +164,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   // --------------- To get energy from THcShower ----------------------
 
 
-  InitHitList(fDetMap, "THcHodoscopeHit", 100);
+  InitHitList(fDetMap, "THcRawHodoHit", 100);
 
   EStatus status;
   // This triggers call of ReadDatabase and DefineVariables
@@ -770,7 +770,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   }
 #if 0
   for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
-    THcHodoscopeHit* hit = (THcHodoscopeHit *) fRawHitList->At(ihit);
+    THcRawHodoHit* hit = (THcRawHodoHit *) fRawHitList->At(ihit);
     cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
 	 << hit->fADC_pos << " " << hit->fADC_neg << " "  <<  hit->fTDC_pos
 	 << " " <<  hit->fTDC_neg << endl;
