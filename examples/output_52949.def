@@ -1,10 +1,11 @@
 # See $ANALYZER/examples/output_example.def for examples
 #
-block H.dc.*
-block H.hod.*
+#block H.dc.*
+#block H.hod.*
 block H.cal.*
-block H.aero.*
+#block H.aero.*
 block H.tr.*
+block H.gold.*
 block g.evtyp
 
 # TDC spectra
@@ -211,4 +212,8 @@ TH1F dtime_hdc2u1 'HDC 2U1 Drift Time' H.dc.2u1.time 200 -100 300
 TH1F dtime_hdc2v1 'HDC 2V1 Drift Time' H.dc.2v1.time 200 -100 300
 TH1F dtime_hdc2y2 'HDC 2Y2 Drift Time' H.dc.2y2.time 200 -100 300
 TH1F dtime_hdc2x2 'HDC 2X2 Drift Time' H.dc.2x2.time 200 -100 300
-
+#
+# Golden Track momentum
+TH1F golden_p 'HMS Golden P' H.gold.p 100 0.011 1.8 H.dc.ntrack!=0
+TH1F golden_e 'HMS Golden E' H.gold.e 100 0.011 1.8 H.dc.ntrack!=0
+TH1F golden_enorm 'HMS Golden E/P' H.gold.e/H.gold.p 100 0.01 1.8 H.gold.index>=0

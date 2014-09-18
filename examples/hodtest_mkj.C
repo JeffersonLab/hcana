@@ -45,6 +45,9 @@ void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000) {
   THcAerogel* aerogel = new THcAerogel("aero", "Aerogel Cerenkov" );
   HMS->AddDetector( aerogel );
 
+  // Add Golden Track
+  gHaPhysics->Add( new THaGoldenTrack( "H.gold", "HMS Golden Track", "H" ));
+
   // Set up the analyzer - we use the standard one,
   // but this could be an experiment-specific one as well.
   // The Analyzer controls the reading of the data, executes
