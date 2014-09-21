@@ -55,13 +55,27 @@ protected:
 
   Int_t        MAXHODHITS;
 
+  Bool_t*      fKeep;
+  Int_t*       fReject;
+
+  Double_t     fPruneXp;
+  Double_t     fPruneYp;
+  Double_t     fPruneYtar;
+  Double_t     fPruneDelta;
+  Double_t     fPruneBeta;
+  Double_t     fPruneDf;
+  Double_t     fPruneChiBeta;
+  Double_t     fPruneFpTime;
+  Double_t     fPruneNPMT;
+
   Int_t        fGoodTrack;
   Int_t        fSelUsingScin;
+  Int_t        fSelUsingPrune;
   Int_t        fNPlanes;
   Int_t        fNtracks;
 
-  Int_t*    f2XHits;
-  Int_t*    f2YHits;
+  Int_t*       f2XHits;
+  Int_t*       f2YHits;
 
   Double_t*    fX2D;
   Double_t*    fY2D;

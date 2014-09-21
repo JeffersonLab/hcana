@@ -78,7 +78,7 @@ public:
   //  Double_t GetBeta() const {return fBeta[];}
 
   Double_t GetBeta(Int_t iii) const {return fBeta[iii];} // Ahmed
-  //  Int_t GetEvent(){ return fCheckEvent;}
+  Int_t GetEvent(){ return fCheckEvent;}
 
   Double_t GetHodoPosSigma(Int_t iii) const {return fHodoPosSigma[iii];}
   Double_t GetHodoNegSigma(Int_t iii) const {return fHodoNegSigma[iii];}

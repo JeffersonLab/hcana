@@ -104,6 +104,8 @@ THcHallCSpectrometer::~THcHallCSpectrometer()
   delete [] f2XHits;              f2XHits = NULL;            // Ahmed  
   delete [] f2YHits;              f2YHits = NULL;            // Ahmed  
 
+  //  delete [] fKeep;                fKeep = NULL;           // Ahmed
+
 }
 
 //_____________________________________________________________________________
@@ -161,6 +163,9 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   f2XHits        = new Int_t [16];
   f2YHits        = new Int_t [16];
 
+  //  fKeep = new Bool_t [MAXHODHIT];
+
+
   // --------------- To get energy from THcShower ----------------------
 
   const char* detector_name = "hod";  
@@ -204,6 +209,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     {"pcentral",              &fPCentral,              kDouble               },
     {"theta_lab",             &fTheta_lab,             kDouble               },
     {"sel_using_scin",        &fSelUsingScin,          kInt,            0,  1},
+    {"sel_using_prune",       &fSelUsingPrune,         kInt,            0,  1},
     {"sel_ndegreesmin",       &fSelNDegreesMin,        kDouble,         0,  1},
     {"sel_dedx1min",          &fSeldEdX1Min,           kDouble,         0,  1},
     {"sel_dedx1max",          &fSeldEdX1Max,           kDouble,         0,  1},
@@ -216,12 +222,32 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     {"scin_2x_dzpos",         &fScin2XdZpos,           kDouble,         0,  1},
     {"scin_2y_zpos",          &fScin2YZpos,            kDouble,         0,  1},
     {"scin_2y_dzpos",         &fScin2YdZpos,           kDouble,         0,  1},
+    {"prune_xp",              &fPruneXp,               kDouble,         0,  1},
+    {"prune_yp",              &fPruneYp,               kDouble,         0,  1},
+    {"prune_ytar",            &fPruneYtar,             kDouble,         0,  1},
+    {"prune_delta",           &fPruneDelta,            kDouble,         0,  1},
+    {"prune_beta",            &fPruneBeta,             kDouble,         0,  1},
+    {"prune_df",              &fPruneDf,               kDouble,         0,  1},
+    {"prune_chibeta",         &fPruneChiBeta,          kDouble,         0,  1},
+    {"prune_npmt",            &fPruneFpTime,           kDouble,         0,  1},
+    {"prune_fptime",          &fPruneNPMT,             kDouble,         0,  1},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   //
 
   cout << "\n\n\nhodo planes = " << fNPlanes << endl;
+  cout << "sel using scin = " << fSelUsingScin << endl;
+  cout <<  "fPruneXp = "      <<  fPruneXp << endl; 
+  cout <<  "fPruneYp = "      <<  fPruneYp << endl; 
+  cout <<  "fPruneYtar = "    <<  fPruneYtar << endl; 
+  cout <<  "fPruneDelta = "   <<  fPruneDelta << endl; 
+  cout <<  "fPruneBeta = "    <<  fPruneBeta << endl; 
+  cout <<  "fPruneDf = "      <<  fPruneDf << endl; 
+  cout <<  "fPruneChiBeta = " <<  fPruneChiBeta << endl; 
+  cout <<  "fPruneFpTime = "  <<  fPruneFpTime << endl; 
+  cout <<  "fPruneNPMT = "    <<  fPruneNPMT << endl; 
+  cout << "sel using prune = " << fSelUsingPrune << endl;
   cout << " fPcentral = " <<  fPCentral << " " <<fPCentralOffset << endl; 
   cout << " fThate_lab = " <<  fTheta_lab << " " <<fThetaCentralOffset << endl; 
   fPCentral= fPCentral*(1.+fPCentralOffset/100.);
@@ -394,7 +420,7 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 Int_t THcHallCSpectrometer::TrackCalc()
 {
 
-  if ( fSelUsingScin == 0 ) {
+  if ( ( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 ) ) {
     
     if( GetTrSorting() )
       fTracks->Sort();
@@ -592,7 +618,91 @@ Int_t THcHallCSpectrometer::TrackCalc()
     
   }
 
+  //-------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------------
+
+  if ( fSelUsingPrune == 1 ){
     
+    fPruneXp      = TMath::Max( 0.08, fPruneXp); 
+    fPruneYp      = TMath::Max( 0.04, fPruneYp); 
+    fPruneYtar    = TMath::Max( 4.0,  fPruneYtar); 
+    fPruneDelta   = TMath::Max( 13.0, fPruneDelta); 
+    fPruneBeta    = TMath::Max( 0.1,  fPruneBeta); 
+    fPruneDf      = TMath::Max( 1.0,  fPruneDf); 
+    fPruneChiBeta = TMath::Max( 2.0,  fPruneChiBeta); 
+    fPruneFpTime  = TMath::Max( 5.0,  fPruneFpTime); 
+    fPruneNPMT    = TMath::Max( 6.0,  fPruneNPMT); 
+    
+    Int_t ptrack = 0, fNGood;
+
+    if ( fNtracks > 0 ) {
+      fChi2Min   = 10000000000.0;
+      fGoodTrack = 0;    
+      fKeep      = new Bool_t [fNtracks];  
+      fReject    = new Int_t  [fNtracks];  
+
+      THaTrack *testTracks[fNtracks];
+
+      // ! Initialize all tracks to be good
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
+	fKeep[ptrack] = kTRUE;
+	fReject[ptrack] = 0;
+      }      
+
+      // ! Prune on xptar
+      fNGood = 0;
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
+	THaTrack* xpGoodTrack = static_cast<THaTrack*>( fTracks->At(ptrack) );      
+        if (!xpGoodTrack) return -1;	
+
+	testTracks[ptrack] = static_cast<THaTrack*>( fTracks->At(ptrack) );      
+        if (!testTracks[ptrack]) return -1;	
+
+	cout << "  Event = " <<  fHodo->GetEvent()
+	     << "   TargetX = " << xpGoodTrack->GetTX()
+	     << "   test pointer = " << testTracks[ptrack] 
+	     << "   TargetX(test) = " << testTracks[ptrack]->GetTX()
+	     << endl;
+
+	if ( ( TMath::Abs( xpGoodTrack->GetTX() ) < fPruneXp ) && ( fKeep[ptrack] ) ){
+	  fNGood ++;
+	}	
+      }
+      // for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
+     	
+
+      // 	fKeep[ptrack]   = kFALSE;
+      // 	fReject[ptrack] = fReject[ptrack] + 1;
+	
+      // 	cout << "Evnet= "       << fHodo->GetEvent()
+      // 	     << "   track = "   << ptrack + 1
+      // 	     // << "   fKeep = "   << fKeep[ptrack] 
+      // 	     // << "   fReject = " << fReject[ptrack]
+      // 	     << endl;
+      // }
+
+      delete [] fKeep;             fKeep = NULL;           // Ahmed
+      delete [] fReject;           fKeep = NULL;           // Ahmed      
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	
+	testTracks[ptrack] = NULL;
+	delete 	testTracks[ptrack];
+
+	cout << "test pointer = " << testTracks[ptrack] << endl;
+	
+      }	
+      
+
+    } // if at least one track 
+  } // if prune
+  
+  //-------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------------
+
+  cout << endl;  
   return TrackTimes( fTracks );
 }
 
