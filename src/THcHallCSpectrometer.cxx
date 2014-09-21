@@ -127,7 +127,7 @@ Bool_t THcHallCSpectrometer::GetTrSorting() const
 void THcHallCSpectrometer::InitializeReconstruction()
 {
   fNReconTerms = 0;
-  for(Int_t i=0;i<fNReconTerms;i++) {
+  for(Int_t i=0;i<fMaxReconElements;i++) {
     for(Int_t j=0;j<4;j++) {
       fReconCoeff[i][j] = 0.0;
     }
