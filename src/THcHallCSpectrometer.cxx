@@ -53,6 +53,13 @@
 //      additional cuts on the tracks. These cuts are on dedx, beta 
 //      and on energy.
 //
+//  Golden track using prune. Zafar Ahmed. September 23 2014
+//      Selection of golden track using prune method is added.
+//      A bug is also fixed in THcHodoscope class
+//      Number of pmts hits, focal plane time, good time for plane 4 
+//      and good time for plane 3 are set to the tracks in 
+//      THcHodoscope class.
+//
 //////////////////////////////////////////////////////////////////////////
 
 #include "THcHallCSpectrometer.h"
@@ -103,8 +110,6 @@ THcHallCSpectrometer::~THcHallCSpectrometer()
   
   delete [] f2XHits;              f2XHits = NULL;            // Ahmed  
   delete [] f2YHits;              f2YHits = NULL;            // Ahmed  
-
-  //  delete [] fKeep;                fKeep = NULL;           // Ahmed
 
 }
 
@@ -163,9 +168,6 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   f2XHits        = new Int_t [16];
   f2YHits        = new Int_t [16];
 
-  //  fKeep = new Bool_t [MAXHODHIT];
-
-
   // --------------- To get energy from THcShower ----------------------
 
   const char* detector_name = "hod";  
@@ -208,6 +210,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     {"pcentral_offset",       &fPCentralOffset,        kDouble               },
     {"pcentral",              &fPCentral,              kDouble               },
     {"theta_lab",             &fTheta_lab,             kDouble               },
+    {"partmass",              &fPartMass,              kDouble               },
     {"sel_using_scin",        &fSelUsingScin,          kInt,            0,  1},
     {"sel_using_prune",       &fSelUsingPrune,         kInt,            0,  1},
     {"sel_ndegreesmin",       &fSelNDegreesMin,        kDouble,         0,  1},
@@ -229,27 +232,29 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     {"prune_beta",            &fPruneBeta,             kDouble,         0,  1},
     {"prune_df",              &fPruneDf,               kDouble,         0,  1},
     {"prune_chibeta",         &fPruneChiBeta,          kDouble,         0,  1},
-    {"prune_npmt",            &fPruneFpTime,           kDouble,         0,  1},
-    {"prune_fptime",          &fPruneNPMT,             kDouble,         0,  1},
+    {"prune_npmt",            &fPruneNPMT,           kDouble,         0,  1},
+    {"prune_fptime",          &fPruneFpTime,             kDouble,         0,  1},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   //
 
-  cout << "\n\n\nhodo planes = " << fNPlanes << endl;
-  cout << "sel using scin = " << fSelUsingScin << endl;
-  cout <<  "fPruneXp = "      <<  fPruneXp << endl; 
-  cout <<  "fPruneYp = "      <<  fPruneYp << endl; 
-  cout <<  "fPruneYtar = "    <<  fPruneYtar << endl; 
-  cout <<  "fPruneDelta = "   <<  fPruneDelta << endl; 
-  cout <<  "fPruneBeta = "    <<  fPruneBeta << endl; 
-  cout <<  "fPruneDf = "      <<  fPruneDf << endl; 
-  cout <<  "fPruneChiBeta = " <<  fPruneChiBeta << endl; 
-  cout <<  "fPruneFpTime = "  <<  fPruneFpTime << endl; 
-  cout <<  "fPruneNPMT = "    <<  fPruneNPMT << endl; 
-  cout << "sel using prune = " << fSelUsingPrune << endl;
-  cout << " fPcentral = " <<  fPCentral << " " <<fPCentralOffset << endl; 
-  cout << " fThate_lab = " <<  fTheta_lab << " " <<fThetaCentralOffset << endl; 
+
+  cout <<  "\n\n\nhodo planes = " << fNPlanes << endl;
+  cout <<  "sel using scin = "    << fSelUsingScin << endl;
+  cout <<  "fPruneXp = "          <<  fPruneXp << endl; 
+  cout <<  "fPruneYp = "          <<  fPruneYp << endl; 
+  cout <<  "fPruneYtar = "        <<  fPruneYtar << endl; 
+  cout <<  "fPruneDelta = "       <<  fPruneDelta << endl; 
+  cout <<  "fPruneBeta = "        <<  fPruneBeta << endl; 
+  cout <<  "fPruneDf = "          <<  fPruneDf << endl; 
+  cout <<  "fPruneChiBeta = "     <<  fPruneChiBeta << endl; 
+  cout <<  "fPruneFpTime = "      <<  fPruneFpTime << endl; 
+  cout <<  "fPruneNPMT = "        <<  fPruneNPMT << endl; 
+  cout <<  "sel using prune = "   <<  fSelUsingPrune << endl;
+  cout <<  "fPartMass = "         <<  fPartMass << endl;
+  cout <<  "fPcentral = "         <<  fPCentral << " " <<fPCentralOffset << endl; 
+  cout <<  "fThate_lab = "        <<  fTheta_lab << " " <<fThetaCentralOffset << endl; 
   fPCentral= fPCentral*(1.+fPCentralOffset/100.);
   // Check that these offsets are in radians
   fTheta_lab=fTheta_lab + fThetaCentralOffset*TMath::RadToDeg();
@@ -380,6 +385,7 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     // There is an hpcentral_offset that needs to be applied somewhere.
     // (happly_offs)
     track->SetMomentum(fPCentral*(1+track->GetDp()/100.0));
+
   }
 
 
@@ -611,12 +617,12 @@ Int_t THcHallCSpectrometer::TrackCalc()
 	  }
 	} // loop over trakcs
 	
-      } // Condition for fNtrack > 0
+      } 
 
-    } else //  condtion fSelUsingScin == 1
+    } else // Condition for fNtrack > 0
       fGoldenTrack = NULL;
     
-  }
+  } //  condtion fSelUsingScin == 1 
 
   //-------------------------------------------------------------------------------------
   //-------------------------------------------------------------------------------------
@@ -636,6 +642,7 @@ Int_t THcHallCSpectrometer::TrackCalc()
     fPruneNPMT    = TMath::Max( 6.0,  fPruneNPMT); 
     
     Int_t ptrack = 0, fNGood;
+    Double_t fP = 0., fBetaP = 0.; // , fPartMass = 0.00051099; // 5.10989979E-04 Fix it
 
     if ( fNtracks > 0 ) {
       fChi2Min   = 10000000000.0;
@@ -649,60 +656,226 @@ Int_t THcHallCSpectrometer::TrackCalc()
       for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	fKeep[ptrack] = kTRUE;
 	fReject[ptrack] = 0;
+	testTracks[ptrack] = static_cast<THaTrack*>( fTracks->At(ptrack) );      
+        if (!testTracks[ptrack]) return -1;	
       }      
-
+      
       // ! Prune on xptar
       fNGood = 0;
       for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
-	THaTrack* xpGoodTrack = static_cast<THaTrack*>( fTracks->At(ptrack) );      
-        if (!xpGoodTrack) return -1;	
-
-	testTracks[ptrack] = static_cast<THaTrack*>( fTracks->At(ptrack) );      
-        if (!testTracks[ptrack]) return -1;	
-
-	cout << "  Event = " <<  fHodo->GetEvent()
-	     << "   TargetX = " << xpGoodTrack->GetTX()
-	     << "   test pointer = " << testTracks[ptrack] 
-	     << "   TargetX(test) = " << testTracks[ptrack]->GetTX()
-	     << endl;
-
-	if ( ( TMath::Abs( xpGoodTrack->GetTX() ) < fPruneXp ) && ( fKeep[ptrack] ) ){
+	if ( ( TMath::Abs( testTracks[ptrack]->GetTTheta() ) < fPruneXp ) && ( fKeep[ptrack] ) ){	  
 	  fNGood ++;
 	}	
       }
-      // for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
-     	
+      if ( fNGood > 0 ) {
+	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
+	  if ( TMath::Abs( testTracks[ptrack]->GetTTheta() ) >= fPruneXp ){
+	    fKeep[ptrack] = kFALSE;
+	    fReject[ptrack] = fReject[ptrack] + 1;
+	  }
+	}
+      }
+      
+      // ! Prune on yptar
+      fNGood = 0;
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
+	if ( ( TMath::Abs( testTracks[ptrack]->GetTPhi() ) < fPruneYp ) && ( fKeep[ptrack] ) ){
+	  fNGood ++; 
+	}
+      }
+      if (fNGood > 0 ) {
+	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
+	  if ( TMath::Abs( testTracks[ptrack]->GetTPhi() ) >= fPruneYp ){
+	    fKeep[ptrack] = kFALSE;
+	    fReject[ptrack] = fReject[ptrack] + 2;
+	    
+	  }		
+	}
+      }
+      
+      // !     Prune on ytar
+      fNGood = 0;
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	
+	if ( ( TMath::Abs( testTracks[ptrack]->GetTY() ) < fPruneYtar ) && ( fKeep[ptrack] ) ){
+	  fNGood ++; 
+	}	
+      }      
+      if (fNGood > 0 ) {
+	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
+	  if ( TMath::Abs( testTracks[ptrack]->GetTY() ) >= fPruneYtar ){
+	    fKeep[ptrack] = kFALSE;
+	    fReject[ptrack] = fReject[ptrack] + 10;
+	  }
+	}
+      }
+      
+      // !     Prune on delta
+      fNGood = 0;
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	
+	if ( ( TMath::Abs( testTracks[ptrack]->GetDp() ) < fPruneDelta ) && ( fKeep[ptrack] ) ){
+	  fNGood ++; 
+	}	
+      }            
+      if (fNGood > 0 ) {
+	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
+	  if ( TMath::Abs( testTracks[ptrack]->GetDp() ) >= fPruneDelta ){
+	    fKeep[ptrack] = kFALSE;
+	    fReject[ptrack] = fReject[ptrack] + 20;
+	  }
+	}
+      }      
+            
+      // !     Prune on beta
+      fNGood = 0;
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	fP = testTracks[ptrack]->GetP();
+	fBetaP = fP / TMath::Sqrt( fP * fP + fPartMass * fPartMass );       
+	if ( ( TMath::Abs( testTracks[ptrack]->GetBeta() - fBetaP ) < fPruneBeta ) && ( fKeep[ptrack] ) ){
+	  fNGood ++; 
+	}	
+      }
+      if (fNGood > 0 ) {
+	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	  fP = testTracks[ptrack]->GetP();
+	  fBetaP = fP / TMath::Sqrt( fP * fP + fPartMass * fPartMass );       
+	  if ( TMath::Abs( testTracks[ptrack]->GetBeta() - fBetaP ) >= fPruneBeta ) {	    
+	    fKeep[ptrack] = kFALSE;
+	    fReject[ptrack] = fReject[ptrack] + 100;	          
+	  }	  
+	}	
+      }
+      
+      // !     Prune on deg. freedom for track chisq
+      fNGood = 0;
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+	if ( ( testTracks[ptrack]->GetNDoF() >= fPruneDf ) && ( fKeep[ptrack] ) ){
+	  fNGood ++; 	  
+	}		
+      }          
+      if (fNGood > 0 ) {
+	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	  if ( testTracks[ptrack]->GetNDoF() < fPruneDf ){	  
+	    fKeep[ptrack] = kFALSE;
+	    fReject[ptrack] = fReject[ptrack] + 200;
+	  }
+	}
+      }
 
-      // 	fKeep[ptrack]   = kFALSE;
-      // 	fReject[ptrack] = fReject[ptrack] + 1;
-	
-      // 	cout << "Evnet= "       << fHodo->GetEvent()
-      // 	     << "   track = "   << ptrack + 1
-      // 	     // << "   fKeep = "   << fKeep[ptrack] 
-      // 	     // << "   fReject = " << fReject[ptrack]
-      // 	     << endl;
-      // }
+      //!     Prune on num pmt hits
+      fNGood = 0;
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+	if ( ( testTracks[ptrack]->GetNPMT() >= fPruneNPMT ) && ( fKeep[ptrack] ) ){
+	  fNGood ++; 	  
+	}	        		
+      }
+      if (fNGood > 0 ) {
+	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	  if ( testTracks[ptrack]->GetNPMT() < fPruneNPMT ){
+	    fKeep[ptrack] = kFALSE;
+	    fReject[ptrack] = fReject[ptrack] + 100000;
+	  }
+	}
+      }
 
-      delete [] fKeep;             fKeep = NULL;           // Ahmed
-      delete [] fReject;           fKeep = NULL;           // Ahmed      
+      // !     Prune on beta chisqr
+      fNGood = 0;
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+	if ( ( testTracks[ptrack]->GetBetaChi2() < fPruneChiBeta ) && 
+	     ( testTracks[ptrack]->GetBetaChi2() > 0.01 )          &&   ( fKeep[ptrack] ) ){
+	  fNGood ++; 	  
+	}	        			
+      }
+      if (fNGood > 0 ) {
+	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	  if ( ( testTracks[ptrack]->GetBetaChi2() >= fPruneChiBeta ) || 
+	       ( testTracks[ptrack]->GetBetaChi2() <= 0.01          ) ){
+	    fKeep[ptrack] = kFALSE;
+	    fReject[ptrack] = fReject[ptrack] + 1000;
+	  }	  	  
+	}
+      }
+
+      // !     Prune on fptime
+      fNGood = 0;
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+	if ( ( TMath::Abs( testTracks[ptrack]->GetFPTime() - fHodo->GetStartTimeCenter() ) < fPruneFpTime )  &&   
+	     ( fKeep[ptrack] ) ){
+	  fNGood ++; 	  
+	}	        			
+      }
+      if (fNGood > 0 ) {
+	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	  if ( TMath::Abs( testTracks[ptrack]->GetFPTime() - fHodo->GetStartTimeCenter() ) >= fPruneFpTime ) {
+	    fKeep[ptrack] = kFALSE;
+	    fReject[ptrack] = fReject[ptrack] + 2000;	    	    
+	  }
+	}
+      }
+      
+      // !     Prune on Y2 being hit
+      fNGood = 0;
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+	if ( ( testTracks[ptrack]->GetGoodPlane4() == 1 )  &&  fKeep[ptrack] ) {
+	  fNGood ++; 	  	  
+	}	        			
+      }
+      if (fNGood > 0 ) {
+	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	  if ( testTracks[ptrack]->GetGoodPlane4() != 1 ) {
+	    fKeep[ptrack] = kFALSE;
+	    fReject[ptrack] = fReject[ptrack] + 10000;	    	    
+	  }
+	}
+      }      
+      
+      // !     Prune on X2 being hit
+      fNGood = 0;
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+	if ( ( testTracks[ptrack]->GetGoodPlane3() == 1 )  &&  fKeep[ptrack] ) {
+	  fNGood ++; 	  	  
+	}	        			
+      }
+      if (fNGood > 0 ) {
+	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	  if ( testTracks[ptrack]->GetGoodPlane3() != 1 ) {
+	    fKeep[ptrack] = kFALSE;
+	    fReject[ptrack] = fReject[ptrack] + 20000;	    	    	    	    
+	  }
+	}
+      }      
+      
+      // !     Pick track with best chisq if more than one track passed prune tests
+      Double_t fChi2PerDeg = 0.;
+      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+
+	fChi2PerDeg =  testTracks[ptrack]->GetChi2() / testTracks[ptrack]->GetNDoF();
+
+	if ( ( fChi2PerDeg < fChi2Min ) && ( fKeep[ptrack] ) ){
+	  fGoodTrack = ptrack;
+	  fChi2Min = fChi2PerDeg;
+	}	
+      }      
+
+      fGoldenTrack = static_cast<THaTrack*>( fTracks->At(fGoodTrack) );
+      fTrkIfo      = *fGoldenTrack;
+      fTrk         = fGoldenTrack;
+      
+      delete [] fKeep;             fKeep = NULL;        
+      delete [] fReject;           fKeep = NULL;        
       for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	
 	testTracks[ptrack] = NULL;
 	delete 	testTracks[ptrack];
-
-	cout << "test pointer = " << testTracks[ptrack] << endl;
-	
-      }	
+      }	      
       
-
-    } // if at least one track 
+    } else // Condition for fNtrack > 0
+      fGoldenTrack = NULL;
   } // if prune
   
   //-------------------------------------------------------------------------------------
   //-------------------------------------------------------------------------------------
   //-------------------------------------------------------------------------------------
   //-------------------------------------------------------------------------------------
-
-  cout << endl;  
+  //  cout << endl;
   return TrackTimes( fTracks );
 }
 

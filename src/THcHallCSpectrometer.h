@@ -58,6 +58,7 @@ protected:
   Bool_t*      fKeep;
   Int_t*       fReject;
 
+  Double_t     fPartMass;
   Double_t     fPruneXp;
   Double_t     fPruneYp;
   Double_t     fPruneYtar;

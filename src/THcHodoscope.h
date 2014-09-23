@@ -78,10 +78,10 @@ public:
   //  Double_t GetBeta() const {return fBeta[];}
 
   Double_t GetBeta(Int_t iii) const {return fBeta[iii];} // Ahmed
-  Int_t GetEvent(){ return fCheckEvent;}
+  //  Int_t GetEvent(){ return fCheckEvent;}
 
   Double_t GetHodoPosSigma(Int_t iii) const {return fHodoPosSigma[iii];}
-  Double_t GetHodoNegSigma(Int_t iii) const {return fHodoNegSigma[iii];}
+  Double_t GetHodoNegSigma(Int_t iii) const {return fNPmtHit[iii];}
 
 
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
@@ -146,11 +146,11 @@ protected:
 
   THcShower* fShower;
 
-  Int_t        fCheckEvent;
+  //  Int_t        fCheckEvent;
 
   Int_t        fGoodTrack;
   Int_t        MAXHODHITS;
-  //  Int_t        fSelUsingScin;
+
   Int_t        fSelNDegreesMin;
   Double_t     fSeldEdX1Min;
   Double_t     fSeldEdX1Max;
