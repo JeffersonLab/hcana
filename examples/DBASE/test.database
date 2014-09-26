@@ -9,6 +9,7 @@ htheta_lab = 10.99
 spcentral = 1.73
 stheta_lab = -32.32
 hpartmass = 0.13957
+spartmass = 0.00051099
 52949
 g_ctp_parm_filename="PARAM/52949/general.param"
 g_decode_map_filename="MAPS/july04.map"
