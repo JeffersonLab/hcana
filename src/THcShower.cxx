@@ -947,6 +947,7 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 	if (dx <= deltaX) {
 	  mclust = i;
 	  deltaX = dx;
+
 	}
       }
     }
@@ -1046,11 +1047,6 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 
     Float_t energy = GetShEnergy(theTrack);
     theTrack->SetEnergy(energy);
-
-    // if ( fEvent == 13252 )
-    //   cout << "THcShower: track = " << itrk + 1 
-    // 	   << "   energy = " << energy << endl;
-
 
     if (fdbg_tracks_cal) {
       cout << "THcShower::FineProcess, Track " << itrk << ": "
