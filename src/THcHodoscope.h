@@ -68,7 +68,7 @@ public:
   Double_t GetStartTimeSlop() const {return fStartTimeSlop;}
   Double_t GetBetaNotrk() const {return fBetaNotrk;}
 
-  Int_t GetGoodRawPad(Int_t iii){return fGoodRawPad[iii];}
+  Int_t GetGoodRawPad(Int_t iii){return fTOFCalc[iii].good_raw_pad;}
   Double_t GetNScinHits(Int_t iii){return fNScinHits[iii];}
 
   Int_t GetNPaddles(Int_t iii) { return fNPaddle[iii];}
@@ -77,11 +77,12 @@ public:
 
   //  Double_t GetBeta() const {return fBeta[];}
 
-  Double_t GetBeta(Int_t iii) const {return fBeta[iii];} // Ahmed
+  // Not used
+  //Double_t GetBeta(Int_t itrack) const {return fBeta[itrack];} // Ahmed
   //  Int_t GetEvent(){ return fCheckEvent;}
 
   Double_t GetHodoPosSigma(Int_t iii) const {return fHodoPosSigma[iii];}
-  Double_t GetHodoNegSigma(Int_t iii) const {return fNPmtHit[iii];}
+  Double_t GetHodoNegSigma(Int_t iii) const {return fHodoNegSigma[iii];}
 
 
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
@@ -146,11 +147,11 @@ protected:
 
   THcShower* fShower;
 
-  //  Int_t        fCheckEvent;
+  Int_t        fCheckEvent;
 
   Int_t        fGoodTrack;
   Int_t        MAXHODHITS;
-
+  //  Int_t        fSelUsingScin;
   Int_t        fSelNDegreesMin;
   Double_t     fSeldEdX1Min;
   Double_t     fSeldEdX1Max;
@@ -167,53 +168,36 @@ protected:
   Double_t*    fPlaneCenter;
   Double_t*    fPlaneSpacing;
 
-  Double_t**   fdEdX;                   // [MAXHODHITS] Array
+  //  Double_t**   fdEdX;                   // [MAXHODHITS] Array
   Double_t**   fScinHit;                // [fNPlanes] Array
-  Int_t*       fGoodRawPad;
-  Double_t*    fBeta;                 // [MAXHODHITS] Array
-  Double_t*    fBetaChisq;            // [MAXHODHITS] Array
+  //  Int_t*       fGoodRawPad;
+  //  Double_t*    fBeta;                 // [MAXHODHITS] Array
+  //  Double_t*    fBetaChisq;            // [MAXHODHITS] Array
 
   Double_t*    fFPTime;               // [fNPlanes] Array 
 
 
-  Double_t* fScinSigma;
-  Double_t* fGoodScinTime;
-  Double_t* fScinTime;
-  Double_t* fTime;
-  Double_t* adcPh;                    // Correct it
-  Double_t* fTimeAtFP;
-  Double_t* fPath;
-  Double_t* fTimePos;
-  Double_t* fTimeNeg;
-  Double_t* fScinTimefp;
-  Double_t* fScinPosTime;
-  Double_t* fScinNegTime;
-  Double_t* fSumPlaneTime;
+  //  Double_t* fTimeAtFP; 
+  Double_t* fSumPlaneTime; // [fNPlanes]
 
-  Int_t* fHitPaddle;
-  Int_t* fNScinHit;
-  Int_t* fNScinHits;
-  Int_t* fNPmtHit;
-  Int_t* fTimeHist;
-  Int_t* fNPlaneTime;
+  //  Int_t* fHitPaddle;
+  //  Int_t* fNScinHit;		// ntracks
+  Int_t* fNScinHits;  // [fNPlanes]
+  //  Int_t* fNPmtHit;    // ntracks
+  Int_t fTimeHist[200];
+  Int_t* fNPlaneTime; // [fNPlanes]
 
-  Bool_t* fScinGoodTime;
-  Bool_t* fKeepPos;
-  Bool_t* fKeepNeg;
-  Bool_t* fGoodPlaneTime;
-  Bool_t* fGoodTDCPos;
-  Bool_t* fGoodTDCNeg;
-
-  Int_t fGoodTimeIndex;
+  //  Bool_t* fScinGoodTime;
+  //  Bool_t* fKeepPos;
+  //  Bool_t* fKeepNeg;
+  Bool_t* fGoodPlaneTime;  // [fNPlanes]
+  //  Bool_t* fGoodTDCPos;
+  //  Bool_t* fGoodTDCNeg;
 
   TClonesArray* scinPosADC;
   TClonesArray* scinNegADC;
   TClonesArray* scinPosTDC;
   TClonesArray* scinNegTDC;
-
-  //test array
-  Double_t test_arr[53];
-  Double_t test_arr1[2];
 
   //----------------------------------------------------------------
 
@@ -234,6 +218,43 @@ protected:
   //    Double_t*  gain;
   //  } fDataDest[NDEST];     // Lookup table for decoder
 
+  // Used in TOF calculation (FineProcess) to hold information about hits
+  // within a given plane
+  struct TOFPInfo {
+    Double_t time_pos;
+    Double_t time_neg;
+    Bool_t keep_pos;
+    Bool_t keep_neg;
+    Double_t adcPh;
+    Double_t path;
+    Double_t time;
+    Double_t scin_pos_time;
+    Double_t scin_neg_time;
+    TOFPInfo () : time_pos(-99.0), time_neg(-99.0), keep_pos(kFALSE),
+		  keep_neg(kFALSE), scin_pos_time(0.0), scin_neg_time(0.0) {}
+  };
+  std::vector<TOFPInfo> fTOFPInfo;
+  
+  // Used to hold information about all hits within the hodoscope for the TOF
+  struct TOFCalc {
+    Int_t hit_paddle;
+    Int_t good_raw_pad;
+    Bool_t good_scin_time;
+    Bool_t good_tdc_pos;
+    Bool_t good_tdc_neg;
+    Double_t scin_time;
+    Double_t scin_sigma;
+    TOFCalc() : good_scin_time(kFALSE), good_tdc_pos(kFALSE),
+		good_tdc_neg(kFALSE) {}
+  };
+  std::vector<TOFCalc> fTOFCalc;
+    // This doesn't work because we clear this structure each track
+    // Do we need an vector of vectors of structures?
+    // Start with a separate vector of vectors for now.
+  std::vector<std::vector<Double_t> > fdEdX;	// Vector over track #
+  std::vector<Int_t > fNScinHit;		// # scins hit for the track
+  // Could combine the above into a structure
+    
   void           ClearEvent();
   void           DeleteArrays();
   virtual Int_t  ReadDatabase( const TDatime& date );
