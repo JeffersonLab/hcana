@@ -92,8 +92,6 @@ public:
   THcHodoscope();  // for ROOT I/O
 protected:
 
-  //  std::vector<bool> myScinGoodTime;  // Ahmed
-
   Int_t fAnalyzePedestals;
 
   // Calibration
@@ -103,10 +101,7 @@ protected:
   Double_t fStartTime; 
   Int_t fNfptimes;
 
-  //  Double_t fdEdX;
-
   Double_t fBetaNotrk;
-  //  Double_t fBeta;  
   // Per-event data
 
   // Potential Hall C parameters.  Mostly here for demonstration
@@ -151,7 +146,6 @@ protected:
 
   Int_t        fGoodTrack;
   Int_t        MAXHODHITS;
-  //  Int_t        fSelUsingScin;
   Int_t        fSelNDegreesMin;
   Double_t     fSeldEdX1Min;
   Double_t     fSeldEdX1Max;
@@ -168,31 +162,18 @@ protected:
   Double_t*    fPlaneCenter;
   Double_t*    fPlaneSpacing;
 
-  //  Double_t**   fdEdX;                   // [MAXHODHITS] Array
   Double_t**   fScinHit;                // [fNPlanes] Array
-  //  Int_t*       fGoodRawPad;
-  //  Double_t*    fBeta;                 // [MAXHODHITS] Array
-  //  Double_t*    fBetaChisq;            // [MAXHODHITS] Array
 
   Double_t*    fFPTime;               // [fNPlanes] Array 
 
 
-  //  Double_t* fTimeAtFP; 
   Double_t* fSumPlaneTime; // [fNPlanes]
 
-  //  Int_t* fHitPaddle;
-  //  Int_t* fNScinHit;		// ntracks
   Int_t* fNScinHits;  // [fNPlanes]
-  //  Int_t* fNPmtHit;    // ntracks
   Int_t fTimeHist[200];
   Int_t* fNPlaneTime; // [fNPlanes]
 
-  //  Bool_t* fScinGoodTime;
-  //  Bool_t* fKeepPos;
-  //  Bool_t* fKeepNeg;
   Bool_t* fGoodPlaneTime;  // [fNPlanes]
-  //  Bool_t* fGoodTDCPos;
-  //  Bool_t* fGoodTDCNeg;
 
   TClonesArray* scinPosADC;
   TClonesArray* scinNegADC;

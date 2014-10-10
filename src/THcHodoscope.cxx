@@ -193,13 +193,6 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
       return kInitError;
   }
 
-  //  fGoodRawPad    = new Int_t [MAXHODHITS];
-  //  fNScinHit      = new Int_t [MAXHODHITS];
-  //  fNPmtHit       = new Int_t [MAXHODHITS];
-  //fTimeHist      = new Int_t [200];
-
-  // fTimeAtFP      = new Double_t [MAXHODHITS];
-
   fNScinHits     = new Int_t [fNPlanes];
   fGoodPlaneTime = new Bool_t [fNPlanes];
   fNPlaneTime    = new Int_t [fNPlanes];
@@ -341,9 +334,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 {
 
   MAXHODHITS = 53;
-  /* These don't need to be arrays */
-  //  fBeta = new Double_t[ MAXHODHITS ];
-  //  fBetaChisq = new Double_t[ MAXHODHITS ];
 
   // Read this detector's parameters from the database file 'fi'.
   // This function is called by THaDetectorBase::Init() once at the
@@ -373,13 +363,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fFPTime = new Double_t [fNPlanes];
   fPlaneCenter = new Double_t[fNPlanes];
   fPlaneSpacing = new Double_t[fNPlanes];
-
-  //  fSpacing = new Double_t [fNPlanes];
-  //fCenter = new Double_t* [fNPlanes];
-
-  // An alternate way to get these variables
-  // Can add Xscin_P_center when LoadParmValues supports arrays
-  
 
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   //
@@ -559,8 +542,6 @@ THcHodoscope::~THcHodoscope()
   // Destructor. Remove variables from global list.
 
   delete [] fFPTime;
-  //  delete [] fBeta;
-  //  delete [] fBetaChisq;
   delete [] fPlaneCenter;
   delete [] fPlaneSpacing;
 
@@ -579,10 +560,6 @@ void THcHodoscope::DeleteArrays()
 {
   // Delete member arrays. Used by destructor.
   Int_t k;  
-  //  for( k = 0; k < MAXHODHITS; k++){
-  //    delete [] fdEdX[k];
-  //  }
-  //  delete [] fdEdX;
   
   for( k = 0; k < fNPlanes; k++){
     delete [] fScinHit[k];
@@ -606,13 +583,6 @@ void THcHodoscope::DeleteArrays()
   delete [] fHodoPosInvAdcLinear; fHodoPosInvAdcLinear = NULL;
   delete [] fHodoNegInvAdcLinear; fHodoNegInvAdcLinear = NULL;
   delete [] fHodoPosInvAdcAdc;    fHodoPosInvAdcAdc = NULL;
-
-  //  delete [] fGoodRawPad;          fGoodRawPad = NULL;        // Ahmed
-  //  delete [] fNScinHit;            fNScinHit = NULL;          // Ahmed
-  //  delete [] fNPmtHit;             fNPmtHit = NULL;           // Ahmed
-  //delete [] fTimeHist;            fTimeHist = NULL;          // Ahmed
-  //  delete [] fTimeAtFP;            fTimeAtFP = NULL;          // Ahmed
-
 
   delete [] fGoodPlaneTime;       fGoodPlaneTime = NULL;     // Ahmed
   delete [] fNPlaneTime;          fNPlaneTime = NULL;        // Ahmed
@@ -776,19 +746,13 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 
   Int_t Ntracks = tracks.GetLast()+1; // Number of reconstructed tracks
   Int_t fJMax, fMaxHit;
-  Int_t fRawIndex = -1; //, fNScinHits[fNPlanes]; 
+  Int_t fRawIndex = -1;
   Double_t fScinTrnsCoord, fScinLongCoord, fScinCenter, fSumfpTime;
   Double_t fP, fXcoord, fYcoord, fTMin, fNfpTime;
   // -------------------------------------------------
 
   Double_t hpartmass=0.00051099; // Fix it
  
-  //  for ( Int_t itrack=0; itrack < Ntracks; itrack++) {
-  //    for(Int_t k = 0; k < MAXHODHITS; k++){
-  //      fdEdX[itrack][k] = 0.;
-  //    }
-  //  }
-
   if (tracks.GetLast()+1 > 0 ) {
 
     // **MAIN LOOP: Loop over all tracks and get corrected time, tof, beta...
@@ -834,9 +798,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       
       for (Int_t j=0; j<200; j++) { fTimeHist[j]=0; } // Line 176
       
-      // fNPlaneTime =  new Int_t [4];
-      // fSumPlaneTime =  new Double_t [4];
-
       // Loop over scintillator planes.
       // In ENGINE, its loop over good scintillator hits.
       
@@ -972,15 +933,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  }
 	} // fJMax > 0 condition
 	
-	// fScinPosTime = new Double_t [MAXHODHITS];
-	// fScinNegTime = new Double_t [MAXHODHITS];
-
-	// Zero these when we init the structure
-	//for ( k = 0; k < MAXHODHITS; k++ ){
-	//	  fScinPosTime[k] = 0;
-	//	  fScinNegTime[k] = 0;
-	//	}
-
 	//---------------------------------------------------------------------------------------------	
 	// ---------------------- Scond loop over scint. hits in a plane ------------------------------
 	//---------------------------------------------------------------------------------------------
@@ -1181,7 +1133,8 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  if ( fTOFCalc[ihhit].good_scin_time ){
 	    fGoodPlaneTime[ip] = kTRUE;
 	  }
-	  	  
+
+	  // Can this be done after looping over hits and planes?
 	  if ( fGoodPlaneTime[2] )	theTrack->SetGoodPlane3( 1 );
 	  if ( !fGoodPlaneTime[2] )	theTrack->SetGoodPlane3( 0 );
 	  if ( fGoodPlaneTime[3] )	theTrack->SetGoodPlane4( 1 );
