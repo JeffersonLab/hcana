@@ -105,12 +105,6 @@ THcHallCSpectrometer::~THcHallCSpectrometer()
 {
   // Destructor
 
-  delete [] fX2D;                 fX2D = NULL;               // Ahmed
-  delete [] fY2D;                 fY2D = NULL;               // Ahmed
-  
-  delete [] f2XHits;              f2XHits = NULL;            // Ahmed  
-  delete [] f2YHits;              f2YHits = NULL;            // Ahmed  
-
   DefineVariables( kDelete );
 }
 
@@ -179,14 +173,6 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   cout << "In THcHallCSpectrometer::ReadDatabase()" << endl;
 #endif
 
-  MAXHODHITS = 53;
-  
-  fX2D           = new Double_t [MAXHODHITS];
-  fY2D           = new Double_t [MAXHODHITS];
-
-  f2XHits        = new Int_t [16];
-  f2YHits        = new Int_t [16];
-
   // --------------- To get energy from THcShower ----------------------
 
   const char* detector_name = "hod";  
@@ -201,6 +187,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   }
   
   fHodo = static_cast<THcHodoscope*>(det);     // fHodo is a membervariable
+
   // fShower = static_cast<THcShower*>(det);     // fShower is a membervariable
   
   // --------------- To get energy from THcShower ----------------------
@@ -445,6 +432,12 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 Int_t THcHallCSpectrometer::TrackCalc()
 {
 
+  Double_t* fX2D           = new Double_t [fNtracks];
+  Double_t* fY2D           = new Double_t [fNtracks];
+  Int_t* f2XHits        = new Int_t [fHodo->GetNPaddles(2)];
+  Int_t* f2YHits        = new Int_t [fHodo->GetNPaddles(3)];
+
+
   if ( ( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 ) ) {
     
     if( GetTrSorting() )
@@ -501,7 +494,9 @@ Int_t THcHallCSpectrometer::TrackCalc()
 	    {
 	      	      
 	      for ( j = 0; j < fHodo->GetNPaddles(2); j++ ){ 
-		f2XHits[j] = -1; 
+		f2XHits[j] = -1;
+	      }
+	      for ( j = 0; j < fHodo->GetNPaddles(3); j++ ){ 
 		f2YHits[j] = -1; 
 	      }
 	      

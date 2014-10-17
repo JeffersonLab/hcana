@@ -333,8 +333,6 @@ void THcHodoscope::DefineArray(const char* fName, char** Suffix, const Int_t ind
 Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 {
 
-  MAXHODHITS = 53;
-
   // Read this detector's parameters from the database file 'fi'.
   // This function is called by THaDetectorBase::Init() once at the
   // beginning of the analysis.

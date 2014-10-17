@@ -145,7 +145,6 @@ protected:
   Int_t        fCheckEvent;
 
   Int_t        fGoodTrack;
-  Int_t        MAXHODHITS;
   Int_t        fSelNDegreesMin;
   Double_t     fSeldEdX1Min;
   Double_t     fSeldEdX1Max;

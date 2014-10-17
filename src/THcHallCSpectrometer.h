@@ -53,8 +53,6 @@ public:
 protected:
   void InitializeReconstruction();
 
-  Int_t        MAXHODHITS;
-
   Bool_t*      fKeep;
   Int_t*       fReject;
 
@@ -74,12 +72,6 @@ protected:
   Int_t        fSelUsingPrune;
   Int_t        fNPlanes;
   Int_t        fNtracks;
-
-  Int_t*       f2XHits;
-  Int_t*       f2YHits;
-
-  Double_t*    fX2D;
-  Double_t*    fY2D;
 
   Double_t     fChi2Min;
   Double_t     fSelNDegreesMin;
