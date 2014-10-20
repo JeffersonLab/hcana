@@ -147,14 +147,7 @@ Bool_t THcHallCSpectrometer::GetTrSorting() const
 void THcHallCSpectrometer::InitializeReconstruction()
 {
   fNReconTerms = 0;
-  for(Int_t i=0;i<fMaxReconElements;i++) {
-    for(Int_t j=0;j<4;j++) {
-      fReconCoeff[i][j] = 0.0;
-    }
-    for(Int_t j=0;j<5;j++) {
-      fReconExponents[i][j] = 0;
-    }
-  }
+  fReconTerms.clear();
   fAngSlope_x = 0.0;
   fAngSlope_y = 0.0;
   fAngOffset_x = 0.0;
@@ -301,22 +294,19 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   good = getline(ifile,line).good();
   //  cout << line << endl;
   fNReconTerms = 0;
+  fReconTerms.clear();
+  fReconTerms.reserve(500);
   //cout << "Reading matrix elements" << endl;
   while(good && line.compare(0,4," ---")!=0) {
-    if(fNReconTerms >= fMaxReconElements) {
-      Error(here, "too much data in reconstruction coefficient file %s",reconCoeffFilename.c_str());
-      return kInitError; // Is this the right return code?
-    }
+    fReconTerms.push_back(reconTerm());
     sscanf(line.c_str()," %le %le %le %le %1d%1d%1d%1d%1d"
-	   ,&fReconCoeff[fNReconTerms][0],&fReconCoeff[fNReconTerms][1]
-	   ,&fReconCoeff[fNReconTerms][2],&fReconCoeff[fNReconTerms][3]
-	   ,&fReconExponents[fNReconTerms][0]
-	   ,&fReconExponents[fNReconTerms][1]
-	   ,&fReconExponents[fNReconTerms][2]
-	   ,&fReconExponents[fNReconTerms][3]
-	   ,&fReconExponents[fNReconTerms][4]);
-    // Parse line into fReconCoeff[fNReconTerms][0 - 3] and
-    //                 fReconExponents[fNReconTerms][0 - 5]
+	   ,&fReconTerms[fNReconTerms].Coeff[0],&fReconTerms[fNReconTerms].Coeff[1]
+	   ,&fReconTerms[fNReconTerms].Coeff[2],&fReconTerms[fNReconTerms].Coeff[3]
+	   ,&fReconTerms[fNReconTerms].Exp[0]
+	   ,&fReconTerms[fNReconTerms].Exp[1]
+	   ,&fReconTerms[fNReconTerms].Exp[2]
+	   ,&fReconTerms[fNReconTerms].Exp[3]
+	   ,&fReconTerms[fNReconTerms].Exp[4]);
     fNReconTerms++;
     good = getline(ifile,line).good();    
   }
@@ -372,12 +362,12 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     for(Int_t iterm=0;iterm<fNReconTerms;iterm++) {
       Double_t term=1.0;
       for(Int_t j=0;j<5;j++) {
-	if(fReconExponents[iterm][j]!=0) {
-	  term *= pow(hut_rot[j],fReconExponents[iterm][j]);
+	if(fReconTerms[iterm].Exp[j]!=0) {
+	  term *= pow(hut_rot[j],fReconTerms[iterm].Exp[j]);
 	}
       }
       for(Int_t k=0;k<4;k++) {
-	sum[k] += term*fReconCoeff[iterm][k];
+	sum[k] += term*fReconTerms[iterm].Coeff[k];
       }
     }
     // Transfer results to track

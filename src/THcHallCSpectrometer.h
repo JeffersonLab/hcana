@@ -94,12 +94,22 @@ protected:
   THcShower* fShower;
   THcHodoscope* fHodo;
 
-  // Should look at the ThaMatrixElement class in THaVDC.h for better way
-  // to store matrix element data
-#define fMaxReconElements 1000
   Int_t fNReconTerms;
-  Double_t fReconCoeff[fMaxReconElements][4];
-  Int_t fReconExponents[fMaxReconElements][5];
+  struct reconTerm {
+    Double_t Coeff[4];
+    Int_t Exp[5];
+    reconTerm() {
+      for(Int_t i=0;i<4;i++) {
+	Coeff[i] = 0.0;
+      }
+      for(Int_t i=0;i<5;i++) {
+	Exp[i] = 0;
+      }
+    }
+  };
+  std::vector<reconTerm> fReconTerms;
+  //  Double_t fReconCoeff[fMaxReconElements][4];
+  //  Int_t fReconExponents[fMaxReconElements][5];
   Double_t fAngSlope_x;
   Double_t fAngSlope_y;
   Double_t fAngOffset_x;
