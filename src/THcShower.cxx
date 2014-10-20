@@ -697,18 +697,19 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
       THcShowerCluster* cluster = (*fClusterList).ListedCluster(i);
 
-      //cout << "Cluster #" << i 
-	   //<<":  E=" << (*cluster).clE() 
-	   //<< "  Epr=" << (*cluster).clEpr()
-	   //<< "  X=" << (*cluster).clX()
-	   //<< "  Z=" << (*cluster).clZ()
-	   //<< "  size=" << (*cluster).clSize()
-	   //<< endl;
+      cout << "Cluster #" << i 
+	   <<":  E=" << (*cluster).clE() 
+	   << "  Epr=" << (*cluster).clEpr()
+	   << "  X=" << (*cluster).clX()
+	   << "  Z=" << (*cluster).clZ()
+	   << "  size=" << (*cluster).clSize()
+	   << endl;
 
       for (UInt_t j=0; j!=(*cluster).clSize(); j++) {
-       	//THcShowerHit* hit = (*cluster).ClusteredHit(j);
-       	//cout << "  hit #" << j << ":  "; (*hit).show();
+       	THcShowerHit* hit = (*cluster).ClusteredHit(j);
+       	cout << "  hit #" << j << ":  "; (*hit).show();
       }
+      //      cout << endl;
 
     }
   }
@@ -920,10 +921,10 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 	   << "  Pathl = " << pathl
 	   << endl;
 
-    inFidVol = (XTrFront < fvXmax) && (XTrFront > fvXmin) &&
-               (YTrFront < fvYmax) && (YTrFront > fvYmin) &&
-               (XTrBack < fvXmax) && (XTrBack > fvXmin) &&
-               (YTrBack < fvYmax) && (YTrBack > fvYmin);
+    inFidVol = (XTrFront <= fvXmax) && (XTrFront >= fvXmin) &&
+               (YTrFront <= fvYmax) && (YTrFront >= fvYmin) &&
+               (XTrBack <= fvXmax) && (XTrBack >= fvXmin) &&
+               (YTrBack <= fvYmax) && (YTrBack >= fvYmin);
 
     if (fdbg_tracks_cal) 
       cout << "  Fiducial volume test: inFidVol = " << inFidVol << endl;
@@ -936,7 +937,12 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 
   if (inFidVol) {
 
-    for (Int_t i=0; i<fNclust; i++) {
+    //    for (Int_t i=0; i<fNclust; i++) {
+
+    // Since hits and clusters are in reverse order (with respect to Engine),
+    // search backwards to be consistent with Engine.
+    //
+    for (Int_t i=fNclust-1; i>-1; i--) {
 
       THcShowerCluster* cluster = (*fClusterList).ListedCluster(i);
 
@@ -944,7 +950,7 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 
       if (dx <= (0.5*BlockThick[0] + fSlop)) {
 	fNtracks++;  // number of shower tracks (Consistent with engine)
-	if (dx <= deltaX) {
+	if (dx < deltaX) {
 	  mclust = i;
 	  deltaX = dx;
 	}
