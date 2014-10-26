@@ -14,8 +14,6 @@
 #include "THcShowerCluster.h"
 #include "TMath.h"
 
-class THaScCalib;
-
 class THcShower : public THaNonTrackingDetector, public THcHitList {
 
 public:
@@ -28,14 +26,8 @@ public:
   virtual Int_t      CoarseProcess( TClonesArray& tracks );
   virtual Int_t      FineProcess( TClonesArray& tracks );
   
-  virtual Int_t      ApplyCorrections( void );
-
   Int_t GetNHits() const { return fNhits; }
   
-  // These are not used in the calorimeter code.
-  //  Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
-  //  const TClonesArray* GetTrackHits() const { return fTrackProj; }
-
   Int_t GetNBlocks(Int_t NLayer) const { return fNBlocks[NLayer];}
 
   Double_t GetXPos(Int_t NLayer, Int_t NRaw) const {
@@ -53,8 +45,6 @@ public:
   Double_t GetZPos(Int_t NLayer) const {return fNLayerZPos[NLayer];}
 
   Double_t GetBlockThick(Int_t NLayer) {return BlockThick[NLayer];}
-
-  //  friend class THaScCalib; not needed for now.
 
   Int_t GetPedLimit(Int_t NBlock, Int_t NLayer, Int_t Side) {
     if (Side!=0&&Side!=1) {
@@ -80,10 +70,6 @@ public:
 
   Int_t GetMinPeds() {
     return fShMinPeds;
-  }
-
-  Int_t GetMult() {
-    return fMult;
   }
 
   Int_t GetNLayers() {
@@ -134,32 +120,12 @@ protected:
 
   Int_t fNhits;              // Total number of hits
   Int_t fNclust;             // Number of clusters
-  Int_t fNtracks;            // Number of shower tracks, i.e. tracks with
-                             // associated clusters
-  Double_t fE;               // Energy of the largest cluster
-  Double_t fEpr;             // Preshower Energy of the largest cluster
-  Double_t fX;               // x-position (cm) of the largest cluster
-  Double_t fZ;               // z-position (cm) of the largest cluster
-  Int_t fMult;               // # of hits in the largest cluster
-  //  Int_t fNblk;           // Number of blocks in main cluster
-  //  Double_t* fEblk;       // Energies of blocks in main cluster
+  Int_t fNtracks;            // Number of shower tracks, i.e. number of
+                             // cluster-to-track association
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
-  // Track quantities, are here for test purposes. Better to move
-  // to the track class(es) later on.
-
-  Double_t fTRX;             // track x-position in det plane (1st track)
-  Double_t fTRY;             // track y-position in det plane (1st track)
-  Double_t fTRE;             // Energy of a cluster associated to the track
-  Double_t fTREpr;           // Preshower Energy of the track's cluster
-  Double_t fTRE_cor;         // Y-corrected track total energy
-  Double_t fTREpr_cor;       // Y-corrected track Preshower energy
-  Double_t* fTREpl_cor;      // [fNLayers] Y-corrected track energy per plane
-  Double_t* fTREpl_pos_cor;  // [fNLayers] Y-corrected track positive energy per plane
-  Double_t* fTREpl_neg_cor;  // [fNLayers] Y-corrected track negative energy per plane
-
-  // Potential Hall C parameters.  Mostly here for demonstration
+  // Geometrical parameters.
 
   char** fLayerNames;
   Int_t fNLayers;               // Number of layers in the calorimeter
@@ -204,8 +170,7 @@ protected:
 
   void Setup(const char* name, const char* description);
 
-  // cluster to track association method.
-
+  // Cluster to track association method.
   Int_t MatchCluster(THaTrack*, Double_t&, Double_t&);
 
   friend class THcShowerPlane;   //to access debug flags.

@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Tue Oct  7 08:29:09 2014 by ROOT version 5.34/06
+// Wed Oct 22 09:01:11 2014 by ROOT version 5.34/06
 // from TTree T/Hall A Analyzer Output DST
 // found on file: hodtest_52949.root
 //////////////////////////////////////////////////////////
@@ -13,8 +13,6 @@
 #include <TFile.h>
 
 // Header file for the classes stored in the TTree if any.
-#include "./podd/src/THaEvent.h"
-#include "./podd/src/THaEvent.h"
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
@@ -39,7 +37,7 @@ public :
    Int_t           Ndata_H_cal_1pr_epos;
    Double_t        H_cal_1pr_epos[13];   //[Ndata.H.cal.1pr.epos]
    Int_t           Ndata_H_cal_1pr_negadchits;
-   Double_t        H_cal_1pr_negadchits[9];   //[Ndata.H.cal.1pr.negadchits]
+   Double_t        H_cal_1pr_negadchits[10];   //[Ndata.H.cal.1pr.negadchits]
    Int_t           Ndata_H_cal_1pr_posadchits;
    Double_t        H_cal_1pr_posadchits[8];   //[Ndata.H.cal.1pr.posadchits]
    Int_t           Ndata_H_cal_2ta_aneg;
@@ -57,9 +55,9 @@ public :
    Int_t           Ndata_H_cal_2ta_epos;
    Double_t        H_cal_2ta_epos[13];   //[Ndata.H.cal.2ta.epos]
    Int_t           Ndata_H_cal_2ta_negadchits;
-   Double_t        H_cal_2ta_negadchits[8];   //[Ndata.H.cal.2ta.negadchits]
+   Double_t        H_cal_2ta_negadchits[9];   //[Ndata.H.cal.2ta.negadchits]
    Int_t           Ndata_H_cal_2ta_posadchits;
-   Double_t        H_cal_2ta_posadchits[7];   //[Ndata.H.cal.2ta.posadchits]
+   Double_t        H_cal_2ta_posadchits[10];   //[Ndata.H.cal.2ta.posadchits]
    Int_t           Ndata_H_cal_3ta_aneg;
    Double_t        H_cal_3ta_aneg[13];   //[Ndata.H.cal.3ta.aneg]
    Int_t           Ndata_H_cal_3ta_aneg_p;
@@ -77,7 +75,7 @@ public :
    Int_t           Ndata_H_cal_3ta_negadchits;
    Double_t        H_cal_3ta_negadchits[1];   //[Ndata.H.cal.3ta.negadchits]
    Int_t           Ndata_H_cal_3ta_posadchits;
-   Double_t        H_cal_3ta_posadchits[6];   //[Ndata.H.cal.3ta.posadchits]
+   Double_t        H_cal_3ta_posadchits[9];   //[Ndata.H.cal.3ta.posadchits]
    Int_t           Ndata_H_cal_4ta_aneg;
    Double_t        H_cal_4ta_aneg[13];   //[Ndata.H.cal.4ta.aneg]
    Int_t           Ndata_H_cal_4ta_aneg_p;
@@ -95,7 +93,7 @@ public :
    Int_t           Ndata_H_cal_4ta_negadchits;
    Double_t        H_cal_4ta_negadchits[1];   //[Ndata.H.cal.4ta.negadchits]
    Int_t           Ndata_H_cal_4ta_posadchits;
-   Double_t        H_cal_4ta_posadchits[5];   //[Ndata.H.cal.4ta.posadchits]
+   Double_t        H_cal_4ta_posadchits[9];   //[Ndata.H.cal.4ta.posadchits]
    Int_t           Ndata_H_tr_beta;
    Double_t        H_tr_beta[10];   //[Ndata.H.tr.beta]
    Int_t           Ndata_H_tr_chi2;
@@ -170,20 +168,9 @@ public :
    Double_t        H_cal_4ta_eplane;
    Double_t        H_cal_4ta_eplane_neg;
    Double_t        H_cal_4ta_eplane_pos;
-   Double_t        H_cal_emax;
-   Double_t        H_cal_eprmax;
-   Double_t        H_cal_mult;
    Double_t        H_cal_nclust;
    Double_t        H_cal_nhits;
    Double_t        H_cal_ntracks;
-   Double_t        H_cal_tre;
-   Double_t        H_cal_trecor;
-   Double_t        H_cal_treplcor;
-   Double_t        H_cal_trepr;
-   Double_t        H_cal_treprcor;
-   Double_t        H_cal_trx;
-   Double_t        H_cal_try;
-   Double_t        H_cal_xmax;
    Double_t        H_gold_dp;
    Double_t        H_gold_e;
    Double_t        H_gold_fp_ph;
@@ -358,20 +345,9 @@ public :
    TBranch        *b_H_cal_4ta_eplane;   //!
    TBranch        *b_H_cal_4ta_eplane_neg;   //!
    TBranch        *b_H_cal_4ta_eplane_pos;   //!
-   TBranch        *b_H_cal_emax;   //!
-   TBranch        *b_H_cal_eprmax;   //!
-   TBranch        *b_H_cal_mult;   //!
    TBranch        *b_H_cal_nclust;   //!
    TBranch        *b_H_cal_nhits;   //!
    TBranch        *b_H_cal_ntracks;   //!
-   TBranch        *b_H_cal_tre;   //!
-   TBranch        *b_H_cal_trecor;   //!
-   TBranch        *b_H_cal_treplcor;   //!
-   TBranch        *b_H_cal_trepr;   //!
-   TBranch        *b_H_cal_treprcor;   //!
-   TBranch        *b_H_cal_trx;   //!
-   TBranch        *b_H_cal_try;   //!
-   TBranch        *b_H_cal_xmax;   //!
    TBranch        *b_H_gold_dp;   //!
    TBranch        *b_H_gold_e;   //!
    TBranch        *b_H_gold_fp_ph;   //!
@@ -614,20 +590,9 @@ void hcana_class::Init(TTree *tree)
    fChain->SetBranchAddress("H.cal.4ta.eplane", &H_cal_4ta_eplane, &b_H_cal_4ta_eplane);
    fChain->SetBranchAddress("H.cal.4ta.eplane_neg", &H_cal_4ta_eplane_neg, &b_H_cal_4ta_eplane_neg);
    fChain->SetBranchAddress("H.cal.4ta.eplane_pos", &H_cal_4ta_eplane_pos, &b_H_cal_4ta_eplane_pos);
-   fChain->SetBranchAddress("H.cal.emax", &H_cal_emax, &b_H_cal_emax);
-   fChain->SetBranchAddress("H.cal.eprmax", &H_cal_eprmax, &b_H_cal_eprmax);
-   fChain->SetBranchAddress("H.cal.mult", &H_cal_mult, &b_H_cal_mult);
    fChain->SetBranchAddress("H.cal.nclust", &H_cal_nclust, &b_H_cal_nclust);
    fChain->SetBranchAddress("H.cal.nhits", &H_cal_nhits, &b_H_cal_nhits);
    fChain->SetBranchAddress("H.cal.ntracks", &H_cal_ntracks, &b_H_cal_ntracks);
-   fChain->SetBranchAddress("H.cal.tre", &H_cal_tre, &b_H_cal_tre);
-   fChain->SetBranchAddress("H.cal.trecor", &H_cal_trecor, &b_H_cal_trecor);
-   fChain->SetBranchAddress("H.cal.treplcor", &H_cal_treplcor, &b_H_cal_treplcor);
-   fChain->SetBranchAddress("H.cal.trepr", &H_cal_trepr, &b_H_cal_trepr);
-   fChain->SetBranchAddress("H.cal.treprcor", &H_cal_treprcor, &b_H_cal_treprcor);
-   fChain->SetBranchAddress("H.cal.trx", &H_cal_trx, &b_H_cal_trx);
-   fChain->SetBranchAddress("H.cal.try", &H_cal_try, &b_H_cal_try);
-   fChain->SetBranchAddress("H.cal.xmax", &H_cal_xmax, &b_H_cal_xmax);
    fChain->SetBranchAddress("H.gold.dp", &H_gold_dp, &b_H_gold_dp);
    fChain->SetBranchAddress("H.gold.e", &H_gold_e, &b_H_gold_e);
    fChain->SetBranchAddress("H.gold.fp_ph", &H_gold_fp_ph, &b_H_gold_fp_ph);

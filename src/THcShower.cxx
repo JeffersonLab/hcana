@@ -24,8 +24,6 @@
 #include "THaTrackProj.h"
 #include "TMath.h"
 
-#include "THaTrackProj.h"
-
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
@@ -70,6 +68,7 @@ void THcShower::Setup(const char* name, const char* description)
   };
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+
   if (fdbg_init_cal) {
     cout << layernamelist << endl;
     cout << "Shower Counter: " << fNLayers << " layers" << endl;
@@ -404,12 +403,6 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
   }
 
-  // Corrdinate corrected track energies per plane
-
-  fTREpl_cor     = new Double_t [fNLayers];
-  fTREpl_pos_cor = new Double_t [fNLayers];
-  fTREpl_neg_cor = new Double_t [fNLayers];
-
   // Origin of the calorimeter, at the centre of the face of the detector,
   // or at the centre of the front of the 1-st layer.
   //
@@ -452,27 +445,8 @@ Int_t THcShower::DefineVariables( EMode mode )
 
   RVarDef vars[] = {
     { "nhits", "Number of hits",                                 "fNhits" },
- //   { "a",      "Raw ADC amplitudes",                 "fA" },
- //   { "a_p",    "Ped-subtracted ADC amplitudes",      "fA_p" },
- //   { "a_c",    "Calibrated ADC amplitudes",          "fA_c" },
- //   { "asum_p", "Sum of ped-subtracted ADCs",         "fAsum_p" },
- //   { "asum_c", "Sum of calibrated ADCs",             "fAsum_c" },
     { "nclust", "Number of clusters",                            "fNclust" },
     { "ntracks", "Number of shower tracks",                      "fNtracks" },
-    { "emax",   "Energy of largest cluster",                     "fE" },
-    { "eprmax",   "Preshower Energy of largest cluster",         "fEpr" },
-    { "xmax",      "x-position (cm) of largest cluster",         "fX" },
- //   { "z",      "z-position (cm) of largest cluster", "fZ" },
-    { "mult",   "Multiplicity of largest cluster",               "fMult" },
- //   { "nblk",   "Numbers of blocks in main cluster",  "fNblk" },
- //   { "eblk",   "Energies of blocks in main cluster", "fEblk" },
-    { "trx",      "track x-position in det plane (1st track)",   "fTRX" },
-    { "try",      "track y-position in det plane (1st track)",   "fTRY" },
-    { "tre",      "track energy in the calorimeter (1st track)", "fTRE" },
-    { "trepr",    "track energy in the preshower (1st track)",   "fTREpr" },
-    { "trecor",   "Y-corrected track Edep (1st track)",          "fTRE_cor" },
-    { "treprcor", "Y-corrected track Epr (1st track)",           "fTREpr_cor" },
-    { "treplcor", "Y-corrected track Edep for planes",           "fTREpl_cor" },
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
@@ -504,8 +478,6 @@ void THcShower::DeleteArrays()
   delete [] fNLayerZPos;  fNLayerZPos = NULL;
   delete [] XPos;  XPos = NULL;
   delete [] ZPos;  ZPos = NULL;
-  //delete [] fSpacing;  fSpacing = NULL;
-  //delete [] fCenter;   fCenter = NULL; // This 2D. What is correct way to delete?
 }
 
 //_____________________________________________________________________________
@@ -519,26 +491,9 @@ void THcShower::Clear(Option_t* opt)
     fPlanes[ip]->Clear(opt);
   }
 
- // fTrackProj->Clear();
-
   fNhits = 0;
   fNclust = 0;
   fNtracks = 0;
-  fMult = 0;
-  fE = 0.;
-  fEpr = 0.;
-  fX = -75.;    //out of acceptance
-  fTRX = -75.;  //out of acceptance
-  fTRY = -40.;  //out of acceptance
-  fTRE = -0.;
-  fTREpr = -0.;
-  fTRE_cor = -0.;
-  fTREpr_cor = -0.;
-  for(Int_t ip=0;ip<fNLayers;ip++) {
-    fTREpl_cor[ip] = -0.;
-    fTREpl_pos_cor[ip] = -0.;
-    fTREpl_neg_cor[ip] = -0.;
-  }
 
   fClusterList->purge();
 
@@ -597,19 +552,6 @@ Int_t THcShower::Decode( const THaEvData& evdata )
 }
 
 //_____________________________________________________________________________
-Int_t THcShower::ApplyCorrections( void )
-{
-  return(0);
-}
-
-//_____________________________________________________________________________
-//Double_t THcShower::TimeWalkCorrection(const Int_t& paddle,
-//					     const ESide side)
-//{
-//  return(0.0);
-//}
-
-//_____________________________________________________________________________
 Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 {
   // Calculation of coordinates of particle track cross point with shower
@@ -632,8 +574,8 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   for(Int_t j=0; j < fNLayers; j++) {
 
-    if (fdbg_clusters_cal)cout << "  Plane " << j << "  Eplane = " 
-			       << fPlanes[j]->GetEplane() << endl;
+    if (fdbg_clusters_cal) cout << "  Plane " << j << "  Eplane = " 
+				<< fPlanes[j]->GetEplane() << endl;
 
     for (Int_t i=0; i<fNBlocks[j]; i++) {
 
@@ -714,38 +656,6 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
     }
   }
 
-  // The following is for testing the code, by comparison with Engine.
-  
-  // The largest cluster by deposited energy, its size and energy
-  // depositions.
-
-  if (fNclust != 0) {
-
-    THcShowerCluster* MaxCluster =  (*fClusterList).ListedCluster(0);
-    fE = (*MaxCluster).clE();
-
-    for (Int_t i=1; i<fNclust; i++) {
-
-
-      THcShowerCluster* cluster = (*fClusterList).ListedCluster(i);
-
-      Double_t E = (*cluster).clE();
-
-      if (fE < E) {
-	fE = E;
-	MaxCluster = cluster;
-      }
-    }
-
-    fMult = (*MaxCluster).clSize();    // number of hit counters
-    fEpr = (*MaxCluster).clEpr();      // Preshower energy
-    fX = (*MaxCluster).clX();          // X coordinate (in vertical direction)
-  }
-
-  if (fdbg_clusters_cal)
-    cout << "Max.cluster: fEpr = " << fEpr << " fE = " << fE << " fX = " << fX
-	 << endl;
-
   // Track-to-cluster  matching.
   //
 
@@ -769,85 +679,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 	   << endl;
     }
 
-    // Track coordinates at front of the calorimeter, initialize out of
-    // acceptance.
-    Double_t Xtr = -75.;
-    Double_t Ytr = -40.;
-
-    // Associate a cluster to the track.
-
-    Int_t mclust = MatchCluster(theTrack, Xtr, Ytr);
-
-    //    if (mclust >= 0) fNtracks++;  // number of shower tracks (This is not consistent with engine!)
-
-    // Do this for the 1-st track only for now.
-    //
-    if (itrk==0) {
-
-      fTRX = Xtr;                // track coordinates at the calorimeter
-      fTRY = Ytr;
-
-      if (mclust >= 0) {         // if there is a matched cluster
-
-	//Assign energies (not Y corrected) of the matched cluster to the track.
-	THcShowerCluster* cluster = (*fClusterList).ListedCluster(mclust);
-	fTRE = (*cluster).clE();
-	fTREpr = (*cluster).clEpr();
-
-	// Correct track energy depositions for the impact coordinate.
-
-	fTRE_cor = 0.;           // Coord. corrected total energy depostion
-
-	for (Int_t ip=0; ip<fNLayers; ip++) {
-
-	  // Coordinate correction factors for positive and negative sides,
-	  // different for single PMT counters in the 1-st two layes and for
-	  // 2 PMT counters in the rear two layers.
-	  Float_t corpos = 1.;   
-	  Float_t corneg = 1.;
-	  if (ip < fNegCols) {
-	    corpos = Ycor(Ytr,0);
-	    corneg = Ycor(Ytr,1);
-	  }
-	  else {
-	    corpos = Ycor(Ytr);
-	    corneg = 0.;
-	  }
-
-	  if (fdbg_tracks_cal) {
-	    cout << "   Plane " << ip << "  Ytr = " << Ytr 
-		 << "  corpos = " << corpos 
-		 << "  corneg = " << corneg << endl;
-	  }
-
-	  fTREpl_pos_cor[ip] = (*cluster).clEplane(ip,0) * corpos;
-	  fTREpl_neg_cor[ip] = (*cluster).clEplane(ip,1) * corneg;;
-	  fTREpl_cor[ip] = fTREpl_pos_cor[ip] + fTREpl_neg_cor[ip];
-
-	  if (fdbg_tracks_cal) {
-	    cout << "   fTREpl_pos_cor = " << fTREpl_pos_cor[ip]
-		 << "   fTREpl_neg_cor = " << fTREpl_neg_cor[ip] << endl;
-	  }
-
-	  fTRE_cor += fTREpl_cor[ip];
-
-	}   //over planes
-
-	fTREpr_cor = fTREpl_cor[0];   // Coord. corrected Edep in Preshower
-
-	if (fdbg_tracks_cal)
-	  cout << "   fTREpr = " << fTREpr 
-	       << "   fTREpr_cor = " << fTREpr_cor << endl;
-
-      }   //mclust>=0
-
-    }     //itrk==0
-
   }       //over tracks
-
-  if (fdbg_tracks_cal)
-    cout << "1st track cluster:  fTRX = " << fTRX << "  fTRY = " << fTRY 
-	 << endl;
 
   if (fdbg_clusters_cal)
   cout << "THcShower::CoarseProcess return ---------------------------" <<endl;
@@ -1064,7 +896,7 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 	   << "  Y = " << theTrack->GetY()
 	   << "  Theta = " << theTrack->GetTheta()
 	   << "  Phi = " << theTrack->GetPhi()
-	   << "  Enegy = " << energy << endl;
+	   << "  Energy = " << energy << endl;
     }
 
 
@@ -1075,4 +907,3 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 
 ClassImp(THcShower)
 ////////////////////////////////////////////////////////////////////////////////
- 

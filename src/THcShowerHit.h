@@ -84,9 +84,9 @@ public:
   //Print out hit information
   //
   void show() {
-    //cout << "row=" << fRow << "  column=" << fCol 
- 	// << "  x=" << fX << "  z=" << fZ 
-	// << "  E=" << fE << "  Epos=" << fEpos << "  Eneg=" << fEneg << endl;
+    cout << "row=" << fRow << "  column=" << fCol 
+	 << "  x=" << fX << "  z=" << fZ 
+	 << "  E=" << fE << "  Epos=" << fEpos << "  Eneg=" << fEneg << endl;
   }
 
 };

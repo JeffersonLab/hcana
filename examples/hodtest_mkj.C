@@ -1,4 +1,5 @@
-void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000) {
+void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000,
+		 Int_t StartEvent=1) {
 
   //
   //  Steering script to test hodoscope decoding
@@ -69,8 +70,8 @@ void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000) {
 
   // Eventually need to learn to skip over, or properly analyze
   // the pedestal events
-  run->SetEventRange(1,MaxEventToReplay);//  Physics Event number, does not
-                                // include scaler or control events
+  run->SetEventRange(StartEvent,MaxEventToReplay);//  Physics Event number,
+                                //  does not include scaler or control events
 
   // Define the analysis parameters
   analyzer->SetCountMode( 0 );   //Mark's modification
