@@ -237,20 +237,31 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
 //_____________________________________________________________________________
 void THcShowerPlane::Clear( Option_t* )
 {
-  if ( ((THcShower*) GetParent())->fdbg_decoded_cal )
-    cout << " Calling THcShowerPlane::Clear " << GetName() << endl;
-
   // Clears the hit lists
   fPosADCHits->Clear();
   fNegADCHits->Clear();
+
+  // Debug output.
+  if ( ((THcShower*) GetParent())->fdbg_decoded_cal ) {
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShowerPlane::Clear\n";
+    cout << " Cleared ADC hits for plane " << GetName() << endl;
+    cout << "---------------------------------------------------------------\n";
+  }
 }
 
 //_____________________________________________________________________________
 Int_t THcShowerPlane::Decode( const THaEvData& evdata )
 {
   // Doesn't actually get called.  Use Fill method instead
-  if ( ((THcShower*) GetParent())->fdbg_decoded_cal )
-    cout << " Calling THcShowerPlane::Decode " << GetName() << endl;
+
+  //Debug output.
+  if ( ((THcShower*) GetParent())->fdbg_decoded_cal ) {
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShowerPlane::Decode\n";
+    cout << " Called for plane " << GetName() << endl;
+    cout << "---------------------------------------------------------------\n";
+  }
 
   return 0;
 }
@@ -261,9 +272,6 @@ Int_t THcShowerPlane::CoarseProcess( TClonesArray& tracks )
 
   // Nothing is done here. See ProcessHits method instead.
   //  
-
-  if ( ((THcShower*) GetParent())->fdbg_tracks_cal )
-    cout << "THcShowerPlane::CoarseProcess called --------------------" << endl;
 
  return 0;
 }
@@ -284,10 +292,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   THcShower* fParent;
   fParent = (THcShower*) GetParent();
 
-  if (fParent->fdbg_decoded_cal)
-    cout << "THcShowerPlane::ProcessHits called ----" << endl;
-
-  // Initialize variable.
+  // Initialize variables.
 
   Int_t nPosADCHits=0;
   Int_t nNegADCHits=0;
@@ -315,17 +320,8 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   Int_t ihit = nexthit;
 
-  if (fParent->fdbg_decoded_cal)
- {
-    cout << "   nrawhits =  " << nrawhits << endl;
-    cout << "   nexthit =  " << nexthit << endl;
-  }
-
   while(ihit < nrawhits) {
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
-
-    if (fParent->fdbg_decoded_cal)
-      cout << "   fplane =  " << hit->fPlane << " Num = " << fLayerNum << endl;
 
     // This is OK as far as the hit list is sorted by layer.
     //
@@ -382,8 +378,44 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     ihit++;
   }
 
-  if (fParent->fdbg_decoded_cal) 
-    cout << "THcShowerPlane::ProcessHits return ----" << endl;
+  //Debug output.
+
+  if (fParent->fdbg_decoded_cal) {
+
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShowerPlane::ProcessHits\n";
+    cout << "  nrawhits =  " << nrawhits << "  nexthit =  " << nexthit << endl;
+    cout << "  Sparsified hits for HMS calorimeter plane #" << fLayerNum
+	 << ", " << GetName() << ":" << endl;
+
+    Int_t nspar = 0;
+    for (Int_t jhit = nexthit; jhit < nrawhits; jhit++) {
+
+      THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(jhit);
+      if(hit->fPlane > fLayerNum) {
+	break;
+      }
+
+      if(hit->fADC_pos > fPosThresh[hit->fCounter -1] ||
+	 hit->fADC_neg > fNegThresh[hit->fCounter -1]) {
+	cout << "  plane =  " << hit->fPlane
+	     << "  counter =  " << hit->fCounter
+	     << "  Emean = " << fEmean[hit->fCounter-1]
+	     << "  Epos = " << fEpos[hit->fCounter-1]
+	     << "  Eneg = " << fEneg[hit->fCounter-1]
+	     << endl;
+	nspar++;
+      }
+    }
+
+    if (nspar == 0) cout << "  No hits\n";
+
+    cout << "  Eplane = " << fEplane
+	 << "  Eplane_pos = " << fEplane_pos
+	 << "  Eplane_neg = " << fEplane_neg
+	 << endl;
+    cout << "---------------------------------------------------------------\n";
+  }
 
   return(ihit);
 }
@@ -396,17 +428,10 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 
   Int_t nrawhits = rawhits->GetLast()+1;
 
-  if ( ((THcShower*) GetParent())->fdbg_raw_cal )
-    cout << "THcShowerPlane::AcculatePedestals " << fLayerNum << " " 
-	 << nexthit << "/" << nrawhits << endl;
-
   Int_t ihit = nexthit;
   while(ihit < nrawhits) {
 
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
-
-    if ( ((THcShower*) GetParent())->fdbg_raw_cal )
-      cout << "fPlane =  " << hit->fPlane << " Limit = " << fLayerNum << endl;
 
     // OK for hit list sorted by layer.
     if(hit->fPlane > fLayerNum) {
@@ -437,6 +462,35 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 
   fNPedestalEvents++;
 
+  // Debug output.
+
+  if ( ((THcShower*) GetParent())->fdbg_raw_cal ) {
+
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShowerPlane::AcculatePedestals\n";
+    cout << "Processed hit list for plane " << GetName() << ":\n";
+
+    for (Int_t ih=nexthit; ih<nrawhits; ih++) {
+
+      THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ih);
+
+      // OK for hit list sorted by layer.
+      if(hit->fPlane > fLayerNum) {
+	break;
+      }
+
+      cout << "  hit " << ih << ":"
+	   << "  plane =  " << hit->fPlane
+	   << "  counter = " << hit->fCounter
+	   << "  ADCpos = " << hit->fADC_pos
+	   << "  ADCneg = " << hit->fADC_neg
+	   << endl;
+    }
+
+    cout << "---------------------------------------------------------------\n";
+
+  }
+
   return(ihit);
 }
     
@@ -460,12 +514,27 @@ void THcShowerPlane::CalculatePedestals( )
 		      - fNegPed[i]*fNegPed[i]);
     fNegThresh[i] = fNegPed[i] + TMath::Min(50., TMath::Max(10., 3.*fNegSig[i]));
 
-    if ( ((THcShower*) GetParent())->fdbg_raw_cal )
-      cout << "Ped&Thr: " << fPosPed[i] << " " << fPosThresh[i] << " "
-	   << fNegPed[i] << " " << fNegThresh[i] << " " << i+1 << endl;
   }
 
-  //  if ( ((THcShower*) GetParent())->fdbg_raw_cal ) cout << " " << endl;
+  // Debug output.
+
+  if ( ((THcShower*) GetParent())->fdbg_raw_cal ) {
+
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShowerPlane::CalculatePedestals\n";
+    cout << "  ADC pedestals and thresholds for HMS calorimeter plane "
+	 << GetName() << endl;
+    for(Int_t i=0; i<fNelem;i++) {
+      cout << "  element " << i << ": "
+	   << "  Pos. pedestal = " << fPosPed[i]
+	   << "  Pos. threshold = " << fPosThresh[i]
+	   << "  Neg. pedestal = " << fNegPed[i]
+	   << "  Neg. threshold = " << fNegThresh[i]
+	   << endl;
+    }
+    cout << "---------------------------------------------------------------\n";
+
+  }
   
 }
 
