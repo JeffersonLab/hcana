@@ -52,9 +52,6 @@ THcShower::THcShower( ) :
 //_____________________________________________________________________________
 void THcShower::Setup(const char* name, const char* description)
 {
-  if (fdbg_init_cal) 
-    cout << "THcShower::Setup called " << GetName() << endl;
-
   char prefix[2];
 
   prefix[0] = tolower(GetApparatus()->GetName()[0]);
@@ -68,11 +65,6 @@ void THcShower::Setup(const char* name, const char* description)
   };
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-
-  if (fdbg_init_cal) {
-    cout << layernamelist << endl;
-    cout << "Shower Counter: " << fNLayers << " layers" << endl;
-  }
 
   vector<string> layer_names = vsplit(layernamelist);
 
@@ -99,22 +91,23 @@ void THcShower::Setup(const char* name, const char* description)
 
     fPlanes[i] = new THcShowerPlane(fLayerNames[i], desc, i+1, this); 
 
-    if (fdbg_init_cal)
-      cout << "Created Shower Plane " << fLayerNames[i] << ", " << desc << endl;
   }
   delete [] desc;
 
-  if (fdbg_init_cal) 
-    cout << "THcShower::Setup Return " << GetName() << endl;
+  cout << "---------------------------------------------------------------\n";
+  cout << "From THcShower::Setup: created Shower planes ";
+  for(Int_t i=0;i < fNLayers;i++) {
+    cout << fLayerNames[i];
+    i < fNLayers-1 ? cout << ", " : cout << ".\n";
+  }
+  cout << "---------------------------------------------------------------\n";
+
 }
 
 
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
 {
-  if (fdbg_init_cal) 
-    cout << "THcShower::Init " << GetName() << endl;
-
   Setup(GetName(), GetTitle());
 
   // Should probably put this in ReadDatabase as we will know the
@@ -141,6 +134,11 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
 	     EngineDID);
       return kInitError;
   }
+
+  cout << "---------------------------------------------------------------\n";
+  cout << "From THcShower::Init: initialized " << GetName() << endl;
+  cout << "---------------------------------------------------------------\n";
+
   return fStatus = kOK;
 }
 
@@ -165,9 +163,6 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   // Will need to determine which spectrometer in order to construct
   // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
 
-  if (fdbg_init_cal) 
-    cout << "THcShower::ReadDatabase called " << GetName() << endl;
-
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
 
@@ -182,22 +177,28 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
       {"dbg_sparsified_cal", &fdbg_sparsified_cal, kInt},
       {"dbg_clusters_cal", &fdbg_clusters_cal, kInt},
       {"dbg_tracks_cal", &fdbg_tracks_cal, kInt},
-      {"debugflaggeometry", &fdbg_init_cal, kInt},
+      {"dbg_init_cal", &fdbg_init_cal, kInt},
       {0}
     };
     fvTest = 0;			// Default if not defined
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
 
+  // Debug output.
   if (fdbg_init_cal) {
-    cout << "Number of neg. columns      = " << fNegCols << endl;
-    cout << "Slop parameter              = " << fSlop << endl;
-    cout << "Fiducial volume test flag   = " << fvTest << endl;
-    cout << "Fiducial volume excl. width = " << fvDelta << endl;
-    cout << "Decode debug flag           = " << fdbg_decoded_cal  << endl;
-    cout << "Sparsify debug flag         = " << fdbg_sparsified_cal  << endl;
-    cout << "Cluster debug flag          = " << fdbg_clusters_cal  << endl;
-    cout << "Tracking debug flag         = " << fdbg_tracks_cal  << endl;
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShower::ReadDatabase\n";
+
+    cout << "  Number of neg. columns      = " << fNegCols << endl;
+    cout << "  Slop parameter              = " << fSlop << endl;
+    cout << "  Fiducial volume test flag   = " << fvTest << endl;
+    cout << "  Fiducial volume excl. width = " << fvDelta << endl;
+    cout << "  Initialize debug flag       = " << fdbg_init_cal  << endl;
+    cout << "  Raw hit debug flag          = " << fdbg_raw_cal  << endl;
+    cout << "  Decode debug flag           = " << fdbg_decoded_cal  << endl;
+    cout << "  Sparsify debug flag         = " << fdbg_sparsified_cal  << endl;
+    cout << "  Cluster debug flag          = " << fdbg_clusters_cal  << endl;
+    cout << "  Tracking debug flag         = " << fdbg_tracks_cal  << endl;
   }
 
   {
@@ -211,8 +212,9 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
 
+  // Debug output.
   if (fdbg_init_cal) {
-    cout << "HMS Calorimeter coordinate correction constants:" << endl;
+    cout << "  HMS Calorimeter coordinate correction constants:" << endl;
     cout << "    fAcor = " << fAcor << endl;
     cout << "    fBcor = " << fBcor << endl;
     cout << "    fCcor = " << fCcor << endl;
@@ -248,9 +250,10 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
 
+  // Debug output.
   if (fdbg_init_cal) {
     for(Int_t i=0;i<fNLayers;i++) {
-      cout << "Plane " << fLayerNames[i] << ":" << endl;
+      cout << "  Plane " << fLayerNames[i] << ":" << endl;
       cout << "    Block thickness: " << BlockThick[i] << endl;
       cout << "    NBlocks        : " << fNBlocks[i] << endl;
       cout << "    Z Position     : " << fNLayerZPos[i] << endl;
@@ -272,10 +275,11 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   fvYmin = YPos[0] + fvDelta;
   fvYmax = YPos[1] - fvDelta;
 
+  // Debug output.
   if (fdbg_init_cal) {
-    cout << "Fiducial volume limits:" << endl;
-    cout << "   Xmin = " << fvXmin << "  Xmax = " << fvXmax << endl;
-    cout << "   Ymin = " << fvYmin << "  Ymax = " << fvYmax << endl;
+    cout << "  Fiducial volume limits:" << endl;
+    cout << "    Xmin = " << fvXmin << "  Xmax = " << fvXmax << endl;
+    cout << "    Ymin = " << fvYmin << "  Ymax = " << fvYmax << endl;
   }
 
   //Calibration related parameters (from hcal.param).
@@ -283,8 +287,9 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   fNtotBlocks=0;              //total number of blocks
   for (Int_t i=0; i<fNLayers; i++) fNtotBlocks += fNBlocks[i];
 
+  // Debug output.
   if (fdbg_init_cal) 
-    cout << "Total number of blocks in the calorimeter: " << fNtotBlocks
+    cout << "  Total number of blocks in the calorimeter: " << fNtotBlocks
 	 << endl;
 
   //Pedestal limits from hcal.param.
@@ -324,50 +329,57 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   };
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 
+  // Debug output.
   if (fdbg_init_cal) {
 
-    cout << "hcal_pos_cal_const:" << endl;
+    cout << "  hcal_pos_cal_const:" << endl;
     for (Int_t j=0; j<fNLayers; j++) {
+      cout << "    ";
       for (Int_t i=0; i<fNBlocks[j]; i++) {
 	cout << hcal_pos_cal_const[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
     };
 
-    cout << "fShPosPedLimit:" << endl;
+    cout << "  fShPosPedLimit:" << endl;
     for (Int_t j=0; j<fNLayers; j++) {
+      cout << "    ";
       for (Int_t i=0; i<fNBlocks[j]; i++) {
 	cout << fShPosPedLimit[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
     };
 
-    cout << "hcal_pos_gain_cor:" << endl;
+    cout << "  hcal_pos_gain_cor:" << endl;
     for (Int_t j=0; j<fNLayers; j++) {
+      cout << "    ";
       for (Int_t i=0; i<fNBlocks[j]; i++) {
 	cout << hcal_pos_gain_cor[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
     };
 
-    cout << "hcal_neg_cal_const:" << endl;
+    cout << "  hcal_neg_cal_const:" << endl;
     for (Int_t j=0; j<fNLayers; j++) {
+      cout << "    ";
       for (Int_t i=0; i<fNBlocks[j]; i++) {
 	cout << hcal_neg_cal_const[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
     };
 
-    cout << "fShNegPedLimit:" << endl;
+    cout << "  fShNegPedLimit:" << endl;
     for (Int_t j=0; j<fNLayers; j++) {
+      cout << "    ";
       for (Int_t i=0; i<fNBlocks[j]; i++) {
 	cout << fShNegPedLimit[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
     };
 
-    cout << "hcal_neg_gain_cor:" << endl;
+    cout << "  hcal_neg_gain_cor:" << endl;
     for (Int_t j=0; j<fNLayers; j++) {
+      cout << "    ";
       for (Int_t i=0; i<fNBlocks[j]; i++) {
 	cout << hcal_neg_gain_cor[j*fNBlocks[j]+i] << " ";
       };
@@ -383,18 +395,21 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     fNegGain[i] = hcal_neg_cal_const[i] *  hcal_neg_gain_cor[i];
   }
 
+  // Debug output.
   if (fdbg_init_cal) {
 
-    cout << "fPosGain:" << endl;
+    cout << "  fPosGain:" << endl;
     for (Int_t j=0; j<fNLayers; j++) {
+      cout << "    ";
       for (Int_t i=0; i<fNBlocks[j]; i++) {
 	cout << fPosGain[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
     };
 
-    cout << "fNegGain:" << endl;
+    cout << "  fNegGain:" << endl;
     for (Int_t j=0; j<fNLayers; j++) {
+      cout << "    ";
       for (Int_t i=0; i<fNBlocks[j]; i++) {
 	cout << fNegGain[j*fNBlocks[j]+i] << " ";
       };
@@ -412,12 +427,13 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
   fOrigin.SetXYZ(xOrig, yOrig, zOrig);
 
+  // Debug output.
   if (fdbg_init_cal) {
-    cout << "Origin of the Calorimeter:" << endl;
-    cout << "       Xorig = " << GetOrigin().X() << endl;
-    cout << "       Yorig = " << GetOrigin().Y() << endl;
-    cout << "       Zorig = " << GetOrigin().Z() << endl;
-    cout << endl;
+    cout << "  Origin of the Calorimeter:" << endl;
+    cout << "    Xorig = " << GetOrigin().X() << endl;
+    cout << "    Yorig = " << GetOrigin().Y() << endl;
+    cout << "    Zorig = " << GetOrigin().Z() << endl;
+    cout << "---------------------------------------------------------------\n";
   }
 
   // Detector axes. Assume no rotation.
@@ -437,9 +453,6 @@ Int_t THcShower::DefineVariables( EMode mode )
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
-
-  if (fdbg_init_cal)
-    cout << "THcShower::DefineVariables called " << GetName() << endl;
 
   // Register variables in global list
 
@@ -514,9 +527,6 @@ Int_t THcShower::Decode( const THaEvData& evdata )
     Int_t nexthit = 0;
     for(Int_t ip=0;ip<fNLayers;ip++) {
       nexthit = fPlanes[ip]->AccumulatePedestals(fRawHitList, nexthit);
-      if (fdbg_decoded_cal) {
-	cout << "THcShower::Decode: nexthit = " << nexthit << endl;
-      }
     }
     fAnalyzePedestals = 1;	// Analyze pedestals first normal events
     return(0);
@@ -534,20 +544,6 @@ Int_t THcShower::Decode( const THaEvData& evdata )
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
   }
 
-  //   fRawHitList is TClones array of THcRawShowerHit objects
-
-  // This debug output does not work, needs to be corrected.
-
-  //  if (fdbg_decoded_cal) {
-  //    cout << "THcShower::Decode: Shower raw hit list:" << endl;
-  //    for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
-  //      THcRawShowerHit* hit = (THcRawShowerHit *) fRawHitList->At(ihit);
-  //      cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
-  //	   << hit->fADC_pos << " " << hit->fADC_neg << " "  << endl;
-  //    }
-  //    cout << endl;
-  //  }
-
   return nhits;
 }
 
@@ -560,22 +556,14 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
   //
   // Apply corrections and reconstruct the complete hits.
   
- if (fdbg_clusters_cal)
-  cout << "THcShower::CoarseProcess called ---------------------------" <<endl;
-
  // Clustering of hits.
  //
 
  // Fill list of unclustered hits.
 
- if (fdbg_clusters_cal) cout << "Filling list of unclustered hits..."  << endl;
-
   THcShowerHitList HitList;
 
   for(Int_t j=0; j < fNLayers; j++) {
-
-    if (fdbg_clusters_cal) cout << "  Plane " << j << "  Eplane = " 
-				<< fPlanes[j]->GetEplane() << endl;
 
     for (Int_t i=0; i<fNBlocks[j]; i++) {
 
@@ -593,53 +581,51 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 	  fPlanes[j]->GetPosThr(i) - fPlanes[j]->GetPosPed(i) ||
 	  fPlanes[j]->GetAneg(i) - fPlanes[j]->GetNegPed(i) >
 	  fPlanes[j]->GetNegThr(i) - fPlanes[j]->GetNegPed(i)) {    //hit
+
 	Double_t Edep = fPlanes[j]->GetEmean(i);
 	Double_t Epos = fPlanes[j]->GetEpos(i);
 	Double_t Eneg = fPlanes[j]->GetEneg(i);
 	Double_t x = XPos[j][i] + BlockThick[j]/2.;        //top + thick/2
 	Double_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
+
 	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep,Epos,Eneg);
 
 	HitList.push_back(hit);
-
-	if (fdbg_clusters_cal)
-	  cout << "    Hit: Edep = " << Edep << " X = " << x << " Z = " << z
-	       << " Block " << i << " Layer " << j << endl;
-      };
+      }
 
     }
   }
 
-  //Print out hits before clustering.
-
   fNhits = HitList.size();
 
+  //Debug output, print out hits before clustering.
+
   if (fdbg_clusters_cal) {
-    cout << "Total hits:     " << fNhits << endl;
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShower::CoarseProcess\n";
+    cout << "  List of unclustered hits. Total hits:     " << fNhits << endl;
     for (Int_t i=0; i!=fNhits; i++) {
-      cout << "unclustered hit " << i << ": ";
+      cout << "  hit " << i << ": ";
       (*(HitList.begin()+i))->show();
     }
   }
 
   // Create list of clusters and fill it.
 
-  //  fClusterList = new THcShowerClusterList; //shall be allocated before
   fClusterList->ClusterHits(HitList);
 
   fNclust = (*fClusterList).NbClusters();   //number of clusters
 
-  //Print out the cluster list.
+  //Debug output, print out the cluster list.
 
   if (fdbg_clusters_cal) {
 
-    cout << "Cluster_list size: " << fNclust << endl;
+    cout << "  Clustered hits. Number of clusters: " << fNclust << endl;
 
     for (Int_t i=0; i!=fNclust; i++) {
 
       THcShowerCluster* cluster = (*fClusterList).ListedCluster(i);
-
-      cout << "Cluster #" << i 
+      cout << "  Cluster #" << i 
 	   <<":  E=" << (*cluster).clE() 
 	   << "  Epr=" << (*cluster).clEpr()
 	   << "  X=" << (*cluster).clX()
@@ -651,38 +637,11 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
        	THcShowerHit* hit = (*cluster).ClusteredHit(j);
        	cout << "  hit #" << j << ":  "; (*hit).show();
       }
-      //      cout << endl;
 
     }
+
+    cout << "---------------------------------------------------------------\n";
   }
-
-  // Track-to-cluster  matching.
-  //
-
-  Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
-
-  if (fdbg_tracks_cal) {
-    cout << endl;
-    cout << "Number of reconstructed tracks = " << Ntracks << endl;
-  }
-
-  for (Int_t itrk=0; itrk<Ntracks; itrk++) {
-
-    THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
-
-    if (fdbg_tracks_cal) {
-      cout << "   Track " << itrk << ": "
-	   << "  X = " << theTrack->GetX()
-	   << "  Y = " << theTrack->GetY()
-	   << "  Theta = " << theTrack->GetTheta()
-	   << "  Phi = " << theTrack->GetPhi()
-	   << endl;
-    }
-
-  }       //over tracks
-
-  if (fdbg_clusters_cal)
-  cout << "THcShower::CoarseProcess return ---------------------------" <<endl;
 
   return 0;
 }
@@ -694,15 +653,6 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 {
   // Match a cluster to a given track. Return the cluster number,
   // and track coordinates at the front of calorimeter.
-
-  if (fdbg_tracks_cal) {
-    cout << "THcShower::MatchCluster: Track at DC:"
-	 << "  X = " << Track->GetX()
-	 << "  Y = " << Track->GetY()
-	 << "  Theta = " << Track->GetTheta()
-	 << "  Phi = " << Track->GetPhi()
-	 << endl;
-  }
 
   XTrFront = kBig;
   YTrFront = kBig;
@@ -719,13 +669,6 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 
   XTrFront += GetOrigin().X();
   YTrFront += GetOrigin().Y();
-
-  if (fdbg_tracks_cal)
-    cout << "  Track at the front of Calorimeter:"
-	 << "  X = " << XTrFront
-	 << "  Y = " << YTrFront
-	 << "  Pathl = " << pathl
-	 << endl;
 
   Bool_t inFidVol = true;            // In Fiducial Volume flag
 
@@ -746,20 +689,11 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
     XTrBack += GetOrigin().X();   // from local coord. system
     YTrBack += GetOrigin().Y();   // to the spectrometer system
 
-    if (fdbg_tracks_cal)
-      cout << "  Track at the back of Calorimeter:"
-	   << "  X = " << XTrBack
-	   << "  Y = " << YTrBack
-	   << "  Pathl = " << pathl
-	   << endl;
-
     inFidVol = (XTrFront <= fvXmax) && (XTrFront >= fvXmin) &&
                (YTrFront <= fvYmax) && (YTrFront >= fvYmin) &&
                (XTrBack <= fvXmax) && (XTrBack >= fvXmin) &&
                (YTrBack <= fvYmax) && (YTrBack >= fvYmin);
 
-    if (fdbg_tracks_cal) 
-      cout << "  Fiducial volume test: inFidVol = " << inFidVol << endl;
   }
 
   // Match a cluster to the track.
@@ -790,9 +724,30 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
     }
   }
 
-  if (fdbg_tracks_cal)
-    cout << "MatchCluster: mclust= " << mclust << "  delatX= " << deltaX 
+  //Debug output.
+
+  if (fdbg_tracks_cal) {
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShower::MatchCluster\n";
+
+    cout << "  Track at DC:"
+	 << "  X = " << Track->GetX()
+	 << "  Y = " << Track->GetY()
+	 << "  Theta = " << Track->GetTheta()
+	 << "  Phi = " << Track->GetPhi()
 	 << endl;
+    cout << "  Track at the front of Calorimeter:"
+	 << "  X = " << XTrFront
+	 << "  Y = " << YTrFront
+	 << "  Pathl = " << pathl
+	 << endl;
+    if (fvTest) 
+      cout << "  Fiducial volume test: inFidVol = " << inFidVol << endl;
+
+    cout << "  Matched cluster #" << mclust << ",  delatX= " << deltaX 
+	 << endl;
+    cout << "---------------------------------------------------------------\n";
+  }
 
   return mclust;
 }
@@ -811,14 +766,6 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
   // Associate a cluster to the track.
 
   Int_t mclust = MatchCluster(Track, Xtr, Ytr);
-
-  if (fdbg_tracks_cal) {
-    cout << "GetShEnergy: Track X = " << Xtr << "  Y = " << Ytr;
-    if (mclust >= 0)
-      cout << "  matched cluster # " << mclust << endl;
-    else
-      cout << " no matched cluster found" << endl;
-  }
 
   // Coordinate corrected total energy deposition in the cluster.
 
@@ -846,20 +793,28 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
 	corneg = 0.;
       }
 
-      if (fdbg_tracks_cal) {
-	cout << "   Plane " << ip << "  Ytr = " << Ytr 
-	     << "  corpos = " << corpos 
-	     << "  corneg = " << corneg << endl;
-      }
-
       Etrk += (*cluster).clEplane(ip,0) * corpos;
-      Etrk += (*cluster).clEplane(ip,1) * corneg;;
+      Etrk += (*cluster).clEplane(ip,1) * corneg;
 
     }   //over planes
 
   }   //mclust>=0
 
-  if (fdbg_tracks_cal) cout << "   Etrk = " << Etrk << endl;
+  //Debug output.
+
+  if (fdbg_tracks_cal) {
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShower::GetShEnergy\n";
+
+    cout << "  Track at the calorimeter: X = " << Xtr << "  Y = " << Ytr;
+    if (mclust >= 0)
+      cout << ", matched cluster #" << mclust << "." << endl;
+    else
+      cout << ", no matched cluster found." << endl;
+
+    cout << "  Coordinate corrected track energy = " << Etrk << "." << endl;
+    cout << "---------------------------------------------------------------\n";
+  }
 
   return Etrk;
 }
@@ -873,11 +828,6 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 
   Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
 
-  if (fdbg_tracks_cal) {
-    cout << endl;
-    cout << "THcShower::FineProcess: Number of tracks = " << Ntracks << endl;
-  }
-
   for (Int_t itrk=0; itrk<Ntracks; itrk++) {
 
     THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
@@ -885,22 +835,28 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
     Float_t energy = GetShEnergy(theTrack);
     theTrack->SetEnergy(energy);
 
-    // if ( fEvent == 13252 )
-    //   cout << "THcShower: track = " << itrk + 1 
-    // 	   << "   energy = " << energy << endl;
+  }       //over tracks
 
+  //Debug output.
 
-    if (fdbg_tracks_cal) {
-      cout << "THcShower::FineProcess, Track " << itrk << ": "
+  if (fdbg_tracks_cal) {
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShower::FineProcess\n";
+
+    cout << "  Number of tracks = " << Ntracks << endl;
+
+    for (Int_t itrk=0; itrk<Ntracks; itrk++) {
+      THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
+      cout << "  Track " << itrk << ": "
 	   << "  X = " << theTrack->GetX()
 	   << "  Y = " << theTrack->GetY()
 	   << "  Theta = " << theTrack->GetTheta()
 	   << "  Phi = " << theTrack->GetPhi()
-	   << "  Energy = " << energy << endl;
+	   << "  Energy = " << theTrack->GetEnergy() << endl;
     }
 
-
-  }       //over tracks
+    cout << "---------------------------------------------------------------\n";
+  }
 
   return 0;
 }
