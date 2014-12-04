@@ -70,9 +70,6 @@ THaAnalysisObject::EStatus THcShowerPlane::Init( const TDatime& date )
 {
   // Extra initialization for shower layer: set up DataDest map
 
-  if ( ((THcShower*) GetParent())->fdbg_init_cal )
-    cout << "THcShowerPlane::Init called " << GetName() << endl;
-
   if( IsZombie())
     return fStatus = kInitError;
 
@@ -91,34 +88,14 @@ THaAnalysisObject::EStatus THcShowerPlane::Init( const TDatime& date )
 //_____________________________________________________________________________
 Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 {
-
-  // See what file it looks for
-  
-  //  static const char* const here = "ReadDatabase()";
-  char prefix[2];
-  char parname[100];
-  
-  prefix[0]=tolower(GetParent()->GetPrefix()[0]);
-  prefix[1]='\0';
-
-  strcpy(parname,prefix);
-  strcat(parname,"cal_");
-  strcat(parname,GetName());
-
-  strcat(parname,"_nr");
-
   // Retrieve parameters we need from parent class
+  //
+
   THcShower* fParent;
   fParent = (THcShower*) GetParent();
 
-  if (fParent->fdbg_init_cal)
-    cout << " Getting value of SHOWER!!!" << parname << endl;
-
+  //  Find the number of elements
   fNelem = fParent->GetNBlocks(fLayerNum-1);
-
-  if (fParent->fdbg_init_cal)
-    cout << "THcShowerPlane::ReadDatabase: fLayerNum=" << fLayerNum 
-         << "  fNelem=" << fNelem << endl;
 
   // Origin of the plane:
   //
@@ -140,28 +117,8 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   fOrigin.SetXYZ(xOrig, yOrig, zOrig);
 
-  if (fParent->fdbg_init_cal)
-    cout << "Origin of Layer " << fLayerNum << ": "
-	 << fOrigin.X() << " " << fOrigin.Y() << " " << fOrigin.Z() << endl;
-
-  // Detector axes. Assume no rotation.
-  //
-  //  DefineAxes(0.); Do not work for subdetector
-
-//  fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
-// 
-//   parname[plen]='\0';
-//   strcat(parname,"_spacing");
-// 
-//   fSpacing =  gHcParms->Find(parname)->GetValue(0);
-  
-  // First letter of GetParent()->GetPrefix() tells us what prefix to
-  // use on parameter names.  
-
-
-  //  Find the number of elements
-  
   // Create arrays to hold results here
+  //
 
   // Pedestal limits per channel.
 
@@ -173,17 +130,7 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
     fNegPedLimit[i] = fParent->GetPedLimit(i,fLayerNum-1,1);
   }
 
-  if (fParent->fdbg_init_cal) {
-    cout << "   fPosPedLimit:";
-    for(Int_t i=0;i<fNelem;i++) cout << " " << fPosPedLimit[i];
-    cout << endl;
-    cout << "   fNegPedLimit:";
-    for(Int_t i=0;i<fNelem;i++) cout << " " << fNegPedLimit[i];
-    cout << endl;
-  }
-
   fMinPeds = fParent->GetMinPeds();
-  if (fParent->fdbg_init_cal) cout << "   fMinPeds = " << fMinPeds << endl;
 
   InitializePedestals();
 
@@ -200,6 +147,29 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   fEneg = new Double_t[fNelem];
   fEmean= new Double_t[fNelem];
 
+  // Debug output.
+
+  if (fParent->fdbg_init_cal) {
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShowerPlane::ReadDatabase\n";
+
+    cout << "  Layer #" << fLayerNum << ", number of elements " << fNelem
+	 << endl;
+
+    cout << "  Origin of Layer at  X = " << fOrigin.X()
+	 << "  Y = " << fOrigin.Y() << "  Z = " << fOrigin.Z() << endl;
+
+    cout << "  fPosPedLimit:";
+    for(Int_t i=0;i<fNelem;i++) cout << " " << fPosPedLimit[i];
+    cout << endl;
+    cout << "  fNegPedLimit:";
+    for(Int_t i=0;i<fNelem;i++) cout << " " << fNegPedLimit[i];
+    cout << endl;
+
+    cout << "  fMinPeds = " << fMinPeds << endl;
+    cout << "---------------------------------------------------------------\n";
+  }
+
   return kOK;
 }
 
@@ -207,9 +177,6 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 Int_t THcShowerPlane::DefineVariables( EMode mode )
 {
   // Initialize global variables and lookup table for decoder
-
-  if ( ((THcShower*) GetParent())->fdbg_init_cal )
-    cout << "THcShowerPlane::DefineVariables called " << GetName() << endl;
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
