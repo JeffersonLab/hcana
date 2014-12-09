@@ -15,7 +15,7 @@
 #include <map>
 #include <vector>
 
-#define MAX_SPACE_POINTS 50
+#define MAX_SPACE_POINTS 100
 #define MAX_HITS_PER_POINT 20
 
 //#include "TMath.h"
