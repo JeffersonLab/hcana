@@ -289,7 +289,7 @@ Int_t THcDriftChamber::FindSpacePoints( void )
       PlanePInd=XPlanePInd;
     }
     if(fPlanes[PlaneInd]->GetNHits() == 1 && fPlanes[PlanePInd]->GetNHits() == 1
-       && TMath::Abs(fHits[plane_hitind]->GetPos() - fHits[planep_hitind]->GetPos())
+       && pow( (fHits[plane_hitind]->GetPos() - fHits[planep_hitind]->GetPos()),2)
        < fSpacePointCriterion
        && fNhits <= 6) {	// An easy case, probably one hit per plane
       if(fHMSStyleChambers) fEasySpacePoint = FindEasySpacePoint_HMS(plane_hitind, planep_hitind);
