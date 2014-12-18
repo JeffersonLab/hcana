@@ -457,7 +457,6 @@ Int_t THcHallCSpectrometer::TrackCalc()
     if( fNtracks > 0 ) {
       
       Double_t fY2Dmin, fX2Dmin, fZap, ft, fChi2PerDeg; //, fShowerEnergy;
-      Double_t fHitPos4, fHitPos3; //, fHitDist3, fHitDist4, fChi2Min;
       Int_t itrack; //, fGoodTimeIndex = -1;
       Int_t  fHitCnt4, fHitCnt3, fRawIndex, fGoodRawPad;
 
@@ -507,9 +506,9 @@ Int_t THcHallCSpectrometer::TrackCalc()
 		} // loop over hits of a plane
 	      } // loop over planes 
 
-	      fHitPos4  = goodTrack->GetY() + goodTrack->GetPhi() * ( fScin2YZpos + 0.5 * fScin2YdZpos );
-	      fHitCnt4  = TMath::Nint( ( fHodo->GetPlaneCenter(3) - fHitPos4 ) / fHodo->GetPlaneSpacing(3) ) + 1;
-	      fHitCnt4  = TMath::Max( TMath::Min(fHitCnt4, (Int_t) fHodo->GetNPaddles(3) ) , 1); // scin_2y_nr = 10
+	      Double_t hitpos4 = goodTrack->GetY() + goodTrack->GetPhi() * ( fScin2YZpos + 0.5 * fScin2YdZpos );
+	      Int_t icounter4  = TMath::Nint( ( fHodo->GetPlaneCenter(3) - hitpos4 ) / fHodo->GetPlaneSpacing(3) ) + 1;
+	      fHitCnt4  = TMath::Max( TMath::Min(icounter4, (Int_t) fHodo->GetNPaddles(3) ) , 1); // scin_2y_nr = 10
 	      //	      fHitDist4 = fHitPos4 - ( fHodo->GetPlaneCenter(3) - fHodo->GetPlaneSpacing(3) * ( fHitCnt4 - 1 ) );
 	      	      
 	      //----------------------------------------------------------------
@@ -537,9 +536,10 @@ Int_t THcHallCSpectrometer::TrackCalc()
 
 	      if ( fNtracks == 1 ) fY2D[itrack] = 0.;
 
-	      fHitPos3  = goodTrack->GetX() + goodTrack->GetTheta() * ( fScin2XZpos + 0.5 * fScin2XdZpos );
-	      fHitCnt3  = TMath::Nint( ( fHitPos3 - fHodo->GetPlaneCenter(2) ) / fHodo->GetPlaneSpacing(2) ) + 1;
-	      fHitCnt3  = TMath::Max( TMath::Min(fHitCnt3, (Int_t) fHodo->GetNPaddles(2) ) , 1); // scin_2x_nr = 16
+	      
+	      Double_t hitpos3  = goodTrack->GetX() + goodTrack->GetTheta() * ( fScin2XZpos + 0.5 * fScin2XdZpos );
+	      Int_t icounter3  = TMath::Nint( ( hitpos3 - fHodo->GetPlaneCenter(2) ) / fHodo->GetPlaneSpacing(2) ) + 1;
+	      fHitCnt3  = TMath::Max( TMath::Min(icounter3, (Int_t) fHodo->GetNPaddles(2) ) , 1); // scin_2x_nr = 16
 	      //	      fHitDist3 = fHitPos3 - ( fHodo->GetPlaneSpacing(2) * ( fHitCnt3 - 1 ) + fHodo->GetPlaneCenter(2) );
 
 	      //----------------------------------------------------------------
