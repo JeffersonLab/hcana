@@ -109,17 +109,17 @@ THcHallCSpectrometer::~THcHallCSpectrometer()
 }
 
 //_____________________________________________________________________________
-Int_t THaSpectrometer::DefineVariables( EMode mode )
+Int_t THcHallCSpectrometer::DefineVariables( EMode mode )
 {
   // Define/delete standard variables for a spectrometer (tracks etc.)
   // Can be overridden or extended by derived (actual) apparatuses
-
   if( mode == kDefine && fIsSetup ) return kOK;
-  THaSpectrometer::DefineVariables( mode );
+  fIsSetup = ( mode == kDefine );
+  //  THaSpectrometer::DefineVariables( mode );
 
   RVarDef vars[] = {
-    { "tr.beta", "Beta", "fTracks,THaTrack.GetBeta()"},
-    { "tr.betachisq", "Chi2 of beta", "fTracks,THaTrack.GetBetaChi2()"},
+    { "tr.beta", "Beta", "fTracks.THaTrack.GetBeta()"},
+    { "tr.betachisq", "Chi2 of beta", "fTracks.THaTrack.GetBetaChi2()"},
     { 0 }
   };
   
@@ -310,12 +310,11 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     fNReconTerms++;
     good = getline(ifile,line).good();    
   }
-  cout << "Read " << fNReconTerms << " matrix element terms" << endl;
+  cout << "Read " << fNReconTerms << " matrix element terms"  << endl;
   if(!good) {
     Error(here, "Error processing reconstruction coefficient file %s",reconCoeffFilename.c_str());
     return kInitError; // Is this the right return code?
   }
-
   return kOK;
 }
 
