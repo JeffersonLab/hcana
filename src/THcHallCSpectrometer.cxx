@@ -114,14 +114,13 @@ Int_t THcHallCSpectrometer::DefineVariables( EMode mode )
   // Define/delete standard variables for a spectrometer (tracks etc.)
   // Can be overridden or extended by derived (actual) apparatuses
   if( mode == kDefine && fIsSetup ) return kOK;
+  THaSpectrometer::DefineVariables( mode );
   fIsSetup = ( mode == kDefine );
-  //  THaSpectrometer::DefineVariables( mode );
-
   RVarDef vars[] = {
-    { "tr.beta", "Beta", "fTracks.THaTrack.GetBeta()"},
     { "tr.betachisq", "Chi2 of beta", "fTracks.THaTrack.GetBetaChi2()"},
     { 0 }
   };
+
   
   return DefineVarsFromList( vars, mode );
 }
