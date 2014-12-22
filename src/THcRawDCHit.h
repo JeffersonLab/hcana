@@ -21,14 +21,14 @@ public:
 
   void SetData(Int_t signal, Int_t data);
   Int_t GetData(Int_t signal);
-  Int_t GetData(Int_t signal, Int_t ihit);
+  Int_t GetData(Int_t signal, UInt_t ihit);
 
   virtual Bool_t  IsSortable () const {return kTRUE; }
   virtual Int_t   Compare(const TObject* obj) const;
 
 
 protected:
-  Int_t fNHits;
+  UInt_t fNHits;
   Int_t fTDC[MAXHITS];
 
 private:

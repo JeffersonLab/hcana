@@ -457,8 +457,8 @@ Int_t THcHallCSpectrometer::TrackCalc()
     if( fNtracks > 0 ) {
       
       Double_t fY2Dmin, fX2Dmin, fZap, ft, fChi2PerDeg; //, fShowerEnergy;
-      Double_t fHitPos4, fHitPos3, fHitDist3, fHitDist4; //, fChi2Min;
-      Int_t i, j, itrack, ip, ihit; //, fGoodTimeIndex = -1;
+      Double_t fHitPos4, fHitPos3; //, fHitDist3, fHitDist4, fChi2Min;
+      Int_t itrack; //, fGoodTimeIndex = -1;
       Int_t  fHitCnt4, fHitCnt3, fRawIndex, fGoodRawPad;
 
       fChi2Min = 10000000000.0;   fGoodTrack = -1;   fY2Dmin = 100.;
@@ -481,15 +481,15 @@ Int_t THcHallCSpectrometer::TrackCalc()
 	      ( goodTrack->GetEnergy()  < fSelEtMax    ) )  	    	    
 	    {
 	      	      
-	      for ( j = 0; j < fHodo->GetNPaddles(2); j++ ){ 
+	      for (UInt_t j = 0; j < fHodo->GetNPaddles(2); j++ ){ 
 		f2XHits[j] = -1;
 	      }
-	      for ( j = 0; j < fHodo->GetNPaddles(3); j++ ){ 
+	      for (UInt_t j = 0; j < fHodo->GetNPaddles(3); j++ ){ 
 		f2YHits[j] = -1; 
 	      }
 	      
-	      for ( ip = 0; ip < fNPlanes; ip++ ){
-		for ( ihit = 0; ihit < fHodo->GetNScinHits(ip); ihit++ ){
+	      for (Int_t ip = 0; ip < fNPlanes; ip++ ){
+		for (UInt_t ihit = 0; ihit < fHodo->GetNScinHits(ip); ihit++ ){
 		  fRawIndex ++;		  
 
 		  //		  fGoodRawPad = fHodo->GetGoodRawPad(fRawIndex)-1;
@@ -509,8 +509,8 @@ Int_t THcHallCSpectrometer::TrackCalc()
 
 	      fHitPos4  = goodTrack->GetY() + goodTrack->GetPhi() * ( fScin2YZpos + 0.5 * fScin2YdZpos );
 	      fHitCnt4  = TMath::Nint( ( fHodo->GetPlaneCenter(3) - fHitPos4 ) / fHodo->GetPlaneSpacing(3) ) + 1;
-	      fHitCnt4  = TMath::Max( TMath::Min(fHitCnt4, fHodo->GetNPaddles(3) ) , 1); // scin_2y_nr = 10
-	      fHitDist4 = fHitPos4 - ( fHodo->GetPlaneCenter(3) - fHodo->GetPlaneSpacing(3) * ( fHitCnt4 - 1 ) );
+	      fHitCnt4  = TMath::Max( TMath::Min(fHitCnt4, (Int_t) fHodo->GetNPaddles(3) ) , 1); // scin_2y_nr = 10
+	      //	      fHitDist4 = fHitPos4 - ( fHodo->GetPlaneCenter(3) - fHodo->GetPlaneSpacing(3) * ( fHitCnt4 - 1 ) );
 	      	      
 	      //----------------------------------------------------------------
 
@@ -518,9 +518,9 @@ Int_t THcHallCSpectrometer::TrackCalc()
 		fZap = 0.;
 		ft = 0;
 		
-		for ( i = 0; i < fHodo->GetNPaddles(3); i++ ){
+		for (UInt_t i = 0; i < fHodo->GetNPaddles(3); i++ ){
 		  if ( f2YHits[i] == 0 ) {		    
-		    fY2D[itrack] = TMath::Abs(fHitCnt4-i-1);
+		    fY2D[itrack] = TMath::Abs((Int_t)fHitCnt4-(Int_t)i-1);
 		    ft ++;
 		    		    
 		    if   ( ft == 1 )                              fZap = fY2D[itrack];
@@ -539,17 +539,17 @@ Int_t THcHallCSpectrometer::TrackCalc()
 
 	      fHitPos3  = goodTrack->GetX() + goodTrack->GetTheta() * ( fScin2XZpos + 0.5 * fScin2XdZpos );
 	      fHitCnt3  = TMath::Nint( ( fHitPos3 - fHodo->GetPlaneCenter(2) ) / fHodo->GetPlaneSpacing(2) ) + 1;
-	      fHitCnt3  = TMath::Max( TMath::Min(fHitCnt3, fHodo->GetNPaddles(2) ) , 1); // scin_2x_nr = 16
-	      fHitDist3 = fHitPos3 - ( fHodo->GetPlaneSpacing(2) * ( fHitCnt3 - 1 ) + fHodo->GetPlaneCenter(2) );
+	      fHitCnt3  = TMath::Max( TMath::Min(fHitCnt3, (Int_t) fHodo->GetNPaddles(2) ) , 1); // scin_2x_nr = 16
+	      //	      fHitDist3 = fHitPos3 - ( fHodo->GetPlaneSpacing(2) * ( fHitCnt3 - 1 ) + fHodo->GetPlaneCenter(2) );
 
 	      //----------------------------------------------------------------
 
 	      if ( fNtracks > 1 ){     // Plane 3 (2X)
 		fZap = 0.;
 		ft = 0;
-		for ( i = 0; i <  fHodo->GetNPaddles(2); i++ ){
+		for (UInt_t i = 0; i <  fHodo->GetNPaddles(2); i++ ){
 		  if ( f2XHits[i] == 0 ) {
-		    fX2D[itrack] = TMath::Abs(fHitCnt3-i-1);
+		    fX2D[itrack] = TMath::Abs((Int_t)fHitCnt3-(Int_t)i-1);
 		    
 		    ft ++;
 		    if   ( ft == 1 )                              fZap = fX2D[itrack];

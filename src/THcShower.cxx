@@ -76,7 +76,7 @@ void THcShower::Setup(const char* name, const char* description)
   }
 
   fLayerNames = new char* [fNLayers];
-  for(Int_t i=0;i<fNLayers;i++) {
+  for(UInt_t i=0;i<fNLayers;i++) {
     fLayerNames[i] = new char[layer_names[i].length()+1];
     strcpy(fLayerNames[i], layer_names[i].c_str());
   }
@@ -84,7 +84,7 @@ void THcShower::Setup(const char* name, const char* description)
   char *desc = new char[strlen(description)+100];
   fPlanes = new THcShowerPlane* [fNLayers];
 
-  for(Int_t i=0;i < fNLayers;i++) {
+  for(UInt_t i=0;i < fNLayers;i++) {
     strcpy(desc, description);
     strcat(desc, " Plane ");
     strcat(desc, fLayerNames[i]);
@@ -96,7 +96,7 @@ void THcShower::Setup(const char* name, const char* description)
 
   cout << "---------------------------------------------------------------\n";
   cout << "From THcShower::Setup: created Shower planes ";
-  for(Int_t i=0;i < fNLayers;i++) {
+  for(UInt_t i=0;i < fNLayers;i++) {
     cout << fLayerNames[i];
     i < fNLayers-1 ? cout << ", " : cout << ".\n";
   }
@@ -119,7 +119,7 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
   if( (status = THaNonTrackingDetector::Init( date )) )
     return fStatus=status;
 
-  for(Int_t ip=0;ip<fNLayers;ip++) {
+  for(UInt_t ip=0;ip<fNLayers;ip++) {
     if((status = fPlanes[ip]->Init( date ))) {
       return fStatus=status;
     }
@@ -222,11 +222,11 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   }
 
   BlockThick = new Double_t [fNLayers];
-  fNBlocks = new Int_t [fNLayers];
+  fNBlocks = new UInt_t [fNLayers];
   fNLayerZPos = new Double_t [fNLayers];
   YPos = new Double_t [2*fNLayers];
 
-  for(Int_t i=0;i<fNLayers;i++) {
+  for(UInt_t i=0;i<fNLayers;i++) {
     DBRequest list[]={
       {Form("cal_%s_thick",fLayerNames[i]), &BlockThick[i], kDouble},
       {Form("cal_%s_nr",fLayerNames[i]), &fNBlocks[i], kInt},
@@ -241,7 +241,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   //Caution! Z positions (fronts) are off in hcal.param! Correct later on.
 
   XPos = new Double_t* [fNLayers];
-  for(Int_t i=0;i<fNLayers;i++) {
+  for(UInt_t i=0;i<fNLayers;i++) {
     XPos[i] = new Double_t [fNBlocks[i]];
     DBRequest list[]={
       {Form("cal_%s_top",fLayerNames[i]),XPos[i], kDouble, fNBlocks[i]},
@@ -252,7 +252,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
   // Debug output.
   if (fdbg_init_cal) {
-    for(Int_t i=0;i<fNLayers;i++) {
+    for(UInt_t i=0;i<fNLayers;i++) {
       cout << "  Plane " << fLayerNames[i] << ":" << endl;
       cout << "    Block thickness: " << BlockThick[i] << endl;
       cout << "    NBlocks        : " << fNBlocks[i] << endl;
@@ -260,7 +260,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
       cout << "    Y Positions    : " << YPos[2*i] << ", " << YPos[2*i+1]
 	   <<endl;
       cout << "    X Positions    :";
-      for(Int_t j=0; j<fNBlocks[i]; j++) {
+      for(UInt_t j=0; j<fNBlocks[i]; j++) {
 	cout << " " << XPos[i][j];
       }
       cout << endl;
@@ -285,7 +285,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   //Calibration related parameters (from hcal.param).
 
   fNtotBlocks=0;              //total number of blocks
-  for (Int_t i=0; i<fNLayers; i++) fNtotBlocks += fNBlocks[i];
+  for (UInt_t i=0; i<fNLayers; i++) fNtotBlocks += fNBlocks[i];
 
   // Debug output.
   if (fdbg_init_cal) 
@@ -333,54 +333,54 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   if (fdbg_init_cal) {
 
     cout << "  hcal_pos_cal_const:" << endl;
-    for (Int_t j=0; j<fNLayers; j++) {
+    for (UInt_t j=0; j<fNLayers; j++) {
       cout << "    ";
-      for (Int_t i=0; i<fNBlocks[j]; i++) {
+      for (UInt_t i=0; i<fNBlocks[j]; i++) {
 	cout << hcal_pos_cal_const[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
     };
 
     cout << "  fShPosPedLimit:" << endl;
-    for (Int_t j=0; j<fNLayers; j++) {
+    for (UInt_t j=0; j<fNLayers; j++) {
       cout << "    ";
-      for (Int_t i=0; i<fNBlocks[j]; i++) {
+      for (UInt_t i=0; i<fNBlocks[j]; i++) {
 	cout << fShPosPedLimit[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
     };
 
     cout << "  hcal_pos_gain_cor:" << endl;
-    for (Int_t j=0; j<fNLayers; j++) {
+    for (UInt_t j=0; j<fNLayers; j++) {
       cout << "    ";
-      for (Int_t i=0; i<fNBlocks[j]; i++) {
+      for (UInt_t i=0; i<fNBlocks[j]; i++) {
 	cout << hcal_pos_gain_cor[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
     };
 
     cout << "  hcal_neg_cal_const:" << endl;
-    for (Int_t j=0; j<fNLayers; j++) {
+    for (UInt_t j=0; j<fNLayers; j++) {
       cout << "    ";
-      for (Int_t i=0; i<fNBlocks[j]; i++) {
+      for (UInt_t i=0; i<fNBlocks[j]; i++) {
 	cout << hcal_neg_cal_const[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
     };
 
     cout << "  fShNegPedLimit:" << endl;
-    for (Int_t j=0; j<fNLayers; j++) {
+    for (UInt_t j=0; j<fNLayers; j++) {
       cout << "    ";
-      for (Int_t i=0; i<fNBlocks[j]; i++) {
+      for (UInt_t i=0; i<fNBlocks[j]; i++) {
 	cout << fShNegPedLimit[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
     };
 
     cout << "  hcal_neg_gain_cor:" << endl;
-    for (Int_t j=0; j<fNLayers; j++) {
+    for (UInt_t j=0; j<fNLayers; j++) {
       cout << "    ";
-      for (Int_t i=0; i<fNBlocks[j]; i++) {
+      for (UInt_t i=0; i<fNBlocks[j]; i++) {
 	cout << hcal_neg_gain_cor[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
@@ -390,7 +390,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
   // Calibration constants (GeV / ADC channel).
 
-  for (Int_t i=0; i<fNtotBlocks; i++) {
+  for (UInt_t i=0; i<fNtotBlocks; i++) {
     fPosGain[i] = hcal_pos_cal_const[i] *  hcal_pos_gain_cor[i];
     fNegGain[i] = hcal_neg_cal_const[i] *  hcal_neg_gain_cor[i];
   }
@@ -399,18 +399,18 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   if (fdbg_init_cal) {
 
     cout << "  fPosGain:" << endl;
-    for (Int_t j=0; j<fNLayers; j++) {
+    for (UInt_t j=0; j<fNLayers; j++) {
       cout << "    ";
-      for (Int_t i=0; i<fNBlocks[j]; i++) {
+      for (UInt_t i=0; i<fNBlocks[j]; i++) {
 	cout << fPosGain[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
     };
 
     cout << "  fNegGain:" << endl;
-    for (Int_t j=0; j<fNLayers; j++) {
+    for (UInt_t j=0; j<fNLayers; j++) {
       cout << "    ";
-      for (Int_t i=0; i<fNBlocks[j]; i++) {
+      for (UInt_t i=0; i<fNBlocks[j]; i++) {
 	cout << fNegGain[j*fNBlocks[j]+i] << " ";
       };
       cout <<  endl;
@@ -500,7 +500,7 @@ void THcShower::Clear(Option_t* opt)
 
 //   Reset per-event data.
 
-  for(Int_t ip=0;ip<fNLayers;ip++) {
+  for(UInt_t ip=0;ip<fNLayers;ip++) {
     fPlanes[ip]->Clear(opt);
   }
 
@@ -525,7 +525,7 @@ Int_t THcShower::Decode( const THaEvData& evdata )
 
   if(gHaCuts->Result("Pedestal_event")) {
     Int_t nexthit = 0;
-    for(Int_t ip=0;ip<fNLayers;ip++) {
+    for(UInt_t ip=0;ip<fNLayers;ip++) {
       nexthit = fPlanes[ip]->AccumulatePedestals(fRawHitList, nexthit);
     }
     fAnalyzePedestals = 1;	// Analyze pedestals first normal events
@@ -533,14 +533,14 @@ Int_t THcShower::Decode( const THaEvData& evdata )
   }
 
   if(fAnalyzePedestals) {
-    for(Int_t ip=0;ip<fNLayers;ip++) {
+    for(UInt_t ip=0;ip<fNLayers;ip++) {
       fPlanes[ip]->CalculatePedestals();
     }
     fAnalyzePedestals = 0;	// Don't analyze pedestals next event
   }
 
   Int_t nexthit = 0;
-  for(Int_t ip=0;ip<fNLayers;ip++) {
+  for(UInt_t ip=0;ip<fNLayers;ip++) {
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
   }
 
@@ -563,9 +563,9 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   THcShowerHitList HitList;
 
-  for(Int_t j=0; j < fNLayers; j++) {
+  for(UInt_t j=0; j < fNLayers; j++) {
 
-    for (Int_t i=0; i<fNBlocks[j]; i++) {
+    for (UInt_t i=0; i<fNBlocks[j]; i++) {
 
       //May be should be done this way.
       //
@@ -777,7 +777,7 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
 
     // Correct track energy depositions for the impact coordinate.
 
-    for (Int_t ip=0; ip<fNLayers; ip++) {
+    for (UInt_t ip=0; ip<fNLayers; ip++) {
 
       // Coordinate correction factors for positive and negative sides,
       // different for single PMT counters in the 1-st two layes and for

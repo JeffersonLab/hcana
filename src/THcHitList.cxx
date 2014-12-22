@@ -53,7 +53,6 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
   // hits for multihit tdcs.
   // The hit list is sorted (by plane, counter) after filling.
 
-  THcRawHit* rawhit;
   // cout << " Clearing TClonesArray " << endl;
   fRawHitList->Clear( );
   fNRawHits = 0;
@@ -64,6 +63,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
     // Loop over all channels that have a hit.
     //    cout << "Crate/Slot: " << d->crate << "/" << d->slot << endl;
     for ( Int_t j=0; j < evdata.GetNumChan( d->crate, d->slot); j++) {
+      THcRawHit* rawhit=0;
       
       Int_t chan = evdata.GetNextChan( d->crate, d->slot, j );
       if( chan < d->lo || chan > d->hi ) continue;     // Not one of my channels
@@ -77,7 +77,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
       // << counter << " " << signal << endl;
       // Search hit list for plane and counter
       // We could do sorting 
-      Int_t thishit = 0;
+      UInt_t thishit = 0;
       while(thishit < fNRawHits) {
 	rawhit = (THcRawHit*) (*fRawHitList)[thishit];
 	if (plane == rawhit->fPlane

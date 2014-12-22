@@ -254,8 +254,8 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
     TObjArray *vararr = values.Tokenize(",");
     Int_t nvals = vararr->GetLast()+1;
     
-    Int_t* ip;
-    Double_t* fp;
+    Int_t* ip=0;
+    Double_t* fp=0;
     // or expressions
     for(Int_t i=0;(ttype==0&&i<nvals);i++) {
       TString valstr = ((TObjString *)vararr->At(i))->GetString();
