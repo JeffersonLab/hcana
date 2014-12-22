@@ -213,7 +213,7 @@ void THcDetectorMap::Load(const char *fname)
 
   Int_t roc=0;
   Int_t nsubadd=0;
-  Int_t mask=0;
+  //  Int_t mask=0;
   Int_t bsub=0;
   Int_t detector=0;
   Int_t slot=0;
@@ -278,8 +278,8 @@ void THcDetectorMap::Load(const char *fname)
 	roc = value;
       } else if (strcasecmp(varname,"nsubadd")==0) {
 	nsubadd = value;
-      } else if (strcasecmp(varname,"mask")==0) {
-	mask = value;
+      } else if (strcasecmp(varname,"mask")==0) { // mask not used here
+	//mask = value;
       } else if (strcasecmp(varname,"bsub")==0) {
 	bsub = value;
       } else if (strcasecmp(varname,"slot")==0) {

@@ -26,7 +26,7 @@ Int_t THcRawDCHit::GetData(Int_t signal) {
 }
 
 // Return a requested hit
-Int_t THcRawDCHit::GetData(Int_t signal, Int_t ihit) {
+Int_t THcRawDCHit::GetData(Int_t signal, UInt_t ihit) {
   if(ihit >=0 && ihit< fNHits) {
     return(fTDC[ihit]);
   } else {
@@ -65,7 +65,7 @@ THcRawDCHit& THcRawDCHit::operator=( const THcRawDCHit& rhs )
     fPlane = rhs.fPlane;
     fCounter = rhs.fCounter;
     fNHits = rhs.fNHits;
-    for(Int_t ihit=0;ihit<fNHits;ihit++) {
+    for(UInt_t ihit=0;ihit<fNHits;ihit++) {
       fTDC[ihit] = rhs.fTDC[ihit];
     }
   }

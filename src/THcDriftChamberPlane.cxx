@@ -88,7 +88,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   // See what file it looks for
   
   char prefix[2];
-  Int_t NumDriftMapBins;
+  UInt_t NumDriftMapBins;
   Double_t DriftMapFirstBin;
   Double_t DriftMapBinSize;
   
@@ -311,7 +311,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Int_t wireNum = hit->fCounter;
     THcDCWire* wire = GetWire(wireNum);
     Int_t wire_last = -1;
-    for(Int_t mhit=0; mhit<hit->fNHits; mhit++) {
+    for(UInt_t mhit=0; mhit<hit->fNHits; mhit++) {
       fNRawhits++;
       /* Sort into early, late and ontime */
       Int_t rawtdc = hit->fTDC[mhit];
