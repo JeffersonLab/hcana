@@ -439,6 +439,9 @@ public:
 
 protected:
 
+  Int_t        fNCalTracks;
+  Double_t*    fTrackEnergy;  // [fNCalTracks] array of tracks energy 
+
   Int_t fEvent;
 
   Int_t fAnalyzePedestals;   // Flag for pedestal analysis.

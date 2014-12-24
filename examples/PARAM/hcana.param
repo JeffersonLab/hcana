@@ -6,6 +6,9 @@
 hhodo_num_planes = 4
 hhodo_plane_names = "1x 1y 2x 2y"
 
+hdbg_init_cal = 0
+sdbg_init_cal = 0
+
 hcal_num_layers = 4
 
 rraster_num_signals = 4

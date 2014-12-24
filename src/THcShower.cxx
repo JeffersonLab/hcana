@@ -40,6 +40,9 @@ THcShower::THcShower( const char* name, const char* description,
   fNLayers = 0;			// No layers until we make them
 
   fClusterList = new THcShowerClusterList;
+
+  fTrackEnergy = NULL;
+
 }
 
 //_____________________________________________________________________________
@@ -456,10 +459,14 @@ Int_t THcShower::DefineVariables( EMode mode )
 
   // Register variables in global list
 
+  fNCalTracks = 20;
+  fTrackEnergy = new Double_t [fNCalTracks];
+
   RVarDef vars[] = {
-    { "nhits", "Number of hits",                                 "fNhits" },
-    { "nclust", "Number of clusters",                            "fNclust" },
-    { "ntracks", "Number of shower tracks",                      "fNtracks" },
+    { "nhits",        "Number of hits",                         "fNhits" },
+    { "nclust",       "Number of clusters",                     "fNclust" },
+    { "ntracks",      "Number of shower tracks",                "fNtracks" },
+    { "trackenergy",  "Energy of a track",                      "fTrackEnergy" },
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
@@ -491,6 +498,9 @@ void THcShower::DeleteArrays()
   delete [] fNLayerZPos;  fNLayerZPos = NULL;
   delete [] XPos;  XPos = NULL;
   delete [] ZPos;  ZPos = NULL;
+
+  delete [] fTrackEnergy;  fTrackEnergy = NULL;
+  
 }
 
 //_____________________________________________________________________________
@@ -502,6 +512,11 @@ void THcShower::Clear(Option_t* opt)
 
   for(Int_t ip=0;ip<fNLayers;ip++) {
     fPlanes[ip]->Clear(opt);
+  }
+
+
+  for ( Int_t ie = 0; ie < fNCalTracks; ie++ ){
+    fTrackEnergy[ie] = 0.;
   }
 
   fNhits = 0;
@@ -834,6 +849,8 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 
     Float_t energy = GetShEnergy(theTrack);
     theTrack->SetEnergy(energy);
+
+    fTrackEnergy[itrk] = energy;
 
   }       //over tracks
 
