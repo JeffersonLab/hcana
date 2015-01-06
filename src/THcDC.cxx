@@ -14,6 +14,7 @@
 #include "THaDetMap.h"
 #include "THcDetectorMap.h"
 #include "THcGlobals.h"
+#include "THaCutList.h"
 #include "THcParmList.h"
 #include "THcDCTrack.h"
 #include "VarDef.h"
@@ -445,35 +446,36 @@ Int_t THcDC::Decode( const THaEvData& evdata )
   // Get the Hall C style hitlist (fRawHitList) for this event
   fNhits = DecodeToHitList(evdata);
 
-  // Let each plane get its hits
-  Int_t nexthit = 0;
-  for(Int_t ip=0;ip<fNPlanes;ip++) {
-    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
-    fN_True_RawHits += fPlanes[ip]->GetNRawhits();
+  if(!gHaCuts->Result("Pedestal_event")) {
+    // Let each plane get its hits
+    Int_t nexthit = 0;
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
+      nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
+      fN_True_RawHits += fPlanes[ip]->GetNRawhits();
       
-  }
+    }
 
-  // Let each chamber get its hits
-  for(Int_t ic=0;ic<fNChambers;ic++) {
-    fChambers[ic]->ProcessHits();
-    fNthits += fChambers[ic]->GetNHits();
-  }
-  // fRawHitList is TClones array of THcRawDCHit objects
-  Int_t counter=0;
-  if (fdebugprintrawdc) {
-    cout << " RAW_TOT_HITS = " <<  fNRawHits << endl;
-    cout << " Hit #  " << "Plane  " << " Wire " <<  " Raw TDC " << endl; 
-    for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
-    THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
-    for(Int_t imhit = 0; imhit < hit->fNHits; imhit++) {
-      counter++;
-      cout << counter << "      " << hit->fPlane << "     " << hit->fCounter << "     " << hit->fTDC[imhit]	   << endl;
+    // Let each chamber get its hits
+    for(Int_t ic=0;ic<fNChambers;ic++) {
+      fChambers[ic]->ProcessHits();
+      fNthits += fChambers[ic]->GetNHits();
+    }
+    // fRawHitList is TClones array of THcRawDCHit objects
+    Int_t counter=0;
+    if (fdebugprintrawdc) {
+      cout << " RAW_TOT_HITS = " <<  fNRawHits << endl;
+      cout << " Hit #  " << "Plane  " << " Wire " <<  " Raw TDC " << endl; 
+      for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
+	THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
+	for(Int_t imhit = 0; imhit < hit->fNHits; imhit++) {
+	  counter++;
+	  cout << counter << "      " << hit->fPlane << "     " << hit->fCounter << "     " << hit->fTDC[imhit]	   << endl;
+	}
       }
+      cout << endl;
+    }
+    Eff();			// Accumlate statistics
   }
-    cout << endl;
-  }
-  Eff();			// Accumlate statistics
-
   return fNhits;
 }
 
