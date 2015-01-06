@@ -121,7 +121,7 @@ Double_t THcFormula::DefinedValue( Int_t i )
   FVarDef_t* def = fVarDef+i;
   const void* ptr = def->code;
   if( !ptr ) return kBig;
-  switch( def->type ) {
+  switch( (Int_t) def->type ) {
   case kVariable:
   case kString:
     return reinterpret_cast<const THaVar*>(ptr)->GetValue( def->index );
