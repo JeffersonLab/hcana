@@ -172,15 +172,22 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
       {"cal_slop", &fSlop, kDouble},
       {"cal_fv_test", &fvTest, kInt,0,1},
       {"cal_fv_delta", &fvDelta, kDouble},
-      {"dbg_raw_cal", &fdbg_raw_cal, kInt},
-      {"dbg_decoded_cal", &fdbg_decoded_cal, kInt},
-      {"dbg_sparsified_cal", &fdbg_sparsified_cal, kInt},
-      {"dbg_clusters_cal", &fdbg_clusters_cal, kInt},
-      {"dbg_tracks_cal", &fdbg_tracks_cal, kInt},
-      {"dbg_init_cal", &fdbg_init_cal, kInt},
+      {"dbg_raw_cal", &fdbg_raw_cal, kInt, 0, 1},
+      {"dbg_decoded_cal", &fdbg_decoded_cal, kInt, 0, 1},
+      {"dbg_sparsified_cal", &fdbg_sparsified_cal, kInt, 0, 1},
+      {"dbg_clusters_cal", &fdbg_clusters_cal, kInt, 0, 1},
+      {"dbg_tracks_cal", &fdbg_tracks_cal, kInt, 0, 1},
+      {"dbg_init_cal", &fdbg_init_cal, kInt, 0, 1},
       {0}
     };
     fvTest = 0;			// Default if not defined
+    fdbg_raw_cal = 0;		// Debugging off by default
+    fdbg_decoded_cal = 0;
+    fdbg_sparsified_cal = 0;
+    fdbg_clusters_cal = 0;
+    fdbg_tracks_cal = 0;
+    fdbg_init_cal = 0;
+
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
 
