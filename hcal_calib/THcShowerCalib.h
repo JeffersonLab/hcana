@@ -16,6 +16,8 @@
 #include "TFile.h"
 #include "TTree.h"
 
+#define D_CALO_FP 338.69    //distance from FP to the calorimeter face
+
 using namespace std;
 
 //
@@ -250,11 +252,11 @@ void THcShowerCalib::ReadShRawTrack(THcShTrack &trk, UInt_t ientry) {
 
   // Track parameters.
 
-  Double_t        H_cal_trp;
-  Double_t        H_cal_trx;
-  Double_t        H_cal_trxp;
-  Double_t        H_cal_try;
-  Double_t        H_cal_tryp;
+  Double_t        H_tr_p;
+  Double_t        H_tr_x;   //X FP
+  Double_t        H_tr_xp;
+  Double_t        H_tr_y;   //Y FP
+  Double_t        H_tr_yp;
 
   // Set branch addresses.
 
@@ -270,15 +272,16 @@ void THcShowerCalib::ReadShRawTrack(THcShTrack &trk, UInt_t ientry) {
   fTree->SetBranchAddress("H.cal.4ta.aneg_p",H_cal_4ta_aneg_p);
   fTree->SetBranchAddress("H.cal.4ta.apos_p",H_cal_4ta_apos_p);
 
-  fTree->SetBranchAddress("H.cal.trx",&H_cal_trx);
-  fTree->SetBranchAddress("H.cal.try",&H_cal_try);
-  fTree->SetBranchAddress("H.tr.th",&H_cal_trxp);
-  fTree->SetBranchAddress("H.tr.ph",&H_cal_tryp);
-  fTree->SetBranchAddress("H.tr.p",&H_cal_trp);
+  fTree->SetBranchAddress("H.tr.x",&H_tr_x);
+  fTree->SetBranchAddress("H.tr.y",&H_tr_y);
+  fTree->SetBranchAddress("H.tr.th",&H_tr_xp);
+  fTree->SetBranchAddress("H.tr.ph",&H_tr_yp);
+  fTree->SetBranchAddress("H.tr.p",&H_tr_p);
 
   fTree->GetEntry(ientry);
 
-  trk.Reset(H_cal_trp, H_cal_trx, H_cal_trxp, H_cal_try, H_cal_tryp);
+  trk.Reset(H_tr_p, H_tr_x+D_CALO_FP*H_tr_xp, H_tr_xp,
+	    H_tr_y+D_CALO_FP*H_tr_yp, H_tr_yp);
 
   for (UInt_t j=0; j<THcShTrack::fNrows; j++) {
     for (UInt_t k=0; k<THcShTrack::fNcols; k++) {
