@@ -91,7 +91,9 @@ public:
   bool isNeighbour(THcShowerHit* hit1) {      //Is hit1 neighbouring this hit?
     Int_t dRow = fRow-(*hit1).fRow;
     Int_t dCol = fCol-(*hit1).fCol;
-    return TMath::Abs(dRow)<2 && TMath::Abs(dCol)<2;
+    //    return TMath::Abs(dRow)<2 && TMath::Abs(dCol)<2;
+    return (TMath::Abs(dRow)<2 && TMath::Abs(dCol)<2) ||
+      (dRow==0 && TMath::Abs(dCol)<3);
   }
 
   //Print out hit information
