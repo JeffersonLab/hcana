@@ -83,15 +83,15 @@ protected:
   Int_t fdebugprintdecodeddc;
   Int_t fHMSStyleChambers;
 
-  UInt_t fNDCTracks;
+  Int_t fNDCTracks;
   TClonesArray* fDCTracks;     // Tracks found from stubs (THcDCTrack obj)
   // Calibration
 
   // Hall C Parameters
   char fPrefix[2];
-  UInt_t fNPlanes;              // Total number of DC planes
+  Int_t fNPlanes;              // Total number of DC planes
   char** fPlaneNames;
-  UInt_t fNChambers;
+  Int_t fNChambers;
   Int_t fFixLR;			// If 1, allow a given hit to have different LR
                                 // for different space points
   Int_t fFixPropagationCorrection; // If 1, don't reapply (and accumulate) the

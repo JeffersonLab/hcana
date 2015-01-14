@@ -652,7 +652,7 @@ Int_t THcDriftChamber::SpacePointMultiWire()
   THcDCHit* hits_plane[fNPlanes][MAX_HITS_PER_POINT];
 
   Int_t nsp_check;
-  //Int_t nplanes_single;
+  Int_t nplanes_single;
 
   Int_t nsp_tot=fNSpacePoints;
   Int_t nsp_totl=fNSpacePoints;
@@ -691,7 +691,7 @@ Int_t THcDriftChamber::SpacePointMultiWire()
     }
     --nsp_new;
     nsp_check=nsp_tot + nsp_new;
-    //nplanes_single = nplanes_hit - nplanes_mult;
+    nplanes_single = nplanes_hit - nplanes_mult;
     //if (fhdebugflagpr) cout << " # of new space points = " << nsp_new << " total now = " << nsp_tot<< endl;
     // Check if cloning conditions are met
     Int_t ntot = 0;
@@ -869,15 +869,15 @@ void THcDriftChamber::SelectSpacePoints()
   }
   // if(sp_count < fNSpacePoints)    if (fhdebugflagpr) cout << "Reduced from " << fNSpacePoints << " to " << sp_count << " space points" << endl;
   fNSpacePoints = sp_count;
-  //for(Int_t isp=0;isp<fNSpacePoints;isp++) {
-  //  THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
+  for(Int_t isp=0;isp<fNSpacePoints;isp++) {
+    THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
     //if (fhdebugflagpr) cout << " sp pt = " << isp+1 << " # of hits = " << sp->GetNHits() << endl;
-    //for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
-  //THcDCHit* hit = sp->GetHit(ihit);
+    for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
+      THcDCHit* hit = sp->GetHit(ihit);
       //THcDriftChamberPlane* plane=hit->GetWirePlane();
       //        if (fhdebugflagpr) cout << ihit+1 << "selecting " << plane->GetPlaneNum() << " " << plane->GetChamberNum() << " " << hit->GetTime() << " " << hit->GetDist() << " " << plane->GetCentralTime() << " " << plane->GetDriftTimeSign() << endl;
-  //    }
-  //  }
+    }
+  }
 }
 
 void THcDriftChamber::CorrectHitTimes()

@@ -463,15 +463,15 @@ protected:
   // Geometrical parameters.
 
   char** fLayerNames;
-  UInt_t fNLayers;	        // Number of layers in the calorimeter
+  Int_t fNLayers;               // Number of layers in the calorimeter
   Double_t* fNLayerZPos;	// Z positions of fronts of layers
   Double_t* BlockThick;		// Thickness of blocks
-  UInt_t* fNBlocks;              // [fNLayers] number of blocks per layer
-  UInt_t fNtotBlocks;            // Total number of shower counter blocks
+  Int_t* fNBlocks;              // [fNLayers] number of blocks per layer
+  Int_t fNtotBlocks;            // Total number of shower counter blocks
   Double_t** XPos;		// [fNLayers] X,Y,Z positions of blocks
   Double_t* YPos;
   Double_t* ZPos;
-  UInt_t fNegCols;               // # of columns with neg. side PMTs only.
+  Int_t fNegCols;               // # of columns with neg. side PMTs only.
   Double_t fSlop;               // Track to cluster vertical slop distance.
   Int_t fvTest;                 // fiducial volume test flag for tracking
   Double_t fvDelta;             // Exclusion band width for fiducial volume

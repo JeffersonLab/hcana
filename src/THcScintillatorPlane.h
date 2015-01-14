@@ -80,8 +80,8 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* fNegADCHits;
 
   Int_t fPlaneNum;		/* Which plane am I 1-4 */
-  UInt_t fTotPlanes;            /* so we can read variables that are not indexed by plane id */
-  UInt_t fNelem;		/* Need since we don't inherit from 
+  Int_t fTotPlanes;             /* so we can read variables that are not indexed by plane id */
+  Int_t fNelem;			/* Need since we don't inherit from 
 				 detector base class */
   Int_t fNScinHits;                 /* Number of hits in this plane */
   Int_t fMaxHits;               /* maximum number of hits to be considered - useful for dimensioning arrays */

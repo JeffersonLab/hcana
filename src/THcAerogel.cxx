@@ -198,12 +198,12 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fNegPedMean = new Double_t[fNelem];
 
   DBRequest list[]={
-    {"aero_pos_gain", fPosGain, kDouble, (UInt_t) fNelem},
-    {"aero_neg_gain", fNegGain, kDouble, (UInt_t) fNelem},
-    {"aero_pos_ped_limit", fPosPedLimit, kInt, (UInt_t) fNelem},
-    {"aero_neg_ped_limit", fNegPedLimit, kInt, (UInt_t) fNelem},
-    {"aero_pos_ped_mean", fPosPedMean, kDouble, (UInt_t) fNelem,optional},
-    {"aero_neg_ped_mean", fNegPedMean, kDouble, (UInt_t) fNelem,optional},
+    {"aero_pos_gain", fPosGain, kDouble, fNelem},
+    {"aero_neg_gain", fNegGain, kDouble, fNelem},
+    {"aero_pos_ped_limit", fPosPedLimit, kInt, fNelem},
+    {"aero_neg_ped_limit", fNegPedLimit, kInt, fNelem},
+    {"aero_pos_ped_mean", fPosPedMean, kDouble, fNelem,optional},
+    {"aero_neg_ped_mean", fNegPedMean, kDouble, fNelem,optional},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);

@@ -20,6 +20,7 @@
 
 //#include "THaTrackingDetector.h"
 //#include "THcHitList.h"
+#include "THcRawDCHit.h"
 #include "THcSpacePoint.h"
 #include "THcDriftChamberPlane.h"
 #include "THcDriftChamber.h"

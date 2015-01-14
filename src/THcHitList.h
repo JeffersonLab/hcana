@@ -32,7 +32,7 @@ public:
 
   TClonesArray* GetHitList() const {return fRawHitList; }
 
-  UInt_t         fNRawHits;
+  Int_t         fNRawHits;
   Int_t         fNMaxRawHits;
   TClonesArray* fRawHitList; // List of raw hits
   TClass* fRawHitClass;		  // Class of raw hit object to use

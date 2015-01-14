@@ -179,9 +179,9 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fPedMean = new Double_t[fNelem];
   
   DBRequest list[]={
-    {"cer_adc_to_npe", fGain,     kDouble, (UInt_t) fNelem},              // Ahmed
-    {"cer_ped_limit",  fPedLimit, kInt,    (UInt_t) fNelem},              // Ahmed
-    {"cer_width",      fCerWidth, kDouble, (UInt_t) fNelem},              // Ahmed
+    {"cer_adc_to_npe", fGain,     kDouble, fNelem},              // Ahmed
+    {"cer_ped_limit",  fPedLimit, kInt,    fNelem},              // Ahmed
+    {"cer_width",      fCerWidth, kDouble, fNelem},              // Ahmed
     {0}
   };
 

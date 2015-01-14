@@ -372,8 +372,7 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
   Int_t i,j,index;
   Double_t mintdc, maxtdc,tdctotime,toftolerance,tmin;
   Double_t pos_ph[53],neg_ph[53],postime[53],negtime[53],scin_corrected_time[53]; // the 53 should go in a param file (was hmax_scin_hits originally)
-  // Bool_t keep_pos[53],keep_neg[53]; // are these all really needed?
-  Bool_t two_good_times[53];
+  Bool_t keep_pos[53],keep_neg[53],two_good_times[53]; // are these all really needed?
   Double_t dist_from_center,scint_center,hit_position,time_pos[100],time_neg[100],hbeta_pcent;
   Int_t timehist[200],jmax,maxhit,nfound=0; // This seems as a pretty old-fashioned way of doing things. Is there a better way?
 
@@ -388,8 +387,8 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
     timehist[i]=0;
   }
   for (i=0;i<fMaxHits;i++) {
-    //    keep_pos[i]=kFALSE;
-    //    keep_neg[i]=kFALSE;
+    keep_pos[i]=kFALSE;
+    keep_neg[i]=kFALSE;
     two_good_times[i]=kFALSE;
   }
 
@@ -581,7 +580,7 @@ void THcScintillatorPlane::CalculatePedestals( )
   // Use the accumulated pedestal data to calculate pedestals
   // Later add check to see if pedestals have drifted ("Danger Will Robinson!")
   //  cout << "Plane: " << fPlaneNum << endl;
-  for(UInt_t i=0; i<fNelem;i++) {
+  for(Int_t i=0; i<fNelem;i++) {
     
     // Positive tubes
     fPosPed[i] = ((Double_t) fPosPedSum[i]) / TMath::Max(1, fPosPedCount[i]);
@@ -615,7 +614,7 @@ void THcScintillatorPlane::InitializePedestals( )
   fNegPed = new Double_t [fNelem];
   fPosThresh = new Double_t [fNelem];
   fNegThresh = new Double_t [fNelem];
-  for(UInt_t i=0;i<fNelem;i++) {
+  for(Int_t i=0;i<fNelem;i++) {
     fPosPedSum[i] = 0;
     fPosPedSum2[i] = 0;
     fPosPedLimit[i] = 1000;	// In engine, this are set in parameter file
