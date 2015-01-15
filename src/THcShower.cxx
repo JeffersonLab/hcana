@@ -151,6 +151,13 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   // beginning of the analysis.
   // 'date' contains the date/time of the run being analyzed.
 
+  fNCalTracks = 20;
+  fTrackEnergy = new Double_t [fNCalTracks]; // [fNCalTracks] array of tracks energy   
+
+  for ( Int_t ite = 0; ite < fNCalTracks; ite++ ){
+    fTrackEnergy[ite] = 0.0;
+  }
+
   //  static const char* const here = "ReadDatabase()";
   char prefix[2];
 
@@ -461,6 +468,8 @@ Int_t THcShower::DefineVariables( EMode mode )
     { "nhits",        "Number of hits",                         "fNhits" },
     { "nclust",       "Number of clusters",                     "fNclust" },
     { "ntracks",      "Number of shower tracks",                "fNtracks" },
+    { "ntracks",      "Number of shower tracks",                "fNtracks" },
+    { "trackenergy",  "Energy of a track",                      "fTrackEnergy" },
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
@@ -493,6 +502,8 @@ void THcShower::DeleteArrays()
   delete [] XPos;  XPos = NULL;
   delete [] ZPos;  ZPos = NULL;
 
+  delete [] fTrackEnergy; fTrackEnergy = NULL;
+
 }
 
 //_____________________________________________________________________________
@@ -500,12 +511,15 @@ inline
 void THcShower::Clear(Option_t* opt)
 {
 
-//   Reset per-event data.
+  //   Reset per-event data.
 
   for(Int_t ip=0;ip<fNLayers;ip++) {
     fPlanes[ip]->Clear(opt);
   }
 
+  // for ( Int_t ite = 0; ite < fNCalTracks; ite++ ){
+  //   fTrackEnergy[ite] = 0.0;
+  // }
   
   fNhits = 0;
   fNclust = 0;
@@ -837,7 +851,7 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 
     Float_t energy = GetShEnergy(theTrack);
     theTrack->SetEnergy(energy);
-
+    fTrackEnergy[itrk] = energy;
   }       //over tracks
 
   //Debug output.

@@ -170,7 +170,7 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   strcat(parname,"cer_tot_pmts");                      // THcScintillatorPlane
   fNelem = (Int_t)gHcParms->Find(parname)->GetValue(); // class.
 
-  //    fNelem = 2;      // Default if not defined                                                                    
+  //    fNelem = 2;      // Default if not defined     
 
   fNPMT = new Int_t[fNelem];
   fADC = new Double_t[fNelem];
@@ -449,12 +449,17 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 
 	}
 	
-	// cout << "Event = " << fCerEvent 
-	//      << "   region = " << ir + 1
-	//      << "   track counter = " << fCerTrackCounter[ir]
-	//      << "   fired coutner = " << fCerFiredCounter[ir]
-	//      << endl;
-
+	// if ( fCerEvent > 5880 ) {
+	//   cout << "Event = " << fCerEvent 
+	//        << "   Beta = " << theTrack->GetBeta()
+	//        // << "   region = " << ir + 1
+	//        // << "   track counter = " << fCerTrackCounter[ir]
+	//        // << "   fired coutner = " << fCerFiredCounter[ir]
+	//        // << "   hsxp = " << theTrack->GetTheta()
+	//        // << "   hsyp = " << theTrack->GetPhi()
+	//        << endl;
+	// }
+	
       } // loop over regions
       //      cout << endl;
       
