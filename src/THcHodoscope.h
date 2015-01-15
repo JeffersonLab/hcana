@@ -161,7 +161,26 @@ protected:
   Double_t*    fPlaneCenter;
   Double_t*    fPlaneSpacing;
 
-  Double_t**   fScinHit;                // [fNPlanes] Array
+  Int_t        fTestSum;
+  Int_t        fTrackEffTestNScinPlanes;
+  Int_t        fGoodScinHits;
+  Int_t*       fxLoScin;
+  Int_t*       fxHiScin;
+  Int_t*       fyLoScin;
+  Int_t*       fyHiScin;
+  Int_t        fNHodoscopes;
+
+  Int_t fHitSweet1X;
+  Int_t fHitSweet1Y;
+  Int_t fHitSweet2X;
+  Int_t fHitSweet2Y;
+  
+  Int_t fSweet1XScin;
+  Int_t fSweet1YScin;
+  Int_t fSweet2XScin;
+  Int_t fSweet2YScin;
+
+  //  Double_t**   fScinHit;                // [fNPlanes] Array
 
   Double_t*    fFPTime;               // [fNPlanes] Array 
 
@@ -231,9 +250,15 @@ protected:
     // This doesn't work because we clear this structure each track
     // Do we need an vector of vectors of structures?
     // Start with a separate vector of vectors for now.
-  std::vector<std::vector<Double_t> > fdEdX;	// Vector over track #
-  std::vector<Int_t > fNScinHit;		// # scins hit for the track
+  std::vector<std::vector<Double_t> > fdEdX;	        // Vector over track #
+  std::vector<Int_t > fNScinHit;		        // # scins hit for the track
+  std::vector<std::vector<Double_t> > fScinHitPaddle;	// Vector over hits in a plane #
+  std::vector<Int_t > fNClust;		                // # scins clusters for the plane
+  std::vector<Int_t > fThreeScin;	                // # scins three clusters for the plane
+  std::vector<Int_t > fGoodScinHitsX;                   // # hits in fid x range
   // Could combine the above into a structure
+
+  //
     
   void           ClearEvent();
   void           DeleteArrays();

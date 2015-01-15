@@ -438,16 +438,14 @@ public:
   THcShower();  // for ROOT I/O
 
 protected:
-
+  
+  Int_t fNCalTracks;
+  Double_t* fTrackEnergy; // [fNCalTracks] array of tracks energy   
   Int_t fEvent;
-
   Int_t fAnalyzePedestals;   // Flag for pedestal analysis.
-
   Int_t* fShPosPedLimit;     // [fNtotBlocks] ADC limits for pedestal calc.-s.
   Int_t* fShNegPedLimit;
-
   Int_t fShMinPeds;          // Min.number of events to analyze pedestals.
-
   Double_t* fPosGain;        // [fNtotBlocks] Gain constants from calibration
   Double_t* fNegGain;
 
