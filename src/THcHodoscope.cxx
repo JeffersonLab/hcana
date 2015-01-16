@@ -1044,7 +1044,8 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	      //	      fNtof ++;
 	      Double_t fADCph = ((THcSignalHit*)scinNegADC->At(iphit))->GetData();
 	      fTOFPInfo[iphit].adcPh = fADCph;
-	      Double_t fPath = fPlanes[ip]->GetPosRight() - fScinLongCoord;
+	      //	      Double_t fPath = fPlanes[ip]->GetPosRight() - fScinLongCoord;
+	      Double_t fPath = fScinLongCoord - fPlanes[ip]->GetPosRight();
 	      fTOFPInfo[iphit].path = fPath;
 	      
 	      // * Convert TDC value to time, do pulse height correction, correction for
@@ -1055,6 +1056,16 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	      fTime = fTime - ( fPath / fHodoVelLight[fPIndex] );
 	      fTOFPInfo[iphit].time = fTime;
 	      fTOFPInfo[iphit].scin_neg_time = fTime - fHodoNegTimeOffset[fPIndex];
+
+	      // cout << "Event = " << fCheckEvent
+	      // 	   << "   track = " << itrack + 1
+	      // 	   << "   hit = " << ihhit + 1
+	      // 	   << "   ftime = " << fTime
+	      // 	   << "   path = " << fPath
+	      // 	   << "   long cor = " << fScinLongCoord
+	      // 	   << "   neg cor = " << fPlanes[ip]->GetPosRight()
+	      // 	   << endl;
+
 	      
 	    } // check for good neg TDC condition
 	    
@@ -1065,12 +1076,22 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 		fTOFCalc[ihhit].scin_sigma = TMath::Sqrt( fHodoPosSigma[fPIndex] * fHodoPosSigma[fPIndex] + 
 							  fHodoNegSigma[fPIndex] * fHodoNegSigma[fPIndex] )/2.;
 		fTOFCalc[ihhit].good_scin_time = kTRUE;
+
+		// cout << "Event = " << fCheckEvent
+		//      << "   track = " << itrack + 1
+		//      << "   hit = " << ihhit + 1
+		//      << "   scin time = " << fTOFCalc[ihhit].scin_time
+		//      << "   pos time = " << fTOFPInfo[iphit].scin_pos_time
+		//      << "   neg time = " << fTOFPInfo[iphit].scin_neg_time
+		//      << "   both tdcs"
+		//      << endl;
 		//		fNtofPairs ++;
 	      }
 	      else{
 		fTOFCalc[ihhit].scin_time = fTOFPInfo[iphit].scin_pos_time;
 		fTOFCalc[ihhit].scin_sigma = fHodoPosSigma[fPIndex];
 		fTOFCalc[ihhit].good_scin_time = kTRUE;
+
 	      }
 	    }
 	    else {
@@ -1078,9 +1099,11 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 		fTOFCalc[ihhit].scin_time = fTOFPInfo[iphit].scin_neg_time;
 		fTOFCalc[ihhit].scin_sigma = fHodoNegSigma[fPIndex];
 		fTOFCalc[ihhit].good_scin_time = kTRUE;
+
 	      }
 	    } // In h_tof.f this includes the following if condition for time at focal plane
 	    // // because it is written in FORTRAN code
+
 
 	    // c     Get time at focal plane
 	    if ( fTOFCalc[ihhit].good_scin_time ){
@@ -1193,6 +1216,14 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	      fSumZZ += fScinWeight * ( fZPosition * fZPosition );
 	      fSumTZ += fScinWeight * fZPosition * fTOFCalc[ihhit].scin_time;
 	      
+
+	// cout << "Event = " << fCheckEvent
+	//      << "   track = " << itrack + 1
+	//      << "   hit = " << ihhit + 1
+	//      << "   scin weight = " << fScinWeight
+	//      << "   scin time = " << fTOFCalc[ihhit].scin_time
+	//      << "   z pos = " << fZPosition
+	//      << endl;
 	      
 	    } // condition of good scin time
 	    ihhit ++;
@@ -1203,9 +1234,27 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	fT0 = ( fSumT * fSumZZ - fSumZ * fSumTZ ) / fTmp ;
 	fTmpDenom = fSumW * fSumTZ - fSumZ * fSumT;
 	
+	// cout << "Event = " << fCheckEvent
+	//      << "   track = " << itrack + 1
+	//      << "   sumt= " << fSumT
+	//      << "   sumw = " << fSumW
+	//      << "   sumz = " << fSumZ
+	//      << "   sumtz = " << fSumTZ
+	//      << endl;
+
+
 	if ( TMath::Abs( fTmpDenom ) > ( 1 / 10000000000.0 ) ) {
 	  
 	  fBeta = fTmp / fTmpDenom;
+
+	  // cout << "Event = " << fCheckEvent
+	  //      << "   track = " << itrack + 1
+	  //      << "   fTmp = " << fTmp
+	  //      << "   fTmpDenom = " << fTmpDenom
+	  //      << "   beta = " << fBeta
+	  //      << endl;
+
+
 	  fBetaChiSq = 0.;	  
 	  ihhit = 0;
 
@@ -1231,12 +1280,16 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  
 	  fPathNorm = TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() + 
 				       theTrack->GetPhi()   * theTrack->GetPhi() );
+
+	  // cout << "Event = " << fCheckEvent
+	  //      << "   track = " << itrack + 1
+	  //      << "   beta = " << fBeta
+	  //      << "   path = " << fPathNorm
+	  //      << endl;
+
 	  fBeta = fBeta / fPathNorm;
 	  fBeta = fBeta / 29.979;    // velocity / c
 	  
-	  // cout << "track = " << itrack + 1 
-	  //      << "   fBeta = " << fBeta[itrack] << endl;
-
 	  
 	}  // condition for fTmpDenom	
 	else {
@@ -1282,13 +1335,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       // This can't be right.  Plus if there are no hits, then
       // it is undefined.
       //      theTrack->SetDedx(fdEdX[itrack][0]); // Dedx of first hit
-
-      // if ( fCheckEvent > 5880 ){
-      // 	cout << "Event = " << fCheckEvent
-      // 	     << "   track = " << itrack + 1
-      // 	     << "   fBeta = " << fBeta
-      // 	     << endl;
-      // }      
 
       theTrack->SetBeta(fBeta);
       theTrack->SetBetaChi2( fBetaChiSq );
@@ -1381,9 +1427,8 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  	  
 	} // Loop over X plane
 	
-
-	// *look for clusters in y planes... (10 scins)  !this assume both y planes have same           
-	// *number of scintillators.                                                                    
+	// *look for clusters in y planes... (10 scins)  !this assume both y planes have same  
+	// *number of scintillators.
 
 	for ( ip = 1; ip < 4; ip +=2 ) { 
 	  // Planes ip = 1 = 1Y 
@@ -1421,12 +1466,11 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  
 	}// Loop over Y planes
 	
-
-	// *now put some "tracking" like cuts on the hslopes, based only on scins...                    
-	// *by "slope" here, I mean the difference in the position of scin hits in two                  
-	// *like-planes.  For example, a track that those great straight through will                   
-	// *have a slope of zero.  If it moves one scin over from s1x to s2x it has an                  
-	// *x-slope of 1...  I pick the minimum slope if there are multiple scin hits.                  
+	// *now put some "tracking" like cuts on the hslopes, based only on scins...  
+	// *by "slope" here, I mean the difference in the position of scin hits in two 
+	// *like-planes.  For example, a track that those great straight through will 
+	// *have a slope of zero.  If it moves one scin over from s1x to s2x it has an 
+	// *x-slope of 1...  I pick the minimum slope if there are multiple scin hits. 
 
 	fBestXpScin = 100.0;
 	fBestYpScin = 100.0;
