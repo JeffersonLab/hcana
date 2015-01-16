@@ -105,7 +105,8 @@ protected:
 
   // Potential Hall C parameters.  Mostly here for demonstration
 
-  UInt_t fNPlanes,fMaxScinPerPlane,fMaxHodoScin; // number of planes; max number of scin/plane; product of the first two 
+  Int_t fNPlanes;
+  UInt_t fMaxScinPerPlane,fMaxHodoScin; // number of planes; max number of scin/plane; product of the first two 
   Double_t fStartTimeCenter, fStartTimeSlop, fScinTdcToTime;
   Double_t fTofTolerance;
   Double_t fPathLengthCentral;

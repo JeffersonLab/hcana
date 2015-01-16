@@ -107,7 +107,7 @@ void THcHodoscope::Setup(const char* name, const char* description)
     // Should quit.  Is there an official way to quit?
   }
   fPlaneNames = new char* [fNPlanes];
-  for(UInt_t i=0;i<fNPlanes;i++) {
+  for(Int_t i=0;i<fNPlanes;i++) {
     fPlaneNames[i] = new char[plane_names[i].length()+1];
     strcpy(fPlaneNames[i], plane_names[i].c_str());
   }
@@ -126,7 +126,7 @@ void THcHodoscope::Setup(const char* name, const char* description)
   // Probably shouldn't assume that description is defined
   char* desc = new char[strlen(description)+100];
   fPlanes = new THcScintillatorPlane* [fNPlanes];
-  for(UInt_t i=0;i < fNPlanes;i++) {
+  for(Int_t i=0;i < fNPlanes;i++) {
     strcpy(desc, description);
     strcat(desc, " Plane ");
     strcat(desc, fPlaneNames[i]);
@@ -171,7 +171,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   if( (status = THaNonTrackingDetector::Init( date )) )
     return fStatus=status;
 
-  for(UInt_t ip=0;ip<fNPlanes;ip++) {
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
     if((status = fPlanes[ip]->Init( date ))) {
       return fStatus=status;
     }
@@ -201,7 +201,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   //  Double_t  fHitCnt4 = 0., fHitCnt3 = 0.;
   
   fScinHit = new Double_t*[fNPlanes];         
-  for (UInt_t m = 0; m < fNPlanes; m++ ){
+  for (Int_t m = 0; m < fNPlanes; m++ ){
     fScinHit[m] = new Double_t[fNPaddle[0]];
   }
   
@@ -364,7 +364,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   //
   prefix[1]='\0';
 
-  for(UInt_t i=0;i<fNPlanes;i++) {
+  for(Int_t i=0;i<fNPlanes;i++) {
     
     DBRequest list[]={
       {Form("scin_%s_nr",fPlaneNames[i]), &fNPaddle[i], kInt},
@@ -376,7 +376,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   // GN added
   // reading variables from *hodo.param
   fMaxScinPerPlane=fNPaddle[0];
-  for (UInt_t i=1;i<fNPlanes;i++) {
+  for (Int_t i=1;i<fNPlanes;i++) {
     fMaxScinPerPlane=(fMaxScinPerPlane > fNPaddle[i])? fMaxScinPerPlane : fNPaddle[i];
   }
 // need this for "padded arrays" i.e. 4x16 lists of parameters (GN)
@@ -451,7 +451,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     cout <<"TdcMin = "<<fScinTdcMin<<" TdcMax = "<<fScinTdcMax<<endl;
     cout <<"TofTolerance = "<<fTofTolerance<<endl;
     cout <<"*** VelLight ***\n";
-    for (UInt_t i1=0;i1<fNPlanes;i1++) {
+    for (Int_t i1=0;i1<fNPlanes;i1++) {
       cout<<"Plane "<<i1<<endl;
       for (UInt_t i2=0;i2<fMaxScinPerPlane;i2++) {
 	cout<<fHodoVelLight[GetScinIndex(i1,i2)]<<" ";
@@ -555,7 +555,7 @@ THcHodoscope::~THcHodoscope()
 void THcHodoscope::DeleteArrays()
 {
   // Delete member arrays. Used by destructor.
-  for(UInt_t k = 0; k < fNPlanes; k++){
+  for(Int_t k = 0; k < fNPlanes; k++){
     delete [] fScinHit[k];
   }
   delete [] fScinHit;
@@ -625,7 +625,7 @@ void THcHodoscope::ClearEvent()
   //    fBetaChisq[imaxhit] = 0.;
   //  }
 
-  for(UInt_t ip=0;ip<fNPlanes;ip++) {
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
     fPlanes[ip]->Clear();
     fFPTime[ip]=0.;
     fPlaneCenter[ip]=0.;
@@ -650,7 +650,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 
   if(gHaCuts->Result("Pedestal_event")) {
     Int_t nexthit = 0;
-    for(UInt_t ip=0;ip<fNPlanes;ip++) {
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
             
       nexthit = fPlanes[ip]->AccumulatePedestals(fRawHitList, nexthit);
     }
@@ -658,7 +658,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     return(0);
   }
   if(fAnalyzePedestals) {
-    for(UInt_t ip=0;ip<fNPlanes;ip++) {
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
       
       fPlanes[ip]->CalculatePedestals();
     }
@@ -670,7 +670,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 
   fStartTime=0;
   fNfptimes=0;
-  for(UInt_t ip=0;ip<fNPlanes;ip++) {
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
 
     fPlaneCenter[ip] = fPlanes[ip]->GetPosCenter(0) + fPlanes[ip]->GetPosOffset();
     fPlaneSpacing[ip] = fPlanes[ip]->GetSpacing();
@@ -759,7 +759,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       THaTrack* theTrack = dynamic_cast<THaTrack*>( tracks.At(itrack) );
       if (!theTrack) return -1;
       
-      for ( UInt_t ip = 0; ip < fNPlanes; ip++ ){ 
+      for ( Int_t ip = 0; ip < fNPlanes; ip++ ){ 
 	fGoodPlaneTime[ip] = kFALSE; 
 	fNScinHits[ip] = 0;
 	fNPlaneTime[ip] = 0;
@@ -797,7 +797,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       
       fTOFCalc.clear();
       Int_t ihhit = 0;		// Hit # overall
-      for( UInt_t ip = 0; ip < fNPlanes; ip++ ) {
+      for( Int_t ip = 0; ip < fNPlanes; ip++ ) {
 	
 	fNScinHits[ip] = fPlanes[ip]->GetNScinHits();
 
@@ -1159,7 +1159,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	sumw = 0.;	sumt = 0.;	sumz = 0.;	sumzz = 0.;	sumtz = 0.;
 	
 	ihhit = 0;  
-	for ( UInt_t ip = 0; ip < fNPlanes; ip++ ){
+	for ( Int_t ip = 0; ip < fNPlanes; ip++ ){
 
 	  if (!fPlanes[ip])
 	    return -1;
@@ -1194,7 +1194,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  betaChisq = 0.;
 	  
 	  ihhit = 0;
-	  for ( UInt_t ip = 0; ip < fNPlanes; ip++ ){                           // Loop over planes
+	  for ( Int_t ip = 0; ip < fNPlanes; ip++ ){                           // Loop over planes
 	    if (!fPlanes[ip])
 	      return -1;
 	    
@@ -1259,7 +1259,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       
       Double_t fptimesum=0.0;
       Int_t n_fptimesum=0;
-      for ( UInt_t ip = 0; ip < fNPlanes; ip++ ){
+      for ( Int_t ip = 0; ip < fNPlanes; ip++ ){
 	if ( fNPlaneTime[ip] != 0 ){
 	  fFPTime[ip] = ( fSumPlaneTime[ip] / fNPlaneTime[ip] );
 	  fptimesum += fSumPlaneTime[ip];

@@ -89,7 +89,7 @@ protected:
 
   // Hall C Parameters
   char fPrefix[2];
-  UInt_t fNPlanes;              // Total number of DC planes
+  Int_t fNPlanes;              // Total number of DC planes
   char** fPlaneNames;
   UInt_t fNChambers;
   Int_t fFixLR;			// If 1, allow a given hit to have different LR

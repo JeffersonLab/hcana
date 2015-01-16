@@ -122,7 +122,7 @@ void THcDC::Setup(const char* name, const char* description)
     // Should quit.  Is there an official way to quit?
   }
   fPlaneNames = new char* [fNPlanes];
-  for(UInt_t i=0;i<fNPlanes;i++) {
+  for(Int_t i=0;i<fNPlanes;i++) {
     fPlaneNames[i] = new char[plane_names[i].length()+1];
     strcpy(fPlaneNames[i], plane_names[i].c_str());
   }
@@ -131,7 +131,7 @@ void THcDC::Setup(const char* name, const char* description)
   char *desc1= new char[strlen(description)+100];
   fPlanes.clear();
 
-  for(UInt_t i=0;i<fNPlanes;i++) {
+  for(Int_t i=0;i<fNPlanes;i++) {
     strcpy(desc, description);
     strcat(desc, " Plane ");
     strcat(desc, fPlaneNames[i]);
@@ -185,7 +185,7 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
     return fStatus=status;
 
   // Initialize planes and add them to chambers
-  for(UInt_t ip=0;ip<fNPlanes;ip++) {
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
     if((status = fPlanes[ip]->Init( date ))) {
       return fStatus=status;
     } else {
@@ -201,7 +201,7 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   }
   // Retrieve the fiting coefficients
   fPlaneCoeffs = new Double_t* [fNPlanes];
-  for(UInt_t ip=0; ip<fNPlanes;ip++) {
+  for(Int_t ip=0; ip<fNPlanes;ip++) {
     fPlaneCoeffs[ip] = fPlanes[ip]->GetPlaneCoef();
   }
 
@@ -288,22 +288,22 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"min_combos", fMinCombos, kInt, fNChambers},
     {"space_point_criterion", fSpace_Point_Criterion, kDouble, fNChambers},
 
-    {"dc_tdc_min_win", fTdcWinMin, kInt, fNPlanes},
-    {"dc_tdc_max_win", fTdcWinMax, kInt, fNPlanes},
-    {"dc_central_time", fCentralTime, kDouble, fNPlanes},
-    {"dc_nrwire", fNWires, kInt, fNPlanes},
-    {"dc_chamber_planes", fNChamber, kInt, fNPlanes},
-    {"dc_wire_counting", fWireOrder, kInt, fNPlanes},
-    {"dc_drifttime_sign", fDriftTimeSign, kInt, fNPlanes},
+    {"dc_tdc_min_win", fTdcWinMin, kInt, (UInt_t)fNPlanes},
+    {"dc_tdc_max_win", fTdcWinMax, kInt, (UInt_t)fNPlanes},
+    {"dc_central_time", fCentralTime, kDouble, (UInt_t)fNPlanes},
+    {"dc_nrwire", fNWires, kInt, (UInt_t)fNPlanes},
+    {"dc_chamber_planes", fNChamber, kInt, (UInt_t)fNPlanes},
+    {"dc_wire_counting", fWireOrder, kInt, (UInt_t)fNPlanes},
+    {"dc_drifttime_sign", fDriftTimeSign, kInt, (UInt_t)fNPlanes},
 
-    {"dc_zpos", fZPos, kDouble, fNPlanes},
-    {"dc_alpha_angle", fAlphaAngle, kDouble, fNPlanes},
-    {"dc_beta_angle", fBetaAngle, kDouble, fNPlanes},
-    {"dc_gamma_angle", fGammaAngle, kDouble, fNPlanes},
-    {"dc_pitch", fPitch, kDouble, fNPlanes},
-    {"dc_central_wire", fCentralWire, kDouble, fNPlanes},
-    {"dc_plane_time_zero", fPlaneTimeZero, kDouble, fNPlanes},
-    {"dc_sigma", fSigma, kDouble, fNPlanes},
+    {"dc_zpos", fZPos, kDouble, (UInt_t)fNPlanes},
+    {"dc_alpha_angle", fAlphaAngle, kDouble, (UInt_t)fNPlanes},
+    {"dc_beta_angle", fBetaAngle, kDouble, (UInt_t)fNPlanes},
+    {"dc_gamma_angle", fGammaAngle, kDouble, (UInt_t)fNPlanes},
+    {"dc_pitch", fPitch, kDouble, (UInt_t)fNPlanes},
+    {"dc_central_wire", fCentralWire, kDouble, (UInt_t)fNPlanes},
+    {"dc_plane_time_zero", fPlaneTimeZero, kDouble, (UInt_t)fNPlanes},
+    {"dc_sigma", fSigma, kDouble, (UInt_t)fNPlanes},
     {"single_stub",&fSingleStub, kInt},
     {"ntracks_max_fp", &fNTracksMaxFP, kInt},
     {"xt_track_criterion", &fXtTrCriterion, kDouble},
@@ -324,7 +324,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
   if(fNTracksMaxFP <= 0) fNTracksMaxFP = 10;
   // if(fNTracksMaxFP > HNRACKS_MAX) fNTracksMaxFP = NHTRACKS_MAX;
   cout << "Plane counts:";
-  for(UInt_t i=0;i<fNPlanes;i++) {
+  for(Int_t i=0;i<fNPlanes;i++) {
     cout << " " << fNWires[i];
   }
   cout << endl;
@@ -429,7 +429,7 @@ void THcDC::ClearEvent()
     fChambers[i]->Clear();
   }
 
-  for(UInt_t i=0;i<fNPlanes;i++) {
+  for(Int_t i=0;i<fNPlanes;i++) {
     fResiduals[i] = 1000.0;
   }
   
@@ -449,7 +449,7 @@ Int_t THcDC::Decode( const THaEvData& evdata )
   if(!gHaCuts->Result("Pedestal_event")) {
     // Let each plane get its hits
     Int_t nexthit = 0;
-    for(UInt_t ip=0;ip<fNPlanes;ip++) {
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
       nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
       fN_True_RawHits += fPlanes[ip]->GetNRawhits();
       
@@ -895,7 +895,7 @@ void THcDC::TrackFit()
       // calculations
 
       // Make sure fCoords, fResiduals, and fDoubleResiduals are clear
-      for(UInt_t iplane=0;iplane < fNPlanes; iplane++) {
+      for(Int_t iplane=0;iplane < fNPlanes; iplane++) {
 	Double_t coord=0.0;
 	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
 	  coord += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
@@ -996,7 +996,7 @@ void THcDC::TrackFit()
     }
   }
   if(fNDCTracks>0) {
-    for(UInt_t ip=0;ip<fNPlanes;ip++) {
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
       THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(0));
       fResiduals[ip] = theDCTrack->GetResidual(ip);
     }
@@ -1101,7 +1101,7 @@ void THcDC::EffInit()
   for(UInt_t i=0;i<fNChambers;i++) {
     fNChamHits[i] = 0;
   }
-  for(UInt_t i=0;i<fNPlanes;i++) {
+  for(Int_t i=0;i<fNPlanes;i++) {
     fPlaneEvents[i] = 0;
   }
   gHcParms->Define(Form("%sdc_tot_events",fPrefix),"Total DC Events",fTotEvents);
@@ -1118,7 +1118,7 @@ void THcDC::Eff()
   for(UInt_t i=0;i<fNChambers;i++) {
     if(fChambers[i]->GetNHits()>0) fNChamHits[i]++;
   }
-  for(UInt_t i=0;i<fNPlanes;i++) {
+  for(Int_t i=0;i<fNPlanes;i++) {
     if(fPlanes[i]->GetNHits() > 0) fPlaneEvents[i]++;
   }
   return;
