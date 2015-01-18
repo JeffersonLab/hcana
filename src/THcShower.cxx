@@ -845,6 +845,8 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 
   Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
 
+  Double_t fTotalEnergy = 0.0;
+
   for (Int_t itrk=0; itrk<Ntracks; itrk++) {
 
     THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
@@ -852,7 +854,14 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
     Float_t energy = GetShEnergy(theTrack);
     theTrack->SetEnergy(energy);
     fTrackEnergy[itrk] = energy;
+
+    fTotalEnergy += energy;
+
   }       //over tracks
+
+  // cout << "Event = " <<  fEvent 
+  //      << "   cal_et = " <<  fTotalEnergy 
+  //      << endl;
 
   //Debug output.
 

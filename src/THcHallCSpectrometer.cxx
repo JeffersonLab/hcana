@@ -253,7 +253,9 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   cout <<  "fPartMass = "         <<  fPartMass << endl;
   cout <<  "fPcentral = "         <<  fPCentral << " " <<fPCentralOffset << endl; 
   cout <<  "fThate_lab = "        <<  fTheta_lab << " " <<fThetaCentralOffset << endl; 
+  cout <<  "fOopCentralOffset = " <<  fOopCentralOffset << endl;
   fPCentral= fPCentral*(1.+fPCentralOffset/100.);
+  cout <<  "fPcentral (GeV)= "         <<  fPCentral << " " <<fPCentralOffset << endl; 
   // Check that these offsets are in radians
   fTheta_lab=fTheta_lab + fThetaCentralOffset*TMath::RadToDeg();
   Double_t ph = 0.0+fPhiOffset*TMath::RadToDeg();

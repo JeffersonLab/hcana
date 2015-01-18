@@ -450,14 +450,11 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 	}
 	
 	// if ( fCerEvent > 5880 ) {
-	//   cout << "Event = " << fCerEvent 
-	//        << "   Beta = " << theTrack->GetBeta()
-	//        // << "   region = " << ir + 1
-	//        // << "   track counter = " << fCerTrackCounter[ir]
-	//        // << "   fired coutner = " << fCerFiredCounter[ir]
-	//        // << "   hsxp = " << theTrack->GetTheta()
-	//        // << "   hsyp = " << theTrack->GetPhi()
-	//        << endl;
+	// cout << "Event = " << fCerEvent 
+	//      << "   region = " << ir + 1
+	//      << "   track counter = " << fCerTrackCounter[ir]
+	//      << "   fired coutner = " << fCerFiredCounter[ir]
+	//      << endl;
 	// }
 	
       } // loop over regions
