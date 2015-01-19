@@ -590,7 +590,6 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
 	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep,Epos,Eneg);
 
-	//	HitList.push_back(hit);
 	HitList.insert(hit);   //<set> version
       }
 
@@ -605,12 +604,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShower::CoarseProcess\n";
     cout << "  List of unclustered hits. Total hits:     " << fNhits << endl;
-    //    for (Int_t i=0; i!=fNhits; i++) {
-    //      cout << "  hit " << i << ": ";
-    //      (*(HitList.begin()+i))->show();
-    //    }
-    //<set> version
-    THcShowerHitIt it = HitList.begin();
+    THcShowerHitIt it = HitList.begin();    //<set> version
     for (Int_t i=0; i!=fNhits; i++) {
       cout << "  hit " << i << ": ";
       (*(++it))->show();

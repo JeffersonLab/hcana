@@ -87,12 +87,12 @@ public:
   }
 
   // Decide if a hit is neighbouring the current hit.
-  // Two hits are neighbours if share a side or a corner.
+  // Two hits are neighbours if share a side or a corner,
+  // or in the same row but separated by no more than a block.
   //
   bool isNeighbour(THcShowerHit* hit1) {      //Is hit1 neighbouring this hit?
     Int_t dRow = fRow-(*hit1).fRow;
     Int_t dCol = fCol-(*hit1).fCol;
-    //    return TMath::Abs(dRow)<2 && TMath::Abs(dCol)<2;
     return (TMath::Abs(dRow)<2 && TMath::Abs(dCol)<2) ||
       (dRow==0 && TMath::Abs(dCol)<3);
   }
@@ -107,14 +107,12 @@ public:
 
 };
 
+//____________________________________________________________________________
 
 // Container (collection) of hits and its iterator.
 //
-//typedef vector<THcShowerHit*> THcShowerHitList;
 typedef set<THcShowerHit*> THcShowerHitList;
 typedef THcShowerHitList::iterator THcShowerHitIt;
-
-//____________________________________________________________________________
 
 //HMS calorimeter hit cluster
 //
@@ -137,17 +135,10 @@ class THcShowerCluster : THcShowerHitList {
   // Add a hit to the cluster hit list
   //
   void grow(THcShowerHit* hit) {
-    //    THcShowerHitList::push_back(hit);
     THcShowerHitList::insert(hit);   //<set> version
   }
 
   //Pointer to the hit #i in the cluster hit list
-  //
-  //  THcShowerHit* ClusteredHit(UInt_t i) {
-  //    return * (THcShowerHitList::begin()+i);
-  //  }
-
-  //<set> version
   THcShowerHit* ClusteredHit(UInt_t i) {
     THcShowerHitIt it = THcShowerHitList::begin();
     for (UInt_t j=0; j<i; j++) it++;
@@ -156,11 +147,6 @@ class THcShowerCluster : THcShowerHitList {
 
   //Print out a hit in the cluster
   //
-  //  void showHit(UInt_t num) {
-  //    (*(THcShowerHitList::begin()+num))->show();
-  //  }
-
-  //<set> version
   void showHit(UInt_t num) {
     THcShowerHitIt it = THcShowerHitList::begin();
     for (UInt_t j=0; j<num; j++) it++;
@@ -180,7 +166,6 @@ class THcShowerCluster : THcShowerHitList {
       x_sum += (*it)->hitX() * (*it)->hitE();
       Etot += (*it)->hitE();
     }
-    //    cout << "x_sum=" << x_sum << "  Etot=" << Etot << endl;
     return (Etot != 0. ? x_sum/Etot : -75.);
   }
 
@@ -197,14 +182,12 @@ class THcShowerCluster : THcShowerHitList {
       z_sum += (*it)->hitZ() * (*it)->hitE();
       Etot += (*it)->hitE();
     }
-    //    cout << "z_sum=" << z_sum << "  Etot=" << Etot << endl;
     return (Etot != 0. ? z_sum/Etot : 0.);
   }
 
   //Energy depostion in a cluster
   //
   Double_t clE() {
-    //    cout << "In ECl:" << endl;
     Double_t Etot=0.;
     for (THcShowerHitIt it=THcShowerHitList::begin();
 	 it!=THcShowerHitList::end(); ++it) {
@@ -269,7 +252,7 @@ class THcShowerCluster : THcShowerHitList {
 
 };
 
-//-----------------------------------------------------------------------------
+//______________________________________________________________________________
 
 //Alias for container of clusters and for its iterator
 //
@@ -319,8 +302,6 @@ class THcShowerClusterList : private THcShClusterList {
     return THcShClusterList::size();
   }
 
-  //____________________________________________________________________________
-
   void ClusterHits(THcShowerHitList HitList) {
 
     // Collect hits from the HitList into the clusters. The resultant clusters
@@ -330,9 +311,6 @@ class THcShowerClusterList : private THcShClusterList {
 
       THcShowerCluster* cluster = new THcShowerCluster;
 
-      //(*cluster).grow(*(HitList.end()-1)); //Move the last hit from the hit list
-      //HitList.erase(HitList.end()-1);      //into the 1st cluster
-      //<set> version
       THcShowerHitIt it = HitList.end();
       (*cluster).grow(*(--it)); //Move the last hit from the hit list
       HitList.erase(it);        //into the 1st cluster
@@ -371,7 +349,7 @@ class THcShowerClusterList : private THcShClusterList {
 
 };
 
-
+//______________________________________________________________________________
 
 class THcShower : public THaNonTrackingDetector, public THcHitList {
 
