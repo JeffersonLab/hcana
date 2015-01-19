@@ -4,7 +4,7 @@ hcal_slop = 7.5
 
 ;Turn on HMS cal. fiducial volume cut. 0="no cut"
 ;Default hcal_fv_test=0
-hcal_fv_test = 0
+hcal_fv_test = 1
 
 hcal_pos_cal_const =0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001
                     0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001,0.001
