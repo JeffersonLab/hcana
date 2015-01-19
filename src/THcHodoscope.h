@@ -18,6 +18,7 @@
 
 #include "THaTrackingDetector.h"
 #include "THcHitList.h"
+#include "THcRawDCHit.h"
 #include "THcSpacePoint.h"
 #include "THcDriftChamberPlane.h"
 #include "THcDriftChamber.h"
@@ -70,7 +71,7 @@ public:
   Int_t GetGoodRawPad(Int_t iii){return fTOFCalc[iii].good_raw_pad;}
   Double_t GetNScinHits(Int_t iii){return fNScinHits[iii];}
 
-  UInt_t GetNPaddles(Int_t iii) { return fNPaddle[iii];}
+  Int_t GetNPaddles(Int_t iii) { return fNPaddle[iii];}
   Double_t GetPlaneCenter(Int_t iii) { return fPlaneCenter[iii];}
   Double_t GetPlaneSpacing(Int_t iii) { return fPlaneSpacing[iii];}
 
@@ -104,15 +105,13 @@ protected:
   // Per-event data
 
   // Potential Hall C parameters.  Mostly here for demonstration
-
-  Int_t fNPlanes;
-  UInt_t fMaxScinPerPlane,fMaxHodoScin; // number of planes; max number of scin/plane; product of the first two 
+  Int_t fNPlanes,fMaxScinPerPlane,fMaxHodoScin; // number of planes; max number of scin/plane; product of the first two 
   Double_t fStartTimeCenter, fStartTimeSlop, fScinTdcToTime;
   Double_t fTofTolerance;
   Double_t fPathLengthCentral;
   Double_t fScinTdcMin, fScinTdcMax; // min and max TDC values
   char** fPlaneNames;
-  UInt_t* fNPaddle;		// Number of paddles per plane
+  Int_t* fNPaddle;		// Number of paddles per plane
 
   Double_t* fHodoVelLight;
   Double_t* fHodoPosSigma;
@@ -162,7 +161,26 @@ protected:
   Double_t*    fPlaneCenter;
   Double_t*    fPlaneSpacing;
 
-  Double_t**   fScinHit;                // [fNPlanes] Array
+  Int_t        fTestSum;
+  Int_t        fTrackEffTestNScinPlanes;
+  Int_t        fGoodScinHits;
+  Int_t*       fxLoScin;
+  Int_t*       fxHiScin;
+  Int_t*       fyLoScin;
+  Int_t*       fyHiScin;
+  Int_t        fNHodoscopes;
+
+  Int_t fHitSweet1X;
+  Int_t fHitSweet1Y;
+  Int_t fHitSweet2X;
+  Int_t fHitSweet2Y;
+  
+  Int_t fSweet1XScin;
+  Int_t fSweet1YScin;
+  Int_t fSweet2XScin;
+  Int_t fSweet2YScin;
+
+  //  Double_t**   fScinHit;                // [fNPlanes] Array
 
   Double_t*    fFPTime;               // [fNPlanes] Array 
 
@@ -232,9 +250,15 @@ protected:
     // This doesn't work because we clear this structure each track
     // Do we need an vector of vectors of structures?
     // Start with a separate vector of vectors for now.
-  std::vector<std::vector<Double_t> > fdEdX;	// Vector over track #
-  std::vector<Int_t > fNScinHit;		// # scins hit for the track
+  std::vector<std::vector<Double_t> > fdEdX;	        // Vector over track #
+  std::vector<Int_t > fNScinHit;		        // # scins hit for the track
+  std::vector<std::vector<Double_t> > fScinHitPaddle;	// Vector over hits in a plane #
+  std::vector<Int_t > fNClust;		                // # scins clusters for the plane
+  std::vector<Int_t > fThreeScin;	                // # scins three clusters for the plane
+  std::vector<Int_t > fGoodScinHitsX;                   // # hits in fid x range
   // Could combine the above into a structure
+
+  //
     
   void           ClearEvent();
   void           DeleteArrays();
