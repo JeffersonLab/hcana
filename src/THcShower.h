@@ -16,7 +16,8 @@
 
 // HMS calorimeter hits, version 2
 
-#include <vector>
+//#include <vector>
+#include <set>
 #include <iterator>
 #include <iostream>
 #include <memory>
@@ -109,10 +110,11 @@ public:
 
 // Container (collection) of hits and its iterator.
 //
-typedef vector<THcShowerHit*> THcShowerHitList;
+//typedef vector<THcShowerHit*> THcShowerHitList;
+typedef set<THcShowerHit*> THcShowerHitList;
 typedef THcShowerHitList::iterator THcShowerHitIt;
 
-
+//____________________________________________________________________________
 
 //HMS calorimeter hit cluster
 //
@@ -128,26 +130,41 @@ class THcShowerCluster : THcShowerHitList {
     for (THcShowerHitIt i = THcShowerHitList::begin();
     	 i != THcShowerHitList::end(); ++i) {
       delete *i;
-      *i = 0;
+      //      *i = 0; does no work with  set<THcShowerHit*> THcShowerHitList
     }
   }
 
   // Add a hit to the cluster hit list
   //
   void grow(THcShowerHit* hit) {
-    THcShowerHitList::push_back(hit);
+    //    THcShowerHitList::push_back(hit);
+    THcShowerHitList::insert(hit);   //<set> version
   }
 
   //Pointer to the hit #i in the cluster hit list
   //
+  //  THcShowerHit* ClusteredHit(UInt_t i) {
+  //    return * (THcShowerHitList::begin()+i);
+  //  }
+
+  //<set> version
   THcShowerHit* ClusteredHit(UInt_t i) {
-    return * (THcShowerHitList::begin()+i);
+    THcShowerHitIt it = THcShowerHitList::begin();
+    for (UInt_t j=0; j<i; j++) it++;
+    return *it;
   }
 
   //Print out a hit in the cluster
   //
+  //  void showHit(UInt_t num) {
+  //    (*(THcShowerHitList::begin()+num))->show();
+  //  }
+
+  //<set> version
   void showHit(UInt_t num) {
-    (*(THcShowerHitList::begin()+num))->show();
+    THcShowerHitIt it = THcShowerHitList::begin();
+    for (UInt_t j=0; j<num; j++) it++;
+    (*it)->show();
   }
 
   // X coordinate of center of gravity of cluster,
@@ -313,8 +330,13 @@ class THcShowerClusterList : private THcShClusterList {
 
       THcShowerCluster* cluster = new THcShowerCluster;
 
-      (*cluster).grow(*(HitList.end()-1)); //Move the last hit from the hit list
-      HitList.erase(HitList.end()-1);      //into the 1st cluster
+      //(*cluster).grow(*(HitList.end()-1)); //Move the last hit from the hit list
+      //HitList.erase(HitList.end()-1);      //into the 1st cluster
+      //<set> version
+      THcShowerHitIt it = HitList.end();
+      (*cluster).grow(*(--it)); //Move the last hit from the hit list
+      HitList.erase(it);        //into the 1st cluster
+
       bool clustered = true;
 
       while (clustered) {                   //Proceed while a hit is clustered
