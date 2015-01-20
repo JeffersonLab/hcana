@@ -10,6 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "THcShower.h"
+#include "THcHallCSpectrometer.h"
 //#include "THcShowerCluster.h"
 #include "THaEvData.h"
 #include "THaDetMap.h"
@@ -134,6 +135,7 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
 	     EngineDID);
       return kInitError;
   }
+
 
   cout << "---------------------------------------------------------------\n";
   cout << "From THcShower::Init: initialized " << GetName() << endl;
@@ -466,6 +468,8 @@ Int_t THcShower::DefineVariables( EMode mode )
   RVarDef vars[] = {
     { "nhits", "Number of hits",                                 "fNhits" },
     { "nclust", "Number of clusters",                            "fNclust" },
+    { "etot", "Total energy",                            "fEtot" },
+    { "etotnorm", "Total energy divided by Central Momentum",   "fEtotNorm" },
     { "ntracks", "Number of shower tracks",                      "fNtracks" },
     { 0 }
   };
@@ -514,6 +518,8 @@ void THcShower::Clear(Option_t* opt)
   fNhits = 0;
   fNclust = 0;
   fNtracks = 0;
+  fEtot = 0.;
+  fEtotNorm = 0.;
 
   fClusterList->purge();
 
@@ -549,8 +555,11 @@ Int_t THcShower::Decode( const THaEvData& evdata )
   Int_t nexthit = 0;
   for(UInt_t ip=0;ip<fNLayers;ip++) {
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
+    fEtot += fPlanes[ip]->GetEplane();
   }
-
+  THcHallCSpectrometer *app = static_cast<THcHallCSpectrometer*>(GetApparatus());
+  fEtotNorm=fEtot/(app->GetPcentral());
+ 
   return nhits;
 }
 
