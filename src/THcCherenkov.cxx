@@ -166,7 +166,7 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   strcat(parname,"cer_tot_pmts");                      // THcScintillatorPlane
   fNelem = (Int_t)gHcParms->Find(parname)->GetValue(); // class.
 
-  //    fNelem = 2;      // Default if not defined                                                                    
+  //    fNelem = 2;      // Default if not defined  
 
   fNPMT = new Int_t[fNelem];
   fADC = new Double_t[fNelem];
@@ -178,16 +178,54 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fPedLimit = new Int_t[fNelem];
   fPedMean = new Double_t[fNelem];
   
+  fNPMT = new Int_t[fNelem];
+  fADC = new Double_t[fNelem];
+  fADC_P = new Double_t[fNelem];
+  fNPE = new Double_t[fNelem];
+  fCerWidth = new Double_t[fNelem];
+  fGain = new Double_t[fNelem];
+  fPedLimit = new Int_t[fNelem];
+  fPedMean = new Double_t[fNelem];
+  
+  fCerNRegions = 3; // This value should be in parameter file
+
+  fCerTrackCounter = new Int_t [fCerNRegions];
+  fCerFiredCounter = new Int_t [fCerNRegions];
+  for ( Int_t ireg = 0; ireg < fCerNRegions; ireg++ ) {
+    fCerTrackCounter[ireg] = 0;
+    fCerFiredCounter[ireg] = 0;
+  }
+
+
+  fCerRegionsValueMax = fCerNRegions * 8; // This value 8 should also be in paramter file
+  fCerRegionValue = new Double_t [fCerRegionsValueMax];
+
   DBRequest list[]={
     {"cer_adc_to_npe", fGain,     kDouble, (UInt_t) fNelem},              // Ahmed
     {"cer_ped_limit",  fPedLimit, kInt,    (UInt_t) fNelem},              // Ahmed
     {"cer_width",      fCerWidth, kDouble, (UInt_t) fNelem},              // Ahmed
+    {"cer_chi2max",     &fCerChi2Max,        kDouble},                       // Ahmed
+    {"cer_beta_min",    &fCerBetaMin,        kDouble},                       // Ahmed
+    {"cer_beta_max",    &fCerBetaMax,        kDouble},                       // Ahmed
+    {"cer_et_min",      &fCerETMin,          kDouble},                       // Ahmed
+    {"cer_et_max",      &fCerETMax,          kDouble},                       // Ahmed
+    {"cer_mirror_zpos", &fCerMirrorZPos,     kDouble},                       // Ahmed
+    {"cer_region",      &fCerRegionValue[0], kDouble, fCerRegionsValueMax},  // Ahmed
+    {"cer_threshold",   &fCerThresh,         kDouble},                       // Ahmed
     {0}
   };
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   fIsInit = true;
+
+  for ( int i1 = 0; i1 < fCerNRegions; i1++ ) {
+    cout << "Region " << i1 << endl;
+    for ( int i2 = 0; i2 < 8; i2++ ) {
+      cout << fCerRegionValue[GetCerIndex( i1, i2 )] << " ";
+    }
+    cout <<endl;
+  }
 
   // Create arrays to hold pedestal results
   InitializePedestals();
@@ -217,6 +255,8 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
     {"npe",         "Number of Photo electrons",                 "fNPE"},
     {"npesum",      "Sum of Number of Photo electrons",          "fNPEsum"},
     {"ncherhit",    "Number of Hits(Cherenkov)",                 "fNCherHit"},
+    {"certrackcounter", "Tracks inside Cherenkov region",        "fCerTrackCounter"},
+    {"cerfiredcounter", "Tracks with engough Cherenkov NPEs ",   "fCerFiredCounter"},
     { 0 }
   };
 
@@ -287,31 +327,6 @@ Int_t THcCherenkov::ApplyCorrections( void )
 //_____________________________________________________________________________
 Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
 {
-  /* 
-     ------------------------------------------------------------------------------------------------------------------
-     h_trans_cer.f code:
-
-      hcer_num_hits = 0                                      <--- clear event
-      do tube=1,hcer_num_mirrors                             
-        hcer_npe(tube) = 0.                                  <--- clear event
-        hcer_adc(tube) = 0.                                  <--- clear event
-      enddo
-      hcer_npe_sum = 0.                                      <--- clear event
-      do nhit = 1, hcer_tot_hits                             <--- loop over total hits. Very first line of this method
-        tube = hcer_tube_num(nhit)                           <--- tube is number of PMT on either side and it is this 
-	                                                          line:  Int_t npmt = hit->fCounter - 1
-        hcer_adc(tube) = hcer_raw_adc(nhit) - hcer_ped(tube) <--- This is done above:
-                                                                  fA_Pos_p[npmt] = hit->fADC_pos - fPosPedMean[npmt];
-                                                                  fA_Neg_p[npmt] = hit->fADC_neg - fNegPedMean[npmt];
-        if (hcer_adc(tube) .gt. hcer_width(tube)) then       <--- This needs to convert in hcana
-          hcer_num_hits = hcer_num_hits + 1
-          hcer_tube_num(hcer_num_hits) = tube
-          hcer_npe(tube) = hcer_adc(tube) * hcer_adc_to_npe(tube)
-          hcer_npe_sum = hcer_npe_sum + hcer_npe(tube)
-        endif
-      enddo
-     ------------------------------------------------------------------------------------------------------------------
-    */
   for(Int_t ihit=0; ihit < fNhits; ihit++) {
     THcCherenkovHit* hit = (THcCherenkovHit *) fRawHitList->At(ihit); // nhit = 1, hcer_tot_hits
 
@@ -353,6 +368,65 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
 //_____________________________________________________________________________
 Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 {
+
+  Double_t fCerX, fCerY;
+   
+  if ( tracks.GetLast() > -1 ) {
+
+    THaTrack* theTrack = dynamic_cast<THaTrack*>( tracks.At(0) );
+    if (!theTrack) return -1;
+    
+    if ( ( ( tracks.GetLast() + 1 ) == 1 ) && 
+	 ( theTrack->GetChi2()/theTrack->GetNDoF() > 0. ) && 
+	 ( theTrack->GetChi2()/theTrack->GetNDoF() <  fCerChi2Max ) && 
+	 ( theTrack->GetBeta() > fCerBetaMin ) &&
+	 ( theTrack->GetBeta() < fCerBetaMax ) &&
+	 ( ( theTrack->GetEnergy() / theTrack->GetP() ) > fCerETMin ) &&
+	 ( ( theTrack->GetEnergy() / theTrack->GetP() ) < fCerETMax ) 
+	 ) {
+      
+      fCerX = theTrack->GetX() + theTrack->GetTheta() * fCerMirrorZPos;
+      fCerY = theTrack->GetY() + theTrack->GetPhi()   * fCerMirrorZPos;
+      
+      for ( Int_t ir = 0; ir < fCerNRegions; ir++ ) {
+	
+	//	*     hit must be inside the region in order to continue.   
+
+	if ( ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 0 )] - fCerX ) < 
+	       fCerRegionValue[GetCerIndex( ir, 4 )] ) &&
+	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 1 )] - fCerY ) < 
+	       fCerRegionValue[GetCerIndex( ir, 5 )] ) &&
+	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 2 )] - theTrack->GetTheta() ) < 
+	       fCerRegionValue[GetCerIndex( ir, 6 )] ) &&
+	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 3 )] - theTrack->GetPhi() ) < 
+	       fCerRegionValue[GetCerIndex( ir, 7 )] ) 
+	     ) {
+	
+	  // *     increment the 'should have fired' counters 
+	  fCerTrackCounter[ir] ++;	  
+	  
+	  // *     increment the 'did fire' counters
+
+	  if ( fNPEsum > fCerThresh ) {
+	    fCerFiredCounter[ir] ++;
+	  }
+
+	}
+	
+	// if ( fCerEvent > 5880 ) {
+	// cout << "Event = " << fCerEvent 
+	//      << "   region = " << ir + 1
+	//      << "   track counter = " << fCerTrackCounter[ir]
+	//      << "   fired coutner = " << fCerFiredCounter[ir]
+	//      << endl;
+	// }
+	
+      } // loop over regions
+      //      cout << endl;
+      
+    }
+    
+  }
 
   return 0;
 }
@@ -431,6 +505,14 @@ void THcCherenkov::CalculatePedestals( )
   //  cout << " " << endl;
   
 }
+
+//_____________________________________________________________________________
+Int_t THcCherenkov::GetCerIndex( Int_t nRegion, Int_t nValue ) {
+
+  return fCerNRegions * nValue + nRegion;
+}
+
+//_____________________________________________________________________________
 void THcCherenkov::Print( const Option_t* opt) const {
   THaNonTrackingDetector::Print(opt);
 

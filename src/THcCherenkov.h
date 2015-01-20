@@ -36,6 +36,8 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
 
   virtual void Print(const Option_t* opt) const;
 
+  Int_t GetCerIndex(Int_t nRegion, Int_t nValue);
+
   THcCherenkov();  // for ROOT I/O		
  protected:
   Int_t         fAnalyzePedestals;
@@ -52,6 +54,19 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Double_t*     fNPE;             // [fNelem] Array of ADC amplitudes
   Double_t      fNPEsum;          // [fNelem] Array of ADC amplitudes
   Double_t      fNCherHit;        // [fNelem] Array of ADC amplitudes
+
+  Double_t*        fCerRegionValue;
+  Double_t         fCerChi2Max;
+  Double_t         fCerBetaMin;
+  Double_t         fCerBetaMax;
+  Double_t         fCerETMin;
+  Double_t         fCerETMax;
+  Double_t         fCerMirrorZPos;
+  Int_t            fCerNRegions;
+  Int_t            fCerRegionsValueMax;
+  Int_t*           fCerTrackCounter;     // [fCerNRegions] Array of Cher regions
+  Int_t*           fCerFiredCounter;     // [fCerNRegions] Array of Cher regions
+  Double_t         fCerThresh;
 
   // Hits
   TClonesArray* fADCHits;
