@@ -71,7 +71,7 @@ public:
   Int_t GetGoodRawPad(Int_t iii){return fTOFCalc[iii].good_raw_pad;}
   Double_t GetNScinHits(Int_t iii){return fNScinHits[iii];}
 
-  Int_t GetNPaddles(Int_t iii) { return fNPaddle[iii];}
+  UInt_t GetNPaddles(Int_t iii) { return fNPaddle[iii];}
   Double_t GetPlaneCenter(Int_t iii) { return fPlaneCenter[iii];}
   Double_t GetPlaneSpacing(Int_t iii) { return fPlaneSpacing[iii];}
 
@@ -105,13 +105,14 @@ protected:
   // Per-event data
 
   // Potential Hall C parameters.  Mostly here for demonstration
-  Int_t fNPlanes,fMaxScinPerPlane,fMaxHodoScin; // number of planes; max number of scin/plane; product of the first two 
+  Int_t fNPlanes;		// Number of planes
+  UInt_t fMaxScinPerPlane,fMaxHodoScin; // max number of scin/plane; product of the first two 
   Double_t fStartTimeCenter, fStartTimeSlop, fScinTdcToTime;
   Double_t fTofTolerance;
   Double_t fPathLengthCentral;
   Double_t fScinTdcMin, fScinTdcMax; // min and max TDC values
   char** fPlaneNames;
-  Int_t* fNPaddle;		// Number of paddles per plane
+  UInt_t* fNPaddle;		// Number of paddles per plane
 
   Double_t* fHodoVelLight;
   Double_t* fHodoPosSigma;

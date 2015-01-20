@@ -210,7 +210,7 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
     {"cer_et_min",      &fCerETMin,          kDouble},                       // Ahmed
     {"cer_et_max",      &fCerETMax,          kDouble},                       // Ahmed
     {"cer_mirror_zpos", &fCerMirrorZPos,     kDouble},                       // Ahmed
-    {"cer_region",      &fCerRegionValue[0], kDouble, fCerRegionsValueMax},  // Ahmed
+    {"cer_region",      &fCerRegionValue[0], kDouble, (UInt_t) fCerRegionsValueMax},  // Ahmed
     {"cer_threshold",   &fCerThresh,         kDouble},                       // Ahmed
     {0}
   };
@@ -219,9 +219,9 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
 
   fIsInit = true;
 
-  for ( int i1 = 0; i1 < fCerNRegions; i1++ ) {
+  for (Int_t i1 = 0; i1 < fCerNRegions; i1++ ) {
     cout << "Region " << i1 << endl;
-    for ( int i2 = 0; i2 < 8; i2++ ) {
+    for (Int_t i2 = 0; i2 < 8; i2++ ) {
       cout << fCerRegionValue[GetCerIndex( i1, i2 )] << " ";
     }
     cout <<endl;
