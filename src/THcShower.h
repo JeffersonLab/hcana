@@ -459,8 +459,11 @@ protected:
   Int_t fNclust;             // Number of clusters
   Int_t fNtracks;            // Number of shower tracks, i.e. number of
                              // cluster-to-track association
+  Double_t fEtot;             // Total energy 
+  Double_t fEtotNorm;             // Total energy divided by spec central momentum 
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
+
 
   // Geometrical parameters.
 

@@ -206,7 +206,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     {"thetacentral_offset",   &fThetaCentralOffset,    kDouble               },
     {"_oopcentral_offset",    &fOopCentralOffset,      kDouble               },
     {"pcentral_offset",       &fPCentralOffset,        kDouble               },
-    {"pcentral",              &fPCentral,              kDouble               },
+    {"pcentral",              &fPcentral,              kDouble               },
     {"theta_lab",             &fTheta_lab,             kDouble               },
     {"partmass",              &fPartMass,              kDouble               },
     {"sel_using_scin",        &fSelUsingScin,          kInt,            0,  1},
@@ -251,9 +251,9 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   cout <<  "fPruneNPMT = "        <<  fPruneNPMT << endl; 
   cout <<  "sel using prune = "   <<  fSelUsingPrune << endl;
   cout <<  "fPartMass = "         <<  fPartMass << endl;
-  cout <<  "fPcentral = "         <<  fPCentral << " " <<fPCentralOffset << endl; 
+  cout <<  "fPcentral = "         <<  fPcentral << " " <<fPCentralOffset << endl; 
   cout <<  "fThate_lab = "        <<  fTheta_lab << " " <<fThetaCentralOffset << endl; 
-  fPCentral= fPCentral*(1.+fPCentralOffset/100.);
+  fPcentral= fPcentral*(1.+fPCentralOffset/100.);
   // Check that these offsets are in radians
   fTheta_lab=fTheta_lab + fThetaCentralOffset*TMath::RadToDeg();
   Double_t ph = 0.0+fPhiOffset*TMath::RadToDeg();
@@ -378,7 +378,7 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     track->SetDp(sum[3]*100.0+fDeltaOffset);	// Percent.  (Don't think podd cares if it is % or fraction)
     // There is an hpcentral_offset that needs to be applied somewhere.
     // (happly_offs)
-    track->SetMomentum(fPCentral*(1+track->GetDp()/100.0));
+    track->SetMomentum(fPcentral*(1+track->GetDp()/100.0));
 
   }
 

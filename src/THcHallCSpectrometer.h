@@ -123,9 +123,8 @@ protected:
   Double_t fThetaCentralOffset; // Offset of Central spectrometer angle (rad)
   Double_t fOopCentralOffset; //Offset of central out-of-plane angle (rad) 
   Double_t fPCentralOffset; // Offset Central spectrometer momentum (%)
-  Double_t fPCentral; // Central spectrometer momentum (GeV)
   Double_t fTheta_lab; // Central spectrometer angle (deg)
-
+  // For spectrometer central momentum use fPcentral in THaSpectrometer.h
   //  THaScintillator *sc_ref;  // calculate time track hits this plane
 
   // Flag for fProperties indicating that tracks are to be sorted by chi2
