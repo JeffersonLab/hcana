@@ -144,6 +144,9 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   cout << "In THcHodoscope::Init()" << endl;
   Setup(GetName(), GetTitle());
 
+  fGood_hits = 0;
+  gHcParms->Define("hgood_hits", "Good Hits",fGood_hits);
+
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
   // But it needs to happen before the sub detectors are initialized
@@ -537,17 +540,15 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
 
   RVarDef vars[] = {
     // Move these into THcHallCSpectrometer using track fTracks
-    {"fpHitsTime",      "Time at focal plane from all hits",        "fFPTime"},
-    {"starttime",       "Hodoscope Start Time",                     "fStartTime"},
-    {"hgoodstarttime",  "Hodoscope Good Start Time",                "fGoodStartTime"},
-    {"hgoodscinhit",    "Hit in fid area",                          "fGoodScinHits"},
-    {"hgoodscinhitx",   "Hit in fid x range",                       "fGoodScinHitsX"},
-    {"htotscinshould",  "Total scin Hits in fid area",              "fScinShould"},
-    {"htotscindid",     "Total scin Hits in fid area with a track", "fScinDid"},
+    {"fpHitsTime",      "Time at focal plane from all hits",       "fFPTime"},
+    {"starttime",       "Hodoscope Start Time",                    "fStartTime"},
+    {"goodstarttime",  "Hodoscope Good Start Time",                "fGoodStartTime"},
+    {"goodscinhit",    "Hit in fid area",                          "fGoodScinHits"},
+    {"goodscinhitx",   "Hit in fid x range",                       "fGoodScinHitsX"},
+    {"totscinshould",  "Total scin Hits in fid area",              "fScinShould"},
+    {"totscindid",     "Total scin Hits in fid area with a track", "fScinDid"},
     { 0 }
   };
-
-  gHcParms->Define(Form("%s_scin_should",fPrefix),"Total Should fired",fScinShould);
 
   return DefineVarsFromList( vars, mode );
   //  return kOK;
@@ -1540,8 +1541,10 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       fScinShould ++;
     
     if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > 0.7 ) && 
-     	 ( fChern->GetCerNPE() > 2.0 ) && ( tracks.GetLast() + 1 > 0 ) )
+     	 ( fChern->GetCerNPE() > 2.0 ) && ( tracks.GetLast() + 1 > 0 ) ) {
       fScinDid ++;    
+      fGood_hits ++;
+    }
   }
   
   return 0;

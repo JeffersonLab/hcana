@@ -145,6 +145,8 @@ protected:
   THcShower* fShower;
   THcCherenkov* fChern;
 
+  Int_t        fGood_hits;
+
   Int_t        fCheckEvent;
   Int_t        fEventType;
 
