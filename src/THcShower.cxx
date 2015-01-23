@@ -10,7 +10,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "THcShower.h"
-//#include "THcShowerCluster.h"
 #include "THaEvData.h"
 #include "THaDetMap.h"
 #include "THcDetectorMap.h"
@@ -28,6 +27,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <numeric>
 
 using namespace std;
 
@@ -556,10 +556,10 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
   //
   // Apply corrections and reconstruct the complete hits.
   
- // Clustering of hits.
- //
+  // Clustering of hits.
+  //
 
- // Fill list of unclustered hits.
+  // Fill list of unclustered hits.
 
   THcShowerHitList HitList;
 
@@ -607,7 +607,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
     THcShowerHitIt it = HitList.begin();    //<set> version
     for (Int_t i=0; i!=fNhits; i++) {
       cout << "  hit " << i << ": ";
-      (*(++it))->show();
+      (*(it++))->show();
     }
   }
 
@@ -627,16 +627,17 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
       THcShowerCluster* cluster = (*fClusterList).ListedCluster(i);
       cout << "  Cluster #" << i 
-	   <<":  E=" << (*cluster).clE() 
-	   << "  Epr=" << (*cluster).clEpr()
-	   << "  X=" << (*cluster).clX()
-	   << "  Z=" << (*cluster).clZ()
-	   << "  size=" << (*cluster).clSize()
+	   <<":  E=" << clE(cluster) 
+	   << "  Epr=" << clEpr(cluster)
+	   << "  X=" << clX(cluster)
+	   << "  Z=" << clZ(cluster)
+	   << "  size=" << (*cluster).size()
 	   << endl;
 
-      for (UInt_t j=0; j!=(*cluster).clSize(); j++) {
-       	THcShowerHit* hit = (*cluster).ClusteredHit(j);
-       	cout << "  hit #" << j << ":  "; (*hit).show();
+      Int_t j=0;
+      for (THcShowerClusterIt it=(*cluster).begin(); it!=(*cluster).end(); it++) {
+	cout << "  hit " << j++ << ": ";
+	(**it).show();
       }
 
     }
@@ -645,6 +646,101 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
   }
 
   return 0;
+}
+
+//-----------------------------------------------------------------------------
+
+Double_t addE(Double_t x, THcShowerHit* h) {
+  return x + h->hitE();
+}
+
+Double_t addX(Double_t x, THcShowerHit* h) {
+  return x + h->hitE() * h->hitX();
+}
+
+Double_t addZ(Double_t x, THcShowerHit* h) {
+  return x + h->hitE() * h->hitZ();
+}
+
+Double_t addEpr(Double_t x, THcShowerHit* h) {
+  return h->hitColumn() == 0 ? x + h->hitE() : x;
+}
+
+Double_t addEpos(Double_t x, THcShowerHit* h) {
+  return x + h->hitEpos();
+}
+
+Double_t addEneg(Double_t x, THcShowerHit* h) {
+  return x + h->hitEneg();
+}
+
+// X coordinate of center of gravity of cluster, calculated as hit energy
+// weighted average. Put X out of the calorimeter (-75 cm), if there is no
+// energy deposition in the cluster.
+//
+Double_t clX(THcShowerCluster* cluster) {
+  Double_t Etot = accumulate((*cluster).begin(),(*cluster).end(),0.,addE);
+  return (Etot != 0. ?
+	  accumulate((*cluster).begin(),(*cluster).end(),0.,addX)/Etot : -75.);
+}
+
+// Z coordinate of center of gravity of cluster, calculated as a hit energy
+// weighted average. Put Z out of the calorimeter (0 cm), if there is no energy
+// deposition in the cluster.
+//
+Double_t clZ(THcShowerCluster* cluster) {
+  Double_t Etot = accumulate((*cluster).begin(),(*cluster).end(),0.,addE);
+  return (Etot != 0. ?
+	  accumulate((*cluster).begin(),(*cluster).end(),0.,addZ)/Etot : 0.);
+}
+
+//Energy depostion in a cluster
+//
+Double_t clE(THcShowerCluster* cluster) {
+    return accumulate((*cluster).begin(),(*cluster).end(),0.,addE);
+}
+
+//Energy deposition in the Preshower (1st plane) for a cluster
+//
+Double_t clEpr(THcShowerCluster* cluster) {
+    return accumulate((*cluster).begin(),(*cluster).end(),0.,addEpr);
+}
+
+
+//Cluster energy deposition in plane iplane=0,..,3:
+// side=0 -- from positive PMTs only;
+// side=1 -- from negative PMTs only;
+// side=2 -- from postive and negative PMTs.
+//
+
+Double_t clEplane(THcShowerCluster* cluster, Int_t iplane, Int_t side) {
+
+  if (side!=0&&side!=1&&side!=2) {
+    cout << "*** Wrong Side in clEplane:" << side << " ***" << endl;
+    return -1;
+  }
+
+  THcShowerHitList pcluster;
+  for (THcShowerHitIt it=(*cluster).begin(); it!=(*cluster).end(); ++it) {
+    if ((*it)->hitColumn() == iplane) pcluster.insert(*it);
+  }
+
+  Double_t Eplane;
+  switch (side) {
+  case 0 :
+    Eplane = accumulate(pcluster.begin(),pcluster.end(),0.,addEpos);
+    break;
+  case 1 :
+    Eplane = accumulate(pcluster.begin(),pcluster.end(),0.,addEneg);
+    break;
+  case 2 :
+    Eplane = accumulate(pcluster.begin(),pcluster.end(),0.,addE);
+    break;
+  default :
+    Eplane = 0. ;
+  }
+
+  return Eplane;
 }
 
 //-----------------------------------------------------------------------------
@@ -704,8 +800,6 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 
   if (inFidVol) {
 
-    //    for (Int_t i=0; i<fNclust; i++) {
-
     // Since hits and clusters are in reverse order (with respect to Engine),
     // search backwards to be consistent with Engine.
     //
@@ -713,14 +807,14 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 
       THcShowerCluster* cluster = (*fClusterList).ListedCluster(i);
 
-      Double_t dx = TMath::Abs( (*cluster).clX() - XTrFront );
+      Double_t dx = TMath::Abs( clX(cluster) - XTrFront );
 
       if (dx <= (0.5*BlockThick[0] + fSlop)) {
-	fNtracks++;  // number of shower tracks (Consistent with engine)
-	if (dx < deltaX) {
-	  mclust = i;
-	  deltaX = dx;
-	}
+      	fNtracks++;  // number of shower tracks (Consistent with engine)
+      	if (dx < deltaX) {
+      	  mclust = i;
+      	  deltaX = dx;
+      	}
       }
     }
   }
@@ -794,8 +888,8 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
 	corneg = 0.;
       }
 
-      Etrk += (*cluster).clEplane(ip,0) * corpos;
-      Etrk += (*cluster).clEplane(ip,1) * corneg;
+      Etrk += clEplane(cluster,ip,0) * corpos;
+      Etrk += clEplane(cluster,ip,1) * corneg;
 
     }   //over planes
 
