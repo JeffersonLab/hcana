@@ -38,6 +38,9 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
 
   Int_t GetCerIndex(Int_t nRegion, Int_t nValue);
 
+  //  Double_t GetCerNPE() { return fNPEsum;}
+  Double_t GetCerNPE();
+
   THcCherenkov();  // for ROOT I/O		
  protected:
   Int_t         fAnalyzePedestals;
@@ -52,8 +55,8 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Double_t*     fADC;             // [fNelem] Array of ADC amplitudes
   Double_t*     fADC_P;           // [fNelem] Array of ADC amplitudes
   Double_t*     fNPE;             // [fNelem] Array of ADC amplitudes
-  Double_t      fNPEsum;          // [fNelem] Array of ADC amplitudes
-  Double_t      fNCherHit;        // [fNelem] Array of ADC amplitudes
+  Double_t      fNPEsum;
+  Double_t      fNCherHit;
 
   Double_t*        fCerRegionValue;
   Double_t         fCerChi2Max;

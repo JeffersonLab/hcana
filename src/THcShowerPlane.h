@@ -50,6 +50,11 @@ public:
     return fOrigin;
   }
 
+
+  Double_t GetCalET() {
+    return fCalET;
+  };
+
   Double_t GetEplane() {
     return fEplane;
   };
@@ -119,6 +124,9 @@ protected:
   Double_t  fEplane;   // Energy deposition in the plane
   Double_t  fEplane_pos;   // Energy deposition in the plane from positive PMTs
   Double_t  fEplane_neg;   // Energy deposition in the plane from negative PMTs
+
+  Double_t  fDEBlock;   // Energy deposition in the block from negative PMTs
+  Double_t  fCalET;   // Energy deposition in the block from negative PMTs
 
   // These lists are not used actively for now.
   TClonesArray* fPosADCHits;    // List of positive ADC hits 
