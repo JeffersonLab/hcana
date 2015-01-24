@@ -111,10 +111,10 @@ public:
 
 // Container (collection) of hits and its iterator.
 //
-typedef set<THcShowerHit*> THcShowerHitList;
-typedef THcShowerHitList::iterator THcShowerHitIt;
+typedef set<THcShowerHit*> THcShowerHitSet;
+typedef THcShowerHitSet::iterator THcShowerHitIt;
 
-typedef THcShowerHitList THcShowerCluster;
+typedef THcShowerHitSet THcShowerCluster;
 typedef THcShowerCluster::iterator THcShowerClusterIt;
 
 //______________________________________________________________________________
@@ -167,18 +167,18 @@ class THcShowerClusterList : private THcShClusterList {
     return THcShClusterList::size();
   }
 
-  void ClusterHits(THcShowerHitList HitList) {
+  void ClusterHits(THcShowerHitSet HitSet) {
 
-    // Collect hits from the HitList into the clusters. The resultant clusters
+    // Collect hits from the HitSet into the clusters. The resultant clusters
     // of hits are saved in the ClusterList.
 
-    while (HitList.size() != 0) {
+    while (HitSet.size() != 0) {
 
       THcShowerCluster* cluster = new THcShowerCluster;
 
-      THcShowerHitIt it = HitList.end();
+      THcShowerHitIt it = HitSet.end();
       (*cluster).insert(*(--it));   //Move the last hit from the hit list
-      HitList.erase(it);            //into the 1st cluster
+      HitSet.erase(it);            //into the 1st cluster
 
       bool clustered = true;
 
@@ -186,7 +186,7 @@ class THcShowerClusterList : private THcShClusterList {
 
 	clustered = false;
 
-	for (THcShowerHitIt i=HitList.begin(); i!=HitList.end(); ++i) {
+	for (THcShowerHitIt i=HitSet.begin(); i!=HitSet.end(); ++i) {
 
 	  for (THcShowerClusterIt k=(*cluster).begin(); k!=(*cluster).end();
 	       k++) {
@@ -194,7 +194,7 @@ class THcShowerClusterList : private THcShClusterList {
 	    if ((**i).isNeighbour(*k)) {
 
 	      (*cluster).insert(*i);      //If the hit #i is neighbouring a hit
-	      HitList.erase(i);           //in the cluster, then move it
+	      HitSet.erase(i);           //in the cluster, then move it
 	                                  //into the cluster.
 	      clustered = true;
 	    }

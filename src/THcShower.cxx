@@ -561,7 +561,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   // Fill list of unclustered hits.
 
-  THcShowerHitList HitList;
+  THcShowerHitSet HitSet;
 
   for(Int_t j=0; j < fNLayers; j++) {
 
@@ -590,13 +590,13 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
 	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep,Epos,Eneg);
 
-	HitList.insert(hit);   //<set> version
+	HitSet.insert(hit);   //<set> version
       }
 
     }
   }
 
-  fNhits = HitList.size();
+  fNhits = HitSet.size();
 
   //Debug output, print out hits before clustering.
 
@@ -604,7 +604,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShower::CoarseProcess\n";
     cout << "  List of unclustered hits. Total hits:     " << fNhits << endl;
-    THcShowerHitIt it = HitList.begin();    //<set> version
+    THcShowerHitIt it = HitSet.begin();    //<set> version
     for (Int_t i=0; i!=fNhits; i++) {
       cout << "  hit " << i << ": ";
       (*(it++))->show();
@@ -613,7 +613,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   // Create list of clusters and fill it.
 
-  fClusterList->ClusterHits(HitList);
+  fClusterList->ClusterHits(HitSet);
 
   fNclust = (*fClusterList).NbClusters();   //number of clusters
 
@@ -720,7 +720,7 @@ Double_t clEplane(THcShowerCluster* cluster, Int_t iplane, Int_t side) {
     return -1;
   }
 
-  THcShowerHitList pcluster;
+  THcShowerHitSet pcluster;
   for (THcShowerHitIt it=(*cluster).begin(); it!=(*cluster).end(); ++it) {
     if ((*it)->hitColumn() == iplane) pcluster.insert(*it);
   }
