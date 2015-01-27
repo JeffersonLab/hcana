@@ -559,7 +559,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
   // Clustering of hits.
   //
 
-  // Fill list of unclustered hits.
+  // Fill set of unclustered hits.
 
   THcShowerHitSet HitSet;
 

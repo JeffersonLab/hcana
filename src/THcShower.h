@@ -104,6 +104,13 @@ public:
 	 << "  E=" << fE << "  Epos=" << fEpos << "  Eneg=" << fEneg << endl;
   }
 
+  bool operator<(THcShowerHit rhs) const {
+    if (fCol != rhs.fCol)
+      return fCol < rhs.fCol;
+    else
+      fRow < rhs.fRow;
+  }
+
 };
 
 
