@@ -34,6 +34,30 @@ goodhdc1	goodhdc1x1 && goodhdc1y1 && goodhdc1u1 && goodhdc1v1 && goodhdc1y2 && g
 goodhdc2	goodhdc2x1 && goodhdc2y1 && goodhdc2u1 && goodhdc2v1 && goodhdc2y2 && goodhdc2x2
 bothgoodhdc	goodhdc1 && goodhdc2
 
+sfoundtrack	S.dc.ntrack != 0
+sfound1track	S.dc.ntrack == 1
+sfound2track	S.dc.ntrack == 2
+sfound3track	S.dc.ntrack == 3
+sfound4track	S.dc.ntrack == 4
+
+goodsdc1u1	(S.dc.1u1.nhit > 0) && (S.dc.1u1.nhit < 3)
+goodsdc1u2	(S.dc.1u2.nhit > 0) && (S.dc.1u2.nhit < 3)
+goodsdc1x1	(S.dc.1x1.nhit > 0) && (S.dc.1x1.nhit < 3)
+goodsdc1x2	(S.dc.1x2.nhit > 0) && (S.dc.1x2.nhit < 3)
+goodsdc1v1	(S.dc.1v1.nhit > 0) && (S.dc.1v1.nhit < 3)
+goodsdc1v2	(S.dc.1v2.nhit > 0) && (S.dc.1v2.nhit < 3)
+
+goodsdc2u1	(S.dc.2u1.nhit > 0) && (S.dc.2u1.nhit < 3)
+goodsdc2u2	(S.dc.2u2.nhit > 0) && (S.dc.2u2.nhit < 3)
+goodsdc2x1	(S.dc.2x1.nhit > 0) && (S.dc.2x1.nhit < 3)
+goodsdc2x2	(S.dc.2x2.nhit > 0) && (S.dc.2x2.nhit < 3)
+goodsdc2v1	(S.dc.2v1.nhit > 0) && (S.dc.2v1.nhit < 3)
+goodsdc2v2	(S.dc.2v2.nhit > 0) && (S.dc.2v2.nhit < 3)
+
+goodsdc1	goodsdc1u1 && goodsdc1u2 && goodsdc1x1 && goodsdc1x2 && goodsdc1v1 && goodsdc1v2
+goodsdc2	goodsdc2u1 && goodsdc2u2 && goodsdc2x1 && goodsdc2x2 && goodsdc2v1 && goodsdc2v2
+bothgoodsdc	goodsdc1 && goodsdc2
+
 realhdc1x1	goodhdc1x1 && (H.dc.nsp != 0)
 realhdc1y1	goodhdc1y1 && (H.dc.nsp != 0)
 realhdc1u1	goodhdc1u1 && (H.dc.nsp != 0)
