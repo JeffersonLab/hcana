@@ -28,8 +28,8 @@ HMS cherenkov total photo electrons: {hmstotchernpe.npassed:%.2f}
 ------------------------
 HMS Hodoscope
 ------------------------
-Scin test: {hgood_hits}
-Scin should fired counters: {hmsscinshould.npassed:%7d}
+hdid: {hgood_hits}
+hscinshould: {hmsscinshould.npassed:%7d}
 Scin total should fired counter: {hmstotscinshould.npassed:%7d}
 
 ------------------------

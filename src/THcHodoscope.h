@@ -115,6 +115,9 @@ protected:
   char** fPlaneNames;
   UInt_t* fNPaddle;		// Number of paddles per plane
 
+  Double_t fEPratio;
+  Double_t fNPElimit;
+
   Double_t* fHodoVelLight;
   Double_t* fHodoPosSigma;
   Double_t* fHodoNegSigma;
@@ -144,8 +147,6 @@ protected:
 
   THcShower* fShower;
   THcCherenkov* fChern;
-
-  Int_t        fGood_hits;
 
   Int_t        fCheckEvent;
   Int_t        fEventType;

@@ -12,6 +12,10 @@
 // Beta and chis square are calculated for each of the hodoscope track.      //
 // Two new variables are added. fBeta and fBetaChisq                         //
 //                                                                           //
+// Date Jan 27 2015                                                          //
+// Zafar Ahmed                                                               //
+// fScinDid and fScinShould added                                            //
+// SING FID TRACK EFFIC is calculated.                                       //
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "THcSignalHit.h"
@@ -143,9 +147,6 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 {
   cout << "In THcHodoscope::Init()" << endl;
   Setup(GetName(), GetTitle());
-
-  fGood_hits = 0;
-  gHcParms->Define("hgood_hits", "Good Hits",fGood_hits);
 
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
@@ -379,6 +380,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   fScinShould = 0;
   fScinDid = 0;
+  gHcParms->Define("hgood_hits", "Good Hits",fScinDid);
+  gHcParms->Define("hgood_hits_2", "Good Hits",fScinShould);
 
   fNPaddle = new UInt_t [fNPlanes];
   fFPTime = new Double_t [fNPlanes];
@@ -458,6 +461,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"yloscin",               &fyLoScin[0],            kInt,     (UInt_t) fNHodoscopes},
     {"yhiscin",               &fyHiScin[0],            kInt,     (UInt_t) fNHodoscopes},
     {"track_eff_test_num_scin_planes",   &fTrackEffTestNScinPlanes,      kInt},
+    {"e_p_ratio_limit",       &fEPratio,                        kDouble},
+    {"npe_sum_limit",         &fNPElimit,                       kDouble},
     {0}
   };
   fTofUsingInvAdc = 0;		// Default if not defined
@@ -1535,18 +1540,19 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   THcHallCSpectrometer *app = static_cast<THcHallCSpectrometer*>(GetApparatus());
     
   if( ( strcmp(app->GetName(), apparatus_name) == 0 ) ) {
-    
-    if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > 0.7 ) && 
-	 ( fChern->GetCerNPE() > 2.0 ) )
+   
+    if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > fEPratio ) && 
+	 ( fChern->GetCerNPE() > fNPElimit ) ) {
       fScinShould ++;
-    
-    if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > 0.7 ) && 
-     	 ( fChern->GetCerNPE() > 2.0 ) && ( tracks.GetLast() + 1 > 0 ) ) {
-      fScinDid ++;    
-      fGood_hits ++;
     }
+    
+    if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > fEPratio ) && 
+     	 ( fChern->GetCerNPE() > fNPElimit ) && ( tracks.GetLast() + 1 > 0 ) ) {
+      fScinDid ++;    
+    }
+
   }
-  
+    
   return 0;
   
 }
