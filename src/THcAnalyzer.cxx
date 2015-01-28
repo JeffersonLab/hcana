@@ -180,6 +180,7 @@ void THcAnalyzer::LoadInfo()
   }
   // Not accurate
   *lastevent = fRun->GetFirstEvent()+fRun->GetNumAnalyzed();
+
 }  
 
 //_____________________________________________________________________________

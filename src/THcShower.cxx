@@ -466,9 +466,9 @@ Int_t THcShower::DefineVariables( EMode mode )
   // Register variables in global list
 
   RVarDef vars[] = {
-    { "nhits", "Number of hits",                                 "fNhits" },
-    { "nclust", "Number of clusters",                            "fNclust" },
-    { "etot", "Total energy",                            "fEtot" },
+    { "nhits", "Number of hits",                                   "fNhits" },
+    { "nclust", "Number of clusters",                             "fNclust" },
+    { "etot", "Total energy",                                       "fEtot" },
     { "etotnorm", "Total energy divided by Central Momentum",   "fEtotNorm" },
     { "ntracks", "Number of shower tracks",                      "fNtracks" },
     { 0 }
@@ -551,15 +551,16 @@ Int_t THcShower::Decode( const THaEvData& evdata )
     }
     fAnalyzePedestals = 0;	// Don't analyze pedestals next event
   }
-
+  
   Int_t nexthit = 0;
   for(UInt_t ip=0;ip<fNLayers;ip++) {
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
-    fEtot += fPlanes[ip]->GetEplane();
+    fEtot += fPlanes[ip]->GetCalET();
   }
+    
   THcHallCSpectrometer *app = static_cast<THcHallCSpectrometer*>(GetApparatus());
   fEtotNorm=fEtot/(app->GetPcentral());
- 
+  
   return nhits;
 }
 
@@ -876,6 +877,11 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 
   return 0;
 }
+
+Double_t THcShower::GetNormETot( ){
+  
+  return fEtotNorm;
+} 
 
 ClassImp(THcShower)
 ////////////////////////////////////////////////////////////////////////////////

@@ -15,6 +15,7 @@
 #include "THcRawHodoHit.h"
 #include "THcScintillatorPlane.h"
 #include "THcShower.h"
+#include "THcCherenkov.h"
 
 #include "THaTrackingDetector.h"
 #include "THcHitList.h"
@@ -114,6 +115,9 @@ protected:
   char** fPlaneNames;
   UInt_t* fNPaddle;		// Number of paddles per plane
 
+  Double_t fEPratio;
+  Double_t fNPElimit;
+
   Double_t* fHodoVelLight;
   Double_t* fHodoPosSigma;
   Double_t* fHodoNegSigma;
@@ -142,8 +146,10 @@ protected:
   //--------------------------   Ahmed   -----------------------------
 
   THcShower* fShower;
+  THcCherenkov* fChern;
 
   Int_t        fCheckEvent;
+  Int_t        fEventType;
 
   Int_t        fGoodTrack;
   Int_t        fSelNDegreesMin;
@@ -165,6 +171,8 @@ protected:
   Int_t        fTestSum;
   Int_t        fTrackEffTestNScinPlanes;
   Int_t        fGoodScinHits;
+  Int_t        fScinShould;
+  Int_t        fScinDid;
   Int_t*       fxLoScin;
   Int_t*       fxHiScin;
   Int_t*       fyLoScin;

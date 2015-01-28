@@ -276,10 +276,12 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     fEmean[i] = 0;
   }
 
+  fDEBlock = 0.0;
+  fCalET = 0.0;
   fEplane = 0;
   fEplane_pos = 0;
   fEplane_neg = 0;
-
+  
   // Process raw hits. Get ADC hits for the plane, assign variables for each
   // channel.
 
@@ -330,20 +332,22 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       fEneg[hit->fCounter-1] += fA_Neg_p[hit->fCounter-1]*
 	fParent->GetGain(hit->fCounter-1,fLayerNum-1,1);
+
     }
 
     // Mean energy in the counter.
-
     fEmean[hit->fCounter-1] += (fEpos[hit->fCounter-1] + fEneg[hit->fCounter-1]);
+    fDEBlock = fEneg[hit->fCounter-1] + fEpos[hit->fCounter-1];
 
     // Accumulate energies in the plane.
-
     fEplane += fEmean[hit->fCounter-1];
+    fCalET += fDEBlock;
     fEplane_pos += fEpos[hit->fCounter-1];
     fEplane_neg += fEneg[hit->fCounter-1];
 
     ihit++;
   }
+
 
   //Debug output.
 

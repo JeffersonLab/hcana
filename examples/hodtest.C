@@ -4,11 +4,13 @@
   //
   //  Steering script to test hodoscope decoding
   //
-  
+  //  Int_t fScinShould = 0;
   Int_t RunNumber=50017;
   char* RunFileNamePattern="daq04_%d.log.0";
   
   gHcParms->Define("gen_run_number", "Run Number", RunNumber);
+  //  gHcParms->Define("htotscinshould","Total Should fired",fScinShould);
+
   gHcParms->AddString("g_ctp_database_filename", "DBASE/test.database");
   
   gHcParms->Load(gHcParms->GetString("g_ctp_database_filename"), RunNumber);
@@ -72,7 +74,7 @@
 
   // Eventually need to learn to skip over, or properly analyze
   // the pedestal events
-  run->SetEventRange(1,100000);//  Physics Event number, does not
+  run->SetEventRange(1,2000);//  Physics Event number, does not
                                 // include scaler or control events
 
   // Define the analysis parameters

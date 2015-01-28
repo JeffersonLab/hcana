@@ -272,7 +272,7 @@ void THcCherenkov::Clear(Option_t* opt)
   // Clear Cherenkov variables  from h_trans_cer.f
   
   fNhits = 0;	     // Don't really need to do this.  (Be sure this called before Decode)
-  fNPEsum = 0;
+  fNPEsum = 0.0;
   fNCherHit = 0;
 
   for(Int_t itube = 0;itube < fNelem;itube++) {
@@ -412,15 +412,7 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 	  }
 
 	}
-	
-	// if ( fCerEvent > 5880 ) {
-	// cout << "Event = " << fCerEvent 
-	//      << "   region = " << ir + 1
-	//      << "   track counter = " << fCerTrackCounter[ir]
-	//      << "   fired coutner = " << fCerFiredCounter[ir]
-	//      << endl;
-	// }
-	
+		
       } // loop over regions
       //      cout << endl;
       
@@ -512,6 +504,7 @@ Int_t THcCherenkov::GetCerIndex( Int_t nRegion, Int_t nValue ) {
   return fCerNRegions * nValue + nRegion;
 }
 
+
 //_____________________________________________________________________________
 void THcCherenkov::Print( const Option_t* opt) const {
   THaNonTrackingDetector::Print(opt);
@@ -528,6 +521,12 @@ void THcCherenkov::Print( const Option_t* opt) const {
   }
 
   cout << endl;
+}
+
+//_____________________________________________________________________________
+Double_t THcCherenkov::GetCerNPE() {
+  
+  return fNPEsum;
 }
 
 ClassImp(THcCherenkov)

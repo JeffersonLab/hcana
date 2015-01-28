@@ -16,21 +16,51 @@ in the braces is evaluated as an expression.  Currently the expression can be
 composed of Hall C style parameter variables, cut results (not really too usefull)
 and cut statistics.  (Number of times called and number of times passed.)
 
-For example, {100*Pedestal_event.npassed/Pedestal_event.ncalled:%.2f}% is the percentage of events that were pedestal events.
+For example, {100*Pedestal_event.npassed/Pedestal_event.ncalled:%.2f}% is the 
+percentage of events that were pedestal events.
+
+------------------------
+HMS Cherenkov
+------------------------
+HMS cherenkov total photo electrons: {hmstotchernpe.npassed:%.2f}
+
+
+------------------------
+HMS Hodoscope
+------------------------
+hdid: {hgood_hits}
+hscinshould: {hmsscinshould.npassed:%7d}
+Scin total should fired counter: {hmstotscinshould.npassed:%7d}
+
+------------------------
+HMS Drift Chambers
+------------------------
+Total number of triggers with any tracks: {hfoundtrack.npassed:%7d}
+Total number of triggers with only one track: {hfound1track.npassed:%7d}
 
 Horizontal drift chamber z positions:
-Chamber 1: {hdc_zpos[0]:%6.2f} {hdc_zpos[1]:%6.2f} {hdc_zpos[2]:%6.2f} {hdc_zpos[3]:%6.2f} {hdc_zpos[4]:%6.2f} {hdc_zpos[5]:%6.2f} 
-Chamber 2: {hdc_zpos[6]:%6.2f} {hdc_zpos[7]:%6.2f} {hdc_zpos[8]:%6.2f} {hdc_zpos[9]:%6.2f} {hdc_zpos[10]:%6.2f} {hdc_zpos[11]:%6.2f} 
+Chamber 1: {hdc_zpos[0]:%6.2f} {hdc_zpos[1]:%6.2f} {hdc_zpos[2]:%6.2f} 
+	   {hdc_zpos[3]:%6.2f} {hdc_zpos[4]:%6.2f} {hdc_zpos[5]:%6.2f} 
+Chamber 2: {hdc_zpos[6]:%6.2f} {hdc_zpos[7]:%6.2f} {hdc_zpos[8]:%6.2f} 
+	   {hdc_zpos[9]:%6.2f} {hdc_zpos[10]:%6.2f} {hdc_zpos[11]:%6.2f} 
 
 The expression result can be formatted by putting a ":" followed by
 a c-style format after the expression.
 
 The HMS reconstruction coefficient file name is {h_recon_coeff_filename}
-The names of the HMS drift chamber planes are: {hdc_plane_names}
+The names of the HMS drift chamber planes are: 
+{hdc_plane_names}
 
 DC Events: {hdc_tot_events}
-Hit in chamber: {hdc_cham_hits[0]/hdc_tot_events:%.3f} {hdc_cham_hits[1]/hdc_tot_events:%.3f}
-Hit in plane: {hdc_events[0]/hdc_tot_events:%.3f} {hdc_events[1]/hdc_tot_events:%.3f} {hdc_events[2]/hdc_tot_events:%.3f} {hdc_events[3]/hdc_tot_events:%.3f} {hdc_events[4]/hdc_tot_events:%.3f} {hdc_events[5]/hdc_tot_events:%.3f} {hdc_events[6]/hdc_tot_events:%.3f} {hdc_events[7]/hdc_tot_events:%.3f} {hdc_events[8]/hdc_tot_events:%.3f} {hdc_events[9]/hdc_tot_events:%.3f} {hdc_events[10]/hdc_tot_events:%.3f} {hdc_events[11]/hdc_tot_events:%.3f}
+Hit in chamber: {hdc_cham_hits[0]/hdc_tot_events:%.3f} 
+                {hdc_cham_hits[1]/hdc_tot_events:%.3f}
+
+Hit in plane: {hdc_events[0]/hdc_tot_events:%.3f} {hdc_events[1]/hdc_tot_events:%.3f} 
+              {hdc_events[2]/hdc_tot_events:%.3f} {hdc_events[3]/hdc_tot_events:%.3f} 
+	      {hdc_events[4]/hdc_tot_events:%.3f} {hdc_events[5]/hdc_tot_events:%.3f} 
+	      {hdc_events[6]/hdc_tot_events:%.3f} {hdc_events[7]/hdc_tot_events:%.3f} 
+	      {hdc_events[8]/hdc_tot_events:%.3f} {hdc_events[9]/hdc_tot_events:%.3f} 
+	      {hdc_events[10]/hdc_tot_events:%.3f} {hdc_events[11]/hdc_tot_events:%.3f}
 
 Run #{gen_run_number}
 first event = {gen_run_starting_event:%7d}
