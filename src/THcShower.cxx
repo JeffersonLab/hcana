@@ -508,7 +508,14 @@ void THcShower::Clear(Option_t* opt)
   fNclust = 0;
   fNtracks = 0;
 
-  fClusterList->purge();
+  // Purge cluster list
+
+  for (THcShowerClusterListIt i=fClusterList->begin(); i!=fClusterList->end();
+       ++i) {
+    delete *i;
+    *i = 0;
+  }
+  fClusterList->clear();
 
 }
 
@@ -613,9 +620,9 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   // Create list of clusters and fill it.
 
-  fClusterList->ClusterHits(HitSet);
+  ClusterHits(HitSet);
 
-  fNclust = (*fClusterList).NbClusters();   //number of clusters
+  fNclust = (*fClusterList).size();   //number of clusters
 
   //Debug output, print out the cluster list.
 
@@ -623,21 +630,23 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
     cout << "  Clustered hits. Number of clusters: " << fNclust << endl;
 
-    for (Int_t i=0; i!=fNclust; i++) {
+    UInt_t i = 0;
+    for (THcShowerClusterListIt ppcl = (*fClusterList).begin();
+	 ppcl != (*fClusterList).end(); ppcl++) {
 
-      THcShowerCluster* cluster = (*fClusterList).ListedCluster(i);
-      cout << "  Cluster #" << i 
-	   <<":  E=" << clE(cluster) 
-	   << "  Epr=" << clEpr(cluster)
-	   << "  X=" << clX(cluster)
-	   << "  Z=" << clZ(cluster)
-	   << "  size=" << (*cluster).size()
+      cout << "  Cluster #" << i++
+	   <<":  E=" << clE(*ppcl) 
+	   << "  Epr=" << clEpr(*ppcl)
+	   << "  X=" << clX(*ppcl)
+	   << "  Z=" << clZ(*ppcl)
+	   << "  size=" << (**ppcl).size()
 	   << endl;
 
       Int_t j=0;
-      for (THcShowerClusterIt it=(*cluster).begin(); it!=(*cluster).end(); it++) {
+      for (THcShowerClusterIt pph=(**ppcl).begin(); pph!=(**ppcl).end();
+	   pph++) {
 	cout << "  hit " << j++ << ": ";
-	(**it).show();
+	(**pph).show();
       }
 
     }
@@ -647,6 +656,54 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   return 0;
 }
+
+//-----------------------------------------------------------------------------
+
+void THcShower::ClusterHits(THcShowerHitSet& HitSet) {
+
+  // Collect hits from the HitSet into the clusters. The resultant clusters
+  // of hits are saved in the ClusterList.
+
+  while (HitSet.size() != 0) {
+
+    THcShowerCluster* cluster = new THcShowerCluster;
+
+    THcShowerHitIt it = HitSet.end();
+    (*cluster).insert(*(--it));   //Move the last hit from the hit list
+    HitSet.erase(it);             //into the 1st cluster
+
+    bool clustered = true;
+
+    while (clustered) {                   //Proceed while a hit is clustered
+
+      clustered = false;
+
+      for (THcShowerHitIt i=HitSet.begin(); i!=HitSet.end(); ++i) {
+
+	for (THcShowerClusterIt k=(*cluster).begin(); k!=(*cluster).end();
+	     k++) {
+
+	  if ((**i).isNeighbour(*k)) {
+
+	    (*cluster).insert(*i);      //If the hit #i is neighbouring a hit
+	    HitSet.erase(i);            //in the cluster, then move it
+	                                //into the cluster.
+	    clustered = true;
+	  }
+
+	  if (clustered) break;
+	}                               //k
+
+	if (clustered) break;
+      }                                 //i
+
+    }                                   //while clustered
+
+    fClusterList->push_back(cluster);   //Put the cluster in the cluster list
+
+  }                                     //While hit_list not exhausted
+
+};
 
 //-----------------------------------------------------------------------------
 
@@ -805,16 +862,16 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
     //
     for (Int_t i=fNclust-1; i>-1; i--) {
 
-      THcShowerCluster* cluster = (*fClusterList).ListedCluster(i);
+      THcShowerCluster* cluster = *(fClusterList->begin()+i);
 
       Double_t dx = TMath::Abs( clX(cluster) - XTrFront );
 
       if (dx <= (0.5*BlockThick[0] + fSlop)) {
-      	fNtracks++;  // number of shower tracks (Consistent with engine)
-      	if (dx < deltaX) {
-      	  mclust = i;
-      	  deltaX = dx;
-      	}
+	fNtracks++;  // number of shower tracks (Consistent with engine)
+	if (dx < deltaX) {
+	  mclust = i;
+	  deltaX = dx;
+	}
       }
     }
   }
@@ -840,7 +897,7 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
       cout << "  Fiducial volume test: inFidVol = " << inFidVol << endl;
 
     cout << "  Matched cluster #" << mclust << ",  delatX= " << deltaX 
-	 << endl;
+    	 << endl;
     cout << "---------------------------------------------------------------\n";
   }
 
@@ -868,7 +925,8 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
   if (mclust >= 0) {         // if there is a matched cluster
 
     // Get matched cluster.
-    THcShowerCluster* cluster = (*fClusterList).ListedCluster(mclust);
+
+    THcShowerCluster* cluster = *(fClusterList->begin()+mclust);
 
     // Correct track energy depositions for the impact coordinate.
 

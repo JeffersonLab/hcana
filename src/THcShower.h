@@ -104,11 +104,13 @@ public:
 	 << "  E=" << fE << "  Epos=" << fEpos << "  Eneg=" << fEneg << endl;
   }
 
+  // Define < operator in order to fill in hit sets in a sorted manner.
+  //
   bool operator<(THcShowerHit rhs) const {
     if (fCol != rhs.fCol)
       return fCol < rhs.fCol;
     else
-      fRow < rhs.fRow;
+      return fRow < rhs.fRow;
   }
 
 };
@@ -128,99 +130,8 @@ typedef THcShowerCluster::iterator THcShowerClusterIt;
 
 //Alias for container of clusters and for its iterator
 //
-typedef vector<THcShowerCluster*> THcShClusterList;
-typedef THcShClusterList::iterator THcShClusterIt;
-
-//List of clusters
-//
-class THcShowerClusterList : private THcShClusterList {
-
- public:
-
-  THcShowerClusterList() {
-    //    cout << "Dummy THcShowerClusterList object created" << endl;
-  }
-
-  ~THcShowerClusterList() {
-    purge();
-  }
-
-  // Purge cluster list
-  //
-  void purge() {
-    for (THcShClusterIt i = THcShClusterList::begin();
-	 i != THcShClusterList::end(); ++i) {
-      delete *i;
-      *i = 0;
-    }
-    THcShClusterList::clear();
-  }
-
-  //Put a cluster in the cluster list
-  //
-  void grow(THcShowerCluster* cluster) {
-    THcShClusterList::push_back(cluster);
-  }
-
-  //Pointer to the cluster #i in the cluster list
-  //
-  THcShowerCluster* ListedCluster(UInt_t i) {
-    return *(THcShClusterList::begin()+i);
-  }
-
-  //Cluster list size.
-  //
-  UInt_t NbClusters() {
-    return THcShClusterList::size();
-  }
-
-  void ClusterHits(THcShowerHitSet HitSet) {
-
-    // Collect hits from the HitSet into the clusters. The resultant clusters
-    // of hits are saved in the ClusterList.
-
-    while (HitSet.size() != 0) {
-
-      THcShowerCluster* cluster = new THcShowerCluster;
-
-      THcShowerHitIt it = HitSet.end();
-      (*cluster).insert(*(--it));   //Move the last hit from the hit list
-      HitSet.erase(it);            //into the 1st cluster
-
-      bool clustered = true;
-
-      while (clustered) {                   //Proceed while a hit is clustered
-
-	clustered = false;
-
-	for (THcShowerHitIt i=HitSet.begin(); i!=HitSet.end(); ++i) {
-
-	  for (THcShowerClusterIt k=(*cluster).begin(); k!=(*cluster).end();
-	       k++) {
-
-	    if ((**i).isNeighbour(*k)) {
-
-	      (*cluster).insert(*i);      //If the hit #i is neighbouring a hit
-	      HitSet.erase(i);           //in the cluster, then move it
-	                                  //into the cluster.
-	      clustered = true;
-	    }
-
-	    if (clustered) break;
-	  }                               //k
-
-	  if (clustered) break;
-	}                                 //i
-
-      }                                   //while clustered
-
-      push_back(cluster);         //Put the cluster in the cluster list
-
-    }                                     //While hit_list not exhausted
-
-  }
-
-};
+typedef vector<THcShowerCluster*> THcShowerClusterList;
+typedef THcShowerClusterList::iterator THcShowerClusterListIt;
 
 //______________________________________________________________________________
 
@@ -382,6 +293,8 @@ protected:
 
   // Cluster to track association method.
   Int_t MatchCluster(THaTrack*, Double_t&, Double_t&);
+
+  void ClusterHits(THcShowerHitSet& HitSet);
 
   friend class THcShowerPlane;   //to access debug flags.
 
