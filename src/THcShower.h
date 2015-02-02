@@ -104,7 +104,7 @@ public:
 	 << "  E=" << fE << "  Epos=" << fEpos << "  Eneg=" << fEneg << endl;
   }
 
-  // Define < operator in order to fill in hit sets in a sorted manner.
+  // Define < operator in order to fill in set of hits in a sorted manner.
   //
   bool operator<(THcShowerHit rhs) const {
     if (fCol != rhs.fCol)
@@ -306,12 +306,15 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Auxiliary methods to be used with the hit and cluster containers.
+// Various helper functions to accumulate hit related quantities.
 
 Double_t addE(Double_t x, THcShowerHit* h);
 Double_t addX(Double_t x, THcShowerHit* h);
 Double_t addZ(Double_t x, THcShowerHit* h);
 Double_t addEpr(Double_t x, THcShowerHit* h);
+
+// Methods to calculate coordinates and energy depositions for a given cluster.
+
 Double_t clX(THcShowerCluster* cluster);
 Double_t clZ(THcShowerCluster* cluster);
 Double_t clE(THcShowerCluster* cluster);

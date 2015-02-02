@@ -11,7 +11,6 @@
 
 #include "THcShower.h"
 #include "THcHallCSpectrometer.h"
-//#include "THcShowerCluster.h"
 #include "THaEvData.h"
 #include "THaDetMap.h"
 #include "THcDetectorMap.h"
@@ -635,7 +634,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
     }
   }
 
-  // Create list of clusters and fill it.
+  // Fill list of clusters.
 
   ClusterHits(HitSet);
 
@@ -679,7 +678,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 void THcShower::ClusterHits(THcShowerHitSet& HitSet) {
 
   // Collect hits from the HitSet into the clusters. The resultant clusters
-  // of hits are saved in the ClusterList.
+  // of hits are saved in the fClusterList.
 
   while (HitSet.size() != 0) {
 
@@ -723,6 +722,8 @@ void THcShower::ClusterHits(THcShowerHitSet& HitSet) {
 };
 
 //-----------------------------------------------------------------------------
+
+// Various helper functions to accumulate hit related quantities.
 
 Double_t addE(Double_t x, THcShowerHit* h) {
   return x + h->hitE();
@@ -779,7 +780,6 @@ Double_t clE(THcShowerCluster* cluster) {
 Double_t clEpr(THcShowerCluster* cluster) {
     return accumulate((*cluster).begin(),(*cluster).end(),0.,addEpr);
 }
-
 
 //Cluster energy deposition in plane iplane=0,..,3:
 // side=0 -- from positive PMTs only;
