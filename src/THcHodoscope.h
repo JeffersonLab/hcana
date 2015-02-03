@@ -15,6 +15,7 @@
 #include "THcRawHodoHit.h"
 #include "THcScintillatorPlane.h"
 #include "THcShower.h"
+#include "THcCherenkov.h"
 
 #include "THaTrackingDetector.h"
 #include "THcHitList.h"
@@ -142,8 +143,12 @@ protected:
   //--------------------------   Ahmed   -----------------------------
 
   THcShower* fShower;
+  THcCherenkov* fChern;
+
+  Int_t        fGood_hits;
 
   Int_t        fCheckEvent;
+  Int_t        fEventType;
 
   Int_t        fGoodTrack;
   Int_t        fSelNDegreesMin;
@@ -165,6 +170,8 @@ protected:
   Int_t        fTestSum;
   Int_t        fTrackEffTestNScinPlanes;
   Int_t        fGoodScinHits;
+  Int_t        fScinShould;
+  Int_t        fScinDid;
   Int_t*       fxLoScin;
   Int_t*       fxHiScin;
   Int_t*       fyLoScin;
