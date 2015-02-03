@@ -1031,5 +1031,9 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
   return 0;
 }
 
+Double_t THcShower::GetNormETot( ){
+  return fEtotNorm;
+} 
+
 ClassImp(THcShower)
 ////////////////////////////////////////////////////////////////////////////////

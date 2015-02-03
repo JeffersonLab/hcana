@@ -147,6 +147,8 @@ public:
   virtual Int_t      CoarseProcess( TClonesArray& tracks );
   virtual Int_t      FineProcess( TClonesArray& tracks );
   
+  Double_t GetNormETot();
+
   Int_t GetNHits() const { return fNhits; }
   
   Int_t GetNBlocks(Int_t NLayer) const { return fNBlocks[NLayer];}
