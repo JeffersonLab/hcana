@@ -8,6 +8,13 @@ Pedestal_event    g.evtyp==4
 Block: Decode
 Decode_master     !Pedestal_event
 
+Block: CoarseProcess
+hmstotchernpe   H.cher.npesum > -1.0
+
+Block: FineProcess
+hmsscinshould      H.hod.goodscinhit == 1
+hmstotscinshould   (H.hod.goodscinhit == 1) && (H.cher.npesum > 2.0)
+
 Block: CoarseTracking
 
 hfoundtrack	H.dc.ntrack != 0
@@ -90,4 +97,3 @@ hdcres_12	(H.dc.residual[11] < 1000) && hlowchi2
 
 Block: CoarseReconstruct
 CourseReconstruct 1
-
