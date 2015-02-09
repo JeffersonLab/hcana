@@ -69,4 +69,5 @@ last event  = {gen_event_id_number:%7d}
 Later, such things as hardware scalers will be added to the set of variables
 that can be used in expressions.
 
+Last momenutm: {H.tr.p[0]}
 

@@ -110,7 +110,7 @@ void THcAnalyzer::PrintReport(const char* templatefile, const char* ofile)
 	if(format.empty()) format = "%s";
 	replacement=Form(format.c_str(),textstring);
       } else {
-	THcFormula* formula = new THcFormula("temp",expression.c_str(),gHcParms, gHaCuts);
+	THcFormula* formula = new THcFormula("temp",expression.c_str(),gHcParms,gHaVars,gHaCuts);
 	Double_t value=formula->Eval();
 	// If the value is close to integer and no format is defined
 	// use "%.0f" to print out integer

@@ -12,6 +12,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "THcFormula.h"
+#include "THcParmList.h"
 #include "THaVarList.h"
 #include "THaCutList.h"
 #include "THaCut.h"
@@ -24,13 +25,15 @@ static const Double_t kBig = 1e38; // Error value
 
 //_____________________________________________________________________________
 THcFormula::THcFormula(const char* name, const char* expression, 
-		       const THaVarList* vlst, const THaCutList* clst ) :
+		       const THcParmList* plst, const THaVarList* vlst,
+		       const THaCutList* clst ) :
   THaFormula()
 {
 
   // We have to duplicate the TFormula constructor code here because of
   // the calls DefinedVariable.  Our version will only get called if
-  // to Compile(). Compile() only works if fVarList is set. 
+  // to Compile(). Compile() only works if fParmList is set. 
+  fParmList = plst;
   fVarList = vlst;
   fCutList = clst;
 
@@ -55,6 +58,23 @@ THcFormula::THcFormula(const char* name, const char* expression,
   Compile();   // This calls our own Compile()
 }
 
+//_____________________________________________________________________________
+THcFormula& THcFormula::operator=( const THcFormula& rhs )
+{
+  if( this != &rhs ) {
+    TFormula::operator=(rhs);
+    fNcodes = rhs.fNcodes;
+    fParmList = rhs.fParmList;
+    fVarList = rhs.fVarList;
+    fCutList = rhs.fCutList;
+    fError = rhs.fError;
+    fRegister = rhs.fRegister;
+    delete [] fVarDef;
+    fVarDef = new FVarDef_t[ kMAXCODES ];
+    memcpy( fVarDef, rhs.fVarDef, kMAXCODES*sizeof(FVarDef_t));
+  }
+  return *this;
+}
 
 //_____________________________________________________________________________
 THcFormula::~THcFormula()
@@ -139,6 +159,58 @@ Double_t THcFormula::DefinedValue( Int_t i )
     return kBig;
   }
 }  
+
+
+//_____________________________________________________________________________
+Int_t THcFormula::DefinedGlobalVariable( const TString& name )
+{
+  // Check if 'name' is a known global variable. If so, enter it in the
+  // local list of variables used in this formula.
+
+  // No list of variables or too many variables in this formula?
+  if( (!fVarList && !fParmList) || fNcodes >= kMAXCODES )
+    return -2;
+
+
+  // Parse name for array syntax
+  THaArrayString var(name);
+  if( var.IsError() )
+    return -1;
+
+  // First check if this name is a Parameter
+  const THaVar* obj = fParmList->Find( var.GetName() );
+  if ( !obj) {  // If not, find a global variable with this name
+    obj = fVarList->Find( var.GetName() );
+    if( !obj )
+      return -1;
+  }
+
+  // Error if array requested but the corresponding variable is not an array
+  if( var.IsArray() && !obj->IsArray() )
+    return -2;
+
+  // Subscript(s) within bounds?
+  Int_t index = 0;
+  if( var.IsArray() 
+      && (index = obj->Index( var )) <0 ) return -2;
+		    
+  // Check if this variable already used in this formula
+  FVarDef_t* def = fVarDef;
+  for( Int_t i=0; i<fNcodes; i++, def++ ) {
+    if( obj == def->code && index == def->index )
+      return i;
+  }
+  // If this is a new variable, add it to the list
+  def->type = kVariable;
+  def->code = obj;
+  def->index = index;
+
+  // No parameters ever for a THaFormula
+  fNpar = 0;
+
+  return fNcodes++;
+}
+
 
 //_____________________________________________________________________________
 
