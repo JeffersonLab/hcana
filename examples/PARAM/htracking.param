@@ -96,3 +96,6 @@
 ;  htrack_eff_test_scin_planes is the number of planes nec needed to 
 ;  set sweet spot to true. 4 is extra clean, 3 is good enough for e-'s.
   htrack_eff_test_num_scin_planes = 4
+
+  hcer_npe = 2.0
+  hnormalized_energy_tot = 0.7

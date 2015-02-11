@@ -70,3 +70,6 @@
 ;  strack_eff_test_scin_planes is the number of planes nec needed to 
 ;  set sweet spot to true. 4 is extra clean, 3 is good enough for e-'s.
   strack_eff_test_num_scin_planes = 4
+
+  scer_npe = 2.0
+  snormalized_energy_tot = 0.7

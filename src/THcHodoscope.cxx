@@ -114,8 +114,6 @@ void THcHodoscope::Setup(const char* name, const char* description)
     strcpy(fPlaneNames[i], plane_names[i].c_str());
   }
 
-  //myShower = new THcShower("cal", "Shower" );
-
   /*  fPlaneNames = new char* [fNPlanes];
   for(Int_t i=0;i<fNPlanes;i++) {fPlaneNames[i] = new char[3];}
   // Should get the plane names from parameters.  
@@ -135,6 +133,48 @@ void THcHodoscope::Setup(const char* name, const char* description)
     fPlanes[i] = new THcScintillatorPlane(fPlaneNames[i], desc, i+1,fNPlanes,this); // Number planes starting from zero!!
     cout << "Created Scintillator Plane " << fPlaneNames[i] << ", " << desc << endl;
   }
+
+  // --------------- To get energy from THcShower ----------------------
+  const char* shower_detector_name = "cal";  
+  //  THaApparatus* app;
+  THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+  THaDetector* det = app->GetDetector( shower_detector_name );
+
+  if( dynamic_cast<THcShower*>(det) ) {
+    fShower = dynamic_cast<THcShower*>(det);
+  }
+  else if( !dynamic_cast<THcShower*>(det) ) {
+    cout << "Warining: calorimeter analysis module " 
+	 << shower_detector_name << " not loaded for spectrometer "
+	 << prefix << endl;
+    
+    fShower = NULL;
+  }
+  
+  // --------------- To get energy from THcShower ----------------------
+
+  // --------------- To get NPEs from THcCherenkov -------------------
+  const char* chern_detector_name = "cher";
+  THaDetector* detc = app->GetDetector( chern_detector_name );
+  
+  if( dynamic_cast<THcCherenkov*>(detc) ) {
+    fChern = dynamic_cast<THcCherenkov*>(detc);  
+  }
+  else if( !dynamic_cast<THcCherenkov*>(detc) ) {
+    cout << "Warining: Cherenkov detector analysis module " 
+	 << chern_detector_name << " not loaded for spectrometer "
+	 << prefix << endl;
+    
+    fChern = NULL;
+  }
+  
+  // --------------- To get NPEs from THcCherenkov -------------------
+
+  fScinShould = 0;
+  fScinDid = 0;
+  gHcParms->Define(Form("%shodo_did",prefix),"Total hodo tracks",fScinDid);
+  gHcParms->Define(Form("%shodo_should",prefix),"Total hodo triggers",fScinShould);
+
   delete [] desc;
 }
 
@@ -144,47 +184,11 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   cout << "In THcHodoscope::Init()" << endl;
   Setup(GetName(), GetTitle());
 
-  fGood_hits = 0;
-  gHcParms->Define("hgood_hits", "Good Hits",fGood_hits);
-
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
   // But it needs to happen before the sub detectors are initialized
   // so that they can get the pointer to the hitlist.
 
-  // --------------- To get energy from THcShower ----------------------
-  const char* shower_detector_name = "cal";  
-  //  THaApparatus* app;
-  THcHallCSpectrometer *app = static_cast<THcHallCSpectrometer*>(GetApparatus());
-  THaDetector* det = app->GetDetector( shower_detector_name );
-
-  if( !dynamic_cast<THcShower*>(det) ) {
-    Error("THcHodoscope", "Cannot find shower detector %s",
-   	  shower_detector_name );
-    return fStatus = kInitError;
-  }
-
-  fShower = static_cast<THcShower*>(det);     // fShower is a membervariable
-
-  // --------------- To get energy from THcShower ----------------------
-
-  // --------------- To get energy from THcCherenkov -------------------
-  const char* apparatus_name = "H";
-  if( strcmp(app->GetName(), apparatus_name ) == 0 ) {
-
-    const char* chern_detector_name = "cher";
-    THaDetector* detc = app->GetDetector( chern_detector_name );
-
-    if( !dynamic_cast<THcCherenkov*>(detc) ) {
-      Error("THcHodoscope", "Cannot find Cherenkov detector %s",
-	    chern_detector_name );
-      return fStatus = kInitError;
-    }
-
-    fChern = static_cast<THcCherenkov*>(detc);     // fShower is a membervariable
-
-  }
-  // --------------- To get energy from THcCherenkov -------------------
 
   InitHitList(fDetMap, "THcRawHodoHit", 100);
 
@@ -378,9 +382,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   //  Int_t plen=strlen(parname);
   cout << " readdatabse hodo fnplanes = " << fNPlanes << endl;
 
-  fScinShould = 0;
-  fScinDid = 0;
-
   fNPaddle = new UInt_t [fNPlanes];
   fFPTime = new Double_t [fNPlanes];
   fPlaneCenter = new Double_t[fNPlanes];
@@ -435,34 +436,40 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   prefix[1]='\0';
   DBRequest list[]={
-    {"start_time_center",     &fStartTimeCenter,                      kDouble},
-    {"start_time_slop",       &fStartTimeSlop,                        kDouble},
-    {"scin_tdc_to_time",      &fScinTdcToTime,                        kDouble},
-    {"scin_tdc_min",          &fScinTdcMin,                           kDouble},
-    {"scin_tdc_max",          &fScinTdcMax,                           kDouble},
-    {"tof_tolerance",         &fTofTolerance,          kDouble,         0,  1},
-    {"pathlength_central",    &fPathLengthCentral,                    kDouble},
-    {"hodo_vel_light",        &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
-    {"hodo_pos_sigma",        &fHodoPosSigma[0],       kDouble,  fMaxHodoScin},
-    {"hodo_neg_sigma",        &fHodoNegSigma[0],       kDouble,  fMaxHodoScin},
-    {"hodo_pos_minph",        &fHodoPosMinPh[0],       kDouble,  fMaxHodoScin},
-    {"hodo_neg_minph",        &fHodoNegMinPh[0],       kDouble,  fMaxHodoScin},
-    {"hodo_pos_phc_coeff",    &fHodoPosPhcCoeff[0],    kDouble,  fMaxHodoScin},
-    {"hodo_neg_phc_coeff",    &fHodoNegPhcCoeff[0],    kDouble,  fMaxHodoScin},
-    {"hodo_pos_time_offset",  &fHodoPosTimeOffset[0],  kDouble,  fMaxHodoScin},
-    {"hodo_neg_time_offset",  &fHodoNegTimeOffset[0],  kDouble,  fMaxHodoScin},
-    {"hodo_pos_ped_limit",    &fHodoPosPedLimit[0],    kInt,     fMaxHodoScin},
-    {"hodo_neg_ped_limit",    &fHodoNegPedLimit[0],    kInt,     fMaxHodoScin},
-    {"tofusinginvadc",        &fTofUsingInvAdc,        kInt,            0,  1},
-    {"xloscin",               &fxLoScin[0],            kInt,     (UInt_t) fNHodoscopes},
-    {"xhiscin",               &fxHiScin[0],            kInt,     (UInt_t) fNHodoscopes},
-    {"yloscin",               &fyLoScin[0],            kInt,     (UInt_t) fNHodoscopes},
-    {"yhiscin",               &fyHiScin[0],            kInt,     (UInt_t) fNHodoscopes},
-    {"track_eff_test_num_scin_planes",   &fTrackEffTestNScinPlanes,      kInt},
+    {"start_time_center",                &fStartTimeCenter,                      kDouble},
+    {"start_time_slop",                  &fStartTimeSlop,                        kDouble},
+    {"scin_tdc_to_time",                 &fScinTdcToTime,                        kDouble},
+    {"scin_tdc_min",                     &fScinTdcMin,                           kDouble},
+    {"scin_tdc_max",                     &fScinTdcMax,                           kDouble},
+    {"tof_tolerance",                    &fTofTolerance,          kDouble,         0,  1},
+    {"pathlength_central",               &fPathLengthCentral,                    kDouble},
+    {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
+    {"hodo_pos_sigma",                   &fHodoPosSigma[0],       kDouble,  fMaxHodoScin},
+    {"hodo_neg_sigma",                   &fHodoNegSigma[0],       kDouble,  fMaxHodoScin},
+    {"hodo_pos_minph",                   &fHodoPosMinPh[0],       kDouble,  fMaxHodoScin},
+    {"hodo_neg_minph",                   &fHodoNegMinPh[0],       kDouble,  fMaxHodoScin},
+    {"hodo_pos_phc_coeff",               &fHodoPosPhcCoeff[0],    kDouble,  fMaxHodoScin},
+    {"hodo_neg_phc_coeff",               &fHodoNegPhcCoeff[0],    kDouble,  fMaxHodoScin},
+    {"hodo_pos_time_offset",             &fHodoPosTimeOffset[0],  kDouble,  fMaxHodoScin},
+    {"hodo_neg_time_offset",             &fHodoNegTimeOffset[0],  kDouble,  fMaxHodoScin},
+    {"hodo_pos_ped_limit",               &fHodoPosPedLimit[0],    kInt,     fMaxHodoScin},
+    {"hodo_neg_ped_limit",               &fHodoNegPedLimit[0],    kInt,     fMaxHodoScin},
+    {"tofusinginvadc",                   &fTofUsingInvAdc,        kInt,            0,  1},       
+    {"xloscin",                          &fxLoScin[0],            kInt,     (UInt_t) fNHodoscopes},
+    {"xhiscin",                          &fxHiScin[0],            kInt,     (UInt_t) fNHodoscopes},
+    {"yloscin",                          &fyLoScin[0],            kInt,     (UInt_t) fNHodoscopes},
+    {"yhiscin",                          &fyHiScin[0],            kInt,     (UInt_t) fNHodoscopes},
+    {"track_eff_test_num_scin_planes",   &fTrackEffTestNScinPlanes,                 kInt},
+    {"cer_npe",                          &fNCerNPE,               kDouble,         0,  1},
+    {"normalized_energy_tot",            &fNormETot,              kDouble,         0,  1},
     {0}
   };
+  
   fTofUsingInvAdc = 0;		// Default if not defined
   fTofTolerance = 3.0;		// Default if not defined
+  fNCerNPE = 2.0;
+  fNormETot = 0.7;
+
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   cout << " x1 lo = " << fxLoScin[0] 
@@ -477,8 +484,10 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
        << " y2 hi = " << fyHiScin[1] 
        << endl;
 
-  cout << "Hdososcope planes hits for trigger = " 
-       << fTrackEffTestNScinPlanes << endl;
+  cout << "Hdososcope planes hits for trigger = " << fTrackEffTestNScinPlanes 
+       << " normalized energy min = " << fNormETot
+       << " number of photo electrons = " << fNCerNPE
+       << endl;
 
   if (fTofUsingInvAdc) {
     DBRequest list2[]={
@@ -541,13 +550,13 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
 
   RVarDef vars[] = {
     // Move these into THcHallCSpectrometer using track fTracks
-    {"fpHitsTime",      "Time at focal plane from all hits",       "fFPTime"},
-    {"starttime",       "Hodoscope Start Time",                    "fStartTime"},
-    {"goodstarttime",  "Hodoscope Good Start Time",                "fGoodStartTime"},
-    {"goodscinhit",    "Hit in fid area",                          "fGoodScinHits"},
-    {"goodscinhitx",   "Hit in fid x range",                       "fGoodScinHitsX"},
-    {"totscinshould",  "Total scin Hits in fid area",              "fScinShould"},
-    {"totscindid",     "Total scin Hits in fid area with a track", "fScinDid"},
+    {"fpHitsTime",      "Time at focal plane from all hits",         "fFPTime"},
+    {"starttime",       "Hodoscope Start Time",                      "fStartTime"},
+    {"goodstarttime",   "Hodoscope Good Start Time",                 "fGoodStartTime"},
+    {"goodscinhit",     "Hit in fid area",                           "fGoodScinHits"},
+    {"goodscinhitx",    "Hit in fid x range",                        "fGoodScinHitsX"},
+    {"scinshould",      "Total scin Hits in fid area",               "fScinShould"},
+    {"scindid",         "Total scin Hits in fid area with a track",  "fScinDid"},
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
@@ -603,41 +612,11 @@ void THcHodoscope::DeleteArrays()
   delete [] fHodoPosInvAdcLinear; fHodoPosInvAdcLinear = NULL;
   delete [] fHodoNegInvAdcLinear; fHodoNegInvAdcLinear = NULL;
   delete [] fHodoPosInvAdcAdc;    fHodoPosInvAdcAdc = NULL;
+  delete [] fGoodPlaneTime;       fGoodPlaneTime = NULL;
+  delete [] fNPlaneTime;          fNPlaneTime = NULL;
+  delete [] fSumPlaneTime;        fSumPlaneTime = NULL;
+  delete [] fNScinHits;           fNScinHits = NULL;
 
-  delete [] fGoodPlaneTime;       fGoodPlaneTime = NULL;     // Ahmed
-  delete [] fNPlaneTime;          fNPlaneTime = NULL;        // Ahmed
-  delete [] fSumPlaneTime;        fSumPlaneTime = NULL;      // Ahmed
-
-  delete [] fNScinHits;           fNScinHits = NULL;         // Ahmed
-
-  //  delete [] fSpacing; fSpacing = NULL;
-  //delete [] fCenter;  fCenter = NULL; // This 2D. What is correct way to delete?
-
-  //  delete [] fRA_c;    fRA_c    = NULL;
-  //  delete [] fRA_p;    fRA_p    = NULL;
-  //  delete [] fRA;      fRA      = NULL;
-  //  delete [] fLA_c;    fLA_c    = NULL;
-  //  delete [] fLA_p;    fLA_p    = NULL;
-  //  delete [] fLA;      fLA      = NULL;
-  //  delete [] fRT_c;    fRT_c    = NULL;
-  //  delete [] fRT;      fRT      = NULL;
-  //  delete [] fLT_c;    fLT_c    = NULL;
-  //  delete [] fLT;      fLT      = NULL;
-  
-  //  delete [] fRGain;   fRGain   = NULL;
-  //  delete [] fLGain;   fLGain   = NULL;
-  //  delete [] fRPed;    fRPed    = NULL;
-  //  delete [] fLPed;    fLPed    = NULL;
-  //  delete [] fROff;    fROff    = NULL;
-  //  delete [] fLOff;    fLOff    = NULL;
-  //  delete [] fTWalkPar; fTWalkPar = NULL;
-  //  delete [] fTrigOff; fTrigOff = NULL;
-
-  //  delete [] fHitPad;  fHitPad  = NULL;
-  //  delete [] fTime;    fTime    = NULL;
-  //  delete [] fdTime;   fdTime   = NULL;
-  //  delete [] fYt;      fYt      = NULL;
-  //  delete [] fYa;      fYa      = NULL;
 }
 
 //_____________________________________________________________________________
@@ -773,11 +752,12 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   Int_t fJMax, fMaxHit;
   Int_t fRawIndex = -1;
   Double_t fScinTrnsCoord, fScinLongCoord, fScinCenter, fSumfpTime, fSlope;
-  Double_t fP, fXcoord, fYcoord, fTMin, fNfpTime, fBestXpScin, fBestYpScin;
+  Double_t fP, fXcoord, fYcoord, fTMin, fBestXpScin, fBestYpScin;
   // -------------------------------------------------
 
   Double_t hpartmass=0.00051099; // Fix it
   fGoodScinHits = 0;
+  fScinShould = 0; fScinDid = 0;
 
   if (tracks.GetLast()+1 > 0 ) {
 
@@ -800,7 +780,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       std::vector<Double_t> dedx_temp;
       fdEdX.push_back(dedx_temp); // Create array of dedx per hit
       
-      //      Int_t fNfpTime = 0;
+      Int_t fNfpTime = 0;
       Double_t betaChiSq = -3;
       Double_t beta = 0;
       //      fTimeAtFP[itrack] = 0.;
@@ -1531,20 +1511,19 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       fGoodScinHits = 0;
   }
 
-  const char* apparatus_name = "H";
-  THcHallCSpectrometer *app = static_cast<THcHallCSpectrometer*>(GetApparatus());
 
-  if( ( strcmp(app->GetName(), apparatus_name) == 0 ) ) {
+  if ( !fChern || !fShower ) { 
+    return 0;    
+  }
 
-    if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > 0.7 ) &&
-	 ( fChern->GetCerNPE() > 2.0 ) )
-      fScinShould ++;
-
-    if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > 0.7 ) &&
-     	 ( fChern->GetCerNPE() > 2.0 ) && ( tracks.GetLast() + 1 > 0 ) ) {
-      fScinDid ++;
-      fGood_hits ++;
-    }
+  
+  if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > fNormETot ) &&
+       ( fChern->GetCerNPE() > fNCerNPE ) )
+    fScinShould = 1;
+  
+  if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > fNormETot ) &&
+       ( fChern->GetCerNPE() > fNCerNPE ) && ( tracks.GetLast() + 1 > 0 ) ) {
+      fScinDid = 1;
   }
   
   return 0;
