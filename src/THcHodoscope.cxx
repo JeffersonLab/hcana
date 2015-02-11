@@ -140,27 +140,34 @@ void THcHodoscope::Setup(const char* name, const char* description)
   THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
   THaDetector* det = app->GetDetector( shower_detector_name );
 
-  if( !dynamic_cast<THcShower*>(det) ) {
-    Error("THcHodoscope", "Cannot find shower detector %s",
-   	  shower_detector_name );
-    return;
+  if( dynamic_cast<THcShower*>(det) ) {
+    fShower = dynamic_cast<THcShower*>(det);
   }
-
-  fShower = dynamic_cast<THcShower*>(det);
+  else if( !dynamic_cast<THcShower*>(det) ) {
+    cout << "Warining: calorimeter analysis module " 
+	 << shower_detector_name << " not loaded for spectrometer "
+	 << prefix << endl;
+    
+    fShower = NULL;
+  }
+  
   // --------------- To get energy from THcShower ----------------------
 
   // --------------- To get NPEs from THcCherenkov -------------------
   const char* chern_detector_name = "cher";
   THaDetector* detc = app->GetDetector( chern_detector_name );
   
-  if( !dynamic_cast<THcCherenkov*>(detc) ) {
-    Error("THcHodoscope", "Cannot find Cherenkov detector %s",
-	  chern_detector_name );
-    return;
+  if( dynamic_cast<THcCherenkov*>(detc) ) {
+    fChern = dynamic_cast<THcCherenkov*>(detc);  
+  }
+  else if( !dynamic_cast<THcCherenkov*>(detc) ) {
+    cout << "Warining: Cherenkov detector analysis module " 
+	 << chern_detector_name << " not loaded for spectrometer "
+	 << prefix << endl;
+    
+    fChern = NULL;
   }
   
-  //  fChern = static_cast<THcCherenkov*>(detc);
-  fChern = dynamic_cast<THcCherenkov*>(detc);  
   // --------------- To get NPEs from THcCherenkov -------------------
 
   fScinShould = 0;
@@ -432,32 +439,35 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   prefix[1]='\0';
   DBRequest list[]={
-    {"start_time_center",     &fStartTimeCenter,                      kDouble},
-    {"start_time_slop",       &fStartTimeSlop,                        kDouble},
-    {"scin_tdc_to_time",      &fScinTdcToTime,                        kDouble},
-    {"scin_tdc_min",          &fScinTdcMin,                           kDouble},
-    {"scin_tdc_max",          &fScinTdcMax,                           kDouble},
-    {"tof_tolerance",         &fTofTolerance,          kDouble,         0,  1},
-    {"pathlength_central",    &fPathLengthCentral,                    kDouble},
-    {"hodo_vel_light",        &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
-    {"hodo_pos_sigma",        &fHodoPosSigma[0],       kDouble,  fMaxHodoScin},
-    {"hodo_neg_sigma",        &fHodoNegSigma[0],       kDouble,  fMaxHodoScin},
-    {"hodo_pos_minph",        &fHodoPosMinPh[0],       kDouble,  fMaxHodoScin},
-    {"hodo_neg_minph",        &fHodoNegMinPh[0],       kDouble,  fMaxHodoScin},
-    {"hodo_pos_phc_coeff",    &fHodoPosPhcCoeff[0],    kDouble,  fMaxHodoScin},
-    {"hodo_neg_phc_coeff",    &fHodoNegPhcCoeff[0],    kDouble,  fMaxHodoScin},
-    {"hodo_pos_time_offset",  &fHodoPosTimeOffset[0],  kDouble,  fMaxHodoScin},
-    {"hodo_neg_time_offset",  &fHodoNegTimeOffset[0],  kDouble,  fMaxHodoScin},
-    {"hodo_pos_ped_limit",    &fHodoPosPedLimit[0],    kInt,     fMaxHodoScin},
-    {"hodo_neg_ped_limit",    &fHodoNegPedLimit[0],    kInt,     fMaxHodoScin},
-    {"tofusinginvadc",        &fTofUsingInvAdc,        kInt,            0,  1},
-    {"xloscin",               &fxLoScin[0],            kInt,     (UInt_t) fNHodoscopes},
-    {"xhiscin",               &fxHiScin[0],            kInt,     (UInt_t) fNHodoscopes},
-    {"yloscin",               &fyLoScin[0],            kInt,     (UInt_t) fNHodoscopes},
-    {"yhiscin",               &fyHiScin[0],            kInt,     (UInt_t) fNHodoscopes},
-    {"track_eff_test_num_scin_planes",   &fTrackEffTestNScinPlanes,      kInt},
+    {"start_time_center",                &fStartTimeCenter,                      kDouble},
+    {"start_time_slop",                  &fStartTimeSlop,                        kDouble},
+    {"scin_tdc_to_time",                 &fScinTdcToTime,                        kDouble},
+    {"scin_tdc_min",                     &fScinTdcMin,                           kDouble},
+    {"scin_tdc_max",                     &fScinTdcMax,                           kDouble},
+    {"tof_tolerance",                    &fTofTolerance,          kDouble,         0,  1},
+    {"pathlength_central",               &fPathLengthCentral,                    kDouble},
+    {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
+    {"hodo_pos_sigma",                   &fHodoPosSigma[0],       kDouble,  fMaxHodoScin},
+    {"hodo_neg_sigma",                   &fHodoNegSigma[0],       kDouble,  fMaxHodoScin},
+    {"hodo_pos_minph",                   &fHodoPosMinPh[0],       kDouble,  fMaxHodoScin},
+    {"hodo_neg_minph",                   &fHodoNegMinPh[0],       kDouble,  fMaxHodoScin},
+    {"hodo_pos_phc_coeff",               &fHodoPosPhcCoeff[0],    kDouble,  fMaxHodoScin},
+    {"hodo_neg_phc_coeff",               &fHodoNegPhcCoeff[0],    kDouble,  fMaxHodoScin},
+    {"hodo_pos_time_offset",             &fHodoPosTimeOffset[0],  kDouble,  fMaxHodoScin},
+    {"hodo_neg_time_offset",             &fHodoNegTimeOffset[0],  kDouble,  fMaxHodoScin},
+    {"hodo_pos_ped_limit",               &fHodoPosPedLimit[0],    kInt,     fMaxHodoScin},
+    {"hodo_neg_ped_limit",               &fHodoNegPedLimit[0],    kInt,     fMaxHodoScin},
+    {"tofusinginvadc",                   &fTofUsingInvAdc,        kInt,            0,  1},       
+    {"xloscin",                          &fxLoScin[0],            kInt,     (UInt_t) fNHodoscopes},
+    {"xhiscin",                          &fxHiScin[0],            kInt,     (UInt_t) fNHodoscopes},
+    {"yloscin",                          &fyLoScin[0],            kInt,     (UInt_t) fNHodoscopes},
+    {"yhiscin",                          &fyHiScin[0],            kInt,     (UInt_t) fNHodoscopes},
+    {"track_eff_test_num_scin_planes",   &fTrackEffTestNScinPlanes,                 kInt},
+    {"cer_npe",                          &fNCerNPE,                              kDouble},
+    {"normalized_energy_tot",            &fNormETot,                             kDouble},
     {0}
   };
+
   fTofUsingInvAdc = 0;		// Default if not defined
   fTofTolerance = 3.0;		// Default if not defined
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
@@ -474,8 +484,10 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
        << " y2 hi = " << fyHiScin[1] 
        << endl;
 
-  cout << "Hdososcope planes hits for trigger = " 
-       << fTrackEffTestNScinPlanes << endl;
+  cout << "Hdososcope planes hits for trigger = " << fTrackEffTestNScinPlanes 
+       << " normalized energy min = " << fNormETot
+       << " number of photo electrons = " << fNCerNPE
+       << endl;
 
   if (fTofUsingInvAdc) {
     DBRequest list2[]={
@@ -1529,15 +1541,19 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   }
 
 
-  if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > 0.7 ) &&
-       ( fChern->GetCerNPE() > 2.0 ) )
-    fScinShould ++;
-  
-  if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > 0.7 ) &&
-       ( fChern->GetCerNPE() > 2.0 ) && ( tracks.GetLast() + 1 > 0 ) ) {
-    fScinDid ++;
+  if ( !fChern || !fShower ) { 
+    return -1;    
   }
 
+  
+  if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > fNormETot ) &&
+       ( fChern->GetCerNPE() > fNCerNPE ) )
+    fScinShould ++;
+  
+  if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > fNormETot ) &&
+       ( fChern->GetCerNPE() > fNCerNPE ) && ( tracks.GetLast() + 1 > 0 ) ) {
+      fScinDid ++;
+  }
   
   return 0;
   
