@@ -114,8 +114,6 @@ void THcHodoscope::Setup(const char* name, const char* description)
     strcpy(fPlaneNames[i], plane_names[i].c_str());
   }
 
-  //myShower = new THcShower("cal", "Shower" );
-
   /*  fPlaneNames = new char* [fNPlanes];
   for(Int_t i=0;i<fNPlanes;i++) {fPlaneNames[i] = new char[3];}
   // Should get the plane names from parameters.  
@@ -135,6 +133,41 @@ void THcHodoscope::Setup(const char* name, const char* description)
     fPlanes[i] = new THcScintillatorPlane(fPlaneNames[i], desc, i+1,fNPlanes,this); // Number planes starting from zero!!
     cout << "Created Scintillator Plane " << fPlaneNames[i] << ", " << desc << endl;
   }
+
+  // --------------- To get energy from THcShower ----------------------
+  const char* shower_detector_name = "cal";  
+  //  THaApparatus* app;
+  THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+  THaDetector* det = app->GetDetector( shower_detector_name );
+
+  if( !dynamic_cast<THcShower*>(det) ) {
+    Error("THcHodoscope", "Cannot find shower detector %s",
+   	  shower_detector_name );
+    return;
+  }
+
+  fShower = dynamic_cast<THcShower*>(det);
+  // --------------- To get energy from THcShower ----------------------
+
+  // --------------- To get NPEs from THcCherenkov -------------------
+  const char* chern_detector_name = "cher";
+  THaDetector* detc = app->GetDetector( chern_detector_name );
+  
+  if( !dynamic_cast<THcCherenkov*>(detc) ) {
+    Error("THcHodoscope", "Cannot find Cherenkov detector %s",
+	  chern_detector_name );
+    return;
+  }
+  
+  //  fChern = static_cast<THcCherenkov*>(detc);
+  fChern = dynamic_cast<THcCherenkov*>(detc);  
+  // --------------- To get NPEs from THcCherenkov -------------------
+
+  fScinShould = 0;
+  fScinDid = 0;
+  gHcParms->Define(Form("%shodo_did",prefix),"Total hodo tracks",fScinDid);
+  gHcParms->Define(Form("%shodo_should",prefix),"Total hodo triggers",fScinShould);
+
   delete [] desc;
 }
 
@@ -144,47 +177,11 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   cout << "In THcHodoscope::Init()" << endl;
   Setup(GetName(), GetTitle());
 
-  fGood_hits = 0;
-  gHcParms->Define("hgood_hits", "Good Hits",fGood_hits);
-
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
   // But it needs to happen before the sub detectors are initialized
   // so that they can get the pointer to the hitlist.
 
-  // --------------- To get energy from THcShower ----------------------
-  const char* shower_detector_name = "cal";  
-  //  THaApparatus* app;
-  THcHallCSpectrometer *app = static_cast<THcHallCSpectrometer*>(GetApparatus());
-  THaDetector* det = app->GetDetector( shower_detector_name );
-
-  if( !dynamic_cast<THcShower*>(det) ) {
-    Error("THcHodoscope", "Cannot find shower detector %s",
-   	  shower_detector_name );
-    return fStatus = kInitError;
-  }
-
-  fShower = static_cast<THcShower*>(det);     // fShower is a membervariable
-
-  // --------------- To get energy from THcShower ----------------------
-
-  // --------------- To get energy from THcCherenkov -------------------
-  const char* apparatus_name = "H";
-  if( strcmp(app->GetName(), apparatus_name ) == 0 ) {
-
-    const char* chern_detector_name = "cher";
-    THaDetector* detc = app->GetDetector( chern_detector_name );
-
-    if( !dynamic_cast<THcCherenkov*>(detc) ) {
-      Error("THcHodoscope", "Cannot find Cherenkov detector %s",
-	    chern_detector_name );
-      return fStatus = kInitError;
-    }
-
-    fChern = static_cast<THcCherenkov*>(detc);     // fShower is a membervariable
-
-  }
-  // --------------- To get energy from THcCherenkov -------------------
 
   InitHitList(fDetMap, "THcRawHodoHit", 100);
 
@@ -1531,21 +1528,16 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       fGoodScinHits = 0;
   }
 
-  const char* apparatus_name = "H";
-  THcHallCSpectrometer *app = static_cast<THcHallCSpectrometer*>(GetApparatus());
 
-  if( ( strcmp(app->GetName(), apparatus_name) == 0 ) ) {
-
-    if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > 0.7 ) &&
-	 ( fChern->GetCerNPE() > 2.0 ) )
-      fScinShould ++;
-
-    if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > 0.7 ) &&
-     	 ( fChern->GetCerNPE() > 2.0 ) && ( tracks.GetLast() + 1 > 0 ) ) {
-      fScinDid ++;
-      fGood_hits ++;
-    }
+  if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > 0.7 ) &&
+       ( fChern->GetCerNPE() > 2.0 ) )
+    fScinShould ++;
+  
+  if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > 0.7 ) &&
+       ( fChern->GetCerNPE() > 2.0 ) && ( tracks.GetLast() + 1 > 0 ) ) {
+    fScinDid ++;
   }
+
   
   return 0;
   
