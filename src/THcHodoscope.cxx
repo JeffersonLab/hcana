@@ -555,8 +555,8 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
     {"goodstarttime",  "Hodoscope Good Start Time",                "fGoodStartTime"},
     {"goodscinhit",    "Hit in fid area",                          "fGoodScinHits"},
     {"goodscinhitx",   "Hit in fid x range",                       "fGoodScinHitsX"},
-    {"totscinshould",  "Total scin Hits in fid area",              "fScinShould"},
-    {"totscindid",     "Total scin Hits in fid area with a track", "fScinDid"},
+    {"scinshould",  "Total scin Hits in fid area",                 "fScinShould"},
+    {"scindid",     "Total scin Hits in fid area with a track",    "fScinDid"},
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
