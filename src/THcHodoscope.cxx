@@ -382,9 +382,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   //  Int_t plen=strlen(parname);
   cout << " readdatabse hodo fnplanes = " << fNPlanes << endl;
 
-  fScinShould = 0;
-  fScinDid = 0;
-
   fNPaddle = new UInt_t [fNPlanes];
   fFPTime = new Double_t [fNPlanes];
   fPlaneCenter = new Double_t[fNPlanes];
@@ -470,6 +467,9 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   fTofUsingInvAdc = 0;		// Default if not defined
   fTofTolerance = 3.0;		// Default if not defined
+  fNCerNPE = 2.0;
+  fNormETot = 0.7;
+
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   cout << " x1 lo = " << fxLoScin[0] 
@@ -612,41 +612,11 @@ void THcHodoscope::DeleteArrays()
   delete [] fHodoPosInvAdcLinear; fHodoPosInvAdcLinear = NULL;
   delete [] fHodoNegInvAdcLinear; fHodoNegInvAdcLinear = NULL;
   delete [] fHodoPosInvAdcAdc;    fHodoPosInvAdcAdc = NULL;
+  delete [] fGoodPlaneTime;       fGoodPlaneTime = NULL;
+  delete [] fNPlaneTime;          fNPlaneTime = NULL;
+  delete [] fSumPlaneTime;        fSumPlaneTime = NULL;
+  delete [] fNScinHits;           fNScinHits = NULL;
 
-  delete [] fGoodPlaneTime;       fGoodPlaneTime = NULL;     // Ahmed
-  delete [] fNPlaneTime;          fNPlaneTime = NULL;        // Ahmed
-  delete [] fSumPlaneTime;        fSumPlaneTime = NULL;      // Ahmed
-
-  delete [] fNScinHits;           fNScinHits = NULL;         // Ahmed
-
-  //  delete [] fSpacing; fSpacing = NULL;
-  //delete [] fCenter;  fCenter = NULL; // This 2D. What is correct way to delete?
-
-  //  delete [] fRA_c;    fRA_c    = NULL;
-  //  delete [] fRA_p;    fRA_p    = NULL;
-  //  delete [] fRA;      fRA      = NULL;
-  //  delete [] fLA_c;    fLA_c    = NULL;
-  //  delete [] fLA_p;    fLA_p    = NULL;
-  //  delete [] fLA;      fLA      = NULL;
-  //  delete [] fRT_c;    fRT_c    = NULL;
-  //  delete [] fRT;      fRT      = NULL;
-  //  delete [] fLT_c;    fLT_c    = NULL;
-  //  delete [] fLT;      fLT      = NULL;
-  
-  //  delete [] fRGain;   fRGain   = NULL;
-  //  delete [] fLGain;   fLGain   = NULL;
-  //  delete [] fRPed;    fRPed    = NULL;
-  //  delete [] fLPed;    fLPed    = NULL;
-  //  delete [] fROff;    fROff    = NULL;
-  //  delete [] fLOff;    fLOff    = NULL;
-  //  delete [] fTWalkPar; fTWalkPar = NULL;
-  //  delete [] fTrigOff; fTrigOff = NULL;
-
-  //  delete [] fHitPad;  fHitPad  = NULL;
-  //  delete [] fTime;    fTime    = NULL;
-  //  delete [] fdTime;   fdTime   = NULL;
-  //  delete [] fYt;      fYt      = NULL;
-  //  delete [] fYa;      fYa      = NULL;
 }
 
 //_____________________________________________________________________________
@@ -1542,17 +1512,19 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 
 
   if ( !fChern || !fShower ) { 
-    return -1;    
+    return 0;    
   }
 
   
+  fScinShould = 0;
+  fScinDid = 0;
   if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > fNormETot ) &&
        ( fChern->GetCerNPE() > fNCerNPE ) )
-    fScinShould ++;
+    fScinShould = 1;
   
   if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > fNormETot ) &&
        ( fChern->GetCerNPE() > fNCerNPE ) && ( tracks.GetLast() + 1 > 0 ) ) {
-      fScinDid ++;
+      fScinDid = 1;
   }
   
   return 0;
