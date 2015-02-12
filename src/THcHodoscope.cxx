@@ -460,11 +460,11 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"yloscin",                          &fyLoScin[0],            kInt,     (UInt_t) fNHodoscopes},
     {"yhiscin",                          &fyHiScin[0],            kInt,     (UInt_t) fNHodoscopes},
     {"track_eff_test_num_scin_planes",   &fTrackEffTestNScinPlanes,                 kInt},
-    {"cer_npe",                          &fNCerNPE,                              kDouble},
-    {"normalized_energy_tot",            &fNormETot,                             kDouble},
+    {"cer_npe",                          &fNCerNPE,               kDouble,         0,  1},
+    {"normalized_energy_tot",            &fNormETot,              kDouble,         0,  1},
     {0}
   };
-
+  
   fTofUsingInvAdc = 0;		// Default if not defined
   fTofTolerance = 3.0;		// Default if not defined
   fNCerNPE = 2.0;
