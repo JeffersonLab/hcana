@@ -550,13 +550,13 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
 
   RVarDef vars[] = {
     // Move these into THcHallCSpectrometer using track fTracks
-    {"fpHitsTime",      "Time at focal plane from all hits",       "fFPTime"},
-    {"starttime",       "Hodoscope Start Time",                    "fStartTime"},
-    {"goodstarttime",  "Hodoscope Good Start Time",                "fGoodStartTime"},
-    {"goodscinhit",    "Hit in fid area",                          "fGoodScinHits"},
-    {"goodscinhitx",   "Hit in fid x range",                       "fGoodScinHitsX"},
-    {"scinshould",  "Total scin Hits in fid area",                 "fScinShould"},
-    {"scindid",     "Total scin Hits in fid area with a track",    "fScinDid"},
+    {"fpHitsTime",      "Time at focal plane from all hits",         "fFPTime"},
+    {"starttime",       "Hodoscope Start Time",                      "fStartTime"},
+    {"goodstarttime",   "Hodoscope Good Start Time",                 "fGoodStartTime"},
+    {"goodscinhit",     "Hit in fid area",                           "fGoodScinHits"},
+    {"goodscinhitx",    "Hit in fid x range",                        "fGoodScinHitsX"},
+    {"scinshould",      "Total scin Hits in fid area",               "fScinShould"},
+    {"scindid",         "Total scin Hits in fid area with a track",  "fScinDid"},
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
@@ -757,6 +757,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 
   Double_t hpartmass=0.00051099; // Fix it
   fGoodScinHits = 0;
+  fScinShould = 0; fScinDid = 0;
 
   if (tracks.GetLast()+1 > 0 ) {
 
@@ -1516,8 +1517,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   }
 
   
-  fScinShould = 0;
-  fScinDid = 0;
   if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > fNormETot ) &&
        ( fChern->GetCerNPE() > fNCerNPE ) )
     fScinShould = 1;
