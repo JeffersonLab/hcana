@@ -752,7 +752,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   Int_t fJMax, fMaxHit;
   Int_t fRawIndex = -1;
   Double_t fScinTrnsCoord, fScinLongCoord, fScinCenter, fSumfpTime, fSlope;
-  Double_t fP, fXcoord, fYcoord, fTMin, fNfpTime, fBestXpScin, fBestYpScin;
+  Double_t fP, fXcoord, fYcoord, fTMin, fBestXpScin, fBestYpScin;
   // -------------------------------------------------
 
   Double_t hpartmass=0.00051099; // Fix it
