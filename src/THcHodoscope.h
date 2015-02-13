@@ -145,7 +145,6 @@ protected:
   THcShower* fShower;
   THcCherenkov* fChern;
 
-  Int_t        fGood_hits;
 
   Int_t        fCheckEvent;
   Int_t        fEventType;
@@ -167,6 +166,8 @@ protected:
   Double_t*    fPlaneCenter;
   Double_t*    fPlaneSpacing;
 
+  Double_t     fNormETot;
+  Double_t     fNCerNPE;
   Int_t        fTestSum;
   Int_t        fTrackEffTestNScinPlanes;
   Int_t        fGoodScinHits;
