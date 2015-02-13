@@ -780,7 +780,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       std::vector<Double_t> dedx_temp;
       fdEdX.push_back(dedx_temp); // Create array of dedx per hit
       
-      //      Int_t fNfpTime = 0;
+      Int_t fNfpTime = 0;
       Double_t betaChiSq = -3;
       Double_t beta = 0;
       //      fTimeAtFP[itrack] = 0.;
