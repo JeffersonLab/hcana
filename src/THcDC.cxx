@@ -23,6 +23,7 @@
 #include "TClonesArray.h"
 #include "TMath.h"
 #include "TVectorD.h"
+#include "THaApparatus.h"
 
 #include <cstring>
 #include <cstdio>

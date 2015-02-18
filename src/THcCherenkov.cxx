@@ -32,6 +32,7 @@
 #include "THaCutList.h"
 #include "THcParmList.h"
 #include "THcHitList.h"
+#include "THaApparatus.h"
 #include "VarDef.h"
 #include "VarType.h"
 #include "THaTrack.h"
