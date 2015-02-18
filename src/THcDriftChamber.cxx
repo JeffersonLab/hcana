@@ -21,6 +21,7 @@
 #include "TMath.h"
 #include "TVectorD.h"
 #include "THcSpacePoint.h"
+#include "THaApparatus.h"
 
 #include "THaTrackProj.h"
 

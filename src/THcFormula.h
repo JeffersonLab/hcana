@@ -23,12 +23,12 @@ public:
   virtual ~THcFormula();
 
   virtual Double_t DefinedValue( Int_t i);
-  virtual Int_t    DefinedCut( const TString& variable);
-  virtual Int_t    DefinedGlobalVariable( const TString& variable);
+  virtual Int_t    DefinedCut( TString& variable);
+  virtual Int_t    DefinedGlobalVariable( TString& variable);
 
 protected:
 
-  enum {kCutScaler = kString+1};
+  enum {kCutScaler = kVarFormula+1};
   enum {kCutNCalled = kCutScaler+1};
   const THcParmList* fParmList; // Pointer to list of parameters
   ClassDef(THcFormula,0) // Formula with cut scalers

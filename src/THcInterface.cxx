@@ -22,7 +22,7 @@
 #include "THcParmList.h"
 #include "THcDetectorMap.h"
 #include "THaCutList.h"
-#include "THaCodaDecoder.h"
+#include "CodaDecoder.h"
 #include "THaGlobals.h"
 #include "THcGlobals.h"
 #include "THaAnalyzer.h"
@@ -32,7 +32,7 @@
 
 #include "TTree.h"
 
-
+#include <iostream>
 //#include "TGXW.h"
  //#include "TVirtualX.h"
 
@@ -81,7 +81,7 @@ THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
   gHaScalers = new TList;
   gHaPhysics = new TList;
   // Use the standard CODA file decoder by default
-  gHaDecoder = THaCodaDecoder::Class();
+  gHaDecoder = Decoder::CodaDecoder::Class();
   // File-based database by default
   //  gHaDB      = new THaFileDB();
   gHaTextvars = new THaTextvars;

@@ -6,6 +6,7 @@
 //
 //////////////////////////////////////////////////////////////////////////
 
+#include "THcDC.h"
 #include "THcDriftChamberPlane.h"
 #include "THcDCWire.h"
 #include "THcDCHit.h"
@@ -14,9 +15,10 @@
 #include "THcGlobals.h"
 #include "THcParmList.h"
 #include "THcHitList.h"
-#include "THcDC.h"
+#include "THaApparatus.h"
 #include "THcHodoscope.h"
 #include "TClass.h"
+
 
 #include <cstring>
 #include <cstdio>
