@@ -96,7 +96,9 @@ void THcShower::Setup(const char* name, const char* description)
   delete [] desc;
 
   cout << "---------------------------------------------------------------\n";
-  cout << "From THcShower::Setup: created Shower planes ";
+  cout << "From THcShower::Setup: created Shower planes for "
+       << GetApparatus()->GetName() << ": ";
+
   for(UInt_t i=0;i < fNLayers;i++) {
     cout << fLayerNames[i];
     i < fNLayers-1 ? cout << ", " : cout << ".\n";
@@ -138,7 +140,8 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
 
 
   cout << "---------------------------------------------------------------\n";
-  cout << "From THcShower::Init: initialized " << GetName() << endl;
+  cout << "From THcShower::Init: initialized " << GetApparatus()->GetName()
+       <<  GetName() << endl;
   cout << "---------------------------------------------------------------\n";
 
   return fStatus = kOK;
@@ -196,7 +199,8 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   // Debug output.
   if (fdbg_init_cal) {
     cout << "---------------------------------------------------------------\n";
-    cout << "Debug output from THcShower::ReadDatabase\n";
+    cout << "Debug output from THcShower::ReadDatabase for "
+	 << GetApparatus()->GetName() << endl;
 
     cout << "  Number of neg. columns      = " << fNegCols << endl;
     cout << "  Slop parameter              = " << fSlop << endl;
@@ -223,7 +227,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
   // Debug output.
   if (fdbg_init_cal) {
-    cout << "  HMS Calorimeter coordinate correction constants:" << endl;
+    cout << "  Coordinate correction constants:\n";
     cout << "    fAcor = " << fAcor << endl;
     cout << "    fBcor = " << fBcor << endl;
     cout << "    fCcor = " << fCcor[0] << ", " << fCcor[1] << endl;
@@ -625,7 +629,9 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   if (fdbg_clusters_cal) {
     cout << "---------------------------------------------------------------\n";
-    cout << "Debug output from THcShower::CoarseProcess\n";
+    cout << "Debug output from THcShower::CoarseProcess for "
+	 << GetApparatus()->GetName() << endl;
+
     cout << "  List of unclustered hits. Total hits:     " << fNhits << endl;
     THcShowerHitIt it = HitSet.begin();    //<set> version
     for (Int_t i=0; i!=fNhits; i++) {
@@ -897,7 +903,8 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 
   if (fdbg_tracks_cal) {
     cout << "---------------------------------------------------------------\n";
-    cout << "Debug output from THcShower::MatchCluster\n";
+    cout << "Debug output from THcShower::MatchCluster for "
+	 << GetApparatus()->GetName() << endl;
 
     cout << "  Track at DC:"
 	 << "  X = " << Track->GetX()
@@ -974,7 +981,8 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
 
   if (fdbg_tracks_cal) {
     cout << "---------------------------------------------------------------\n";
-    cout << "Debug output from THcShower::GetShEnergy\n";
+    cout << "Debug output from THcShower::GetShEnergy for "
+	 << GetApparatus()->GetName() << endl;
 
     cout << "  Track at the calorimeter: X = " << Xtr << "  Y = " << Ytr;
     if (mclust >= 0)
@@ -1011,7 +1019,8 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 
   if (fdbg_tracks_cal) {
     cout << "---------------------------------------------------------------\n";
-    cout << "Debug output from THcShower::FineProcess\n";
+    cout << "Debug output from THcShower::FineProcess for "
+	 << GetApparatus()->GetName() << endl;
 
     cout << "  Number of tracks = " << Ntracks << endl;
 

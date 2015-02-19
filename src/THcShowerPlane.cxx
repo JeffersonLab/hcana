@@ -151,7 +151,8 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   if (fParent->fdbg_init_cal) {
     cout << "---------------------------------------------------------------\n";
-    cout << "Debug output from THcShowerPlane::ReadDatabase\n";
+    cout << "Debug output from THcShowerPlane::ReadDatabase for "
+	 << GetApparatus()->GetName() << ":" << endl;
 
     cout << "  Layer #" << fLayerNum << ", number of elements " << fNelem
 	 << endl;
@@ -211,7 +212,9 @@ void THcShowerPlane::Clear( Option_t* )
   // Debug output.
   if ( ((THcShower*) GetParent())->fdbg_decoded_cal ) {
     cout << "---------------------------------------------------------------\n";
-    cout << "Debug output from THcShowerPlane::Clear\n";
+    cout << "Debug output from THcShowerPlane::Clear for "
+	 << GetApparatus()->GetName() << ":" << endl;
+
     cout << " Cleared ADC hits for plane " << GetName() << endl;
     cout << "---------------------------------------------------------------\n";
   }
@@ -225,7 +228,9 @@ Int_t THcShowerPlane::Decode( const THaEvData& evdata )
   //Debug output.
   if ( ((THcShower*) GetParent())->fdbg_decoded_cal ) {
     cout << "---------------------------------------------------------------\n";
-    cout << "Debug output from THcShowerPlane::Decode\n";
+    cout << "Debug output from THcShowerPlane::Decode for "
+	 << GetApparatus()->GetName() << ":" << endl;
+
     cout << " Called for plane " << GetName() << endl;
     cout << "---------------------------------------------------------------\n";
   }
@@ -350,7 +355,9 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   if (fParent->fdbg_decoded_cal) {
 
     cout << "---------------------------------------------------------------\n";
-    cout << "Debug output from THcShowerPlane::ProcessHits\n";
+    cout << "Debug output from THcShowerPlane::ProcessHits for "
+	 << GetApparatus()->GetName() << ":" << endl;
+
     cout << "  nrawhits =  " << nrawhits << "  nexthit =  " << nexthit << endl;
     cout << "  Sparsified hits for HMS calorimeter plane #" << fLayerNum
 	 << ", " << GetName() << ":" << endl;
@@ -434,7 +441,9 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
   if ( ((THcShower*) GetParent())->fdbg_raw_cal ) {
 
     cout << "---------------------------------------------------------------\n";
-    cout << "Debug output from THcShowerPlane::AcculatePedestals\n";
+    cout << "Debug output from THcShowerPlane::AcculatePedestals for "
+	 << GetApparatus()->GetName() << ":" << endl;
+
     cout << "Processed hit list for plane " << GetName() << ":\n";
 
     for (Int_t ih=nexthit; ih<nrawhits; ih++) {
@@ -488,8 +497,10 @@ void THcShowerPlane::CalculatePedestals( )
   if ( ((THcShower*) GetParent())->fdbg_raw_cal ) {
 
     cout << "---------------------------------------------------------------\n";
-    cout << "Debug output from THcShowerPlane::CalculatePedestals\n";
-    cout << "  ADC pedestals and thresholds for HMS calorimeter plane "
+    cout << "Debug output from THcShowerPlane::CalculatePedestals for"
+	 << GetApparatus()->GetName() << ":" << endl;
+
+    cout << "  ADC pedestals and thresholds for calorimeter plane "
 	 << GetName() << endl;
     for(Int_t i=0; i<fNelem;i++) {
       cout << "  element " << i << ": "
