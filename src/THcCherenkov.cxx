@@ -369,8 +369,6 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
 Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 {
 
-  Double_t fCerX, fCerY;
-   
   if ( tracks.GetLast() > -1 ) {
 
     THaTrack* theTrack = dynamic_cast<THaTrack*>( tracks.At(0) );
@@ -385,16 +383,16 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 	 ( ( theTrack->GetEnergy() / theTrack->GetP() ) < fCerETMax ) 
 	 ) {
       
-      fCerX = theTrack->GetX() + theTrack->GetTheta() * fCerMirrorZPos;
-      fCerY = theTrack->GetY() + theTrack->GetPhi()   * fCerMirrorZPos;
+      Double_t cerX = theTrack->GetX() + theTrack->GetTheta() * fCerMirrorZPos;
+      Double_t cerY = theTrack->GetY() + theTrack->GetPhi()   * fCerMirrorZPos;
       
       for ( Int_t ir = 0; ir < fCerNRegions; ir++ ) {
 	
 	//	*     hit must be inside the region in order to continue.   
 
-	if ( ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 0 )] - fCerX ) < 
+	if ( ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 0 )] - cerX ) < 
 	       fCerRegionValue[GetCerIndex( ir, 4 )] ) &&
-	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 1 )] - fCerY ) < 
+	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 1 )] - cerY ) < 
 	       fCerRegionValue[GetCerIndex( ir, 5 )] ) &&
 	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 2 )] - theTrack->GetTheta() ) < 
 	       fCerRegionValue[GetCerIndex( ir, 6 )] ) &&

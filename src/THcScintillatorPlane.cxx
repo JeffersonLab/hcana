@@ -370,7 +370,7 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
     !       to accomodate difference in TOF for other particles
     ! Default value in case user hasn't defined something reasonable */
   Int_t i,j,index;
-  Double_t mintdc, maxtdc,tdctotime,toftolerance,tmin;
+  Double_t mintdc, maxtdc,tdctotime,toftolerance;
   Double_t pos_ph[53],neg_ph[53],postime[53],negtime[53],scin_corrected_time[53]; // the 53 should go in a param file (was hmax_scin_hits originally)
   // Bool_t keep_pos[53],keep_neg[53]; // are these all really needed?
   Bool_t two_good_times[53];
@@ -443,7 +443,7 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
 	  time_neg[i]=negtime[i]-(fZpos+(j%2)*fDzpos)/(29.979*betanominal);
 	  nfound++;
 	  for (int k=0;k<200;k++) {
-	    tmin=0.5*(k+1);
+	    Double_t tmin=0.5*(k+1);
 	    if ((time_pos[i]> tmin) && (time_pos[i] < tmin+toftolerance)) {
 	      timehist[k]++;
 	    }
@@ -471,7 +471,7 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
 	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()>=mintdc) &&
 	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()<=maxtdc)) {
       if(jmax>0) {
-	tmin = 0.5*jmax;
+	Double_t tmin = 0.5*jmax;
 	if ((time_pos[i]>tmin) && (time_pos[i]<tmin+toftolerance) &&
 	    (time_neg[i]>tmin) && (time_neg[i]<tmin+toftolerance))
 	  two_good_times[i]=kTRUE;

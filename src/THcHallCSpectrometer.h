@@ -78,7 +78,6 @@ protected:
   Int_t        fNPlanes;
   Int_t        fNtracks;
 
-  Double_t     fChi2Min;
   Double_t     fSelNDegreesMin;
   Double_t     fSeldEdX1Min;
   Double_t     fSeldEdX1Max;

@@ -420,10 +420,10 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 Int_t THcHallCSpectrometer::TrackCalc()
 {
 
-  Double_t* fX2D           = new Double_t [fNtracks];
-  Double_t* fY2D           = new Double_t [fNtracks];
-  Int_t* f2XHits        = new Int_t [fHodo->GetNPaddles(2)];
-  Int_t* f2YHits        = new Int_t [fHodo->GetNPaddles(3)];
+  Double_t* x2D           = new Double_t [fNtracks];
+  Double_t* y2D           = new Double_t [fNtracks];
+  Int_t* x2Hits        = new Int_t [fHodo->GetNPaddles(2)];
+  Int_t* y2Hits        = new Int_t [fHodo->GetNPaddles(3)];
 
 
   if ( ( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 ) ) {
@@ -453,163 +453,169 @@ Int_t THcHallCSpectrometer::TrackCalc()
       fGoldenTrack = NULL;
   }
 
+  Double_t chi2Min;
   if ( fSelUsingScin == 1 ){
     if( fNtracks > 0 ) {
       
-      Double_t fY2Dmin, fX2Dmin, fZap, ft, fChi2PerDeg; //, fShowerEnergy;
+      Double_t ft; //, fShowerEnergy;
       Int_t itrack; //, fGoodTimeIndex = -1;
-      Int_t  fHitCnt4, fHitCnt3, fRawIndex, fGoodRawPad;
+      Int_t fRawIndex, fGoodRawPad;
 
-      fChi2Min = 10000000000.0;   fGoodTrack = -1;   fY2Dmin = 100.;
-      fX2Dmin = 100.;             fZap = 0.;
+      fGoodTrack = -1;
+      chi2Min = 10000000000.0;
+      Double_t y2Dmin = 100.;
+      Double_t x2Dmin = 100.;
 
       fRawIndex = -1;
       for ( itrack = 0; itrack < fNtracks; itrack++ ){
+	Double_t chi2PerDeg;
 	
-	THaTrack* goodTrack = static_cast<THaTrack*>( fTracks->At(itrack) );      
-        if (!goodTrack) return -1;	
+	THaTrack* aTrack = static_cast<THaTrack*>( fTracks->At(itrack) );      
+        if (!aTrack) return -1;	
 
-	if ( goodTrack->GetNDoF() > fSelNDegreesMin ){
-	  fChi2PerDeg =  goodTrack->GetChi2() / goodTrack->GetNDoF();
-	  
-	  if( ( goodTrack->GetDedx()    > fSeldEdX1Min )   && 
-	      ( goodTrack->GetDedx()    < fSeldEdX1Max )   && 
-	      ( goodTrack->GetBeta()    > fSelBetaMin  )   &&
-	      ( goodTrack->GetBeta()    < fSelBetaMax  )   &&
-	      ( goodTrack->GetEnergy()  > fSelEtMin    )   && 
-	      ( goodTrack->GetEnergy()  < fSelEtMax    ) )  	    	    
+	if ( aTrack->GetNDoF() > fSelNDegreesMin ){
+	  chi2PerDeg =  aTrack->GetChi2() / aTrack->GetNDoF();
+
+	  if( ( aTrack->GetDedx()    > fSeldEdX1Min )   && 
+	      ( aTrack->GetDedx()    < fSeldEdX1Max )   && 
+	      ( aTrack->GetBeta()    > fSelBetaMin  )   &&
+	      ( aTrack->GetBeta()    < fSelBetaMax  )   &&
+	      ( aTrack->GetEnergy()  > fSelEtMin    )   && 
+	      ( aTrack->GetEnergy()  < fSelEtMax    ) )  	    	    
 	    {
-	      	      
 	      for (UInt_t j = 0; j < fHodo->GetNPaddles(2); j++ ){ 
-		f2XHits[j] = -1;
+		x2Hits[j] = -1;
 	      }
 	      for (UInt_t j = 0; j < fHodo->GetNPaddles(3); j++ ){ 
-		f2YHits[j] = -1; 
+		y2Hits[j] = -1; 
 	      }
 	      
 	      for (Int_t ip = 0; ip < fNPlanes; ip++ ){
 		for (UInt_t ihit = 0; ihit < fHodo->GetNScinHits(ip); ihit++ ){
-		  fRawIndex ++;		  
+		  fRawIndex ++;	
+		  cout << itrack << " " << fRawIndex << endl;
 
 		  //		  fGoodRawPad = fHodo->GetGoodRawPad(fRawIndex)-1;
 		  fGoodRawPad = fHodo->GetGoodRawPad(fRawIndex);
+		  cout << itrack << " " << fRawIndex << " " << fGoodRawPad << endl;
 
 		  if ( ip == 2 ){  
-		    f2XHits[fGoodRawPad] = 0;   		    
+		    x2Hits[fGoodRawPad] = 0;   		    
 		  }
 
 		  if ( ip == 3 ){  
-		    f2YHits[fGoodRawPad] = 0;   
+		    y2Hits[fGoodRawPad] = 0;   
 		    
 		  } 
 
 		} // loop over hits of a plane
 	      } // loop over planes 
 
-	      Double_t hitpos4 = goodTrack->GetY() + goodTrack->GetPhi() * ( fScin2YZpos + 0.5 * fScin2YdZpos );
+	      Double_t hitpos4 = aTrack->GetY() + aTrack->GetPhi() * ( fScin2YZpos + 0.5 * fScin2YdZpos );
 	      Int_t icounter4  = TMath::Nint( ( fHodo->GetPlaneCenter(3) - hitpos4 ) / fHodo->GetPlaneSpacing(3) ) + 1;
-	      fHitCnt4  = TMath::Max( TMath::Min(icounter4, (Int_t) fHodo->GetNPaddles(3) ) , 1); // scin_2y_nr = 10
-	      //	      fHitDist4 = fHitPos4 - ( fHodo->GetPlaneCenter(3) - fHodo->GetPlaneSpacing(3) * ( fHitCnt4 - 1 ) );
+	      Int_t hitCnt4  = TMath::Max( TMath::Min(icounter4, (Int_t) fHodo->GetNPaddles(3) ) , 1); // scin_2y_nr = 10
+	      //	      fHitDist4 = fHitPos4 - ( fHodo->GetPlaneCenter(3) - fHodo->GetPlaneSpacing(3) * ( hitCnt4 - 1 ) );
 	      	      
 	      //----------------------------------------------------------------
 
 	      if ( fNtracks > 1 ){     // Plane 4		
-		fZap = 0.;
+		Double_t zap = 0.;
 		ft = 0;
 		
 		for (UInt_t i = 0; i < fHodo->GetNPaddles(3); i++ ){
-		  if ( f2YHits[i] == 0 ) {		    
-		    fY2D[itrack] = TMath::Abs((Int_t)fHitCnt4-(Int_t)i-1);
+		  if ( y2Hits[i] == 0 ) {		    
+		    y2D[itrack] = TMath::Abs((Int_t)hitCnt4-(Int_t)i-1);
 		    ft ++;
 		    		    
-		    if   ( ft == 1 )                              fZap = fY2D[itrack];
-		    if ( ( ft == 2 ) && ( fY2D[itrack] < fZap ) ) fZap = fY2D[itrack]; 		    
-		    if ( ( ft == 3 ) && ( fY2D[itrack] < fZap ) ) fZap = fY2D[itrack]; 
-		    if ( ( ft == 4 ) && ( fY2D[itrack] < fZap ) ) fZap = fY2D[itrack]; 
-		    if ( ( ft == 5 ) && ( fY2D[itrack] < fZap ) ) fZap = fY2D[itrack]; 
-		    if ( ( ft == 6 ) && ( fY2D[itrack] < fZap ) ) fZap = fY2D[itrack]; 
+		    if   ( ft == 1 )                              zap = y2D[itrack];
+		    if ( ( ft == 2 ) && ( y2D[itrack] < zap ) ) zap = y2D[itrack]; 		    
+		    if ( ( ft == 3 ) && ( y2D[itrack] < zap ) ) zap = y2D[itrack]; 
+		    if ( ( ft == 4 ) && ( y2D[itrack] < zap ) ) zap = y2D[itrack]; 
+		    if ( ( ft == 5 ) && ( y2D[itrack] < zap ) ) zap = y2D[itrack]; 
+		    if ( ( ft == 6 ) && ( y2D[itrack] < zap ) ) zap = y2D[itrack]; 
 
 		  } // condition for fHodScinHit[4][i]
 		} // loop over 10
-		fY2D[itrack] = fZap; 
+		y2D[itrack] = zap; 
 	      } // condition for track. Plane 4
 
-	      if ( fNtracks == 1 ) fY2D[itrack] = 0.;
+	      if ( fNtracks == 1 ) y2D[itrack] = 0.;
 
 	      
-	      Double_t hitpos3  = goodTrack->GetX() + goodTrack->GetTheta() * ( fScin2XZpos + 0.5 * fScin2XdZpos );
+	      Double_t hitpos3  = aTrack->GetX() + aTrack->GetTheta() * ( fScin2XZpos + 0.5 * fScin2XdZpos );
 	      Int_t icounter3  = TMath::Nint( ( hitpos3 - fHodo->GetPlaneCenter(2) ) / fHodo->GetPlaneSpacing(2) ) + 1;
-	      fHitCnt3  = TMath::Max( TMath::Min(icounter3, (Int_t) fHodo->GetNPaddles(2) ) , 1); // scin_2x_nr = 16
-	      //	      fHitDist3 = fHitPos3 - ( fHodo->GetPlaneSpacing(2) * ( fHitCnt3 - 1 ) + fHodo->GetPlaneCenter(2) );
+	      Int_t hitCnt3  = TMath::Max( TMath::Min(icounter3, (Int_t) fHodo->GetNPaddles(2) ) , 1); // scin_2x_nr = 16
+	      //	      fHitDist3 = fHitPos3 - ( fHodo->GetPlaneSpacing(2) * ( hitCnt3 - 1 ) + fHodo->GetPlaneCenter(2) );
 
 	      //----------------------------------------------------------------
 
 	      if ( fNtracks > 1 ){     // Plane 3 (2X)
-		fZap = 0.;
+		Double_t zap = 0.;
 		ft = 0;
 		for (UInt_t i = 0; i <  fHodo->GetNPaddles(2); i++ ){
-		  if ( f2XHits[i] == 0 ) {
-		    fX2D[itrack] = TMath::Abs((Int_t)fHitCnt3-(Int_t)i-1);
+		  if ( x2Hits[i] == 0 ) {
+		    x2D[itrack] = TMath::Abs((Int_t)hitCnt3-(Int_t)i-1);
 		    
 		    ft ++;
-		    if   ( ft == 1 )                              fZap = fX2D[itrack];
-		    if ( ( ft == 2 ) && ( fX2D[itrack] < fZap ) ) fZap = fX2D[itrack]; 		    
-		    if ( ( ft == 3 ) && ( fX2D[itrack] < fZap ) ) fZap = fX2D[itrack]; 
-		    if ( ( ft == 4 ) && ( fX2D[itrack] < fZap ) ) fZap = fX2D[itrack]; 
-		    if ( ( ft == 5 ) && ( fX2D[itrack] < fZap ) ) fZap = fX2D[itrack]; 
-		    if ( ( ft == 6 ) && ( fX2D[itrack] < fZap ) ) fZap = fX2D[itrack]; 
+		    if   ( ft == 1 )                              zap = x2D[itrack];
+		    if ( ( ft == 2 ) && ( x2D[itrack] < zap ) ) zap = x2D[itrack]; 		    
+		    if ( ( ft == 3 ) && ( x2D[itrack] < zap ) ) zap = x2D[itrack]; 
+		    if ( ( ft == 4 ) && ( x2D[itrack] < zap ) ) zap = x2D[itrack]; 
+		    if ( ( ft == 5 ) && ( x2D[itrack] < zap ) ) zap = x2D[itrack]; 
+		    if ( ( ft == 6 ) && ( x2D[itrack] < zap ) ) zap = x2D[itrack]; 
 		    
 		  } // condition for fHodScinHit[4][i]
 		} // loop over 16
-		fX2D[itrack] = fZap; 
+		x2D[itrack] = zap; 
 	      } // condition for track. Plane 3
 
 	      //----------------------------------------------------------------
 
 	      if ( fNtracks == 1 ) 
-		fX2D[itrack] = 0.;
+		x2D[itrack] = 0.;
 	      	      
-	      if ( fY2D[itrack] <= fY2Dmin ) {
-		if ( fY2D[itrack] < fY2Dmin ) {
-		  fX2Dmin = 100.;
-		  fChi2Min = 10000000000.;
-		} // fY2D min
+	      if ( y2D[itrack] <= y2Dmin ) {
+		if ( y2D[itrack] < y2Dmin ) {
+		  x2Dmin = 100.;
+		  chi2Min = 10000000000.;
+		} // y2D min
 		
-		if ( fX2D[itrack] <= fX2Dmin ){
-		  if ( fX2D[itrack] < fX2Dmin ){
-		    fChi2Min = 10000000000.0;
-		  } // condition fX2D
-		  if ( fChi2PerDeg < fChi2Min ){
+		if ( x2D[itrack] <= x2Dmin ){
+		  if ( x2D[itrack] < x2Dmin ){
+		    chi2Min = 10000000000.0;
+		  } // condition x2D
+		  if ( chi2PerDeg < chi2Min ){
 
 		    fGoodTrack = itrack; // fGoodTrack = itrack
-		    fY2Dmin = fY2D[itrack];
-		    fX2Dmin = fX2D[itrack];
-		    fChi2Min = fChi2PerDeg;
+		    y2Dmin = y2D[itrack];
+		    x2Dmin = x2D[itrack];
+		    chi2Min = chi2PerDeg;
 
 		    fGoldenTrack = static_cast<THaTrack*>( fTracks->At( fGoodTrack ) );
 		    fTrkIfo      = *fGoldenTrack;
 		    fTrk         = fGoldenTrack;
 		  }		  
-		} // condition fX2D
-	      } // condition fY2D
+		} // condition x2D
+	      } // condition y2D
 	    } // conditions for dedx, beta and trac energy		  
 	} // confition for fNFreeFP greater than fSelNDegreesMin
       } // loop over tracks      
 
       if ( fGoodTrack == -1 ){
 	
-	fChi2Min = 10000000000.0;
+	chi2Min = 10000000000.0;
 	for (Int_t iitrack = 0; iitrack < fNtracks; iitrack++ ){
+	  Double_t chi2PerDeg;
 	  THaTrack* aTrack = dynamic_cast<THaTrack*>( fTracks->At(iitrack) );
 	  if (!aTrack) return -1;
 	  
 	  if ( aTrack->GetNDoF() > fSelNDegreesMin ){
-	    fChi2PerDeg =  aTrack->GetChi2() / aTrack->GetNDoF();
+	    chi2PerDeg =  aTrack->GetChi2() / aTrack->GetNDoF();
 	    
-	    if ( fChi2PerDeg < fChi2Min ){
+	    if ( chi2PerDeg < chi2Min ){
 	      
 	      fGoodTrack = iitrack;
-	      fChi2Min = fChi2PerDeg;
+	      chi2Min = chi2PerDeg;
 	      
 	      fGoldenTrack = static_cast<THaTrack*>( fTracks->At(fGoodTrack) );
 	      fTrkIfo      = *fGoldenTrack;
@@ -647,7 +653,7 @@ Int_t THcHallCSpectrometer::TrackCalc()
     Double_t fP = 0., fBetaP = 0.; // , fPartMass = 0.00051099; // 5.10989979E-04 Fix it
 
     if ( fNtracks > 0 ) {
-      fChi2Min   = 10000000000.0;
+      chi2Min   = 10000000000.0;
       fGoodTrack = 0;    
       fKeep      = new Bool_t [fNtracks];  
       fReject    = new Int_t  [fNtracks];  
@@ -847,14 +853,14 @@ Int_t THcHallCSpectrometer::TrackCalc()
       }      
       
       // !     Pick track with best chisq if more than one track passed prune tests
-      Double_t fChi2PerDeg = 0.;
+      Double_t chi2PerDeg = 0.;
       for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
 
-	fChi2PerDeg =  testTracks[ptrack]->GetChi2() / testTracks[ptrack]->GetNDoF();
+	chi2PerDeg =  testTracks[ptrack]->GetChi2() / testTracks[ptrack]->GetNDoF();
 
-	if ( ( fChi2PerDeg < fChi2Min ) && ( fKeep[ptrack] ) ){
+	if ( ( chi2PerDeg < chi2Min ) && ( fKeep[ptrack] ) ){
 	  fGoodTrack = ptrack;
-	  fChi2Min = fChi2PerDeg;
+	  chi2Min = chi2PerDeg;
 	}	
       }      
 

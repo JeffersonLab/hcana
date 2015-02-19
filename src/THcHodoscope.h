@@ -154,13 +154,6 @@ protected:
   Int_t        fEventType;
 
   Int_t        fGoodTrack;
-  Int_t        fSelNDegreesMin;
-  Double_t     fSeldEdX1Min;
-  Double_t     fSeldEdX1Max;
-  Double_t     fSelBetaMin;
-  Double_t     fSelBetaMax;
-  Double_t     fSelEtMin;
-  Double_t     fSelEtMax;
   Double_t     fScin2XZpos;
   Double_t     fScin2XdZpos;
   Double_t     fScin2YZpos;
@@ -201,7 +194,6 @@ protected:
   Double_t* fSumPlaneTime; // [fNPlanes]
 
   Int_t* fNScinHits;  // [fNPlanes]
-  Int_t fTimeHist[200];
   Int_t* fNPlaneTime; // [fNPlanes]
 
   Bool_t* fGoodPlaneTime;  // [fNPlanes]
