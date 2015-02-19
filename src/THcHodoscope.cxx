@@ -927,7 +927,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  }
 	}
 	
-	if ( fJMax >= 0 ){ // Line 248. Here I followed the code of THcSCintilaltorPlane::PulseHeightCorrection
+	if ( fJMax > 0 ){ // Line 248. Here I followed the code of THcSCintilaltorPlane::PulseHeightCorrection
 	  fTMin = 0.5 * fJMax;
 	  for(Int_t iphit = 0; iphit < fNScinHits[ip]; iphit++) { // Loop over sinc. hits. in plane
 	    if ( ( fTOFPInfo[iphit].time_pos > fTMin ) && ( fTOFPInfo[iphit].time_pos < ( fTMin + fTofTolerance ) ) ) {

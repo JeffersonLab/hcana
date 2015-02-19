@@ -444,7 +444,7 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
 	  time_neg[i]=negtime[i]-(fZpos+(j%2)*fDzpos)/(29.979*hbeta_pcent);
 	  nfound++;
 	  for (int k=0;k<200;k++) {
-	    tmin=0.5*k;
+	    tmin=0.5*(k+1);
 	    if ((time_pos[i]> tmin) && (time_pos[i] < tmin+toftolerance)) {
 	      timehist[k]++;
 	    }
@@ -471,7 +471,7 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
 	(((THcSignalHit*) fPosTDCHits->At(i))->GetData()<=maxtdc) &&
 	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()>=mintdc) &&
 	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()<=maxtdc)) {
-      if(jmax>=0) {
+      if(jmax>0) {
 	tmin = 0.5*jmax;
 	if ((time_pos[i]>tmin) && (time_pos[i]<tmin+toftolerance) &&
 	    (time_neg[i]>tmin) && (time_neg[i]<tmin+toftolerance))
