@@ -16,8 +16,8 @@ hcal_fv_delta = 5.
 # Constants for the coordiante correction of the calorimeter energy depositions
 hcal_a_cor = 200.
 hcal_b_cor = 8000.
-hcal_c_cor = 64.36
-hcal_d_cor = 1.66
+hcal_c_cor = 64.36, 64.36	# for positive and negative sides
+hcal_d_cor =  1.66,  1.66
 
 hcal_layer_names = "1pr 2ta 3ta 4ta"
 

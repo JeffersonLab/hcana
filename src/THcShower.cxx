@@ -214,8 +214,8 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     DBRequest list[]={
       {"cal_a_cor", &fAcor, kDouble},
       {"cal_b_cor", &fBcor, kDouble},
-      {"cal_c_cor", &fCcor, kDouble},
-      {"cal_d_cor", &fDcor, kDouble},
+      {"cal_c_cor", fCcor, kDouble, 2},
+      {"cal_d_cor", fDcor, kDouble, 2},
       {0}
     };
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
@@ -226,8 +226,8 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     cout << "  HMS Calorimeter coordinate correction constants:" << endl;
     cout << "    fAcor = " << fAcor << endl;
     cout << "    fBcor = " << fBcor << endl;
-    cout << "    fCcor = " << fCcor << endl;
-    cout << "    fDcor = " << fDcor << endl;
+    cout << "    fCcor = " << fCcor[0] << ", " << fCcor[1] << endl;
+    cout << "    fDcor = " << fDcor[0] << ", " << fDcor[1] << endl;
   }
 
   BlockThick = new Double_t [fNLayers];
@@ -950,8 +950,8 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
     for (UInt_t ip=0; ip<fNLayers; ip++) {
 
       // Coordinate correction factors for positive and negative sides,
-      // different for single PMT counters in the 1-st two layes and for
-      // 2 PMT counters in the rear two layers.
+      // different for double PMT counters in the 1-st two layes and for
+      // single PMT counters in the rear two layers.
       Float_t corpos = 1.;   
       Float_t corneg = 1.;
       if (ip < fNegCols) {
