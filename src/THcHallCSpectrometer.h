@@ -50,6 +50,11 @@ public:
   Bool_t SetTrSorting( Bool_t set = kFALSE );
   Bool_t GetTrSorting() const;
 
+  // Mass of nominal detected particle type
+  Double_t GetParticleMass() const {return fPartMass; }
+  Double_t GetBetaAtPcentral() const { return
+      fPcentral/TMath::Sqrt(fPcentral*fPcentral+fPartMass*fPartMass);}
+
 protected:
   void InitializeReconstruction();
 

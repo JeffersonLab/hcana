@@ -374,7 +374,7 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
   Double_t pos_ph[53],neg_ph[53],postime[53],negtime[53],scin_corrected_time[53]; // the 53 should go in a param file (was hmax_scin_hits originally)
   // Bool_t keep_pos[53],keep_neg[53]; // are these all really needed?
   Bool_t two_good_times[53];
-  Double_t dist_from_center,scint_center,hit_position,time_pos[100],time_neg[100],hbeta_pcent;
+  Double_t dist_from_center,scint_center,hit_position,time_pos[100],time_neg[100];
   Int_t timehist[200],jmax,maxhit,nfound=0; // This seems as a pretty old-fashioned way of doing things. Is there a better way?
 
 
@@ -397,9 +397,8 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
   maxtdc=((THcHodoscope *)GetParent())->GetTdcMax();
   tdctotime=((THcHodoscope *)GetParent())->GetTdcToTime();
   toftolerance=((THcHodoscope *)GetParent())->GetTofTolerance();
-  //  hbeta_pcent=(TH((THcHodoscope *)GetParent())->GetParent()
-  // Horrible hack until I find out where to get the central beta from momentum!! GN
-  hbeta_pcent=1.0;
+  Double_t betanominal=((THcHodoscope *)GetParent())->GetBetaNominal();
+
   fpTime=-1e5;
   for (i=0;i<fNScinHits;i++) {
     if ((((THcSignalHit*) fPosTDCHits->At(i))->GetData()>=mintdc) &&
@@ -440,8 +439,8 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
 	  postime[i]=postime[i]-(fPosLeft-hit_position)/((THcHodoscope *)GetParent())->GetHodoVelLight(index);
 	  negtime[i]=negtime[i]-(hit_position-fPosRight)/((THcHodoscope *)GetParent())->GetHodoVelLight(index);
 
-	  time_pos[i]=postime[i]-(fZpos+(j%2)*fDzpos)/(29.979*hbeta_pcent);
-	  time_neg[i]=negtime[i]-(fZpos+(j%2)*fDzpos)/(29.979*hbeta_pcent);
+	  time_pos[i]=postime[i]-(fZpos+(j%2)*fDzpos)/(29.979*betanominal);
+	  time_neg[i]=negtime[i]-(fZpos+(j%2)*fDzpos)/(29.979*betanominal);
 	  nfound++;
 	  for (int k=0;k<200;k++) {
 	    tmin=0.5*(k+1);
@@ -521,7 +520,7 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
     j=((THcSignalHit*)fNegTDCHits->At(i))->GetPaddleNumber()-1;  
     index=((THcHodoscope *)GetParent())->GetScinIndex(fPlaneNum-1,j);
     if (two_good_times[i]) { // both tubes fired
-      fpTimes[fNScinGoodHits]=scin_corrected_time[i]-(fZpos+(j%2)*fDzpos)/(29.979*hbeta_pcent);
+      fpTimes[fNScinGoodHits]=scin_corrected_time[i]-(fZpos+(j%2)*fDzpos)/(29.979*betanominal);
       fScinTime[fNScinGoodHits]=scin_corrected_time[i];
       fScinSigma[fNScinGoodHits]=TMath::Sqrt(((THcHodoscope *)GetParent())->GetHodoPosSigma(index)*((THcHodoscope *)GetParent())->GetHodoPosSigma(index)+((THcHodoscope *)GetParent())->GetHodoNegSigma(index)*((THcHodoscope *)GetParent())->GetHodoNegSigma(index)); // not ideal by any stretch!!!
       fScinZpos[fNScinGoodHits]=fZpos+(j%2)*fDzpos; // see comment above

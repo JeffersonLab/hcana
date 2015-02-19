@@ -58,6 +58,7 @@ public:
   Double_t GetTdcMax() const {return fScinTdcMax;}
   Double_t GetTofTolerance() const {return fTofTolerance;}
   Double_t GetTdcToTime() const {return fScinTdcToTime;}
+  Double_t GetBetaNominal() const {return fBetaNominal;}
   Double_t GetHodoPosPhcCoeff(Int_t iii) const {return fHodoPosPhcCoeff[iii];}
   Double_t GetHodoNegPhcCoeff(Int_t iii) const {return fHodoNegPhcCoeff[iii];}
   Double_t GetHodoPosMinPh(Int_t iii) const {return fHodoPosMinPh[iii];}
@@ -134,6 +135,9 @@ protected:
   Double_t* fHodoNegInvAdcLinear;
   Double_t* fHodoPosInvAdcAdc;
   Double_t* fHodoNegInvAdcAdc;
+
+  Double_t fPartMass;		// Nominal particle mass
+  Double_t fBetaNominal;	// Beta for central ray of nominal particle type
 
   THcScintillatorPlane** fPlanes; // List of plane objects
 

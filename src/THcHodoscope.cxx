@@ -175,6 +175,10 @@ void THcHodoscope::Setup(const char* name, const char* description)
   gHcParms->Define(Form("%shodo_did",prefix),"Total hodo tracks",fScinDid);
   gHcParms->Define(Form("%shodo_should",prefix),"Total hodo triggers",fScinShould);
 
+  // Save the nominal particle mass
+  fPartMass = app->GetParticleMass();
+  fBetaNominal = app->GetBetaAtPcentral();
+
   delete [] desc;
 }
 
@@ -752,10 +756,9 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   Int_t fJMax, fMaxHit;
   Int_t fRawIndex = -1;
   Double_t fScinTrnsCoord, fScinLongCoord, fScinCenter, fSumfpTime, fSlope;
-  Double_t fP, fXcoord, fYcoord, fTMin, fBestXpScin, fBestYpScin;
+  Double_t fXcoord, fYcoord, fTMin, fBestXpScin, fBestYpScin;
   // -------------------------------------------------
 
-  Double_t hpartmass=0.00051099; // Fix it
   fGoodScinHits = 0;
   fScinShould = 0; fScinDid = 0;
 
@@ -786,8 +789,8 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       //      fTimeAtFP[itrack] = 0.;
       fSumfpTime = 0.; // Line 138
       fNScinHit.push_back(0);
-      fP = theTrack->GetP(); // Line 142 
-      Double_t betaP = fP/( TMath::Sqrt( fP * fP + hpartmass * hpartmass) );
+      Double_t p = theTrack->GetP(); // Line 142 
+      Double_t betaP = p/( TMath::Sqrt( p * p + fPartMass * fPartMass) );
       
       //! Calculate all corrected hit times and histogram
       //! This uses a copy of code below. Results are save in time_pos,neg
