@@ -57,33 +57,23 @@ THcFormula::THcFormula(const char* name, const char* expression,
 		       const THaCutList* clst ) :
   THaFormula()
 {
+  Bool_t do_register=0;
 
-  // We have to duplicate the TFormula constructor code here because of
-  // the calls DefinedVariable.  Our version will only get called if
-  // to Compile(). Compile() only works if fParmList is set. 
   fParmList = plst;
   fVarList = vlst;
   fCutList = clst;
 
-  SetName(name);
+  if( Init( name, expression ) != 0 ) {
+    RegisterFormula(false);
+    return;
+  }
 
-  //eliminate blanks in expression
-  Int_t nch = strlen(expression);
-  char *expr = new char[nch+1];
-  Int_t j = 0;
-  for (Int_t i=0;i<nch;i++) {
-     if (expression[i] == ' ') continue;
-     if (i > 0 && (expression[i] == '*') && (expression[i-1] == '*')) {
-        expr[j-1] = '^';
-        continue;
-     }
-     expr[j] = expression[i]; j++;
-   }
-  expr[j] = 0;
-  if (j) SetTitle(expr);
-  delete [] expr;
+  SetBit(kNotGlobal,!do_register);
 
   Compile();   // This calls our own Compile()
+
+  if( do_register )
+    RegisterFormula();
 }
 
 //_____________________________________________________________________________
@@ -120,9 +110,12 @@ Int_t THcFormula::DefinedCut( TString& name )
   } else {
     realname = name(0,period);
     TString attribute(name(period+1,name.Length()-period-1));
+    cout << name << " -> " << realname << " " << attribute <<endl;
     if(attribute.CompareTo("scaler")==0 || attribute.CompareTo("npassed")==0) {
+      cout << "kCutScaler" << endl;
       thistype = (EVariableType) kCutScaler;
     } else if (attribute.CompareTo("ncalled")==0) {
+      cout << "kCutNCalled" << endl;
       thistype = (EVariableType) kCutNCalled;
     } else {
       thistype = kCut;
@@ -131,7 +124,7 @@ Int_t THcFormula::DefinedCut( TString& name )
 
   // Cut names are obviously only valid if there is a list of existing cuts
   if( fCutList ) {
-    THaCut* pcut = fCutList->FindCut( name );
+    THaCut* pcut = fCutList->FindCut( realname );
     if( pcut ) {
       // See if this cut already used earlier in the expression
       for( vector<FVarDef_t>::size_type i=0; i<fVarDef.size(); ++i ) {
@@ -139,7 +132,7 @@ Int_t THcFormula::DefinedCut( TString& name )
 	if( def.type == thistype && pcut == def.obj )
 	  return i;
       }
-      fVarDef.push_back( FVarDef_t(kCut,pcut,0) );
+      fVarDef.push_back( FVarDef_t(thistype,pcut,0) );
       fNpar = 0;
       return fVarDef.size()-1;
     }
