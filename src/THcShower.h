@@ -215,7 +215,8 @@ public:
       return 0.;
     }
     Int_t sign = 1 - 2*side;
-    return (fCcor + sign*y)/(fCcor + sign*y/fDcor);
+    //    return (fCcor + sign*y)/(fCcor + sign*y/fDcor);
+    return (fCcor[side] + sign*y)/(fCcor[side] + sign*y/fDcor[side]);
   }
 
   // Get total energy deposited in the cluster matched to the given
@@ -282,8 +283,8 @@ protected:
 
   Double_t fAcor;               // Coordinate correction constants
   Double_t fBcor;
-  Double_t fCcor;
-  Double_t fDcor;
+  Double_t fCcor[2];            // for positive ad negative side PMTs
+  Double_t fDcor[2];
 
   THcShowerPlane** fPlanes;     // [fNLayers] Shower Plane objects
 
