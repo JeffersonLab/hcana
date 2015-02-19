@@ -184,11 +184,11 @@ TH1F htimedif4 ' Time dif of plane 2 and 3' Hhodtdif4 80 -40. 40.
 TH1F htimedif5 ' Time dif of plane 2 and 4' Hhodtdif5 80 -40. 40.
 TH1F htimedif6 ' Time dif of plane 3 and 4' Hhodtdif6 80 -40. 40.
 
-TH1F hs1xfptime 'HODO s1x fptime' H.hod.1x.fptime 80 0 80 H.hod.hgoodstarttime
-TH1F hs1yfptime 'HODO s1y fptime' H.hod.1y.fptime 80 0 80 H.hod.hgoodstarttime
-TH1F hs2xfptime 'HODO s2x fptime' H.hod.2x.fptime 80 0 80 H.hod.hgoodstarttime
-TH1F hs2yfptime 'HODO s2y fptime' H.hod.2y.fptime 80 0 80 H.hod.hgoodstarttime
-TH1F starttime  'HODO start time' H.hod.starttime 80 0 80 H.hod.hgoodstarttime
+TH1F hs1xfptime 'HODO s1x fptime' H.hod.1x.fptime 80 0 80 H.hod.goodstarttime
+TH1F hs1yfptime 'HODO s1y fptime' H.hod.1y.fptime 80 0 80 H.hod.goodstarttime
+TH1F hs2xfptime 'HODO s2x fptime' H.hod.2x.fptime 80 0 80 H.hod.goodstarttime
+TH1F hs2yfptime 'HODO s2y fptime' H.hod.2y.fptime 80 0 80 H.hod.goodstarttime
+TH1F starttime  'HODO start time' H.hod.starttime 80 0 80 H.hod.goodstarttime
 
 #SOS
 # TDC hits per paddle
