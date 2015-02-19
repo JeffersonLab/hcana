@@ -110,12 +110,9 @@ Int_t THcFormula::DefinedCut( TString& name )
   } else {
     realname = name(0,period);
     TString attribute(name(period+1,name.Length()-period-1));
-    cout << name << " -> " << realname << " " << attribute <<endl;
     if(attribute.CompareTo("scaler")==0 || attribute.CompareTo("npassed")==0) {
-      cout << "kCutScaler" << endl;
       thistype = (EVariableType) kCutScaler;
     } else if (attribute.CompareTo("ncalled")==0) {
-      cout << "kCutNCalled" << endl;
       thistype = (EVariableType) kCutNCalled;
     } else {
       thistype = kCut;

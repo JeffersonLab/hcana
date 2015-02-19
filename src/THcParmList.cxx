@@ -339,8 +339,8 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 	    if(valstr.IsFloat()) {
 	      fp[currentindex+i] = valstr.Atof();
 	    } else {
-	      THaFormula* formula = new THaFormula("temp",valstr.Data()
-						   ,this, 0);
+	      THaFormula* formula = new THaFormula
+		("temp",valstr.Data(), (Bool_t) 0, this, 0);
 	      fp[currentindex+i] = formula->Eval();
 	      delete formula;
 	    }
@@ -377,8 +377,8 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 	    if(valstr.IsFloat()) {
 	      existingp[currentindex+i] = valstr.Atof();
 	    } else {
-	      THaFormula* formula = new THaFormula("temp",valstr.Data()
-						   ,this, 0);
+	      THaFormula* formula = new THaFormula
+		("temp",valstr.Data(), (Bool_t) 0, this, 0);
 	      existingp[currentindex+i] = formula->Eval();
 	      delete formula;
 	    }
@@ -403,8 +403,8 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 	  if(valstr.IsFloat()) {
 	    fp[i] = valstr.Atof();
 	  } else {
-	    THaFormula* formula = new THaFormula("temp",valstr.Data()
-						 ,this, 0);
+	    THaFormula* formula = new THaFormula
+	      ("temp",valstr.Data(), (Bool_t) 0, this, 0);
 	    fp[i] = formula->Eval();
 	    delete formula;
 	  }
