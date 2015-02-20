@@ -121,7 +121,7 @@ void THcHodoscope::Setup(const char* name, const char* description)
     strcpy(desc, description);
     strcat(desc, " Plane ");
     strcat(desc, fPlaneNames[i]);
-    fPlanes[i] = new THcScintillatorPlane(fPlaneNames[i], desc, i+1,fNPlanes,this); // Number planes starting from zero!!
+    fPlanes[i] = new THcScintillatorPlane(fPlaneNames[i], desc, i+1, this); // Number planes starting from zero!!
     cout << "Created Scintillator Plane " << fPlaneNames[i] << ", " << desc << endl;
   }
 
@@ -378,6 +378,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   cout << " readdatabse hodo fnplanes = " << fNPlanes << endl;
 
   fNPaddle = new UInt_t [fNPlanes];
+
   fFPTime = new Double_t [fNPlanes];
   fPlaneCenter = new Double_t[fNPlanes];
   fPlaneSpacing = new Double_t[fNPlanes];
@@ -428,6 +429,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fxHiScin = new Int_t [fNHodoscopes]; 
   fyLoScin = new Int_t [fNHodoscopes]; 
   fyHiScin = new Int_t [fNHodoscopes]; 
+  fHodoSlop = new Double_t [fNPlanes];
 
   DBRequest list[]={
     {"start_time_center",                &fStartTimeCenter,                      kDouble},
@@ -456,6 +458,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"track_eff_test_num_scin_planes",   &fTrackEffTestNScinPlanes,                 kInt},
     {"cer_npe",                          &fNCerNPE,               kDouble,         0,  1},
     {"normalized_energy_tot",            &fNormETot,              kDouble,         0,  1},
+    {"hodo_slop",                        fHodoSlop,               kDouble,  fNPlanes},
     {0}
   };
   
@@ -588,6 +591,7 @@ void THcHodoscope::DeleteArrays()
   
   delete [] fxLoScin;             fxLoScin = NULL;
   delete [] fxHiScin;             fxHiScin = NULL;
+  delete [] fHodoSlop;            fHodoSlop = NULL;
 
   delete [] fNPaddle;             fNPaddle = NULL;
   delete [] fHodoVelLight;        fHodoVelLight = NULL;

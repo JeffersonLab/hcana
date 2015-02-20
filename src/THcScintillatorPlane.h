@@ -23,8 +23,6 @@ class THcScintillatorPlane : public THaSubDetector {
  public:
   THcScintillatorPlane( const char* name, const char* description,
 			Int_t planenum, THaDetectorBase* parent = NULL);
-  THcScintillatorPlane( const char* name, const char* description,
-			Int_t planenum, Int_t totplanes, THaDetectorBase* parent = NULL);
   virtual ~THcScintillatorPlane();
 
   virtual void    Clear( Option_t* opt="" );
@@ -93,7 +91,7 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t fPosLeft;            /* NOTE: "left" = "top" for a Y scintillator */
   Double_t fPosRight;           /* NOTE: "right" = "bottom" for a Y scintillator */
   Double_t fPosOffset;
-  Double_t fPosCenter[16];         /* array with centers for all scintillators in the plane */
+  Double_t *fPosCenter;         /* array with centers for all scintillators in the plane */
 
 
   Double_t fTolerance; /* need this for PulseHeightCorrection */

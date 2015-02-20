@@ -50,34 +50,7 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fScinTime = new Double_t [fMaxHits];
   fScinSigma = new Double_t [fMaxHits];
   fScinZpos = new Double_t [fMaxHits];
-}
-//______________________________________________________________________________
-THcScintillatorPlane::THcScintillatorPlane( const char* name, 
-					    const char* description,
-					    const Int_t planenum,
-					    const Int_t totplanes,
-					    THaDetectorBase* parent )
-  : THaSubDetector(name,description,parent)
-{
-  // Normal constructor with name and description
-  fPosTDCHits = new TClonesArray("THcSignalHit",16);
-  fNegTDCHits = new TClonesArray("THcSignalHit",16);
-  fPosADCHits = new TClonesArray("THcSignalHit",16);
-  fNegADCHits = new TClonesArray("THcSignalHit",16);
-  frPosTDCHits = new TClonesArray("THcSignalHit",16);
-  frNegTDCHits = new TClonesArray("THcSignalHit",16);
-  frPosADCHits = new TClonesArray("THcSignalHit",16);
-  frNegADCHits = new TClonesArray("THcSignalHit",16);
-  fPlaneNum = planenum;
-  fTotPlanes = totplanes;
-  fNScinHits = 0;
-  //
-  fMaxHits=53;
-
-  fpTimes = new Double_t [fMaxHits];
-  fScinTime = new Double_t [fMaxHits];
-  fScinSigma = new Double_t [fMaxHits];
-  fScinZpos = new Double_t [fMaxHits];
+  fPosCenter = NULL;
 }
 
 //______________________________________________________________________________
@@ -96,6 +69,7 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete fScinTime;
   delete fScinSigma;
   delete fScinZpos;
+  delete fPosCenter;
 
 }
 
@@ -158,35 +132,37 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
     strcpy(tmpright,"top");
   }
 
-  Double_t tmpdouble[fTotPlanes];
-    DBRequest list[]={
-     {Form("scin_%s_zpos",GetName()), &fZpos, kDouble},
-     {Form("scin_%s_dzpos",GetName()), &fDzpos, kDouble},
-     {Form("scin_%s_size",GetName()), &fSize, kDouble},
-     {Form("scin_%s_spacing",GetName()), &fSpacing, kDouble},
-     {Form("scin_%s_%s",GetName(),tmpleft), &fPosLeft,kDouble},
-     {Form("scin_%s_%s",GetName(),tmpright), &fPosRight,kDouble},
-     {Form("scin_%s_offset",GetName()), &fPosOffset, kDouble},
-     {Form("scin_%s_center",GetName()), &fPosCenter[0],kDouble,fNelem},
-     // this is from Xhodo.param...
-          {"hodo_slop",&tmpdouble[0],kDouble,fTotPlanes},
-     {0}
-    };
-   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-   // fetch the parameter from the temporary list
-   fHodoSlop=tmpdouble[fPlaneNum-1];
-   cout <<" plane num = "<<fPlaneNum<<endl;
-   cout <<" nelem     = "<<fNelem<<endl;
-   cout <<" zpos      = "<<fZpos<<endl;
-   cout <<" dzpos     = "<<fDzpos<<endl;
-   cout <<" spacing   = "<<fSpacing<<endl;
-   cout <<" size      = "<<fSize<<endl;
-   cout <<" hodoslop  = "<<fHodoSlop<<endl;
-   cout <<"PosLeft = "<<fPosLeft<<endl;
-   cout <<"PosRight = "<<fPosRight<<endl;
-   cout <<"PosOffset = "<<fPosOffset<<endl;
-   cout <<"PosCenter[0] = "<<fPosCenter[0]<<endl;
+  delete [] fPosCenter; fPosCenter = new Double_t[fNelem];
 
+  DBRequest list[]={
+    {Form("scin_%s_zpos",GetName()), &fZpos, kDouble},
+    {Form("scin_%s_dzpos",GetName()), &fDzpos, kDouble},
+    {Form("scin_%s_size",GetName()), &fSize, kDouble},
+    {Form("scin_%s_spacing",GetName()), &fSpacing, kDouble},
+    {Form("scin_%s_%s",GetName(),tmpleft), &fPosLeft,kDouble},
+    {Form("scin_%s_%s",GetName(),tmpright), &fPosRight,kDouble},
+    {Form("scin_%s_offset",GetName()), &fPosOffset, kDouble},
+    {Form("scin_%s_center",GetName()), fPosCenter,kDouble,fNelem},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  // fetch the parameter from the temporary list
+
+  // Retrieve parameters we need from parent class
+  fHodoSlop= ((THcHodoscope*) GetParent())->GetHodoSlop(fPlaneNum-1);
+  
+  cout <<" plane num = "<<fPlaneNum<<endl;
+  cout <<" nelem     = "<<fNelem<<endl;
+  cout <<" zpos      = "<<fZpos<<endl;
+  cout <<" dzpos     = "<<fDzpos<<endl;
+  cout <<" spacing   = "<<fSpacing<<endl;
+  cout <<" size      = "<<fSize<<endl;
+  cout <<" hodoslop  = "<<fHodoSlop<<endl;
+  cout <<"PosLeft = "<<fPosLeft<<endl;
+  cout <<"PosRight = "<<fPosRight<<endl;
+  cout <<"PosOffset = "<<fPosOffset<<endl;
+  cout <<"PosCenter[0] = "<<fPosCenter[0]<<endl;
+  
   // Think we will make special methods to pass most
   // How generic do we want to make this class?  
   // The way we get parameter data is going to be pretty specific to
