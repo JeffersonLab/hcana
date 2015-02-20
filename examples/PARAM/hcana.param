@@ -51,11 +51,10 @@ scal_num_layers = 4
 scal_fv_delta = 5.
 
 # Constants for the coordiante correction of the calorimeter energy depositions
-# (saw) Copied from HMS
-scal_a_cor = 200.
-scal_b_cor = 8000.
-scal_c_cor = 64.36
-scal_d_cor = 1.66
+scal_a_cor = 400.
+scal_b_cor = 12000.
+scal_c_cor = -87.1628, -100.	# The positive side constants reproduce
+scal_d_cor =  1.65054,    3.	# correction in Engine to accuracy better 0.005.
 
 scal_layer_names = "1pr 2ta 3ta 4ta"
 
