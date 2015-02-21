@@ -37,8 +37,8 @@ THcShowerPlane::THcShowerPlane( const char* name,
   : THaSubDetector(name,description,parent)
 {
   // Normal constructor with name and description
-  fPosADCHits = new TClonesArray("THcSignalHit",13);
-  fNegADCHits = new TClonesArray("THcSignalHit",13);
+  fPosADCHits = new TClonesArray("THcSignalHit",fNelem);
+  fNegADCHits = new TClonesArray("THcSignalHit",fNelem);
 
   //#if ROOT_VERSION_CODE < ROOT_VERSION(5,32,0)
   //  fPosADCHitsClass = fPosADCHits->GetClass();
