@@ -457,16 +457,13 @@ Int_t THcHallCSpectrometer::TrackCalc()
   if ( fSelUsingScin == 1 ){
     if( fNtracks > 0 ) {
       
-      Double_t ft; //, fShowerEnergy;
       Int_t itrack; //, fGoodTimeIndex = -1;
-      Int_t fRawIndex, fGoodRawPad;
 
       fGoodTrack = -1;
       chi2Min = 10000000000.0;
       Double_t y2Dmin = 100.;
       Double_t x2Dmin = 100.;
 
-      fRawIndex = -1;
       for ( itrack = 0; itrack < fNtracks; itrack++ ){
 	Double_t chi2PerDeg;
 	
@@ -490,24 +487,23 @@ Int_t THcHallCSpectrometer::TrackCalc()
 		y2Hits[j] = -1; 
 	      }
 	      
+	      Int_t rawindex = 0;
 	      for (Int_t ip = 0; ip < fNPlanes; ip++ ){
 		for (UInt_t ihit = 0; ihit < fHodo->GetNScinHits(ip); ihit++ ){
-		  fRawIndex ++;	
-		  cout << itrack << " " << fRawIndex << endl;
 
-		  //		  fGoodRawPad = fHodo->GetGoodRawPad(fRawIndex)-1;
-		  fGoodRawPad = fHodo->GetGoodRawPad(fRawIndex);
-		  cout << itrack << " " << fRawIndex << " " << fGoodRawPad << endl;
+		  //		  goodRawPad = fHodo->GetGoodRawPad(rawindex)-1;
+		  // Kind of a fragile way to get the paddle number
+		  Int_t goodRawPad = fHodo->GetGoodRawPad(rawindex);
 
 		  if ( ip == 2 ){  
-		    x2Hits[fGoodRawPad] = 0;   		    
+		    x2Hits[goodRawPad] = 0;   		    
 		  }
 
 		  if ( ip == 3 ){  
-		    y2Hits[fGoodRawPad] = 0;   
+		    y2Hits[goodRawPad] = 0;   
 		    
 		  } 
-
+		  rawindex ++;	
 		} // loop over hits of a plane
 	      } // loop over planes 
 
@@ -520,19 +516,29 @@ Int_t THcHallCSpectrometer::TrackCalc()
 
 	      if ( fNtracks > 1 ){     // Plane 4		
 		Double_t zap = 0.;
-		ft = 0;
+		Int_t ft = 0;
 		
+		// What is this doing?  There must be a simpler way.
+		// Why stop at ft==6?  Something identifying the paddle
+		// with hits that is closest to where the track passes?
 		for (UInt_t i = 0; i < fHodo->GetNPaddles(3); i++ ){
 		  if ( y2Hits[i] == 0 ) {		    
 		    y2D[itrack] = TMath::Abs((Int_t)hitCnt4-(Int_t)i-1);
 		    ft ++;
-		    		    
+#if 0		    		    
 		    if   ( ft == 1 )                              zap = y2D[itrack];
 		    if ( ( ft == 2 ) && ( y2D[itrack] < zap ) ) zap = y2D[itrack]; 		    
 		    if ( ( ft == 3 ) && ( y2D[itrack] < zap ) ) zap = y2D[itrack]; 
 		    if ( ( ft == 4 ) && ( y2D[itrack] < zap ) ) zap = y2D[itrack]; 
 		    if ( ( ft == 5 ) && ( y2D[itrack] < zap ) ) zap = y2D[itrack]; 
 		    if ( ( ft == 6 ) && ( y2D[itrack] < zap ) ) zap = y2D[itrack]; 
+#else
+		    if (ft==1) {
+		      zap = y2D[itrack];
+		    } else if (ft>=2 && ft<=6) {
+		      if(y2D[itrack] < zap) zap = y2D[itrack];
+		    }
+#endif
 
 		  } // condition for fHodScinHit[4][i]
 		} // loop over 10
@@ -551,18 +557,26 @@ Int_t THcHallCSpectrometer::TrackCalc()
 
 	      if ( fNtracks > 1 ){     // Plane 3 (2X)
 		Double_t zap = 0.;
-		ft = 0;
+		Int_t ft = 0;
 		for (UInt_t i = 0; i <  fHodo->GetNPaddles(2); i++ ){
 		  if ( x2Hits[i] == 0 ) {
 		    x2D[itrack] = TMath::Abs((Int_t)hitCnt3-(Int_t)i-1);
 		    
 		    ft ++;
+#if 0
 		    if   ( ft == 1 )                              zap = x2D[itrack];
 		    if ( ( ft == 2 ) && ( x2D[itrack] < zap ) ) zap = x2D[itrack]; 		    
 		    if ( ( ft == 3 ) && ( x2D[itrack] < zap ) ) zap = x2D[itrack]; 
 		    if ( ( ft == 4 ) && ( x2D[itrack] < zap ) ) zap = x2D[itrack]; 
 		    if ( ( ft == 5 ) && ( x2D[itrack] < zap ) ) zap = x2D[itrack]; 
 		    if ( ( ft == 6 ) && ( x2D[itrack] < zap ) ) zap = x2D[itrack]; 
+#else
+		    if (ft==1) {
+		      zap = x2D[itrack];
+		    } else if (ft>=2 && ft<=6) {
+		      if(x2D[itrack] < zap) zap = x2D[itrack];
+		    }
+#endif
 		    
 		  } // condition for fHodScinHit[4][i]
 		} // loop over 16

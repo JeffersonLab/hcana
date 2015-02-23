@@ -1106,6 +1106,9 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  // ** See if there are any good time measurements in the plane.
 	  if ( fTOFCalc[ihhit].good_scin_time ){
 	    fGoodPlaneTime[ip] = kTRUE;
+	    fTOFCalc[ihhit].dedx = fdEdX[itrack][fNScinHit[itrack]-1];
+	  } else {
+	    fTOFCalc[ihhit].dedx = 0.0;
 	  }
 
 	  // Can this be done after looping over hits and planes?
@@ -1232,10 +1235,15 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	}
       }
       Double_t fptime = FPTimeSum/nFPTimeSum;
-     
-      // This can't be right.  Plus if there are no hits, then
-      // it is undefined.
       
+      Double_t dedx=0.0;
+      for(UInt_t ih=0;ih<fTOFCalc.size();ih++) {
+	if(fTOFCalc[ih].good_scin_time) {
+	  dedx = fTOFCalc[ih].dedx;
+	  break;
+	}
+      }
+      theTrack->SetDedx(dedx);
       theTrack->SetFPTime(fptime);
       theTrack->SetBeta(beta);
       theTrack->SetBetaChi2( betaChiSq );

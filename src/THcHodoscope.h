@@ -245,6 +245,7 @@ protected:
     Bool_t good_tdc_neg;
     Double_t scin_time;
     Double_t scin_sigma;
+    Double_t dedx;
     TOFCalc() : good_scin_time(kFALSE), good_tdc_pos(kFALSE),
 		good_tdc_neg(kFALSE) {}
   };
