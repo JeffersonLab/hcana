@@ -200,11 +200,6 @@ protected:
 
   Bool_t* fGoodPlaneTime;  // [fNPlanes]
 
-  TClonesArray* scinPosADC;
-  TClonesArray* scinNegADC;
-  TClonesArray* scinPosTDC;
-  TClonesArray* scinNegTDC;
-
   //----------------------------------------------------------------
 
   // Useful derived quantities

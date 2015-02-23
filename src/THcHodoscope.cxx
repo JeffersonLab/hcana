@@ -806,6 +806,10 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       for(Int_t ip = 0; ip < fNPlanes; ip++ ) {
 	
 	fNScinHits[ip] = fPlanes[ip]->GetNScinHits();
+	TClonesArray* scinPosADC = fPlanes[ip]->GetPosADC();
+	TClonesArray* scinNegADC = fPlanes[ip]->GetNegADC();
+	TClonesArray* scinPosTDC = fPlanes[ip]->GetPosTDC();
+	TClonesArray* scinNegTDC = fPlanes[ip]->GetNegTDC();  
 
 	// first loop over hits with in a single plane
 	fTOFPInfo.clear();
@@ -821,11 +825,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  fTOFPInfo[iphit].scin_pos_time = 0.0;
 	  fTOFPInfo[iphit].scin_neg_time = 0.0;
 	  
-	  scinPosADC = fPlanes[ip]->GetPosADC();
-	  scinNegADC = fPlanes[ip]->GetNegADC();
-	  scinPosTDC = fPlanes[ip]->GetPosTDC();
-	  scinNegTDC = fPlanes[ip]->GetNegTDC();  
-	  	  
 	  Int_t paddle = ((THcSignalHit*)scinPosTDC->At(iphit))->GetPaddleNumber()-1;
 	  
 	  Double_t xHitCoord = theTrack->GetX() + theTrack->GetTheta() *
@@ -1273,13 +1272,13 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
     if (!fPlanes[ip])
       return -1;
 
-    scinPosTDC = fPlanes[ip]->GetPosTDC();
-    scinNegTDC = fPlanes[ip]->GetNegTDC();
+    TClonesArray* scinPosTDC = fPlanes[ip]->GetPosTDC();
+    TClonesArray* scinNegTDC = fPlanes[ip]->GetNegTDC();
 
     fNScinHits[ip] = fPlanes[ip]->GetNScinHits();
     for (Int_t iphit = 0; iphit < fNScinHits[ip]; iphit++ ){
       Int_t paddlePos = ((THcSignalHit*)scinPosTDC->At(iphit))->GetPaddleNumber()-1;
-      Int_t paddleNeg = ((THcSignalHit*)scinPosTDC->At(iphit))->GetPaddleNumber()-1;
+      Int_t paddleNeg = ((THcSignalHit*)scinNegTDC->At(iphit))->GetPaddleNumber()-1;
       if ( paddlePos != paddleNeg )
 	return -1;
       
