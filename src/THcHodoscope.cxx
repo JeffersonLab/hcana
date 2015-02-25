@@ -945,6 +945,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  // These need a track index too to calculate efficiencies
 	  fTOFCalc[ihhit].good_tdc_pos = kFALSE;
 	  fTOFCalc[ihhit].good_tdc_neg = kFALSE;
+	  fTOFCalc[ihhit].pindex = ip;
 
 	  //	  ihhit ++;
 	  //	  fRawIndex ++;   // Is fRawIndex ever different from ihhit

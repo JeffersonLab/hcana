@@ -71,7 +71,9 @@ public:
   Double_t GetBetaNotrk() const {return fBetaNotrk;}
 
   Int_t GetGoodRawPad(Int_t iii){return fTOFCalc[iii].good_raw_pad;}
-  Double_t GetNScinHits(Int_t iii){return fNScinHits[iii];}
+  Int_t GetGoodRawPlane(Int_t iii){return fTOFCalc[iii].pindex;}
+  Int_t GetNScinHits(Int_t iii){return fNScinHits[iii];}
+  Int_t GetTotHits(){return fTOFCalc.size();}
 
   UInt_t GetNPaddles(Int_t iii) { return fNPaddle[iii];}
   Double_t GetHodoSlop(Int_t iii) { return fHodoSlop[iii];}
@@ -239,6 +241,7 @@ protected:
   // Used to hold information about all hits within the hodoscope for the TOF
   struct TOFCalc {
     Int_t hit_paddle;
+    Int_t pindex;		// Plane index
     Int_t good_raw_pad;
     Bool_t good_scin_time;
     Bool_t good_tdc_pos;
