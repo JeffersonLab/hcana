@@ -234,10 +234,15 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     {"prune_fptime",          &fPruneFpTime,             kDouble,         0,  1},
     {0}
   };
+
+  // Default values
+  fSelUsingScin = 0;
+  fSelUsingPrune = 0;
+
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-  //
 
-
+  EnforcePruneLimits();
+  
   cout <<  "\n\n\nhodo planes = " << fNPlanes << endl;
   cout <<  "sel using scin = "    << fSelUsingScin << endl;
   cout <<  "fPruneXp = "          <<  fPruneXp << endl; 
@@ -315,6 +320,22 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     return kInitError; // Is this the right return code?
   }
   return kOK;
+}
+
+//_____________________________________________________________________________
+void THcHallCSpectrometer::EnforcePruneLimits()
+{
+  // Enforce minimum values for the prune cuts
+  
+  fPruneXp      = TMath::Max( 0.08, fPruneXp); 
+  fPruneYp      = TMath::Max( 0.04, fPruneYp); 
+  fPruneYtar    = TMath::Max( 4.0,  fPruneYtar); 
+  fPruneDelta   = TMath::Max( 13.0, fPruneDelta); 
+  fPruneBeta    = TMath::Max( 0.1,  fPruneBeta); 
+  fPruneDf      = TMath::Max( 1.0,  fPruneDf); 
+  fPruneChiBeta = TMath::Max( 2.0,  fPruneChiBeta); 
+  fPruneFpTime  = TMath::Max( 5.0,  fPruneFpTime); 
+  fPruneNPMT    = TMath::Max( 6.0,  fPruneNPMT);
 }
 
 //_____________________________________________________________________________
@@ -420,434 +441,424 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 Int_t THcHallCSpectrometer::TrackCalc()
 {
 
-
-
   if ( ( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 ) ) {
-    
-    if( GetTrSorting() )
-      fTracks->Sort();
-    
-    // Find the "Golden Track". 
-    //  if( GetNTracks() > 0 ) {
-    if( fNtracks > 0 ) {
-      // Select first track in the array. If there is more than one track
-      // and track sorting is enabled, then this is the best fit track
-      // (smallest chi2/ndof).  Otherwise, it is the track with the best
-      // geometrical match (smallest residuals) between the U/V clusters
-      // in the upper and lower VDCs (old behavior).
-      // 
-      // Chi2/dof is a well-defined quantity, and the track selected in this
-      // way is immediately physically meaningful. The geometrical match
-      // criterion is mathematically less well defined and not usually used
-      // in track reconstruction. Hence, chi2 sortiing is preferable, albeit
-      // obviously slower.
-      
-      fGoldenTrack = static_cast<THaTrack*>( fTracks->At(0) );
-      fTrkIfo      = *fGoldenTrack;
-      fTrk         = fGoldenTrack;
-    } else
-      fGoldenTrack = NULL;
+    BestTrackSimple();
+  } else if (fSelUsingPrune !=0) {
+    BestTrackUsingPrune();
+  } else {
+    BestTrackUsingScin();
   }
 
-  Double_t chi2Min;
-  if ( fSelUsingScin == 1 ){
-    if( fNtracks > 0 ) {
-      fGoodTrack = -1;
-      chi2Min = 10000000000.0;
-      Int_t y2Dmin = 100;
-      Int_t x2Dmin = 100;
+  return TrackTimes( fTracks );
+}
 
-      Bool_t* x2Hits        = new Bool_t [fHodo->GetNPaddles(2)];
-      Bool_t* y2Hits        = new Bool_t [fHodo->GetNPaddles(3)];
-      for (UInt_t j = 0; j < fHodo->GetNPaddles(2); j++ ){ 
-	x2Hits[j] = kFALSE;
-      }
-      for (UInt_t j = 0; j < fHodo->GetNPaddles(3); j++ ){ 
-	y2Hits[j] = kFALSE;
-      }
+//_____________________________________________________________________________
+Int_t THcHallCSpectrometer::BestTrackSimple()
+{
+  
+  if( GetTrSorting() )
+    fTracks->Sort();
+  
+  // Find the "Golden Track". 
+  //  if( GetNTracks() > 0 ) {
+  if( fNtracks > 0 ) {
+    // Select first track in the array. If there is more than one track
+    // and track sorting is enabled, then this is the best fit track
+    // (smallest chi2/ndof).  Otherwise, it is the track with the best
+    // geometrical match (smallest residuals) between the U/V clusters
+    // in the upper and lower VDCs (old behavior).
+    // 
+    // Chi2/dof is a well-defined quantity, and the track selected in this
+    // way is immediately physically meaningful. The geometrical match
+    // criterion is mathematically less well defined and not usually used
+    // in track reconstruction. Hence, chi2 sortiing is preferable, albeit
+    // obviously slower.
       
-      for (Int_t rawindex=0; rawindex<fHodo->GetTotHits(); rawindex++) {
-	Int_t ip = fHodo->GetGoodRawPlane(rawindex);
-	if(ip==2) {	// X2
-	  Int_t goodRawPad = fHodo->GetGoodRawPad(rawindex);
-	  x2Hits[goodRawPad] = kTRUE;
-	} else if (ip==3) { // Y2
-	  Int_t goodRawPad = fHodo->GetGoodRawPad(rawindex);
-	  y2Hits[goodRawPad] = kTRUE;
-	}
+    fGoldenTrack = static_cast<THaTrack*>( fTracks->At(0) );
+    fTrkIfo      = *fGoldenTrack;
+    fTrk         = fGoldenTrack;
+  } else
+    fGoldenTrack = NULL;
+
+  return(0);
+}
+
+//_____________________________________________________________________________
+Int_t THcHallCSpectrometer::BestTrackUsingScin()
+{
+  Double_t chi2Min;
+
+  if( fNtracks > 0 ) {
+    fGoodTrack = -1;
+    chi2Min = 10000000000.0;
+    Int_t y2Dmin = 100;
+    Int_t x2Dmin = 100;
+
+    Bool_t* x2Hits        = new Bool_t [fHodo->GetNPaddles(2)];
+    Bool_t* y2Hits        = new Bool_t [fHodo->GetNPaddles(3)];
+    for (UInt_t j = 0; j < fHodo->GetNPaddles(2); j++ ){ 
+      x2Hits[j] = kFALSE;
+    }
+    for (UInt_t j = 0; j < fHodo->GetNPaddles(3); j++ ){ 
+      y2Hits[j] = kFALSE;
+    }
+      
+    for (Int_t rawindex=0; rawindex<fHodo->GetTotHits(); rawindex++) {
+      Int_t ip = fHodo->GetGoodRawPlane(rawindex);
+      if(ip==2) {	// X2
+	Int_t goodRawPad = fHodo->GetGoodRawPad(rawindex);
+	x2Hits[goodRawPad] = kTRUE;
+      } else if (ip==3) { // Y2
+	Int_t goodRawPad = fHodo->GetGoodRawPad(rawindex);
+	y2Hits[goodRawPad] = kTRUE;
       }
+    }
 
-      for (Int_t itrack = 0; itrack < fNtracks; itrack++ ){
+    for (Int_t itrack = 0; itrack < fNtracks; itrack++ ){
+      Double_t chi2PerDeg;
+
+      THaTrack* aTrack = static_cast<THaTrack*>( fTracks->At(itrack) );      
+      if (!aTrack) return -1;	
+
+      if ( aTrack->GetNDoF() > fSelNDegreesMin ){
+	chi2PerDeg =  aTrack->GetChi2() / aTrack->GetNDoF();
+
+	if( ( aTrack->GetDedx()    > fSeldEdX1Min )   && 
+	    ( aTrack->GetDedx()    < fSeldEdX1Max )   && 
+	    ( aTrack->GetBeta()    > fSelBetaMin  )   &&
+	    ( aTrack->GetBeta()    < fSelBetaMax  )   &&
+	    ( aTrack->GetEnergy()  > fSelEtMin    )   && 
+	    ( aTrack->GetEnergy()  < fSelEtMax    ) )  	    	    
+	  {
+	    Int_t x2D, y2D;
+	      	      
+	    if ( fNtracks > 1 ){
+	      Double_t hitpos3  = aTrack->GetX() + aTrack->GetTheta() * ( fScin2XZpos + 0.5 * fScin2XdZpos );
+	      Int_t icounter3  = TMath::Nint( ( hitpos3 - fHodo->GetPlaneCenter(2) ) / fHodo->GetPlaneSpacing(2) ) + 1;
+	      Int_t hitCnt3  = TMath::Max( TMath::Min(icounter3, (Int_t) fHodo->GetNPaddles(2) ) , 1); // scin_2x_nr = 16
+	      //	      fHitDist3 = fHitPos3 - ( fHodo->GetPlaneSpacing(2) * ( hitCnt3 - 1 ) + fHodo->GetPlaneCenter(2) );
+	      Double_t hitpos4 = aTrack->GetY() + aTrack->GetPhi() * ( fScin2YZpos + 0.5 * fScin2YdZpos );
+	      Int_t icounter4  = TMath::Nint( ( fHodo->GetPlaneCenter(3) - hitpos4 ) / fHodo->GetPlaneSpacing(3) ) + 1;
+	      Int_t hitCnt4  = TMath::Max( TMath::Min(icounter4, (Int_t) fHodo->GetNPaddles(3) ) , 1); // scin_2y_nr = 10
+	      //	      fHitDist4 = fHitPos4 - ( fHodo->GetPlaneCenter(3) - fHodo->GetPlaneSpacing(3) * ( hitCnt4 - 1 ) );
+	      // Plane 3
+	      Int_t mindiff=1000;
+	      for (UInt_t i = 0; i <  fHodo->GetNPaddles(2); i++ ){
+		if ( x2Hits[i] ) {
+		  Int_t diff = TMath::Abs((Int_t)hitCnt3-(Int_t)i-1);
+		  if (diff < mindiff) mindiff = diff;
+		}
+	      }
+	      if(mindiff < 1000) {
+		x2D = mindiff;
+	      } else {
+		x2D = 0;	// Is this what we really want if there were no hits on this plane?
+	      }
+
+	      // Plane 4
+	      mindiff = 1000;
+	      for (UInt_t i = 0; i < fHodo->GetNPaddles(3); i++ ){
+		if ( y2Hits[i] ) {		    
+		  Int_t diff = TMath::Abs((Int_t)hitCnt4-(Int_t)i-1);
+		  if (diff < mindiff) mindiff = diff;
+		}
+	      }
+	      if(mindiff < 1000) {
+		y2D = mindiff;
+	      } else {
+		y2D = 0;	// Is this what we really want if there were no hits on this plane?
+	      }
+	    } else { // Only a single track
+	      x2D = 0.;
+	      y2D = 0.;
+	    }
+
+	    if ( y2D <= y2Dmin ) {
+	      if ( y2D < y2Dmin ) {
+		x2Dmin = 100;
+		chi2Min = 10000000000.;
+	      } // y2D min
+
+	      if ( x2D <= x2Dmin ){
+		if ( x2D < x2Dmin ){
+		  chi2Min = 10000000000.0;
+		} // condition x2D
+		if ( chi2PerDeg < chi2Min ){
+
+		  fGoodTrack = itrack; // fGoodTrack = itrack
+		  y2Dmin = y2D;
+		  x2Dmin = x2D;
+		  chi2Min = chi2PerDeg;
+
+		  fGoldenTrack = static_cast<THaTrack*>( fTracks->At( fGoodTrack ) );
+		  fTrkIfo      = *fGoldenTrack;
+		  fTrk         = fGoldenTrack;
+		}		  
+	      } // condition x2D
+	    } // condition y2D
+	  } // conditions for dedx, beta and trac energy		  
+      } // confition for fNFreeFP greater than fSelNDegreesMin
+    } // loop over tracks      
+
+    // Fall back to using track with minimum chi2
+    if ( fGoodTrack == -1 ){
+      
+      chi2Min = 10000000000.0;
+      for (Int_t iitrack = 0; iitrack < fNtracks; iitrack++ ){
 	Double_t chi2PerDeg;
-	
-	THaTrack* aTrack = static_cast<THaTrack*>( fTracks->At(itrack) );      
-        if (!aTrack) return -1;	
-
+	THaTrack* aTrack = dynamic_cast<THaTrack*>( fTracks->At(iitrack) );
+	if (!aTrack) return -1;
+	  
 	if ( aTrack->GetNDoF() > fSelNDegreesMin ){
 	  chi2PerDeg =  aTrack->GetChi2() / aTrack->GetNDoF();
 
-	  if( ( aTrack->GetDedx()    > fSeldEdX1Min )   && 
-	      ( aTrack->GetDedx()    < fSeldEdX1Max )   && 
-	      ( aTrack->GetBeta()    > fSelBetaMin  )   &&
-	      ( aTrack->GetBeta()    < fSelBetaMax  )   &&
-	      ( aTrack->GetEnergy()  > fSelEtMin    )   && 
-	      ( aTrack->GetEnergy()  < fSelEtMax    ) )  	    	    
-	    {
-	      Int_t x2D, y2D;
-	      	      
-	      if ( fNtracks > 1 ){
-		Double_t hitpos3  = aTrack->GetX() + aTrack->GetTheta() * ( fScin2XZpos + 0.5 * fScin2XdZpos );
-		Int_t icounter3  = TMath::Nint( ( hitpos3 - fHodo->GetPlaneCenter(2) ) / fHodo->GetPlaneSpacing(2) ) + 1;
-		Int_t hitCnt3  = TMath::Max( TMath::Min(icounter3, (Int_t) fHodo->GetNPaddles(2) ) , 1); // scin_2x_nr = 16
-		//	      fHitDist3 = fHitPos3 - ( fHodo->GetPlaneSpacing(2) * ( hitCnt3 - 1 ) + fHodo->GetPlaneCenter(2) );
-		Double_t hitpos4 = aTrack->GetY() + aTrack->GetPhi() * ( fScin2YZpos + 0.5 * fScin2YdZpos );
-		Int_t icounter4  = TMath::Nint( ( fHodo->GetPlaneCenter(3) - hitpos4 ) / fHodo->GetPlaneSpacing(3) ) + 1;
-		Int_t hitCnt4  = TMath::Max( TMath::Min(icounter4, (Int_t) fHodo->GetNPaddles(3) ) , 1); // scin_2y_nr = 10
-		//	      fHitDist4 = fHitPos4 - ( fHodo->GetPlaneCenter(3) - fHodo->GetPlaneSpacing(3) * ( hitCnt4 - 1 ) );
-		// Plane 3
-		Int_t mindiff=1000;
-		for (UInt_t i = 0; i <  fHodo->GetNPaddles(2); i++ ){
-		  if ( x2Hits[i] ) {
-		    Int_t diff = TMath::Abs((Int_t)hitCnt3-(Int_t)i-1);
-		    if (diff < mindiff) mindiff = diff;
-		  }
-		}
-		if(mindiff < 1000) {
-		  x2D = mindiff;
-		} else {
-		  x2D = 0;	// Is this what we really want if there were no hits on this plane?
-		}
-
-		// Plane 4
-		mindiff = 1000;
-		for (UInt_t i = 0; i < fHodo->GetNPaddles(3); i++ ){
-		  if ( y2Hits[i] ) {		    
-		    Int_t diff = TMath::Abs((Int_t)hitCnt4-(Int_t)i-1);
-		    if (diff < mindiff) mindiff = diff;
-		  }
-		}
-		if(mindiff < 1000) {
-		  y2D = mindiff;
-		} else {
-		  y2D = 0;	// Is this what we really want if there were no hits on this plane?
-		}
-	      } else { // Only a single track
-		x2D = 0.;
-		y2D = 0.;
-	      }
-
-	      if ( y2D <= y2Dmin ) {
-		if ( y2D < y2Dmin ) {
-		  x2Dmin = 100;
-		  chi2Min = 10000000000.;
-		} // y2D min
-		
-		if ( x2D <= x2Dmin ){
-		  if ( x2D < x2Dmin ){
-		    chi2Min = 10000000000.0;
-		  } // condition x2D
-		  if ( chi2PerDeg < chi2Min ){
-
-		    fGoodTrack = itrack; // fGoodTrack = itrack
-		    y2Dmin = y2D;
-		    x2Dmin = x2D;
-		    chi2Min = chi2PerDeg;
-
-		    fGoldenTrack = static_cast<THaTrack*>( fTracks->At( fGoodTrack ) );
-		    fTrkIfo      = *fGoldenTrack;
-		    fTrk         = fGoldenTrack;
-		  }		  
-		} // condition x2D
-	      } // condition y2D
-	    } // conditions for dedx, beta and trac energy		  
-	} // confition for fNFreeFP greater than fSelNDegreesMin
-      } // loop over tracks      
-
-      // Fall back to using track with minimum chi2
-      if ( fGoodTrack == -1 ){
-	
-	chi2Min = 10000000000.0;
-	for (Int_t iitrack = 0; iitrack < fNtracks; iitrack++ ){
-	  Double_t chi2PerDeg;
-	  THaTrack* aTrack = dynamic_cast<THaTrack*>( fTracks->At(iitrack) );
-	  if (!aTrack) return -1;
-	  
-	  if ( aTrack->GetNDoF() > fSelNDegreesMin ){
-	    chi2PerDeg =  aTrack->GetChi2() / aTrack->GetNDoF();
-	    
-	    if ( chi2PerDeg < chi2Min ){
+	  if ( chi2PerDeg < chi2Min ){
 	      
-	      fGoodTrack = iitrack;
-	      chi2Min = chi2PerDeg;
-	      
-	      fGoldenTrack = aTrack;
-	      fTrkIfo      = *fGoldenTrack;
-	      fTrk         = fGoldenTrack;
+	    fGoodTrack = iitrack;
+	    chi2Min = chi2PerDeg;
 
-	    }
+	    fGoldenTrack = aTrack;
+	    fTrkIfo      = *fGoldenTrack;
+	    fTrk         = fGoldenTrack;
+
 	  }
-	} // loop over trakcs
-	
-      } 
+	}
+      } // loop over trakcs
 
-    } else // Condition for fNtrack > 0
-      fGoldenTrack = NULL;
+    } 
+
+  } else // Condition for fNtrack > 0
+    fGoldenTrack = NULL;
+
+  return(0);
+}
     
-  } //  condtion fSelUsingScin == 1 
+//_____________________________________________________________________________
+Int_t THcHallCSpectrometer::BestTrackUsingPrune()
+{  
+  Int_t nGood;
+  Double_t chi2Min;
 
-  //-------------------------------------------------------------------------------------
-  //-------------------------------------------------------------------------------------
-  //-------------------------------------------------------------------------------------
-  //-------------------------------------------------------------------------------------
+  if ( fNtracks > 0 ) {
+    chi2Min   = 10000000000.0;
+    fGoodTrack = 0;    
+    Bool_t* keep      = new Bool_t [fNtracks];  
+    Int_t* reject    = new Int_t  [fNtracks];  
 
-  if ( fSelUsingPrune == 1 ){
-    
-    fPruneXp      = TMath::Max( 0.08, fPruneXp); 
-    fPruneYp      = TMath::Max( 0.04, fPruneYp); 
-    fPruneYtar    = TMath::Max( 4.0,  fPruneYtar); 
-    fPruneDelta   = TMath::Max( 13.0, fPruneDelta); 
-    fPruneBeta    = TMath::Max( 0.1,  fPruneBeta); 
-    fPruneDf      = TMath::Max( 1.0,  fPruneDf); 
-    fPruneChiBeta = TMath::Max( 2.0,  fPruneChiBeta); 
-    fPruneFpTime  = TMath::Max( 5.0,  fPruneFpTime); 
-    fPruneNPMT    = TMath::Max( 6.0,  fPruneNPMT); 
-    
-    Int_t ptrack = 0, fNGood;
-    Double_t fP = 0., fBetaP = 0.; // , fPartMass = 0.00051099; // 5.10989979E-04 Fix it
+    THaTrack *testTracks[fNtracks];
 
-    if ( fNtracks > 0 ) {
-      chi2Min   = 10000000000.0;
-      fGoodTrack = 0;    
-      fKeep      = new Bool_t [fNtracks];  
-      fReject    = new Int_t  [fNtracks];  
-
-      THaTrack *testTracks[fNtracks];
-
-      // ! Initialize all tracks to be good
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
-	fKeep[ptrack] = kTRUE;
-	fReject[ptrack] = 0;
-	testTracks[ptrack] = static_cast<THaTrack*>( fTracks->At(ptrack) );      
-        if (!testTracks[ptrack]) return -1;	
-      }      
+    // ! Initialize all tracks to be good
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
+      keep[ptrack] = kTRUE;
+      reject[ptrack] = 0;
+      testTracks[ptrack] = static_cast<THaTrack*>( fTracks->At(ptrack) );      
+      if (!testTracks[ptrack]) return -1;	
+    }      
       
-      // ! Prune on xptar
-      fNGood = 0;
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
-	if ( ( TMath::Abs( testTracks[ptrack]->GetTTheta() ) < fPruneXp ) && ( fKeep[ptrack] ) ){	  
-	  fNGood ++;
-	}	
-      }
-      if ( fNGood > 0 ) {
-	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
-	  if ( TMath::Abs( testTracks[ptrack]->GetTTheta() ) >= fPruneXp ){
-	    fKeep[ptrack] = kFALSE;
-	    fReject[ptrack] = fReject[ptrack] + 1;
-	  }
+    // ! Prune on xptar
+    nGood = 0;
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
+      if ( ( TMath::Abs( testTracks[ptrack]->GetTTheta() ) < fPruneXp ) && ( keep[ptrack] ) ){	  
+	nGood ++;
+      }	
+    }
+    if ( nGood > 0 ) {
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
+	if ( TMath::Abs( testTracks[ptrack]->GetTTheta() ) >= fPruneXp ){
+	  keep[ptrack] = kFALSE;
+	  reject[ptrack] = reject[ptrack] + 1;
 	}
       }
+    }
       
-      // ! Prune on yptar
-      fNGood = 0;
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
-	if ( ( TMath::Abs( testTracks[ptrack]->GetTPhi() ) < fPruneYp ) && ( fKeep[ptrack] ) ){
-	  fNGood ++; 
-	}
+    // ! Prune on yptar
+    nGood = 0;
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
+      if ( ( TMath::Abs( testTracks[ptrack]->GetTPhi() ) < fPruneYp ) && ( keep[ptrack] ) ){
+	nGood ++; 
       }
-      if (fNGood > 0 ) {
-	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
-	  if ( TMath::Abs( testTracks[ptrack]->GetTPhi() ) >= fPruneYp ){
-	    fKeep[ptrack] = kFALSE;
-	    fReject[ptrack] = fReject[ptrack] + 2;
-	    
-	  }		
-	}
-      }
-      
-      // !     Prune on ytar
-      fNGood = 0;
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	
-	if ( ( TMath::Abs( testTracks[ptrack]->GetTY() ) < fPruneYtar ) && ( fKeep[ptrack] ) ){
-	  fNGood ++; 
-	}	
-      }      
-      if (fNGood > 0 ) {
-	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
-	  if ( TMath::Abs( testTracks[ptrack]->GetTY() ) >= fPruneYtar ){
-	    fKeep[ptrack] = kFALSE;
-	    fReject[ptrack] = fReject[ptrack] + 10;
-	  }
-	}
-      }
-      
-      // !     Prune on delta
-      fNGood = 0;
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	
-	if ( ( TMath::Abs( testTracks[ptrack]->GetDp() ) < fPruneDelta ) && ( fKeep[ptrack] ) ){
-	  fNGood ++; 
-	}	
-      }            
-      if (fNGood > 0 ) {
-	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){
-	  if ( TMath::Abs( testTracks[ptrack]->GetDp() ) >= fPruneDelta ){
-	    fKeep[ptrack] = kFALSE;
-	    fReject[ptrack] = fReject[ptrack] + 20;
-	  }
-	}
-      }      
-            
-      // !     Prune on beta
-      fNGood = 0;
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
-	fP = testTracks[ptrack]->GetP();
-	fBetaP = fP / TMath::Sqrt( fP * fP + fPartMass * fPartMass );       
-	if ( ( TMath::Abs( testTracks[ptrack]->GetBeta() - fBetaP ) < fPruneBeta ) && ( fKeep[ptrack] ) ){
-	  fNGood ++; 
-	}	
-      }
-      if (fNGood > 0 ) {
-	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
-	  fP = testTracks[ptrack]->GetP();
-	  fBetaP = fP / TMath::Sqrt( fP * fP + fPartMass * fPartMass );       
-	  if ( TMath::Abs( testTracks[ptrack]->GetBeta() - fBetaP ) >= fPruneBeta ) {	    
-	    fKeep[ptrack] = kFALSE;
-	    fReject[ptrack] = fReject[ptrack] + 100;	          
-	  }	  
-	}	
-      }
-      
-      // !     Prune on deg. freedom for track chisq
-      fNGood = 0;
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
-	if ( ( testTracks[ptrack]->GetNDoF() >= fPruneDf ) && ( fKeep[ptrack] ) ){
-	  fNGood ++; 	  
-	}		
-      }          
-      if (fNGood > 0 ) {
-	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
-	  if ( testTracks[ptrack]->GetNDoF() < fPruneDf ){	  
-	    fKeep[ptrack] = kFALSE;
-	    fReject[ptrack] = fReject[ptrack] + 200;
-	  }
-	}
-      }
-
-      //!     Prune on num pmt hits
-      fNGood = 0;
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
-	if ( ( testTracks[ptrack]->GetNPMT() >= fPruneNPMT ) && ( fKeep[ptrack] ) ){
-	  fNGood ++; 	  
-	}	        		
-      }
-      if (fNGood > 0 ) {
-	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
-	  if ( testTracks[ptrack]->GetNPMT() < fPruneNPMT ){
-	    fKeep[ptrack] = kFALSE;
-	    fReject[ptrack] = fReject[ptrack] + 100000;
-	  }
-	}
-      }
-
-      // !     Prune on beta chisqr
-      fNGood = 0;
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
-	if ( ( testTracks[ptrack]->GetBetaChi2() < fPruneChiBeta ) && 
-	     ( testTracks[ptrack]->GetBetaChi2() > 0.01 )          &&   ( fKeep[ptrack] ) ){
-	  fNGood ++; 	  
-	}	        			
-      }
-      if (fNGood > 0 ) {
-	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
-	  if ( ( testTracks[ptrack]->GetBetaChi2() >= fPruneChiBeta ) || 
-	       ( testTracks[ptrack]->GetBetaChi2() <= 0.01          ) ){
-	    fKeep[ptrack] = kFALSE;
-	    fReject[ptrack] = fReject[ptrack] + 1000;
-	  }	  	  
-	}
-      }
-
-      // !     Prune on fptime
-      fNGood = 0;
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
-	if ( ( TMath::Abs( testTracks[ptrack]->GetFPTime() - fHodo->GetStartTimeCenter() ) < fPruneFpTime )  &&   
-	     ( fKeep[ptrack] ) ){
-	  fNGood ++; 	  
-	}	        			
-      }
-      if (fNGood > 0 ) {
-	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
-	  if ( TMath::Abs( testTracks[ptrack]->GetFPTime() - fHodo->GetStartTimeCenter() ) >= fPruneFpTime ) {
-	    fKeep[ptrack] = kFALSE;
-	    fReject[ptrack] = fReject[ptrack] + 2000;	    	    
-	  }
-	}
-      }
-      
-      // !     Prune on Y2 being hit
-      fNGood = 0;
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
-	if ( ( testTracks[ptrack]->GetGoodPlane4() == 1 )  &&  fKeep[ptrack] ) {
-	  fNGood ++; 	  	  
-	}	        			
-      }
-      if (fNGood > 0 ) {
-	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
-	  if ( testTracks[ptrack]->GetGoodPlane4() != 1 ) {
-	    fKeep[ptrack] = kFALSE;
-	    fReject[ptrack] = fReject[ptrack] + 10000;	    	    
-	  }
-	}
-      }      
-      
-      // !     Prune on X2 being hit
-      fNGood = 0;
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
-	if ( ( testTracks[ptrack]->GetGoodPlane3() == 1 )  &&  fKeep[ptrack] ) {
-	  fNGood ++; 	  	  
-	}	        			
-      }
-      if (fNGood > 0 ) {
-	for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
-	  if ( testTracks[ptrack]->GetGoodPlane3() != 1 ) {
-	    fKeep[ptrack] = kFALSE;
-	    fReject[ptrack] = fReject[ptrack] + 20000;	    	    	    	    
-	  }
-	}
-      }      
-      
-      // !     Pick track with best chisq if more than one track passed prune tests
-      Double_t chi2PerDeg = 0.;
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
-
-	chi2PerDeg =  testTracks[ptrack]->GetChi2() / testTracks[ptrack]->GetNDoF();
-
-	if ( ( chi2PerDeg < chi2Min ) && ( fKeep[ptrack] ) ){
-	  fGoodTrack = ptrack;
-	  chi2Min = chi2PerDeg;
-	}	
-      }      
-
-      fGoldenTrack = static_cast<THaTrack*>( fTracks->At(fGoodTrack) );
-      fTrkIfo      = *fGoldenTrack;
-      fTrk         = fGoldenTrack;
-      
-      delete [] fKeep;             fKeep = NULL;        
-      delete [] fReject;           fKeep = NULL;        
-      for ( ptrack = 0; ptrack < fNtracks; ptrack++ ){	
-	testTracks[ptrack] = NULL;
-	delete 	testTracks[ptrack];
-      }	      
-      
-    } else // Condition for fNtrack > 0
-      fGoldenTrack = NULL;
-  } // if prune
+    }
+    if (nGood > 0 ) {
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
+	if ( TMath::Abs( testTracks[ptrack]->GetTPhi() ) >= fPruneYp ){
+	  keep[ptrack] = kFALSE;
+	  reject[ptrack] = reject[ptrack] + 2;
   
-  //-------------------------------------------------------------------------------------
-  //-------------------------------------------------------------------------------------
-  //-------------------------------------------------------------------------------------
-  //-------------------------------------------------------------------------------------
-  //  cout << endl;
-  return TrackTimes( fTracks );
+	}		
+      }
+    }
+      
+    // !     Prune on ytar
+    nGood = 0;
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	
+      if ( ( TMath::Abs( testTracks[ptrack]->GetTY() ) < fPruneYtar ) && ( keep[ptrack] ) ){
+	nGood ++; 
+      }	
+    }      
+    if (nGood > 0 ) {
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
+	if ( TMath::Abs( testTracks[ptrack]->GetTY() ) >= fPruneYtar ){
+	  keep[ptrack] = kFALSE;
+	  reject[ptrack] = reject[ptrack] + 10;
+	}
+      }
+    }
+  
+    // !     Prune on delta
+    nGood = 0;
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	
+      if ( ( TMath::Abs( testTracks[ptrack]->GetDp() ) < fPruneDelta ) && ( keep[ptrack] ) ){
+	nGood ++; 
+      }	
+    }            
+    if (nGood > 0 ) {
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
+	if ( TMath::Abs( testTracks[ptrack]->GetDp() ) >= fPruneDelta ){
+	  keep[ptrack] = kFALSE;
+	  reject[ptrack] = reject[ptrack] + 20;
+	}
+      }
+    }      
+            
+    // !     Prune on beta
+    nGood = 0;
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+      Double_t p = testTracks[ptrack]->GetP();
+      Double_t betaP = p / TMath::Sqrt( p * p + fPartMass * fPartMass );       
+      if ( ( TMath::Abs( testTracks[ptrack]->GetBeta() - betaP ) < fPruneBeta ) && ( keep[ptrack] ) ){
+	nGood ++; 
+      }	
+    }
+    if (nGood > 0 ) {
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	Double_t p = testTracks[ptrack]->GetP();
+	Double_t betaP = p / TMath::Sqrt( p * p + fPartMass * fPartMass );       
+	if ( TMath::Abs( testTracks[ptrack]->GetBeta() - betaP ) >= fPruneBeta ) {	    
+	  keep[ptrack] = kFALSE;
+	  reject[ptrack] = reject[ptrack] + 100;	          
+	}	  
+      }	
+    }
+  
+    // !     Prune on deg. freedom for track chisq
+    nGood = 0;
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+      if ( ( testTracks[ptrack]->GetNDoF() >= fPruneDf ) && ( keep[ptrack] ) ){
+	nGood ++; 	  
+      }		
+    }          
+    if (nGood > 0 ) {
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	if ( testTracks[ptrack]->GetNDoF() < fPruneDf ){	  
+	  keep[ptrack] = kFALSE;
+	  reject[ptrack] = reject[ptrack] + 200;
+	}
+      }
+    }
+
+    //!     Prune on num pmt hits
+    nGood = 0;
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+      if ( ( testTracks[ptrack]->GetNPMT() >= fPruneNPMT ) && ( keep[ptrack] ) ){
+	nGood ++; 	  
+      }	        		
+    }
+    if (nGood > 0 ) {
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	if ( testTracks[ptrack]->GetNPMT() < fPruneNPMT ){
+	  keep[ptrack] = kFALSE;
+	  reject[ptrack] = reject[ptrack] + 100000;
+	}
+      }
+    }
+
+    // !     Prune on beta chisqr
+    nGood = 0;
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+      if ( ( testTracks[ptrack]->GetBetaChi2() < fPruneChiBeta ) && 
+	   ( testTracks[ptrack]->GetBetaChi2() > 0.01 )          &&   ( keep[ptrack] ) ){
+	nGood ++; 	  
+      }	        			
+    }
+    if (nGood > 0 ) {
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	if ( ( testTracks[ptrack]->GetBetaChi2() >= fPruneChiBeta ) || 
+	     ( testTracks[ptrack]->GetBetaChi2() <= 0.01          ) ){
+	  keep[ptrack] = kFALSE;
+	  reject[ptrack] = reject[ptrack] + 1000;
+	}	  	  
+      }
+    }
+
+    // !     Prune on fptime
+    nGood = 0;
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+      if ( ( TMath::Abs( testTracks[ptrack]->GetFPTime() - fHodo->GetStartTimeCenter() ) < fPruneFpTime )  &&   
+	   ( keep[ptrack] ) ){
+	nGood ++; 	  
+      }	        			
+    }
+    if (nGood > 0 ) {
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	if ( TMath::Abs( testTracks[ptrack]->GetFPTime() - fHodo->GetStartTimeCenter() ) >= fPruneFpTime ) {
+	  keep[ptrack] = kFALSE;
+	  reject[ptrack] = reject[ptrack] + 2000;	    	    
+	}
+      }
+    }
+      
+    // !     Prune on Y2 being hit
+    nGood = 0;
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+      if ( ( testTracks[ptrack]->GetGoodPlane4() == 1 )  &&  keep[ptrack] ) {
+	nGood ++; 	  	  
+      }	        			
+    }
+    if (nGood > 0 ) {
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	if ( testTracks[ptrack]->GetGoodPlane4() != 1 ) {
+	  keep[ptrack] = kFALSE;
+	  reject[ptrack] = reject[ptrack] + 10000;	    	    
+	}
+      }
+    }      
+  
+    // !     Prune on X2 being hit
+    nGood = 0;
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+      if ( ( testTracks[ptrack]->GetGoodPlane3() == 1 )  &&  keep[ptrack] ) {
+	nGood ++; 	  	  
+      }	        			
+    }
+    if (nGood > 0 ) {
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+	if ( testTracks[ptrack]->GetGoodPlane3() != 1 ) {
+	  keep[ptrack] = kFALSE;
+	  reject[ptrack] = reject[ptrack] + 20000;	    	    	    	    
+	}
+      }
+    }      
+      
+    // !     Pick track with best chisq if more than one track passed prune tests
+    Double_t chi2PerDeg = 0.;
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+
+      chi2PerDeg =  testTracks[ptrack]->GetChi2() / testTracks[ptrack]->GetNDoF();
+
+      if ( ( chi2PerDeg < chi2Min ) && ( keep[ptrack] ) ){
+	fGoodTrack = ptrack;
+	chi2Min = chi2PerDeg;
+      }	
+    }      
+
+    fGoldenTrack = static_cast<THaTrack*>( fTracks->At(fGoodTrack) );
+    fTrkIfo      = *fGoldenTrack;
+    fTrk         = fGoldenTrack;
+      
+  } else // Condition for fNtrack > 0
+    fGoldenTrack = NULL;
+
+  return(0);
 }
 
 //_____________________________________________________________________________

@@ -40,8 +40,12 @@ public:
   virtual ~THcHallCSpectrometer();
 
   virtual Int_t   ReadDatabase( const TDatime& date );
+  virtual void    EnforcePruneLimits();
   virtual Int_t   FindVertices( TClonesArray& tracks );
   virtual Int_t   TrackCalc();
+  virtual Int_t   BestTrackSimple();
+  virtual Int_t   BestTrackUsingScin();
+  virtual Int_t   BestTrackUsingPrune();
   virtual Int_t   TrackTimes( TClonesArray* tracks );
 
   virtual Int_t   ReadRunDatabase( const TDatime& date );
@@ -58,8 +62,8 @@ public:
 protected:
   void InitializeReconstruction();
 
-  Bool_t*      fKeep;
-  Int_t*       fReject;
+  //  Bool_t*      fKeep;
+  //  Int_t*       fReject;
 
   Double_t     fPartMass;
   Double_t     fPruneXp;
