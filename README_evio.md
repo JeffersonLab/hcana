@@ -11,9 +11,9 @@ Downloading
 
 On your local system, retrieve and unpack the EVIO source distribution:
 
-wget -check-certificate https://coda.jlab.org/drupal/system/files/coda/evio/evio-4.4/evio-4.4.4.tgz
-tar -xvzf evio-4.4.4.tgz
-cd evio-4.4.4
+	$ wget -check-certificate https://coda.jlab.org/drupal/system/files/coda/evio/evio-4.4/evio-4.4.4.tgz
+	$ tar -xvzf evio-4.4.4.tgz
+	$ cd evio-4.4.4
 
 This will unpack the EVIO source code in a directory called evio-4.4.4, and take you
 into that new directory.
@@ -28,7 +28,7 @@ In the podd-1.6 git branch of hcana, there is a file called evio-4.4.4.patch
 
 Apply this patch to the original source distribution with:
 
-patch < /path/to/hcana/installation/evio-4.4.4.patch
+	$ patch < /path/to/hcana/installation/evio-4.4.4.patch
 
 where of course you would specify the full path to wherever you have installed the hcana podd 1.5 git branch.
  
@@ -49,18 +49,18 @@ The final step is to define the environment variables necessary to tell hcana wh
 
 .cshrc
 
-setenv ANALYZER /home/brash/analysis/hcana/podd
-setenv HCANALYZER /home/brash/analysis/hcana
-setenv INSTALL_DIR /home/brash/evio-4.4.4
-setenv KERNEL_NAME `uname -s`
-setenv MACHINE_NAME `uname -m`
-setenv EVIO_SUBDIR $KERNEL_NAME-$MACHINE_NAME
-setenv EVIO_BINDIR $INSTALL_DIR/$EVIO_SUBDIR/bin
-setenv EVIO_LIBDIR $INSTALL_DIR/$EVIO_SUBDIR/lib
-setenv EVIO_INCDIR $INSTALL_DIR/$EVIO_SUBDIR/include
-setenv LD_LIBRARY_PATH "${HCANALYZER}:${ANALYZER}/src:${ANALYZER}/hana_decode:${ANALYZER}/hana_scaler:${EVIO_LIBDIR}:${ANALYZER}"
-setenv DB_DIR $ANALYZER/DB
-set path = ( $ANALYZER/bin $HCANALYZER/bin $EVIO_BINDIR $path )
+	setenv ANALYZER /home/brash/analysis/hcana/podd
+	setenv HCANALYZER /home/brash/analysis/hcana
+	setenv INSTALL_DIR /home/brash/evio-4.4.4
+	setenv KERNEL_NAME `uname -s`
+	setenv MACHINE_NAME `uname -m`
+	setenv EVIO_SUBDIR $KERNEL_NAME-$MACHINE_NAME
+	setenv EVIO_BINDIR $INSTALL_DIR/$EVIO_SUBDIR/bin
+	setenv EVIO_LIBDIR $INSTALL_DIR/$EVIO_SUBDIR/lib
+	setenv EVIO_INCDIR $INSTALL_DIR/$EVIO_SUBDIR/include
+	setenv LD_LIBRARY_PATH "${HCANALYZER}:${ANALYZER}/src:${ANALYZER}/hana_decode:${ANALYZER}/hana_scaler:${EVIO_LIBDIR}:${ANALYZER}"
+	setenv DB_DIR $ANALYZER/DB
+	set path = ( $ANALYZER/bin $HCANALYZER/bin $EVIO_BINDIR $path )
 
 .bash_profile
 
