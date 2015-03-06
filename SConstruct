@@ -153,6 +153,7 @@ hallclib = 'HallC'
 hallalib = 'HallA'
 dclib = 'dc'
 scalerlib = 'scaler'
+eviolib = 'evio'
 
 baseenv.Append(LIBPATH=['$HC_DIR','$EVIO_LIB','$HA_DIR','$HC_SRC','$HA_SRC','$HA_DC','$HA_SCALER'])
 baseenv.Replace(SHLIBSUFFIX = '.so')
@@ -162,8 +163,8 @@ directorylist = ['./','src','podd','podd/src','podd/hana_decode','podd/hana_scal
 
 baseenv.Append(SHLIBSUFFIX ='.'+baseenv.subst('$VERSION'))
 pbaseenv=baseenv.Clone()
-pbaseenv.Append(LIBS=[hallclib,hallalib,dclib,scalerlib])
-baseenv.Append(LIBS=[hallalib,dclib,scalerlib])
+pbaseenv.Append(LIBS=[eviolib,hallclib,hallalib,dclib,scalerlib])
+baseenv.Append(LIBS=[eviolib,hallalib,dclib,scalerlib])
 Export('pbaseenv')
 
 SConscript(dirs = directorylist,name='SConscript.py',exports='baseenv')
