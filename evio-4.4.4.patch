@@ -1,0 +1,27 @@
+diff -rupN evio-4.4.4_orig/SConstruct evio-4.4.4/SConstruct
+--- evio-4.4.4_orig/SConstruct	2015-02-05 15:35:06.000000000 -0500
++++ evio-4.4.4/SConstruct	2015-03-06 15:38:35.000000000 -0500
+@@ -167,7 +167,8 @@ else:
+ 
+     elif platform == 'Darwin':
+         execLibs = ['pthread', 'dl', 'expat', 'z']
+-        env.Append(CPPDEFINES = ['Darwin'], SHLINKFLAGS = ['-multiply_defined', '-flat_namespace', 'suppress'])
++        env.Append(CPPDEFINES = 'Darwin')
++        env.Append(SHLINKFLAGS = '-multiply_defined suppress -flat_namespace -undefined suppress')
+         env.Append(CCFLAGS = ['-fmessage-length=0'])
+ 
+ 
+diff -rupN evio-4.4.4_orig/coda.py evio-4.4.4/coda.py
+--- evio-4.4.4_orig/coda.py	2015-01-08 10:26:13.000000000 -0500
++++ evio-4.4.4/coda.py	2015-03-06 15:38:30.000000000 -0500
+@@ -125,8 +125,8 @@ def configure32bits(env, use32bits, plat
+ 
+     elif platform == 'Darwin':
+         if not use32bits:
+-            env.Append(CCFLAGS =   ['-arch x86_64'],
+-                       LINKFLAGS = ['-arch x86_64', '-Wl', '-bind_at_load'])
++            env.Append(CCFLAGS =   '-arch x86_64')
++            env.Append(LINKFLAGS = '-arch x86_64 -Wl,-bind_at_load')
+ 
+     elif platform == 'Linux':
+         if use32bits:
