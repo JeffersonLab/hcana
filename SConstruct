@@ -45,8 +45,8 @@ baseenv.Append(HA_SRC= baseenv.subst('$HA_DIR')+'/src ')
 baseenv.Append(HA_DC= baseenv.subst('$HA_DIR')+'/hana_decode ') 
 baseenv.Append(HA_SCALER= baseenv.subst('$HA_DIR')+'/hana_scaler ') 
 baseenv.Append(MAJORVERSION = '1')
-baseenv.Append(MINORVERSION = '5')
-baseenv.Append(PATCH = '28')
+baseenv.Append(MINORVERSION = '6')
+baseenv.Append(PATCH = '0')
 baseenv.Append(SOVERSION = baseenv.subst('$MAJORVERSION')+'.'+baseenv.subst('$MINORVERSION'))
 baseenv.Append(VERSION = baseenv.subst('$SOVERSION')+'.'+baseenv.subst('$PATCH'))
 baseenv.Append(EXTVERS = '')
@@ -57,6 +57,14 @@ print "Hall A Main Directory = %s" % baseenv.subst('$HA_DIR')
 print "Software Version = %s" % baseenv.subst('$VERSION')
 ivercode = 65536*int(float(baseenv.subst('$SOVERSION')))+ 256*int(10*(float(baseenv.subst('$SOVERSION'))-int(float(baseenv.subst('$SOVERSION')))))+ int(float(baseenv.subst('$PATCH')))
 baseenv.Append(VERCODE = ivercode)
+#
+# evio environment #
+baseenv.Append(EVIO_LIB = os.getenv('EVIO_LIBDIR'))
+baseenv.Append(EVIO_INC = os.getenv('EVIO_INCDIR'))
+print "EVIO lib Directory = %s" % baseenv.subst('$EVIO_LIB')
+print "EVIO include Directory = %s" % baseenv.subst('$EVIO_INC')
+baseenv.Append(CPPPATH = ['$EVIO_INC'])
+#
 baseenv.Append(CPPPATH = ['$HC_SRC','$HA_SRC','$HA_DC','$HA_SCALER'])
 
 proceed = "1" or "y" or "yes" or "Yes" or "Y"
@@ -146,7 +154,7 @@ hallalib = 'HallA'
 dclib = 'dc'
 scalerlib = 'scaler'
 
-baseenv.Append(LIBPATH=['$HC_DIR','$HA_DIR','$HC_SRC','$HA_SRC','$HA_DC','$HA_SCALER'])
+baseenv.Append(LIBPATH=['$HC_DIR','$EVIO_LIB','$HA_DIR','$HC_SRC','$HA_SRC','$HA_DC','$HA_SCALER'])
 baseenv.Replace(SHLIBSUFFIX = '.so')
 baseenv.Append(CPPDEFINES = '-DHALLC_MODS')
 
