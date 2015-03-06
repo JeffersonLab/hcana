@@ -11,7 +11,7 @@ Downloading
 
 On your local system, retrieve and unpack the EVIO source distribution:
 
-	$ wget -check-certificate https://coda.jlab.org/drupal/system/files/coda/evio/evio-4.4/evio-4.4.4.tgz
+	$ wget --no-check-certificate https://coda.jlab.org/drupal/system/files/coda/evio/evio-4.4/evio-4.4.4.tgz
 	$ tar -xvzf evio-4.4.4.tgz
 	$ cd evio-4.4.4
 
@@ -37,8 +37,8 @@ Compiling
 
 You can now compile the EVIO libraries with:
 
-scons
-scons install --prefix=.
+	$ scons
+	$ scons install --prefix=.
 
 This will install the libaries in a subdirectory of the current source directory according to the operating system that you are using.
 
@@ -64,18 +64,18 @@ The final step is to define the environment variables necessary to tell hcana wh
 
 .bash_profile
 
-export HCANALYZER=/Users/brash/Dropbox/Research/analysis/hcana
-export ANALYZER=/Users/brash/Dropbox/Research/analysis/hcana/podd
-export INSTALL_DIR=/Users/brash/Dropbox/Research/analyzer-evio/evio-4.4.4
-export KERNEL_NAME=`uname -s`
-export MACHINE_NAME=`uname -m`
-export EVIO_SUBDIR=$KERNEL_NAME-$MACHINE_NAME
-export EVIO_BINDIR=$INSTALL_DIR/$EVIO_SUBDIR/bin
-export EVIO_LIBDIR=$INSTALL_DIR/$EVIO_SUBDIR/lib
-export EVIO_INCDIR=$INSTALL_DIR/$EVIO_SUBDIR/include
-export PATH=$HCANALYZER/bin:$ANALYZER/bin:$EVIO_BINDIR:$PATH
-export DYLD_LIBRARY_PATH=$HCANALYZER:$ANALYZER:$EVIO_LIBDIR:$DYLD_LIBRARY_PATH
-export LD_LIBRARY_PATH=$HCANALYZER:$ANALYZER:$EVIO_LIBDIR:$LD_LIBRARY_PATH
+	export HCANALYZER=/Users/brash/Dropbox/Research/analysis/hcana
+	export ANALYZER=/Users/brash/Dropbox/Research/analysis/hcana/podd
+	export INSTALL_DIR=/Users/brash/Dropbox/Research/analyzer-evio/evio-4.4.4
+	export KERNEL_NAME=`uname -s`
+	export MACHINE_NAME=`uname -m`
+	export EVIO_SUBDIR=$KERNEL_NAME-$MACHINE_NAME
+	export EVIO_BINDIR=$INSTALL_DIR/$EVIO_SUBDIR/bin
+	export EVIO_LIBDIR=$INSTALL_DIR/$EVIO_SUBDIR/lib
+	export EVIO_INCDIR=$INSTALL_DIR/$EVIO_SUBDIR/include
+	export PATH=$HCANALYZER/bin:$ANALYZER/bin:$EVIO_BINDIR:$PATH
+	export DYLD_LIBRARY_PATH=$HCANALYZER:$ANALYZER:$EVIO_LIBDIR:$DYLD_LIBRARY_PATH
+	export LD_LIBRARY_PATH=$HCANALYZER:$ANALYZER:$EVIO_LIBDIR:$LD_LIBRARY_PATH
 
 
 
