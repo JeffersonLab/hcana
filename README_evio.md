@@ -2,7 +2,7 @@ hcana with externally built evio libraries
 ============================================
 
 As of PODD version 1.6, EVIO is built as an external library from the official JLAB
-DAQ group source code.  As of this writing, the official release is version 4.4.4.
+DAQ group source code.  As of this writing, the official release is version 4.4.5.
 In order to compile hcana with PODD version 1.6, one must download, install, and define
 appropriate environment variables for the evio libraries.
 
@@ -11,27 +11,13 @@ Downloading
 
 On your local system, retrieve and unpack the EVIO source distribution:
 
-	$ wget --no-check-certificate https://coda.jlab.org/drupal/system/files/coda/evio/evio-4.4/evio-4.4.4.tgz
-	$ tar -xvzf evio-4.4.4.tgz
-	$ cd evio-4.4.4
+	$ wget --no-check-certificate https://coda.jlab.org/drupal/system/files/coda/evio/evio-4.4/evio-4.4.5.tgz
+	$ tar -xvzf evio-4.4.5.tgz
+	$ cd evio-4.4.5
 
-This will unpack the EVIO source code in a directory called evio-4.4.4, and take you
+This will unpack the EVIO source code in a directory called evio-4.4.5, and take you
 into that new directory.
 
-Patching
---------
-
-If you are running Mac OSX, you will need to apply a patch to this distribution,
-as two of the python compilation scripts that SCons uses have errors.  
-
-In the podd-1.6 git branch of hcana, there is a file called evio-4.4.4.patch
-
-Apply this patch to the original source distribution with:
-
-	$ patch < /path/to/hcana/installation/evio-4.4.4.patch
-
-where of course you would specify the full path to wherever you have installed the hcana podd 1.5 git branch.
- 
 Compiling
 ---------
 
@@ -49,9 +35,9 @@ The final step is to define the environment variables necessary to tell hcana wh
 
 .cshrc
 
-	setenv ANALYZER /home/brash/analysis/hcana/podd
 	setenv HCANALYZER /home/brash/analysis/hcana
-	setenv INSTALL_DIR /home/brash/evio-4.4.4
+	setenv ANALYZER /home/brash/analysis/hcana/podd
+	setenv INSTALL_DIR /home/brash/evio-4.4.5
 	setenv KERNEL_NAME `uname -s`
 	setenv MACHINE_NAME `uname -m`
 	setenv EVIO_SUBDIR $KERNEL_NAME-$MACHINE_NAME
@@ -66,7 +52,7 @@ The final step is to define the environment variables necessary to tell hcana wh
 
 	export HCANALYZER=/Users/brash/Dropbox/Research/analysis/hcana
 	export ANALYZER=/Users/brash/Dropbox/Research/analysis/hcana/podd
-	export INSTALL_DIR=/Users/brash/Dropbox/Research/analyzer-evio/evio-4.4.4
+	export INSTALL_DIR=/Users/brash/Dropbox/Research/analyzer-evio/evio-4.4.5
 	export KERNEL_NAME=`uname -s`
 	export MACHINE_NAME=`uname -m`
 	export EVIO_SUBDIR=$KERNEL_NAME-$MACHINE_NAME
