@@ -1,0 +1,219 @@
+# See $ANALYZER/examples/output_example.def for examples
+#
+#block H.dc.*
+#block H.hod.*
+block H.cal.*
+#block H.aero.*
+block H.tr.*
+block H.gold.*
+block g.evtyp
+
+# TDC spectra
+TH1F hfptime1x ' HMS s1x fptime' H.hod.1x.fptime 80 0. 80.
+TH1F hfptime1y ' HMS s1y fptime' H.hod.1y.fptime 80 0. 80.
+TH1F hfptime2x ' HMS s2x fptime' H.hod.2x.fptime 80 0. 80.
+TH1F hfptime2y ' HMS s2y fptime' H.hod.2y.fptime 80 0. 80.
+# Beta
+TH1F hfpBeta      'HMS Hodo Beta'  H.hod.fpBeta      250 -0.5 2.0
+TH1F hfpBetaChisq 'HMS Hodo Chisq' H.hod.fpBetaChisq 550 -5. 50.
+# TDC hits per paddle
+TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.postdchits 16 0.5 16.5
+TH1F hnegtdc1 'HMS s1x- TDC hits' H.hod.1x.negtdchits 16 0.5 16.5
+TH1F hpostdc2 'HMS s1y+ TDC hits' H.hod.1y.postdchits 10 0.5 10.5
+TH1F hnegtdc2 'HMS s1y- TDC hits' H.hod.1y.negtdchits 10 0.5 10.5
+TH1F hpostdc3 'HMS s2x+ TDC hits' H.hod.2x.postdchits 16 0.5 16.5
+TH1F hnegtdc3 'HMS s2x- TDC hits' H.hod.2x.negtdchits 16 0.5 16.5
+TH1F hpostdc4 'HMS s2y+ TDC hits' H.hod.2y.postdchits 10 0.5 10.5
+TH1F hnegtdc4 'HMS s2y- TDC hits' H.hod.2y.negtdchits 10 0.5 10.5
+
+# ADC hits per paddle
+TH1F hposadc1 'HMS s1x+ ADC hits' H.hod.1x.posadchits 16 0.5 16.5
+TH1F hnegadc1 'HMS s1x- ADC hits' H.hod.1x.negadchits 16 0.5 16.5
+TH1F hposadc2 'HMS s1y+ ADC hits' H.hod.1y.posadchits 10 0.5 10.5
+TH1F hnegadc2 'HMS s1y- ADC hits' H.hod.1y.negadchits 10 0.5 10.5
+TH1F hposadc3 'HMS s2x+ ADC hits' H.hod.2x.posadchits 16 0.5 16.5
+TH1F hnegadc3 'HMS s2x- ADC hits' H.hod.2x.negadchits 16 0.5 16.5
+TH1F hposadc4 'HMS s2y+ ADC hits' H.hod.2y.posadchits 10 0.5 10.5
+TH1F hnegadc4 'HMS s2y- ADC hits' H.hod.2y.negadchits 10 0.5 10.5
+
+# ADC hits per Calorimeter layer
+TH1F chposadc1 'HMS Cal A+ ADC hits' H.cal.1pr.posadchits 13 0.5 13.5
+TH1F chnegadc1 'HMS Cal A- ADC hits' H.cal.1pr.negadchits 13 0.5 13.5
+TH1F chposadc2 'HMS Cal B+ ADC hits' H.cal.2ta.posadchits 13 0.5 13.5
+TH1F chnegadc2 'HMS Cal B- ADC hits' H.cal.2ta.negadchits 13 0.5 13.5
+TH1F chposadc3 'HMS Cal C+ ADC hits' H.cal.3ta.posadchits 13 0.5 13.5
+TH1F chposadc4 'HMS Cal D+ ADC hits' H.cal.4ta.posadchits 13 0.5 13.5
+
+# Deposited Energies per Calorimeter layer
+TH1F edep1 'HMS Cal A Edep' H.cal.1pr.eplane 100 -0.1 0.811
+TH1F edep2 'HMS Cal B Edep' H.cal.2ta.eplane 100 -0.1 0.811
+TH1F edep3 'HMS Cal C Edep' H.cal.3ta.eplane 100 -0.1 0.811
+TH1F edep4 'HMS Cal D Edep' H.cal.4ta.eplane 100 -0.1 0.811
+
+# Number of sparsified hits in the Calorimeter.
+TH1F nhits 'HMS Cal sparsified hits' H.cal.nhits 53 -0.5 52.5
+
+# Number of hit clusters in the Calorimeter.
+TH1F nclust 'HMS Cal number of clusters' H.cal.nclust 11 -0.5 10.5
+
+# Multiplicity of the largest cluster in the Calorimeter.
+####TH1F mult 'HMS Cal size of largest cluster' H.cal.mult 21 -0.5 20.5
+
+# Energy deposited in the largest cluster.
+####TH1F emax 'HMS Cal Max Clust. Edep' H.cal.emax 200 -0.1 1.622
+
+# Preshower Energy from the largest cluster.
+####TH1F eprmax 'HMS PrSh Max Clust. Edep' H.cal.eprmax 100 -0.1 0.811
+
+# X coordinate the largest cluster.
+####TH1F xmax 'HMS Cal Max Clust. X' H.cal.xmax 150 -75. 75.
+
+# Track coordinates at the front of calorimeter
+####TH2F trx_vs_try 'HMS Track X vs Y at calor.' H.cal.try H.cal.trx 80 -40. 40. 150 -75. 75. H.dc.ntrack==1
+####TH1F trx 'HMS Track X at calorimeter' H.cal.trx 150 -75. 75. H.dc.ntrack==1
+####TH1F try 'HMS Track Y at calorimeter' H.cal.try  80 -40. 40. H.dc.ntrack==1
+
+# Energy of the cluster associated to the main (currently first) track
+####TH1F tre 'HMS Cal Track Clust. Edep' H.cal.tre 200 -0.1 1.622 H.dc.ntrack==1
+
+# Preshower Energy of the cluster associated to the main (currently 1st) track
+####TH1F trepr 'HMS PrSh Track Clust. Edep' H.cal.trepr 100 -0.1 0.811 H.dc.ntrack==1
+
+# Coordinate corrected energy deposition from the main track (currently first)
+####TH1F trecor 'HMS Cal Track Edep' H.cal.trecor 200 -0.1 1.622 H.dc.ntrack==1
+
+# Coordinate corrected preshower energy from the main track (currently first)
+####TH1F treprcor 'HMS PrSh Track Edep' H.cal.treprcor 100 -0.1 0.811 H.dc.ntrack==1
+# Coordinate corrected energy deposition from the main track (currently first)
+# in the planes. Currently works for the 1-st pnae only.
+####TH1F treplcor 'HMS Cal Track E1' H.cal.treplcor 100 -0.1 0.811 H.dc.ntrack==1
+
+# Calorimeter ADC channels
+#TH1F hcaladc_A1p 'HMS Cal ADC A1p - PED' H.cal.1pr.apos_p[0] 150 50 500
+#TH1F hcaladc_A2p 'HMS Cal ADC A2p - PED' H.cal.1pr.apos_p[1] 150 50 500
+#TH1F hcaladc_A3p 'HMS Cal ADC A3p - PED' H.cal.1pr.apos_p[2] 150 50 500
+#TH1F hcaladc_A4p 'HMS Cal ADC A4p - PED' H.cal.1pr.apos_p[3] 150 50 500
+#TH1F hcaladc_A5p 'HMS Cal ADC A5p - PED' H.cal.1pr.apos_p[4] 150 50 500
+#TH1F hcaladc_A6p 'HMS Cal ADC A6p - PED' H.cal.1pr.apos_p[5] 150 50 500
+#TH1F hcaladc_A7p 'HMS Cal ADC A7p - PED' H.cal.1pr.apos_p[6] 150 50 500
+#TH1F hcaladc_A8p 'HMS Cal ADC A8p - PED' H.cal.1pr.apos_p[7] 150 50 500
+#TH1F hcaladc_A9p 'HMS Cal ADC A9p - PED' H.cal.1pr.apos_p[8] 150 50 500
+#TH1F hcaladc_A10p 'HMS Cal ADC A10p - PED' H.cal.1pr.apos_p[9] 150 50 500
+#TH1F hcaladc_A11p 'HMS Cal ADC A11p - PED' H.cal.1pr.apos_p[10] 150 50 500
+#TH1F hcaladc_A12p 'HMS Cal ADC A12p - PED' H.cal.1pr.apos_p[11] 150 50 500
+#TH1F hcaladc_A13p 'HMS Cal ADC A13p - PED' H.cal.1pr.apos_p[12] 150 50 500
+#TH1F hcaladc_B1p 'HMS Cal ADC B1p - PED' H.cal.2ta.apos_p[0] 150 50 500
+#TH1F hcaladc_B2p 'HMS Cal ADC B2p - PED' H.cal.2ta.apos_p[1] 150 50 500
+#TH1F hcaladc_B3p 'HMS Cal ADC B3p - PED' H.cal.2ta.apos_p[2] 150 50 500
+#TH1F hcaladc_B4p 'HMS Cal ADC B4p - PED' H.cal.2ta.apos_p[3] 150 50 500
+#TH1F hcaladc_B5p 'HMS Cal ADC B5p - PED' H.cal.2ta.apos_p[4] 150 50 500
+#TH1F hcaladc_B6p 'HMS Cal ADC B6p - PED' H.cal.2ta.apos_p[5] 150 50 500
+#TH1F hcaladc_B7p 'HMS Cal ADC B7p - PED' H.cal.2ta.apos_p[6] 150 50 500
+#TH1F hcaladc_B8p 'HMS Cal ADC B8p - PED' H.cal.2ta.apos_p[7] 150 50 500
+#TH1F hcaladc_B9p 'HMS Cal ADC B9p - PED' H.cal.2ta.apos_p[8] 150 50 500
+#TH1F hcaladc_B10p 'HMS Cal ADC B10p - PED' H.cal.2ta.apos_p[9] 150 50 500
+#TH1F hcaladc_B11p 'HMS Cal ADC B11p - PED' H.cal.2ta.apos_p[10] 150 50 500
+#TH1F hcaladc_B12p 'HMS Cal ADC B12p - PED' H.cal.2ta.apos_p[11] 150 50 500
+#TH1F hcaladc_B13p 'HMS Cal ADC B13p - PED' H.cal.2ta.apos_p[12] 150 50 500
+
+#TH1F hcaladc_C1p 'HMS Cal ADC C1p - PED' H.cal.3ta.apos_p[0] 150 50 500
+#TH1F hcaladc_C2p 'HMS Cal ADC C2p - PED' H.cal.3ta.apos_p[1] 150 50 500
+#TH1F hcaladc_C3p 'HMS Cal ADC C3p - PED' H.cal.3ta.apos_p[2] 150 50 500
+#TH1F hcaladc_C4p 'HMS Cal ADC C4p - PED' H.cal.3ta.apos_p[3] 150 50 500
+#TH1F hcaladc_C5p 'HMS Cal ADC C5p - PED' H.cal.3ta.apos_p[4] 150 50 500
+#TH1F hcaladc_C6p 'HMS Cal ADC C6p - PED' H.cal.3ta.apos_p[5] 150 50 500
+#TH1F hcaladc_C7p 'HMS Cal ADC C7p - PED' H.cal.3ta.apos_p[6] 150 50 500
+#TH1F hcaladc_C8p 'HMS Cal ADC C8p - PED' H.cal.3ta.apos_p[7] 150 50 500
+#TH1F hcaladc_C9p 'HMS Cal ADC C9p - PED' H.cal.3ta.apos_p[8] 150 50 500
+#TH1F hcaladc_C10p 'HMS Cal ADC C10p - PED' H.cal.3ta.apos_p[9] 150 50 500
+#TH1F hcaladc_C11p 'HMS Cal ADC C11p - PED' H.cal.3ta.apos_p[10] 150 50 500
+#TH1F hcaladc_C12p 'HMS Cal ADC C12p - PED' H.cal.3ta.apos_p[11] 150 50 500
+#TH1F hcaladc_C13p 'HMS Cal ADC C13p - PED' H.cal.3ta.apos_p[12] 150 50 500
+
+#TH1F hcaladc_D1p 'HMS Cal ADC D1p - PED' H.cal.4ta.apos_p[0] 150 50 500
+#TH1F hcaladc_D2p 'HMS Cal ADC D2p - PED' H.cal.4ta.apos_p[1] 150 50 500
+#TH1F hcaladc_D3p 'HMS Cal ADC D3p - PED' H.cal.4ta.apos_p[2] 150 50 500
+#TH1F hcaladc_D4p 'HMS Cal ADC D4p - PED' H.cal.4ta.apos_p[3] 150 50 500
+#TH1F hcaladc_D5p 'HMS Cal ADC D5p - PED' H.cal.4ta.apos_p[4] 150 50 500
+#TH1F hcaladc_D6p 'HMS Cal ADC D6p - PED' H.cal.4ta.apos_p[5] 150 50 500
+#TH1F hcaladc_D7p 'HMS Cal ADC D7p - PED' H.cal.4ta.apos_p[6] 150 50 500
+#TH1F hcaladc_D8p 'HMS Cal ADC D8p - PED' H.cal.4ta.apos_p[7] 150 50 500
+#TH1F hcaladc_D9p 'HMS Cal ADC D9p - PED' H.cal.4ta.apos_p[8] 150 50 500
+#TH1F hcaladc_D10p 'HMS Cal ADC D10p - PED' H.cal.4ta.apos_p[9] 150 50 500
+#TH1F hcaladc_D11p 'HMS Cal ADC D11p - PED' H.cal.4ta.apos_p[10] 150 50 500
+#TH1F hcaladc_D12p 'HMS Cal ADC D12p - PED' H.cal.4ta.apos_p[11] 150 50 500
+#TH1F hcaladc_D13p 'HMS Cal ADC D13p - PED' H.cal.4ta.apos_p[12] 150 50 500
+
+#TH1F hcaladc_A1n 'HMS Cal ADC A1n - PED' H.cal.1pr.aneg_p[0] 150 50 500
+#TH1F hcaladc_A2n 'HMS Cal ADC A2n - PED' H.cal.1pr.aneg_p[1] 150 50 500
+#TH1F hcaladc_A3n 'HMS Cal ADC A3n - PED' H.cal.1pr.aneg_p[2] 150 50 500
+#TH1F hcaladc_A4n 'HMS Cal ADC A4n - PED' H.cal.1pr.aneg_p[3] 150 50 500
+#TH1F hcaladc_A5n 'HMS Cal ADC A5n - PED' H.cal.1pr.aneg_p[4] 150 50 500
+#TH1F hcaladc_A6n 'HMS Cal ADC A6n - PED' H.cal.1pr.aneg_p[5] 150 50 500
+#TH1F hcaladc_A7n 'HMS Cal ADC A7n - PED' H.cal.1pr.aneg_p[6] 150 50 500
+#TH1F hcaladc_A8n 'HMS Cal ADC A8n - PED' H.cal.1pr.aneg_p[7] 150 50 500
+#TH1F hcaladc_A9n 'HMS Cal ADC A9n - PED' H.cal.1pr.aneg_p[8] 150 50 500
+#TH1F hcaladc_A10n 'HMS Cal ADC A10n - PED' H.cal.1pr.aneg_p[9] 150 50 500
+#TH1F hcaladc_A11n 'HMS Cal ADC A11n - PED' H.cal.1pr.aneg_p[10] 150 50 500
+#TH1F hcaladc_A12n 'HMS Cal ADC A12n - PED' H.cal.1pr.aneg_p[11] 150 50 500
+#TH1F hcaladc_A13n 'HMS Cal ADC A13n - PED' H.cal.1pr.aneg_p[12] 150 50 500
+
+#TH1F hcaladc_B1n 'HMS Cal ADC B1n - PED' H.cal.2ta.aneg_p[0] 150 50 500
+#TH1F hcaladc_B2n 'HMS Cal ADC B2n - PED' H.cal.2ta.aneg_p[1] 150 50 500
+#TH1F hcaladc_B3n 'HMS Cal ADC B3n - PED' H.cal.2ta.aneg_p[2] 150 50 500
+#TH1F hcaladc_B4n 'HMS Cal ADC B4n - PED' H.cal.2ta.aneg_p[3] 150 50 500
+#TH1F hcaladc_B5n 'HMS Cal ADC B5n - PED' H.cal.2ta.aneg_p[4] 150 50 500
+#TH1F hcaladc_B6n 'HMS Cal ADC B6n - PED' H.cal.2ta.aneg_p[5] 150 50 500
+#TH1F hcaladc_B7n 'HMS Cal ADC B7n - PED' H.cal.2ta.aneg_p[6] 150 50 500
+#TH1F hcaladc_B8n 'HMS Cal ADC B8n - PED' H.cal.2ta.aneg_p[7] 150 50 500
+#TH1F hcaladc_B9n 'HMS Cal ADC B9n - PED' H.cal.2ta.aneg_p[8] 150 50 500
+#TH1F hcaladc_B10n 'HMS Cal ADC B10n - PED' H.cal.2ta.aneg_p[9] 150 50 500
+#TH1F hcaladc_B11n 'HMS Cal ADC B11n - PED' H.cal.2ta.aneg_p[10] 150 50 500
+#TH1F hcaladc_B12n 'HMS Cal ADC B12n - PED' H.cal.2ta.aneg_p[11] 150 50 500
+#TH1F hcaladc_B13n 'HMS Cal ADC B13n - PED' H.cal.2ta.aneg_p[12] 150 50 500
+
+# Can we use variables for the constants.  In CTP we used hdc_nwire(i)
+#
+TH1F hdc1x1_wm 'HDC 1X1 Wiremap' H.dc.1x1.tdchits 113 0.5 113.5
+TH1F hdc1y1_wm 'HDC 1Y1 Wiremap' H.dc.1y1.tdchits 52 0.5 52.5
+TH1F hdc1u1_wm 'HDC 1U1 Wiremap' H.dc.1u1.tdchits 107 0.5 107.5
+TH1F hdc1v1_wm 'HDC 1V1 Wiremap' H.dc.1v1.tdchits 107 0.5 107.5
+TH1F hdc1y2_wm 'HDC 1Y2 Wiremap' H.dc.1y2.tdchits 52 0.5 52.5
+TH1F hdc1x2_wm 'HDC 1X2 Wiremap' H.dc.1x2.tdchits 113 0.5 113.5
+TH1F hdc2x1_wm 'HDC 2X1 Wiremap' H.dc.2x1.tdchits 113 0.5 113.5
+TH1F hdc2y1_wm 'HDC 2Y1 Wiremap' H.dc.2y1.tdchits 52 0.5 52.5
+TH1F hdc2u1_wm 'HDC 2U1 Wiremap' H.dc.2u1.tdchits 107 0.5 107.5
+TH1F hdc2v1_wm 'HDC 2V1 Wiremap' H.dc.2v1.tdchits 107 0.5 107.5
+TH1F hdc2y2_wm 'HDC 2Y2 Wiremap' H.dc.2y2.tdchits 52 0.5 52.5
+TH1F hdc2x2_wm 'HDC 2X2 Wiremap' H.dc.2x2.tdchits 113 0.5 113.5
+#
+TH1F ddist_hdc1x1 'HDC 1X1 Drift Dis' H.dc.1x1.dist 30 -0.1 0.6
+TH1F ddist_hdc1y1 'HDC 1Y1 Drift Dis' H.dc.1y1.dist 30 -0.1 0.6
+TH1F ddist_hdc1u1 'HDC 1U1 Drift Dis' H.dc.1u1.dist 30 -0.1 0.6
+TH1F ddist_hdc1v1 'HDC 1V1 Drift Dis' H.dc.1v1.dist 30 -0.1 0.6
+TH1F ddist_hdc1y2 'HDC 1Y2 Drift Dis' H.dc.1y2.dist 30 -0.1 0.6
+TH1F ddist_hdc1x2 'HDC 1X2 Drift Dis' H.dc.1x2.dist 30 -0.1 0.6
+TH1F ddist_hdc2x1 'HDC 2X1 Drift Dis' H.dc.2x1.dist 30 -0.1 0.6
+TH1F ddist_hdc2y1 'HDC 2Y1 Drift Dis' H.dc.2y1.dist 30 -0.1 0.6
+TH1F ddist_hdc2u1 'HDC 2U1 Drift Dis' H.dc.2u1.dist 30 -0.1 0.6
+TH1F ddist_hdc2v1 'HDC 2V1 Drift Dis' H.dc.2v1.dist 30 -0.1 0.6
+TH1F ddist_hdc2y2 'HDC 2Y2 Drift Dis' H.dc.2y2.dist 30 -0.1 0.6
+TH1F ddist_hdc2x2 'HDC 2X2 Drift Dis' H.dc.2x2.dist 30 -0.1 0.6
+#
+TH1F dtime_hdc1x1 'HDC 1X1 Drift Time' H.dc.1x1.time 200 -100 300
+TH1F dtime_hdc1y1 'HDC 1Y1 Drift Time' H.dc.1y1.time 200 -100 300
+TH1F dtime_hdc1u1 'HDC 1U1 Drift Time' H.dc.1u1.time 200 -100 300
+TH1F dtime_hdc1v1 'HDC 1V1 Drift Time' H.dc.1v1.time 200 -100 300
+TH1F dtime_hdc1y2 'HDC 1Y2 Drift Time' H.dc.1y2.time 200 -100 300
+TH1F dtime_hdc1x2 'HDC 1X2 Drift Time' H.dc.1x2.time 200 -100 300
+TH1F dtime_hdc2x1 'HDC 2X1 Drift Time' H.dc.2x1.time 200 -100 300
+TH1F dtime_hdc2y1 'HDC 2Y1 Drift Time' H.dc.2y1.time 200 -100 300
+TH1F dtime_hdc2u1 'HDC 2U1 Drift Time' H.dc.2u1.time 200 -100 300
+TH1F dtime_hdc2v1 'HDC 2V1 Drift Time' H.dc.2v1.time 200 -100 300
+TH1F dtime_hdc2y2 'HDC 2Y2 Drift Time' H.dc.2y2.time 200 -100 300
+TH1F dtime_hdc2x2 'HDC 2X2 Drift Time' H.dc.2x2.time 200 -100 300
+#
+# Golden Track momentum
+TH1F golden_p 'HMS Golden P' H.gold.p 100 0.011 1.8 H.dc.ntrack!=0
+TH1F golden_e 'HMS Golden E' H.gold.e 100 0.011 1.8 H.dc.ntrack!=0
+TH1F golden_enorm 'HMS Golden E/P' H.gold.e/H.gold.p 100 0.01 1.8 H.gold.index>=0

@@ -1,0 +1,840 @@
+# ENGINE style parameter vs. run number database
+# buddhini - coppied from test.database to setup the raster decoding.
+# 
+50017
+g_ctp_parm_filename ="PARAM/general.param"
+g_decode_map_filename ="MAPS/raster_jun04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52947
+g_ctp_parm_filename ="PARAM/general.param"
+g_decode_map_filename ="MAPS/raster_jun04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52426
+g_ctp_parm_filename ="DBASE/52426.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52427
+g_ctp_parm_filename ="DBASE/52427.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52428
+g_ctp_parm_filename ="DBASE/52428.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52429
+g_ctp_parm_filename ="DBASE/52429.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52430
+g_ctp_parm_filename ="DBASE/52430.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52431
+g_ctp_parm_filename ="DBASE/52431.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52432
+g_ctp_parm_filename ="DBASE/52432.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52433
+g_ctp_parm_filename ="DBASE/52433.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52434
+g_ctp_parm_filename ="DBASE/52434.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52435
+g_ctp_parm_filename ="DBASE/52435.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52436
+g_ctp_parm_filename ="DBASE/52436.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52437
+g_ctp_parm_filename ="DBASE/52437.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52438
+g_ctp_parm_filename ="DBASE/52438.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52439
+g_ctp_parm_filename ="DBASE/52439.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52440
+g_ctp_parm_filename ="DBASE/52440.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52441
+g_ctp_parm_filename ="DBASE/52441.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52442
+g_ctp_parm_filename ="DBASE/52442.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52443
+g_ctp_parm_filename ="DBASE/52443.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52444
+g_ctp_parm_filename ="DBASE/52444.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52445
+g_ctp_parm_filename ="DBASE/52445.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52446
+g_ctp_parm_filename ="DBASE/52446.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52447
+g_ctp_parm_filename ="DBASE/52447.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52448
+g_ctp_parm_filename ="DBASE/52448.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52449
+g_ctp_parm_filename ="DBASE/52449.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52450
+g_ctp_parm_filename ="DBASE/52531.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52451
+g_ctp_parm_filename ="DBASE/52441.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52452
+g_ctp_parm_filename ="DBASE/52440.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52453
+g_ctp_parm_filename ="DBASE/52439.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52454
+g_ctp_parm_filename ="DBASE/52438.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52455
+g_ctp_parm_filename ="DBASE/52445.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52456
+g_ctp_parm_filename ="DBASE/52444.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52457
+g_ctp_parm_filename ="DBASE/52443.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52458
+g_ctp_parm_filename ="DBASE/52442.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52459
+g_ctp_parm_filename ="DBASE/52449.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52460
+g_ctp_parm_filename ="DBASE/52448.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52461
+g_ctp_parm_filename ="DBASE/52447.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52462
+g_ctp_parm_filename ="DBASE/52446.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52463
+g_ctp_parm_filename ="DBASE/52531.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52464
+g_ctp_parm_filename ="DBASE/52429.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52465
+g_ctp_parm_filename ="DBASE/52428.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52466
+g_ctp_parm_filename ="DBASE/52427.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52467
+g_ctp_parm_filename ="DBASE/52426.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52531
+g_ctp_parm_filename ="DBASE/52531.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52532
+g_ctp_parm_filename ="DBASE/52532.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52533
+g_ctp_parm_filename ="DBASE/52533.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52535
+g_ctp_parm_filename ="DBASE/52535.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52536
+g_ctp_parm_filename ="DBASE/52536.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52537
+g_ctp_parm_filename ="DBASE/52537.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52538
+g_ctp_parm_filename ="DBASE/52538.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52539
+g_ctp_parm_filename ="DBASE/52539.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52540
+g_ctp_parm_filename ="DBASE/52540.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52541
+g_ctp_parm_filename ="DBASE/52541.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52542
+g_ctp_parm_filename ="DBASE/52542.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52544
+g_ctp_parm_filename ="DBASE/52544.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52545
+g_ctp_parm_filename ="DBASE/52545.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52546
+g_ctp_parm_filename ="DBASE/52546.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52547
+g_ctp_parm_filename ="DBASE/52547.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52548
+g_ctp_parm_filename ="DBASE/52548.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52549
+g_ctp_parm_filename ="DBASE/52549.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52550
+g_ctp_parm_filename ="DBASE/52550.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52551
+g_ctp_parm_filename ="DBASE/52551.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52552
+g_ctp_parm_filename ="DBASE/52552.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52553
+g_ctp_parm_filename ="DBASE/52553.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52554
+g_ctp_parm_filename ="DBASE/52554.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52555
+g_ctp_parm_filename ="DBASE/52555.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52556
+g_ctp_parm_filename ="DBASE/52556.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52557
+g_ctp_parm_filename ="DBASE/52557.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52558
+g_ctp_parm_filename ="DBASE/52558.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52559
+g_ctp_parm_filename ="DBASE/52559.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52560
+g_ctp_parm_filename ="DBASE/52560.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52562
+g_ctp_parm_filename ="DBASE/52562.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52563
+g_ctp_parm_filename ="DBASE/52563.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52564
+g_ctp_parm_filename ="DBASE/52564.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52565
+g_ctp_parm_filename ="DBASE/52565.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52566
+g_ctp_parm_filename ="DBASE/52566.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52567
+g_ctp_parm_filename ="DBASE/52567.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52568
+g_ctp_parm_filename ="DBASE/52568.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52569
+g_ctp_parm_filename ="DBASE/52569.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52570
+g_ctp_parm_filename ="DBASE/52570.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52571
+g_ctp_parm_filename ="DBASE/52571.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52572
+g_ctp_parm_filename ="DBASE/52572.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52573
+g_ctp_parm_filename ="DBASE/52573.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52574
+g_ctp_parm_filename ="DBASE/52574.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52575
+g_ctp_parm_filename ="DBASE/52575.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52576
+g_ctp_parm_filename ="DBASE/52576.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52577
+g_ctp_parm_filename ="DBASE/52577.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52578
+g_ctp_parm_filename ="DBASE/52578.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52579
+g_ctp_parm_filename ="DBASE/52579.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52580
+g_ctp_parm_filename ="DBASE/52580.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52581
+g_ctp_parm_filename ="DBASE/52581.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52582
+g_ctp_parm_filename ="DBASE/52582.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52583
+g_ctp_parm_filename ="DBASE/52583.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52584
+g_ctp_parm_filename ="DBASE/52584.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52585
+g_ctp_parm_filename ="DBASE/52585.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52586
+g_ctp_parm_filename ="DBASE/52586.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52587
+g_ctp_parm_filename ="DBASE/52587.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52588
+g_ctp_parm_filename ="DBASE/52588.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52589
+g_ctp_parm_filename ="DBASE/52589.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52593
+g_ctp_parm_filename ="DBASE/52593.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52594
+g_ctp_parm_filename ="DBASE/52594.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52595
+g_ctp_parm_filename ="DBASE/52595.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52596
+g_ctp_parm_filename ="DBASE/52596.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52598
+g_ctp_parm_filename ="DBASE/52598.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52599
+g_ctp_parm_filename ="DBASE/52599.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52602
+g_ctp_parm_filename ="DBASE/52602.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52603
+g_ctp_parm_filename ="DBASE/52603.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52605
+g_ctp_parm_filename ="DBASE/52605.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52606
+g_ctp_parm_filename ="DBASE/52606.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52607
+g_ctp_parm_filename ="DBASE/52607.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52608
+g_ctp_parm_filename ="DBASE/52608.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52609
+g_ctp_parm_filename ="DBASE/52609.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52610
+g_ctp_parm_filename ="DBASE/52610.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52611
+g_ctp_parm_filename ="DBASE/52611.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52612
+g_ctp_parm_filename ="DBASE/52612.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52613
+g_ctp_parm_filename ="DBASE/52613.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52614
+g_ctp_parm_filename ="DBASE/52614.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52617
+g_ctp_parm_filename ="DBASE/52617.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52618
+g_ctp_parm_filename ="DBASE/52618.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52619
+g_ctp_parm_filename ="DBASE/52619.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52620
+g_ctp_parm_filename ="DBASE/52620.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52621
+g_ctp_parm_filename ="DBASE/52621.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52622
+g_ctp_parm_filename ="DBASE/52622.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52623
+g_ctp_parm_filename ="DBASE/52623.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52624
+g_ctp_parm_filename ="DBASE/52624.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52625
+g_ctp_parm_filename ="DBASE/52625.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52626
+g_ctp_parm_filename ="DBASE/52626.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52627
+g_ctp_parm_filename ="DBASE/52627.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52629
+g_ctp_parm_filename ="DBASE/52629.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52630
+g_ctp_parm_filename ="DBASE/52630.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52631
+g_ctp_parm_filename ="DBASE/52631.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52632
+g_ctp_parm_filename ="DBASE/52632.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52633
+g_ctp_parm_filename ="DBASE/52633.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52634
+g_ctp_parm_filename ="DBASE/52634.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52635
+g_ctp_parm_filename ="DBASE/52635.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52636
+g_ctp_parm_filename ="DBASE/52636.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52637
+g_ctp_parm_filename ="DBASE/52637.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52638
+g_ctp_parm_filename ="DBASE/52638.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52639
+g_ctp_parm_filename ="DBASE/52639.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52640
+g_ctp_parm_filename ="DBASE/52640.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52641
+g_ctp_parm_filename ="DBASE/52641.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52642
+g_ctp_parm_filename ="DBASE/52642.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52643
+g_ctp_parm_filename ="DBASE/52643.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52644
+g_ctp_parm_filename ="DBASE/52644.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52656
+g_ctp_parm_filename ="DBASE/52656.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52657
+g_ctp_parm_filename ="DBASE/52657.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52658
+g_ctp_parm_filename ="DBASE/52658.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52659
+g_ctp_parm_filename ="DBASE/52659.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52660
+g_ctp_parm_filename ="DBASE/52660.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52661
+g_ctp_parm_filename ="DBASE/52661.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52662
+g_ctp_parm_filename ="DBASE/52662.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52663
+g_ctp_parm_filename ="DBASE/52663.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52664
+g_ctp_parm_filename ="DBASE/52664.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52665
+g_ctp_parm_filename ="DBASE/52665.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52666
+g_ctp_parm_filename ="DBASE/52666.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52667
+g_ctp_parm_filename ="DBASE/52667.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52668
+g_ctp_parm_filename ="DBASE/52668.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52669
+g_ctp_parm_filename ="DBASE/52669.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52670
+g_ctp_parm_filename ="DBASE/52670.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52671
+g_ctp_parm_filename ="DBASE/52671.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52672
+g_ctp_parm_filename ="DBASE/52672.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52673
+g_ctp_parm_filename ="DBASE/52673.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52674
+g_ctp_parm_filename ="DBASE/52674.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52675
+g_ctp_parm_filename ="DBASE/52675.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52676
+g_ctp_parm_filename ="DBASE/52676.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52677
+g_ctp_parm_filename ="DBASE/52677.param"
+g_decode_map_filename ="HCANA_MAPS/july04.map"
+g_ctp_kinematics_filename ="DBASE/jan05.kinematics"
+
+52678
+g_ctp_parm_filename ="DBASE/52678.param"

@@ -60,7 +60,7 @@ class THcDetectorMap : public TObject {
 
  protected:
 
-  ClassDef(THcDetectorMap,0);
+  ClassDef(THcDetectorMap,0); // Map electronics channels to Detector, Plane, Counter, Signal
 };
 #endif
 

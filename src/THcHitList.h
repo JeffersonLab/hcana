@@ -20,7 +20,7 @@ using namespace std;
 
 class THcHitList {
 
- public:
+public:
 
   virtual ~THcHitList();
 
@@ -30,19 +30,17 @@ class THcHitList {
   void          InitHitList(THaDetMap* detmap,
 			    const char *hitclass, Int_t maxhits);
 
-  // This is a list of pointers to hit objects
-  // Instead should we have a list of the actual objects so that we are
-  // no delting and creating objects all the time.
-  //
-  Int_t         fNRawHits;
+  TClonesArray* GetHitList() const {return fRawHitList; }
+
+  UInt_t         fNRawHits;
   Int_t         fNMaxRawHits;
   TClonesArray* fRawHitList; // List of raw hits
   TClass* fRawHitClass;		  // Class of raw hit object to use
 
   THaDetMap*    fdMap;
 
- protected:
+protected:
 
-  ClassDef(THcHitList,0)
+  ClassDef(THcHitList,0);  // List of raw hits sorted by plane, counter
 };
 #endif

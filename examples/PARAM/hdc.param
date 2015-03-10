@@ -1,0 +1,44 @@
+;---------------------------------------------------------------------
+; HMS_TRACKING
+; CTP parameter file containing all tracking parameters for the HMS
+;----------------------------------------------------------------------
+; sigma of wire chamber resolution for each plane
+      hdc_sigma = 0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+; hms dc tdc minimum tdc value array allowed for a good hit
+    hdc_tdc_min_win = 2900, 2900, 2900, 2900, 2900, 2900
+                      2900, 2900, 2900, 2900, 2900, 2900
+; hms dc tdc maximum tdc value array allowed for a good hit
+    hdc_tdc_max_win = 3400, 3400, 3400, 3400, 3400, 3400
+                      3400, 3400, 3400, 3400, 3400, 3400
+; hms drift chamber tdc's time per channel
+        hdc_tdc_time_per_channel = 0.50
+; hms zero time for drift chambers	!DECREASING this number moves the hdtime plots to LOWER time.
+        hdc_plane_time_zero = (1670+14+18-10)
+                              (1670+12+20-10)
+                              (1670+13+18-10)
+                              (1670+13+20-10)
+                              (1670+12+20-10)
+                              (1670+14+16-10)
+                              (1670+15+16-10)
+                              (1670+11.5+16-10)
+                              (1670+13+12-10)
+                              (1670+13+12-10)
+                              (1670+10.5+16-10)
+                              (1670+13+18-10)
+
+; Dave Abbott's wire velocity correction
+hdc_wire_velocity = 12.0
+hdc_central_time = 7,9,3,4,6,5
+                   7,5,3,4,6,6
+  

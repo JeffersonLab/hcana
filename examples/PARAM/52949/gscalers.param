@@ -1,0 +1,30 @@
+; These BCM's (1 and 2) numbers are from Jan 05 experiments (VT)
+ 
+
+;point to scaler indices for BCM's
+  gbcm1_index = 321
+  gbcm2_index = 322
+  gbcm3_index = 323
+  gunser_index = 324
+
+
+gbcm1_gain = 0.000328449              ; microA/Hz (New Value)
+gbcm2_gain = 0.000381451              ; microA/Hz (New Value)
+gbcm3_gain = 0.00043343               ; microA/Hz (Old, Value)
+
+gbcm1_offset =  250403.               ; Hz (New Value)
+gbcm2_offset =  250123.               ; Hz (New Value)
+gbcm3_offset =  245437.               ; Hz (Old, Value)
+
+gunser_offset =  514529.              ; Hz (Old, Value)
+gunser_gain = 0.00025001              ; microA/Hz (New Value)
+
+
+;define the threshold current at which beam is "on". (in microamps)
+g_beam_on_thresh_cur = 1.5, 1.5
+ bcm_for_threshold_cut = 1
+
+;point to hardware clock (1MHz scaler, scaler channel 325)
+  gclock_index = 325
+  gclock_rate = 1.e+6
+ 

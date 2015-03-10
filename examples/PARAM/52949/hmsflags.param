@@ -1,0 +1,52 @@
+; Offset in the spectrometer momentum.
+  hmomentum_factor = 0.000 ; leave 0 so it will have no effect
+                           ; use hpcentral_offset if one needs to offset central momentum
+;
+; The hdelta_offset,htheta_offset,hphi_offset effect the
+; reconstructed target quantities. Used in h_targ_trans.f 
+; For transport x is in the dispersive direction with + down
+;               y is in the horizontal + towards small angles.
+;               z is along the central optics axis.
+; In transport coordinates phi = hyptar = dy/dz and theta = hxptar = dx/dz 
+;    but for unknown reasons the yp offset is named  htheta_offset
+;    and  the xp offset is named  hphi_offset
+; Do not to change these values, since these are the zero order
+;  CMOP matrix elements. If you do change then your hms sieve
+;  plots will be screwed up.
+  hdelta_offset = 0.       ; (%)   hdelta_tar = hdelta_tar + hdelta_offset
+  htheta_offset = 4.83e-5  ; (rad) hyp_tar = hyp_tar + htheta_offset
+  hphi_offset   = -4.73e-3 ; (rad) hxp_tar = hxp_tar + hphi_offset
+;
+
+;saturation correction flag
+  genable_hms_satcorr = 2000 ;(0=disabled) - h_satcorr.f
+                          ; a correction to hsdelta event by event
+                          ; for a problem in setting Q3 current.
+                          ; There was an unknown zero offset in the Q3 current.
+                          ; The magnet setting code field00.f partially 
+                          ; fixes this problem. T. Horn in 2003 determined
+                          ; the corrections to delta.
+                          ; Data taken with fields set by field99.f or earlier should set to 1999.
+                          ; Data taken with fields set by field00.f or later should set to 2000.
+; central field  correction
+  genable_hms_fieldcorr = 1 ; (1=disabled) - h_fieldcorr.f 
+                            ; Need to enable for experiments before Jan 2002 .
+			    ; experiments using field02 and field03 should disable. 
+;
+; The following offsets are applied to the central kinematic variables
+;  in h_apply_offsets.f  . These might be modified by an experiment
+;  after doing calibration with elastic ep.
+; The values below are from T. Horn 2003 analysis
+  hpcentral_offset = -0.25   ; sets hpcentral = hpcentral * ( 1. + hpcentral_offset / 100. )
+		    ; experiments earlier than April 2003 
+                    ; should use  about -0.3 which is the best
+                    ; estimate based on several previous experiments.
+  hthetacentral_offset = 0.0002 ; (rad) 
+                         ;htheta_lab=htheta_lab + hthetacentral_offset/degree 
+; This offset is determined from elastic ep data.
+; Must be added to ssxptar when used in calculating lab angles.
+; Example is in h_physics.f
+;
+  h_oopcentral_offset = 0.0011  ; (rad)
+
+

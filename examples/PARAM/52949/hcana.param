@@ -1,0 +1,4 @@
+#include "PARAM/hcana.param"
+
+# New calorimeter debug parameter.
+hdbg_init_cal = 0

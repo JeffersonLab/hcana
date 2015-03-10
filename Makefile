@@ -7,13 +7,27 @@
 # List only the implementation files (*.cxx). For every implementation file
 # there must be a corresponding header file (*.h).
 
-
 SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
-	src/THcHodoscopeHit.cxx src/THcRawHit.cxx \
-	src/THcDCHit.cxx \
-	src/THcHitList.cxx src/THcDetectorMap.cxx src/THcHodoscope.cxx \
-	src/THcHallCSpectrometer.cxx src/THcDriftChamber.cxx \
-	src/THcScintillatorPlane.cxx
+	src/THcHallCSpectrometer.cxx \
+	src/THcDetectorMap.cxx \
+	src/THcRawHit.cxx src/THcHitList.cxx \
+	src/THcSignalHit.cxx \
+	src/THcHodoscope.cxx src/THcScintillatorPlane.cxx \
+	src/THcRawHodoHit.cxx \
+	src/THcDC.cxx src/THcDriftChamberPlane.cxx \
+	src/THcDriftChamber.cxx \
+	src/THcRawDCHit.cxx src/THcDCHit.cxx \
+	src/THcDCWire.cxx \
+	src/THcDCLookupTTDConv.cxx src/THcDCTimeToDistConv.cxx \
+	src/THcSpacePoint.cxx src/THcDCTrack.cxx \
+	src/THcShower.cxx src/THcShowerPlane.cxx \
+	src/THcRawShowerHit.cxx \
+	src/THcAerogel.cxx src/THcAerogelHit.cxx \
+	src/THcCherenkov.cxx src/THcCherenkovHit.cxx \
+	src/THcFormula.cxx\
+	src/THcRaster.cxx\
+	src/THcRasteredBeam.cxx\
+	src/THcRasterRawHit.cxx
 
 # Name of your package. 
 # The shared library that will be built will get the name lib$(PACKAGE).so
@@ -51,6 +65,16 @@ endif
 INCDIRS  = $(wildcard $(addprefix $(ANALYZER)/, include src hana_decode hana_scaler)), $(shell pwd)/src
 
 #------------------------------------------------------------------------------
+# Check that root version is new enough (>= 5.32) by requiring
+# root-config --svn-revision to be >= 43166
+
+GOODROOTVERSION := $(shell expr `root-config --svn-revision` \>= 43166)
+
+ifneq ($(GOODROOTVERSION),1)
+  $(error ROOT version 5.32 or later required)
+endif
+
+#------------------------------------------------------------------------------
 # Do not change anything  below here unless you know what you are doing
 
 ifeq ($(strip $(INCDIRS)),)
@@ -60,6 +84,7 @@ endif
 ROOTCFLAGS   := $(shell root-config --cflags)
 ROOTLIBS     := $(shell root-config --libs)
 ROOTGLIBS    := $(shell root-config --glibs)
+ROOTBIN      := $(shell root-config --bindir)
 
 INCLUDES      = $(ROOTCFLAGS) $(addprefix -I, $(INCDIRS) )
 #INCLUDES      = $(ROOTCFLAGS) $(addprefix -I, $(INCDIRS) ) -I$(shell pwd)
@@ -104,7 +129,7 @@ ifeq ($(CXX),)
 $(error $(ARCH) invalid architecture)
 endif
 
-CXXFLAGS     += $(INCLUDES)
+CXXFLAGS     += $(INCLUDES) -DHALLC_MODS
 LIBS         += $(ROOTLIBS) $(SYSLIBS)
 GLIBS        += $(ROOTGLIBS) $(SYSLIBS)
 
@@ -112,6 +137,13 @@ MAKEDEPEND    = gcc
 
 ifdef WITH_DEBUG
 CXXFLAGS     += -DWITH_DEBUG
+endif
+
+CCDBLIBS = 
+CCDBFLAGS = 
+ifdef CCDB_HOME
+CCDBLIBS     += -L$(CCDB_HOME)/lib -lccdb
+CCDBFLAGS  += -I$(CCDB_HOME)/include -DWITH_CCDB
 endif
 
 ifdef PROFILE
@@ -146,7 +178,8 @@ HALLALIBS    := -L$(LIBDIR) -lHallA -ldc -lscaler
 src/THcInterface.d:  $(HDR_COMPILEDATA)
 
 hcana:		src/main.o $(LIBDC) $(LIBSCALER) $(LIBHALLA) $(USERLIB)
-		$(LD) $(LDFLAGS) $< $(HALLALIBS) -L. -lHallC $(GLIBS) -o $@
+		$(LD) $(LDFLAGS) $< $(HALLALIBS) -L. -lHallC $(CCDBLIBS) \
+		$(GLIBS) -o $@
 
 $(USERLIB):	$(HDR) $(OBJS)
 		$(LD) $(LDFLAGS) $(SOFLAGS) -o $@ $(OBJS)
@@ -154,11 +187,11 @@ $(USERLIB):	$(HDR) $(OBJS)
 
 $(HDR_COMPILEDATA) $(LIBHALLA) $(LIBDC) $(LIBSCALER): $(ANALYZER)/Makefile
 		@echo "Building Podd"		
-		@cd $(ANALYZER) ; make
+		@cd $(ANALYZER) ; export PODD_EXTRA_DEFINES=-DHALLC_MODS ; make
 
 $(USERDICT).cxx: $(RCHDR) $(HDR) $(LINKDEF)
 	@echo "Generating dictionary $(USERDICT)..."
-	$(ROOTSYS)/bin/rootcint -f $@ -c $(INCLUDES) $^
+	$(ROOTBIN)/rootcint -f $@ -c $(INCLUDES) $(CCDBFLAGS) $^
 
 install:	all
 	cp -p $(USERLIB) $(HOME)/cue/SRC/ana
@@ -167,7 +200,9 @@ clean:
 		rm -f src/*.o *~ $(USERLIB) $(USERDICT).*
 
 realclean:	clean
-		rm -f *.d
+		rm -f *.d NormAnaDict.* THaDecDict.* THaScallDict.* bin/hcana
+		rm -f src/*.os
+		rm -f bin
 
 srcdist:
 		rm -f $(DISTFILE)
@@ -184,7 +219,7 @@ srcdist:
 .SUFFIXES: .c .cc .cpp .cxx .C .o .d
 
 %.o:	%.cxx
-	$(CXX) $(CXXFLAGS) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) $(CCDBFLAGS) -o $@ -c $<
 
 # FIXME: this only works with gcc
 %.d:	%.cxx
