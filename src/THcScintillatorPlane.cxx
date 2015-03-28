@@ -246,6 +246,8 @@ Int_t THcScintillatorPlane::FineProcess( TClonesArray& tracks )
 {
   return 0;
 }
+
+
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 {
@@ -397,15 +399,6 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
 	    TMath::Sqrt(TMath::Max(0.,(neg_ph[i]/((THcHodoscope *)GetParent())->GetHodoNegMinPh(index)-1)));
 	  negtime[i]=negtime[i]-((THcHodoscope *)GetParent())->GetHodoNegTimeOffset(index);
 
-	  // ***************
-	  ///	  cout <<"hcana i = "<<i<<endl;
-	  ///  cout <<"hcana tdc_pos = "<<((THcSignalHit*) fPosTDCHits->At(i))->GetData()<<endl;
-	  ///cout <<"hcana pos_ph = "<<pos_ph[i]<<endl;
-	  //	  cout <<"hcana pos_phc_coeff = "<<((THcHodoscope *)GetParent())->GetHodoPosPhcCoeff(index)<<endl;
-	  //	  cout <<"hcana postime = "<<postime[i]<<endl;
-	  //cout <<"hcana negtime = "<<negtime[i]<<endl;
-	  //*************
-
 	  // Find hit position.  If postime larger, then hit was nearer negative side.
 	  dist_from_center=0.5*(negtime[i]-postime[i])*((THcHodoscope *)GetParent())->GetHodoVelLight(index);
 	  scint_center=0.5*(fPosLeft+fPosRight);
@@ -435,10 +428,12 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
   maxhit=0;
   for (i=0;i<200;i++) {
     if (timehist[i]>maxhit) {
-      jmax=i;
+       jmax=i;
       maxhit=timehist[i];
+      //     cout << " i = " << i << " " << jmax << " " << timehist[i] << endl; 
     }
   }
+  // cout << " jmax = " << jmax << " " << maxhit << endl;
   // Resume regular tof code, now using time filer(?) from above
   // Check for TWO good TDC hits
   for (i=0;i<fNScinHits;i++) {
@@ -446,12 +441,10 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
 	(((THcSignalHit*) fPosTDCHits->At(i))->GetData()<=maxtdc) &&
 	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()>=mintdc) &&
 	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()<=maxtdc)) {
-      if(jmax>0) {
 	Double_t tmin = 0.5*jmax;
 	if ((time_pos[i]>tmin) && (time_pos[i]<tmin+toftolerance) &&
 	    (time_neg[i]>tmin) && (time_neg[i]<tmin+toftolerance))
 	  two_good_times[i]=kTRUE;
-      }
     }
   } // end of loop that finds tube setting time
   for (i=0;i<fNScinHits;i++) {
