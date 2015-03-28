@@ -7,6 +7,7 @@ class THcRawHodoHit : public THcRawHit {
 
  public:
   friend class THcScintillatorPlane;
+  friend class THcHodoscope;
 
   THcRawHodoHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
     fADC_pos(-1), fADC_neg(-1),

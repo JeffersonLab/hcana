@@ -169,6 +169,7 @@ protected:
   Double_t     fNormETot;
   Double_t     fNCerNPE;
   Double_t*    fHodoSlop;
+  Int_t        fdebugprintscinraw;
   Int_t        fTestSum;
   Int_t        fTrackEffTestNScinPlanes;
   Int_t        fGoodScinHits;

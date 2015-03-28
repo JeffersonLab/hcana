@@ -459,9 +459,10 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"cer_npe",                          &fNCerNPE,               kDouble,         0,  1},
     {"normalized_energy_tot",            &fNormETot,              kDouble,         0,  1},
     {"hodo_slop",                        fHodoSlop,               kDouble,  fNPlanes},
+    {"debugprintscinraw",                &fdebugprintscinraw,               kInt,  0,1},
     {0}
   };
-  
+  fdebugprintscinraw=0;
   fTofUsingInvAdc = 0;		// Default if not defined
   fTofTolerance = 3.0;		// Default if not defined
   fNCerNPE = 2.0;
@@ -687,14 +688,12 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     // GN: select only events that have reasonable TDC values to start with
     // as per the Engine h_strip_scin.f
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList,nexthit);
-    if (fPlanes[ip]->GetNScinHits()>0) {
+     if (fPlanes[ip]->GetNScinHits()>0) {
       fPlanes[ip]->PulseHeightCorrection();
       // GN: allow for more than one fptime per plane!!
       for (Int_t i=0;i<fPlanes[ip]->GetNScinGoodHits();i++) {
 	if (TMath::Abs(fPlanes[ip]->GetFpTime(i)-fStartTimeCenter)<=fStartTimeSlop) {
 	  fStartTime=fStartTime+fPlanes[ip]->GetFpTime(i);
-	  // GN write stuff out so I can compare with engine
-	  ///	  cout<<"hcana event= "<<evdata.GetEvNum()<<" fNfptimes= "<<fNfptimes<<" fptime= "<<fPlanes[ip]->GetFpTime(i)<<endl;
 	  fNfptimes++;
 	}
       }
@@ -707,15 +706,15 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     fGoodStartTime=kFALSE;
     fStartTime=fStartTimeCenter;
   }
-#if 0
-  for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
+  if (fdebugprintscinraw == 1) {
+  for(UInt_t ihit = 0; ihit < fNRawHits ; ihit++) {
     THcRawHodoHit* hit = (THcRawHodoHit *) fRawHitList->At(ihit);
     cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
 	 << hit->fADC_pos << " " << hit->fADC_neg << " "  <<  hit->fTDC_pos
 	 << " " <<  hit->fTDC_neg << endl;
   }
   cout << endl;
-#endif
+  }
   ///  fStartTime = 500;		// Drift Chamber will need this
 
   return nhits;
@@ -921,7 +920,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  }
 	}
 	
-	if ( jmax > 0 ){ // Line 248. Here I followed the code of THcSCintilaltorPlane::PulseHeightCorrection
+
 	  Double_t tmin = 0.5 * jmax;
 	  for(Int_t iphit = 0; iphit < fNScinHits[ip]; iphit++) { // Loop over sinc. hits. in plane
 	    if ( ( fTOFPInfo[iphit].time_pos > tmin ) && ( fTOFPInfo[iphit].time_pos < ( tmin + fTofTolerance ) ) ) {
@@ -931,7 +930,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	      fTOFPInfo[iphit].keep_neg=kTRUE;
 	    }	
 	  }
-	} // jmax > 0 condition
+
 	
 	//---------------------------------------------------------------------------------------------	
 	// ---------------------- Scond loop over scint. hits in a plane ------------------------------
