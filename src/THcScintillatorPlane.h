@@ -35,7 +35,7 @@ class THcScintillatorPlane : public THaSubDetector {
   virtual Bool_t   IsPid()      { return kFALSE; }
 
   virtual Int_t ProcessHits(TClonesArray* rawhits, Int_t nexthit);
-  virtual Int_t PulseHeightCorrection();
+  virtual Int_t EstimateFocalPlaneTimes();
 
   virtual Int_t AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit);
   virtual void  CalculatePedestals( );
@@ -102,7 +102,7 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t *fHodoVelLight;
   Double_t *fHodoSigma;
 
-  Double_t fTolerance; /* need this for PulseHeightCorrection */
+  Double_t fTolerance; /* need this for Focal Plane Time estimation */
   /* Pedestal Quantities */
   Int_t fNPedestalEvents;	/* Number of pedestal events */
   Int_t fMinPeds;		/* Only analyze/update if num events > */

@@ -690,7 +690,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     // as per the Engine h_strip_scin.f
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList,nexthit);
      if (fPlanes[ip]->GetNScinHits()>0) {
-      fPlanes[ip]->PulseHeightCorrection();
+      fPlanes[ip]->EstimateFocalPlaneTimes();
       // GN: allow for more than one fptime per plane!!
       for (Int_t i=0;i<fPlanes[ip]->GetNScinGoodHits();i++) {
 	if (TMath::Abs(fPlanes[ip]->GetFpTime(i)-fStartTimeCenter)<=fStartTimeSlop) {
@@ -853,16 +853,12 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  if ( TMath::Abs( scinCenter - scinTrnsCoord ) <
 	       ( fPlanes[ip]->GetSize() * 0.5 + fPlanes[ip]->GetHodoSlop() ) ){ // Line 293
 	    
-	    Double_t adcPhp = ((THcHodoHit*)hodoHits->At(iphit))->GetPosADC();
 	    Double_t pathp = fPlanes[ip]->GetPosLeft() - scinLongCoord;
-	    Double_t timep = ((THcHodoHit*)hodoHits->At(iphit))->GetPosTDC() * fScinTdcToTime;
-	    timep = timep - fHodoPosPhcCoeff[fPIndex] *
-	      TMath::Sqrt( TMath::Max( 0., ( ( adcPhp / fHodoPosMinPh[fPIndex] ) - 1 ) ) );
+	    Double_t timep = ((THcHodoHit*)hodoHits->At(iphit))->GetPosCorrectedTime();
 	    timep = timep - ( pathp / fHodoVelLight[fPIndex] ) - ( fPlanes[ip]->GetZpos() +  
 								( paddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betaP ) *
 	      TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
 			   theTrack->GetPhi() * theTrack->GetPhi() );
-	    timep = timep - fHodoPosTimeOffset[fPIndex];
 	    fTOFPInfo[iphit].time_pos = timep;
 	      
 	    for ( Int_t k = 0; k < 200; k++ ){ // Line 211
@@ -871,16 +867,12 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 		timehist[k] ++;
 	    }
 	    
-	    Double_t adcPhn = ((THcHodoHit*)hodoHits->At(iphit))->GetNegADC();
 	    Double_t pathn =  scinLongCoord - fPlanes[ip]->GetPosRight();
-	    Double_t timen = ((THcHodoHit*)hodoHits->At(iphit))->GetNegTDC() * fScinTdcToTime;
-	    timen =timen - fHodoNegPhcCoeff[fPIndex] * 
-	      TMath::Sqrt( TMath::Max( 0., ( ( adcPhn / fHodoNegMinPh[fPIndex] ) - 1 ) ) );
+	    Double_t timen = ((THcHodoHit*)hodoHits->At(iphit))->GetNegCorrectedTime();
 	    timen = timen - ( pathn / fHodoVelLight[fPIndex] ) - ( fPlanes[ip]->GetZpos() +
 								( paddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betaP ) *
 	      TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
 			   theTrack->GetPhi() * theTrack->GetPhi() );
-	    timen = timen - fHodoNegTimeOffset[fPIndex];
 	    fTOFPInfo[iphit].time_neg = timen;
 	      
 	    for ( Int_t k = 0; k < 200; k++ ){ // Line 230
@@ -966,16 +958,13 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	      
 	      // ** Calculate time for each tube with a good tdc. 'pos' side first.
 	      fTOFCalc[ihhit].good_tdc_pos = kTRUE;
-	      Double_t adcPh = ((THcHodoHit*)hodoHits->At(iphit))->GetPosADC();
 	      Double_t path = fPlanes[ip]->GetPosLeft() - scinLongCoord;
 	      
 	      // * Convert TDC value to time, do pulse height correction, correction for
 	      // * propogation of light thru scintillator, and offset.	      
-	      Double_t time = ((THcHodoHit*)hodoHits->At(iphit))->GetPosTDC() * fScinTdcToTime;
-	      time = time - ( fHodoPosPhcCoeff[fPIndex] * TMath::Sqrt( TMath::Max( 0. , 
-					( ( adcPh / fHodoPosMinPh[fPIndex] ) - 1 ) ) ) );
+	      Double_t time = ((THcHodoHit*)hodoHits->At(iphit))->GetPosCorrectedTime();
 	      time = time - ( path / fHodoVelLight[fPIndex] );
-	      fTOFPInfo[iphit].scin_pos_time = time - fHodoPosTimeOffset[fPIndex];
+	      fTOFPInfo[iphit].scin_pos_time = time;
 	      
 	    } // check for good pos TDC condition
 	    
@@ -984,17 +973,13 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	      // ** Calculate time for each tube with a good tdc. 'pos' side first.
 	      fTOFCalc[ihhit].good_tdc_neg = kTRUE;
 	      //	      fNtof ++;
-	      Double_t adcPh = ((THcHodoHit*)hodoHits->At(iphit))->GetNegADC();
-	      //	      Double_t path = fPlanes[ip]->GetPosRight() - scinLongCoord;
 	      Double_t path = scinLongCoord - fPlanes[ip]->GetPosRight();
 	      
 	      // * Convert TDC value to time, do pulse height correction, correction for
 	      // * propogation of light thru scintillator, and offset.
-	      Double_t time = ((THcHodoHit*)hodoHits->At(iphit))->GetNegTDC() * fScinTdcToTime;
-	      time = time - ( fHodoNegPhcCoeff[fPIndex] *
-			   TMath::Sqrt( TMath::Max( 0. , ( ( adcPh / fHodoNegMinPh[fPIndex] ) - 1 ) ) ) );
+	      Double_t time = ((THcHodoHit*)hodoHits->At(iphit))->GetNegCorrectedTime();
 	      time = time - ( path / fHodoVelLight[fPIndex] );
-	      fTOFPInfo[iphit].scin_neg_time = time - fHodoNegTimeOffset[fPIndex];
+	      fTOFPInfo[iphit].scin_neg_time = time;
       
 	    } // check for good neg TDC condition
 	    
