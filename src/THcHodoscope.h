@@ -229,9 +229,9 @@ protected:
     Double_t time_neg;
     Bool_t keep_pos;
     Bool_t keep_neg;
-    Double_t adcPh;
-    Double_t path;
-    Double_t time;
+    //    Double_t adcPh;
+    //    Double_t path;
+    //    Double_t time;
     Double_t scin_pos_time;
     Double_t scin_neg_time;
     TOFPInfo () : time_pos(-99.0), time_neg(-99.0), keep_pos(kFALSE),

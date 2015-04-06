@@ -61,10 +61,7 @@ class THcScintillatorPlane : public THaSubDetector {
 
   TClonesArray* fParentHitList;
 
-  TClonesArray* GetPosADC() { return fPosADCHits;};  // Ahmed
-  TClonesArray* GetNegADC() { return fNegADCHits;};  // Ahmed
-  TClonesArray* GetPosTDC() { return fPosTDCHits;};  // Ahmed
-  TClonesArray* GetNegTDC() { return fNegTDCHits;};  // Ahmed
+  TClonesArray* GetHits() { return fHodoHits;};
 
  protected:
 
@@ -72,10 +69,7 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* frNegTDCHits;
   TClonesArray* frPosADCHits;
   TClonesArray* frNegADCHits;
-  TClonesArray* fPosTDCHits;
-  TClonesArray* fNegTDCHits;
-  TClonesArray* fPosADCHits;
-  TClonesArray* fNegADCHits;
+  TClonesArray* fHodoHits;
 
   Int_t fPlaneNum;		/* Which plane am I 1-4 */
   UInt_t fTotPlanes;            /* so we can read variables that are not indexed by plane id */

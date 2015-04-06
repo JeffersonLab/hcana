@@ -9,6 +9,7 @@
 #include "THcScintillatorPlane.h"
 #include "TClonesArray.h"
 #include "THcSignalHit.h"
+#include "THcHodoHit.h"
 #include "THcGlobals.h"
 #include "THcParmList.h"
 #include "THcHitList.h"
@@ -32,10 +33,7 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   : THaSubDetector(name,description,parent)
 {
   // Normal constructor with name and description
-  fPosTDCHits = new TClonesArray("THcSignalHit",16);
-  fNegTDCHits = new TClonesArray("THcSignalHit",16);
-  fPosADCHits = new TClonesArray("THcSignalHit",16);
-  fNegADCHits = new TClonesArray("THcSignalHit",16);
+  fHodoHits = new TClonesArray("THcHodoHit",16);
   frPosTDCHits = new TClonesArray("THcSignalHit",16);
   frNegTDCHits = new TClonesArray("THcSignalHit",16);
   frPosADCHits = new TClonesArray("THcSignalHit",16);
@@ -57,10 +55,7 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
 THcScintillatorPlane::~THcScintillatorPlane()
 {
   // Destructor
-  delete fPosTDCHits;
-  delete fNegTDCHits;
-  delete fPosADCHits;
-  delete fNegADCHits;
+  delete fHodoHits;
   delete frPosTDCHits;
   delete frNegTDCHits;
   delete frPosADCHits;
@@ -248,10 +243,7 @@ void THcScintillatorPlane::Clear( Option_t* )
 {
   //cout << " Calling THcScintillatorPlane::Clear " << GetName() << endl;
   // Clears the hit lists
-  fPosTDCHits->Clear();
-  fNegTDCHits->Clear();
-  fPosADCHits->Clear();
-  fNegADCHits->Clear();
+  fHodoHits->Clear();
   frPosTDCHits->Clear();
   frNegTDCHits->Clear();
   frPosADCHits->Clear();
@@ -307,15 +299,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frPosADCHits->Clear();
   frNegADCHits->Clear();
   //stripped
-  Int_t nPosTDCHits=0;
-  Int_t nNegTDCHits=0;
-  Int_t nPosADCHits=0;
-  Int_t nNegADCHits=0;
   fNScinHits=0;
-  fPosTDCHits->Clear();
-  fNegTDCHits->Clear();
-  fPosADCHits->Clear();
-  fNegADCHits->Clear();
+  fHodoHits->Clear();
   Int_t nrawhits = rawhits->GetLast()+1;
   // cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
   Int_t ihit = nexthit;
@@ -342,19 +327,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     if (((hit->fTDC_pos >= fScinTdcMin) && (hit->fTDC_pos <= fScinTdcMax)) ||
 	((hit->fTDC_neg >= fScinTdcMin) && (hit->fTDC_neg <= fScinTdcMax))) {
 
-      //TDC positive hit
-      THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
-      sighit->Set(padnum, hit->fTDC_pos);
-      // TDC negative hit
-      THcSignalHit *sighit2 = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
-      sighit2->Set(padnum, hit->fTDC_neg);
-      // ADC positive hit
-      THcSignalHit *sighit3 = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
-      sighit3->Set(padnum, hit->fADC_pos-fPosPed[index]);
-      // ADC negative hit
-      THcSignalHit *sighit4 = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
-      sighit4->Set(padnum, hit->fADC_neg-fNegPed[index]);      
-      fNScinHits++;
+      // If TDC values are all good, transfer the raw hit to the HodoHit list
+      new( (*fHodoHits)[fNScinHits++]) THcHodoHit(hit, fPosPed[index], fNegPed[index], this);
     }
     else {
     }
@@ -406,47 +380,42 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
 
   fpTime=-1e5;
   for (Int_t i=0;i<fNScinHits;i++) {
-    if ((((THcSignalHit*) fPosTDCHits->At(i))->GetData()>=fScinTdcMin) &&
-	(((THcSignalHit*) fPosTDCHits->At(i))->GetData()<=fScinTdcMax) &&
-	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()>=fScinTdcMin) &&
-	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()<=fScinTdcMax)) {
-	  pos_ph[i]=((THcSignalHit*) fPosADCHits->At(i))->GetData();
-	  postime[i]=((THcSignalHit*) fPosTDCHits->At(i))->GetData()*fScinTdcToTime;
-	  Int_t jpos=((THcSignalHit*)fPosTDCHits->At(i))->GetPaddleNumber()-1;
-	  postime[i]=postime[i]-fHodoPosPhcCoeff[jpos]*
-	    TMath::Sqrt(TMath::Max(0.,(pos_ph[i]/fHodoPosMinPh[jpos]-1)));
-	  postime[i]=postime[i]-fHodoPosTimeOffset[jpos];
+    // Perhaps these calculations should be done in the THcHodoHit class so
+    // that they don't get repeated
+    Int_t index=((THcHodoHit*)fHodoHits->At(i))->GetPaddleNumber()-1;
 
-	  neg_ph[i]=((THcSignalHit*) fNegADCHits->At(i))->GetData();
-	  negtime[i]=((THcSignalHit*) fNegTDCHits->At(i))->GetData()*fScinTdcToTime;
-	  Int_t jneg=((THcSignalHit*)fNegTDCHits->At(i))->GetPaddleNumber()-1;
-	  assert(jpos==jneg);
-	  negtime[i]=negtime[i]-fHodoNegPhcCoeff[jneg]*
-	    TMath::Sqrt(TMath::Max(0.,(neg_ph[i]/fHodoNegMinPh[jneg]-1)));
-	  negtime[i]=negtime[i]-fHodoNegTimeOffset[jneg];
+    pos_ph[i]=((THcHodoHit*) fHodoHits->At(i))->GetPosADC();
+    postime[i]=((THcHodoHit*) fHodoHits->At(i))->GetPosTDC()*fScinTdcToTime;
+    postime[i]=postime[i]-fHodoPosPhcCoeff[index]*
+      TMath::Sqrt(TMath::Max(0.,(pos_ph[i]/fHodoPosMinPh[index]-1)));
+    postime[i]=postime[i]-fHodoPosTimeOffset[index];
 
-	  // Find hit position.  If postime larger, then hit was nearer negative side.
-	  dist_from_center=0.5*(negtime[i]-postime[i])*fHodoVelLight[jpos];
-	  scint_center=0.5*(fPosLeft+fPosRight);
-	  hit_position=scint_center+dist_from_center;
-	  hit_position=TMath::Min(hit_position,fPosLeft);
-	  hit_position=TMath::Max(hit_position,fPosRight);
-	  postime[i]=postime[i]-(fPosLeft-hit_position)/fHodoVelLight[jpos];
-	  negtime[i]=negtime[i]-(hit_position-fPosRight)/fHodoVelLight[jpos];
+    neg_ph[i]=((THcHodoHit*) fHodoHits->At(i))->GetNegADC();
+    negtime[i]=((THcHodoHit*) fHodoHits->At(i))->GetNegTDC()*fScinTdcToTime;
+    negtime[i]=negtime[i]-fHodoNegPhcCoeff[index]*
+      TMath::Sqrt(TMath::Max(0.,(neg_ph[i]/fHodoNegMinPh[index]-1)));
+    negtime[i]=negtime[i]-fHodoNegTimeOffset[index];
+	  
+    // Find hit position.  If postime larger, then hit was nearer negative side.
+    dist_from_center=0.5*(negtime[i]-postime[i])*fHodoVelLight[index];
+    scint_center=0.5*(fPosLeft+fPosRight);
+    hit_position=scint_center+dist_from_center;
+    hit_position=TMath::Min(hit_position,fPosLeft);
+    hit_position=TMath::Max(hit_position,fPosRight);
+    postime[i]=postime[i]-(fPosLeft-hit_position)/fHodoVelLight[index];
+    negtime[i]=negtime[i]-(hit_position-fPosRight)/fHodoVelLight[index];
 
-	  time_pos[i]=postime[i]-(fZpos+(jpos%2)*fDzpos)/(29.979*fBetaNominal);
-	  time_neg[i]=negtime[i]-(fZpos+(jpos%2)*fDzpos)/(29.979*fBetaNominal);
+    time_pos[i]=postime[i]-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+    time_neg[i]=negtime[i]-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	  //	  nfound++;
-	  for (Int_t k=0;k<200;k++) {
-	    Double_t tmin=0.5*(k+1);
-	    if ((time_pos[i]> tmin) && (time_pos[i] < tmin+fTofTolerance)) {
-	      timehist[k]++;
-	    }
-	    if ((time_neg[i]> tmin) && (time_neg[i] < tmin+fTofTolerance)) {
-	      timehist[k]++;
-	    }
-	  }
-	  //	  nfound++;
+    for (Int_t k=0;k<200;k++) {
+      Double_t tmin=0.5*(k+1);
+      if ((time_pos[i]> tmin) && (time_pos[i] < tmin+fTofTolerance)) {
+	timehist[k]++;
+      }
+      if ((time_neg[i]> tmin) && (time_neg[i] < tmin+fTofTolerance)) {
+	timehist[k]++;
+      }
     }
   }
   // Find the bin with most hits
@@ -463,45 +432,40 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
   // Resume regular tof code, now using time filer(?) from above
   // Check for TWO good TDC hits
   for (Int_t i=0;i<fNScinHits;i++) {
-    if ((((THcSignalHit*) fPosTDCHits->At(i))->GetData()>=fScinTdcMin) &&
-	(((THcSignalHit*) fPosTDCHits->At(i))->GetData()<=fScinTdcMax) &&
-	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()>=fScinTdcMin) &&
-	(((THcSignalHit*) fNegTDCHits->At(i))->GetData()<=fScinTdcMax)) {
-	Double_t tmin = 0.5*jmax;
-	if ((time_pos[i]>tmin) && (time_pos[i]<tmin+fTofTolerance) &&
-	    (time_neg[i]>tmin) && (time_neg[i]<tmin+fTofTolerance))
-	  two_good_times[i]=kTRUE;
-    }
+    Double_t tmin = 0.5*jmax;
+    if ((time_pos[i]>tmin) && (time_pos[i]<tmin+fTofTolerance) &&
+	(time_neg[i]>tmin) && (time_neg[i]<tmin+fTofTolerance))
+      two_good_times[i]=kTRUE;
   } // end of loop that finds tube setting time
   for (Int_t i=0;i<fNScinHits;i++) {
     if (two_good_times[i]) { // both tubes fired
       // correct time for everything except veloc. correction in order
       // to find hit location from difference in TDC.
-      pos_ph[i]=((THcSignalHit*) fPosADCHits->At(i))->GetData();
-      postime[i]=((THcSignalHit*) fPosTDCHits->At(i))->GetData()*fScinTdcToTime;
-      Int_t jpos=((THcSignalHit*)fPosTDCHits->At(i))->GetPaddleNumber()-1;
-      postime[i]=postime[i]-fHodoPosPhcCoeff[jpos]*
-	TMath::Sqrt(TMath::Max(0.,(pos_ph[i]/fHodoPosMinPh[jpos]-1)));
-      postime[i]=postime[i]-fHodoPosTimeOffset[jpos];
-      //
-      neg_ph[i]=((THcSignalHit*) fNegADCHits->At(i))->GetData();
-      negtime[i]=((THcSignalHit*) fNegTDCHits->At(i))->GetData()*fScinTdcToTime;
-      Int_t jneg=((THcSignalHit*)fNegTDCHits->At(i))->GetPaddleNumber()-1;
-      assert(jpos==jneg);
-      negtime[i]=negtime[i]-fHodoNegPhcCoeff[jneg]*
-	TMath::Sqrt(TMath::Max(0.,(neg_ph[i]/fHodoNegMinPh[jneg]-1)));
-      negtime[i]=negtime[i]-fHodoNegTimeOffset[jneg];
+      // We are repeating some stuff here.  Should save it all in the hit
+      // class so it doesn't have to be recalculated.  (Avoid mistakes too)
+      Int_t index=((THcHodoHit*)fHodoHits->At(i))->GetPaddleNumber()-1;
+      pos_ph[i]=((THcHodoHit*) fHodoHits->At(i))->GetPosADC();
+      postime[i]=((THcHodoHit*) fHodoHits->At(i))->GetPosTDC()*fScinTdcToTime;
+      postime[i]=postime[i]-fHodoPosPhcCoeff[index]*
+	TMath::Sqrt(TMath::Max(0.,(pos_ph[i]/fHodoPosMinPh[index]-1)));
+      postime[i]=postime[i]-fHodoPosTimeOffset[index];
+
+      neg_ph[i]=((THcHodoHit*) fHodoHits->At(i))->GetNegADC();
+      negtime[i]=((THcHodoHit*) fHodoHits->At(i))->GetNegTDC()*fScinTdcToTime;
+      negtime[i]=negtime[i]-fHodoNegPhcCoeff[index]*
+	TMath::Sqrt(TMath::Max(0.,(neg_ph[i]/fHodoNegMinPh[index]-1)));
+      negtime[i]=negtime[i]-fHodoNegTimeOffset[index];
+
       // find hit position. If postime larger, then hit was nearer negative side
-      dist_from_center=0.5*(negtime[i]-postime[i])*fHodoVelLight[jpos];
+      dist_from_center=0.5*(negtime[i]-postime[i])*fHodoVelLight[index];
       scint_center=0.5*(fPosLeft+fPosRight);
       hit_position=scint_center+dist_from_center;
       hit_position=TMath::Min(hit_position,fPosLeft);
       hit_position=TMath::Max(hit_position,fPosRight);
-      postime[i]=postime[i]-(fPosLeft-hit_position)/fHodoVelLight[jpos];
-      negtime[i]=negtime[i]-(hit_position-fPosRight)/fHodoVelLight[jpos];
+      postime[i]=postime[i]-(fPosLeft-hit_position)/fHodoVelLight[index];
+      negtime[i]=negtime[i]-(hit_position-fPosRight)/fHodoVelLight[index];
       scin_corrected_time[i]=0.5*(postime[i]+negtime[i]);
-    }
-    else { // only one tube fired
+    } else { // only one tube fired
       scin_corrected_time[i]=0.0; // not a very good "flag" but there is the logical two_good_hits...
       // no fpTimes for U!
     }
@@ -511,7 +475,7 @@ Int_t THcScintillatorPlane::PulseHeightCorrection()
 
   fNScinGoodHits=0;
   for (Int_t i=0;i<fNScinHits;i++) {
-    Int_t j=((THcSignalHit*)fNegTDCHits->At(i))->GetPaddleNumber()-1;  
+    Int_t j=((THcHodoHit*)fHodoHits->At(i))->GetPaddleNumber()-1;  
     if (two_good_times[i]) { // both tubes fired
       fpTimes[fNScinGoodHits]=scin_corrected_time[i]-(fZpos+(j%2)*fDzpos)/(29.979*fBetaNominal);
       fScinTime[fNScinGoodHits]=scin_corrected_time[i];
