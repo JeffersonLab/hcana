@@ -337,7 +337,23 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       Double_t timec_neg = hit->fTDC_neg*fScinTdcToTime - fHodoNegPhcCoeff[index]*
 	TMath::Sqrt(TMath::Max(0.0,(hit->fADC_neg/fHodoNegMinPh[index]-1)))
 	- fHodoNegTimeOffset[index];
-      ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg);
+
+      // Find hit position using ADCs
+      // If postime larger, then hit was nearer negative side.
+      Double_t dist_from_center=0.5*(timec_neg-timec_pos)*fHodoVelLight[index];
+      Double_t scint_center=0.5*(fPosLeft+fPosRight);
+      Double_t hit_position=scint_center+dist_from_center;
+      hit_position=TMath::Min(hit_position,fPosLeft);
+      hit_position=TMath::Max(hit_position,fPosRight);
+      Double_t postime=timec_pos-(fPosLeft-hit_position)/fHodoVelLight[index];
+      Double_t negtime=timec_neg-(hit_position-fPosRight)/fHodoVelLight[index];
+      Double_t scin_corrected_time = 0.5*(postime+negtime);
+      postime = postime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+      negtime = postime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+
+      ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,
+								 postime, negtime,
+								 scin_corrected_time);
       fNScinHits++;
     }
     else {
@@ -349,113 +365,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   return(ihit);
 }
-//________________________________________________________________________________
 
-Int_t THcScintillatorPlane::EstimateFocalPlaneTimes()
-{
-  // Perform pulse height correction of the TDC values as in the original h_trans_scin
-  // see original comments below
-  /*! Calculate all corrected hit times and histogram
-    ! This uses a copy of code below. Results are save in time_pos,neg
-    ! including the z-pos. correction assuming nominal value of betap
-    ! Code is currently hard-wired to look for a peak in the
-    ! range of 0 to 100 nsec, with a group of times that all
-    ! agree withing a time_tolerance of time_tolerance nsec. The normal
-    ! peak position appears to be around 35 nsec (SOS0 or 31 nsec (HMS)
-    ! NOTE: if want to find particles with beta different than
-    !       reference particle, need to make sure this is big enough
-    !       to accomodate difference in TOF for other particles
-    ! Default value in case user hasn't defined something reasonable */
-  Double_t scin_corrected_time[53]; // the 53 should go in a param file (was hmax_scin_hits originally)
-  // Bool_t keep_pos[53],keep_neg[53]; // are these all really needed?
-  Bool_t two_good_times[53];
-  Double_t dist_from_center,scint_center,hit_position,time_pos[100],time_neg[100];
-  Int_t timehist[200]; // This seems as a pretty old-fashioned way of doing things. Is there a better way?
-
-
-  // protect against spam events
-  if (fNScinHits>1000) {
-    cout <<"Too many hits "<<fNScinHits<<" in this event! Skipping!\n";
-    return -1;
-  }
-  // zero out histogram 
-  for (Int_t i=0;i<200;i++) {
-    timehist[i]=0;
-  }
-
-  fpTime=-1e5;
-  for (Int_t i=0;i<fNScinHits;i++) {
-    Int_t index=((THcHodoHit*)fHodoHits->At(i))->GetPaddleNumber()-1;
-
-    Double_t postime=((THcHodoHit*) fHodoHits->At(i))->GetPosCorrectedTime();
-    Double_t negtime=((THcHodoHit*) fHodoHits->At(i))->GetNegCorrectedTime();
-	  
-    // Find hit position.  If postime larger, then hit was nearer negative side.
-    dist_from_center=0.5*(negtime-postime)*fHodoVelLight[index];
-    scint_center=0.5*(fPosLeft+fPosRight);
-    hit_position=scint_center+dist_from_center;
-    hit_position=TMath::Min(hit_position,fPosLeft);
-    hit_position=TMath::Max(hit_position,fPosRight);
-    postime=postime-(fPosLeft-hit_position)/fHodoVelLight[index];
-    negtime=negtime-(hit_position-fPosRight)/fHodoVelLight[index];
-    scin_corrected_time[i]=0.5*(postime+negtime);
-
-    time_pos[i]=postime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
-    time_neg[i]=negtime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
-	  //	  nfound++;
-    for (Int_t k=0;k<200;k++) {
-      Double_t tmin=0.5*(k+1);
-      if ((time_pos[i]> tmin) && (time_pos[i] < tmin+fTofTolerance)) {
-	timehist[k]++;
-      }
-      if ((time_neg[i]> tmin) && (time_neg[i] < tmin+fTofTolerance)) {
-	timehist[k]++;
-      }
-    }
-  }
-  // Find the bin with most hits
-  Int_t jmax=0;
-  Int_t maxhit=0;
-  for (Int_t i=0;i<200;i++) {
-    if (timehist[i]>maxhit) {
-       jmax=i;
-      maxhit=timehist[i];
-      //     cout << " i = " << i << " " << jmax << " " << timehist[i] << endl; 
-    }
-  }
-  // cout << " jmax = " << jmax << " " << maxhit << endl;
-  // Resume regular tof code, now using time filer(?) from above
-  // Check for TWO good TDC hits
-  for (Int_t i=0;i<fNScinHits;i++) {
-    Double_t tmin = 0.5*jmax;
-    if ((time_pos[i]>tmin) && (time_pos[i]<tmin+fTofTolerance) &&
-	(time_neg[i]>tmin) && (time_neg[i]<tmin+fTofTolerance)) {
-      two_good_times[i]=kTRUE;
-    } else {
-      two_good_times[i]=kFALSE;
-      scin_corrected_time[i]=0.0; // not a very good "flag" but there is the logical two_good_hits...
-    }
-  } // end of loop that finds tube setting time  
-
-  //start time calculation.  assume xp=yp=0 radians.  project all
-  //time values to focal plane.  use average for start time.
-
-  fNScinGoodHits=0;
-  for (Int_t i=0;i<fNScinHits;i++) {
-    Int_t j=((THcHodoHit*)fHodoHits->At(i))->GetPaddleNumber()-1;  
-    if (two_good_times[i]) { // both tubes fired
-      fpTimes[fNScinGoodHits]=scin_corrected_time[i]-(fZpos+(j%2)*fDzpos)/(29.979*fBetaNominal);
-      fScinTime[fNScinGoodHits]=scin_corrected_time[i];
-      // Should we precompute these
-      fScinSigma[fNScinGoodHits]=fHodoSigma[j];
-      fScinZpos[fNScinGoodHits]=fZpos+(j%2)*fDzpos; // see comment above
-      //        h_rfptime(hscin_plane_num(ihit))=fptime
-      fNScinGoodHits++; // increment the number of good hits
-    }
-  }
-  CalcFpTime();
-  return 0;
-  }
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 {

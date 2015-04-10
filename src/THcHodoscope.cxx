@@ -678,7 +678,6 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   // Let each plane get its hits
   Int_t nexthit = 0;
 
-  fStartTime=0;
   fNfptimes=0;
   for(Int_t ip=0;ip<fNPlanes;ip++) {
 
@@ -689,24 +688,10 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     // GN: select only events that have reasonable TDC values to start with
     // as per the Engine h_strip_scin.f
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList,nexthit);
-     if (fPlanes[ip]->GetNScinHits()>0) {
-      fPlanes[ip]->EstimateFocalPlaneTimes();
-      // GN: allow for more than one fptime per plane!!
-      for (Int_t i=0;i<fPlanes[ip]->GetNScinGoodHits();i++) {
-	if (TMath::Abs(fPlanes[ip]->GetFpTime(i)-fStartTimeCenter)<=fStartTimeSlop) {
-	  fStartTime=fStartTime+fPlanes[ip]->GetFpTime(i);
-	  fNfptimes++;
-	}
-      }
-    }
   }
-  if (fNfptimes>0) {
-    fStartTime=fStartTime/fNfptimes;
-    fGoodStartTime=kTRUE;
-  } else {
-    fGoodStartTime=kFALSE;
-    fStartTime=fStartTimeCenter;
-  }
+
+  EstimateFocalPlaneTime();
+
   if (fdebugprintscinraw == 1) {
   for(UInt_t ihit = 0; ihit < fNRawHits ; ihit++) {
     THcRawHodoHit* hit = (THcRawHodoHit *) fRawHitList->At(ihit);
@@ -721,6 +706,81 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   return nhits;
 }
 
+//_____________________________________________________________________________
+void THcHodoscope::EstimateFocalPlaneTime( void )
+{
+  Int_t timehist[200];
+  Int_t time_pos[100],time_neg[100];
+  Double_t scin_corrected_time[100];
+
+  for (Int_t i=0;i<200;i++) {
+    timehist[i] = 0;
+  }
+  Int_t ihit=0;
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    Int_t nphits=fPlanes[ip]->GetNScinHits();
+    TClonesArray* hodoHits = fPlanes[ip]->GetHits();
+    for(Int_t i=0;i<nphits;i++) {
+      Double_t postime=((THcHodoHit*) hodoHits->At(i))->GetPosTOFCorrectedTime();
+      Double_t negtime=((THcHodoHit*) hodoHits->At(i))->GetNegTOFCorrectedTime();
+	  
+      for (Int_t k=0;k<200;k++) {
+	Double_t tmin=0.5*(k+1);
+	if ((postime> tmin) && (postime < tmin+fTofTolerance)) {
+	  timehist[k]++;
+	}
+	if ((negtime> tmin) && (negtime < tmin+fTofTolerance)) {
+	  timehist[k]++;
+	}
+      }
+      ihit++;
+    }
+  }
+
+  // Find the bin with most hits
+  ihit=0;
+  Int_t binmax=0;
+  Int_t maxhit=0;
+  for(Int_t i=0;i<200;i++) {
+    if(timehist[i]>maxhit) {
+      binmax = i;
+      maxhit = timehist[i];
+    }
+  }
+
+  ihit = 0;
+  Double_t fpTimeSum = 0.0;
+  fNfptimes=0;
+    
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    Int_t nphits=fPlanes[ip]->GetNScinHits();
+    TClonesArray* hodoHits = fPlanes[ip]->GetHits();
+    for(Int_t i=0;i<nphits;i++) {
+      Double_t tmin = 0.5*binmax;
+      if ((time_pos[ihit]>tmin) && (time_pos[ihit]<tmin+fTofTolerance) &&
+	  (time_neg[ihit]>tmin) && (time_neg[ihit]<tmin+fTofTolerance)) {
+	// Both tubes fired
+	Int_t index=((THcHodoHit*)hodoHits->At(i))->GetPaddleNumber()-1;
+	Double_t fptime = ((THcHodoHit*)hodoHits->At(i))->GetScinCorrectedTime() 
+	  - (fPlanes[ip]->GetZpos()+(index%2)*fPlanes[ip]->GetDzpos())
+	  / (29.979 * fBetaNominal);
+	if(TMath::Abs(fptime-fStartTimeCenter)<=fStartTimeSlop) {
+	  // Should also fill the all FP times histogram
+	  fpTimeSum += fptime;
+	  fNfptimes++;
+	}
+      }
+    }
+    ihit++;
+  }
+  if(fNfptimes>0) {
+    fStartTime = fpTimeSum/fNfptimes;
+    fGoodStartTime=kTRUE;
+  } else {
+    fStartTime = fStartTimeCenter;
+    fGoodStartTime=kFALSE;
+  }
+}
 //_____________________________________________________________________________
 Int_t THcHodoscope::ApplyCorrections( void )
 {

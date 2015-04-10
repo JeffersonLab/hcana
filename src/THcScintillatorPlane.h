@@ -35,7 +35,6 @@ class THcScintillatorPlane : public THaSubDetector {
   virtual Bool_t   IsPid()      { return kFALSE; }
 
   virtual Int_t ProcessHits(TClonesArray* rawhits, Int_t nexthit);
-  virtual Int_t EstimateFocalPlaneTimes();
 
   virtual Int_t AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit);
   virtual void  CalculatePedestals( );

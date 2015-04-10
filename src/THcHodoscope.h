@@ -46,6 +46,7 @@ public:
   virtual Int_t      CoarseProcess( TClonesArray& tracks );
   virtual Int_t      FineProcess( TClonesArray& tracks );
   
+  void EstimateFocalPlaneTime(void);
   virtual Int_t      ApplyCorrections( void );
   Double_t GetStartTime() const { return fStartTime; }
   Bool_t IsStartTimeGood() const {return fGoodStartTime;};

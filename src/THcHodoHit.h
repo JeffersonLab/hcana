@@ -30,10 +30,20 @@ public:
   Int_t GetNegTDC() const { return fNegTDC; }
   Double_t GetPosCorrectedTime() const { return fPosCorrectedTime;}
   Double_t GetNegCorrectedTime() const { return fNegCorrectedTime;}
+  Double_t GetPosTOFCorrectedTime() const { return fPosTOFCorrectedTime;}
+  Double_t GetNegTOFCorrectedTime() const { return fNegTOFCorrectedTime;}
+  Double_t GetScinCorrectedTime() const { return fScinCorrectedTime;}
   Int_t GetPaddleNumber() const { return fPaddleNumber; }
 
-  void SetCorrectedTimes(Double_t pos, Double_t neg) {
+  void SetCorrectedTimes(Double_t pos, Double_t neg, Double_t) {
     fPosCorrectedTime = pos; fNegCorrectedTime = neg;
+  }
+  void SetCorrectedTimes(Double_t pos, Double_t neg,
+			 Double_t postof, Double_t negtof,
+			 Double_t timeave) {
+    fPosCorrectedTime = pos; fNegCorrectedTime = neg;
+    fPosTOFCorrectedTime = postof; fNegTOFCorrectedTime = negtof;
+    fScinCorrectedTime = timeave;
   }
 
 protected:
@@ -46,7 +56,10 @@ protected:
   Double_t fNegADC_Ped;		// Pedestal subtracted ADC
   Double_t fPosCorrectedTime;	// Pulse height corrected time
   Double_t fNegCorrectedTime;	// Pulse height corrected time
-
+  Double_t fScinCorrectedTime;  // Time average corrected for position
+                                // based on ADCs.
+  Double_t fPosTOFCorrectedTime; // Times corrected for z position
+  Double_t fNegTOFCorrectedTime; // using nominal beta
   THcScintillatorPlane* fPlane;	// Pointer to parent scintillator plane
   
   
