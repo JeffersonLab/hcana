@@ -332,10 +332,12 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       
       // Do the pulse height correction to the time.  (Position dependent corrections later)
       Double_t timec_pos = hit->fTDC_pos*fScinTdcToTime - fHodoPosPhcCoeff[index]*
-	TMath::Sqrt(TMath::Max(0.0,(hit->fADC_pos/fHodoPosMinPh[index]-1)))
+	TMath::Sqrt(TMath::Max(0.0,
+			       (hit->fADC_pos-fPosPed[index])/fHodoPosMinPh[index]-1.0))
 	- fHodoPosTimeOffset[index];
       Double_t timec_neg = hit->fTDC_neg*fScinTdcToTime - fHodoNegPhcCoeff[index]*
-	TMath::Sqrt(TMath::Max(0.0,(hit->fADC_neg/fHodoNegMinPh[index]-1)))
+	TMath::Sqrt(TMath::Max(0.0,
+			       (hit->fADC_neg-fNegPed[index])/fHodoNegMinPh[index]-1.0))
 	- fHodoNegTimeOffset[index];
 
       // Find hit position using ADCs
