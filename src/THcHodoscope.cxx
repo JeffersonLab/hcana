@@ -591,8 +591,6 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 void THcHodoscope::EstimateFocalPlaneTime( void )
 {
   Int_t timehist[200];
-  Int_t time_pos[100],time_neg[100];
-  Double_t scin_corrected_time[100];
 
   for (Int_t i=0;i<200;i++) {
     timehist[i] = 0;
@@ -638,8 +636,10 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
     TClonesArray* hodoHits = fPlanes[ip]->GetHits();
     for(Int_t i=0;i<nphits;i++) {
       Double_t tmin = 0.5*binmax;
-      if ((time_pos[ihit]>tmin) && (time_pos[ihit]<tmin+fTofTolerance) &&
-	  (time_neg[ihit]>tmin) && (time_neg[ihit]<tmin+fTofTolerance)) {
+      Double_t postime=((THcHodoHit*) hodoHits->At(i))->GetPosTOFCorrectedTime();
+      Double_t negtime=((THcHodoHit*) hodoHits->At(i))->GetNegTOFCorrectedTime();
+      if ((postime>tmin) && (postime<tmin+fTofTolerance) &&
+	  (negtime>tmin) && (negtime<tmin+fTofTolerance)) {
 	// Both tubes fired
 	Int_t index=((THcHodoHit*)hodoHits->At(i))->GetPaddleNumber()-1;
 	Double_t fptime = ((THcHodoHit*)hodoHits->At(i))->GetScinCorrectedTime() 

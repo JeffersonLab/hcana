@@ -351,7 +351,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       Double_t negtime=timec_neg-(hit_position-fPosRight)/fHodoVelLight[index];
       Double_t scin_corrected_time = 0.5*(postime+negtime);
       postime = postime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
-      negtime = postime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+      negtime = negtime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 
       ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,
 								 postime, negtime,
