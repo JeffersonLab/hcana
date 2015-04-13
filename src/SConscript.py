@@ -13,7 +13,7 @@ THcDetectorMap.cxx \
 THcRawHit.cxx THcHitList.cxx \
 THcSignalHit.cxx \
 THcHodoscope.cxx THcScintillatorPlane.cxx \
-THcRawHodoHit.cxx \
+THcRawHodoHit.cxx THcHodoHit.cxx \
 THcDC.cxx THcDriftChamberPlane.cxx \
 THcDriftChamber.cxx \
 THcRawDCHit.cxx THcDCHit.cxx \
