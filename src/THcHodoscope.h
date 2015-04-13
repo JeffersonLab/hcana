@@ -272,11 +272,6 @@ protected:
   void           DeleteArrays();
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
-  Double_t DefineDoubleVariable(const char* fName);
-  Int_t    DefineIntVariable(const char* fName);
-  void DefineArray(const char* fName, const Int_t index, Double_t *myArray);
-  void DefineArray(const char* fName, char** Suffix, const Int_t index, Double_t *myArray);
-  void DefineArray(const char* fName, char** Suffix, const Int_t index, Int_t *myArray);
   enum ESide { kLeft = 0, kRight = 1 };
   
   virtual  Double_t TimeWalkCorrection(const Int_t& paddle,
