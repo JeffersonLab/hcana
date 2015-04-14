@@ -622,7 +622,7 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
   Int_t maxhit=0;
   for(Int_t i=0;i<200;i++) {
     if(timehist[i]>maxhit) {
-      binmax = i;
+      binmax = i+1;
       maxhit = timehist[i];
     }
   }
