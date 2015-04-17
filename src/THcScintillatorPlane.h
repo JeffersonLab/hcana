@@ -39,24 +39,17 @@ class THcScintillatorPlane : public THaSubDetector {
   virtual Int_t AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit);
   virtual void  CalculatePedestals( );
 
-  Int_t GetNelem(); // return number of paddles in this plane
-  Int_t GetNScinHits(); // return the number of hits in this plane (that pass min/max TDC cuts)
-  Double_t GetSpacing(); // return the spacing of paddles 
-  Double_t GetSize();    // return paddle size
-  Double_t GetHodoSlop(); // return the hodo slop
-  Double_t GetZpos();   //return the z position
-  Double_t GetDzpos();
-  Double_t GetPosLeft();
-  Double_t GetPosRight();
-  Double_t GetPosOffset();
-  Double_t GetPosCenter(Int_t PaddleNo); // here we're counting from zero!
-  Double_t CalcFpTime();
-  Double_t GetFpTime() {return fpTime;};
-  Double_t GetFpTime(Int_t index) { return fpTimes[index];};
-  Double_t GetScinTime(Int_t index) { return fScinTime[index];};
-  Double_t GetScinSigma(Int_t index) { return fScinSigma[index];};
-  Double_t GetScinZpos(Int_t index) { return fScinZpos[index];};
-  Int_t GetNScinGoodHits() const {return fNScinGoodHits;};
+  Int_t GetNelem() {return fNelem;}; // return number of paddles in this plane
+  Int_t GetNScinHits() {return fNScinHits;}; // # hits in plane (that pass min/max TDC cuts)
+  Double_t GetSpacing() {return fSpacing;}; // spacing of paddles 
+  Double_t GetSize() {return fSize;};    // paddle size
+  Double_t GetHodoSlop() {return fHodoSlop;}; // hodo slop
+  Double_t GetZpos() {return fZpos;};   //return the z position
+  Double_t GetDzpos() {return fDzpos;};
+  Double_t GetPosLeft() {return fPosLeft;};
+  Double_t GetPosRight() {return fPosRight;};
+  Double_t GetPosOffset() {return fPosOffset;};
+  Double_t GetPosCenter(Int_t PaddleNo) {return fPosCenter[PaddleNo];}; // counting from zero!
 
   TClonesArray* fParentHitList;
 

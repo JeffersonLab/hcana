@@ -230,8 +230,8 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
      "frPosADCHits.THcSignalHit.GetPaddleNumber()"},
     {"negadchits", "List of Negative ADC hits", 
      "frNegADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"fptime", "Time at focal plane", 
-     "GetFpTime()"},
+    //    {"fptime", "Time at focal plane", 
+    //     "GetFpTime()"},
     { 0 }
   };
 
@@ -461,75 +461,6 @@ void THcScintillatorPlane::InitializePedestals( )
     fNegPedLimit[i] = 1000;	// In engine, this are set in parameter file
     fNegPedCount[i] = 0;
   }
-}
-//____________________________________________________________________________
-Int_t THcScintillatorPlane::GetNelem() 
-{
-  return fNelem;
-}
-//____________________________________________________________________________
-Int_t THcScintillatorPlane::GetNScinHits() 
-{
-  return fNScinHits;
-}
-//____________________________________________________________________________
-Double_t THcScintillatorPlane::GetSpacing()
-{
-  return fSpacing;
-}
-//____________________________________________________________________________
-Double_t THcScintillatorPlane::GetSize()
-{
-  return fSize;
-}
-//____________________________________________________________________________
-Double_t THcScintillatorPlane::GetHodoSlop()
-{
-  return fHodoSlop;
-}
-//____________________________________________________________________________
-Double_t THcScintillatorPlane::GetZpos()
-{
-  return fZpos;
-}
-//____________________________________________________________________________
-Double_t THcScintillatorPlane::GetDzpos()
-{
-  return fDzpos;
-}
-//____________________________________________________________________________
-Double_t THcScintillatorPlane::GetPosLeft() {
-  return fPosLeft;
-}
-//____________________________________________________________________________
-Double_t THcScintillatorPlane::GetPosRight() {
-  return fPosRight;
-}
-//____________________________________________________________________________
-Double_t THcScintillatorPlane::GetPosOffset() {
-  return fPosOffset;
-}
-//____________________________________________________________________________
-Double_t THcScintillatorPlane::GetPosCenter(Int_t PaddleNo) {
-  return fPosCenter[PaddleNo];
-}
-//____________________________________________________________________________
-Double_t THcScintillatorPlane::CalcFpTime() 
-{
-  Double_t tmp=0;
-  Int_t counter=0;
-  for (Int_t i=0;i<fNScinGoodHits;i++) {
-    if (TMath::Abs(fpTimes[i]-fStartTimeCenter)<=fStartTimeSlop) {
-      tmp+=fpTimes[i];
-      counter++;
-    }
-  }
-  if (counter>0) {
-    fpTime=tmp/counter;
-  } else {
-    fpTime=-10000.;
-  }
-  return fpTime;
 }
 //____________________________________________________________________________
 ClassImp(THcScintillatorPlane)
