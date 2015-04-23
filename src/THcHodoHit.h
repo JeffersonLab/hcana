@@ -16,8 +16,8 @@
 class THcHodoHit : public TObject {
 
 public:
-  THcHodoHit( THcRawHodoHit* hit, Double_t posPed, 
-	      Double_t negPed, THcScintillatorPlane* sp);
+  THcHodoHit( THcRawHodoHit* hit=NULL, Double_t posPed=0.0, 
+	      Double_t negPed=0.0, THcScintillatorPlane* sp=NULL);
       
   virtual ~THcHodoHit() {}
 

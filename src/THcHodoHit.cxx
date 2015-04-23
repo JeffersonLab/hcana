@@ -15,8 +15,8 @@ using std::endl;
 
 ClassImp(THcHodoHit)
 
-THcHodoHit::THcHodoHit( THcRawHodoHit *hit, Double_t posPed=0.0, 
-			     Double_t negPed=0.0, THcScintillatorPlane* sp=NULL)
+THcHodoHit::THcHodoHit( THcRawHodoHit *hit, Double_t posPed, 
+			     Double_t negPed, THcScintillatorPlane* sp)
 {
   if(hit) {
     fPosTDC = hit->fTDC_pos;
