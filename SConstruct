@@ -58,12 +58,48 @@ print "Software Version = %s" % baseenv.subst('$VERSION')
 ivercode = 65536*int(float(baseenv.subst('$SOVERSION')))+ 256*int(10*(float(baseenv.subst('$SOVERSION'))-int(float(baseenv.subst('$SOVERSION')))))+ int(float(baseenv.subst('$PATCH')))
 baseenv.Append(VERCODE = ivercode)
 #
-# evio environment #
-baseenv.Append(EVIO_LIB = os.getenv('EVIO_LIBDIR'))
-baseenv.Append(EVIO_INC = os.getenv('EVIO_INCDIR'))
+# evio environment 
+#
+evio_libdir = os.getenv('EVIO_LIBDIR')
+evio_incdir = os.getenv('EVIO_INCDIR')
+evio_instdir = os.getenv('INSTALL_DIR')
+if evio_instdir is None or evio_libdir is None or evio_incdir is None:
+	print "No external EVIO environment configured !!!"
+	print "INSTALL_DIR = %s" % evio_instdir
+	print "EVIO_LIBDIR = %s" % evio_libdir
+	print "EVIO_INCDIR = %s" % evio_incdir
+	print "Using local installation ... "
+	evio_local = baseenv.subst('$HA_DIR')+'/evio'
+	evio_version = '4.4.5'
+	uname = os.uname();
+	platform = uname[0];
+	machine = uname[4];
+	evio_name = platform + '-' + machine
+	print "evio_name = %s" % evio_name	
+	evio_local_lib = "%s/evio-%s/%s/lib" % (evio_local,evio_version,evio_name) 
+	evio_local_inc = "%s/evio-%s/%s/include" % (evio_local,evio_version,evio_name)
+	evio_tarfile = "%s/evio-%s.tgz" % (evio_local,evio_version)
+	if not os.path.isdir(evio_local_lib):
+		if not os.path.exists(evio_tarfile):
+			evio_command_scons = "cd %s; wget --no-check-certificate https://coda.jlab.org/drupal/system/files/coda/evio/evio-4.4/evio-%s.tgz; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install --prefix=." % (evio_local,evio_version,evio_version,evio_version)
+		else:
+			evio_command_scons = "cd %s; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install --prefix=." % (evio_local,evio_version,evio_version)
+	else:
+			evio_command_scons = "cd %s; cd evio-%s/ ; scons install --prefix=." % (evio_local,evio_version)
+			
+	os.system(evio_command_scons)
+	baseenv.Append(EVIO_LIB = evio_local_lib)
+	baseenv.Append(EVIO_INC = evio_local_inc)
+else:
+	evio_command_scons = "cd %s; scons install --prefix=." % evio_instdir
+	os.system(evio_command_scons)
+	baseenv.Append(EVIO_LIB = os.getenv('EVIO_LIBDIR'))
+	baseenv.Append(EVIO_INC = os.getenv('EVIO_INCDIR'))
 print "EVIO lib Directory = %s" % baseenv.subst('$EVIO_LIB')
 print "EVIO include Directory = %s" % baseenv.subst('$EVIO_INC')
 baseenv.Append(CPPPATH = ['$EVIO_INC'])
+#
+# end evio environment
 #
 baseenv.Append(CPPPATH = ['$HC_SRC','$HA_SRC','$HA_DC','$HA_SCALER'])
 
