@@ -224,6 +224,8 @@ Int_t THcDriftChamber::DefineVariables( EMode mode )
   // Register variables in global list
 
    RVarDef vars[] = {
+     { "maxhits",     "Maximum hits allowed",    "fMaxHits" },
+     { "spacepoints", "Space points of DC",      "fNSpacePoints" },
      { "nhit", "Number of DC hits",  "fNhits" },
      { "trawhit", "Number of True Raw hits", "fN_True_RawHits" },
      { 0 }

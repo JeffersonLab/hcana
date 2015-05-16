@@ -232,6 +232,8 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
      "frNegADCHits.THcSignalHit.GetPaddleNumber()"},
     //    {"fptime", "Time at focal plane", 
     //     "GetFpTime()"},
+    {"nhits", "Number of hits",      
+     "GetNScinHits() "},
     { 0 }
   };
 

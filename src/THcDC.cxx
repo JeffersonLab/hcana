@@ -346,6 +346,7 @@ Int_t THcDC::DefineVariables( EMode mode )
   // Register variables in global list
 
   RVarDef vars[] = {
+    { "stubtest", "stub test",  "fStubTest" },
     { "nhit", "Number of DC hits",  "fNhits" },
     { "tnhit", "Number of good DC hits",  "fNthits" },
     { "trawhit", "Number of true raw DC hits", "fN_True_RawHits" },
@@ -422,6 +423,7 @@ inline
 void THcDC::ClearEvent()
 {
   // Reset per-event data.
+  fStubTest = 0;
   fNhits = 0;
   fNthits = 0;
   fN_True_RawHits=0;
@@ -695,6 +697,7 @@ void THcDC::LinkStubs()
 	       && (TMath::Abs(dposyp) < fYptTrCriterion)) {
 	      if(newtrack) {
 		assert(sptracks==0);
+		fStubTest = 1;
 		//stubtest=1;  Used in h_track_tests.f
 		// Make a new track if there are not to many
 		if(fNDCTracks < MAXTRACKS) {
