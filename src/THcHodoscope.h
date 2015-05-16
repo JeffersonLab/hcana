@@ -69,7 +69,7 @@ public:
   Double_t GetHodoVelLight(Int_t iii) const {return fHodoVelLight[iii];}
   Double_t GetStartTimeCenter() const {return fStartTimeCenter;}
   Double_t GetStartTimeSlop() const {return fStartTimeSlop;}
-  Double_t GetBetaNotrk() const {return fBetaNotrk;}
+  Double_t GetBetaNotrk() const {return fBetaNoTrk;}
 
   Int_t GetGoodRawPad(Int_t iii){return fTOFCalc[iii].good_raw_pad;}
   Int_t GetGoodRawPlane(Int_t iii){return fTOFCalc[iii].pindex;}
@@ -107,7 +107,8 @@ protected:
   Double_t fStartTime; 
   Int_t fNfptimes;
 
-  Double_t fBetaNotrk;
+  Double_t     fBetaNoTrk;
+  Double_t     fBetaNoTrkChiSq;
   // Per-event data
 
   // Potential Hall C parameters.  Mostly here for demonstration
@@ -222,6 +223,22 @@ protected:
   //    Double_t*  ped;
   //    Double_t*  gain;
   //  } fDataDest[NDEST];     // Lookup table for decoder
+
+  // Inforamtion for each plane
+  struct NoTrkPlaneInfo {
+    Bool_t goodplanetime;
+    NoTrkPlaneInfo () : goodplanetime(kFALSE) {}
+  };
+  std::vector<NoTrkPlaneInfo> fNoTrkPlaneInfo;
+  
+  // Inforamtion for each plane
+  struct NoTrkHitInfo {
+    Bool_t goodtwotimes;
+    Bool_t goodscintime;
+    NoTrkHitInfo () : goodtwotimes(kFALSE) {}
+  };
+  std::vector<NoTrkHitInfo> fNoTrkHitInfo;
+
 
   // Used in TOF calculation (FineProcess) to hold information about hits
   // within a given plane
