@@ -107,6 +107,8 @@ protected:
   Double_t fStartTime; 
   Int_t fNfptimes;
 
+  Double_t     fBetaP;
+
   Double_t     fBetaNoTrk;
   Double_t     fBetaNoTrkChiSq;
   // Per-event data

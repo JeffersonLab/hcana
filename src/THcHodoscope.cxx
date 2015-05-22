@@ -259,6 +259,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   //  Int_t plen=strlen(parname);
   cout << " readdatabse hodo fnplanes = " << fNPlanes << endl;
 
+  fBetaP = 0.;
   fBetaNoTrk = 0.;
   fBetaNoTrkChiSq = 0.;
   
@@ -432,15 +433,16 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
 
   RVarDef vars[] = {
     // Move these into THcHallCSpectrometer using track fTracks
+    {"betap",             "betaP",                "fBetaP"},
     {"betanotrack",       "Beta from scintillator hits",                "fBetaNoTrk"},
     {"betachisqnotrack",  "Chi square of beta from scintillator hits",  "fBetaNoTrkChiSq"},
-    {"fpHitsTime",      "Time at focal plane from all hits",         "fFPTime"},
-    {"starttime",       "Hodoscope Start Time",                      "fStartTime"},
-    {"goodstarttime",   "Hodoscope Good Start Time",                 "fGoodStartTime"},
-    {"goodscinhit",     "Hit in fid area",                           "fGoodScinHits"},
-    //    {"goodscinhitx",    "Hit in fid x range",                        "fGoodScinHitsX"},
-    {"scinshould",      "Total scin Hits in fid area",               "fScinShould"},
-    {"scindid",         "Total scin Hits in fid area with a track",  "fScinDid"},
+    {"fpHitsTime",        "Time at focal plane from all hits",            "fFPTime"},
+    {"starttime",         "Hodoscope Start Time",                         "fStartTime"},
+    {"goodstarttime",     "Hodoscope Good Start Time",                    "fGoodStartTime"},
+    {"goodscinhit",       "Hit in fid area",                              "fGoodScinHits"},
+    //    {"goodscinhitx",    "Hit in fid x range",                     "fGoodScinHitsX"},
+    {"scinshould",        "Total scin Hits in fid area",                  "fScinShould"},
+    {"scindid",           "Total scin Hits in fid area with a track",     "fScinDid"},
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
@@ -509,6 +511,7 @@ inline
 void THcHodoscope::ClearEvent()
 {
 
+  fBetaP = 0.;
   fBetaNoTrk = 0.0;
   fBetaNoTrkChiSq = 0.0;
 
@@ -820,7 +823,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       Double_t sumFPTime = 0.; // Line 138
       fNScinHit.push_back(0);
       Double_t p = theTrack->GetP(); // Line 142 
-      Double_t betaP = p/( TMath::Sqrt( p * p + fPartMass * fPartMass) );
+      fBetaP = p/( TMath::Sqrt( p * p + fPartMass * fPartMass) );
       
       //! Calculate all corrected hit times and histogram
       //! This uses a copy of code below. Results are save in time_pos,neg
@@ -895,7 +898,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	    Double_t pathp = fPlanes[ip]->GetPosLeft() - scinLongCoord;
 	    Double_t timep = ((THcHodoHit*)hodoHits->At(iphit))->GetPosCorrectedTime();
 	    timep = timep - ( pathp / fHodoVelLight[fPIndex] ) - ( fPlanes[ip]->GetZpos() +  
-								( paddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betaP ) *
+								( paddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * fBetaP ) *
 	      TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
 			   theTrack->GetPhi() * theTrack->GetPhi() );
 	    fTOFPInfo[iphit].time_pos = timep;
@@ -909,7 +912,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	    Double_t pathn =  scinLongCoord - fPlanes[ip]->GetPosRight();
 	    Double_t timen = ((THcHodoHit*)hodoHits->At(iphit))->GetNegCorrectedTime();
 	    timen = timen - ( pathn / fHodoVelLight[fPIndex] ) - ( fPlanes[ip]->GetZpos() +
-								( paddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * betaP ) *
+								( paddle % 2 ) * fPlanes[ip]->GetDzpos() ) / ( 29.979 * fBetaP ) *
 	      TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
 			   theTrack->GetPhi() * theTrack->GetPhi() );
 	    fTOFPInfo[iphit].time_neg = timen;
@@ -1052,7 +1055,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	      // scin_time_fp doesn't need to be an array
 	      Double_t scin_time_fp = fTOFCalc[ihhit].scin_time -
 	       	( fPlanes[ip]->GetZpos() + ( paddle % 2 ) * fPlanes[ip]->GetDzpos() ) /
-	       	( 29.979 * betaP ) *
+	       	( 29.979 * fBetaP ) *
 	       	TMath::Sqrt( 1. + theTrack->GetTheta() * theTrack->GetTheta() +
 	       		     theTrack->GetPhi() * theTrack->GetPhi() );
 
