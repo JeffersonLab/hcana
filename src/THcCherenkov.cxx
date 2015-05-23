@@ -168,7 +168,8 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fNelem = (Int_t)gHcParms->Find(parname)->GetValue(); // class.
 
   //    fNelem = 2;      // Default if not defined  
-
+  fCerNRegions = 3;
+  
   fNPMT = new Int_t[fNelem];
   fADC = new Double_t[fNelem];
   fADC_P = new Double_t[fNelem];
@@ -188,7 +189,6 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fPedLimit = new Int_t[fNelem];
   fPedMean = new Double_t[fNelem];
   
-  fCerNRegions = 3; // This value should be in parameter file
 
   fCerTrackCounter = new Int_t [fCerNRegions];
   fCerFiredCounter = new Int_t [fCerNRegions];
@@ -197,28 +197,29 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
     fCerFiredCounter[ireg] = 0;
   }
 
-
   fCerRegionsValueMax = fCerNRegions * 8; // This value 8 should also be in paramter file
   fCerRegionValue = new Double_t [fCerRegionsValueMax];
 
   DBRequest list[]={
-    {"cer_adc_to_npe", fGain,     kDouble, (UInt_t) fNelem},              // Ahmed
-    {"cer_ped_limit",  fPedLimit, kInt,    (UInt_t) fNelem},              // Ahmed
-    {"cer_width",      fCerWidth, kDouble, (UInt_t) fNelem},              // Ahmed
-    {"cer_chi2max",     &fCerChi2Max,        kDouble},                       // Ahmed
-    {"cer_beta_min",    &fCerBetaMin,        kDouble},                       // Ahmed
-    {"cer_beta_max",    &fCerBetaMax,        kDouble},                       // Ahmed
-    {"cer_et_min",      &fCerETMin,          kDouble},                       // Ahmed
-    {"cer_et_max",      &fCerETMax,          kDouble},                       // Ahmed
-    {"cer_mirror_zpos", &fCerMirrorZPos,     kDouble},                       // Ahmed
-    {"cer_region",      &fCerRegionValue[0], kDouble, (UInt_t) fCerRegionsValueMax},  // Ahmed
-    {"cer_threshold",   &fCerThresh,         kDouble},                       // Ahmed
+    {"cer_adc_to_npe", fGain,     kDouble, (UInt_t) fNelem},             
+    {"cer_ped_limit",  fPedLimit, kInt,    (UInt_t) fNelem},             
+    {"cer_width",      fCerWidth, kDouble, (UInt_t) fNelem},             
+    {"cer_chi2max",     &fCerChi2Max,        kDouble},                   
+    {"cer_beta_min",    &fCerBetaMin,        kDouble},                   
+    {"cer_beta_max",    &fCerBetaMax,        kDouble},                   
+    {"cer_et_min",      &fCerETMin,          kDouble},                   
+    {"cer_et_max",      &fCerETMax,          kDouble},                   
+    {"cer_mirror_zpos", &fCerMirrorZPos,     kDouble},                   
+    {"cer_region",      &fCerRegionValue[0], kDouble, (UInt_t) fCerRegionsValueMax}, 
+    {"cer_threshold",   &fCerThresh,         kDouble},                    
+    //    {"cer_regions",     &fCerNRegions,       kInt},                       
     {0}
   };
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   fIsInit = true;
+
 
   for (Int_t i1 = 0; i1 < fCerNRegions; i1++ ) {
     cout << "Region " << i1 << endl;
@@ -250,12 +251,12 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
   // No.  They show up in tree as Ndata.H.aero.postdchits for example
 
   RVarDef vars[] = {
-    {"phototubes",  "Nuber of Cherenkov photo tubes",            "fNPMT"},
-    {"adc",         "Raw ADC values",                            "fADC"},
-    {"adc_p",       "Pedestal Subtracted ADC values",            "fADC_P"},
-    {"npe",         "Number of Photo electrons",                 "fNPE"},
-    {"npesum",      "Sum of Number of Photo electrons",          "fNPEsum"},
-    {"ncherhit",    "Number of Hits(Cherenkov)",                 "fNCherHit"},
+    {"phototubes",      "Nuber of Cherenkov photo tubes",        "fNPMT"},
+    {"adc",             "Raw ADC values",                        "fADC"},
+    {"adc_p",           "Pedestal Subtracted ADC values",        "fADC_P"},
+    {"npe",             "Number of Photo electrons",             "fNPE"},
+    {"npesum",          "Sum of Number of Photo electrons",      "fNPEsum"},
+    {"ncherhit",        "Number of Hits(Cherenkov)",             "fNCherHit"},
     {"certrackcounter", "Tracks inside Cherenkov region",        "fCerTrackCounter"},
     {"cerfiredcounter", "Tracks with engough Cherenkov NPEs ",   "fCerFiredCounter"},
     { 0 }
@@ -374,7 +375,7 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 
     THaTrack* theTrack = dynamic_cast<THaTrack*>( tracks.At(0) );
     if (!theTrack) return -1;
-    
+
     if ( ( ( tracks.GetLast() + 1 ) == 1 ) && 
 	 ( theTrack->GetChi2()/theTrack->GetNDoF() > 0. ) && 
 	 ( theTrack->GetChi2()/theTrack->GetNDoF() <  fCerChi2Max ) && 
@@ -405,18 +406,12 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 	  fCerTrackCounter[ir] ++;	  
 	  
 	  // *     increment the 'did fire' counters
-
 	  if ( fNPEsum > fCerThresh ) {
 	    fCerFiredCounter[ir] ++;
 	  }
-
 	}
-		
-      } // loop over regions
-      //      cout << endl;
-      
+      } // loop over regions 
     }
-    
   }
 
   return 0;

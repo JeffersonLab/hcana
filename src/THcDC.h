@@ -103,6 +103,7 @@ protected:
                                 // Was used for SOS in ENGINE.
 
   // Per-event data
+  Int_t fStubTest;
   Int_t fNhits;
   Int_t fNthits;
   Int_t fN_True_RawHits;
