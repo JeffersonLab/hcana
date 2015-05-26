@@ -62,7 +62,7 @@ ifndef ANALYZER
   $(error $$ANALYZER environment variable not defined)
 endif
 
-INCDIRS  = $(wildcard $(addprefix $(ANALYZER)/, include src hana_decode hana_scaler)), $(shell pwd)/src
+INCDIRS  = $(wildcard $(addprefix $(ANALYZER)/, include src hana_decode)) $(shell pwd)/src
 
 #------------------------------------------------------------------------------
 # Check that root version is new enough (>= 5.32) by requiring
@@ -172,12 +172,11 @@ all:		$(USERLIB) hcana
 LIBDIR:=$(ANALYZER)
 LIBHALLA     := $(LIBDIR)/libHallA.so
 LIBDC        := $(LIBDIR)/libdc.so
-LIBSCALER    := $(LIBDIR)/libscaler.so
-HALLALIBS    := -L$(LIBDIR) -lHallA -ldc -lscaler
+HALLALIBS    := -L$(LIBDIR) -lHallA -ldc
 
 src/THcInterface.d:  $(HDR_COMPILEDATA)
 
-hcana:		src/main.o $(LIBDC) $(LIBSCALER) $(LIBHALLA) $(USERLIB)
+hcana:		src/main.o $(LIBDC) $(LIBHALLA) $(USERLIB)
 		$(LD) $(LDFLAGS) $< $(HALLALIBS) -L. -lHallC $(CCDBLIBS) \
 		$(GLIBS) -o $@
 
@@ -185,7 +184,7 @@ $(USERLIB):	$(HDR) $(OBJS)
 		$(LD) $(LDFLAGS) $(SOFLAGS) -o $@ $(OBJS)
 		@echo "$@ done"
 
-$(HDR_COMPILEDATA) $(LIBHALLA) $(LIBDC) $(LIBSCALER): $(ANALYZER)/Makefile
+$(HDR_COMPILEDATA) $(LIBHALLA) $(LIBDC): $(ANALYZER)/Makefile
 		@echo "Building Podd"		
 		@cd $(ANALYZER) ; export PODD_EXTRA_DEFINES=-DHALLC_MODS ; make
 

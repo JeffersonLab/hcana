@@ -78,8 +78,8 @@ THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
   gHcParms    = new THcParmList;
   gHaCuts    = new THaCutList( gHaVars );
   gHaApps    = new TList;
-  gHaScalers = new TList;
   gHaPhysics = new TList;
+  gHaEvtHandlers = new TList;
   // Use the standard CODA file decoder by default
   gHaDecoder = Decoder::CodaDecoder::Class();
   // File-based database by default
@@ -110,7 +110,7 @@ THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
       gSystem->FreeDirectory(dp);
       s = p;
     } else 
-      s = s+"/src " + s+"/hana_decode " + s+"/hana_scaler";
+      s = s+"/src " + s+"/hana_decode ";
   }
   // Directories names separated by blanks.
   // FIXME: allow blanks
@@ -160,7 +160,7 @@ THcInterface::~THcInterface()
     delete gHaTextvars; gHaTextvars=0;
     //    delete gHaDB;           gHaDB = 0;
     delete gHaPhysics;   gHaPhysics=0;
-    delete gHaScalers;   gHaScalers=0;
+    delete gHaEvtHandlers; gHaEvtHandlers=0;
     delete gHaApps;         gHaApps=0;
     delete gHaVars;         gHaVars=0;
     delete gHaCuts;         gHaCuts=0;
