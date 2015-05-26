@@ -43,7 +43,6 @@ baseenv.Append(HC_SRC= baseenv.subst('$HC_DIR')+'/src ')
 baseenv.Append(HA_DIR= baseenv.subst('$HC_DIR')+'/podd ')
 baseenv.Append(HA_SRC= baseenv.subst('$HA_DIR')+'/src ') 
 baseenv.Append(HA_DC= baseenv.subst('$HA_DIR')+'/hana_decode ') 
-baseenv.Append(HA_SCALER= baseenv.subst('$HA_DIR')+'/hana_scaler ') 
 baseenv.Append(MAJORVERSION = '1')
 baseenv.Append(MINORVERSION = '6')
 baseenv.Append(PATCH = '0')
@@ -62,10 +61,8 @@ baseenv.Append(VERCODE = ivercode)
 #
 evio_libdir = os.getenv('EVIO_LIBDIR')
 evio_incdir = os.getenv('EVIO_INCDIR')
-evio_instdir = os.getenv('INSTALL_DIR')
-if evio_instdir is None or evio_libdir is None or evio_incdir is None:
+if evio_libdir is None or evio_incdir is None:
 	print "No external EVIO environment configured !!!"
-	print "INSTALL_DIR = %s" % evio_instdir
 	print "EVIO_LIBDIR = %s" % evio_libdir
 	print "EVIO_INCDIR = %s" % evio_incdir
 	print "Using local installation ... "
@@ -91,8 +88,8 @@ if evio_instdir is None or evio_libdir is None or evio_incdir is None:
 	baseenv.Append(EVIO_LIB = evio_local_lib)
 	baseenv.Append(EVIO_INC = evio_local_inc)
 else:
-	evio_command_scons = "cd %s; scons install --prefix=." % evio_instdir
-	os.system(evio_command_scons)
+	# evio_command_scons = "cd %s; scons install --prefix=." % evio_instdir
+	# os.system(evio_command_scons)
 	baseenv.Append(EVIO_LIB = os.getenv('EVIO_LIBDIR'))
 	baseenv.Append(EVIO_INC = os.getenv('EVIO_INCDIR'))
 print "EVIO lib Directory = %s" % baseenv.subst('$EVIO_LIB')
@@ -101,7 +98,7 @@ baseenv.Append(CPPPATH = ['$EVIO_INC'])
 #
 # end evio environment
 #
-baseenv.Append(CPPPATH = ['$HC_SRC','$HA_SRC','$HA_DC','$HA_SCALER'])
+baseenv.Append(CPPPATH = ['$HC_SRC','$HA_SRC','$HA_DC'])
 
 proceed = "1" or "y" or "yes" or "Yes" or "Y"
 ######## Configure Section #######
@@ -188,19 +185,18 @@ if baseenv.subst('$CPPCHECK')==proceed:
 hallclib = 'HallC'
 hallalib = 'HallA'
 dclib = 'dc'
-scalerlib = 'scaler'
 eviolib = 'evio'
 
-baseenv.Append(LIBPATH=['$HC_DIR','$EVIO_LIB','$HA_DIR','$HC_SRC','$HA_SRC','$HA_DC','$HA_SCALER'])
+baseenv.Append(LIBPATH=['$HC_DIR','$EVIO_LIB','$HA_DIR','$HC_SRC','$HA_SRC','$HA_DC'])
 baseenv.Replace(SHLIBSUFFIX = '.so')
 baseenv.Append(CPPDEFINES = '-DHALLC_MODS')
 
-directorylist = ['./','src','podd','podd/src','podd/hana_decode','podd/hana_scaler']
+directorylist = ['./','src','podd','podd/src','podd/hana_decode']
 
 baseenv.Append(SHLIBSUFFIX ='.'+baseenv.subst('$VERSION'))
 pbaseenv=baseenv.Clone()
-pbaseenv.Append(LIBS=[eviolib,hallclib,hallalib,dclib,scalerlib])
-baseenv.Append(LIBS=[eviolib,hallalib,dclib,scalerlib])
+pbaseenv.Append(LIBS=[eviolib,hallclib,hallalib,dclib])
+baseenv.Append(LIBS=[eviolib,hallalib,dclib])
 Export('pbaseenv')
 
 SConscript(dirs = directorylist,name='SConscript.py',exports='baseenv')
