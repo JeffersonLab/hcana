@@ -26,6 +26,7 @@ THcAerogel.cxx THcAerogelHit.cxx \
 THcCherenkov.cxx THcCherenkovHit.cxx \
 THcFormula.cxx \
 THcRaster.cxx THcRasteredBeam.cxx THcRasterRawHit.cxx
+THcScalerEvtHandler.cxx
 """)
 
 pbaseenv.Object('main.C')
