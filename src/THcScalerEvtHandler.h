@@ -51,6 +51,7 @@ private:
    std::vector<Int_t> index;
    Int_t Nvars, ifound, fNormIdx, nscalers;
    Double_t *dvars;
+   Double_t *dvarsFirst;
    TTree *fScalerTree;
 
    THcScalerEvtHandler(const THcScalerEvtHandler& fh);
