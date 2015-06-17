@@ -170,11 +170,8 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     *fDebugFile << "   Found flag   =  "<<ifound<<endl;
   }
 
-  // FIXME: What are the HMS and SOS headers?  Are there header words?
-  //
-  // L-HRS has headers which are different from R-HRS, but both are
-  // event type 140 and come here.  If you found no headers, it was
-  // the other arms event type.  (The arm is fName).
+  // HMS has headers which are different from SOS, but both are
+  // event type 0 and come here.  If you found no headers, return.
 
   if (!ifound) return 0;
 
