@@ -63,7 +63,7 @@ static const UInt_t defaultDT = 4;
 
 THcScalerEvtHandler::THcScalerEvtHandler(const char *name, const char* description)
   : THaEvtTypeHandler(name,description), evcount(0), ifound(0), fNormIdx(-1),
-    dvars(0), fScalerTree(0)
+    dvars(0), dvarsFirst(0), fScalerTree(0)
 {
   rdata = new UInt_t[MAXTEVT];
 }
@@ -147,8 +147,8 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
   ifound = 0;
 
   while (p < pstop && j < ndata) {
-    if (fDebugFile) {
-      *fDebugFile << "p  and  pstop  "<<j++<<"   "<<p<<"   "<<pstop<<"   "<<hex<<*p<<"   "<<dec<<endl;
+	if (fDebugFile) {
+      		*fDebugFile << "p  and  pstop  "<<j++<<"   "<<p<<"   "<<pstop<<"   "<<hex<<*p<<"   "<<dec<<endl;
     }
     nskip = 1;
     for (UInt_t j=0; j<scalers.size(); j++) {
@@ -182,15 +182,28 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     UInt_t ivar = scalerloc[i]->ivar;
     UInt_t isca = scalerloc[i]->iscaler;
     UInt_t ichan = scalerloc[i]->ichan;
-    if (fDebugFile) *fDebugFile << "Debug dvars "<<i<<"   "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
-    if ((ivar >= 0 && ivar < scalerloc.size()) &&
-	(isca >= 0 && isca < scalers.size()) &&
-	(ichan >= 0 && ichan < MAXCHAN)) {
-      if (scalerloc[ivar]->ikind == ICOUNT) dvars[ivar] = scalers[isca]->GetData(ichan);
-      if (scalerloc[ivar]->ikind == IRATE)  dvars[ivar] = scalers[isca]->GetRate(ichan);
-      if (fDebugFile) *fDebugFile << "   dvars  "<<scalerloc[ivar]->ikind<<"  "<<dvars[ivar]<<endl;
-    } else {
-      cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
+    if (evcount==0) {
+    	if (fDebugFile) *fDebugFile << "Debug dvarsFirst "<<i<<"   "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
+    	if ((ivar >= 0 && ivar < scalerloc.size()) &&
+		(isca >= 0 && isca < scalers.size()) &&
+		(ichan >= 0 && ichan < MAXCHAN)) {
+      			if (scalerloc[ivar]->ikind == ICOUNT) dvarsFirst[ivar] = scalers[isca]->GetData(ichan);
+      			if (scalerloc[ivar]->ikind == IRATE)  dvarsFirst[ivar] = scalers[isca]->GetRate(ichan);
+      			if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
+    	} else {
+      			cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
+    	}
+    }else{
+    	if (fDebugFile) *fDebugFile << "Debug dvars "<<i<<"   "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
+    	if ((ivar >= 0 && ivar < scalerloc.size()) &&
+		(isca >= 0 && isca < scalers.size()) &&
+		(ichan >= 0 && ichan < MAXCHAN)) {
+      			if (scalerloc[ivar]->ikind == ICOUNT) dvars[ivar] = scalers[isca]->GetData(ichan)-dvarsFirst[ivar];
+      			if (scalerloc[ivar]->ikind == IRATE)  dvars[ivar] = scalers[isca]->GetRate(ichan);
+      			if (fDebugFile) *fDebugFile << "   dvars  "<<scalerloc[ivar]->ikind<<"  "<<dvars[ivar]<<endl;
+    	} else {
+      			cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
+    	}
     }
   }
 
@@ -295,7 +308,10 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
 	if (scalers.size() > 0) {
 	  UInt_t idx = scalers.size()-1;
 	  scalers[idx]->SetHeader(header, mask);
-	  if (clkchan >= 0) scalers[idx]->SetClock(defaultDT, clkchan, clkfreq);
+	  if (clkchan >= 0) {
+		  scalers[idx]->SetClock(defaultDT, clkchan, clkfreq);
+		  cout << "Setting scaler clock ... channel = "<<clkchan<<" ... freq = "<<clkfreq<<endl;
+	  }
 	}
       }
     }
@@ -388,7 +404,9 @@ void THcScalerEvtHandler::DefVars()
   Nvars = scalerloc.size();
   if (Nvars == 0) return;
   dvars = new Double_t[Nvars];  // dvars is a member of this class
+  dvarsFirst = new Double_t[Nvars];  // dvarsFirst is a member of this class
   memset(dvars, 0, Nvars*sizeof(Double_t));
+  memset(dvarsFirst, 0, Nvars*sizeof(Double_t));
   if (gHaVars) {
     if(fDebugFile) *fDebugFile << "THcScalerEVtHandler:: Have gHaVars "<<gHaVars<<endl;
   } else {
@@ -400,6 +418,8 @@ void THcScalerEvtHandler::DefVars()
   for (UInt_t i = 0; i < scalerloc.size(); i++) {
     gHaVars->DefineByType(scalerloc[i]->name.Data(), scalerloc[i]->description.Data(),
 			  &dvars[i], kDouble, count);
+    gHaVars->DefineByType(scalerloc[i]->name.Data(), scalerloc[i]->description.Data(),
+			  &dvarsFirst[i], kDouble, count);
   }
 }
 
