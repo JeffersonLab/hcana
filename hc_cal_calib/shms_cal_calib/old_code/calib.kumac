@@ -1,0 +1,87 @@
+macro calib P=1
+
+set *
+opt *
+ve/del *
+hi/del 0
+close 0
+
+opt date
+opt grid
+opt stat
+opt fit
+
+fn='../results/e/'[P]'.r'
+
+sh ./shms_calib < [fn]
+
+ve/read e,eb,x shms_calib.cal_data
+sigma r=e/eb
+
+1d 1 'Edep/P' 100 0.5 1.5
+**1d 1 'Edep/P' 200 0.5 1.5
+hfill r 1
+
+rms=$HINFO(1,'RMS')
+mean=$HINFO(1,'MEAN')
+lo=[mean]-3*[rms]
+hi=[mean]+3*[rms]
+**lo=[mean]-2*[rms]
+**hi=[mean]+2*[rms]
+mess lo=[lo] hi=[hi]
+hi/fit 1([lo]:[hi]) g
+
+*------------------------------------------------------------------------------
+ve/cr fpar(3) r
+ve/cr ferr(3) r
+Application COMIS Quit
+      SUBROUTINE chiq
+* NPFITS  Number of points used in the fit
+* NFPAR   Number of free parameters
+* FITCHI  Chisquare
+* FITPAR  Values of parameters
+* FITSIG  Errors on parameters
+      COMMON/HCFITS/NCFITS,NPFITS,NFPAR,FITCHI,FITPAR(35),FITSIG(35)
+     +             ,FITDER(35)
+      vector fpar
+      vector ferr
+      fpar(1)=fitpar(1)
+      fpar(2)=fitpar(2)
+      fpar(3)=fitpar(3)
+      ferr(1)=fitsig(1)
+      ferr(2)=fitsig(2)
+      ferr(3)=fitsig(3)
+      END
+Quit
+*------------------------------------------------------------------------------
+
+call chiq
+sig=fpar(3)
+ser=ferr(3)
+mean=fpar(2)
+sigm=[sig]/[mean]*100
+serr=[ser]/[mean]*100
+mess sigma = [sigm] +/- [serr]  %
+
+lo=[mean]-3*[sig]
+hi=[mean]+3*[sig]
+1d 2 'Edep/P' 100 [lo] [hi]
+
+hfill r 2
+sum=$HINFO(2,'SUM')
+entries=$HINFO(2,'Entries')
+eff=[sum]/[entries]*100
+
+mess eff = [eff] %
+
+* Output.
+
+rms=[rms]/[mean]*100
+
+ve/cr v(5) r
+ve/inp v [P] [rms] [sigm] [serr] [eff]
+ve/write v tmp.d '(f3.0,3f6.3,f6.2)'
+sh cat tmp.d >> resolution.dat
+sh rm tmp.d
+
+return

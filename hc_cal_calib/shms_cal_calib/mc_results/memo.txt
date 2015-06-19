@@ -1,0 +1,4 @@
+From /scratch/tadevosn/shms_lg/g4.simon/mar2012.
+
+Removed degradation of quantum efficiencies of PMTs, both in Preshower
+and Shower.
