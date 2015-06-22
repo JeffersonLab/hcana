@@ -311,6 +311,8 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
 	  if (clkchan >= 0) {
 		  scalers[idx]->SetClock(defaultDT, clkchan, clkfreq);
 		  cout << "Setting scaler clock ... channel = "<<clkchan<<" ... freq = "<<clkfreq<<endl;
+		  if (fDebugFile) *fDebugFile <<"Setting scaler clock ... channel = "<<clkchan<<" ... freq = "<<clkfreq<<endl;
+		  fNormIdx = idx;
 	  }
 	}
       }
@@ -319,7 +321,8 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
   // can't compare UInt_t to Int_t (compiler warning), so do this
   nscalers=0;
   for (UInt_t i=0; i<scalers.size(); i++) nscalers++;
-  // need to do LoadNormScaler after scalers created and if fNormIdx found.
+  // need to do LoadNormScaler after scalers created and if fNormIdx found
+  if (fDebugFile) *fDebugFile <<"fNormIdx = "<<fNormIdx<<endl;
   if ((fNormIdx >= 0) && fNormIdx < nscalers) {
     for (Int_t i = 0; i < nscalers; i++) {
       if (i==fNormIdx) continue;
