@@ -1,1 +1,1 @@
-../examples/make_cratemap.pl
+../../examples/make_cratemap.pl
