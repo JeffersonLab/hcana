@@ -421,8 +421,8 @@ void THcScalerEvtHandler::DefVars()
   for (UInt_t i = 0; i < scalerloc.size(); i++) {
     gHaVars->DefineByType(scalerloc[i]->name.Data(), scalerloc[i]->description.Data(),
 			  &dvars[i], kDouble, count);
-    gHaVars->DefineByType(scalerloc[i]->name.Data(), scalerloc[i]->description.Data(),
-			  &dvarsFirst[i], kDouble, count);
+    //gHaVars->DefineByType(scalerloc[i]->name.Data(), scalerloc[i]->description.Data(),
+    //			  &dvarsFirst[i], kDouble, count);
   }
 }
 
