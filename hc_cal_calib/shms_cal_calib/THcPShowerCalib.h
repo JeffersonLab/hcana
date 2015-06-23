@@ -394,19 +394,19 @@ void THcPShowerCalib::ComposeVMs() {
   // Output vectors and matrixes, for debug purposes.
 
   ofstream q0out;
-  q0out.open("q0.d",ios::out);
+  q0out.open("q0.deb",ios::out);
   for (UInt_t i=0; i<THcPShTrack::fNpmts; i++)
     q0out << setprecision(20) << fq0[i] << " " << i << endl;
   q0out.close();
 
   ofstream qeout;
-  qeout.open("qe.d",ios::out);
+  qeout.open("qe.deb",ios::out);
   for (UInt_t i=0; i<THcPShTrack::fNpmts; i++)
     qeout << setprecision(20) << fqe[i] << " " << i << endl;
   qeout.close();
 
   ofstream Qout;
-  Qout.open("Q.d",ios::out);
+  Qout.open("Q.deb",ios::out);
   for (UInt_t i=0; i<THcPShTrack::fNpmts; i++)
     for (UInt_t j=0; j<THcPShTrack::fNpmts; j++)
       Qout << setprecision(20) << fQ[i][j] << " " << i << " " << j << endl;
@@ -572,7 +572,7 @@ void THcPShowerCalib::FillHEcal() {
   //
 
   ofstream output;
-  output.open("calibrated.d",ios::out);
+  output.open("calibrated.deb",ios::out);
 
   Int_t nev = 0;
 
