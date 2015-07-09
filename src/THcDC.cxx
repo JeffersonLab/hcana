@@ -529,6 +529,8 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
       // CalcFocalPlaneCoords.  Aren't our tracks already in focal plane coords
       // We should have some kind of track ID so that the THaTrack can be
       // associate back with the DC track
+      // Assign the track number
+      theTrack->SetTrkNum(itrack+1);
     }
   }
 

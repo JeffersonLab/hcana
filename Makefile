@@ -28,7 +28,8 @@ SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcRaster.cxx\
 	src/THcRasteredBeam.cxx\
 	src/THcRasterRawHit.cxx \
-	src/THcScalerEvtHandler.cxx
+	src/THcScalerEvtHandler.cxx \
+	src/THcHodoEff.cxx
 
 # Name of your package. 
 # The shared library that will be built will get the name lib$(PACKAGE).so

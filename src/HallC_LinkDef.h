@@ -53,5 +53,6 @@
 #pragma link C++ class THcRasteredBeam+;
 #pragma link C++ class THcRasterRawHit+;
 #pragma link C++ class THcScalerEvtHandler+;
+#pragma link C++ class THcHodoEff+;
 
 #endif

@@ -36,7 +36,8 @@
   gHaApps->Add( HMS );
 
   // Add hodoscope
-  HMS->AddDetector( new THcHodoscope("hod", "Hodoscope" ));
+  THcHodoscope* hms_hodoscope = new THcHodoscope("hod","Hodoscope");
+  HMS->AddDetector( hms_hodoscope );
   HMS->AddDetector( new THcShower("cal", "Shower" ));
   HMS->AddDetector( new THcDC("dc", "Drift Chambers" ));
   THcAerogel* aerogel = new THcAerogel("aero", "Aerogel Cerenkov" );
@@ -47,9 +48,14 @@
   THaApparatus* SOS = new THcHallCSpectrometer("S","SOS");
   gHaApps->Add( SOS );
   // Add detectors
-  SOS->AddDetector( new THcHodoscope("hod", "Hodoscope" ));
+  THcHodoscope* sos_hodoscope = new THcHodoscope("hod","Hodoscope");
+  SOS->AddDetector( sos_hodoscope);
   SOS->AddDetector( new THcShower("cal", "Shower" ));
   SOS->AddDetector( new THcDC("dc", "Drift Chambers" ));
+
+  gHaPhysics->Add(new THcHodoEff("hhodeff","HMS Hodoscope Efficiencies","H.hod"));
+  gHaPhysics->Add(new THcHodoEff("shodeff","SOS Hodoscope Efficiencies","S.hod"));
+  
 
   // Set up the analyzer - we use the standard one,
   // but this could be an experiment-specific one as well.
