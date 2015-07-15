@@ -76,6 +76,8 @@ public:
   Int_t GetNScinHits(Int_t iii){return fNScinHits[iii];}
   Int_t GetTotHits(){return fTOFCalc.size();}
 
+  Int_t GetNPlanes() { return fNPlanes;}
+  THcScintillatorPlane* GetPlane(Int_t ip) { return fPlanes[ip];}
   UInt_t GetNPaddles(Int_t iii) { return fNPaddle[iii];}
   Double_t GetHodoSlop(Int_t iii) { return fHodoSlop[iii];}
   Double_t GetPlaneCenter(Int_t iii) { return fPlaneCenter[iii];}
@@ -90,6 +92,15 @@ public:
   Double_t GetHodoPosSigma(Int_t iii) const {return fHodoPosSigma[iii];}
   Double_t GetHodoNegSigma(Int_t iii) const {return fHodoNegSigma[iii];}
 
+  Bool_t GetFlags(Int_t itrack, Int_t iplane, Int_t ihit,
+		  Bool_t& onTrack, Bool_t& goodScinTime,
+		  Bool_t& goodTdcNeg, Bool_t& goodTdcPos) const {
+    onTrack = fGoodFlags[itrack][iplane][ihit].onTrack;
+    goodScinTime = fGoodFlags[itrack][iplane][ihit].goodScinTime;
+    goodTdcNeg = fGoodFlags[itrack][iplane][ihit].goodTdcNeg;
+    goodTdcPos = fGoodFlags[itrack][iplane][ihit].goodTdcPos;
+    return(kTRUE);
+  }
 
   const TClonesArray* GetTrackHits() const { return fTrackProj; }
 
@@ -285,6 +296,13 @@ protected:
   std::vector<Int_t > fGoodScinHitsX;                   // # hits in fid x range
   // Could combine the above into a structure
 
+  struct GoodFlags {
+    Bool_t onTrack;
+    Bool_t goodScinTime;
+    Bool_t goodTdcNeg;
+    Bool_t goodTdcPos;
+  };
+  std::vector<std::vector<std::vector<GoodFlags> > > fGoodFlags;
   //
     
   void           ClearEvent();

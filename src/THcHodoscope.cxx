@@ -815,6 +815,8 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       }
       std::vector<Double_t> dedx_temp;
       fdEdX.push_back(dedx_temp); // Create array of dedx per hit
+      std::vector<std::vector<GoodFlags> > goodflagstmp1;
+      fGoodFlags.push_back(goodflagstmp1);
       
       Int_t nFPTime = 0;
       Double_t betaChiSq = -3;
@@ -847,6 +849,9 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       Int_t ihhit = 0;		// Hit # overall
       for(Int_t ip = 0; ip < fNPlanes; ip++ ) {
 	
+	std::vector<GoodFlags> goodflagstmp2;
+	fGoodFlags[itrack].push_back(goodflagstmp2);
+
 	fNScinHits[ip] = fPlanes[ip]->GetNScinHits();
 	TClonesArray* hodoHits = fPlanes[ip]->GetHits();
 
@@ -955,6 +960,12 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	//---------------------------------------------------------------------------------------------
 
 	for (Int_t iphit = 0; iphit < fNScinHits[ip]; iphit++ ){
+	  GoodFlags flags;
+	  fGoodFlags[itrack][ip].push_back(flags);
+	  fGoodFlags[itrack][ip][iphit].onTrack = kFALSE;
+	  fGoodFlags[itrack][ip][iphit].goodScinTime = kFALSE;
+	  fGoodFlags[itrack][ip][iphit].goodTdcNeg = kFALSE;
+	  fGoodFlags[itrack][ip][iphit].goodTdcPos = kFALSE;
 	  
 	  fTOFCalc.push_back(TOFCalc());
 	  // Do we set back to false for each track, or just once per event?
@@ -1000,6 +1011,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	      
 	      // ** Calculate time for each tube with a good tdc. 'pos' side first.
 	      fTOFCalc[ihhit].good_tdc_pos = kTRUE;
+	      fGoodFlags[itrack][ip][iphit].goodTdcPos = kTRUE;
 	      Double_t path = fPlanes[ip]->GetPosLeft() - scinLongCoord;
 	      
 	      // * Convert TDC value to time, do pulse height correction, correction for
@@ -1014,6 +1026,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	      
 	      // ** Calculate time for each tube with a good tdc. 'pos' side first.
 	      fTOFCalc[ihhit].good_tdc_neg = kTRUE;
+	      fGoodFlags[itrack][ip][iphit].goodTdcNeg = kTRUE;
 	      //	      fNtof ++;
 	      Double_t path = scinLongCoord - fPlanes[ip]->GetPosRight();
 	      
@@ -1033,11 +1046,13 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 		fTOFCalc[ihhit].scin_sigma = TMath::Sqrt( fHodoPosSigma[fPIndex] * fHodoPosSigma[fPIndex] + 
 							  fHodoNegSigma[fPIndex] * fHodoNegSigma[fPIndex] )/2.;
 		fTOFCalc[ihhit].good_scin_time = kTRUE;
+		fGoodFlags[itrack][ip][iphit].goodScinTime = kTRUE;
 	      }
 	      else{
 		fTOFCalc[ihhit].scin_time = fTOFPInfo[iphit].scin_pos_time;
 		fTOFCalc[ihhit].scin_sigma = fHodoPosSigma[fPIndex];
 		fTOFCalc[ihhit].good_scin_time = kTRUE;
+		fGoodFlags[itrack][ip][iphit].goodScinTime = kTRUE;
 	      }
 	    }
 	    else {
@@ -1045,6 +1060,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 		fTOFCalc[ihhit].scin_time = fTOFPInfo[iphit].scin_neg_time;
 		fTOFCalc[ihhit].scin_sigma = fHodoNegSigma[fPIndex];
 		fTOFCalc[ihhit].good_scin_time = kTRUE;
+		fGoodFlags[itrack][ip][iphit].goodScinTime = kTRUE;
 	      }
 	    } // In h_tof.f this includes the following if condition for time at focal plane
 	    // // because it is written in FORTRAN code
