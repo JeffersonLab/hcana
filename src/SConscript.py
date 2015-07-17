@@ -25,8 +25,9 @@ THcRawShowerHit.cxx \
 THcAerogel.cxx THcAerogelHit.cxx \
 THcCherenkov.cxx THcCherenkovHit.cxx \
 THcFormula.cxx \
-THcRaster.cxx THcRasteredBeam.cxx THcRasterRawHit.cxx
-THcScalerEvtHandler.cxx
+THcRaster.cxx THcRasteredBeam.cxx THcRasterRawHit.cxx \
+THcScalerEvtHandler.cxx \
+THcHodoEff.cxx
 """)
 
 pbaseenv.Object('main.C')
