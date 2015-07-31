@@ -59,6 +59,9 @@ Int_t THcHodoEff::Begin( THaRunBase* )
       fStatNegHit[ip][ic] = 0;
       fStatAndHit[ip][ic] = 0;
       fStatOrHit[ip][ic] = 0;
+      fBothGood[ip][ic] = 0;
+      fPosGood[ip][ic] = 0;
+      fNegGood[ip][ic] = 0;
       for(Int_t idel=0;idel<20;idel++) {
 	fStatTrkDel[ip][ic][idel] = 0;
 	fStatAndHitDel[ip][ic][idel] = 0;
@@ -118,12 +121,12 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
   //
   // Assumes that planes are X, Y, X, Y 
   THaTrack* theTrack = fSpectro->GetGoldenTrack();
-  Int_t trackIndex = theTrack->GetTrkNum()-1;
   // Since fSpectro knows the index of the golden track, we can
   // get other information about the track from fSpectro.
   // Need to remove the specialized stuff from fGoldenTrack
 
   if(!theTrack) return 0;
+  Int_t trackIndex = theTrack->GetTrkNum()-1;
 
   // May make these member variables
   Double_t hitPos[fNPlanes];
@@ -334,6 +337,9 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
   fStatNegHit.resize(fNPlanes);
   fStatAndHit.resize(fNPlanes);
   fStatOrHit.resize(fNPlanes);
+  fBothGood.resize(fNPlanes);
+  fPosGood.resize(fNPlanes);
+  fNegGood.resize(fNPlanes);
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     fStatTrkDel[ip].resize(fNCounters[ip]);
     fStatAndHitDel[ip].resize(fNCounters[ip]);
@@ -341,6 +347,9 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
     fStatNegHit[ip].resize(fNCounters[ip]);
     fStatAndHit[ip].resize(fNCounters[ip]);
     fStatOrHit[ip].resize(fNCounters[ip]);
+    fBothGood[ip].resize(fNCounters[ip]);
+    fPosGood[ip].resize(fNCounters[ip]);
+    fNegGood[ip].resize(fNCounters[ip]);
     for(Int_t ic=0;ic<fNCounters[ip];ic++) {
       fStatTrkDel[ip][ic].resize(20); // Max this settable
       fStatAndHitDel[ip][ic].resize(20); // Max this settable
