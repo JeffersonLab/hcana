@@ -7,6 +7,17 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "THaEvData.h"
+#include "THaCutList.h"
+#include "VarDef.h"
+#include "VarType.h"
+#include "TClonesArray.h"
+
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
+
 #include "THaPhysicsModule.h"
 #include "THcHodoscope.h"
 #include "THaSpectrometer.h"
@@ -27,6 +38,8 @@ public:
 protected:
 
   virtual Int_t ReadDatabase( const TDatime& date);
+  virtual Int_t  DefineVariables( EMode mode = kDefine );
+  /* Int_t GetScinIndex(Int_t nPlane, Int_t nPaddle); */
 
   // Data needed for efficiency calculation for one Hodoscope paddle
 
@@ -41,13 +54,19 @@ protected:
   // Information about the hodoscopes that we get from the
   // THcHodoscope object
 
+  Int_t fEffiTest;
   Int_t fNPlanes;
   THcScintillatorPlane** fPlanes;
   Double_t* fPosZ;
   Double_t* fSpacing;
   Double_t* fCenterFirst;
   Int_t* fNCounters;
-  //  Int_t fMaxNcounters;
+  //  Int_t* fHodoPlnContHit;
+  Int_t* fHodoPosEffi;
+  Int_t* fHodoNegEffi;
+  Int_t* fHodoOrEffi;
+  Int_t* fHodoAndEffi;
+  Int_t* fStatTrk;
   Double_t fStatSlop;
   Double_t fMaxChisq;
   Double_t* fHodoSlop;
