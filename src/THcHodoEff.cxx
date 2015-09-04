@@ -219,8 +219,8 @@ Int_t THcHodoEff::DefineVariables( EMode mode )
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
 
-  fEffiTest = 0;
-  gHcParms->Define(Form("hodoeffi"),"Testing effi",fEffiTest);
+  //  fEffiTest = 0;
+  //  gHcParms->Define(Form("hodoeffi"),"Testing effi",fEffiTest);
   
   const RVarDef vars[] = {
     // Move these into THcHallCSpectrometer using track fTracks
