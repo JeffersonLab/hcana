@@ -131,19 +131,22 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
   fCenterFirst = new Double_t[fNPlanes];
   fNCounters = new Int_t[fNPlanes];
   fHodoSlop = new Double_t[fNPlanes];
-  fHodoPosEffi = new Int_t[100];
-  fHodoNegEffi = new Int_t[100];
-  fHodoOrEffi = new Int_t[100];
-  fHodoAndEffi = new Int_t[100];
-  fStatTrk = new Int_t[100];
 
+  Int_t maxcountersperplane=0;
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     fPlanes[ip] = fHod->GetPlane(ip);
     fPosZ[ip] = fPlanes[ip]->GetZpos() + 0.5*fPlanes[ip]->GetDzpos();
     fSpacing[ip] = fPlanes[ip]->GetSpacing();
     fCenterFirst[ip] = fPlanes[ip]->GetPosCenter(0) + fPlanes[ip]->GetPosOffset();
     fNCounters[ip] = fPlanes[ip]->GetNelem();
+    maxcountersperplane = TMath::Max(maxcountersperplane,fNCounters[ip]);
   }
+  Int_t totalpaddles = fNPlanes*maxcountersperplane;
+  fHodoPosEffi = new Int_t[totalpaddles];
+  fHodoNegEffi = new Int_t[totalpaddles];
+  fHodoOrEffi = new Int_t[totalpaddles];
+  fHodoAndEffi = new Int_t[totalpaddles];
+  fStatTrk = new Int_t[totalpaddles];
   
   char prefix[2];
   prefix[0] = tolower((fHod->GetApparatus())->GetName()[0]);
@@ -202,12 +205,11 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
   // gHcParms->Define(Form("%shodo_pos_hits[%d][%d]",fPrefix,fNPlanes,fHodPaddles),
   // 		        "Golden track's pos pmt hit",*&fStatPosHit);
 
-  Int_t fTotalPaddles = 100;
-  gHcParms->Define(Form("%shodo_pos_eff[%d]",  prefix,fTotalPaddles), "Hodo positive effi",*fHodoPosEffi);
-  gHcParms->Define(Form("%shodo_neg_eff[%d]",  prefix,fTotalPaddles), "Hodo negative effi",*fHodoNegEffi);
-  gHcParms->Define(Form("%shodo_or_eff[%d]",   prefix,fTotalPaddles), "Hodo or effi",      *fHodoOrEffi);
-  gHcParms->Define(Form("%shodo_and_eff[%d]",  prefix,fTotalPaddles), "Hodo and effi",     *fHodoAndEffi);
-  gHcParms->Define(Form("%shodo_gold_hits[%d]",prefix,fTotalPaddles), "Hodo golden hits",  *fStatTrk);
+  gHcParms->Define(Form("%shodo_pos_eff[%d]",  prefix,totalpaddles), "Hodo positive effi",*fHodoPosEffi);
+  gHcParms->Define(Form("%shodo_neg_eff[%d]",  prefix,totalpaddles), "Hodo negative effi",*fHodoNegEffi);
+  gHcParms->Define(Form("%shodo_or_eff[%d]",   prefix,totalpaddles), "Hodo or effi",      *fHodoOrEffi);
+  gHcParms->Define(Form("%shodo_and_eff[%d]",  prefix,totalpaddles), "Hodo and effi",     *fHodoAndEffi);
+  gHcParms->Define(Form("%shodo_gold_hits[%d]",prefix,totalpaddles), "Hodo golden hits",  *fStatTrk);
 
   return kOK;
 }
