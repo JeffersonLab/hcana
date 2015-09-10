@@ -45,6 +45,11 @@
   THcCherenkov* cherenkov = new THcCherenkov("cher", "Gas Cerenkov" );
   HMS->AddDetector( cherenkov );
 
+  THcScalerEvtHandler *hscaler = new THcScalerEvtHandler("HS","HC scaler event type 0");
+  hscaler->SetDebugFile("HScaler.txt");
+  gHaEvtHandlers->Add (hscaler);
+
+
   THaApparatus* SOS = new THcHallCSpectrometer("S","SOS");
   gHaApps->Add( SOS );
   // Add detectors
@@ -52,6 +57,10 @@
   SOS->AddDetector( sos_hodoscope);
   SOS->AddDetector( new THcShower("cal", "Shower" ));
   SOS->AddDetector( new THcDC("dc", "Drift Chambers" ));
+
+  // setup physics
+  gHaPhysics->Add( new THaGoldenTrack( "H.gold", "HMS Golden Track", "H" ));
+  gHaPhysics->Add( new THaGoldenTrack( "S.gold", "SOS Golden Track", "S" ));
 
   gHaPhysics->Add(new THcHodoEff("hhodeff","HMS Hodoscope Efficiencies","H.hod"));
   gHaPhysics->Add(new THcHodoEff("shodeff","SOS Hodoscope Efficiencies","S.hod"));
