@@ -18,30 +18,350 @@ and cut statistics.  (Number of times called and number of times passed.)
 
 For example, {100*Pedestal_event.npassed/Pedestal_event.ncalled:%.2f}% is the 
 percentage of events that were pedestal events.
+Number of pedestal events:  {Pedestal_event.npassed}  {Pedestal_event.ncalled}
+Number of HMS events:  {HMS_event.npassed}  {HMS_event.ncalled}
+Number of scalar   events:  {scalar_event.npassed}  {scalar_event.ncalled}
+Number of hfoundtrack  events:  {hFoundTrack.npassed}  
+ hFoundTrack/Number of HMS events: {hFoundTrack.npassed/HMS_event.npassed:%.5f}
 
-------------------------
-HMS Cherenkov
-------------------------
-HMS cherenkov total photo electrons: {hmstotchernpe.npassed:%.2f}
+
+*****************************
+* HMS TRACKING EFFICIENCIES *
+*****************************
+htrig                          :   {hmscoin_event.npassed}
+hhitslt = passed hits/cham     :   {hmsHitsLt.npassed}
+hhitsplanes = +planes >= 5/6   :   {hmsHitsPlanes.npassed}
+hhitsplanessps = + sps         :   {hSpacePoints.npassed}
+hhitsplanesspsstubs +stub      :   {hSpacePointsStub.npassed}
+hsfoundtrack                   :   {hFoundTrack.npassed}
+hstublt = passed stub tests    :   {hStubLT.npassed}
+h1hitslt                       :   {hms1HitsLt.npassed}
+h2hitslt                       :   {hms2HitsLt.npassed}
+h1planesgt                     :   {hmsDC1PlanesGT.npassed}
+h2planesgt                     :   {hmsDC2PlanesGT.npassed}
+hplanesgt = gt 5 planes/cham   :   {hmsPlanseGT.npassed}
+f1hspacepoints                 :   {f1HSpacePoints.npassed}
+f2hspacepoints                 :   {f2HSpacePoints.npassed}
+htest1=p hits/planes, f sp     :   {hTest1.npassed}
+htest2=p sp, f stubs           :   {hTest2.npassed}
+hdid                           :   {HMSScinDid.npassed}
+hdide                          :   {HMSScinDide.npassed}
+hdidh                          :   {HMSScinDidh.npassed}
+hscinshould                    :   {HMSScinShould.npassed}
+hscinshoulde                   :   {HMSScinShoulde.npassed}
+hscinshouldh                   :   {HMSScinShouldh.npassed}
+SING FID TRACK EFFIC           : {HMSScinDid.npassed/(HMSScinShould.npassed+0.0001):%8.4f} +- {(sqrt(HMSScinShould.npassed-HMSScinDid.npassed)/(HMSScinShould.npassed+.0001)):%8.4f}
+E SING FID TRACK EFFIC         : {HMSScinDide.npassed/(HMSScinShoulde.npassed+0.0001):%8.4f} +- {(sqrt(HMSScinShoulde.npassed-HMSScinDide.npassed)/(HMSScinShoulde.npassed+.0001)):%8.4f}
+HADRON SING FID TRACK EFFIC    : {HMSScinDidh.npassed/(HMSScinShouldh.npassed+0.0001):%8.4f} +- {(sqrt(HMSScinShouldh.npassed-HMSScinDidh.npassed)/(HMSScinShouldh.npassed+.0001)):%8.4f}
+
+* hms coincidences...
+ctrig                          :   {coin_event.npassed}
+bhhitslt = passed hits/cham    :   {bhmsHitsLt.npassed}
+bhhitsplanes = +planes >= 5/6  :   {bhmsHitsPlanes.npassed}
+bhhitsplanessps = + sps        :   {bhmsHitsPlanesSps.npassed}
+bhhitsplanesspsstubs +stub     :   {bhmsHitsPlanesSpsStubs.npassed}
+found track and ctrig          :   {bhmsFoundTrack.npassed}
+bhstublt = passed stub tests   :   {bhmsStubLt.npassed}
+bh1hitslt                      :   {bhms1HitsLt.npassed}
+bh2hitslt                      :   {bhms2HitsLt.npassed}
+bh1planesgt                    :   {bhmsDC1PlanesGT.npassed}
+bh2planesgt                    :   {bhmsDC2PlanesGT.npassed}
+bhplanesgt = gt 5 planes/cham  :   {bhmsPlanesGt.npassed}
+f1bhspacepoints                :   {f1bhmsSpacepoints.npassed}
+f2bhspacepoints                :   {f2bhmsSpacepoints.npassed}
+bhtest1=p hits/planes, f sp    :   {bhmsTest1.npassed}
+bhtest2=p sp, f stubs          :   {bhmsTest2.npassed}
+bhdid                          :   {BHMSScinDid.npassed}
+bhdide                         :   {BHMSScinDide.npassed}
+bhdidh                         :   {BHMSScinDidh.npassed}
+bhscinshould                   :   {BHMSScinShould.npassed}
+bhscinshoulde                  :   {BHMSScinShoulde.npassed}
+bhscinshouldh                  :   {BHMSScinShouldh.npassed}
+COIN FID TRACK EFFIC           : {BHMSScinDid.npassed/(BHMSScinShould.npassed+0.0001):%8.4f} +- {(sqrt(BHMSScinShould.npassed-BHMSScinDid.npassed)/(BHMSScinShould.npassed+.0001)):%8.4f}
+E COIN FID TRACK EFFIC         : {BHMSScinDide.npassed/(BHMSScinShoulde.npassed+0.0001):%8.4f} +- {(sqrt(BHMSScinShoulde.npassed-BHMSScinDide.npassed)/(BHMSScinShoulde.npassed+.0001)):%8.4f}
+HADRON COIN FID TRACK EFFIC    : {BHMSScinDidh.npassed/(BHMSScinShouldh.npassed+0.0001):%8.4f} +- {(sqrt(BHMSScinShouldh.npassed-BHMSScinDidh.npassed)/(BHMSScinShouldh.npassed+.0001)):%8.4f}
+********************************************************************
 
 
-------------------------
-HMS Hodoscope
-------------------------
-Scin should fired counters: {hmsscinshould.npassed:%7d}
-Scin total should fired counter: {hmstotscinshould.npassed:%7d}
+*****************************
+* RAW SOFTWARE EFFICIENCIES *
+*****************************
+"raw"  means one or more hits per dc plane.
+"Good" means one or two  hits per dc plane.
 
-------------------------
-HMS Drift Chambers
-------------------------
-Total number of triggers with any tracks: {hfoundtrack.npassed:%7d}
-Total number of triggers with only one track: {hfound1track.npassed:%7d}
+rawhdc1x1   =    {h1hit1.npassed}   eff = {(h1hit1.npassed/hmsCham1Hits.npassed):%5.3f}  BAD = 0.95
+rawhdc1y1   =    {h1hit2.npassed}   eff = {(h1hit2.npassed/hmsCham1Hits.npassed):%5.3f}  BAD = 0.95
+rawhdc1u1   =    {h1hit3.npassed}   eff = {(h1hit3.npassed/hmsCham1Hits.npassed):%5.3f}  BAD = 0.95
+rawhdc1v1   =    {h1hit4.npassed}   eff = {(h1hit4.npassed/hmsCham1Hits.npassed):%5.3f}  BAD = 0.95
+rawhdc1y2   =    {h1hit5.npassed}   eff = {(h1hit5.npassed/hmsCham1Hits.npassed):%5.3f}  BAD = 0.95
+rawhdc1x2   =    {h1hit6.npassed}   eff = {(h1hit6.npassed/hmsCham1Hits.npassed):%5.3f}  BAD = 0.95
+rawhdc1     =    {hmsCham1Hits.npassed}   eff = {(hdc_cham_hits[0]/hmsCham1Hits.npassed):%5.3f}  BAD = 0.99
+rawhdc2x1   =    {h2hit1.npassed}   eff = {(h2hit1.npassed/hmsCham2Hits.npassed):%5.3f}  BAD = 0.95
+rawhdc2y1   =    {h2hit2.npassed}   eff = {(h2hit2.npassed/hmsCham2Hits.npassed):%5.3f}  BAD = 0.95
+rawhdc2y1   =    {h2hit3.npassed}   eff = {(h2hit3.npassed/hmsCham2Hits.npassed):%5.3f}  BAD = 0.95
+rawhdc2v1   =    {h2hit4.npassed}   eff = {(h2hit4.npassed/hmsCham2Hits.npassed):%5.3f}  BAD = 0.95
+rawhdc2y2   =    {h2hit5.npassed}   eff = {(h2hit5.npassed/hmsCham2Hits.npassed):%5.3f}  BAD = 0.95
+rawhdc2x2   =    {h2hit6.npassed}   eff = {(h2hit6.npassed/hmsCham2Hits.npassed):%5.3f}  BAD = 0.95
+rawhdc2     =    {hmsCham2Hits.npassed}   eff = {(hdc_cham_hits[1]/hmsCham2Hits.npassed):%5.3f}  BAD = 0.99
+
+goodhdc1x1  =   {goodHDC1x1.npassed}   eff = {(goodHDC1x1.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.95
+goodhdc1y1  =   {goodHDC1y1.npassed}   eff = {(goodHDC1y1.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.95
+goodhdc1u1  =   {goodHDC1u1.npassed}   eff = {(goodHDC1u1.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.95
+goodhdc1v1  =   {goodHDC1v1.npassed}   eff = {(goodHDC1v1.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.95
+goodhdc1y2  =   {goodHDC1y2.npassed}   eff = {(goodHDC1y2.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.95
+goodhdc1x2  =   {goodHDC1x2.npassed}   eff = {(goodHDC1x2.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.95
+goodhdc1    =   {goodHDC1.npassed}   eff = {(goodHDC1.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.90
+goodhdc2x1  =   {goodHDC2x1.npassed}   eff = {(goodHDC2x1.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.95
+goodhdc2x1  =   {goodHDC2y1.npassed}   eff = {(goodHDC2y1.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.95
+goodhdc2x1  =   {goodHDC2u1.npassed}   eff = {(goodHDC2u1.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.95
+goodhdc2x1  =   {goodHDC2v1.npassed}   eff = {(goodHDC2v1.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.95
+goodhdc2x1  =   {goodHDC2y2.npassed}   eff = {(goodHDC2y2.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.95
+goodhdc2x1  =   {goodHDC2x2.npassed}   eff = {(goodHDC2x2.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.95
+goodhdc2    =   {goodHDC2.npassed}   eff = {(goodHDC2.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.90
+bothgoodhdc =   {bothGood.npassed}   eff = {(bothGood.npassed/(hmscoin_event.npassed+0.0001)):%5.3f}  BAD = 0.80
+
+"hfoundtrack" based on analyzer variable HNTRACKS_FP.
+"hcleantrack" based on analyzer variable HSNUM_FPTRACK (=foundtrack+chi2+PID).
+
+hfoundtrack  = {hFoundTrack.npassed:%7d}   eff = {hFoundTrack.npassed/(hmscoin_event.npassed+0.0001):%5.3f}  BAD = .95
+hfound1track = {hFound1Track.npassed:%7d}   eff = {hFound1Track.npassed/(hmscoin_event.npassed+.0001):%5.3f}
+hfound2track = {hFound2Track.npassed:%7d}   eff = {hFound2Track.npassed/(hmscoin_event.npassed+.0001):%5.3f}
+hfound3track = {hFound3Track.npassed:%7d}   eff = {hFound3Track.npassed/(hmscoin_event.npassed+.0001):%5.3f}
+hfound4track = {hFound4Track.npassed:%7d}   eff = {hFound4Track.npassed/(hmscoin_event.npassed+.0001):%5.3f}
+
+hcleantrack  = {hCleanTrack.npassed:%7d}   eff = {hCleanTrack.npassed/(hmscoin_event.npassed+0.0001):%5.3f}  BAD = .95
+1hcleantrack = {1hCleanTrack.npassed:%7d}   eff = {1hCleanTrack.npassed/(hmscoin_event.npassed+0.0001):%5.3f}
+2hcleantrack = {2hCleanTrack.npassed:%7d}   eff = {2hCleanTrack.npassed/(hmscoin_event.npassed+0.0001):%5.3f}
+3hcleantrack = {3hCleanTrack.npassed:%7d}   eff = {3hCleanTrack.npassed/(hmscoin_event.npassed+0.0001):%5.3f}
+4hcleantrack = {4hCleanTrack.npassed:%7d}   eff = {4hCleanTrack.npassed/(hmscoin_event.npassed+0.0001):%5.3f}
+
+"Any"  means one or more hits per scint plane.
+"Good" means one or two  hits per scint plane.
+
+anyhs1x     = {anyhs1x.npassed:%7d}   eff = {anyhs1x.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .99
+anyhs1y     = {anyhs1y.npassed:%7d}   eff = {anyhs1y.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .99
+anyhs2x     = {anyhs2x.npassed:%7d}   eff = {anyhs2x.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .99
+anyhs2y     = {anyhs2y.npassed:%7d}   eff = {anyhs2y.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .99
+
+goodhs1x    = {goodhs1x.npassed:%7d}   eff = {goodhs1x.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .98
+goodhs1y    = {goodhs1y.npassed:%7d}   eff = {goodhs1y.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .98
+goodhs1     = {goodhs1.npassed:%7d}   eff = {goodhs1.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .96
+goodhs2x    = {goodhs2x.npassed:%7d}   eff = {goodhs2x.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .98
+goodhs2y    = {goodhs2y.npassed:%7d}   eff = {goodhs2y.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .98
+goodhs2     = {goodhs2.npassed:%7d}   eff = {goodhs2.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .96
+goodhs1s2   = {goodhs1s2.npassed:%7d}   eff = {goodhs1s2.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .95
+
+
+********************
+* HARDWARE SCALERS *
+********************
+General Format:
+signal   =   counts (  rate-Hz )
+
+
+**********
+*SUMMARY *
+**********
+Time of run        = {HShCLOCK/1.0e6:%8.2f} sec.
+
+hdc1 6/6 eff = {(hdc_cham_hits[0]/hmsCham1Hits.npassed):%5.3f}  BAD = 0.99
+hdc2 6/6 eff = {(hdc_cham_hits[1]/hmsCham1Hits.npassed):%5.3f}  BAD = 0.99
+anyhs1x  eff = {anyhs1x.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .99
+anyhs1y  eff = {anyhs1y.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .99
+anyhs2x  eff = {anyhs2x.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .99
+anyhs2y  eff = {anyhs2y.npassed/(hmscoin_event.npassed+.0001):%5.3f}  BAD = .99
+
+
+         I_avg           Q_tot             Q_tot
+      (microAmps)   (microCoulombs)   (microAmp-hours)
+BCM1 
+BCM2 
+BCM3 
+
+hpretriggers  = 
+htriggers     = 
+hadcgates     = 
+Computer D.T. = 
+Elec. D.T.    = 
+
+**************************
+* Hodoscope Efficiencies *
+**************************
+Efficiencies for hodoscopes is the fraction of times scin. was hit when track
+with chisquared/dof < {hstat_maxchisq:%5.1f} came within {hstat_slop:%4.1f} cm of the center.
+
+Events examined = htrig       = {hmscoin_event.npassed:%7d}
+Tracks found    = hcleantrack = {hCleanTrack.npassed:%7d}
+Tracks passing chisquared cut = {HstatNumevents.npassed:%7d}
+
+Scint  POS eff NEG eff  OR eff AND eff   Hits
+-----  ------- ------- ------- -------   ----
+hS1X1:  {(hhodo_pos_eff[0]/hhodo_gold_hits[0]):%6.3f}  {(hhodo_neg_eff[0]/hhodo_gold_hits[0]):%6.3f}  {(hhodo_or_eff[0]/hhodo_gold_hits[0]):%6.3f}  {(hhodo_and_eff[0]/hhodo_gold_hits[0]):%6.3f} {hhodo_gold_hits[0]:%6d}
+hS1X2:  {(hhodo_pos_eff[4]/hhodo_gold_hits[4]):%6.3f}  {(hhodo_neg_eff[4]/hhodo_gold_hits[4]):%6.3f}  {(hhodo_or_eff[4]/hhodo_gold_hits[4]):%6.3f}  {(hhodo_and_eff[4]/hhodo_gold_hits[4]):%6.3f} {hhodo_gold_hits[4]:%6d}
+hS1X3:  {(hhodo_pos_eff[8]/hhodo_gold_hits[8]):%6.3f}  {(hhodo_neg_eff[8]/hhodo_gold_hits[8]):%6.3f}  {(hhodo_or_eff[8]/hhodo_gold_hits[8]):%6.3f}  {(hhodo_and_eff[8]/hhodo_gold_hits[8]):%6.3f} {hhodo_gold_hits[8]:%6d}
+hS1X4:  {(hhodo_pos_eff[12]/hhodo_gold_hits[12]):%6.3f}  {(hhodo_neg_eff[12]/hhodo_gold_hits[12]):%6.3f}  {(hhodo_or_eff[12]/hhodo_gold_hits[12]):%6.3f}  {(hhodo_and_eff[12]/hhodo_gold_hits[12]):%6.3f} {hhodo_gold_hits[12]:%6d}
+hS1X5:  {(hhodo_pos_eff[16]/hhodo_gold_hits[16]):%6.3f}  {(hhodo_neg_eff[16]/hhodo_gold_hits[16]):%6.3f}  {(hhodo_or_eff[16]/hhodo_gold_hits[16]):%6.3f}  {(hhodo_and_eff[16]/hhodo_gold_hits[16]):%6.3f} {hhodo_gold_hits[16]:%6d}
+hS1X6:  {(hhodo_pos_eff[20]/hhodo_gold_hits[20]):%6.3f}  {(hhodo_neg_eff[20]/hhodo_gold_hits[20]):%6.3f}  {(hhodo_or_eff[20]/hhodo_gold_hits[20]):%6.3f}  {(hhodo_and_eff[20]/hhodo_gold_hits[20]):%6.3f} {hhodo_gold_hits[20]:%6d}
+hS1X7:  {(hhodo_pos_eff[24]/hhodo_gold_hits[24]):%6.3f}  {(hhodo_neg_eff[24]/hhodo_gold_hits[24]):%6.3f}  {(hhodo_or_eff[24]/hhodo_gold_hits[24]):%6.3f}  {(hhodo_and_eff[24]/hhodo_gold_hits[24]):%6.3f} {hhodo_gold_hits[24]:%6d}
+hS1X8:  {(hhodo_pos_eff[28]/hhodo_gold_hits[28]):%6.3f}  {(hhodo_neg_eff[28]/hhodo_gold_hits[28]):%6.3f}  {(hhodo_or_eff[28]/hhodo_gold_hits[28]):%6.3f}  {(hhodo_and_eff[28]/hhodo_gold_hits[28]):%6.3f} {hhodo_gold_hits[28]:%6d}
+hS1X9:  {(hhodo_pos_eff[32]/hhodo_gold_hits[32]):%6.3f}  {(hhodo_neg_eff[32]/hhodo_gold_hits[32]):%6.3f}  {(hhodo_or_eff[32]/hhodo_gold_hits[32]):%6.3f}  {(hhodo_and_eff[32]/hhodo_gold_hits[32]):%6.3f} {hhodo_gold_hits[32]:%6d}
+hS1X10: {(hhodo_pos_eff[36]/hhodo_gold_hits[36]):%6.3f}  {(hhodo_neg_eff[36]/hhodo_gold_hits[36]):%6.3f}  {(hhodo_or_eff[36]/hhodo_gold_hits[36]):%6.3f}  {(hhodo_and_eff[36]/hhodo_gold_hits[36]):%6.3f} {hhodo_gold_hits[36]:%6d}
+hS1X11: {(hhodo_pos_eff[40]/hhodo_gold_hits[40]):%6.3f}  {(hhodo_neg_eff[40]/hhodo_gold_hits[40]):%6.3f}  {(hhodo_or_eff[40]/hhodo_gold_hits[40]):%6.3f}  {(hhodo_and_eff[40]/hhodo_gold_hits[40]):%6.3f} {hhodo_gold_hits[40]:%6d}
+hS1X12: {(hhodo_pos_eff[44]/hhodo_gold_hits[44]):%6.3f}  {(hhodo_neg_eff[44]/hhodo_gold_hits[44]):%6.3f}  {(hhodo_or_eff[44]/hhodo_gold_hits[44]):%6.3f}  {(hhodo_and_eff[44]/hhodo_gold_hits[44]):%6.3f} {hhodo_gold_hits[44]:%6d}
+hS1X13: {(hhodo_pos_eff[48]/hhodo_gold_hits[48]):%6.3f}  {(hhodo_neg_eff[48]/hhodo_gold_hits[48]):%6.3f}  {(hhodo_or_eff[48]/hhodo_gold_hits[48]):%6.3f}  {(hhodo_and_eff[48]/hhodo_gold_hits[48]):%6.3f} {hhodo_gold_hits[48]:%6d}
+hS1X14: {(hhodo_pos_eff[52]/hhodo_gold_hits[52]):%6.3f}  {(hhodo_neg_eff[52]/hhodo_gold_hits[52]):%6.3f}  {(hhodo_or_eff[52]/hhodo_gold_hits[52]):%6.3f}  {(hhodo_and_eff[52]/hhodo_gold_hits[52]):%6.3f} {hhodo_gold_hits[52]:%6d}
+hS1X15: {(hhodo_pos_eff[56]/hhodo_gold_hits[56]):%6.3f}  {(hhodo_neg_eff[56]/hhodo_gold_hits[56]):%6.3f}  {(hhodo_or_eff[56]/hhodo_gold_hits[56]):%6.3f}  {(hhodo_and_eff[56]/hhodo_gold_hits[56]):%6.3f} {hhodo_gold_hits[56]:%6d}
+hS1X16: {(hhodo_pos_eff[60]/hhodo_gold_hits[60]):%6.3f}  {(hhodo_neg_eff[60]/hhodo_gold_hits[60]):%6.3f}  {(hhodo_or_eff[60]/hhodo_gold_hits[60]):%6.3f}  {(hhodo_and_eff[60]/hhodo_gold_hits[60]):%6.3f} {hhodo_gold_hits[60]:%6d}
+
+hS1Y1:  {(hhodo_pos_eff[1]/hhodo_gold_hits[1]):%6.3f}  {(hhodo_neg_eff[1]/hhodo_gold_hits[1]):%6.3f}  {(hhodo_or_eff[1]/hhodo_gold_hits[1]):%6.3f}  {(hhodo_and_eff[1]/hhodo_gold_hits[1]):%6.3f} {hhodo_gold_hits[1]:%6d}
+hS1Y2:  {(hhodo_pos_eff[5]/hhodo_gold_hits[5]):%6.3f}  {(hhodo_neg_eff[5]/hhodo_gold_hits[5]):%6.3f}  {(hhodo_or_eff[5]/hhodo_gold_hits[5]):%6.3f}  {(hhodo_and_eff[5]/hhodo_gold_hits[5]):%6.3f} {hhodo_gold_hits[5]:%6d}
+hS1Y3:  {(hhodo_pos_eff[9]/hhodo_gold_hits[9]):%6.3f}  {(hhodo_neg_eff[9]/hhodo_gold_hits[9]):%6.3f}  {(hhodo_or_eff[9]/hhodo_gold_hits[9]):%6.3f}  {(hhodo_and_eff[9]/hhodo_gold_hits[9]):%6.3f} {hhodo_gold_hits[9]:%6d}
+hS1Y4:  {(hhodo_pos_eff[13]/hhodo_gold_hits[13]):%6.3f}  {(hhodo_neg_eff[13]/hhodo_gold_hits[13]):%6.3f}  {(hhodo_or_eff[13]/hhodo_gold_hits[13]):%6.3f}  {(hhodo_and_eff[13]/hhodo_gold_hits[13]):%6.3f} {hhodo_gold_hits[13]:%6d}
+hS1Y5:  {(hhodo_pos_eff[17]/hhodo_gold_hits[17]):%6.3f}  {(hhodo_neg_eff[17]/hhodo_gold_hits[17]):%6.3f}  {(hhodo_or_eff[17]/hhodo_gold_hits[17]):%6.3f}  {(hhodo_and_eff[17]/hhodo_gold_hits[17]):%6.3f} {hhodo_gold_hits[17]:%6d}
+hS1Y6:  {(hhodo_pos_eff[21]/hhodo_gold_hits[21]):%6.3f}  {(hhodo_neg_eff[21]/hhodo_gold_hits[21]):%6.3f}  {(hhodo_or_eff[21]/hhodo_gold_hits[21]):%6.3f}  {(hhodo_and_eff[21]/hhodo_gold_hits[21]):%6.3f} {hhodo_gold_hits[21]:%6d}
+hS1Y7:  {(hhodo_pos_eff[25]/hhodo_gold_hits[25]):%6.3f}  {(hhodo_neg_eff[25]/hhodo_gold_hits[25]):%6.3f}  {(hhodo_or_eff[25]/hhodo_gold_hits[25]):%6.3f}  {(hhodo_and_eff[25]/hhodo_gold_hits[25]):%6.3f} {hhodo_gold_hits[25]:%6d}
+hS1Y8:  {(hhodo_pos_eff[29]/hhodo_gold_hits[29]):%6.3f}  {(hhodo_neg_eff[29]/hhodo_gold_hits[29]):%6.3f}  {(hhodo_or_eff[29]/hhodo_gold_hits[29]):%6.3f}  {(hhodo_and_eff[29]/hhodo_gold_hits[29]):%6.3f} {hhodo_gold_hits[29]:%6d}
+hS1Y9:  {(hhodo_pos_eff[33]/hhodo_gold_hits[33]):%6.3f}  {(hhodo_neg_eff[33]/hhodo_gold_hits[33]):%6.3f}  {(hhodo_or_eff[33]/hhodo_gold_hits[33]):%6.3f}  {(hhodo_and_eff[33]/hhodo_gold_hits[33]):%6.3f} {hhodo_gold_hits[33]:%6d}
+hS1Y10: {(hhodo_pos_eff[37]/hhodo_gold_hits[37]):%6.3f}  {(hhodo_neg_eff[37]/hhodo_gold_hits[37]):%6.3f}  {(hhodo_or_eff[37]/hhodo_gold_hits[37]):%6.3f}  {(hhodo_and_eff[37]/hhodo_gold_hits[37]):%6.3f} {hhodo_gold_hits[37]:%6d}
+
+hS2X1:  {(hhodo_pos_eff[2]/hhodo_gold_hits[2]):%6.3f}  {(hhodo_neg_eff[2]/hhodo_gold_hits[2]):%6.3f}  {(hhodo_or_eff[2]/hhodo_gold_hits[2]):%6.3f}  {(hhodo_and_eff[2]/hhodo_gold_hits[2]):%6.3f} {hhodo_gold_hits[2]:%6d}
+hS2X2:  {(hhodo_pos_eff[6]/hhodo_gold_hits[6]):%6.3f}  {(hhodo_neg_eff[6]/hhodo_gold_hits[6]):%6.3f}  {(hhodo_or_eff[6]/hhodo_gold_hits[6]):%6.3f}  {(hhodo_and_eff[6]/hhodo_gold_hits[6]):%6.3f} {hhodo_gold_hits[6]:%6d}
+hS2X3:  {(hhodo_pos_eff[10]/hhodo_gold_hits[10]):%6.3f}  {(hhodo_neg_eff[10]/hhodo_gold_hits[10]):%6.3f}  {(hhodo_or_eff[10]/hhodo_gold_hits[10]):%6.3f}  {(hhodo_and_eff[10]/hhodo_gold_hits[10]):%6.3f} {hhodo_gold_hits[10]:%6d}
+hS2X4:  {(hhodo_pos_eff[14]/hhodo_gold_hits[14]):%6.3f}  {(hhodo_neg_eff[14]/hhodo_gold_hits[14]):%6.3f}  {(hhodo_or_eff[14]/hhodo_gold_hits[14]):%6.3f}  {(hhodo_and_eff[14]/hhodo_gold_hits[14]):%6.3f} {hhodo_gold_hits[14]:%6d}
+hS2X5:  {(hhodo_pos_eff[18]/hhodo_gold_hits[18]):%6.3f}  {(hhodo_neg_eff[18]/hhodo_gold_hits[18]):%6.3f}  {(hhodo_or_eff[18]/hhodo_gold_hits[18]):%6.3f}  {(hhodo_and_eff[18]/hhodo_gold_hits[18]):%6.3f} {hhodo_gold_hits[18]:%6d}
+hS2X6:  {(hhodo_pos_eff[22]/hhodo_gold_hits[22]):%6.3f}  {(hhodo_neg_eff[22]/hhodo_gold_hits[22]):%6.3f}  {(hhodo_or_eff[22]/hhodo_gold_hits[22]):%6.3f}  {(hhodo_and_eff[22]/hhodo_gold_hits[22]):%6.3f} {hhodo_gold_hits[22]:%6d}
+hS2X7:  {(hhodo_pos_eff[26]/hhodo_gold_hits[26]):%6.3f}  {(hhodo_neg_eff[26]/hhodo_gold_hits[26]):%6.3f}  {(hhodo_or_eff[26]/hhodo_gold_hits[26]):%6.3f}  {(hhodo_and_eff[26]/hhodo_gold_hits[26]):%6.3f} {hhodo_gold_hits[26]:%6d}
+hS2X8:  {(hhodo_pos_eff[30]/hhodo_gold_hits[30]):%6.3f}  {(hhodo_neg_eff[30]/hhodo_gold_hits[30]):%6.3f}  {(hhodo_or_eff[30]/hhodo_gold_hits[30]):%6.3f}  {(hhodo_and_eff[30]/hhodo_gold_hits[30]):%6.3f} {hhodo_gold_hits[30]:%6d}
+hS2X9:  {(hhodo_pos_eff[34]/hhodo_gold_hits[34]):%6.3f}  {(hhodo_neg_eff[34]/hhodo_gold_hits[34]):%6.3f}  {(hhodo_or_eff[34]/hhodo_gold_hits[34]):%6.3f}  {(hhodo_and_eff[34]/hhodo_gold_hits[34]):%6.3f} {hhodo_gold_hits[34]:%6d}
+hS2X10: {(hhodo_pos_eff[38]/hhodo_gold_hits[38]):%6.3f}  {(hhodo_neg_eff[38]/hhodo_gold_hits[38]):%6.3f}  {(hhodo_or_eff[38]/hhodo_gold_hits[38]):%6.3f}  {(hhodo_and_eff[38]/hhodo_gold_hits[38]):%6.3f} {hhodo_gold_hits[38]:%6d}
+hS2X11: {(hhodo_pos_eff[42]/hhodo_gold_hits[42]):%6.3f}  {(hhodo_neg_eff[42]/hhodo_gold_hits[42]):%6.3f}  {(hhodo_or_eff[42]/hhodo_gold_hits[42]):%6.3f}  {(hhodo_and_eff[42]/hhodo_gold_hits[42]):%6.3f} {hhodo_gold_hits[42]:%6d}
+hS2X12: {(hhodo_pos_eff[46]/hhodo_gold_hits[46]):%6.3f}  {(hhodo_neg_eff[46]/hhodo_gold_hits[46]):%6.3f}  {(hhodo_or_eff[46]/hhodo_gold_hits[46]):%6.3f}  {(hhodo_and_eff[46]/hhodo_gold_hits[46]):%6.3f} {hhodo_gold_hits[46]:%6d}
+hS2X13: {(hhodo_pos_eff[50]/hhodo_gold_hits[50]):%6.3f}  {(hhodo_neg_eff[50]/hhodo_gold_hits[50]):%6.3f}  {(hhodo_or_eff[50]/hhodo_gold_hits[50]):%6.3f}  {(hhodo_and_eff[50]/hhodo_gold_hits[50]):%6.3f} {hhodo_gold_hits[50]:%6d}
+hS2X14: {(hhodo_pos_eff[54]/hhodo_gold_hits[54]):%6.3f}  {(hhodo_neg_eff[54]/hhodo_gold_hits[54]):%6.3f}  {(hhodo_or_eff[54]/hhodo_gold_hits[54]):%6.3f}  {(hhodo_and_eff[54]/hhodo_gold_hits[54]):%6.3f} {hhodo_gold_hits[54]:%6d}
+hS2X15: {(hhodo_pos_eff[58]/hhodo_gold_hits[58]):%6.3f}  {(hhodo_neg_eff[58]/hhodo_gold_hits[58]):%6.3f}  {(hhodo_or_eff[58]/hhodo_gold_hits[58]):%6.3f}  {(hhodo_and_eff[58]/hhodo_gold_hits[58]):%6.3f} {hhodo_gold_hits[58]:%6d}
+hS2X16: {(hhodo_pos_eff[62]/hhodo_gold_hits[62]):%6.3f}  {(hhodo_neg_eff[62]/hhodo_gold_hits[62]):%6.3f}  {(hhodo_or_eff[62]/hhodo_gold_hits[62]):%6.3f}  {(hhodo_and_eff[62]/hhodo_gold_hits[62]):%6.3f} {hhodo_gold_hits[62]:%6d}
+
+hS2Y1:  {(hhodo_pos_eff[3]/hhodo_gold_hits[3]):%6.3f}  {(hhodo_neg_eff[3]/hhodo_gold_hits[3]):%6.3f}  {(hhodo_or_eff[3]/hhodo_gold_hits[3]):%6.3f}  {(hhodo_and_eff[3]/hhodo_gold_hits[3]):%6.3f} {hhodo_gold_hits[3]:%6d}
+hS2Y2:  {(hhodo_pos_eff[7]/hhodo_gold_hits[7]):%6.3f}  {(hhodo_neg_eff[7]/hhodo_gold_hits[7]):%6.3f}  {(hhodo_or_eff[7]/hhodo_gold_hits[7]):%6.3f}  {(hhodo_and_eff[7]/hhodo_gold_hits[7]):%6.3f} {hhodo_gold_hits[7]:%6d}
+hS2Y3:  {(hhodo_pos_eff[11]/hhodo_gold_hits[11]):%6.3f}  {(hhodo_neg_eff[11]/hhodo_gold_hits[11]):%6.3f}  {(hhodo_or_eff[11]/hhodo_gold_hits[11]):%6.3f}  {(hhodo_and_eff[11]/hhodo_gold_hits[11]):%6.3f} {hhodo_gold_hits[11]:%6d}
+hS2Y4:  {(hhodo_pos_eff[15]/hhodo_gold_hits[15]):%6.3f}  {(hhodo_neg_eff[15]/hhodo_gold_hits[15]):%6.3f}  {(hhodo_or_eff[15]/hhodo_gold_hits[15]):%6.3f}  {(hhodo_and_eff[15]/hhodo_gold_hits[15]):%6.3f} {hhodo_gold_hits[15]:%6d}
+hS2Y5:  {(hhodo_pos_eff[19]/hhodo_gold_hits[19]):%6.3f}  {(hhodo_neg_eff[19]/hhodo_gold_hits[19]):%6.3f}  {(hhodo_or_eff[19]/hhodo_gold_hits[19]):%6.3f}  {(hhodo_and_eff[19]/hhodo_gold_hits[19]):%6.3f} {hhodo_gold_hits[19]:%6d}
+hS2Y6:  {(hhodo_pos_eff[23]/hhodo_gold_hits[23]):%6.3f}  {(hhodo_neg_eff[23]/hhodo_gold_hits[23]):%6.3f}  {(hhodo_or_eff[23]/hhodo_gold_hits[23]):%6.3f}  {(hhodo_and_eff[23]/hhodo_gold_hits[23]):%6.3f} {hhodo_gold_hits[23]:%6d}
+hS2Y7:  {(hhodo_pos_eff[27]/hhodo_gold_hits[27]):%6.3f}  {(hhodo_neg_eff[27]/hhodo_gold_hits[27]):%6.3f}  {(hhodo_or_eff[27]/hhodo_gold_hits[27]):%6.3f}  {(hhodo_and_eff[27]/hhodo_gold_hits[27]):%6.3f} {hhodo_gold_hits[27]:%6d}
+hS2Y8:  {(hhodo_pos_eff[31]/hhodo_gold_hits[31]):%6.3f}  {(hhodo_neg_eff[31]/hhodo_gold_hits[31]):%6.3f}  {(hhodo_or_eff[31]/hhodo_gold_hits[31]):%6.3f}  {(hhodo_and_eff[31]/hhodo_gold_hits[31]):%6.3f} {hhodo_gold_hits[31]:%6d}
+hS2Y9:  {(hhodo_pos_eff[35]/hhodo_gold_hits[35]):%6.3f}  {(hhodo_neg_eff[35]/hhodo_gold_hits[35]):%6.3f}  {(hhodo_or_eff[35]/hhodo_gold_hits[35]):%6.3f}  {(hhodo_and_eff[35]/hhodo_gold_hits[35]):%6.3f} {hhodo_gold_hits[35]:%6d}
+hS2Y10: {(hhodo_pos_eff[39]/hhodo_gold_hits[39]):%6.3f}  {(hhodo_neg_eff[39]/hhodo_gold_hits[39]):%6.3f}  {(hhodo_or_eff[39]/hhodo_gold_hits[39]):%6.3f}  {(hhodo_and_eff[39]/hhodo_gold_hits[39]):%6.3f} {hhodo_gold_hits[39]:%6d}
+
+
+*************************
+* Cerenkov Efficiencies *
+*************************
+Good Track Requirements:
+   1. Only one track found in the focal plane
+   2. chisq/dof <  {hcer_chi2max:%6.2f}
+   3. {hcer_beta_min:%6.2f} < beta < {hcer_beta_max:%6.2f}
+   4. {hcer_et_min:%6.2f} < calorimeter energy < {hcer_et_max:%6.2f}
+Threshold set at  {hcer_threshold:%6.2f}
+
+Mirror 1 Efficiency = {H.cher.cerfiredcounter[0]/( H.cher.certrackcounter[0] + 0.0001 ):%5.3f}  
+Mirror 1 {H.cher.cerfiredcounter[0]:%6d} of {H.cher.certrackcounter[0]:%6d} good tracks.
+Mirror 2 Efficiency = {H.cher.cerfiredcounter[1]/( H.cher.certrackcounter[1] + 0.0001 ):%5.3f}  
+Mirror 2 {H.cher.cerfiredcounter[1]:%6d} of {H.cher.certrackcounter[1]:%6d} good tracks.
+Overall  Efficiency = {H.cher.cerfiredcounter[2]/( H.cher.certrackcounter[2] + 0.0001 ):%5.3f}  
+Overall  {H.cher.cerfiredcounter[2]:%6d} of {H.cher.certrackcounter[2]:%6d} good tracks.
+
+****************************
+* Calorimeter Efficiencies *
+****************************
+Efficiencies for calorimeter is the fraction of times block was hit when track
+with chisquared/dof < hstat_cal_maxchisq  which came within hstat_cal_slop cm of the center.
+and hcer_npe_sum > 3.0 (hardwired).
+
+Events examined = htrig       = 
+Tracks found    = hcleantrack = 
+Tracks passing chisquared cut = 
+
+Block   eff    Hits
+-----   ---    ----
+hA1   
+hA2   
+hA3   
+hA4   
+hA5   
+hA6   
+hA7   
+hA8   
+hA9   
+hA10  
+hA11  
+hA12  
+hA13  
+
+hB1   
+hB2   
+hB3   
+hB4   
+hB5   
+hB6   
+hB7   
+hB8   
+hB9   
+hB10  
+hB11  
+hB12  
+hB13  
+
+hC1   
+hC2   
+hC3   
+hC4   
+hC5   
+hC6   
+hC7   
+hC8   
+hC9   
+hC10  
+hC11  
+hC12  
+hC13  
+
+hD1   
+hD2   
+hD3   
+hD4   
+hD5   
+hD6   
+hD7   
+hD8   
+hD9   
+hD10  
+hD11  
+hD12  
+hD13  
+
+hA    
+hB    
+hC    
+hD    
+
+***************
+* ALL SCALERS *
+***************
+
+
+--------------------------------------------------------------------------------------
+//////////////////////////////////////////////////////////////////////////////////////
+--------------------------------------------------------------------------------------
+
+General Format
+signal   =   counts (  rate-Hz )
+
 
 Horizontal drift chamber z positions:
 Chamber 1: {hdc_zpos[0]:%6.2f} {hdc_zpos[1]:%6.2f} {hdc_zpos[2]:%6.2f} 
 	   {hdc_zpos[3]:%6.2f} {hdc_zpos[4]:%6.2f} {hdc_zpos[5]:%6.2f} 
 Chamber 2: {hdc_zpos[6]:%6.2f} {hdc_zpos[7]:%6.2f} {hdc_zpos[8]:%6.2f} 
-	   {hdc_zpos[9]:%6.2f} {hdc_zpos[10]:%6.2f} {hdc_zpos[11]:%6.2f} 
+           {hdc_zpos[9]:%6.2f} {hdc_zpos[10]:%6.2f} {hdc_zpos[11]:%6.2f} 
 
 The expression result can be formatted by putting a ":" followed by
 a c-style format after the expression.
@@ -50,16 +370,16 @@ The HMS reconstruction coefficient file name is {h_recon_coeff_filename}
 The names of the HMS drift chamber planes are: 
 {hdc_plane_names}
 
-DC Events: {hdc_tot_events}
-Hit in chamber: {hdc_cham_hits[0]/hdc_tot_events:%.3f} 
-                {hdc_cham_hits[1]/hdc_tot_events:%.3f}
 
-Hit in plane: {hdc_events[0]/hdc_tot_events:%.3f} {hdc_events[1]/hdc_tot_events:%.3f} 
-              {hdc_events[2]/hdc_tot_events:%.3f} {hdc_events[3]/hdc_tot_events:%.3f} 
-	      {hdc_events[4]/hdc_tot_events:%.3f} {hdc_events[5]/hdc_tot_events:%.3f} 
-	      {hdc_events[6]/hdc_tot_events:%.3f} {hdc_events[7]/hdc_tot_events:%.3f} 
-	      {hdc_events[8]/hdc_tot_events:%.3f} {hdc_events[9]/hdc_tot_events:%.3f} 
-	      {hdc_events[10]/hdc_tot_events:%.3f} {hdc_events[11]/hdc_tot_events:%.3f}
+
+DC Events: {hdc_tot_events}
+Hit in chamber: {hdc_cham_hits[0]/hdc_tot_events:%.3f} {hdc_cham_hits[1]/hdc_tot_events:%.3f}
+Hit in plane: {hdc_events[0]/hdc_tot_events:%.3f}  {hdc_events[1]/hdc_tot_events:%.3f} 
+              {hdc_events[2]/hdc_tot_events:%.3f}  {hdc_events[3]/hdc_tot_events:%.3f} 
+              {hdc_events[4]/hdc_tot_events:%.3f}  {hdc_events[5]/hdc_tot_events:%.3f} 
+              {hdc_events[6]/hdc_tot_events:%.3f}  {hdc_events[7]/hdc_tot_events:%.3f} 
+              {hdc_events[8]/hdc_tot_events:%.3f}  {hdc_events[9]/hdc_tot_events:%.3f} 
+              {hdc_events[10]/hdc_tot_events:%.3f} {hdc_events[11]/hdc_tot_events:%.3f}
 
 Run #{gen_run_number}
 first event = {gen_run_starting_event:%7d}
@@ -68,7 +388,3 @@ last event  = {gen_event_id_number:%7d}
 Later, such things as hardware scalers will be added to the set of variables
 that can be used in expressions.
 
-Last momenutm: {H.tr.p[0]}
-
-{hhodo_pos_eff[0]}
-{hhodo_pos_eff[1]}
