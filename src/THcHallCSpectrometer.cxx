@@ -172,13 +172,14 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   THaDetector* det = GetDetector("hod");
   // THaDetector* det = app->GetDetector( shower_detector_name );
   
-  if( !dynamic_cast<THcHodoscope*>(det) ) {
+  if( dynamic_cast<THcHodoscope*>(det) ) {
+    fHodo = static_cast<THcHodoscope*>(det);     // fHodo is a membervariable
+  } else {
     Error("THcHallCSpectrometer", "Cannot find hodoscope detector %s",
     	  detector_name );
-     return fStatus = kInitError;
+    fHodo = NULL;
   }
   
-  fHodo = static_cast<THcHodoscope*>(det);     // fHodo is a membervariable
 
   // fShower = static_cast<THcShower*>(det);     // fShower is a membervariable
   
@@ -272,7 +273,8 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   ifile.open(reconCoeffFilename.c_str());
   if(!ifile.is_open()) {
     Error(here, "error opening reconstruction coefficient file %s",reconCoeffFilename.c_str());
-    return kInitError; // Is this the right return code?
+    //    return kInitError; // Is this the right return code?
+    return kOK;
   }
   
   string line="!";
