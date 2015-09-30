@@ -25,6 +25,10 @@ class THcRawHodoHit : public THcRawHit {
 
   //  virtual Bool_t  IsSortable () const {return kTRUE; }
   //  virtual Int_t   Compare(const TObject* obj) const;
+  Int_t GetADCPos() {return fADC_pos;}
+  Int_t GetADCNeg() {return fADC_neg;}
+  Int_t GetTDCPos() {return fTDC_pos;}
+  Int_t GetTDCNeg() {return fTDC_neg;}
 
  protected:
   Int_t fADC_pos;
