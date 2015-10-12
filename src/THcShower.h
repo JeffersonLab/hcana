@@ -11,6 +11,7 @@
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
 #include "THcShowerPlane.h"
+#include "THcShowerArray.h"
 #include "TMath.h"
 
 
@@ -256,7 +257,10 @@ protected:
 
   char** fLayerNames;
   UInt_t fNLayers;	        // Number of layers in the calorimeter
+  UInt_t fNTotLayers;	        // Number of layers including array
+  UInt_t fHasArray;		// If !=0 fly's eye array behind preshower
   Double_t* fNLayerZPos;	// Z positions of fronts of layers
+  // Following apply to just sideways readout layers
   Double_t* BlockThick;		// Thickness of blocks
   UInt_t* fNBlocks;              // [fNLayers] number of blocks per layer
   UInt_t fNtotBlocks;            // Total number of shower counter blocks
@@ -287,6 +291,7 @@ protected:
   Double_t fDcor[2];
 
   THcShowerPlane** fPlanes;     // [fNLayers] Shower Plane objects
+  THcShowerArray* fArray;
 
   TClonesArray*  fTrackProj;    // projection of track onto plane
 

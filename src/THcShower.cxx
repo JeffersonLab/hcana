@@ -39,6 +39,8 @@ THcShower::THcShower( const char* name, const char* description,
 {
   // Constructor
   fNLayers = 0;			// No layers until we make them
+  fNTotLayers = 0;
+  fHasArray = 0;
 
   fClusterList = new THcShowerClusterList;
 }
@@ -58,26 +60,29 @@ void THcShower::Setup(const char* name, const char* description)
   prefix[0] = tolower(GetApparatus()->GetName()[0]);
   prefix[1] = '\0';
 
+  
   string layernamelist;
+  fHasArray = 0;		// Flag for presence of fly's eye array
   DBRequest list[]={
     {"cal_num_layers", &fNLayers, kInt},
     {"cal_layer_names", &layernamelist, kString},
+    {"cal_array",&fHasArray, kInt,0, 1}, 
     {0}
   };
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-
+  fNTotLayers = (fNLayers+(fHasArray!=0?1:0));
   vector<string> layer_names = vsplit(layernamelist);
 
-  if(layer_names.size() != (UInt_t) fNLayers) {
-    cout << "THcShower::Setup ERROR: Number of layers " << fNLayers 
+  if(layer_names.size() != fNTotLayers) {
+    cout << "THcShower::Setup ERROR: Number of layers " << fNTotLayers 
 	 << " doesn't agree with number of layer names "
 	 << layer_names.size() << endl;
     // Should quit.  Is there an official way to quit?
   }
 
-  fLayerNames = new char* [fNLayers];
-  for(UInt_t i=0;i<fNLayers;i++) {
+  fLayerNames = new char* [fNTotLayers];
+  for(UInt_t i=0;i<fNTotLayers;i++) {
     fLayerNames[i] = new char[layer_names[i].length()+1];
     strcpy(fLayerNames[i], layer_names[i].c_str());
   }
@@ -93,6 +98,16 @@ void THcShower::Setup(const char* name, const char* description)
     fPlanes[i] = new THcShowerPlane(fLayerNames[i], desc, i+1, this); 
 
   }
+  if(fHasArray) {
+    strcpy(desc, description);
+    strcat(desc, " Array ");
+    strcat(desc, fLayerNames[fNTotLayers-1]);
+
+    fArray = new THcShowerArray(fLayerNames[fNTotLayers-1], desc, fNTotLayers, this);
+  } else {
+    fArray = 0;
+  }
+
   delete [] desc;
 
   cout << "---------------------------------------------------------------\n";
@@ -125,6 +140,11 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
   for(UInt_t ip=0;ip<fNLayers;ip++) {
     if((status = fPlanes[ip]->Init( date ))) {
       return fStatus=status;
+    }
+  }
+  if(fHasArray) {
+    if((status = fArray->Init( date ))) {
+      return fStatus = status;
     }
   }
 
@@ -171,9 +191,11 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
 
+  fNegCols = fNLayers;		// If not defined assume tube on each end
+                                // for every layer
   {
     DBRequest list[]={
-      {"cal_num_neg_columns", &fNegCols, kInt},
+      {"cal_num_neg_columns", &fNegCols, kInt, 0, 1},
       {"cal_slop", &fSlop, kDouble},
       {"cal_fv_test", &fvTest, kInt,0,1},
       {"cal_fv_delta", &fvDelta, kDouble},
@@ -518,6 +540,9 @@ void THcShower::Clear(Option_t* opt)
   for(UInt_t ip=0;ip<fNLayers;ip++) {
     fPlanes[ip]->Clear(opt);
   }
+  if(fHasArray) {
+    fArray->Clear(opt);
+  }
 
   fNhits = 0;
   fNclust = 0;
@@ -552,6 +577,9 @@ Int_t THcShower::Decode( const THaEvData& evdata )
     for(UInt_t ip=0;ip<fNLayers;ip++) {
       nexthit = fPlanes[ip]->AccumulatePedestals(fRawHitList, nexthit);
     }
+    if(fHasArray) {
+      nexthit = fArray->AccumulatePedestals(fRawHitList, nexthit);
+    }
     fAnalyzePedestals = 1;	// Analyze pedestals first normal events
     return(0);
   }
@@ -560,6 +588,9 @@ Int_t THcShower::Decode( const THaEvData& evdata )
     for(UInt_t ip=0;ip<fNLayers;ip++) {
       fPlanes[ip]->CalculatePedestals();
     }
+    if(fHasArray) {
+      fArray->CalculatePedestals();
+    }
     fAnalyzePedestals = 0;	// Don't analyze pedestals next event
   }
 
@@ -567,6 +598,10 @@ Int_t THcShower::Decode( const THaEvData& evdata )
   for(UInt_t ip=0;ip<fNLayers;ip++) {
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
     fEtot += fPlanes[ip]->GetEplane();
+  }
+  if(fHasArray) {
+    nexthit = fArray->ProcessHits(fRawHitList, nexthit);
+    fEtot += fArray->GetEplane();
   }
   THcHallCSpectrometer *app = static_cast<THcHallCSpectrometer*>(GetApparatus());
   fEtotNorm=fEtot/(app->GetPcentral());
@@ -587,6 +622,8 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
   //
 
   // Fill set of unclustered hits.
+
+  // Ignore shower array (SHMS) for now
 
   THcShowerHitSet HitSet;
 
