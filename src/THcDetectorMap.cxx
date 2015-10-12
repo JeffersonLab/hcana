@@ -236,12 +236,19 @@ void THcDetectorMap::Load(const char *fname)
       }
       line.erase(0,1);	// Erase "!"
       if(! ((pos=line.find("_ID=")) == string::npos)) {
+	Int_t llen = line.length();
 	fIDMap[fNIDs].name = new char [pos+1];
 	strncpy(fIDMap[fNIDs].name,line.c_str(),pos);
 	fIDMap[fNIDs].name[pos] = '\0';
 	start = (pos += 4); // Move to after "="
-	while(isdigit(line.at(pos++)));
-	fIDMap[fNIDs++].id = atoi(line.substr(start,pos).c_str());
+	while(pos < llen) {
+	  if(isdigit(line.at(pos))) {
+	    pos++;
+	  } else {
+	    break;
+	  }
+	}
+	fIDMap[fNIDs++].id = atoi(line.substr(start,pos-start).c_str());
       }
       continue;
     }
