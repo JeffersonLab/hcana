@@ -52,6 +52,17 @@ Int_t THcRawShowerHit::GetData(Int_t signal, UInt_t isample) {
   }
   return(-1);
 }
+
+// Return the number of samples
+Int_t THcRawShowerHit::GetNSamples(Int_t signal) {
+  if(signal==0) {
+    return(fNPosSamples);
+  } else if (signal==1) {
+    return(fNNegSamples);
+  }
+  return(-1);
+}
+
 //_____________________________________________________________________________
 THcRawShowerHit& THcRawShowerHit::operator=( const THcRawShowerHit& rhs )
 {

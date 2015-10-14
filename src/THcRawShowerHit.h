@@ -23,6 +23,7 @@ class THcRawShowerHit : public THcRawHit {
   void SetData(Int_t signal, Int_t data);
   Int_t GetData(Int_t signal);
   Int_t GetData(Int_t signal, UInt_t isample);
+  Int_t GetNSamples(Int_t signal);
 
   //  virtual Bool_t  IsSortable () const {return kTRUE; }
   //  virtual Int_t   Compare(const TObject* obj) const;
