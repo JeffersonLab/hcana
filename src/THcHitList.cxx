@@ -89,8 +89,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
       }
 
       if(thishit == fNRawHits) {
-	rawhit = (THcRawHit*) (*fRawHitList)[thishit];
-	rawhit->Clear();	// Blank out hit contents
+	rawhit = (THcRawHit*) fRawHitList->ConstructedAt(thishit,"");
 	fNRawHits++;
 	rawhit->fPlane = plane;
 	rawhit->fCounter = counter;
