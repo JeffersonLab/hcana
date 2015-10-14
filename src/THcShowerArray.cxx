@@ -173,7 +173,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
 
     // Should probably check that counter # is in range
-    fA[hit->fCounter-1] = hit->fADC_pos;
+    fA[hit->fCounter-1] = hit->GetData(0);
 
     // Do other stuff like comparison to thresholds, signal hits, energy sums
 

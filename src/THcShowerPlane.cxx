@@ -301,20 +301,20 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
     
     // Should probably check that counter # is in range
-    fA_Pos[hit->fCounter-1] = hit->fADC_pos;
-    fA_Neg[hit->fCounter-1] = hit->fADC_neg;
+    fA_Pos[hit->fCounter-1] = hit->GetData(0);
+    fA_Neg[hit->fCounter-1] = hit->GetData(1);
 
     // Sparsify positive side hits, fill the hit list, compute the
     // energy depostion from positive side for the counter.
 
     Double_t thresh_pos = fPosThresh[hit->fCounter -1];
-    if(hit->fADC_pos >  thresh_pos) {
+    if(hit->GetData(0) >  thresh_pos) {
 
       THcSignalHit *sighit =
 	(THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
-      sighit->Set(hit->fCounter, hit->fADC_pos);
+      sighit->Set(hit->fCounter, hit->GetData(0));
 
-      fA_Pos_p[hit->fCounter-1] = hit->fADC_pos - fPosPed[hit->fCounter -1];
+      fA_Pos_p[hit->fCounter-1] = hit->GetData(0) - fPosPed[hit->fCounter -1];
 
       fEpos[hit->fCounter-1] += fA_Pos_p[hit->fCounter-1]*
 	fParent->GetGain(hit->fCounter-1,fLayerNum-1,0);
@@ -324,13 +324,13 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     // energy depostion from negative side for the counter.
 
     Double_t thresh_neg = fNegThresh[hit->fCounter -1];
-    if(hit->fADC_neg >  thresh_neg) {
+    if(hit->GetData(1) >  thresh_neg) {
 
       THcSignalHit *sighit = 
 	(THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
-      sighit->Set(hit->fCounter, hit->fADC_neg);
+      sighit->Set(hit->fCounter, hit->GetData(1));
 
-      fA_Neg_p[hit->fCounter-1] = hit->fADC_neg - fNegPed[hit->fCounter -1];
+      fA_Neg_p[hit->fCounter-1] = hit->GetData(1) - fNegPed[hit->fCounter -1];
 
       fEneg[hit->fCounter-1] += fA_Neg_p[hit->fCounter-1]*
 	fParent->GetGain(hit->fCounter-1,fLayerNum-1,1);
@@ -369,8 +369,8 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	break;
       }
 
-      if(hit->fADC_pos > fPosThresh[hit->fCounter -1] ||
-	 hit->fADC_neg > fNegThresh[hit->fCounter -1]) {
+      if(hit->GetData(0) > fPosThresh[hit->fCounter -1] ||
+	 hit->GetData(1) > fNegThresh[hit->fCounter -1]) {
 	cout << "  plane =  " << hit->fPlane
 	     << "  counter =  " << hit->fCounter
 	     << "  Emean = " << fEmean[hit->fCounter-1]
@@ -411,8 +411,8 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
       break;
     }
     Int_t element = hit->fCounter - 1; // Should check if in range
-    Int_t adcpos = hit->fADC_pos;
-    Int_t adcneg = hit->fADC_neg;
+    Int_t adcpos = hit->GetData(0);
+    Int_t adcneg = hit->GetData(1);
 
     if(adcpos <= fPosPedLimit[element]) {
       fPosPedSum[element] += adcpos;
@@ -457,8 +457,8 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
       cout << "  hit " << ih << ":"
 	   << "  plane =  " << hit->fPlane
 	   << "  counter = " << hit->fCounter
-	   << "  ADCpos = " << hit->fADC_pos
-	   << "  ADCneg = " << hit->fADC_neg
+	   << "  ADCpos = " << hit->GetData(0)
+	   << "  ADCneg = " << hit->GetData(1)
 	   << endl;
     }
 
