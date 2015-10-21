@@ -55,6 +55,7 @@ public:
 protected:
 
   Double_t* fA;                 // [fNelem] ADC amplitude of blocks
+  Double_t* fP;                 // [fNelem] Event by event pedestals
 
   TClonesArray* fADCHits;	// List of ADC hits
 
@@ -64,6 +65,11 @@ protected:
   // Parameters
   Int_t fNRows;
   Int_t fNColumns;
+  Int_t fUsingFADC;		// != 0 if using FADC in sample mode
+  Int_t fPedSampLow;		// Sample range for
+  Int_t fPedSampHigh;		// dynamic pedestal
+  Int_t fDataSampLow;		// Sample range for
+  Int_t fDataSampHigh;		// sample integration
 
   Int_t fLayerNum;		// 2 for SHMS
   // Accumulators for pedestals go here

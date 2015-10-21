@@ -46,6 +46,7 @@ THcShowerArray::~THcShowerArray()
   delete fADCHits;
 
   delete [] fA;
+  delete [] fP;
 }
 
 //_____________________________________________________________________________
@@ -77,9 +78,19 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   prefix[1]='\0';
 
   cout << "Parent name: " << GetParent()->GetPrefix() << endl;
+  fUsingFADC=0;
+  fPedSampLow=0;
+  fPedSampHigh=9;
+  fDataSampLow=23;
+  fDataSampHigh=49;
   DBRequest list[]={
     {"cal_nrows", &fNRows, kInt},
     {"cal_ncolumns", &fNColumns, kInt},
+    {"cal_using_fadc", &fUsingFADC, kInt, 0, 1},
+    {"cal_ped_sample_low", &fPedSampLow, kInt, 0, 1},
+    {"cal_ped_sample_high", &fPedSampHigh, kInt, 0, 1},
+    {"cal_data_sample_low", &fDataSampLow, kInt, 0, 1},
+    {"cal_data_sample_high", &fDataSampHigh, kInt, 0, 1},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
@@ -89,7 +100,9 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   // Here read the 2-D arras of pedestals, gains, etc.
 
 
+  // Event by event amplitude and pedestal
   fA = new Double_t[fNelem];
+  fP = new Double_t[fNelem];
 
   return kOK;
 }
@@ -106,6 +119,7 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
   RVarDef vars[] = {
     {"adchits", "List of ADC hits", "fADCHits.THcSignalHit.GetPaddleNumber()"},
     {"a", "Raw ADC Amplitude", "fA"},
+    {"p", "Dynamic ADC Pedestal", "fP"},
     { 0 }
   };
 
@@ -173,7 +187,13 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
 
     // Should probably check that counter # is in range
-    fA[hit->fCounter-1] = hit->GetData(0);
+    if(fUsingFADC) {
+      fA[hit->fCounter-1] = hit->GetData(0,fPedSampLow,fPedSampHigh,
+					 fDataSampLow,fDataSampHigh);
+      fP[hit->fCounter-1] = hit->GetPedestal(0,fPedSampLow,fPedSampHigh);
+    } else {
+          fA[hit->fCounter-1] = hit->GetData(0);
+    }
 
     // Do other stuff like comparison to thresholds, signal hits, energy sums
 

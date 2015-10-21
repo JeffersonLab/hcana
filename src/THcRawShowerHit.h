@@ -22,7 +22,10 @@ class THcRawShowerHit : public THcRawHit {
 
   void SetData(Int_t signal, Int_t data);
   Int_t GetData(Int_t signal);
-  Int_t GetData(Int_t signal, UInt_t isample);
+  Int_t GetData(Int_t signal, Int_t isamplow, Int_t isamphigh,
+		Int_t iintegrallow, Int_t iintegralhigh);
+  Int_t GetSample(Int_t signal, UInt_t isample);
+  Double_t GetPedestal(Int_t signal, Int_t isamplow, Int_t isamphigh);
   Int_t GetNSamples(Int_t signal);
 
   //  virtual Bool_t  IsSortable () const {return kTRUE; }
