@@ -1,6 +1,11 @@
 #ifndef ROOT_THcShowerArray
 #define ROOT_THcShowerArray 
 
+//#define HITPIC 1
+#ifdef HITPIC
+#define NPERLINE 5
+#endif
+
 //////////////////////////////////////////////////////////////////////////////
 //                         
 // THcShowerArray
@@ -54,6 +59,10 @@ public:
 
 protected:
 
+#ifdef HITPIC
+  char **hitpic;
+  Int_t piccolumn;
+#endif
   Double_t* fA;                 // [fNelem] ADC amplitude of blocks
   Double_t* fP;                 // [fNelem] Event by event pedestals
 

@@ -25,6 +25,7 @@
 #include <iostream>
 
 #include <fstream>
+
 using namespace std;
 
 ClassImp(THcShowerArray)
@@ -103,6 +104,14 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   // Event by event amplitude and pedestal
   fA = new Double_t[fNelem];
   fP = new Double_t[fNelem];
+
+#ifdef HITPIC
+  hitpic = new char*[fNRows];
+  for(Int_t row=0;row<fNRows;row++) {
+    hitpic[row] = new char[NPERLINE*(fNColumns+1)+2];
+  }
+  piccolumn=0;
+#endif
 
   return kOK;
 }
@@ -183,6 +192,8 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   Int_t ihit = nexthit;
 
+  Int_t ngood = 0;
+  Int_t threshold = 100;
   while(ihit < nrawhits) {
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
 
@@ -194,11 +205,70 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     } else {
           fA[hit->fCounter-1] = hit->GetData(0);
     }
+    if(fA[hit->fCounter-1] > threshold) {
+      ngood++;
+    }
 
     // Do other stuff like comparison to thresholds, signal hits, energy sums
 
     ihit++;
   }
+    
+#if 0
+  if(ngood > 0) {
+    cout << "+";
+    for(Int_t column=0;column<fNColumns;column++) {
+      cout << "-";
+    }
+    cout << "+" << endl;
+    for(Int_t row=0;row<fNRows;row++) {
+      cout << "|";
+      for(Int_t column=0;column<fNColumns;column++) {
+	Int_t counter = column*fNRows + row;
+	if(fA[counter]>threshold) {
+	  cout << "X";
+	} else {
+	  cout << " ";
+	}
+      }
+      cout << "|" << endl;
+    }
+  }
+#endif
+#ifdef HITPIC
+  if(ngood > 0) {
+    for(Int_t row=0;row<fNRows;row++) {
+      if(piccolumn==0) {
+	hitpic[row][0] = '|';
+      }
+      for(Int_t column=0;column<fNColumns;column++) {
+	Int_t counter = column*fNRows+row;
+	if(fA[counter] > threshold) {
+	  hitpic[row][piccolumn*(fNColumns+1)+column+1] = 'X';
+	} else {
+	  hitpic[row][piccolumn*(fNColumns+1)+column+1] = ' ';
+	}
+	hitpic[row][(piccolumn+1)*(fNColumns+1)] = '|';
+      }
+    }
+    piccolumn++;
+    if(piccolumn==NPERLINE) {
+      cout << "+";
+      for(Int_t pc=0;pc<NPERLINE;pc++) {
+	for(Int_t column=0;column<fNColumns;column++) {
+	  cout << "-";
+	}
+	cout << "+";
+      }
+      cout << endl;
+      for(Int_t row=0;row<fNRows;row++) {
+	hitpic[row][(piccolumn+1)*(fNColumns+1)+1] = '\0';
+	cout << hitpic[row] << endl;
+      }
+      piccolumn = 0;
+    }
+  }
+#endif
 
   return(ihit);
 }
