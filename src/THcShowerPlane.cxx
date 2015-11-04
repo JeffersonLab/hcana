@@ -88,7 +88,29 @@ THaAnalysisObject::EStatus THcShowerPlane::Init( const TDatime& date )
 //_____________________________________________________________________________
 Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 {
-  // Retrieve parameters we need from parent class
+  
+  // Retrieve FADC parameters.  In principle may want different dynamic
+  // pedestal and integration range for preshower and shower, but for now
+  // use same parameters
+  char prefix[2];
+  prefix[0]=tolower(GetParent()->GetPrefix()[0]);
+  prefix[1]='\0';
+  fUsingFADC=0;
+  fPedSampLow=0;
+  fPedSampHigh=9;
+  fDataSampLow=23; 
+  fDataSampHigh=49;
+  DBRequest list[]={
+    {"cal_using_fadc", &fUsingFADC, kInt, 0, 1},
+    {"cal_ped_sample_low", &fPedSampLow, kInt, 0, 1},
+    {"cal_ped_sample_high", &fPedSampHigh, kInt, 0, 1},
+    {"cal_data_sample_low", &fDataSampLow, kInt, 0, 1},
+    {"cal_data_sample_high", &fDataSampHigh, kInt, 0, 1},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list, prefix);
+
+  // Retrieve more parameters we need from parent class
   //
 
   THcShower* fParent;
@@ -301,20 +323,27 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
     
     // Should probably check that counter # is in range
-    fA_Pos[hit->fCounter-1] = hit->GetData(0);
-    fA_Neg[hit->fCounter-1] = hit->GetData(1);
+    if(fUsingFADC) {
+      fA_Pos[hit->fCounter-1] = hit->GetData(0,fPedSampLow,fPedSampHigh,
+					 fDataSampLow,fDataSampHigh);
+      fA_Neg[hit->fCounter-1] = hit->GetData(1,fPedSampLow,fPedSampHigh,
+					 fDataSampLow,fDataSampHigh);
+    } else {
+      fA_Pos[hit->fCounter-1] = hit->GetData(0);
+      fA_Neg[hit->fCounter-1] = hit->GetData(1);
+    }
 
     // Sparsify positive side hits, fill the hit list, compute the
     // energy depostion from positive side for the counter.
 
     Double_t thresh_pos = fPosThresh[hit->fCounter -1];
-    if(hit->GetData(0) >  thresh_pos) {
+    if(fA_Pos[hit->fCounter-1] >  thresh_pos) {
 
       THcSignalHit *sighit =
 	(THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
-      sighit->Set(hit->fCounter, hit->GetData(0));
+      sighit->Set(hit->fCounter, fA_Pos[hit->fCounter-1]);
 
-      fA_Pos_p[hit->fCounter-1] = hit->GetData(0) - fPosPed[hit->fCounter -1];
+      fA_Pos_p[hit->fCounter-1] = fA_Pos[hit->fCounter-1] - fPosPed[hit->fCounter -1];
 
       fEpos[hit->fCounter-1] += fA_Pos_p[hit->fCounter-1]*
 	fParent->GetGain(hit->fCounter-1,fLayerNum-1,0);
@@ -324,13 +353,13 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     // energy depostion from negative side for the counter.
 
     Double_t thresh_neg = fNegThresh[hit->fCounter -1];
-    if(hit->GetData(1) >  thresh_neg) {
+    if(fA_Neg[hit->fCounter-1] >  thresh_neg) {
 
       THcSignalHit *sighit = 
 	(THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
-      sighit->Set(hit->fCounter, hit->GetData(1));
+      sighit->Set(hit->fCounter, fA_Neg[hit->fCounter-1]);
 
-      fA_Neg_p[hit->fCounter-1] = hit->GetData(1) - fNegPed[hit->fCounter -1];
+      fA_Neg_p[hit->fCounter-1] = fA_Neg[hit->fCounter-1] - fNegPed[hit->fCounter -1];
 
       fEneg[hit->fCounter-1] += fA_Neg_p[hit->fCounter-1]*
 	fParent->GetGain(hit->fCounter-1,fLayerNum-1,1);
@@ -369,8 +398,8 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	break;
       }
 
-      if(hit->GetData(0) > fPosThresh[hit->fCounter -1] ||
-	 hit->GetData(1) > fNegThresh[hit->fCounter -1]) {
+      if(fA_Pos[hit->fCounter-1] > fPosThresh[hit->fCounter -1] ||
+	 fA_Neg[hit->fCounter-1] > fNegThresh[hit->fCounter -1]) {
 	cout << "  plane =  " << hit->fPlane
 	     << "  counter =  " << hit->fCounter
 	     << "  Emean = " << fEmean[hit->fCounter-1]

@@ -108,6 +108,13 @@ public:
 
 protected:
 
+  // Flash ADC parameters
+  Int_t fUsingFADC;		// != 0 if using FADC in sample mode
+  Int_t fPedSampLow;		// Sample range for
+  Int_t fPedSampHigh;		// dynamic pedestal
+  Int_t fDataSampLow;		// Sample range for
+  Int_t fDataSampHigh;		// sample integration
+
   Double_t*   fA_Pos;         // [fNelem] ADC amplitudes of blocks
   Double_t*   fA_Neg;         // [fNelem] ADC amplitudes of blocks
   Double_t*   fA_Pos_p;	      // [fNelem] pedestal subtracted ADC amplitudes
