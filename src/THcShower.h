@@ -308,6 +308,7 @@ protected:
   void ClusterHits(THcShowerHitSet& HitSet);
 
   friend class THcShowerPlane;   //to access debug flags.
+  friend class THcShowerArray;   //to access debug flags.
 
   ClassDef(THcShower,0)          // Shower counter detector
 };

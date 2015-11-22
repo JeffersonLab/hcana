@@ -68,9 +68,6 @@ protected:
 
   TClonesArray* fADCHits;	// List of ADC hits
 
-  Int_t fNPedestalEvents;	/* Pedestal event counter */
-  Int_t fMinPeds;		/* Only analyze/update if num events > */
-
   // Parameters
   Int_t fNRows;
   Int_t fNColumns;
@@ -81,8 +78,22 @@ protected:
   Int_t fDataSampHigh;		// sample integration
 
   Int_t fLayerNum;		// 2 for SHMS
+
   // Accumulators for pedestals go here
+
+  Int_t fNPedestalEvents;	/* Pedestal event counter */
+  Int_t fMinPeds;		/* Only analyze/update if num events > */
+
   // 2D arrays
+
+  Int_t *fPedSum;		/* Accumulators for pedestals */
+  Int_t *fPedSum2;
+  Int_t *fPedLimit;          // Analyze pedestal if ADC signal < PedLimit
+  Int_t *fPedCount;          // [fNelem] counter of pedestal analysis
+
+  Float_t *fPed;             // [fNelem] pedestal positions
+  Float_t *fSig;             // [fNelem] pedestal rms-s
+  Float_t *fThresh;          // [fNelem] ADC thresholds
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );

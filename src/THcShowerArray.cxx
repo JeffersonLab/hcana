@@ -98,8 +98,22 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 
   fNelem = fNRows*fNColumns;
 
-  // Here read the 2-D arras of pedestals, gains, etc.
+  // Here read the 2-D arrays of pedestals, gains, etc.
 
+  // Pedestal limits per channel.
+
+  fPedLimit = new Int_t [fNelem];
+
+  THcShower* fParent;
+  fParent = (THcShower*) GetParent();
+
+  for(Int_t i=0;i<fNelem;i++) {
+    fPedLimit[i] = fParent->GetPedLimit(i,fLayerNum,0);   //layer 2, neg. side
+  }
+
+  fMinPeds = fParent->GetMinPeds();
+
+  InitializePedestals();
 
   // Event by event amplitude and pedestal
   fA = new Double_t[fNelem];
@@ -112,6 +126,27 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   }
   piccolumn=0;
 #endif
+
+  // Debug output.
+
+  if (fParent->fdbg_init_cal) {
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShowerArray::ReadDatabase for "
+    	 << GetParent()->GetPrefix() << ":" << endl;
+
+    cout << "  Layer #" << fLayerNum << ", number of elements " << fNelem
+	 << endl;
+
+    //    cout << "  Origin of Layer at  X = " << fOrigin.X()
+    //	 << "  Y = " << fOrigin.Y() << "  Z = " << fOrigin.Z() << endl;
+
+    cout << "  fPedLimit:";
+    for(Int_t i=0;i<fNelem;i++) cout << " " << fPedLimit[i];
+    cout << endl;
+
+    cout << "  fMinPeds = " << fMinPeds << endl;
+    cout << "---------------------------------------------------------------\n";
+  }
 
   return kOK;
 }
