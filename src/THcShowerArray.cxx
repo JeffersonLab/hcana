@@ -310,7 +310,8 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 //_____________________________________________________________________________
 Int_t THcShowerArray::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 {
-  // Doesn't do anything yet except skip over hits
+  // Extract data for this plane from hit list and accumulate in
+  // arrays for subsequent pedestal calculations.
 
   Int_t nrawhits = rawhits->GetLast()+1;
 
@@ -376,8 +377,37 @@ Int_t THcShowerArray::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 //_____________________________________________________________________________
 void THcShowerArray::CalculatePedestals( )
 {
-  // Doesn't do anything yet
+  // Use the accumulated pedestal data to calculate pedestals.
 
+  for(Int_t i=0; i<fNelem;i++) {
+    
+    fPed[i] = ((Float_t) fPedSum[i]) / TMath::Max(1, fPedCount[i]);
+    fSig[i] = sqrt(((Float_t)fPedSum2[i])/TMath::Max(1, fPedCount[i])
+		   - fPed[i]*fPed[i]);
+    fThresh[i] = fPed[i] + TMath::Min(50., TMath::Max(10., 3.*fSig[i]));
+
+  }
+
+  // Debug output.
+
+  if ( ((THcShower*) GetParent())->fdbg_raw_cal ) {
+
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShowerArray::CalculatePedestals for"
+    	 << GetParent()->GetPrefix() << ":" << endl;
+
+    cout << "  ADC pedestals and thresholds for calorimeter plane "
+	 << GetName() << endl;
+    for(Int_t i=0; i<fNelem;i++) {
+      cout << "  element " << i << ": "
+	   << "  Pedestal = " << fPed[i]
+	   << "  /threshold = " << fThresh[i]
+	   << endl;
+    }
+    cout << "---------------------------------------------------------------\n";
+
+  }
+  
 }
 //_____________________________________________________________________________
 void THcShowerArray::InitializePedestals( )
