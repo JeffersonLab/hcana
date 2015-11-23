@@ -317,18 +317,62 @@ Int_t THcShowerArray::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
   Int_t ihit = nexthit;
 
   while(ihit < nrawhits) {
+
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
 
     // OK for hit list sorted by layer.
     if(hit->fPlane > fLayerNum) {
       break;
     }
+
+    Int_t element = hit->fCounter - 1; // Should check if in range
+    Int_t adc = hit->GetData(0);
+
+    if(adc <= fPedLimit[element]) {
+      fPedSum[element] += adc;
+      fPedSum2[element] += adc*adc;
+      fPedCount[element]++;
+      if(fPedCount[element] == fMinPeds/5) {
+	fPedLimit[element] = 100 + fPedSum[element]/fPedCount[element];
+      }
+    }
     ihit++;
   }
   fNPedestalEvents++;
 
+  // Debug output.
+
+  if ( ((THcShower*) GetParent())->fdbg_raw_cal ) {
+
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShowerArray::AcculatePedestals for "
+    	 << GetParent()->GetPrefix() << ":" << endl;
+
+    cout << "Processed hit list for plane " << GetName() << ":\n";
+
+    for (Int_t ih=nexthit; ih<nrawhits; ih++) {
+
+      THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ih);
+
+      // OK for hit list sorted by layer.
+      if(hit->fPlane > fLayerNum) {
+	break;
+      }
+
+      cout << "  hit " << ih << ":"
+	   << "  plane =  " << hit->fPlane
+	   << "  counter = " << hit->fCounter
+	   << "  ADC = " << hit->GetData(0)
+	   << endl;
+    }
+
+    cout << "---------------------------------------------------------------\n";
+
+  }
+
   return(ihit);
 }
+
 //_____________________________________________________________________________
 void THcShowerArray::CalculatePedestals( )
 {
