@@ -101,7 +101,6 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   // Here read the 2-D arrays of pedestals, gains, etc.
 
   // Pedestal limits per channel.
-
   fPedLimit = new Int_t [fNelem];
 
   THcShower* fParent;
@@ -136,6 +135,15 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 
     cout << "  Layer #" << fLayerNum << ", number of elements " << fNelem
 	 << endl;
+    cout << "  Columns " << fNColumns << ", Rows " << fNRows << endl;
+
+    cout << "  Using FADC " << fUsingFADC << endl;
+    if (fUsingFADC) {
+      cout << "  FADC pedestal sample low = " << fPedSampLow << ",  high = "
+	   << fPedSampHigh << endl;
+      cout << "  FADC data sample low = " << fDataSampLow << ",  high = "
+	   << fDataSampHigh << endl;
+    }
 
     //    cout << "  Origin of Layer at  X = " << fOrigin.X()
     //	 << "  Y = " << fOrigin.Y() << "  Z = " << fOrigin.Z() << endl;
@@ -322,12 +330,17 @@ Int_t THcShowerArray::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
 
     // OK for hit list sorted by layer.
-    if(hit->fPlane > fLayerNum) {
-      break;
-    }
+    //    if(hit->fPlane > fLayerNum) {
+    //      break;
+    //    }
 
     Int_t element = hit->fCounter - 1; // Should check if in range
-    Int_t adc = hit->GetData(0);
+
+    Int_t adc = fUsingFADC ?
+      hit->GetData(0,fPedSampLow,fPedSampHigh,fDataSampLow,fDataSampHigh)
+      :
+      hit->GetData(0);
+
 
     if(adc <= fPedLimit[element]) {
       fPedSum[element] += adc;
@@ -355,15 +368,15 @@ Int_t THcShowerArray::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 
       THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ih);
 
-      // OK for hit list sorted by layer.
-      if(hit->fPlane > fLayerNum) {
-	break;
-      }
+      Int_t adc = fUsingFADC ?
+	hit->GetData(0,fPedSampLow,fPedSampHigh,fDataSampLow,fDataSampHigh)
+	:
+	hit->GetData(0);
 
       cout << "  hit " << ih << ":"
 	   << "  plane =  " << hit->fPlane
 	   << "  counter = " << hit->fCounter
-	   << "  ADC = " << hit->GetData(0)
+	   << "  ADC = " << adc
 	   << endl;
     }
 
