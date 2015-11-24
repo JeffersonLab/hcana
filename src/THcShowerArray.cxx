@@ -412,6 +412,19 @@ void THcShowerArray::CalculatePedestals( )
 //_____________________________________________________________________________
 void THcShowerArray::InitializePedestals( )
 {
-  // Doesn't do anything yet
   fNPedestalEvents = 0;
+
+  fPedSum = new Int_t [fNelem];
+  fPedSum2 = new Int_t [fNelem];
+  fPedCount = new Int_t [fNelem];
+
+  fSig = new Float_t [fNelem];
+  fPed = new Float_t [fNelem];
+  fThresh = new Float_t [fNelem];
+
+  for(Int_t i=0;i<fNelem;i++) {
+    fPedSum[i] = 0;
+    fPedSum2[i] = 0;
+    fPedCount[i] = 0;
+  }
 } 
