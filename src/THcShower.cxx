@@ -111,13 +111,18 @@ void THcShower::Setup(const char* name, const char* description)
   delete [] desc;
 
   cout << "---------------------------------------------------------------\n";
+
   cout << "From THcShower::Setup: created Shower planes for "
        << GetApparatus()->GetName() << ": ";
 
-  for(UInt_t i=0;i < fNLayers;i++) {
+  for(UInt_t i=0;i < fNTotLayers;i++) {
     cout << fLayerNames[i];
-    i < fNLayers-1 ? cout << ", " : cout << ".\n";
+    i < fNTotLayers-1 ? cout << ", " : cout << ".\n";
   }
+
+  if(fHasArray)
+    cout << fLayerNames[fNTotLayers-1] << " has fly\'s eye configuration\n";
+
   cout << "---------------------------------------------------------------\n";
 
 }
@@ -494,7 +499,7 @@ Int_t THcShower::DefineVariables( EMode mode )
   RVarDef vars[] = {
     { "nhits", "Number of hits",                                 "fNhits" },
     { "nclust", "Number of clusters",                            "fNclust" },
-    { "etot", "Total energy",                            "fEtot" },
+    { "etot", "Total energy",                                    "fEtot" },
     { "etotnorm", "Total energy divided by Central Momentum",   "fEtotNorm" },
     { "ntracks", "Number of shower tracks",                      "fNtracks" },
     { 0 }
