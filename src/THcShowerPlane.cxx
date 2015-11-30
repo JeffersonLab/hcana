@@ -525,7 +525,7 @@ void THcShowerPlane::CalculatePedestals( )
   if ( ((THcShower*) GetParent())->fdbg_raw_cal ) {
 
     cout << "---------------------------------------------------------------\n";
-    cout << "Debug output from THcShowerPlane::CalculatePedestals for"
+    cout << "Debug output from THcShowerPlane::CalculatePedestals for "
     	 << GetParent()->GetPrefix() << ":" << endl;
 
     cout << "  ADC pedestals and thresholds for calorimeter plane "
