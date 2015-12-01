@@ -25,6 +25,7 @@ class THcDetectorMap : public TObject {
   struct Channel { // Mapping for one hardware channel
     Int_t roc;
     Int_t slot;
+    Int_t refchan;
     Int_t channel;
     Int_t did;
     Int_t plane;
@@ -39,6 +40,7 @@ class THcDetectorMap : public TObject {
     Int_t plane;
     Int_t counter;
     Int_t signal;
+    Int_t refchan;
   };
   struct ModChanList {
     Int_t roc;

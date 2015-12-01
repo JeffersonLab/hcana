@@ -89,6 +89,7 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
       Achan.plane = fTable[ich].plane;
       Achan.counter = fTable[ich].counter;
       Achan.signal = fTable[ich].signal;
+      Achan.refchan = fTable[ich].refchan;
       for(imod=mlist.begin(); imod!= mlist.end(); ++imod) {
 	if((*imod).roc == roc && (*imod).slot == slot) {
 	  //	  cout << "Pushing chan " << Achan.channel << " to " << roc
@@ -134,27 +135,31 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
     Int_t last_signal = -1;
     Int_t first_counter = -1;
     Int_t last_counter = -1;
+    Int_t last_refchan = -1;
     for(ichan=clistp->begin(); ichan!=clistp->end(); ++ichan) {
       Int_t this_chan = (*ichan).channel;
       Int_t this_counter = (*ichan).counter;
       Int_t this_signal = (*ichan).signal;
       Int_t this_plane = (*ichan).plane;
+      Int_t this_refchan = (*ichan).refchan;
       if(last_chan+1!=this_chan || last_counter+1 != this_counter 
-	 || last_plane != this_plane || last_signal!=this_signal) {
+	 || last_plane != this_plane || last_signal!=this_signal
+	 || last_refchan != this_refchan) {
 	if(last_chan >= 0) {
 	  if(ichan != clistp->begin()) {
 	    //	    cout << "AddModule " << slot << " " << first_chan << 
 	    //  " " << last_chan << " " << first_counter << endl;
 	    detmap->AddModule((UShort_t)roc, (UShort_t)slot,
 			      (UShort_t)first_chan, (UShort_t)last_chan, 
-			      (UInt_t) first_counter, model, (Int_t) 0,
-			      (Int_t) -1, (UInt_t)last_plane, (UInt_t)last_signal);
+			      (UInt_t) first_counter, model, (Int_t) -1,
+			      (Int_t) last_refchan, (UInt_t)last_plane, (UInt_t)last_signal);
 	  }
 	}
 	first_chan = this_chan;
 	first_counter = this_counter;
       }
       last_chan = this_chan;
+      last_refchan = this_refchan;
       last_counter = this_counter;
       last_plane = this_plane;
       last_signal = this_signal;
@@ -217,6 +222,7 @@ void THcDetectorMap::Load(const char *fname)
   Int_t bsub=0;
   Int_t detector=0;
   Int_t slot=0;
+  Int_t refchan=0;
   Int_t model=0;
 
   fNchans = 0;
@@ -236,7 +242,7 @@ void THcDetectorMap::Load(const char *fname)
       }
       line.erase(0,1);	// Erase "!"
       if(! ((pos=line.find("_ID=")) == string::npos)) {
-	Int_t llen = line.length();
+	string::size_type llen = line.length();
 	fIDMap[fNIDs].name = new char [pos+1];
 	strncpy(fIDMap[fNIDs].name,line.c_str(),pos);
 	fIDMap[fNIDs].name[pos] = '\0';
@@ -277,7 +283,17 @@ void THcDetectorMap::Load(const char *fname)
     if((pos=line.find_first_of("=")) != string::npos) { // Setting parameter
       strcpy(varname, (line.substr(0,pos)).c_str());
       Int_t valuestartpos = pos+1;
-      Int_t value = atoi(line.substr(valuestartpos).c_str());
+      Int_t commapos = line.find_first_of(",");
+      Int_t value;
+      Int_t value2 = -1;
+      if(commapos != string::npos) {
+	//	cout << line.substr(valuestartpos,commapos-valuestartpos) << "|"
+	//	     << line.substr(commapos+1) << "|" << endl;
+	value = atoi(line.substr(valuestartpos,commapos-valuestartpos).c_str());
+	value2 = atoi(line.substr(commapos+1).c_str());
+      } else {	
+	value = atoi(line.substr(valuestartpos).c_str());
+      }
       // Some if statements
       if(strcasecmp(varname,"detector")==0) {
 	detector = value;
@@ -291,6 +307,7 @@ void THcDetectorMap::Load(const char *fname)
 	bsub = value;
       } else if (strcasecmp(varname,"slot")==0) {
 	slot = value;
+	refchan = value2;
       }
       if(nsubadd == 96) {
 	model = 1877;
@@ -326,6 +343,7 @@ void THcDetectorMap::Load(const char *fname)
 
       fTable[fNchans].roc=roc;
       fTable[fNchans].slot=slot;
+      fTable[fNchans].refchan=refchan;
       fTable[fNchans].channel=channel;
       fTable[fNchans].did=detector;
       fTable[fNchans].plane=plane;
