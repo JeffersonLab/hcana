@@ -103,6 +103,13 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	// cout << "Signal " << signal << "=" << data << endl;
 	rawhit->SetData(signal,data);
       }
+      // Get the reference time.  Only take the first hit
+      if(d->refchan >= 0) {
+	if( evdata.GetNumHits(d->crate,d->slot,d->refchan) > 0) {
+	  Int_t reftime = evdata.GetData(d->crate, d->slot, d->refchan, 0);
+	  rawhit->SetReference(signal, reftime);
+	}
+      }
     }
   }
   fRawHitList->Sort(fNRawHits);

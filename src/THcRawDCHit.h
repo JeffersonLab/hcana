@@ -20,8 +20,11 @@ public:
   virtual void Clear( Option_t* opt="" ) { fNHits=0; }
 
   void SetData(Int_t signal, Int_t data);
+  void SetReference(Int_t signal, Int_t reference);
   Int_t GetData(Int_t signal);
   Int_t GetData(Int_t signal, UInt_t ihit);
+  Int_t GetReference(Int_t signal);
+  
 
   virtual Bool_t  IsSortable () const {return kTRUE; }
   virtual Int_t   Compare(const TObject* obj) const;
@@ -30,6 +33,7 @@ public:
 protected:
   UInt_t fNHits;
   Int_t fTDC[MAXHITS];
+  Int_t fReferenceTime;
 
 private:
 

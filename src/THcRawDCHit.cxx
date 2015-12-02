@@ -34,6 +34,20 @@ Int_t THcRawDCHit::GetData(Int_t signal, UInt_t ihit) {
   }
 }
 
+// Set the reference time
+void THcRawDCHit::SetReference(Int_t signal, Int_t reference) {
+  fReferenceTime = reference;
+  fHasRef = kTRUE;
+}
+
+// Get the reference time
+Int_t THcRawDCHit::GetReference(Int_t signal) {
+  if(fHasRef) {
+    return(fReferenceTime);
+  } else {
+    return(0);
+  }
+}
 
 Int_t THcRawDCHit::Compare(const TObject* obj) const
 {
