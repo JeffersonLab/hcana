@@ -233,12 +233,12 @@ protected:
 
   Int_t fAnalyzePedestals;   // Flag for pedestal analysis.
 
-  Int_t* fShPosPedLimit;     // [fNtotBlocks] ADC limits for pedestal calc.-s.
+  Int_t* fShPosPedLimit;     // [fNTotBlocks] ADC limits for pedestal calc.-s.
   Int_t* fShNegPedLimit;
 
   Int_t fShMinPeds;          // Min.number of events to analyze pedestals.
 
-  Double_t* fPosGain;        // [fNtotBlocks] Gain constants from calibration
+  Double_t* fPosGain;        // [fNTotBlocks] Gain constants from calibration
   Double_t* fNegGain;
 
   // Per-event data
@@ -263,7 +263,7 @@ protected:
   // Following apply to just sideways readout layers
   Double_t* BlockThick;		// Thickness of blocks
   UInt_t* fNBlocks;              // [fNLayers] number of blocks per layer
-  UInt_t fNtotBlocks;            // Total number of shower counter blocks
+  UInt_t fNTotBlocks;            // Total number of shower counter blocks
   Double_t** XPos;		// [fNLayers] X,Y,Z positions of blocks
   Double_t* YPos;
   Double_t* ZPos;

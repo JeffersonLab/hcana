@@ -324,46 +324,46 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
   //Calibration related parameters (from hcal.param).
 
-  fNtotBlocks=0;              //total number of blocks
-  for (UInt_t i=0; i<fNLayers; i++) fNtotBlocks += fNBlocks[i];
+  fNTotBlocks=0;              //total number of blocks in the layers
+  for (UInt_t i=0; i<fNLayers; i++) fNTotBlocks += fNBlocks[i];
 
   // Debug output.
   if (fdbg_init_cal) 
-    cout << "  Total number of blocks in the calorimeter: " << fNtotBlocks
+    cout << "  Total number of blocks in the layers of calorimeter: " << dec << fNTotBlocks
 	 << endl;
 
   //Pedestal limits from hcal.param.
-  fShPosPedLimit = new Int_t [fNtotBlocks];
-  fShNegPedLimit = new Int_t [fNtotBlocks];
+  fShPosPedLimit = new Int_t [fNTotBlocks];
+  fShNegPedLimit = new Int_t [fNTotBlocks];
 
   //Calibration constants
-  fPosGain = new Double_t [fNtotBlocks];
-  fNegGain = new Double_t [fNtotBlocks];
+  fPosGain = new Double_t [fNTotBlocks];
+  fNegGain = new Double_t [fNTotBlocks];
 
   //Read in parameters from hcal.param
-  Double_t hcal_pos_cal_const[fNtotBlocks];
-  //  Double_t hcal_pos_gain_ini[fNtotBlocks];     not used
-  //  Double_t hcal_pos_gain_cur[fNtotBlocks];     not used
-  //  Int_t    hcal_pos_ped_limit[fNtotBlocks];    not used
-  Double_t hcal_pos_gain_cor[fNtotBlocks];
+  Double_t hcal_pos_cal_const[fNTotBlocks];
+  //  Double_t hcal_pos_gain_ini[fNTotBlocks];     not used
+  //  Double_t hcal_pos_gain_cur[fNTotBlocks];     not used
+  //  Int_t    hcal_pos_ped_limit[fNTotBlocks];    not used
+  Double_t hcal_pos_gain_cor[fNTotBlocks];
 
-  Double_t hcal_neg_cal_const[fNtotBlocks];
-  //  Double_t hcal_neg_gain_ini[fNtotBlocks];     not used
-  //  Double_t hcal_neg_gain_cur[fNtotBlocks];     not used
-  //  Int_t    hcal_neg_ped_limit[fNtotBlocks];    not used
-  Double_t hcal_neg_gain_cor[fNtotBlocks];
+  Double_t hcal_neg_cal_const[fNTotBlocks];
+  //  Double_t hcal_neg_gain_ini[fNTotBlocks];     not used
+  //  Double_t hcal_neg_gain_cur[fNTotBlocks];     not used
+  //  Int_t    hcal_neg_ped_limit[fNTotBlocks];    not used
+  Double_t hcal_neg_gain_cor[fNTotBlocks];
 
   DBRequest list[]={
-    {"cal_pos_cal_const", hcal_pos_cal_const, kDouble, fNtotBlocks},
-    //    {"cal_pos_gain_ini",  hcal_pos_gain_ini,  kDouble, fNtotBlocks},
-    //    {"cal_pos_gain_cur",  hcal_pos_gain_cur,  kDouble, fNtotBlocks},
-    {"cal_pos_ped_limit", fShPosPedLimit, kInt,    fNtotBlocks},
-    {"cal_pos_gain_cor",  hcal_pos_gain_cor,  kDouble, fNtotBlocks},
-    {"cal_neg_cal_const", hcal_neg_cal_const, kDouble, fNtotBlocks},
-    //    {"cal_neg_gain_ini",  hcal_neg_gain_ini,  kDouble, fNtotBlocks},
-    //    {"cal_neg_gain_cur",  hcal_neg_gain_cur,  kDouble, fNtotBlocks},
-    {"cal_neg_ped_limit", fShNegPedLimit, kInt,    fNtotBlocks},
-    {"cal_neg_gain_cor",  hcal_neg_gain_cor,  kDouble, fNtotBlocks},
+    {"cal_pos_cal_const", hcal_pos_cal_const, kDouble, fNTotBlocks},
+    //    {"cal_pos_gain_ini",  hcal_pos_gain_ini,  kDouble, fNTotBlocks},
+    //    {"cal_pos_gain_cur",  hcal_pos_gain_cur,  kDouble, fNTotBlocks},
+    {"cal_pos_ped_limit", fShPosPedLimit, kInt,    fNTotBlocks},
+    {"cal_pos_gain_cor",  hcal_pos_gain_cor,  kDouble, fNTotBlocks},
+    {"cal_neg_cal_const", hcal_neg_cal_const, kDouble, fNTotBlocks},
+    //    {"cal_neg_gain_ini",  hcal_neg_gain_ini,  kDouble, fNTotBlocks},
+    //    {"cal_neg_gain_cur",  hcal_neg_gain_cur,  kDouble, fNTotBlocks},
+    {"cal_neg_ped_limit", fShNegPedLimit, kInt,    fNTotBlocks},
+    {"cal_neg_gain_cor",  hcal_neg_gain_cor,  kDouble, fNTotBlocks},
     {"cal_min_peds", &fShMinPeds, kInt},
     {0}
   };
@@ -430,7 +430,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
   // Calibration constants (GeV / ADC channel).
 
-  for (UInt_t i=0; i<fNtotBlocks; i++) {
+  for (UInt_t i=0; i<fNTotBlocks; i++) {
     fPosGain[i] = hcal_pos_cal_const[i] *  hcal_pos_gain_cor[i];
     fNegGain[i] = hcal_neg_cal_const[i] *  hcal_neg_gain_cor[i];
   }
