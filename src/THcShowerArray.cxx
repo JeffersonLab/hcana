@@ -103,13 +103,17 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   // Pedestal limits per channel.
   fPedLimit = new Int_t [fNelem];
 
+  DBRequest list1[]={
+    //    {"cal_arr_cal_const", hcal_pos_cal_const, kDouble, fNelem},
+    {"cal_arr_ped_limit", fPedLimit, kInt,    fNelem},
+    //    {"cal_arr_gain_cor",  hcal_pos_gain_cor,  kDouble, fNelem},
+    //    {"cal_min_peds", &fShMinPeds, kInt},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list1, prefix);
+
   THcShower* fParent;
   fParent = (THcShower*) GetParent();
-
-  for(Int_t i=0;i<fNelem;i++) {
-    fPedLimit[i] = fParent->GetPedLimit(i,fLayerNum,0);   //layer 2, neg. side
-  }
-
   fMinPeds = fParent->GetMinPeds();
 
   InitializePedestals();
@@ -133,7 +137,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     cout << "Debug output from THcShowerArray::ReadDatabase for "
     	 << GetParent()->GetPrefix() << ":" << endl;
 
-    cout << "  Layer #" << fLayerNum << ", number of elements " << fNelem
+    cout << "  Layer #" << fLayerNum << ", number of elements " << dec << fNelem
 	 << endl;
     cout << "  Columns " << fNColumns << ", Rows " << fNRows << endl;
 
@@ -213,9 +217,7 @@ Int_t THcShowerArray::FineProcess( TClonesArray& tracks )
 //_____________________________________________________________________________
 Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 {
-  // Extract the data for this layer from hit list
-  // Assumes that the hit list is sorted by layer, so we stop when the
-  // plane doesn't agree and return the index for the next hit.
+  // Extract the data for this layer from hit list.
 
   THcShower* fParent;
   fParent = (THcShower*) GetParent();
@@ -329,10 +331,9 @@ Int_t THcShowerArray::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
 
-    // OK for hit list sorted by layer.
-    //    if(hit->fPlane > fLayerNum) {
-    //      break;
-    //    }
+    if(hit->fPlane != fLayerNum) {
+      break;
+    }
 
     Int_t element = hit->fCounter - 1; // Should check if in range
 
@@ -367,6 +368,10 @@ Int_t THcShowerArray::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
     for (Int_t ih=nexthit; ih<nrawhits; ih++) {
 
       THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ih);
+
+      if(hit->fPlane != fLayerNum) {
+	break;
+      }
 
       Int_t adc = fUsingFADC ?
 	hit->GetData(0,fPedSampLow,fPedSampHigh,fDataSampLow,fDataSampHigh)
@@ -406,7 +411,7 @@ void THcShowerArray::CalculatePedestals( )
   if ( ((THcShower*) GetParent())->fdbg_raw_cal ) {
 
     cout << "---------------------------------------------------------------\n";
-    cout << "Debug output from THcShowerArray::CalculatePedestals for"
+    cout << "Debug output from THcShowerArray::CalculatePedestals for "
     	 << GetParent()->GetPrefix() << ":" << endl;
 
     cout << "  ADC pedestals and thresholds for calorimeter plane "
@@ -414,7 +419,7 @@ void THcShowerArray::CalculatePedestals( )
     for(Int_t i=0; i<fNelem;i++) {
       cout << "  element " << i << ": "
 	   << "  Pedestal = " << fPed[i]
-	   << "  /threshold = " << fThresh[i]
+	   << "  threshold = " << fThresh[i]
 	   << endl;
     }
     cout << "---------------------------------------------------------------\n";

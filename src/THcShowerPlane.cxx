@@ -175,7 +175,7 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
     cout << "Debug output from THcShowerPlane::ReadDatabase for "
     	 << GetParent()->GetPrefix() << ":" << endl;
 
-    cout << "  Layer #" << fLayerNum << ", number of elements " << fNelem
+    cout << "  Layer #" << fLayerNum << ", number of elements " << dec << fNelem
 	 << endl;
 
     cout << "  Origin of Layer at  X = " << fOrigin.X()
