@@ -48,6 +48,9 @@ THcShowerArray::~THcShowerArray()
 
   delete [] fA;
   delete [] fP;
+  delete [] fA_p;
+
+  delete [] fE;
 }
 
 //_____________________________________________________________________________
@@ -98,39 +101,10 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 
   fNelem = fNRows*fNColumns;
 
-  // Here read the 2-D arrays of pedestals, gains, etc.
-
-  // Pedestal limits per channel.
-  fPedLimit = new Int_t [fNelem];
-
-  DBRequest list1[]={
-    //    {"cal_arr_cal_const", hcal_pos_cal_const, kDouble, fNelem},
-    {"cal_arr_ped_limit", fPedLimit, kInt,    fNelem},
-    //    {"cal_arr_gain_cor",  hcal_pos_gain_cor,  kDouble, fNelem},
-    //    {"cal_min_peds", &fShMinPeds, kInt},
-    {0}
-  };
-  gHcParms->LoadParmValues((DBRequest*)&list1, prefix);
+  // Debug output.
 
   THcShower* fParent;
   fParent = (THcShower*) GetParent();
-  fMinPeds = fParent->GetMinPeds();
-
-  InitializePedestals();
-
-  // Event by event amplitude and pedestal
-  fA = new Double_t[fNelem];
-  fP = new Double_t[fNelem];
-
-#ifdef HITPIC
-  hitpic = new char*[fNRows];
-  for(Int_t row=0;row<fNRows;row++) {
-    hitpic[row] = new char[NPERLINE*(fNColumns+1)+2];
-  }
-  piccolumn=0;
-#endif
-
-  // Debug output.
 
   if (fParent->fdbg_init_cal) {
     cout << "---------------------------------------------------------------\n";
@@ -149,14 +123,111 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 	   << fDataSampHigh << endl;
     }
 
+  }
+
+  // Here read the 2-D arrays of pedestals, gains, etc.
+
+  // Pedestal limits per channel.
+  fPedLimit = new Int_t [fNelem];
+
+  Double_t cal_arr_cal_const[fNelem];
+  Double_t cal_arr_gain_cor[fNelem];
+
+  DBRequest list1[]={
+    {"cal_arr_ped_limit", fPedLimit, kInt,    fNelem},
+    {"cal_arr_cal_const", cal_arr_cal_const, kDouble, fNelem},
+    {"cal_arr_gain_cor",  cal_arr_gain_cor,  kDouble, fNelem},
+    //    {"cal_min_peds", &fShMinPeds, kInt},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list1, prefix);
+
+  // Debug output.
+  if (fParent->fdbg_init_cal) {
+
+    cout << "  fPedLimit:" << endl;
+    Int_t el=0;
+    for (UInt_t j=0; j<fNColumns; j++) {
+      cout << "    ";
+      for (UInt_t i=0; i<fNRows; i++) {
+	cout << fPedLimit[el++] << " ";
+      };
+      cout <<  endl;
+    };
+
+    cout << "  cal_arr_cal_const:" << endl;
+    el=0;
+    for (UInt_t j=0; j<fNColumns; j++) {
+      cout << "    ";
+      for (UInt_t i=0; i<fNRows; i++) {
+	cout << cal_arr_cal_const[el++] << " ";
+      };
+      cout <<  endl;
+    };
+
+    cout << "  cal_arr_gain_cor:" << endl;
+    el=0;
+    for (UInt_t j=0; j<fNColumns; j++) {
+      cout << "    ";
+      for (UInt_t i=0; i<fNRows; i++) {
+	cout << cal_arr_gain_cor[el++] << " ";
+      };
+      cout <<  endl;
+    };
+
+  }    // end of debug output
+
+  // Calibration constants (GeV / ADC channel).
+  fGain = new Double_t [fNelem];
+  for (UInt_t i=0; i<fNelem; i++) {
+    fGain[i] = cal_arr_cal_const[i] *  cal_arr_gain_cor[i];
+  }
+
+  // Debug output.
+  if (fParent->fdbg_init_cal) {
+
+    cout << "  fGain:" << endl;
+    Int_t el=0;
+    for (UInt_t j=0; j<fNColumns; j++) {
+      cout << "    ";
+      for (UInt_t i=0; i<fNRows; i++) {
+	cout << fGain[el++] << " ";
+      };
+      cout <<  endl;
+    };
+
+  }
+
+  fMinPeds = fParent->GetMinPeds();
+
+  InitializePedestals();
+
+  // Event by event amplitude and pedestal
+  fA = new Double_t[fNelem];
+  fP = new Double_t[fNelem];
+  fA_p = new Double_t[fNelem];
+
+  // Energy depositions per block.
+
+  fE = new Double_t[fNelem];
+
+#ifdef HITPIC
+  hitpic = new char*[fNRows];
+  for(Int_t row=0;row<fNRows;row++) {
+    hitpic[row] = new char[NPERLINE*(fNColumns+1)+2];
+  }
+  piccolumn=0;
+#endif
+
+  // Debug output.
+
+  if (fParent->fdbg_init_cal) {
+
+    cout << "  fMinPeds = " << fMinPeds << endl;
+
     //    cout << "  Origin of Layer at  X = " << fOrigin.X()
     //	 << "  Y = " << fOrigin.Y() << "  Z = " << fOrigin.Z() << endl;
 
-    cout << "  fPedLimit:";
-    for(Int_t i=0;i<fNelem;i++) cout << " " << fPedLimit[i];
-    cout << endl;
-
-    cout << "  fMinPeds = " << fMinPeds << endl;
     cout << "---------------------------------------------------------------\n";
   }
 
@@ -176,6 +247,8 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
     {"adchits", "List of ADC hits", "fADCHits.THcSignalHit.GetPaddleNumber()"},
     {"a", "Raw ADC Amplitude", "fA"},
     {"p", "Dynamic ADC Pedestal", "fP"},
+    {"a_p", "Sparsified, ped-subtracted ADC Amplitudes", "fA_p"},
+    {"e", "Energy Depositions per block", "fE"},
     { 0 }
   };
 
@@ -228,7 +301,11 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   for(Int_t i=0;i<fNelem;i++) {
     fA[i] = 0;
+    fA_p[i] = 0;
+    fE[i] = 0;
   }
+
+  fETot = 0;
 
   // Process raw hits. Get ADC hits for the plane, assign variables for each
   // channel.
@@ -242,6 +319,10 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   while(ihit < nrawhits) {
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
 
+    if(hit->fPlane != fLayerNum) {
+      break;
+    }
+
     // Should probably check that counter # is in range
     if(fUsingFADC) {
       fA[hit->fCounter-1] = hit->GetData(0,fPedSampLow,fPedSampHigh,
@@ -250,11 +331,30 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     } else {
           fA[hit->fCounter-1] = hit->GetData(0);
     }
+
     if(fA[hit->fCounter-1] > threshold) {
       ngood++;
     }
 
-    // Do other stuff like comparison to thresholds, signal hits, energy sums
+    // Sparsify hits, fill the hit list, compute the energy depostion.
+
+    Double_t thresh = fThresh[hit->fCounter -1];
+    if(fA[hit->fCounter-1] >  thresh) {
+
+      //      THcSignalHit *sighit =
+      //	(THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
+      //      sighit->Set(hit->fCounter, fA_Pos[hit->fCounter-1]);
+
+      fUsingFADC ?
+	fA_p[hit->fCounter-1] = fA[hit->fCounter-1] :
+	fA_p[hit->fCounter-1] = fA[hit->fCounter-1] - fP[hit->fCounter -1];
+
+      fE[hit->fCounter-1] += fA_p[hit->fCounter-1] * fGain[hit->fCounter-1];
+    }
+
+    // Accumulate energies in the plane.
+
+    fETot += fE[hit->fCounter-1];
 
     ihit++;
   }
@@ -314,6 +414,40 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
   }
 #endif
+
+  //Debug output.
+
+  if (fParent->fdbg_decoded_cal) {
+
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShowerArray::ProcessHits for "
+    	 << fParent->GetPrefix() << ":" << endl;
+
+    cout << "  nrawhits =  " << nrawhits << "  nexthit =  " << nexthit << endl;
+    cout << "  Sparsified hits for shower array, plane #" << fLayerNum
+	 << ", " << GetName() << ":" << endl;
+
+    Int_t nspar = 0;
+    for (Int_t jhit = nexthit; jhit < nrawhits; jhit++) {
+
+      THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(jhit);
+      if(hit->fPlane != fLayerNum) {
+	break;
+      }
+
+      if(fA[hit->fCounter-1] > fThresh[hit->fCounter -1]) {
+	cout << "  counter =  " << hit->fCounter
+	     << "  E = " << fE[hit->fCounter-1]
+	     << endl;
+	nspar++;
+      }
+    }
+
+    if (nspar == 0) cout << "  No hits\n";
+
+    cout << "  E total = " << fETot << endl;
+    cout << "---------------------------------------------------------------\n";
+  }
 
   return(ihit);
 }

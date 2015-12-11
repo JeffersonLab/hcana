@@ -63,8 +63,10 @@ protected:
   char **hitpic;
   Int_t piccolumn;
 #endif
-  Double_t* fA;                 // [fNelem] ADC amplitude of blocks
-  Double_t* fP;                 // [fNelem] Event by event pedestals
+  Double_t* fA;               // [fNelem] ADC amplitudes of blocks
+  Double_t* fP;               // [fNelem] Event by event (FADC) pedestals
+  Double_t* fA_p;	      // [fNelem] sparsified, pedestal subtracted
+                              // (FASTBUS) ADC amplitudes
 
   TClonesArray* fADCHits;	// List of ADC hits
 
@@ -94,6 +96,13 @@ protected:
   Float_t *fPed;             // [fNelem] pedestal positions
   Float_t *fSig;             // [fNelem] pedestal rms-s
   Float_t *fThresh;          // [fNelem] ADC thresholds
+
+  Double_t* fGain;           // [fNelem] Gain constants from calibration
+
+  //Energy depositions.
+
+  Double_t* fE;     // [fNelem] energy depositions in the blocks.
+  Double_t  fETot;  // Total Energy deposition in the array.
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
