@@ -102,7 +102,7 @@ protected:
   //Energy depositions.
 
   Double_t* fE;     // [fNelem] energy depositions in the blocks.
-  Double_t  fETot;  // Total Energy deposition in the array.
+  Double_t  fEarray;  // Total Energy deposition in the array.
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );

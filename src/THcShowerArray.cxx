@@ -249,6 +249,7 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
     {"p", "Dynamic ADC Pedestal", "fP"},
     {"a_p", "Sparsified, ped-subtracted ADC Amplitudes", "fA_p"},
     {"e", "Energy Depositions per block", "fE"},
+    {"earray", "Energy Deposition in array", "fEarray"},
     { 0 }
   };
 
@@ -305,7 +306,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     fE[i] = 0;
   }
 
-  fETot = 0;
+  fEarray = 0;
 
   // Process raw hits. Get ADC hits for the plane, assign variables for each
   // channel.
@@ -322,7 +323,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     if(hit->fPlane != fLayerNum) {
       break;
     }
-
+    
     // Should probably check that counter # is in range
     if(fUsingFADC) {
       fA[hit->fCounter-1] = hit->GetData(0,fPedSampLow,fPedSampHigh,
@@ -338,8 +339,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     // Sparsify hits, fill the hit list, compute the energy depostion.
 
-    Double_t thresh = fThresh[hit->fCounter -1];
-    if(fA[hit->fCounter-1] >  thresh) {
+    if(fA[hit->fCounter-1] >  fThresh[hit->fCounter -1]) {
 
       //      THcSignalHit *sighit =
       //	(THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
@@ -347,14 +347,14 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       fUsingFADC ?
 	fA_p[hit->fCounter-1] = fA[hit->fCounter-1] :
-	fA_p[hit->fCounter-1] = fA[hit->fCounter-1] - fP[hit->fCounter -1];
+	fA_p[hit->fCounter-1] = fA[hit->fCounter-1] - fPed[hit->fCounter -1];
 
       fE[hit->fCounter-1] += fA_p[hit->fCounter-1] * fGain[hit->fCounter-1];
     }
 
     // Accumulate energies in the plane.
 
-    fETot += fE[hit->fCounter-1];
+    fEarray += fE[hit->fCounter-1];
 
     ihit++;
   }
@@ -445,7 +445,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     if (nspar == 0) cout << "  No hits\n";
 
-    cout << "  E total = " << fETot << endl;
+    cout << "  Earray = " << fEarray << endl;
     cout << "---------------------------------------------------------------\n";
   }
 
