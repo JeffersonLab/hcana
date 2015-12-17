@@ -298,6 +298,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   // Initialize variables.
 
+  Int_t nADCHits=0;
   fADCHits->Clear();
 
   for(Int_t i=0;i<fNelem;i++) {
@@ -341,9 +342,8 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     if(fA[hit->fCounter-1] >  fThresh[hit->fCounter -1]) {
 
-      //      THcSignalHit *sighit =
-      //	(THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
-      //      sighit->Set(hit->fCounter, fA_Pos[hit->fCounter-1]);
+      THcSignalHit *sighit = (THcSignalHit*)fADCHits->ConstructedAt(nADCHits++);
+      sighit->Set(hit->fCounter, fA[hit->fCounter-1]);
 
       fUsingFADC ?
 	fA_p[hit->fCounter-1] = fA[hit->fCounter-1] :
