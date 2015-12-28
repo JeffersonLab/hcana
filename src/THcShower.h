@@ -155,7 +155,7 @@ public:
   Int_t GetNBlocks(Int_t NLayer) const { return fNBlocks[NLayer];}
 
   Double_t GetXPos(Int_t NLayer, Int_t NRaw) const {
-    return XPos[NLayer][NRaw];
+    return fXPos[NLayer][NRaw];
   }
 
   Double_t GetYPos(Int_t NLayer, Int_t Side) const {
@@ -163,10 +163,10 @@ public:
     //Side = 0 for postive (right) side
     //Side = 1 for negative (left) side
 
-    return YPos[2*NLayer+(1-Side)];
+    return fYPos[2*NLayer+(1-Side)];
   }
 
-  Double_t GetZPos(Int_t NLayer) const {return fNLayerZPos[NLayer];}
+  Double_t GetZPos(Int_t NLayer) const {return fLayerZPos[NLayer];}
 
   Double_t GetBlockThick(Int_t NLayer) {return BlockThick[NLayer];}
 
@@ -259,14 +259,14 @@ protected:
   UInt_t fNLayers;	        // Number of layers in the calorimeter
   UInt_t fNTotLayers;	        // Number of layers including array
   UInt_t fHasArray;		// If !=0 fly's eye array behind preshower
-  Double_t* fNLayerZPos;	// Z positions of fronts of layers
+  Double_t* fLayerZPos;	        // Z positions of fronts of layers
   // Following apply to just sideways readout layers
   Double_t* BlockThick;		// Thickness of blocks
   UInt_t* fNBlocks;              // [fNLayers] number of blocks per layer
   UInt_t fNTotBlocks;            // Total number of shower counter blocks
-  Double_t** XPos;		// [fNLayers] X,Y,Z positions of blocks
-  Double_t* YPos;
-  Double_t* ZPos;
+  Double_t** fXPos;		// [fNLayers] X,Y,Z positions of blocks
+  Double_t* fYPos;
+  Double_t* fZPos;
   UInt_t fNegCols;               // # of columns with neg. side PMTs only.
   Double_t fSlop;               // Track to cluster vertical slop distance.
   Int_t fvTest;                 // fiducial volume test flag for tracking

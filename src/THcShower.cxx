@@ -263,16 +263,16 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
   BlockThick = new Double_t [fNLayers];
   fNBlocks = new UInt_t [fNLayers];
-  fNLayerZPos = new Double_t [fNLayers];
-  YPos = new Double_t [2*fNLayers];
+  fLayerZPos = new Double_t [fNLayers];
+  fYPos = new Double_t [2*fNLayers];
 
   for(UInt_t i=0;i<fNLayers;i++) {
     DBRequest list[]={
       {Form("cal_%s_thick",fLayerNames[i]), &BlockThick[i], kDouble},
       {Form("cal_%s_nr",fLayerNames[i]), &fNBlocks[i], kInt},
-      {Form("cal_%s_zpos",fLayerNames[i]), &fNLayerZPos[i], kDouble},
-      {Form("cal_%s_right",fLayerNames[i]), &YPos[2*i], kDouble},
-      {Form("cal_%s_left",fLayerNames[i]), &YPos[2*i+1], kDouble},
+      {Form("cal_%s_zpos",fLayerNames[i]), &fLayerZPos[i], kDouble},
+      {Form("cal_%s_right",fLayerNames[i]), &fYPos[2*i], kDouble},
+      {Form("cal_%s_left",fLayerNames[i]), &fYPos[2*i+1], kDouble},
       {0}
     };
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
@@ -280,11 +280,11 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
   //Caution! Z positions (fronts) are off in hcal.param! Correct later on.
 
-  XPos = new Double_t* [fNLayers];
+  fXPos = new Double_t* [fNLayers];
   for(UInt_t i=0;i<fNLayers;i++) {
-    XPos[i] = new Double_t [fNBlocks[i]];
+    fXPos[i] = new Double_t [fNBlocks[i]];
     DBRequest list[]={
-      {Form("cal_%s_top",fLayerNames[i]),XPos[i], kDouble, fNBlocks[i]},
+      {Form("cal_%s_top",fLayerNames[i]),fXPos[i], kDouble, fNBlocks[i]},
       {0}
     };
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
@@ -296,12 +296,12 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
       cout << "  Plane " << fLayerNames[i] << ":" << endl;
       cout << "    Block thickness: " << BlockThick[i] << endl;
       cout << "    NBlocks        : " << fNBlocks[i] << endl;
-      cout << "    Z Position     : " << fNLayerZPos[i] << endl;
-      cout << "    Y Positions    : " << YPos[2*i] << ", " << YPos[2*i+1]
+      cout << "    Z Position     : " << fLayerZPos[i] << endl;
+      cout << "    Y Positions    : " << fYPos[2*i] << ", " << fYPos[2*i+1]
 	   <<endl;
       cout << "    X Positions    :";
       for(UInt_t j=0; j<fNBlocks[i]; j++) {
-	cout << " " << XPos[i][j];
+	cout << " " << fXPos[i][j];
       }
       cout << endl;
     }
@@ -310,10 +310,10 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   // Fiducial volume limits, based on Plane 1 positions.
   //
 
-  fvXmin = XPos[0][0] + fvDelta;
-  fvXmax = XPos[0][fNBlocks[0]-1] + BlockThick[0] - fvDelta;
-  fvYmin = YPos[0] + fvDelta;
-  fvYmax = YPos[1] - fvDelta;
+  fvXmin = fXPos[0][0] + fvDelta;
+  fvXmax = fXPos[0][fNBlocks[0]-1] + BlockThick[0] - fvDelta;
+  fvYmin = fYPos[0] + fvDelta;
+  fvYmax = fYPos[1] - fvDelta;
 
   // Debug output.
   if (fdbg_init_cal) {
@@ -461,9 +461,9 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   // Origin of the calorimeter, at the centre of the face of the detector,
   // or at the centre of the front of the 1-st layer.
   //
-  Double_t xOrig = (XPos[0][0] + XPos[0][fNBlocks[0]-1])/2 + BlockThick[0]/2;
-  Double_t yOrig = (YPos[0] + YPos[1])/2;
-  Double_t zOrig = fNLayerZPos[0];
+  Double_t xOrig = (fXPos[0][0] + fXPos[0][fNBlocks[0]-1])/2 + BlockThick[0]/2;
+  Double_t yOrig = (fYPos[0] + fYPos[1])/2;
+  Double_t zOrig = fLayerZPos[0];
 
   fOrigin.SetXYZ(xOrig, yOrig, zOrig);
 
@@ -530,9 +530,9 @@ void THcShower::DeleteArrays()
 
   delete [] BlockThick;  BlockThick = NULL;
   delete [] fNBlocks;  fNBlocks = NULL;
-  delete [] fNLayerZPos;  fNLayerZPos = NULL;
-  delete [] XPos;  XPos = NULL;
-  delete [] ZPos;  ZPos = NULL;
+  delete [] fLayerZPos;  fLayerZPos = NULL;
+  delete [] fXPos;  fXPos = NULL;
+  delete [] fZPos;  fZPos = NULL;
 }
 
 //_____________________________________________________________________________
@@ -640,8 +640,8 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
       //
       //      Double_t Edep = fPlanes[j]->GetEmean(i);
       //      if (Edep > 0.) {                                 //hit
-      //	Double_t x = YPos[j][i] + BlockThick[j]/2.;    //top + thick/2
-      //	Double_t z = fNLayerZPos[j] + BlockThick[j]/2.;//front + thick/2
+      //	Double_t x = fYPos[j][i] + BlockThick[j]/2.;    //top + thick/2
+      //	Double_t z = fLayerZPos[j] + BlockThick[j]/2.;//front + thick/2
       //      	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep);
 
       //ENGINE way.
@@ -654,8 +654,8 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 	Double_t Edep = fPlanes[j]->GetEmean(i);
 	Double_t Epos = fPlanes[j]->GetEpos(i);
 	Double_t Eneg = fPlanes[j]->GetEneg(i);
-	Double_t x = XPos[j][i] + BlockThick[j]/2.;        //top + thick/2
-	Double_t z = fNLayerZPos[j] + BlockThick[j]/2.;    //front + thick/2
+	Double_t x = fXPos[j][i] + BlockThick[j]/2.;        //top + thick/2
+	Double_t z = fLayerZPos[j] + BlockThick[j]/2.;      //front + thick/2
 
 	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep,Epos,Eneg);
 
