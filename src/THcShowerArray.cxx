@@ -44,6 +44,9 @@ THcShowerArray::THcShowerArray( const char* name,
 THcShowerArray::~THcShowerArray()
 {
   // Destructor
+  delete fXPos;
+  delete fYPos;
+
   delete fADCHits;
 
   delete [] fA;
@@ -88,8 +91,13 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   fDataSampLow=23;
   fDataSampHigh=49;
   DBRequest list[]={
-    {"cal_nrows", &fNRows, kInt},
-    {"cal_ncolumns", &fNColumns, kInt},
+    {"cal_arr_nrows", &fNRows, kInt},
+    {"cal_arr_ncolumns", &fNColumns, kInt},
+    {"cal_arr_front_x", &fXFront, kDouble},
+    {"cal_arr_front_y", &fYFront, kDouble},
+    {"cal_arr_front_z", &fZFront, kDouble},
+    {"cal_arr_xstep", &fXStep, kDouble},
+    {"cal_arr_ystep", &fYStep, kDouble},
     {"cal_using_fadc", &fUsingFADC, kInt, 0, 1},
     {"cal_ped_sample_low", &fPedSampLow, kInt, 0, 1},
     {"cal_ped_sample_high", &fPedSampHigh, kInt, 0, 1},
@@ -100,6 +108,22 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 
   fNelem = fNRows*fNColumns;
+
+  fXPos = new Double_t* [fNRows];
+  fYPos = new Double_t* [fNRows];
+  for (UInt_t i=0; i<fNRows; i++) {
+    fXPos[i] = new Double_t [fNColumns];
+    fYPos[i] = new Double_t [fNColumns];
+  }
+
+  //Looking to the front, the numbering goes from left to right, and from top
+  //to bottom.
+
+  for (UInt_t j=0; j<fNColumns; j++)
+    for (UInt_t i=0; i<fNRows; i++) {
+      fXPos[i][j] = fXFront - (fNRows-1)*fXStep/2 + fXStep*i;
+      fYPos[i][j] = fYFront + (fNColumns-1)*fYStep/2 - fYStep*j;
+  }
 
   // Debug output.
 
@@ -114,6 +138,30 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     cout << "  Layer #" << fLayerNum << ", number of elements " << dec << fNelem
 	 << endl;
     cout << "  Columns " << fNColumns << ", Rows " << fNRows << endl;
+
+    cout << "Front X, Y Z: " << fXFront << ", " << fYFront << ", " << fZFront
+	 << " cm" << endl;
+
+    cout << "  Block to block X and Y distances: " << fXStep << ", " << fYStep
+	 << " cm" << endl;
+
+    cout << "Block X coordinates:" << endl;
+    for (UInt_t i=0; i<fNRows; i++) {
+      for (UInt_t j=0; j<fNColumns; j++) {
+	cout << fXPos[i][j] << " ";
+      }
+      cout << endl;
+    }
+    cout << endl;
+
+    cout << "Block Y coordinates:" << endl;
+    for (UInt_t i=0; i<fNRows; i++) {
+      for (UInt_t j=0; j<fNColumns; j++) {
+    	cout << fYPos[i][j] << " ";
+      }
+      cout << endl;
+    }
+    cout << endl;
 
     cout << "  Using FADC " << fUsingFADC << endl;
     if (fUsingFADC) {

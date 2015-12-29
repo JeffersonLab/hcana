@@ -71,8 +71,17 @@ protected:
   TClonesArray* fADCHits;	// List of ADC hits
 
   // Parameters
+
   Int_t fNRows;
   Int_t fNColumns;
+  Double_t fXFront;              // Front position X
+  Double_t fYFront;              // Front position Y
+  Double_t fZFront;              // Front position Z, from FP
+  Double_t fXStep;               // distance btw centers of blocks along X
+  Double_t fYStep;               // distance btw centers of blocks along Y
+  Double_t** fXPos;              // block X coordinates
+  Double_t** fYPos;              // block Y coordinates
+
   Int_t fUsingFADC;		// != 0 if using FADC in sample mode
   Int_t fPedSampLow;		// Sample range for
   Int_t fPedSampHigh;		// dynamic pedestal
