@@ -85,6 +85,9 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   prefix[1]='\0';
 
   cout << "Parent name: " << GetParent()->GetPrefix() << endl;
+  fNRows=fNColumns=0;
+  fXFront=fYFront=fZFront=0.;
+  fXStep=fYStep=0.;
   fUsingFADC=0;
   fPedSampLow=0;
   fPedSampHigh=9;
@@ -628,3 +631,31 @@ void THcShowerArray::InitializePedestals( )
     fPedCount[i] = 0;
   }
 } 
+
+//------------------------------------------------------------------------------
+
+// Fiducial volume limits.
+
+Double_t THcShowerArray::fvXmin() {
+  THcShower* fParent;
+  fParent = (THcShower*) GetParent();
+  return fXPos[0][0] - fXStep/2 + fParent->fvDelta;
+}
+
+Double_t THcShowerArray::fvYmax() {
+  THcShower* fParent;
+  fParent = (THcShower*) GetParent();
+  return fYPos[0][0] + fYStep/2 - fParent->fvDelta;
+}
+
+Double_t THcShowerArray::fvXmax() {
+  THcShower* fParent;
+  fParent = (THcShower*) GetParent();
+  return fXPos[fNRows-1][fNColumns-1] + fXStep/2 - fParent->fvDelta;
+}
+
+Double_t THcShowerArray::fvYmin() {
+  THcShower* fParent;
+  fParent = (THcShower*) GetParent();
+  return fYPos[fNRows-1][fNColumns-1] - fYStep/2 + fParent->fvDelta;
+}

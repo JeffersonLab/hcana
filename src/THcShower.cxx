@@ -163,6 +163,19 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
       return kInitError;
   }
 
+  if(fHasArray) {
+    cout << "THcShower::Init: adjustment of fiducial volume limits to the fly's eye part." << endl;
+    cout << "  Old limits:" << endl;
+    cout << "    Xmin = " << fvXmin << "  Xmax = " << fvXmax << endl;
+    cout << "    Ymin = " << fvYmin << "  Ymax = " << fvYmax << endl;
+    fvXmin = TMath::Max(fvXmin, fArray->fvXmin());
+    fvXmax = TMath::Min(fvXmax, fArray->fvXmax());
+    fvYmin = TMath::Max(fvYmin, fArray->fvYmin());
+    fvYmax = TMath::Min(fvYmax, fArray->fvYmax());
+    cout << "  New limits:" << endl;
+    cout << "    Xmin = " << fvXmin << "  Xmax = " << fvXmax << endl;
+    cout << "    Ymin = " << fvYmin << "  Ymax = " << fvYmax << endl;
+  }
 
   cout << "---------------------------------------------------------------\n";
   cout << "From THcShower::Init: initialized " << GetApparatus()->GetName()

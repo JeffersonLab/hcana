@@ -56,6 +56,11 @@ public:
     return 0.0;
   };
 
+  // Fiducial volume limits.
+  Double_t fvXmin(); 
+  Double_t fvYmax();
+  Double_t fvXmax();
+  Double_t fvYmin();
 
 protected:
 

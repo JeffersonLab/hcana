@@ -154,8 +154,8 @@ public:
   
   Int_t GetNBlocks(Int_t NLayer) const { return fNBlocks[NLayer];}
 
-  Double_t GetXPos(Int_t NLayer, Int_t NRaw) const {
-    return fXPos[NLayer][NRaw];
+  Double_t GetXPos(Int_t NLayer, Int_t NRow) const {
+    return fXPos[NLayer][NRow];
   }
 
   Double_t GetYPos(Int_t NLayer, Int_t Side) const {
@@ -247,8 +247,8 @@ protected:
   Int_t fNclust;             // Number of clusters
   Int_t fNtracks;            // Number of shower tracks, i.e. number of
                              // cluster-to-track association
-  Double_t fEtot;             // Total energy 
-  Double_t fEtotNorm;             // Total energy divided by spec central momentum 
+  Double_t fEtot;            // Total energy 
+  Double_t fEtotNorm;        // Total energy divided by spec central momentum 
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
