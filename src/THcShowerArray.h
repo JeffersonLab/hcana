@@ -18,6 +18,7 @@
 
 #include "THaSubDetector.h"
 #include "TClonesArray.h"
+#include "THcShowerHitCluster.h"
 
 #include <iostream>
 
@@ -117,6 +118,8 @@ protected:
 
   Double_t* fE;     // [fNelem] energy depositions in the blocks.
   Double_t  fEarray;  // Total Energy deposition in the array.
+
+  THcShowerClusterList* fClusterList;   // List of hit clusters
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
