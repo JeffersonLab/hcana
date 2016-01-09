@@ -184,7 +184,7 @@ protected:
   // Cluster to track association method.
   Int_t MatchCluster(THaTrack*, Double_t&, Double_t&);
 
-  void ClusterHits(THcShowerHitSet& HitSet);
+  void ClusterHits(THcShowerHitSet& HitSet, THcShowerClusterList* ClusterList);
 
   friend class THcShowerPlane;   //to access debug flags.
   friend class THcShowerArray;   //to access debug flags.

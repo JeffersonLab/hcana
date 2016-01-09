@@ -697,7 +697,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   // Fill list of clusters.
 
-  ClusterHits(HitSet);
+  ClusterHits(HitSet, fClusterList);
 
   fNclust = (*fClusterList).size();   //number of clusters
 
@@ -731,15 +731,18 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
     cout << "---------------------------------------------------------------\n";
   }
 
+  if(fHasArray) fArray->CoarseProcess(tracks);
+
   return 0;
 }
 
 //-----------------------------------------------------------------------------
 
-void THcShower::ClusterHits(THcShowerHitSet& HitSet) {
+void THcShower::ClusterHits(THcShowerHitSet& HitSet,
+			    THcShowerClusterList* ClusterList) {
 
   // Collect hits from the HitSet into the clusters. The resultant clusters
-  // of hits are saved in the fClusterList.
+  // of hits are saved in the ClusterList.
 
   while (HitSet.size() != 0) {
 
@@ -776,7 +779,7 @@ void THcShower::ClusterHits(THcShowerHitSet& HitSet) {
 
     }                                   //while clustered
 
-    fClusterList->push_back(cluster);   //Put the cluster in the cluster list
+    ClusterList->push_back(cluster);   //Put the cluster in the cluster list
 
   }                                     //While hit_list not exhausted
 

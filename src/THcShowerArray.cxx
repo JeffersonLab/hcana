@@ -39,8 +39,11 @@ THcShowerArray::THcShowerArray( const char* name,
 {
   fADCHits = new TClonesArray("THcSignalHit",100);
   fLayerNum = layernum;
+
+  fClusterList = new THcShowerClusterList;
 }
 
+//______________________________________________________________________________
 THcShowerArray::~THcShowerArray()
 {
   // Destructor
@@ -299,6 +302,7 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
     {"a", "Raw ADC Amplitude", "fA"},
     {"p", "Dynamic ADC Pedestal", "fP"},
     {"a_p", "Sparsified, ped-subtracted ADC Amplitudes", "fA_p"},
+    { "nhits", "Number of hits", "fNhits" },
     {"e", "Energy Depositions per block", "fE"},
     {"earray", "Energy Deposition in array", "fEarray"},
     { 0 }
@@ -312,6 +316,15 @@ void THcShowerArray::Clear( Option_t* )
 {
   // Clears the hit lists
   fADCHits->Clear();
+
+  fNhits = 0;
+
+  for (THcShowerClusterListIt i=fClusterList->begin(); i!=fClusterList->end();
+       ++i) {
+    delete *i;
+    *i = 0;
+  }
+  fClusterList->clear();
 
 }
 
@@ -327,10 +340,46 @@ Int_t THcShowerArray::Decode( const THaEvData& evdata )
 Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
 {
 
-  // Nothing is done here. See ProcessHits method instead.
-  //  
+  // Fill set of unclustered shower array hits.
 
- return 0;
+  THcShowerHitSet HitSet;
+
+  UInt_t k=0;
+  for (UInt_t i=0; i<fNRows; i++) {
+    for(UInt_t j=0; j < fNColumns; j++) {
+
+      if (fA_p[k] > 0) {    //hit
+
+	THcShowerHit* hit =
+	  new THcShowerHit(i, j, fXPos[i][j], fYPos[i][j], fE[k], 0., 0.);
+
+	HitSet.insert(hit);
+      }
+
+      k++;
+    }
+  }
+
+  fNhits = HitSet.size();
+
+  //Debug output, print out hits before clustering.
+
+  THcShower* fParent = (THcShower*) GetParent();
+
+  if (fParent->fdbg_clusters_cal) {
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShowerArray::CoarseProcess for " << GetName()
+	 << endl;
+
+    cout << "  List of unclustered hits. Total hits:     " << fNhits << endl;
+    THcShowerHitIt it = HitSet.begin();    //<set> version
+    for (Int_t i=0; i!=fNhits; i++) {
+      cout << "  hit " << i << ": ";
+      (*(it++))->show();
+    }
+  }
+
+  return 0;
 }
 
 //_____________________________________________________________________________

@@ -119,6 +119,8 @@ protected:
   Double_t* fE;     // [fNelem] energy depositions in the blocks.
   Double_t  fEarray;  // Total Energy deposition in the array.
 
+  Int_t fNhits;              // Total number of hits
+
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
   virtual Int_t  ReadDatabase( const TDatime& date );
