@@ -120,6 +120,9 @@ protected:
   Double_t  fEarray;  // Total Energy deposition in the array.
 
   Int_t fNhits;              // Total number of hits
+  Int_t fNclust;             // Number of clusters
+  Int_t fNtracks;            // Number of shower tracks, i.e. number of
+                             // cluster-to-track association
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
 

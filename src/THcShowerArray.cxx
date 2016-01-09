@@ -303,8 +303,10 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
     {"p", "Dynamic ADC Pedestal", "fP"},
     {"a_p", "Sparsified, ped-subtracted ADC Amplitudes", "fA_p"},
     { "nhits", "Number of hits", "fNhits" },
+    { "nclust", "Number of clusters", "fNclust" },
     {"e", "Energy Depositions per block", "fE"},
     {"earray", "Energy Deposition in array", "fEarray"},
+    { "ntracks", "Number of shower tracks", "fNtracks" },
     { 0 }
   };
 
@@ -318,6 +320,8 @@ void THcShowerArray::Clear( Option_t* )
   fADCHits->Clear();
 
   fNhits = 0;
+  fNclust = 0;
+  fNtracks = 0;
 
   for (THcShowerClusterListIt i=fClusterList->begin(); i!=fClusterList->end();
        ++i) {
@@ -377,6 +381,40 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
       cout << "  hit " << i << ": ";
       (*(it++))->show();
     }
+  }
+
+  // Fill list of clusters.
+
+  fParent->ClusterHits(HitSet, fClusterList);
+
+  fNclust = (*fClusterList).size();   //number of clusters
+
+  if (fParent->fdbg_clusters_cal) {
+
+    cout << "  Clustered hits. Number of clusters: " << fNclust << endl;
+
+    UInt_t i = 0;
+    for (THcShowerClusterListIt ppcl = (*fClusterList).begin();
+	 ppcl != (*fClusterList).end(); ppcl++) {
+
+      cout << "  Cluster #" << i++
+	   <<":  E=" << clE(*ppcl) 
+	   << "  Epr=" << clEpr(*ppcl)
+	   << "  X=" << clX(*ppcl)
+	   << "  Z=" << clZ(*ppcl)
+	   << "  size=" << (**ppcl).size()
+	   << endl;
+
+      Int_t j=0;
+      for (THcShowerClusterIt pph=(**ppcl).begin(); pph!=(**ppcl).end();
+	   pph++) {
+	cout << "  hit " << j++ << ": ";
+	(**pph).show();
+      }
+
+    }
+
+    cout << "---------------------------------------------------------------\n";
   }
 
   return 0;
