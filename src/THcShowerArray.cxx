@@ -90,7 +90,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   cout << "Parent name: " << GetParent()->GetPrefix() << endl;
   fNRows=fNColumns=0;
   fXFront=fYFront=fZFront=0.;
-  fXStep=fYStep=0.;
+  fXStep=fYStep=fZSize=0.;
   fUsingFADC=0;
   fPedSampLow=0;
   fPedSampHigh=9;
@@ -104,6 +104,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     {"cal_arr_front_z", &fZFront, kDouble},
     {"cal_arr_xstep", &fXStep, kDouble},
     {"cal_arr_ystep", &fYStep, kDouble},
+    {"cal_arr_zsize", &fZSize, kDouble},
     {"cal_using_fadc", &fUsingFADC, kInt, 0, 1},
     {"cal_ped_sample_low", &fPedSampLow, kInt, 0, 1},
     {"cal_ped_sample_high", &fPedSampHigh, kInt, 0, 1},
@@ -150,6 +151,8 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 
     cout << "  Block to block X and Y distances: " << fXStep << ", " << fYStep
 	 << " cm" << endl;
+
+    cout << "  Block size along Z: " << fZSize << " cm" << endl;
 
     cout << "Block X coordinates:" << endl;
     for (UInt_t i=0; i<fNRows; i++) {
@@ -418,6 +421,114 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
   }
 
   return 0;
+}
+
+//-----------------------------------------------------------------------------
+
+Int_t THcShowerArray::MatchCluster(THaTrack* Track,
+				   Double_t& XTrFront, Double_t& YTrFront)
+{
+  // Match an Array cluster to a given track. Return the cluster number,
+  // and track coordinates at the front of Array.
+
+  XTrFront = kBig;
+  YTrFront = kBig;
+  Double_t pathl = kBig;
+
+  // Track interception with face of Array. The coordinates are
+  // in the Array's local system.
+
+  fOrigin = this->GetOrigin();
+
+  THcShower* fParent = (THcShower*) GetParent();
+
+  fParent->CalcTrackIntercept(Track, pathl, XTrFront, YTrFront);
+
+  // Transform coordiantes to the spectrometer's coordinate system.
+
+  XTrFront += GetOrigin().X();
+  YTrFront += GetOrigin().Y();
+
+  Bool_t inFidVol = true;            // In Fiducial Volume flag
+
+  // Re-evaluate Fid. Volume Flag if fid. volume test is requested
+
+  if (fParent->fvTest) {
+
+    // Track coordinates at the back of the detector.
+
+    // Origin at the back of counter.
+    fOrigin.SetXYZ(GetOrigin().X(), GetOrigin().Y(), GetOrigin().Z() + fZSize);
+
+    Double_t XTrBack = kBig;
+    Double_t YTrBack = kBig;
+
+    fParent->CalcTrackIntercept(Track, pathl, XTrBack, YTrBack);
+
+    XTrBack += GetOrigin().X();   // from local coord. system
+    YTrBack += GetOrigin().Y();   // to the spectrometer system
+
+    inFidVol = (XTrFront <= fParent->fvXmax) && (XTrFront >= fParent->fvXmin) &&
+               (YTrFront <= fParent->fvYmax) && (YTrFront >= fParent->fvYmin) &&
+               (XTrBack <= fParent->fvXmax) && (XTrBack >= fParent->fvXmin) &&
+               (YTrBack <= fParent->fvYmax) && (YTrBack >= fParent->fvYmin);
+
+  }
+
+  // Match a cluster to the track.
+
+  Int_t mclust = -1;    // The match cluster #, initialize with a bogus value.
+  Double_t Delta = kBig;   // Track to cluster distance
+
+  if (inFidVol) {
+
+    // Since hits and clusters are in reverse order (with respect to Engine),
+    // search backwards to be consistent with Engine.
+    //
+    for (Int_t i=fNclust-1; i>-1; i--) {
+
+      THcShowerCluster* cluster = *(fClusterList->begin()+i);
+
+      Double_t dx = TMath::Abs( clX(cluster) - XTrFront );
+      Double_t dy = TMath::Abs( clZ(cluster) - YTrFront );
+      Double_t distance = TMath::Sqrt(dx*dx+dy*dy);
+
+      if (distance <= (0.5*(fXStep + fYStep) + fParent->fSlop)) {
+	fNtracks++;
+	if (distance < Delta) {
+	  mclust = i;
+	  Delta = distance;
+	}
+      }
+    }
+  }
+
+  //Debug output.
+
+  if (fParent->fdbg_tracks_cal) {
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShowerArray::MatchCluster for " << GetName()
+	 << endl;
+
+    cout << "  Track at DC:"
+	 << "  X = " << Track->GetX()
+	 << "  Y = " << Track->GetY()
+	 << "  Theta = " << Track->GetTheta()
+	 << "  Phi = " << Track->GetPhi()
+	 << endl;
+    cout << "  Track at the front of Array:"
+	 << "  X = " << XTrFront
+	 << "  Y = " << YTrFront
+	 << "  Pathl = " << pathl
+	 << endl;
+    if (fParent->fvTest) 
+      cout << "  Fiducial volume test: inFidVol = " << inFidVol << endl;
+
+    cout << "  Matched cluster #" << mclust << ",  Delta = " << Delta << endl;
+    cout << "---------------------------------------------------------------\n";
+  }
+
+  return mclust;
 }
 
 //_____________________________________________________________________________

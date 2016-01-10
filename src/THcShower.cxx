@@ -994,8 +994,8 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
 
   // Track coordinates at front of the calorimeter, initialize out of
   // acceptance.
-  Double_t Xtr = -75.;
-  Double_t Ytr = -40.;
+  Double_t Xtr = -100.;
+  Double_t Ytr = -100.;
 
   // Associate a cluster to the track.
 

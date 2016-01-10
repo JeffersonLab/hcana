@@ -17,6 +17,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "THaSubDetector.h"
+#include "THaTrack.h"
 #include "TClonesArray.h"
 #include "THcShowerHitCluster.h"
 
@@ -47,6 +48,9 @@ public:
   virtual Int_t AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit);
   virtual void  CalculatePedestals( );
   virtual void  InitializePedestals( );
+
+  // Cluster to track association method.
+  Int_t MatchCluster(THaTrack*, Double_t&, Double_t&);
 
   //  Double_t fSpacing;   not used
 
@@ -85,6 +89,7 @@ protected:
   Double_t fZFront;              // Front position Z, from FP
   Double_t fXStep;               // distance btw centers of blocks along X
   Double_t fYStep;               // distance btw centers of blocks along Y
+  Double_t fZSize;               // Block size along Z
   Double_t** fXPos;              // block X coordinates
   Double_t** fYPos;              // block Y coordinates
 
