@@ -52,6 +52,11 @@ public:
   // Cluster to track association method.
   Int_t MatchCluster(THaTrack*, Double_t&, Double_t&);
 
+  // Get total energy deposited in the cluster matched to the given
+  // spectrometer Track.
+
+  Float_t GetShEnergy(THaTrack*);
+
   //  Double_t fSpacing;   not used
 
   TClonesArray* fParentHitList;
@@ -125,7 +130,7 @@ protected:
   Double_t  fEarray;  // Total Energy deposition in the array.
 
   Int_t fNhits;              // Total number of hits
-  Int_t fNclust;             // Number of clusters
+Int_t fNclust;             // Number of clusters
   Int_t fNtracks;            // Number of shower tracks, i.e. number of
                              // cluster-to-track association
 

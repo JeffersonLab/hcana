@@ -1069,6 +1069,7 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
     THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
 
     Float_t energy = GetShEnergy(theTrack);
+    if (fHasArray) energy += fArray->GetShEnergy(theTrack);
     theTrack->SetEnergy(energy);
 
   }       //over tracks

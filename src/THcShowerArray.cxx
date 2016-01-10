@@ -532,6 +532,55 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
 }
 
 //_____________________________________________________________________________
+Float_t THcShowerArray::GetShEnergy(THaTrack* Track) {
+
+  // Get total energy deposited in the Array cluster matched to the given
+  // spectrometer Track.
+
+  // Track coordinates at the front of Array, initialize out of acceptance.
+  Double_t Xtr = -100.;
+  Double_t Ytr = -100.;
+
+  // Associate a cluster to the track.
+
+  Int_t mclust = MatchCluster(Track, Xtr, Ytr);
+
+  // Coordinate corrected total energy deposition in the cluster.
+
+  Float_t Etrk = 0.;
+  if (mclust >= 0) {         // if there is a matched cluster
+
+    // Get matched cluster.
+    THcShowerCluster* cluster = *(fClusterList->begin()+mclust);
+
+    // No coordinate correction for now.
+    Etrk = clE(cluster);
+
+  }   //mclust>=0
+
+  //Debug output.
+
+  THcShower* fParent = (THcShower*) GetParent();
+
+  if (fParent->fdbg_tracks_cal) {
+    cout << "---------------------------------------------------------------\n";
+    cout << "Debug output from THcShowerArray::GetShEnergy for "
+	 << GetName() << endl;
+
+    cout << "  Track at Array: X = " << Xtr << "  Y = " << Ytr;
+    if (mclust >= 0)
+      cout << ", matched cluster #" << mclust << "." << endl;
+    else
+      cout << ", no matched cluster found." << endl;
+
+    cout << "  Track's Array energy = " << Etrk << "." << endl;
+    cout << "---------------------------------------------------------------\n";
+  }
+
+  return Etrk;
+}
+
+//_____________________________________________________________________________
 Int_t THcShowerArray::FineProcess( TClonesArray& tracks )
 {
   return 0;
