@@ -103,7 +103,8 @@ void THcShower::Setup(const char* name, const char* description)
     strcat(desc, " Array ");
     strcat(desc, fLayerNames[fNTotLayers-1]);
 
-    fArray = new THcShowerArray(fLayerNames[fNTotLayers-1], desc, fNTotLayers, this);
+    fArray = new THcShowerArray(fLayerNames[fNTotLayers-1], desc, fNTotLayers,
+				this);
   } else {
     fArray = 0;
   }
@@ -335,15 +336,15 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     cout << "    Ymin = " << fvYmin << "  Ymax = " << fvYmax << endl;
   }
 
-  //Calibration related parameters (from hcal.param).
+  //Calibration related parameters (from h(s)cal.param).
 
   fNTotBlocks=0;              //total number of blocks in the layers
   for (UInt_t i=0; i<fNLayers; i++) fNTotBlocks += fNBlocks[i];
 
   // Debug output.
   if (fdbg_init_cal) 
-    cout << "  Total number of blocks in the layers of calorimeter: " << dec << fNTotBlocks
-	 << endl;
+    cout << "  Total number of blocks in the layers of calorimeter: " << dec
+	 << fNTotBlocks << endl;
 
   //Pedestal limits from hcal.param.
   fShPosPedLimit = new Int_t [fNTotBlocks];
@@ -619,7 +620,7 @@ Int_t THcShower::Decode( const THaEvData& evdata )
   }
   if(fHasArray) {
     nexthit = fArray->ProcessHits(fRawHitList, nexthit);
-    fEtot += fArray->GetEplane();
+    fEtot += fArray->GetEarray();
   }
   THcHallCSpectrometer *app = static_cast<THcHallCSpectrometer*>(GetApparatus());
   fEtotNorm=fEtot/(app->GetPcentral());
@@ -640,8 +641,6 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
   //
 
   // Fill set of unclustered hits.
-
-  // Ignore shower array (SHMS) for now
 
   THcShowerHitSet HitSet;
 
@@ -731,6 +730,8 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
     cout << "---------------------------------------------------------------\n";
   }
 
+  // Do same for Array.
+
   if(fHasArray) fArray->CoarseProcess(tracks);
 
   return 0;
@@ -814,13 +815,13 @@ Double_t addEneg(Double_t x, THcShowerHit* h) {
 }
 
 // X coordinate of center of gravity of cluster, calculated as hit energy
-// weighted average. Put X out of the calorimeter (-75 cm), if there is no
+// weighted average. Put X out of the calorimeter (-100 cm), if there is no
 // energy deposition in the cluster.
 //
 Double_t clX(THcShowerCluster* cluster) {
   Double_t Etot = accumulate((*cluster).begin(),(*cluster).end(),0.,addE);
   return (Etot != 0. ?
-	  accumulate((*cluster).begin(),(*cluster).end(),0.,addX)/Etot : -75.);
+	  accumulate((*cluster).begin(),(*cluster).end(),0.,addX)/Etot : -100.);
 }
 
 // Z coordinate of center of gravity of cluster, calculated as a hit energy

@@ -44,7 +44,7 @@ public:
 
   //  Double_t fSpacing;   not used
 
-  TClonesArray* fParentHitList;
+  //  TClonesArray* fParentHitList;  not used
 
   TVector3 GetOrigin() {
     return fOrigin;

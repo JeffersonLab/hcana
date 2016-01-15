@@ -59,11 +59,10 @@ public:
 
   //  Double_t fSpacing;   not used
 
-  TClonesArray* fParentHitList;
+  //  TClonesArray* fParentHitList; not used
 
-  // Return zero for now
-  Double_t GetEplane() {
-    return 0.0;
+  Double_t GetEarray() {
+    return fEarray;
   };
 
   // Fiducial volume limits.
@@ -126,13 +125,13 @@ protected:
 
   //Energy depositions.
 
-  Double_t* fE;     // [fNelem] energy depositions in the blocks.
-  Double_t  fEarray;  // Total Energy deposition in the array.
+  Double_t* fE;              // [fNelem] energy depositions in the blocks.
+  Double_t  fEarray;         // Total Energy deposition in the array.
 
   Int_t fNhits;              // Total number of hits
-Int_t fNclust;             // Number of clusters
+  Int_t fNclust;             // Number of hit clusters
   Int_t fNtracks;            // Number of shower tracks, i.e. number of
-                             // cluster-to-track association
+                             // cluster-to-track associations
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
@@ -140,4 +139,5 @@ Int_t fNclust;             // Number of clusters
   virtual Int_t  DefineVariables( EMode mode = kDefine );
   ClassDef(THcShowerArray,0); // Fly;s Eye calorimeter array
 };
+
 #endif

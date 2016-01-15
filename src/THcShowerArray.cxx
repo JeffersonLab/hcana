@@ -40,7 +40,7 @@ THcShowerArray::THcShowerArray( const char* name,
   fADCHits = new TClonesArray("THcSignalHit",100);
   fLayerNum = layernum;
 
-  fClusterList = new THcShowerClusterList;
+  fClusterList = new THcShowerClusterList;         // List of hit clusters
 }
 
 //______________________________________________________________________________
@@ -282,9 +282,6 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 
     cout << "  fMinPeds = " << fMinPeds << endl;
 
-    //    cout << "  Origin of Layer at  X = " << fOrigin.X()
-    //	 << "  Y = " << fOrigin.Y() << "  Z = " << fOrigin.Z() << endl;
-
     cout << "---------------------------------------------------------------\n";
   }
 
@@ -348,8 +345,12 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
 {
 
   // Fill set of unclustered shower array hits.
+  // Reuse hit class pertained to the HMS/SOS type calorimeters.
+  // Save Y coordinate of the hit in Z parameter of the class.
+  // Save energy deposition in the module as hit mean energy, do not use
+  // positive and negative side energies.
 
-  THcShowerHitSet HitSet;
+  THcShowerHitSet HitSet;         //set of hits
 
   UInt_t k=0;
   for (UInt_t i=0; i<fNRows; i++) {
@@ -386,11 +387,13 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
     }
   }
 
-  // Fill list of clusters.
+  // Cluster hits and fill list of clusters.
 
   fParent->ClusterHits(HitSet, fClusterList);
 
-  fNclust = (*fClusterList).size();   //number of clusters
+  fNclust = (*fClusterList).size();         //number of clusters
+
+  //Debug output, print out clustered hits.
 
   if (fParent->fdbg_clusters_cal) {
 
@@ -475,7 +478,7 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
 
   }
 
-  // Match a cluster to the track.
+  // Match a cluster to the track. Choose closest to the track cluster.
 
   Int_t mclust = -1;    // The match cluster #, initialize with a bogus value.
   Double_t Delta = kBig;   // Track to cluster distance
@@ -485,13 +488,18 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
     // Since hits and clusters are in reverse order (with respect to Engine),
     // search backwards to be consistent with Engine.
     //
+    // Note: cluster Z coordinate is used here as Y, for Z variable
+    // of the THcShowerHit class was used to save Y coordinates of hits.
+
     for (Int_t i=fNclust-1; i>-1; i--) {
 
       THcShowerCluster* cluster = *(fClusterList->begin()+i);
 
       Double_t dx = TMath::Abs( clX(cluster) - XTrFront );
-      Double_t dy = TMath::Abs( clZ(cluster) - YTrFront );
-      Double_t distance = TMath::Sqrt(dx*dx+dy*dy);
+      Double_t dy = TMath::Abs( clZ(cluster) - YTrFront ); //cluster Z for Y.
+      Double_t distance = TMath::Sqrt(dx*dx+dy*dy);        //cluster-track dist.
+
+      //Choice of threshold on distance is not unuque. Use the simplest for now.
 
       if (distance <= (0.5*(fXStep + fYStep) + fParent->fSlop)) {
 	fNtracks++;
@@ -773,7 +781,6 @@ Int_t THcShowerArray::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
       hit->GetData(0,fPedSampLow,fPedSampHigh,fDataSampLow,fDataSampHigh)
       :
       hit->GetData(0);
-
 
     if(adc <= fPedLimit[element]) {
       fPedSum[element] += adc;
