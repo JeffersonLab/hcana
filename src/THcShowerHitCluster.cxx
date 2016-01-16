@@ -1,6 +1,9 @@
 #include "THcShowerHitCluster.h"
 
-//____________________________________________________________________________
+//ClassImp(THcShowerHit)
+
+using namespace std;
+
 THcShowerHit::THcShowerHit() {         //default constructor
   fCol=fRow=0;
   fX=fZ=0.;
@@ -9,7 +12,6 @@ THcShowerHit::THcShowerHit() {         //default constructor
   fEneg=0.;
 }
 
-//____________________________________________________________________________
 THcShowerHit::THcShowerHit(Int_t hRow, Int_t hCol, Double_t hX, Double_t hZ,
 			   Double_t hE, Double_t hEpos, Double_t hEneg) {
   fRow=hRow;
@@ -44,8 +46,8 @@ void THcShowerHit::show() {
 }
 
 //____________________________________________________________________________
-// Define < operator in order to fill in set of hits in a sorted manner.
-//
+  // Define < operator in order to fill in set of hits in a sorted manner.
+  //
 bool THcShowerHit::operator<(THcShowerHit rhs) const {
   if (fCol != rhs.fCol)
     return fCol < rhs.fCol;
