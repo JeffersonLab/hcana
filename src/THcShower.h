@@ -128,6 +128,7 @@ protected:
                              // cluster-to-track association
   Double_t fEtot;            // Total energy 
   Double_t fEtotNorm;        // Total energy divided by spec central momentum 
+  Double_t fEtrack;          // Cluster energy associated to the last track
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
 

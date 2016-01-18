@@ -514,7 +514,8 @@ Int_t THcShower::DefineVariables( EMode mode )
     { "nhits", "Number of hits",                                 "fNhits" },
     { "nclust", "Number of clusters",                            "fNclust" },
     { "etot", "Total energy",                                    "fEtot" },
-    { "etotnorm", "Total energy divided by Central Momentum",   "fEtotNorm" },
+    { "etotnorm", "Total energy divided by Central Momentum",    "fEtotNorm" },
+    { "etrack", "Track energy",                                  "fEtrack" },
     { "ntracks", "Number of shower tracks",                      "fNtracks" },
     { 0 }
   };
@@ -568,6 +569,7 @@ void THcShower::Clear(Option_t* opt)
   fNtracks = 0;
   fEtot = 0.;
   fEtotNorm = 0.;
+  fEtrack = 0.;
 
   // Purge cluster list
 
@@ -1069,9 +1071,9 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 
     THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
 
-    Float_t energy = GetShEnergy(theTrack);
-    if (fHasArray) energy += fArray->GetShEnergy(theTrack);
-    theTrack->SetEnergy(energy);
+    fEtrack = GetShEnergy(theTrack);
+    if (fHasArray) fEtrack += fArray->GetShEnergy(theTrack);
+    theTrack->SetEnergy(fEtrack);
 
   }       //over tracks
 
