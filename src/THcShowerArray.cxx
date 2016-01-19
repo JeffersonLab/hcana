@@ -132,6 +132,8 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
       fYPos[i][j] = fYFront + (fNColumns-1)*fYStep/2 - fYStep*j;
   }
 
+  fOrigin.SetXYZ(fXFront, fYFront, fZFront);
+
   // Debug output.
 
   THcShower* fParent;
@@ -172,6 +174,12 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     }
     cout << endl;
 
+    cout << "  Origin of Array:" << endl;
+    cout << "    Xorig = " << GetOrigin().X() << endl;
+    cout << "    Yorig = " << GetOrigin().Y() << endl;
+    cout << "    Zorig = " << GetOrigin().Z() << endl;
+    cout << endl;
+
     cout << "  Using FADC " << fUsingFADC << endl;
     if (fUsingFADC) {
       cout << "  FADC pedestal sample low = " << fPedSampLow << ",  high = "
@@ -180,6 +188,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 	   << fDataSampHigh << endl;
     }
 
+    getchar();
   }
 
   // Here read the 2-D arrays of pedestals, gains, etc.
@@ -441,7 +450,7 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
   // Track interception with face of Array. The coordinates are
   // in the Array's local system.
 
-  fOrigin = this->GetOrigin();
+  fOrigin = GetOrigin();
 
   THcShower* fParent = (THcShower*) GetParent();
 
@@ -457,6 +466,8 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
   // Re-evaluate Fid. Volume Flag if fid. volume test is requested
 
   if (fParent->fvTest) {
+
+    TVector3 Origin = fOrigin;         //save fOrigin
 
     // Track coordinates at the back of the detector.
 
@@ -476,6 +487,7 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
                (XTrBack <= fParent->fvXmax) && (XTrBack >= fParent->fvXmin) &&
                (YTrBack <= fParent->fvYmax) && (YTrBack >= fParent->fvYmin);
 
+    fOrigin = Origin;         //restore fOrigin
   }
 
   // Match a cluster to the track. Choose closest to the track cluster.
