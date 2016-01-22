@@ -1,0 +1,170 @@
+; MEC - updated for E02-109/E04-001  1/8/05
+;
+; This is the target parameter file.  Numbers 1-10 are solid targets,
+; 11-16 are cryotargets, and 17-20 are dummy/optics.
+;
+;The target order is:
+;
+;       Au_1%         C_2%        Fe_1%
+;       C_1%          C_5%        C_6%
+;       Cu_6%         Be_3%       Au_6%
+;       ---
+;       H (4cm)       ---
+;       ---           ---
+;       D (4cm)       ---
+;       Dummy (4cm)
+;       optics (8cm)
+;       optics (4 foil)
+;       NO target
+
+
+; non-existant targets have A=Z=M=...=0
+; dummy targets have A=Z=M=...=0
+; empty/dummy cells have A=Z=M=...= AS ALUMINUM (MAY NEED TO CHANGE FOR DUMMY DATA!!!)
+;
+;
+; 1=tuna can, 2=beer can, 21=solid
+ gtarg_type   =  21.     ,    21.     ,   21.
+	         21.     ,    21.     ,   21.
+                 21.     ,    21.     ,   21.
+                 21.
+                 1.      ,     1.
+                 1.      ,     1.
+                 1.      ,     1.
+                 21.     ,    21.
+                 21.     ,    21.
+
+  gtarg_z     = 79.0     ,     6.0    ,   26.0
+                 6.0     ,     6.0    ,    6.0
+                29.0     ,     0.0    ,   79.0
+                 0.0
+                 1.0     ,     0.0
+                 0.0     ,     0.0
+                 1.0     ,     0.0
+                 13.0    ,     0.0
+		 0.0     ,     0.0
+
+  gtarg_a     = 197.0    ,    12.0    ,    57.0
+                12.0     ,    12.0    ,    12.0
+                64.0     ,     0.0    ,   197.0
+                 0.0
+                 1.0     ,     0.0
+                 0.0     ,     0.0
+                 2.0     ,     0.0
+                 27.0    ,     0.0
+		 0.0     ,     0.0
+
+  gtarg_mass  = 196.9237    ,   12.0107   ,    56.85
+                12.0107     ,   12.0107   ,    12.0107 
+                63.546      ,   0.0  ,        196.9237    
+                 0.0
+                 1.00727647 ,    0.0 
+                 0.0   ,    0.0
+                 2.01355322,     0.0
+                 26.98       ,   0.0
+                 0.0        ,    0.0
+
+
+; Next is the radiation length in percent...  SOLID=APPROXIMATE, CRYO=GUESSES!!!!!
+  gtarg_lrad  =  1.0      ,    2.0     ,     1.0
+                 1.0      ,    5.2     ,     6.4
+                 6.0      ,    3.0     ,     6.0
+                 0.0 
+                 0.46     ,    0.0
+                 0.0      ,    0.0
+                 0.55     ,    0.0
+                 2.2      ,    0.0
+                 0.0      ,    0.0
+
+
+; Next is the thickness of the target in g/cm^2...
+; NOTE THE 3HE,4HE USE THICKNESS FROM KAON EXPERIMENT, WHICH HAD DIFFERENT CELLS!!!
+
+  gtarg_thick =  0.0417 ,    0.6706    ,     0.119
+                 0.346  ,    1.79      ,     2.735
+                 0.7986 ,    0.5       ,     0.3795
+                 0.0
+                 0.289  ,    0.0
+                 0.0    ,    0.0
+                 0.648  ,    0.0
+                 0.526  ,    0.0
+		 0.0    ,    0.0
+
+
+; Finally, the density of the target in g/cm^3.
+
+; Densities taken from http://pdg.lbl.gov/AtomicNuclearProperties
+;  used "Carbon (compact)" for Carbon - could be way off
+;  3He and 4He come from taking the total thickness (above) / 4cm - thickness could be way off
+
+  gtarg_dens  =  19.320    ,  2.265   ,     7.87
+                 2.265     ,  2.265   ,     2.265
+                 8.960     ,  0.0     ,     19.320
+                 0.0
+                 0.0723    ,  0.0
+                 0.0       ,  0.0
+                 0.167     ,  0.0
+		 2.265     ,  0.0
+                 0.0       ,  0.0
+
+; Target angle:  =90 deg. is perpendicluar to beam
+;                <90 deg. is face towards HMS
+;                >90 deg. is face towards SOS 
+; for E99118 target was rotated 20.3deg. to face HMS =>69.7deg. = 1.2164945rad
+  gtarg_theta =  1.570796327 
+
+
+;general target energy loss parameters. Vansyoc Mar.98
+
+;target cell****************
+; JRA: 09/19/04: Updated based on Meekins' report, June 30, 2004
+; 		gcell_radius was 1.0 - don't know why.  Changed to 2.0
+;  DID NOT UPDATED WALL/END/FRONT THICKNESSES - Don't know the units :(
+
+      gcell_radius = 2.008
+      gz_cell 	 =  13.0
+      ga_cell 	 =  27.0
+      gcell_den 	=   2.7
+      gwall_thk	 =  0.03429
+      gend_thk  	=   0.03429
+      gfront_thk  =  0.020574   
+
+;Air gap between the chamber and the entrance window
+      gair_dens 	=   0.00121
+      gair_thk 	=   0.018
+      gair_a 	=   14.68
+      gair _z 	=   7.32
+
+
+;HMS********
+;    HMS scattering chamber window specs.********** 
+      hscat_win_thk  = 0.109728
+      hscat_win_den =  2.70
+      hscat_win_z   =  13.0
+      hscat_win_a   =  27.0
+;    HMS entrance window specs.********************
+      hdet_ent_thk  =  0.049098
+      hdet_ent_den  =  0.878636
+      hdet_ent_z    =  2.67
+      hdet_ent_a    =  4.67
+;SOS********
+;    SOS scattering chamber window specs.**********
+      sscat_win_thk =  0.054864
+      sscat_win_den =  2.70
+      sscat_win_z   =  13.0
+      sscat_win_a   =  27.0
+;    SOS entrance window specs.********************
+      sdet_ent_thk  =  0.016421
+      sdet_ent_den  =  0.862
+      sdet_ent_z    =  2.67
+      sdet_ent_a    =  4.67
+;eloss debug   0 = off,1 = on
+;      gelossdebug = 0
+;use old cryo geometry? (1)
+;      old_tgeom = 1
+
+;
+
+
+
+

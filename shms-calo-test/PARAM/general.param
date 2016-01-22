@@ -1,0 +1,35 @@
+#real raddeg
+raddeg=3.14159265/180
+
+; hms/sosflags.param include spectrometer offsets and options.
+#include "PARAM/genflags.param"
+#include "PARAM/hmsflags.param"
+#include "PARAM/sosflags.param"
+
+#include "PARAM/gdebug.param"
+#include "PARAM/hdebug.param"
+#include "PARAM/sdebug.param"
+#include "PARAM/htracking.param"
+#include "PARAM/stracking.param"
+
+#include "PARAM/gtarget.param"
+#include "PARAM/gbeam.param"
+;  Can't quite handle this one
+#include "PARAM/hdc_offsets.param"
+#include "PARAM/hdc.pos"
+#include "PARAM/hhodo.pos"
+#include "PARAM/hcal.pos"
+#include "PARAM/sdc_offsets.param"
+#include "PARAM/sdc.pos"
+#include "PARAM/shodo.pos"
+#include "PARAM/scal.pos"
+#include "PARAM/hhodo.param"
+#include "PARAM/haero.param"
+#include "PARAM/hdc.param"
+#include "PARAM/hdriftmap.param"
+#include "PARAM/hcal.param"
+#include "PARAM/hcer.param"
+#include "PARAM/shodo.param"
+#include "PARAM/scal.param"
+#include "PARAM/sdc.param"
+#include "PARAM/sdriftmap.param"

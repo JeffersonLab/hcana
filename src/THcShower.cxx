@@ -1022,6 +1022,7 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
       // single PMT counters in the rear two layers.
       Float_t corpos = 1.;   
       Float_t corneg = 1.;
+
       if (ip < fNegCols) {
 	corpos = Ycor(Ytr,0);
 	corneg = Ycor(Ytr,1);

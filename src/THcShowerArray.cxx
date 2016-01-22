@@ -188,7 +188,6 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 	   << fDataSampHigh << endl;
     }
 
-    getchar();
   }
 
   // Here read the 2-D arrays of pedestals, gains, etc.

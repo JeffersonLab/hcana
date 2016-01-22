@@ -1,0 +1,216 @@
+; Number of planes installed in SOS detector setup
+      sdc_num_planes = 12
+; Number of chambers installed in SOS detector setup
+      sdc_num_chambers = 2
+; Z positions of various planes in SOS chambers
+; sdc_n_zpos is the surveyed Z position of the center of chamber n.
+      sdc_1_zpos = (-24.76+31.01)
+      sdc_2_zpos = ( 24.76+31.01)
+;      sdc_3_zpos =(247.50+31.01)
+      sdc_zpos   = sdc_1_zpos - 1.5875
+                   sdc_1_zpos - 0.9525
+                   sdc_1_zpos - 0.3175
+                   sdc_1_zpos + 0.3175
+                   sdc_1_zpos + 0.9525
+                   sdc_1_zpos + 1.5875
+                   sdc_2_zpos - 1.5875
+                   sdc_2_zpos - 0.9525
+                   sdc_2_zpos - 0.3175
+                   sdc_2_zpos + 0.3175
+                   sdc_2_zpos + 0.9525
+                   sdc_2_zpos + 1.5875
+; Angle alpha of wires in wire chamber planes (.051,.045 degrees roll in dc1,2)
+      sdc_alpha_angle = ( 30-.051)*raddeg
+                        ( 30-.051)*raddeg
+                        ( 90-.051)*raddeg
+                        ( 90-.051)*raddeg
+                        (150-.051)*raddeg
+                        (150-.051)*raddeg
+                        ( 30-.045)*raddeg
+                        ( 30-.045)*raddeg
+                        ( 90-.045)*raddeg
+                        ( 90-.045)*raddeg
+                        (150-.045)*raddeg
+                        (150-.045)*raddeg
+; Angle beta of wires in wire chamber planes
+      sdc_beta_angle =   -0.052*raddeg
+                         -0.052*raddeg
+                         -0.052*raddeg
+                         -0.052*raddeg
+                         -0.052*raddeg
+                         -0.052*raddeg
+                         -0.182*raddeg
+                         -0.182*raddeg
+                         -0.182*raddeg
+                         -0.182*raddeg
+                         -0.182*raddeg
+                         -0.182*raddeg
+; Angle gamma of wires in wire chamber planes
+      sdc_gamma_angle = -0.070*raddeg
+                        -0.070*raddeg
+                        -0.070*raddeg
+                        -0.070*raddeg
+                        -0.070*raddeg
+                        -0.070*raddeg
+                        -0.257*raddeg
+                        -0.257*raddeg
+                        -0.257*raddeg
+                        -0.257*raddeg
+                        -0.257*raddeg
+                        -0.257*raddeg
+; Pitch
+      sdc_pitch = 1.0000
+                  1.0000
+                  1.0000
+                  1.0000
+                  1.0000
+                  1.0000
+                  1.0000
+                  1.0000
+                  1.0000
+                  1.0000
+                  1.0000
+                  1.0000
+; Number of wires per plane
+      sdc_nrwire = 48
+                   48
+                   64
+                   64
+                   48
+                   48
+                   48
+                   48
+                   64
+                   64
+                   48
+                   48
+; X,Y position of center of wire chamber
+; The given value is subtracted from the position of the wire (i.e.
+; the sign is opposite of the actual center position of the chamber).
+; Increasing dc2 coordinates increases dpos histograms.
+; Values are from jan17, 1996 survey memo.  values ARE corrected for
+; 18 degree (optical axis) vs 17.85 degree (survey axis) discrepensy.
+      sdc_xcenter = (8.488-3.982)
+                    (-1.822+1.825+0.35)
+      sdc_ycenter =(+0.007+.388+0.2)
+                   (-0.197+0.379+0.2)
+;;      sdc_xcenter = 8.488
+;;                   -1.822
+;;      sdc_ycenter =+0.007
+;;                   -0.197
+;
+;  sdc_ycenter(2) was -.197 from survey.  -.087 is DD's correction 
+;   based on (e,e'p) data (centering Em,Pm).
+;
+
+; Wire number of center of wire chamber
+; Note the convention : x : low number =  -x , u,v : low number = "-x"
+; x1 and x2, u1 and u2, v1 and v2 are offset by half a cell length
+; assume 1st wire of 1st dc of a set is closest to edge where counting starts
+      sdc_central_wire = (24.75+.008+.0019)
+                         (24.25-.008+.0064)
+                         (32.75-.001-.0105)
+                         (32.25+.001+.0021)
+                         (24.25+.003+.0019)
+                         (24.75-.003+.0075)
+                         (24.75-.001-.0019)
+                         (24.25+.001-.0078+.0120)
+                         (32.75+.002-.0104-.0067)
+                         (32.25-.002-.0007-.0053)
+                         (24.25-.003-.0008-.0015)
+                         (24.75+.003-.0081+.0131)
+; with shifts to make resiudals line up with each other.
+;      sdc_central_wire = (24.75+.008)
+;                         (24.25-.008)
+;                         32.75
+;                         32.25
+;                         (24.25+.002)
+;                         (24.75-.002)
+;                         24.75
+;                         24.25
+;                         (32.75+.003)
+;                         (32.25-.003)
+;                         (24.25-.003)
+;                         (24.75+.003)
+; nov95 online values
+;      sdc_central_wire = (24.75+.008)
+;                         (24.25-.008)
+;                         (32.75-.009)
+;                         (32.25+.009)
+;                         24.25
+;                         24.75
+;                         (24.75-.005)
+;                         (24.25+.005)
+;                         32.75
+;                         32.25
+;                         (24.25-.006)
+;                         (24.75+.006)
+; s_chamber_planes    array giving the chamber number for each plane
+      sdc_chamber_planes = 1
+                           1
+                           1
+                           1
+                           1
+                           1
+                           2
+                           2
+                           2
+                           2
+                           2
+                           2
+; The hms readout numbers some planes in reverse order.
+; I (SAW) think that the SOS readout numbers are always in forward order
+; The following array is a flag on the order number.
+; If sdc_wire_counting(plane) = 0
+;  the wire center is at (wire - sdc_central_wire) * pitch
+; If sdc_wire_counting(plane) = 1
+;  the wire center is at ( sdc_nrwire + 1 - wire - sdc_central_wire) * pitch
+        sdc_wire_counting = 1
+                            0
+                            1
+                            0
+                            0
+                            1
+                            1
+                            0
+                            1
+                            0
+                            0
+                            1
+; The velocity correction is the distance from the center of the wire divided
+; by the velocity of propagation times sdc_drifttime_sign(pln).  +/-1
+; for disc. card at +/- coord. (i.e. top = -x direction, so top readout is +1)
+;
+; THESE ARE NOTHING BUT BAD GUESSES AT THE MOMENT!!!!
+;
+       sdc_drifttime_sign =  +1
+                             -1
+                             -1
+                             +1
+                             +1
+                             -1
+                             +1
+                             -1
+                             -1
+                             +1
+                             +1
+                             -1
+; Names of each wire plane
+;      sdc_plane_names = 'sos1u1'
+;                        'sos1u2'
+;                        'sos1x1'
+;                        'sos1x2'
+;                        'sos1v1'
+;                        'sos1v2'
+;                        'sos2u1'
+;                        'sos2u2'
+;                        'sos2x1'
+;                        'sos2x2'
+;                        'sos2v1'
+;                        'sos2v2'
+;                        'sos3u1'
+;                        'sos3u2'
+;                        'sos3x1'
+;                        'sos3x2'
+;                        'sos3v1'
+;                        'sos3v2'

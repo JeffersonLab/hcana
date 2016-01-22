@@ -1,0 +1,103 @@
+      spathlength_central = 750
+; Z positions of hodoscopes
+      sscin_1y_zpos = ( 42.6+31.01)
+      sscin_1x_zpos = ( 66.1+31.01+0.9)
+      sscin_2y_zpos = (218.5+31.01-1.4)
+      sscin_2x_zpos = (242.0+31.01+17.8-1.4)
+      sscin_1x_dzpos = 1.12
+      sscin_1y_dzpos = 1.12
+      sscin_2x_dzpos = 1.12
+      sscin_2y_dzpos = 1.12
+; Sizes of hodoscope paddles
+      sscin_1x_size = 7.303
+      sscin_1y_size = 4.445
+      sscin_2x_size = 7.303
+      sscin_2y_size = 4.445
+      sscin_1x_spacing = 7.025
+      sscin_1y_spacing = 4.050
+      sscin_2x_spacing = 7.025
+      sscin_2y_spacing = 4.050
+; Number of hodoscope paddles per layer
+      sscin_1x_nr =  9
+      sscin_1y_nr =  9
+      sscin_2x_nr = 16
+      sscin_2y_nr =  9
+; X,Y positions of hodoscope paddles
+      sscin_1x_left  =  23.5
+      sscin_1x_right = -23.5
+      sscin_1x_offset=   -0.25
+      sscin_1x_center= -28.100
+                       -21.075
+                       -14.050
+                        -7.025
+                         0.000
+                         7.025
+                        14.050
+                        21.075
+                        28.100
+      sscin_1y_top   = -36.8
+      sscin_1y_bot   =  36.8
+; increasing offset moves "delta y" histogram move to larger y.
+      sscin_1y_offset=   0.0
+
+      sscin_1y_center=  16.20
+                        12.15
+                         8.10
+                         4.05
+                         0.00
+                        -4.05
+                        -8.10
+                       -12.15
+                       -16.20
+      sscin_2x_left  =  34.00
+      sscin_2x_right = -34.00
+      sscin_2x_offset=   4.57
+      sscin_2x_center=  -55.700
+                        -48.675
+                        -41.650
+                        -34.625
+                        -27.600
+                        -20.575
+                        -13.550
+                         -6.525
+                          0.500
+                          7.525
+                         14.550
+                         21.575
+                         28.600
+                         35.625
+                         42.650
+                         49.675
+
+
+;                       -60.25   ; Values from old variable "top"
+;                       -52.75
+;                       -45.25
+;                       -37.75
+;                       -30.25
+;                       -22.75
+;                       -15.25
+;                        -7.75
+;                        -0.25
+;                         7.25
+;                        14.75
+;                        22.25
+;                        29.75
+;                        37.25
+;                        44.75
+;                        52.25
+
+
+      sscin_2y_top   = -57.15
+      sscin_2y_bot   =  57.15
+; increasing offset moves "delta y" histogram move to larger y.
+      sscin_2y_offset=   0.0
+      sscin_2y_center=  16.20
+                        12.15
+                         8.10
+                         4.05
+                         0.00
+                        -4.05
+                        -8.10
+                       -12.15
+                       -16.20

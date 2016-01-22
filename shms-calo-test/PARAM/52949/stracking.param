@@ -1,0 +1,76 @@
+; sos pattern recognition and tracking code parameters
+; sminhit(i)   minimum number of hits in each space point (one for each chamber)
+; smin_combos(i) minimum number of pairs in each space point ( one per chamber)
+; sspace_point_criterion(i) minimum separation of distinct space points
+;
+	smax_pr_hits = 25, 25
+        smin_hit =      5, 5
+        smin_combos =   6, 6
+        sspace_point_criterion = 1.2, 1.2 
+;
+; The following four criteria are applied to the stub fit results at the
+; focal plane position to link stubs to tracks
+; sxt_track_criterion  
+; syt_track_criterion
+; sxpt_track_criterion
+; sypt_track_criterion
+       sxt_track_criterion  = 100.
+       syt_track_criterion  = 20.
+       sxpt_track_criterion = 1.0
+       sypt_track_criterion = 1.0
+; ssingle_stub            If .ne. 0 make a track of all single stubs
+  ssingle_stub = 0
+; turn on/off small angle approximation to left/right decision for y
+  sSmallAngleApprox = 1
+;
+; Crude track selection criteria in s_physics
+; ssel_chi2_fpperdegmax   maximum chi2 per degree of freedom for track
+  ssel_chi2_fpperdegmax = 9999999.
+; ssel_dedx1min           minimum dedx to chose best track in scin 1
+  ssel_dedx1min = -1000000.
+; ssel_dedx1max           maximum dedx to chose best track in scin 1
+  ssel_dedx1max = 1000000.
+; ssel_betamin            minimum track beta to chose best track 
+  ssel_betamin  = -1000000.
+; ssel_betamax            maximum track beta to chose best track 
+  ssel_betamax  = 1000000.
+; ssel_etmin              minimum track et to chose best track 
+  ssel_etmin = -1000000.
+; ssel_etmax              maximum track et to chose best track 
+  ssel_etmax = 1000000.
+; ssel_ndegreesmin        minimum number of degrees of freedom for track
+  ssel_ndegreesmin = 1
+
+; ssel_using_scin         uses scintillator for track selection
+  ssel_using_scin = 1
+
+; sstat_maxchisq          chisquared limit for tracks used to measure hodo. eff.
+  sstat_maxchisq = 10.
+; sstat_slop              distance from center of scin. to count as expecting hit
+;              must be < 2 cm. since s1y and s2y scins. are only +/- 2cm in size.
+  sstat_slop = 1.
+; sstat_mineff            warning level for scin. effic.
+  sstat_mineff = .95
+; sstat_cal_maxchisq      chisquared limit for tracks used to measure cal. eff.
+  sstat_cal_maxchisq = 10.
+; sstat_cal_slop          distance from center of block to count as expecting hit
+  sstat_cal_slop = 2.
+; scer_min_eff            warning level for cerenkov effic.
+  scer_min_eff = .90
+; scer_threshold          threshold for good hit (for measureing effic.)
+  scer_threshold = 0.5
+; sdc_min_eff             warning level for dc raw effic.(1 per plane)
+  sdc_min_eff = .96,.96,.96,.96,.96,.96
+                .96,.96,.96,.96,.96,.96
+; sdc_min_wire_eff        warning level for wire effic, measured using tracking
+  sdc_min_wire_eff = .85
+; sdc_min_plane_eff       warning level for plane effic, measured using tracking
+  sdc_min_plane_eff = .95,.95,.95,.95,.95,.95
+                      .95,.95,.95,.95,.95,.95
+  sxloscin  = 2, 3
+  sxhiscin  = 8, 14
+  syloscin  = 2, 2
+  syhiscin  = 8, 8
+;  strack_eff_test_scin_planes is the number of planes nec needed to 
+;  set sweet spot to true. 4 is extra clean, 3 is good enough for e-'s.
+  strack_eff_test_num_scin_planes = 4

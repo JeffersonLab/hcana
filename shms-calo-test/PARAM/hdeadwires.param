@@ -1,0 +1,10 @@
+; list of dead wires in the HMS (plane,wire).  Dead means <20% efficiency.
+hdc_num_deadwires = 6
+
+hdc_deadwire_plane =  2,   6,   6,   7,   9,  10
+
+hdc_deadwire_num =   43,  18,  60,  97,  30,   8
+
+; rough efficiency  22%,  3%, .4%,  0%,  0%,  7%
+
+; pln9,wire99 is HOT (used to be that 9/#100 was DEAD)?

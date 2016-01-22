@@ -1,0 +1,127 @@
+; sos tracking code debug flags.
+; when these flags are non-zero, dump routines are called to
+; print out the data banks for each event.
+;
+;  sluno     fortran lun for output
+      sluno = 6
+; sdebugdumptof           Dump timing information for fitting offsets for old CSA method
+      sdebugdumptof = 0
+; sdumptof           Dump timing information for fitting offsets, new way
+; Done from h_tof.f. Add particle ID cuts if desired
+; Note: don't set both hdumptof=1 and hdebugdumptof=1 at same time
+;       because they both use fort.37 for the output
+      sdumptof = 0
+;; sdebugdumpcal           Dump calorimeter information for fitting gains
+      sdebugdumpcal = 0
+; number of pedestal events required to overwrite orig. peds.
+  shodo_min_peds = 500
+  scal_min_peds  = 500
+  scer_min_peds  = 500
+  saer_min_peds = 500
+  sluc_min_peds = 500
+
+
+; DEBUGGING OUTPUT FLAGS
+; ----------------------
+; sdebugprintrawdc        Dump SDC_RAW_DC bank
+      sdebugprintrawdc = 0
+; sdebugprintdecodeddc    DUMP SDC_DECODED_DC bank
+      sdebugprintdecodeddc = 0
+; sdebugflagpsi               Dump calculated coordinate positions
+      sdebugflagpsi =  0
+; sdebugflaggeoemtry          Dump calculated geometrical parameters
+      sdebugflaggeometry = 0
+; sdebugflagpr                Dump intermediate pattern recognition results
+      sdebugflagpr = 0
+; sdebugflagstubchisq         Dump chi2 of left-right fits
+      sdebugstubchisq = 0
+; sdebugflagstubs             Dump stub fit results
+      sdebugflagstubs = 0
+; sdebuglinkstubs             Dump link stub results
+      sdebuglinkstubs = 0
+; sdebugtrackprint            Dump focal plane track fit results
+      sdebugtrackprint = 0
+; sdebugtartrackprint         Dump tracks at target
+      sdebugtartrackprint = 0
+; tof debuging
+;
+;  sdebugprintscinraw         Dump SOS_RAW_SCIN
+    sdebugprintscinraw = 0
+;  sdebugprintscindec         Dump SOS_DECODED_SCIN
+    sdebugprintscindec = 0
+;  sdebugprinttoftracks       Dump  sos_scin_tof
+    sdebugprinttoftracks = 0
+;  sdebugprinttracktests      Dump SOS_TRACK_TESTS
+    sdebugprinttracktests = 0
+;
+;
+;  sos calorimeter debug flags
+;  slun_dbg_cal        lun for output
+   slun_dbg_cal   = sluno
+;  sdbg_raw_cal        call s_prt_cal_raw
+   sdbg_raw_cal = 1
+;  sdbg_sparsified_cal call s_prt_cal_sparsified
+   sdbg_sparsified_cal = 0
+;  sdbg_decoded_cal    call s_prt_cal_decoded
+   sdbg_decoded_cal = 0
+;  sdbg_clusters_cal   call s_prt_cal_clusters
+   sdbg_clusters_cal = 0
+;  sdbg_tracks_cal     call s_prt_cal_tracks
+   sdbg_tracks_cal = 0
+;  sdbg_tests_cal      call s_prt_cal_tests    SOS_TRACK_TESTS
+   sdbg_tests_cal = 0
+;
+;  hard wired histograms. If these flags .ne. 0 then the histogram
+;     blocks are filled
+;
+; sturnon_scin_raw_hist       Histogram SOS raw hodoscope data (all blocks)
+  sturnon_scin_raw_hist = 1
+; sturnon_decoded_dc_hist     Histogram SOS_DECODED_DC
+  sturnon_decoded_dc_hist = 1
+; sturnon_focal_plane_hist    Histogram SOS_FOCAL_PLANE
+  sturnon_focal_plane_hist = 1
+; sturnon_target_hist         HISTOGRAM SOS_TARGET
+  sturnon_target_hist = 1
+;
+; Bypass paramters to bypass code elementes in s_reconstruction
+;      Stored in sosbypass_switches.cmn
+;      Code element is bypassed if switch .ne. 0
+; sbypass_trans_dc         bypass s_trans_dc
+  sbypass_trans_dc   = 0
+; sbypass_track            bypass s_track
+  sbypass_track      = 0
+; sbypass_targ_trans       bypass s_targ_trans
+  sbypass_targ_trans = 0
+; sbypass_dc_eff           bypass s_dc_eff and s_dc_eff_shutdown
+  sbypass_dc_eff     = 0
+; sbypass_track_eff        bypass s_tracking efficiency code
+  sbypass_track_eff  = 0
+; sbypass_track_eff_files  bypass s_tracking efficiency output files
+  sbypass_track_eff_files  = 1
+
+; sbypass_trans_scin       bypass s_trans_scin
+  sbypass_trans_scin = 0
+; sbypass_tof              bypass s_tof
+  sbypass_tof        = 0
+; sbypass_scin_eff         bypass s_scin_eff and s_scin_eff_shutdown
+  sbypass_scin_eff   = 0
+
+; sbypass_trans_cer        bypass s_trans_cer
+  sbypass_trans_cer  = 0
+; sbypass_cer              bypass s_cer, (a dummy routine)
+  sbypass_cer        = 1
+; sbypass_cer_eff          bypass s_cer_eff and s_cer_eff_shutdown
+  sbypass_cer_eff    = 0
+
+; sbypass_aero              bypass s_aero
+  sbypass_aero        = 0
+
+; sbypass_trans_cal        bypass s_trans_cal
+  sbypass_trans_cal  = 0
+; sbypass_cal              bypass s_cal
+  sbypass_cal        = 0
+; sbypass_cal_eff          bypass s_cal_eff and s_cal_eff_shutdown
+  sbypass_cal_eff    = 0
+
+; sbypass_physics          bypass s_physics
+  sbypass_physics    = 0
