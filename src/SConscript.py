@@ -21,7 +21,7 @@ THcDCWire.cxx \
 THcSpacePoint.cxx THcDCTrack.cxx \
 THcDCLookupTTDConv.cxx THcDCTimeToDistConv.cxx \
 THcShower.cxx THcShowerPlane.cxx THcShowerArray.cxx \
-THcRawShowerHit.cxx THcShowerHitCluster.cxx
+THcRawShowerHit.cxx THcShowerHit.cxx
 THcAerogel.cxx THcAerogelHit.cxx \
 THcCherenkov.cxx THcCherenkovHit.cxx \
 THcFormula.cxx \

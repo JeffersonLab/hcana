@@ -19,7 +19,7 @@
 #include "THaSubDetector.h"
 #include "THaTrack.h"
 #include "TClonesArray.h"
-#include "THcShowerHitCluster.h"
+#include "THcShowerHit.h"
 
 #include <iostream>
 

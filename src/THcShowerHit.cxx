@@ -1,4 +1,4 @@
-#include "THcShowerHitCluster.h"
+#include "THcShowerHit.h"
 
 //ClassImp(THcShowerHit)
 

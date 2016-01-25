@@ -12,7 +12,7 @@
 #include "THcHitList.h"
 #include "THcShowerPlane.h"
 #include "THcShowerArray.h"
-#include "THcShowerHitCluster.h"
+#include "THcShowerHit.h"
 #include "TMath.h"
 
 class THcShower : public THaNonTrackingDetector, public THcHitList {

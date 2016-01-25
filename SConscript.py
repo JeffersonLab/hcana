@@ -17,7 +17,7 @@ hcheaders = Split("""
         src/THcDC.h src/THcDriftChamberPlane.h 
 	src/THcDriftChamber.h src/THcRawDCHit.h src/THcDCHit.h src/THcDCWire.h src/THcSpacePoint.h 
 	src/THcDCLookupTTDConv.h src/THcDCTimeToDistConv.h src/THcShower.h src/THcShowerPlane.h 
-        src/THcShowerArray.h src/THcShowerHitCluster.h
+        src/THcShowerArray.h src/THcShowerHit.h
 	src/THcRawShowerHit.h src/THcAerogel.h src/THcAerogelHit.h src/THcCherenkov.h src/THcCherenkovHit.h
         src/THcGlobals.h src/THcDCTrack.h src/THcFormula.h
         src/THcRaster.h src/THcRasteredBeam.h src/THcRasterRawHit.h src/THcScalerEvtHandler.h

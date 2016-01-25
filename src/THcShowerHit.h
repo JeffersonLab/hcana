@@ -1,5 +1,5 @@
-#ifndef ROOT_THcShowerHitCluster
-#define ROOT_THcShowerHitCluster
+#ifndef ROOT_THcShowerHit
+#define ROOT_THcShowerHit
 
 // HMS calorimeter hits, version 2
 

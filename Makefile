@@ -22,6 +22,7 @@ SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcSpacePoint.cxx src/THcDCTrack.cxx \
 	src/THcShower.cxx src/THcShowerPlane.cxx \
 	src/THcShowerArray.cxx \
+	src/THcShowerHit.cxx \
 	src/THcRawShowerHit.cxx \
 	src/THcAerogel.cxx src/THcAerogelHit.cxx \
 	src/THcCherenkov.cxx src/THcCherenkovHit.cxx \
