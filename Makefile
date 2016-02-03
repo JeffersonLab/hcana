@@ -178,10 +178,18 @@ LIBHALLA     := $(LIBDIR)/libHallA.so
 LIBDC        := $(LIBDIR)/libdc.so
 HALLALIBS    := -L$(LIBDIR) -lHallA -ldc
 
+# If EVIO environment not defined, expect to find it in PODD directory
+
+ifdef EVIO_LIBDIR
+  EVIOLIB    := -L$(EVIO_LIBDIR) -levio
+else
+  EVIOLIB    := -levio
+endif
+
 src/THcInterface.d:  $(HDR_COMPILEDATA)
 
 hcana:		src/main.o $(LIBDC) $(LIBHALLA) $(USERLIB)
-		$(LD) $(LDFLAGS) $< $(HALLALIBS) -L. -lHallC $(CCDBLIBS) \
+		$(LD) $(LDFLAGS) $< $(HALLALIBS) $(EVIOLIB) -L. -lHallC $(CCDBLIBS) \
 		$(GLIBS) -o $@
 
 $(USERLIB):	$(HDR) $(OBJS)
