@@ -6,7 +6,7 @@
   //
   
   Int_t RunNumber=50017;
-  char* RunFileNamePattern="daq04_%d.log.0";
+  char RunFileNamePattern[]="daq04_%d.log.0";
   
   gHcParms->Define("gen_run_number", "Run Number", RunNumber);
   gHcParms->AddString("g_ctp_database_filename", "DBASE/test.database");

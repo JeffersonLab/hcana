@@ -17,11 +17,11 @@
 #include "TTree.h"
 #include "TString.h"  
 
-class ScalerLoc { // Utility class used by THaScalerEvtHandler
+class HCScalerLoc { // Utility class used by THaScalerEvtHandler
  public:
- ScalerLoc(TString nm, TString desc, Int_t isc, Int_t ich, Int_t iki) :
+ HCScalerLoc(TString nm, TString desc, Int_t isc, Int_t ich, Int_t iki) :
    name(nm), description(desc), iscaler(isc), ichan(ich), ikind(iki) { };
-  ~ScalerLoc();
+  ~HCScalerLoc();
   TString name, description;
   UInt_t iscaler, ichan, ivar, ikind;
 };
@@ -45,7 +45,7 @@ private:
    static size_t FindNoCase(const std::string& sdata, const std::string& skey);
 
    std::vector<Decoder::GenScaler*> scalers;
-   std::vector<ScalerLoc*> scalerloc;
+   std::vector<HCScalerLoc*> scalerloc;
    Double_t evcount;
    UInt_t *rdata;
    std::vector<Int_t> index;

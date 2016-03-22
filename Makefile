@@ -70,12 +70,16 @@ INCDIRS  = $(wildcard $(addprefix $(ANALYZER)/, include src hana_decode)) $(shel
 
 #------------------------------------------------------------------------------
 # Check that root version is new enough (>= 5.32) by requiring
+# root-config --version to be version 6 or
 # root-config --svn-revision to be >= 43166
 
-GOODROOTVERSION := $(shell expr `root-config --svn-revision` \>= 43166)
+GOODROOTVERSION6 := $(shell expr `root-config --version` \>= 6.06)
 
-ifneq ($(GOODROOTVERSION),1)
-  $(error ROOT version 5.32 or later required)
+ifneq ($(GOODROOTVERSION6),1)
+  GOODROOTVERSION := $(shell expr `root-config --svn-revision` \>= 43166)
+  ifneq ($(GOODROOTVERSION),1)
+    $(error ROOT version 5.32 or later required)
+  endif
 endif
 
 #------------------------------------------------------------------------------

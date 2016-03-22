@@ -116,7 +116,7 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     tinfo = name + "/D";
     fScalerTree->Branch(name.Data(), &evcount, tinfo.Data(), 4000);
 
-    for (UInt_t i = 0; i < scalerloc.size(); i++) {
+    for (size_t i = 0; i < scalerloc.size(); i++) {
       name = scalerloc[i]->name;
       tinfo = name + "/D";
       fScalerTree->Branch(name.Data(), &dvars[i], tinfo.Data(), 4000);
@@ -151,7 +151,7 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
       		*fDebugFile << "p  and  pstop  "<<j++<<"   "<<p<<"   "<<pstop<<"   "<<hex<<*p<<"   "<<dec<<endl;
     }
     nskip = 1;
-    for (UInt_t j=0; j<scalers.size(); j++) {
+    for (size_t j=0; j<scalers.size(); j++) {
       nskip = scalers[j]->Decode(p);
       if (fDebugFile && nskip > 1) {
 	*fDebugFile << "\n===== Scaler # "<<j<<"     fName = "<<fName<<"   nskip = "<<nskip<<endl;
@@ -178,10 +178,10 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
   // The correspondance between dvars and the scaler and the channel
   // will be driven by a scaler.map file  -- later
 
-  for (UInt_t i = 0; i < scalerloc.size(); i++) {
-    UInt_t ivar = scalerloc[i]->ivar;
-    UInt_t isca = scalerloc[i]->iscaler;
-    UInt_t ichan = scalerloc[i]->ichan;
+  for (size_t i = 0; i < scalerloc.size(); i++) {
+    size_t ivar = scalerloc[i]->ivar;
+    size_t isca = scalerloc[i]->iscaler;
+    size_t ichan = scalerloc[i]->ichan;
     if (evcount==0) {
     	if (fDebugFile) *fDebugFile << "Debug dvarsFirst "<<i<<"   "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
     	if ((ivar >= 0 && ivar < scalerloc.size()) &&
@@ -209,7 +209,7 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 
   evcount = evcount + 1.0;
 
-  for (UInt_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
+  for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
 
   if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
 
@@ -263,7 +263,7 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
       pos1 = FindNoCase(dbline[0],svariable);
       if (pos1 != minus1 && dbline.size()>4) {
 	string sdesc = "";
-	for (UInt_t j=5; j<dbline.size(); j++) sdesc = sdesc+" "+dbline[j];
+	for (size_t j=5; j<dbline.size(); j++) sdesc = sdesc+" "+dbline[j];
 	Int_t isca = atoi(dbline[1].c_str());
 	Int_t ichan = atoi(dbline[2].c_str());
 	Int_t ikind = atoi(dbline[3].c_str());
@@ -320,7 +320,7 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
   }
   // can't compare UInt_t to Int_t (compiler warning), so do this
   nscalers=0;
-  for (UInt_t i=0; i<scalers.size(); i++) nscalers++;
+  for (size_t i=0; i<scalers.size(); i++) nscalers++;
   // need to do LoadNormScaler after scalers created and if fNormIdx found
   if (fDebugFile) *fDebugFile <<"fNormIdx = "<<fNormIdx<<endl;
   if ((fNormIdx >= 0) && fNormIdx < nscalers) {
@@ -380,7 +380,7 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
 #endif
 
   if(fDebugFile) *fDebugFile << "THcScalerEvtHandler:: Name of scaler bank "<<fName<<endl;
-  for (UInt_t i=0; i<scalers.size(); i++) {
+  for (size_t i=0; i<scalers.size(); i++) {
     if(fDebugFile) {
       *fDebugFile << "Scaler  #  "<<i<<endl;
       scalers[i]->SetDebugFile(fDebugFile);
@@ -396,7 +396,7 @@ void THcScalerEvtHandler::AddVars(TString name, TString desc, Int_t iscal,
   // need to add fName here to make it a unique variable.  (Left vs Right HRS, for example)
   TString name1 = fName + name;
   TString desc1 = fName + desc;
-  ScalerLoc *loc = new ScalerLoc(name1, desc1, iscal, ichan, ikind);
+  HCScalerLoc *loc = new HCScalerLoc(name1, desc1, iscal, ichan, ikind);
   loc->ivar = scalerloc.size();  // ivar will be the pointer to the dvars array.
   scalerloc.push_back(loc);
 }
@@ -418,7 +418,7 @@ void THcScalerEvtHandler::DefVars()
   }
   if(fDebugFile) *fDebugFile << "THcScalerEvtHandler:: scalerloc size "<<scalerloc.size()<<endl;
   const Int_t* count = 0;
-  for (UInt_t i = 0; i < scalerloc.size(); i++) {
+  for (size_t i = 0; i < scalerloc.size(); i++) {
     gHaVars->DefineByType(scalerloc[i]->name.Data(), scalerloc[i]->description.Data(),
 			  &dvars[i], kDouble, count);
     //gHaVars->DefineByType(scalerloc[i]->name.Data(), scalerloc[i]->description.Data(),
