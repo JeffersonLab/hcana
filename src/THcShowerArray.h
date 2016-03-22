@@ -86,8 +86,8 @@ protected:
 
   // Parameters
 
-  Int_t fNRows;
-  Int_t fNColumns;
+  UInt_t fNRows;
+  UInt_t fNColumns;
   Double_t fXFront;              // Front position X
   Double_t fYFront;              // Front position Y
   Double_t fZFront;              // Front position Z, from FP

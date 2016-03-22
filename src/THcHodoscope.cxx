@@ -343,7 +343,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"track_eff_test_num_scin_planes",   &fTrackEffTestNScinPlanes,                 kInt},
     {"cer_npe",                          &fNCerNPE,               kDouble,         0,  1},
     {"normalized_energy_tot",            &fNormETot,              kDouble,         0,  1},
-    {"hodo_slop",                        fHodoSlop,               kDouble,  fNPlanes},
+    {"hodo_slop",                        fHodoSlop,               kDouble,  (UInt_t) fNPlanes},
     {"debugprintscinraw",                &fdebugprintscinraw,               kInt,  0,1},
     {0}
   };
