@@ -195,8 +195,8 @@ directorylist = ['./','src','podd','podd/src','podd/hana_decode']
 
 baseenv.Append(SHLIBSUFFIX ='.'+baseenv.subst('$VERSION'))
 pbaseenv=baseenv.Clone()
-pbaseenv.Append(LIBS=[eviolib,hallclib,hallalib,dclib])
-baseenv.Append(LIBS=[eviolib,hallalib,dclib])
+pbaseenv.Prepend(LIBS=[hallclib,hallalib,dclib,eviolib])
+baseenv.Prepend(LIBS=[hallalib,dclib,eviolib])
 Export('pbaseenv')
 
 SConscript(dirs = directorylist,name='SConscript.py',exports='baseenv')

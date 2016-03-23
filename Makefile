@@ -192,8 +192,8 @@ endif
 
 src/THcInterface.d:  $(HDR_COMPILEDATA)
 
-hcana:		src/main.o $(LIBDC) $(LIBHALLA) $(USERLIB)
-		$(LD) $(LDFLAGS) $< $(HALLALIBS) $(EVIOLIB) -L. -lHallC $(CCDBLIBS) \
+hcana:		src/main.o $(LIBDC) $(LIBHALLA) $(USERLIB) 
+		$(LD) $(LDFLAGS) $< -lHallC $(HALLALIBS) $(EVIOLIB) -L. $(CCDBLIBS) \
 		$(GLIBS) -o $@
 
 $(USERLIB):	$(HDR) $(OBJS)
