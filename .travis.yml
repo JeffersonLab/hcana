@@ -2,7 +2,7 @@ os: linux
 compiler: gcc
 language: cpp
 git:
-  depth 5
+  depth: 5
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y x11-common libx11-6 x11-utils gsl-bin libxpm4 libxft2 libpng3 libjpeg-turbo8 libjpeg8 libtiff4 libxml2 libldap-2.4-2 libkrb5-3 freeglut3 libfftw3-3 python libmysqlclient18 libgif4 libiodbc2 libxext6 libxmu6 libimlib2 gccxml wget libpopt-dev
