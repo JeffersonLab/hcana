@@ -158,6 +158,128 @@ goodhs1s2   = {goodhs1s2.npassed:%7d}   eff = {goodhs1s2.npassed/(hmscoin_event.
 General Format:
 signal   =   counts (  rate-Hz )
 
+S1       = {HSS1:%15.1f} [ {HSS1/HShCLOCK*1.0e6:%9.1f} ]
+S2       = {HSS2:%15.1f} [ {HSS2/HShCLOCK*1.0e6:%9.1f} ]
+S1X      = {HSS1X:%15.1f} [ {HSS1X/HShCLOCK*1.0e6:%9.1f} ]
+S1Y      = {HSS1Y:%15.1f} [ {HSS1Y/HShCLOCK*1.0e6:%9.1f} ]
+S2X      = {HSS2X:%15.1f} [ {HSS2X/HShCLOCK*1.0e6:%9.1f} ]
+S2Y      = {HSS2Y:%15.1f} [ {HSS2Y/HShCLOCK*1.0e6:%9.1f} ]
+
+hS1X     = {HShS1X:%15.1f} [ {HShS1X/HShCLOCK*1.0e6:%9.1f} ]
+hS1Y     = {HShS1Y:%15.1f} [ {HShS1Y/HShCLOCK*1.0e6:%9.1f} ]
+hS2X     = {HShS2X:%15.1f} [ {HShS2X/HShCLOCK*1.0e6:%9.1f} ]
+hS2Y     = {HShS2Y:%15.1f} [ {HShS2Y/HShCLOCK*1.0e6:%9.1f} ]
+hS1      = {HShS1:%15.1f} [ {HShS1/HShCLOCK*1.0e6:%9.1f} ]
+hS2      = {HShS2:%15.1f} [ {HShS2/HShCLOCK*1.0e6:%9.1f} ]
+hSTOF    = {HShSTOF:%15.1f} [ {HShSTOF/HShCLOCK*1.0e6:%9.1f} ]
+hSCIN    = {HShSCIN:%15.1f} [ {HShSCIN/HShCLOCK*1.0e6:%9.1f} ]
+hPRHI    = {HShPRHI:%15.1f} [ {HShPRHI/HShCLOCK*1.0e6:%9.1f} ]
+hPRLO    = {HShPRLO:%15.1f} [ {HShPRLO/HShCLOCK*1.0e6:%9.1f} ]
+hSHLO    = {HShSHLO:%15.1f} [ {HShSHLO/HShCLOCK*1.0e6:%9.1f} ]
+hCER     = {HShCER:%15.1f} [ {HShCER/HShCLOCK*1.0e6:%9.1f} ]
+hELHI    = {HShELHI:%15.1f} [ {HShELHI/HShCLOCK*1.0e6:%9.1f} ]
+hELLO    = {HShELLO:%15.1f} [ {HShELLO/HShCLOCK*1.0e6:%9.1f} ]
+hPION    = {HShPION:%15.1f} [ {HShPION/HShCLOCK*1.0e6:%9.1f} ]
+hPIPRE   = {HShPIPRE:%15.1f} [ {HShPIPRE/HShCLOCK*1.0e6:%9.1f} ]
+hELREAL  = {HShELREAL:%15.1f} [ {HShELREAL/HShCLOCK*1.0e6:%9.1f} ]
+hELCLEAN = {HShELCLEAN:%15.1f} [ {HShELCLEAN/HShCLOCK*1.0e6:%9.1f} ]
+hPRETRG  = {HShPRETRG:%15.1f} [ {HShPRETRG/HShCLOCK*1.0e6:%9.1f} ]
+hPIONHI  = {HShPIONHI:%15.1f} [ {HShPIONHI/HShCLOCK*1.0e6:%9.1f} ]
+hCERHI   = {HShCERHI:%15.1f} [ {HShCERHI/HShCLOCK*1.0e6:%9.1f} ]
+HMSPRE   = {HSHMSPRE:%15.1f} [ {HSHMSPRE/HShCLOCK*1.0e6:%9.1f} ]
+HMSTRG   = {HSHMSTRG:%15.1f} [ {HSHMSTRG/HShCLOCK*1.0e6:%9.1f} ]
+hADCGATES= {HShADCGATES:%15.1f} [ {HShADCGATES/HShCLOCK*1.0e6:%9.1f} ]
+hPRE50   = {HShPRE50:%15.1f} [ {HShPRE50/HShCLOCK*1.0e6:%9.1f} ]
+hPRE100  = {HShPRE100:%15.1f} [ {HShPRE100/HShCLOCK*1.0e6:%9.1f} ]
+hPRE150  = {HShPRE150:%15.1f} [ {HShPRE150/HShCLOCK*1.0e6:%9.1f} ]
+hPRE200  = {HShPRE200:%15.1f} [ {HShPRE200/HShCLOCK*1.0e6:%9.1f} ]
+UNSER    = {HShUNSER:%15.1f} [ {HShUNSER/HShCLOCK*1.0e6:%9.1f} ]
+BCM1     = {HShBCM1:%15.1f} [ {HShBCM1/HShCLOCK*1.0e6:%9.1f} ]
+BCM2     = {HShBCM2:%15.1f} [ {HShBCM2/HShCLOCK*1.0e6:%9.1f} ]
+CLOCK    = {HShCLOCK:%15.1f} [ {HShCLOCK/HShCLOCK*1.0e6:%9.1f} ]
+BEAMGATES= {HShBEAMGATES:%15.1f} [ {HShBEAMGATES/HShCLOCK*1.0e6:%9.1f} ]
+
+hcomp L.T= {100*(HSHMSTRG/(HSHMSPRE+.0001)):%9.2f} %
+helec.D.T= {100*(60/50)*(HShPRE100-HShPRE150)/(HShPRE100+.0001):%9.2f} %
+
+sS1X     = {HSsS1X:%15.1f} [ {HSsS1X/HSsCLOCK*1.0e6:%9.1f} ]
+sS1Y     = {HSsS1Y:%15.1f} [ {HSsS1Y/HSsCLOCK*1.0e6:%9.1f} ]
+sS2X     = {HSsS2X:%15.1f} [ {HSsS2X/HSsCLOCK*1.0e6:%9.1f} ]
+sS2Y     = {HSsS2Y:%15.1f} [ {HSsS2Y/HSsCLOCK*1.0e6:%9.1f} ]
+sS1      = {HSsS1:%15.1f} [ {HSsS1/HSsCLOCK*1.0e6:%9.1f} ]
+sS2      = {HSsS2:%15.1f} [ {HSsS2/HSsCLOCK*1.0e6:%9.1f} ]
+sSTOF    = {HSsSTOF:%15.1f} [ {HSsSTOF/HSsCLOCK*1.0e6:%9.1f} ]
+sSCIN    = {HSsSCIN:%15.1f} [ {HSsSCIN/HSsCLOCK*1.0e6:%9.1f} ]
+sPRHI    = {HSsPRHI:%15.1f} [ {HSsPRHI/HSsCLOCK*1.0e6:%9.1f} ]
+sPRLO    = {HSsPRLO:%15.1f} [ {HSsPRLO/HSsCLOCK*1.0e6:%9.1f} ]
+sSHLO    = {HSsSHLO:%15.1f} [ {HSsSHLO/HSsCLOCK*1.0e6:%9.1f} ]
+sCER     = {HSsCER:%15.1f} [ {HSsCER/HSsCLOCK*1.0e6:%9.1f} ]
+sELHI    = {HSsELHI:%15.1f} [ {HSsELHI/HSsCLOCK*1.0e6:%9.1f} ]
+sELLO    = {HSsELLO:%15.1f} [ {HSsELLO/HSsCLOCK*1.0e6:%9.1f} ]
+sPION    = {HSsPION:%15.1f} [ {HSsPION/HSsCLOCK*1.0e6:%9.1f} ]
+sPIPRE   = {HSsPIPRE:%15.1f} [ {HSsPIPRE/HSsCLOCK*1.0e6:%9.1f} ]
+sELREAL  = {HSsELREAL:%15.1f} [ {HSsELREAL/HSsCLOCK*1.0e6:%9.1f} ]
+sELCLEAN = {HSsELCLEAN:%15.1f} [ {HSsELCLEAN/HSsCLOCK*1.0e6:%9.1f} ]
+sPRETRG  = {HSsPRETRG:%15.1f} [ {HSsPRETRG/HSsCLOCK*1.0e6:%9.1f} ]
+SOSPRE   = {HSSOSPRE:%15.1f} [ {HSSOSPRE/HSsCLOCK*1.0e6:%9.1f} ]
+SOSTRG   = {HSSOSTRG:%15.1f} [ {HSSOSTRG/HSsCLOCK*1.0e6:%9.1f} ]
+sADCGATES= {HSsADCGATES:%15.1f} [ {HSsADCGATES/HSsCLOCK*1.0e6:%9.1f} ]
+sPRE50   = {HSsPRE50:%15.1f} [ {HSsPRE150/HSsCLOCK*1.0e6:%9.1f} ]
+sPRE100  = {HSsPRE100:%15.1f} [ {HSsPRE100/HSsCLOCK*1.0e6:%9.1f} ]
+sPRE150  = {HSsPRE150:%15.1f} [ {HSsPRE150/HSsCLOCK*1.0e6:%9.1f} ]
+sPRE200  = {HSsPRE200:%15.1f} [ {HSsPRE200/HSsCLOCK*1.0e6:%9.1f} ]
+BCM1     = {HSsBCM1:%15.1f} [ {HSsBCM1/HSsCLOCK*1.0e6:%9.1f} ]
+BCM2     = {HSsBCM2:%15.1f} [ {HSsBCM2/HSsCLOCK*1.0e6:%9.1f} ]
+CLOCK    = {HSsCLOCK:%15.1f} [ {HSsCLOCK/HSsCLOCK*1.0e6:%9.1f} ]
+
+scomp D.T= {100*(HSSOSTRG/(HSSOSPRE+.0001)):%9.2f} %
+selec.D.T= {100*(60/50)*(HSsPRE100-HSsPRE150)/(HSsPRE100+.0001):%9.2f} %
+
+COINPRE  = {HSCOINPRE:%15.1f} [ {HSCOINPRE/HSsCLOCK*1.0e6:%9.1f} ]
+PEDPRE   = {HSPEDPRE:%15.1f} [ {HSPEDPRE/HSsCLOCK*1.0e6:%9.1f} ]
+COINTRG  = {HSCOINTRG:%15.1f} [ {HSCOINTRG/HSsCLOCK*1.0e6:%9.1f} ]
+PEDTRG   = {HSPEDTRG:%15.1f} [ {HSPEDTRG/HSsCLOCK*1.0e6:%9.1f} ]
+
+***************************
+*OTHER SCALER INFORMATION *
+***************************
+
+all adcgates= {HShBEAMGATES:%8d} [ {HShBEAMGATES/HSsCLOCK*1.0e6:%7.1f} ]
+hms adcgates= {HShADCGATES:%8d} [ {HShADCGATES/HSsCLOCK*1.0e6:%7.1f} ]
+sos adcgates= {HSsADCGATES:%8d} [ {HSsADCGATES/HSsCLOCK*1.0e6:%7.1f} ]
+==> coin adc= {(HShADCGATES+HSsADCGATES-HShBEAMGATES):%8d} [ {(HShADCGATES+HSsADCGATES-HShBEAMGATES)/HSsCLOCK*1.0e6:%7.1f} ]
+
+hPRE      = {HSHMSPRE:%15.1f} [ {HSHMSPRE/HSsCLOCK*1.0e6:%7.1f} ]
+hPRE2     = {HSSHODO9:%15.1f} [ {HSSHODO9/HSsCLOCK*1.0e6:%7.1f} ] (from SOS scaler)
+hPRE3     = {HShPRETRG:%15.1f} [ {HShPRETRG/HSsCLOCK*1.0e6:%7.1f} ] (HShPRETRG)
+hTRG      = {HSHMSTRG:%15.1f} [ {HSHMSTRG/HSsCLOCK*1.0e6:%7.1f} ]
+hTRG2     = {HSSHODO13:%15.1f} [ {HSSHODO13/HSsCLOCK*1.0e6:%7.1f} ] (from SOS scaler)
+
+aadc-sadc = {(HShBEAMGATES-HSsADCGATES):%15.1f} [ {(HShBEAMGATES-HSsADCGATES)/HSsCLOCK*1.0e6:%7.1f} ]
+
+*hcomputer D.T. = {100*(1-HSHMSTRG/(HSHMSPRE+.0001)):%9.2f} % ( {100*(1-HSSHODO13/(HSSHODO9+.0001)):%6.2f} % from SOS scaler)
+*helect.  D.T.  = {100*(60/50)*(HShPRE100-HShPRE150)/(HShPRE100+.0001):%9.2f} %
+ PS1(calc)      = {((HSHMSTRG-HSCOINTRG)/(HShBEAMGATES-HSsADCGATES+.00001)):%9.1f}
+
+sPSR      = {HSSOSPRE:%15.1f} [ {HSSOSPRE/HSsCLOCK*1.0e6:%7.1f} ]
+sPSR2     = {HShUNUSED4:%15.1f} [ {HShUNUSED4/HSsCLOCK*1.0e6:%7.1f} ] (from HMS scaler)
+sTRG      = {HSSOSTRG:%15.1f} [ {HSSOSTRG/HSsCLOCK*1.0e6:%7.1f} ]
+sTRG2     = {HShUNUSED5:%15.1f} [ {HShUNUSED5/HSsCLOCK*1.0e6:%7.1f} ] (from HMS scaler)
+
+aadc-hadc = {(HShBEAMGATES-HShADCGATES):%15.1f} [ {(HShBEAMGATES-HShADCGATES)/HSsCLOCK*1.0e6:%7.1f} ]
+
+*scomputer D.T. = {100*(1-HSSOSTRG/(HSSOSPRE+.0001)):%9.2f} % ( {100*(1-HShUNUSED5/(HShUNUSED4+.0001)):%9.2f} % from HMS scaler)
+*select    D.T. = {100*(60/50)*(HSsPRE100-HSsPRE150)/(HSsPRE100+.0001):%9.2f} %
+ PS2(calc)      = {((HSSOSTRG-HSSHODO15)/(HShBEAMGATES-HShADCGATES+.00001)):%9.1f}
+
+cPRE       = {HSCOINPRE:%15.1f} [ {HSCOINPRE/HSsCLOCK*1.0e6:%7.1f} ]
+cPRE2      = {HSSHODO11:%15.1f} [ {HSSHODO11/HSsCLOCK*1.0e6:%7.1f} ] (from SOS scaler)
+cTRG       = {HSCOINTRG:%15.1f} [ {HSCOINTRG/HSsCLOCK*1.0e6:%7.1f} ]
+cTRG2      = {HSSHODO15:%15.1f} [ {HSSHODO15/HSsCLOCK*1.0e6:%7.1f} ] (from SOS scaler)
+
+hms coin  D.T. = {100*(1-HSCOINTRG/(HSCOINPRE+.0001)):%9.2f} %
+sos coin  D.T. = {100*(1-HSSHODO15/(HSSHODO11+.0001)):%9.2f} %
+NEW coin  D.T. = {100*(1-HShPRE200/(HShPIONHI+.0001)):%9.2f} %
 
 **********
 *SUMMARY *
@@ -348,6 +470,383 @@ hD
 * ALL SCALERS *
 ***************
 
+DA01: hS1X+
+HS1XP1     = {HSHS1XP1:%15d}
+HS1XP2     = {HSHS1XP2:%15d}
+HS1XP3     = {HSHS1XP3:%15d}
+HS1XP4     = {HSHS1XP4:%15d}
+HS1XP5     = {HSHS1XP5:%15d}
+HS1XP6     = {HSHS1XP6:%15d}
+HS1XP7     = {HSHS1XP7:%15d}
+HS1XP8     = {HSHS1XP8:%15d}
+HS1XP9     = {HSHS1XP9:%15d}
+HS1XP10    = {HSHS1XP10:%15d}
+HS1XP11    = {HSHS1XP11:%15d}
+HS1XP12    = {HSHS1XP12:%15d}
+HS1XP13    = {HSHS1XP13:%15d}
+HS1XP14    = {HSHS1XP14:%15d}
+HS1XP15    = {HSHS1XP15:%15d}
+HS1XP16    = {HSHS1XP16:%15d}
+
+DA02: hS1X-
+HS1XM1     = {HSHS1XM1:%15d}
+HS1XM2     = {HSHS1XM2:%15d}
+HS1XM3     = {HSHS1XM3:%15d}
+HS1XM4     = {HSHS1XM4:%15d}
+HS1XM5     = {HSHS1XM5:%15d}
+HS1XM6     = {HSHS1XM6:%15d}
+HS1XM7     = {HSHS1XM7:%15d}
+HS1XM8     = {HSHS1XM8:%15d}
+HS1XM9     = {HSHS1XM9:%15d}
+HS1XM10    = {HSHS1XM10:%15d}
+HS1XM11    = {HSHS1XM11:%15d}
+HS1XM12    = {HSHS1XM12:%15d}
+HS1XM13    = {HSHS1XM13:%15d}
+HS1XM14    = {HSHS1XM14:%15d}
+HS1XM15    = {HSHS1XM15:%15d}
+HS1XM16    = {HSHS1XM16:%15d}
+
+DA03: hS1Y+
+HS1YP1     = {HSHS1YP1:%15d}
+HS1YP2     = {HSHS1YP2:%15d}
+HS1YP3     = {HSHS1YP3:%15d}
+HS1YP4     = {HSHS1YP4:%15d}
+HS1YP5     = {HSHS1YP5:%15d}
+HS1YP6     = {HSHS1YP6:%15d}
+HS1YP7     = {HSHS1YP7:%15d}
+HS1YP8     = {HSHS1YP8:%15d}
+HS1YP9     = {HSHS1YP9:%15d}
+HS1YP10    = {HSHS1YP10:%15d}
+HS1YP11    = {HSHS1YP11:%15d}
+HS1YP12    = {HSHS1YP12:%15d}
+HS1YP13    = {HSHS1YP13:%15d}
+HS1YP14    = {HSHS1YP14:%15d}
+HS1YP15    = {HSHS1YP15:%15d}
+HS1YP16    = {HSHS1YP16:%15d}
+
+DA04: hS1Y-
+HS1YM1     = {HSHS1YM1:%15d}
+HS1YM2     = {HSHS1YM2:%15d}
+HS1YM3     = {HSHS1YM3:%15d}
+HS1YM4     = {HSHS1YM4:%15d}
+HS1YM5     = {HSHS1YM5:%15d}
+HS1YM6     = {HSHS1YM6:%15d}
+HS1YM7     = {HSHS1YM7:%15d}
+HS1YM8     = {HSHS1YM8:%15d}
+HS1YM9     = {HSHS1YM9:%15d}
+HS1YM10    = {HSHS1YM10:%15d}
+HS1YM11    = {HSHS1YM11:%15d}
+HS1YM12    = {HSHS1YM12:%15d}
+HS1YM13    = {HSHS1YM13:%15d}
+HS1YM14    = {HSHS1YM14:%15d}
+HS1YM15    = {HSHS1YM15:%15d}
+HS1YM16    = {HSHS1YM16:%15d}
+
+DA05: hS2X+
+HS2XP1     = {HSHS2XP1:%15d}
+HS2XP2     = {HSHS2XP2:%15d}
+HS2XP3     = {HSHS2XP3:%15d}
+HS2XP4     = {HSHS2XP4:%15d}
+HS2XP5     = {HSHS2XP5:%15d}
+HS2XP6     = {HSHS2XP6:%15d}
+HS2XP7     = {HSHS2XP7:%15d}
+HS2XP8     = {HSHS2XP8:%15d}
+HS2XP9     = {HSHS2XP9:%15d}
+HS2XP10    = {HSHS2XP10:%15d}
+HS2XP11    = {HSHS2XP11:%15d}
+HS2XP12    = {HSHS2XP12:%15d}
+HS2XP13    = {HSHS2XP13:%15d}
+HS2XP14    = {HSHS2XP14:%15d}
+HS2XP15    = {HSHS2XP15:%15d}
+HS2XP16    = {HSHS2XP16:%15d}
+
+DA06: hS2X-
+HS2XM1     = {HSHS2XM1:%15d}
+HS2XM2     = {HSHS2XM2:%15d}
+HS2XM3     = {HSHS2XM3:%15d}
+HS2XM4     = {HSHS2XM4:%15d}
+HS2XM5     = {HSHS2XM5:%15d}
+HS2XM6     = {HSHS2XM6:%15d}
+HS2XM7     = {HSHS2XM7:%15d}
+HS2XM8     = {HSHS2XM8:%15d}
+HS2XM9     = {HSHS2XM9:%15d}
+HS2XM10    = {HSHS2XM10:%15d}
+HS2XM11    = {HSHS2XM11:%15d}
+HS2XM12    = {HSHS2XM12:%15d}
+HS2XM13    = {HSHS2XM13:%15d}
+HS2XM14    = {HSHS2XM14:%15d}
+HS2XM15    = {HSHS2XM15:%15d}
+HS2XM16    = {HSHS2XM16:%15d}
+
+DA07: hS2Y+
+HS2YP1     = {HSHS2YP1:%15d}
+HS2YP2     = {HSHS2YP2:%15d}
+HS2YP3     = {HSHS2YP3:%15d}
+HS2YP4     = {HSHS2YP4:%15d}
+HS2YP5     = {HSHS2YP5:%15d}
+HS2YP6     = {HSHS2YP6:%15d}
+HS2YP7     = {HSHS2YP7:%15d}
+HS2YP8     = {HSHS2YP8:%15d}
+HS2YP9     = {HSHS2YP9:%15d}
+HS2YP10    = {HSHS2YP10:%15d}
+HS2YP11    = {HSHS2YP11:%15d}
+HS2YP12    = {HSHS2YP12:%15d}
+HS2YP13    = {HSHS2YP13:%15d}
+HS2YP14    = {HSHS2YP14:%15d}
+HS2YP15    = {HSHS2YP15:%15d}
+HS2YP16    = {HSHS2YP16:%15d}
+
+DA08: hS2Y-
+HS2YM1     = {HSHS2YM1:%15d}
+HS2YM2     = {HSHS2YM2:%15d}
+HS2YM3     = {HSHS2YM3:%15d}
+HS2YM4     = {HSHS2YM4:%15d}
+HS2YM5     = {HSHS2YM5:%15d}
+HS2YM6     = {HSHS2YM6:%15d}
+HS2YM7     = {HSHS2YM7:%15d}
+HS2YM8     = {HSHS2YM8:%15d}
+HS2YM9     = {HSHS2YM9:%15d}
+HS2YM10    = {HSHS2YM10:%15d}
+HS2YM11    = {HSHS2YM11:%15d}
+HS2YM12    = {HSHS2YM12:%15d}
+HS2YM13    = {HSHS2YM13:%15d}
+HS2YM14    = {HSHS2YM14:%15d}
+HS2YM15    = {HSHS2YM15:%15d}
+HS2YM16    = {HSHS2YM16:%15d}
+
+DA09: htrig1
+S1         = {HSS1:%15d}
+hPRE50     = {HShPRE50:%15d}
+S2X        = {HSS2X:%15d}
+hPRE150    = {HShPRE150:%15d}
+S1X        = {HSS1X:%15d}
+S2Y        = {HSS2Y:%15d}
+hPRE100    = {HShPRE100:%15d}
+S1Y        = {HSS1Y:%15d}
+S2         = {HSS2:%15d}
+hCERHI     = {HShCERHI:%15d}
+hSTOF      = {HShSTOF:%15d}
+hSCIN      = {HShSCIN:%15d}
+hELREAL    = {HShELREAL:%15d}
+hPIPRE     = {HShPIPRE:%15d}
+hELCLEAN   = {HShELCLEAN:%15d}
+hPRETRG    = {HShPRETRG:%15d}
+
+DA0A: htrig2
+hPION      = {HShPION:%15d}
+hCER       = {HShCER:%15d}
+hPIONHI    = {HShPIONHI:%15d}
+hPRE200    = {HShPRE200:%15d}
+hUNUSED1   = {HShUNUSED1:%15d}
+hUNSER     = {HShUNSER:%15d}
+hBCM1      = {HShBCM1:%15d}
+hBCM2      = {HShBCM2:%15d}
+hELHI      = {HShELHI:%15d}
+hELLO      = {HShELLO:%15d}
+hPRHI      = {HShPRHI:%15d}
+hPRLO      = {HShPRLO:%15d}
+hSHLO      = {HShSHLO:%15d}
+hCLOCK     = {HShCLOCK:%15d}
+hBEAMGATES = {HShBEAMGATES:%15d}
+hADCGATES  = {HShADCGATES:%15d}
+
+DA0B: hHODO
+hS1X       = {HShS1X:%15d}
+hS1Y       = {HShS1Y:%15d}
+hS2X       = {HShS2X:%15d}
+hS2Y       = {HShS2Y:%15d}
+hS1        = {HShS1:%15d}
+hS2        = {HShS2:%15d}
+hUNUSED2   = {HShUNUSED2:%15d}
+hUNUSED3   = {HShUNUSED3:%15d}
+HMSPRE     = {HSHMSPRE:%15d}
+hUNUSED4   = {HShUNUSED4:%15d}
+COINPRE    = {HSCOINPRE:%15d}
+PEDPRE     = {HSPEDPRE:%15d}
+HMSTRG     = {HSHMSTRG:%15d}
+hUNUSED5   = {HShUNUSED5:%15d}
+COINTRG    = {HSCOINTRG:%15d}
+PEDTRG     = {HSPEDTRG:%15d}
+
+DA0C: hCAL
+HCAL1      = {HSHCAL1:%15d}
+HCAL2      = {HSHCAL2:%15d}
+HCAL3      = {HSHCAL3:%15d}
+HCAL4      = {HSHCAL4:%15d}
+HCAL5      = {HSHCAL5:%15d}
+HCAL6      = {HSHCAL6:%15d}
+HCAL7      = {HSHCAL7:%15d}
+HCAL8      = {HSHCAL8:%15d}
+HCAL9      = {HSHCAL9:%15d}
+HCAL10     = {HSHCAL10:%15d}
+HCAL11     = {HSHCAL11:%15d}
+HCAL12     = {HSHCAL12:%15d}
+HCAL13     = {HSHCAL13:%15d}
+HCAL14     = {HSHCAL14:%15d}
+HCAL15     = {HSHCAL15:%15d}
+HCAL16     = {HSHCAL16:%15d}
+
+DA0D: sS1X
+SS1X1      = {HSSS1X1:%15d}
+SS1X2      = {HSSS1X2:%15d}
+SS1X3      = {HSSS1X3:%15d}
+SS1X4      = {HSSS1X4:%15d}
+SS1X5      = {HSSS1X5:%15d}
+SS1X6      = {HSSS1X6:%15d}
+SS1X7      = {HSSS1X7:%15d}
+SS1X8      = {HSSS1X8:%15d}
+SS1X9      = {HSSS1X9:%15d}
+SS1X10     = {HSSS1X10:%15d}
+SS1X11     = {HSSS1X11:%15d}
+SS1X12     = {HSSS1X12:%15d}
+SS1X13     = {HSSS1X13:%15d}
+SS1X14     = {HSSS1X14:%15d}
+SS1X15     = {HSSS1X15:%15d}
+SS1X16     = {HSSS1X16:%15d}
+
+DA0E: sS1Y
+SS1Y1      = {HSSS1Y1:%15d}
+SS1Y2      = {HSSS1Y2:%15d}
+SS1Y3      = {HSSS1Y3:%15d}
+SS1Y4      = {HSSS1Y4:%15d}
+SS1Y5      = {HSSS1Y5:%15d}
+SS1Y6      = {HSSS1Y6:%15d}
+SS1Y7      = {HSSS1Y7:%15d}
+SS1Y8      = {HSSS1Y8:%15d}
+SS1Y9      = {HSSS1Y9:%15d}
+SS1Y10     = {HSSS1Y10:%15d}
+SS1Y11     = {HSSS1Y11:%15d}
+SS1Y12     = {HSSS1Y12:%15d}
+SS1Y13     = {HSSS1Y13:%15d}
+SS1Y14     = {HSSS1Y14:%15d}
+SS1Y15     = {HSSS1Y15:%15d}
+SS1Y16     = {HSSS1Y16:%15d}
+  
+DA0F: sS2X+
+SS2XP1     = {HSSS2XP1:%15d}
+SS2XP2     = {HSSS2XP2:%15d}
+SS2XP3     = {HSSS2XP3:%15d}
+SS2XP4     = {HSSS2XP4:%15d}
+SS2XP5     = {HSSS2XP5:%15d}
+SS2XP6     = {HSSS2XP6:%15d}
+SS2XP7     = {HSSS2XP7:%15d}
+SS2XP8     = {HSSS2XP8:%15d}
+SS2XP9     = {HSSS2XP9:%15d}
+SS2XP10    = {HSSS2XP10:%15d}
+SS2XP11    = {HSSS2XP11:%15d}
+SS2XP12    = {HSSS2XP12:%15d}
+SS2XP13    = {HSSS2XP13:%15d}
+SS2XP14    = {HSSS2XP14:%15d}
+SS2XP15    = {HSSS2XP15:%15d}
+SS2XP16    = {HSSS2XP16:%15d}
+
+DA10: sS2X-
+SS2XM1     = {HSSS2XM1:%15d}
+SS2XM2     = {HSSS2XM2:%15d}
+SS2XM3     = {HSSS2XM3:%15d}
+SS2XM4     = {HSSS2XM4:%15d}
+SS2XM5     = {HSSS2XM5:%15d}
+SS2XM6     = {HSSS2XM6:%15d}
+SS2XM7     = {HSSS2XM7:%15d}
+SS2XM8     = {HSSS2XM8:%15d}
+SS2XM9     = {HSSS2XM9:%15d}
+SS2XM10    = {HSSS2XM10:%15d}
+SS2XM11    = {HSSS2XM11:%15d}
+SS2XM12    = {HSSS2XM12:%15d}
+SS2XM13    = {HSSS2XM13:%15d}
+SS2XM14    = {HSSS2XM14:%15d}
+SS2XM15    = {HSSS2XM15:%15d}
+SS2XM16    = {HSSS2XM16:%15d}
+
+DA11: sS2Y
+SS2Y1      = {HSSS2Y1:%15d}
+SS2Y2      = {HSSS2Y2:%15d}
+SS2Y3      = {HSSS2Y3:%15d}
+SS2Y4      = {HSSS2Y4:%15d}
+SS2Y5      = {HSSS2Y5:%15d}
+SS2Y6      = {HSSS2Y6:%15d}
+SS2Y7      = {HSSS2Y7:%15d}
+SS2Y8      = {HSSS2Y8:%15d}
+SS2Y9      = {HSSS2Y9:%15d}
+SS2Y10     = {HSSS2Y10:%15d}
+SS2Y11     = {HSSS2Y11:%15d}
+SS2Y12     = {HSSS2Y12:%15d}
+SS2Y13     = {HSSS2Y13:%15d}
+SS2Y14     = {HSSS2Y14:%15d}
+SS2Y15     = {HSSS2Y15:%15d}
+SS2Y16     = {HSSS2Y16:%15d}
+
+DA12: sHODO spare
+SPHODO1    = {HSSPHODO1:%15d}
+SPHODO2    = {HSSPHODO2:%15d}
+SPHODO3    = {HSSPHODO3:%15d}
+SPHODO4    = {HSSPHODO4:%15d}
+SPHODO5    = {HSSPHODO5:%15d}
+SPHODO6    = {HSSPHODO6:%15d}
+SPHODO7    = {HSSPHODO7:%15d}
+SPHODO8    = {HSSPHODO8:%15d}
+SPHODO9    = {HSSPHODO9:%15d}
+SPHODO10   = {HSSPHODO10:%15d}
+SPHODO11   = {HSSPHODO11:%15d}
+SPHODO12   = {HSSPHODO12:%15d}
+SPHODO13   = {HSSPHODO13:%15d}
+SPHODO14   = {HSSPHODO14:%15d}
+SPHODO15   = {HSSPHODO15:%15d}
+SPHODO16   = {HSSPHODO16:%15d}
+
+DA13: strig1
+sUNUSED1   = {HSsUNUSED1:%15d}
+sPRE50     = {HSsPRE50:%15d}
+sUNUSED2   = {HSsUNUSED2:%15d}
+sPRE150    = {HSsPRE150:%15d}
+sUNUSED3   = {HSsUNUSED3:%15d}
+sUNUSED4   = {HSsUNUSED4:%15d}
+sPRE100    = {HSsPRE100:%15d}
+sUNUSED5   = {HSsUNUSED5:%15d}
+sUNUSED6   = {HSsUNUSED6:%15d}
+sPRE200    = {HSsPRE200:%15d}
+sSTOF      = {HSsSTOF:%15d}
+sSCIN      = {HSsSCIN:%15d}
+sELREAL    = {HSsELREAL:%15d}
+sPIPRE     = {HSsPIPRE:%15d}
+sELCLEAN   = {HSsELCLEAN:%15d}
+sPRETRG    = {HSsPRETRG:%15d}
+
+DA14: strig2
+sBCM1      = {HSsBCM1:%15d}
+sBCM2      = {HSsBCM2:%15d}
+sUNUSED7   = {HSsUNUSED7:%15d}
+sUNUSED8   = {HSsUNUSED8:%15d}
+sCLOCK     = {HSsCLOCK:%15d}
+sUNUSED9   = {HSsUNUSED9:%15d}
+sUNUSED10  = {HSsUNUSED10:%15d}
+sUNUSED11  = {HSsUNUSED11:%15d}
+sPION      = {HSsPION:%15d}
+sCER       = {HSsCER:%15d}
+sELHI      = {HSsELHI:%15d}
+sELLO      = {HSsELLO:%15d}
+sPRHI      = {HSsPRHI:%15d}
+sPRLO      = {HSsPRLO:%15d}
+sSHLO      = {HSsSHLO:%15d}
+sADCGATES  = {HSsADCGATES:%15d}
+
+DA15: sHODO
+sS1X       = {HSsS1X:%15d}
+sS1Y       = {HSsS1Y:%15d}
+sS2X       = {HSsS2X:%15d}
+sS2Y       = {HSsS2Y:%15d}
+sS1        = {HSsS1:%15d}
+sS2        = {HSsS2:%15d}
+SHODO7     = {HSSHODO7:%15d}
+SHODO8     = {HSSHODO8:%15d}
+SHODO9     = {HSSHODO9:%15d}
+SOSPRE     = {HSSOSPRE:%15d}
+SHODO11    = {HSSHODO11:%15d}
+SHODO12    = {HSSHODO12:%15d}
+SHODO13    = {HSSHODO13:%15d}
+SOSTRG     = {HSSOSTRG:%15d}
+SHODO15    = {HSSHODO15:%15d}
+SHODO16    = {HSSHODO16:%15d}
 
 --------------------------------------------------------------------------------------
 //////////////////////////////////////////////////////////////////////////////////////
@@ -370,8 +869,6 @@ The HMS reconstruction coefficient file name is {h_recon_coeff_filename}
 The names of the HMS drift chamber planes are: 
 {hdc_plane_names}
 
-
-
 DC Events: {hdc_tot_events}
 Hit in chamber: {hdc_cham_hits[0]/hdc_tot_events:%.3f} {hdc_cham_hits[1]/hdc_tot_events:%.3f}
 Hit in plane: {hdc_events[0]/hdc_tot_events:%.3f}  {hdc_events[1]/hdc_tot_events:%.3f} 
@@ -385,6 +882,4 @@ Run #{gen_run_number}
 first event = {gen_run_starting_event:%7d}
 last event  = {gen_event_id_number:%7d}
 
-Later, such things as hardware scalers will be added to the set of variables
-that can be used in expressions.
 
