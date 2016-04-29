@@ -37,8 +37,8 @@ config.log
 *.pcm
 \#*\#
 
-# THtml generated documentation directory
-docs/htmldoc
+# Doxygen generated documentation directory
+docs/html
 
 # Examples directory
 examples/*.root
