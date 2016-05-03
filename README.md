@@ -1,4 +1,4 @@
-hcana - Hall C ROOT/C++ analyzer   \mainpage
+hcana - Hall C ROOT/C++ analyzer
 ============================================
 
 hcana is an under-development tool to analyze data from the HMS, SHMS and
