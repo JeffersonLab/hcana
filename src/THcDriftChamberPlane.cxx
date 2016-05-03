@@ -1,10 +1,9 @@
-//*-- Author :
+/** \class ThcDriftChamberPlane
+    \ingroup Detectors
 
-//////////////////////////////////////////////////////////////////////////
-//
-// THcDriftChamberPlane
-//
-//////////////////////////////////////////////////////////////////////////
+Class for a a single Hall C horizontal drift chamber plane
+
+*/
 
 #include "THcDC.h"
 #include "THcDriftChamberPlane.h"

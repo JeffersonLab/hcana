@@ -1,10 +1,10 @@
-//*-- Author : Stephen A. Wood 10.02.2012
+/** \class THcParmList
+    \ingroup Core
 
-// THcParmList
-//
-// A THaVarList that holds parameters read from
-// the legacy ENGINE parameter file format
-//
+A class that can read and hold the parmaters from the CTP formatted
+parameter files used by the Fortran ENGINE.
+
+*/
 
 #define INCLUDESTR "#include"
 
@@ -42,17 +42,21 @@ inline static bool IsComment( const string& s, string::size_type pos )
 
 void THcParmList::Load( const char* fname, Int_t RunNumber )
 {
-  // Read a CTP style parameter file.
-  //
-  // Parameter values and arrays of values are cached in a THaVarList
-  // and are available for use elsewhere in the analyzer.
-  // Text strings are saved in a THaTextvars list.
-  // Parameter files can contain "include" statements of the form
-  //   #include "filename"
-  //
-  // If a run number is given, ignore input until a line with a matching
-  // run number or run number range is found.  All parameters following
-  // the are read until a non matching run number or range is encountered.
+  /**
+Read a CTP style parameter file.
+
+Parameter values and arrays of values are cached in a THaVarList
+and are available for use elsewhere in the analyzer.
+Text strings are saved in a THaTextvars list.
+Parameter files can contain "include" statements of the form
+~~~
+   #include "filename"
+~~~
+
+If a run number is given, ignore input until a line with a matching
+run number or run number range is found.  All parameters following
+the are read until a non matching run number or range is encountered.
+  */
 
   static const char* const whtspc = " \t";
 

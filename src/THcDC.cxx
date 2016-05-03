@@ -1,13 +1,13 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcDC                                                              //
-//                                                                           //
-// Class for a generic hodoscope consisting of multiple                      //
-// planes with multiple paddles with phototubes on both ends.                //
-// This differs from Hall A scintillator class in that it is the whole       //
-// hodoscope array, not just one plane.                                      //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** \class THcDC
+    \ingroup Detectors
+This class analyzes a package of horizontal drift chambers.  It uses the
+first letter of the apparatus name as a prefix to parameter names.  The
+paramters, read in the Setup method, determine the number of chambers and
+the number of parameters per plane.
+
+\author S. A. Wood, based on Fortran ENGINE
+
+*/
 
 #include "THcDC.h"
 #include "THaEvData.h"
@@ -81,7 +81,7 @@ THcDC::THcDC(
 //_____________________________________________________________________________
 void THcDC::Setup(const char* name, const char* description)
 {
-
+  // Create the chamber and plane objects using parameters.
   static const char* const here = "Setup";
 
   THaApparatus *app = GetApparatus();
@@ -173,6 +173,8 @@ THcDC::THcDC( ) :
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
 {
+  // Register the plane objects with the appropriate chambers.
+  // Trigger ReadDatabase to load the remaining parameters
   Setup(GetName(), GetTitle());	// Create the subdetectors here
   EffInit();
 
@@ -237,22 +239,12 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
 //_____________________________________________________________________________
 Int_t THcDC::ReadDatabase( const TDatime& date )
 {
-  // Read this detector's parameters from the database file 'fi'.
+  // Read this detector's parameters from the ThcParmList
   // This function is called by THaDetectorBase::Init() once at the
   // beginning of the analysis.
   // 'date' contains the date/time of the run being analyzed.
 
   //  static const char* const here = "ReadDatabase()";
-
-  // Read data from database 
-  // Pull values from the THcParmList instead of reading a database
-  // file like Hall A does.
-
-  // We will probably want to add some kind of method to gHcParms to allow
-  // bulk retrieval of parameters of interest.
-
-  // Will need to determine which spectrometer in order to construct
-  // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
 
   delete [] fXCenter;  fXCenter = new Double_t [fNChambers];
   delete [] fYCenter;  fYCenter = new Double_t [fNChambers];
@@ -338,7 +330,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
 //_____________________________________________________________________________
 Int_t THcDC::DefineVariables( EMode mode )
 {
-  // Initialize global variables and lookup table for decoder
+  // Initialize global variables for histograms and Root tree
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
@@ -442,7 +434,9 @@ void THcDC::ClearEvent()
 //_____________________________________________________________________________
 Int_t THcDC::Decode( const THaEvData& evdata )
 {
-
+  // Decode event into hit list.
+  // Pass hit list to the planes.
+  // Load hits from planes into chamber objects
   ClearEvent();
   Int_t num_event = evdata.GetEvNum();
   if (fdebugprintrawdc ||fdebugprintdecodeddc || fdebuglinkstubs || fdebugtrackprint) cout << " event num = " << num_event << endl;

@@ -1,10 +1,10 @@
-//*-- Author :
+/** \class THcScintillatorPlane
+    \ingroup Detectors
 
-//////////////////////////////////////////////////////////////////////////
-//
-// THcScintillatorPlane
-//
-//////////////////////////////////////////////////////////////////////////
+This class implements a single plane of scintillators.  The THaHodoscope
+class instatiates one object per plane.
+
+*/
 #include "TMath.h"
 #include "THcScintillatorPlane.h"
 #include "TClonesArray.h"

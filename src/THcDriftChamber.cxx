@@ -1,13 +1,13 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcDriftChamber                                                           //
-//                                                                           //
-// Subdetector class to hold a bunch of planes constituting a chamber        //
-// This class will be created by the THcDC class which will also create      //
-// the plane objects.                                                        //
-// The THcDC class will then pass this class a list of the planes.           //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** \class ThcDriftChamber
+    \ingroup Detectors
+
+Subdetector class to hold a bunch of planes constituting a chamber
+This class will be created by the THcDC class which will also create
+the plane objects.
+
+The THcDC class will then pass this class a list of the planes.
+
+*/
 
 #include "THcDriftChamber.h"
 #include "THcDC.h"
