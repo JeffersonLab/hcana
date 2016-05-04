@@ -283,7 +283,7 @@ void THcDetectorMap::Load(const char *fname)
     if((pos=line.find_first_of("=")) != string::npos) { // Setting parameter
       strcpy(varname, (line.substr(0,pos)).c_str());
       Int_t valuestartpos = pos+1;
-      UInt_t commapos = line.find_first_of(",");
+      Int_t commapos = line.find_first_of(",");
       Int_t value;
       Int_t value2 = -1;
       if(commapos != string::npos) {
