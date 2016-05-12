@@ -40,6 +40,8 @@ config.log
 # Doxygen generated documentation directory
 docs/ROOT.tag
 docs/html
+docs/Doxyfile_podd
+docs/Doxygen_podd.tag
 
 # Examples directory
 examples/*.root
