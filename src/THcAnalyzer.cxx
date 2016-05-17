@@ -1,26 +1,24 @@
-//*-- Author :    Stephen Wood  13-March-2012
+/** \class THcAnalyzer
+    \ingroup Base
 
-//////////////////////////////////////////////////////////////////////////
-//
-// THcAnalyzer
-//
-// THcAnalyzer is the base class for a "Hall C analyzer" class.
-// An analyzer defines the basic actions to perform during analysis.
-// THcAnalyzer is the default analyzer that is used if no user class is
-// defined.  It performs a standard analysis consisting of
-//
-//   1. Decoding/Calibrating
-//   2. Track Reconstruction
-//   3. Physics variable processing
-//
-// At the end of each step, testing and histogramming are done for
-// the appropriate block defined in the global test/histogram lists.
-//
-// Hall C has their own analyzer class because some things are bound to
-// be different.
-//
-//////////////////////////////////////////////////////////////////////////
+THcAnalyzer is the base class for a "Hall C analyzer" class.
+An analyzer defines the basic actions to perform during analysis.
+THcAnalyzer is the default analyzer that is used if no user class is
+defined.  It performs a standard analysis consisting of
 
+   1. Decoding/Calibrating
+   2. Track Reconstruction
+   3. Physics variable processing
+
+At the end of each step, testing and histogramming are done for
+the appropriate block defined in the global test/histogram lists.
+
+Hall C has their own analyzer class because some things are bound to
+be different.
+
+\author S. A. Wood,  13-March-2012
+
+*/
 #include "THcAnalyzer.h"
 #include "THaRunBase.h"
 #include "THaBenchmark.h"

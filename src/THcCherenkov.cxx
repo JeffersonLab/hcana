@@ -1,26 +1,11 @@
-///////////////////////////////////////////////////////////////////////////////////////
-//                                                                                   //
-// THcCherenkov                                                                      //
-//                                                                                   //
-// Class for an Cherenkov detector consisting of two PMT's                           //
-//                                                                                   //
-// Zafar Ahmed. Fourth pull request. January 30 2014.                                //
-// Comment: No need to cahnge the Map file.                                          //
-// Comment  New parameter hcer_tot_pmts = 2 is added to the hcana.param file         //
-//                                                                                   //
-// This code is for the coarse process of THcCherenkov class.                        //
-//                                                                                   //
-//                                                                                   //
-// Variable Name   Description                                                       //
-//                                                                                   //
-// phototubes      Nuber of Cherenkov photo tubes                                    //
-// adc             Raw ADC values                                                    //
-// adc_p           Pedestal Subtracted ADC values                                    //
-// npe             Number of Photo electrons                                         //
-// npesum          Sum of Number of Photo electrons                                  //
-// ncherhit        Number of Hits(Cherenkov)                                         //
-//                                                                                   //
-///////////////////////////////////////////////////////////////////////////////////////
+/** \class THcCherenkov
+    \ingroup Detectors
+
+Class for an Cherenkov detector consisting of two PMT's                         
+
+\author Zafar Ahmed
+
+*/
 
 #include "THcCherenkov.h"
 #include "TClonesArray.h"

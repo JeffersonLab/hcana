@@ -1,5 +1,5 @@
 /** \class ThcDriftChamberPlane
-    \ingroup Detectors
+    \ingroup DetSupport
 
 Class for a a single Hall C horizontal drift chamber plane
 
