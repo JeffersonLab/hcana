@@ -1,13 +1,9 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcShower                                                                 //
-//                                                                           //
-// Shower counter class, describing a generic segmented shower detector.     //
-//                                                                           //
-//                                                                           //
-//                                                                           //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** \class THcShower
+    \ingroup Detectors
+
+Shower counter class, describing a generic segmented shower detector.     //
+
+*/
 
 #include "THcShower.h"
 #include "THcHallCSpectrometer.h"
