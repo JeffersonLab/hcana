@@ -1,4 +1,4 @@
-/** \class ThcDriftChamberPlane
+/** \class THcDriftChamberPlane
     \ingroup DetSupport
 
 Class for a a single Hall C horizontal drift chamber plane

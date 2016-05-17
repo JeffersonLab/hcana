@@ -40,7 +40,7 @@ hodoscope array, not just one plane.
 #include "TClonesArray.h"
 #include "TMath.h"
 
-#include "THaTrackProj.h"
+s#include "THaTrackProj.h"
 #include <vector>
 
 #include <cstring>
@@ -510,6 +510,11 @@ void THcHodoscope::DeleteArrays()
 inline 
 void THcHodoscope::ClearEvent()
 {
+  /*! \brief Clears variables
+   *
+   *  Called by  THcHodoscope::Decode
+   *
+   */
 
   fBetaP = 0.;
   fBetaNoTrk = 0.0;
@@ -532,6 +537,19 @@ void THcHodoscope::ClearEvent()
 //_____________________________________________________________________________
 Int_t THcHodoscope::Decode( const THaEvData& evdata )
 {
+  /*! \brief Decodes raw data and processes raw data into hits for each instance of  THcScintillatorPlane
+   *
+   *  - Calls THcHodoscope::ClearEvent  
+   *  - Reads raw data using THcHitList::DecodeToHitList
+   *  - If one wants to subtract pedestals (assumed to be a set of data at beginning of run)
+   *    + Must define "Pedestal_event" cut in the cuts definition file 
+   *    + For each "Pedestal_event" calls THcScintillatorPlane::AccumulatePedestals and returns
+   *    + After First event which is not a  "Pedestal_event" calls THcScintillatorPlane::CalculatePedestals  
+   *  - For each scintillator plane THcScintillatorPlane::ProcessHits
+   *  - Calls THcHodoscope::EstimateFocalPlaneTime
+   *      
+   *
+   */
   ClearEvent();
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = DecodeToHitList(evdata);
@@ -586,7 +604,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   }
   cout << endl;
   }
-  ///  fStartTime = 500;		// Drift Chamber will need this
+
 
   return nhits;
 }
@@ -594,6 +612,15 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 //_____________________________________________________________________________
 void THcHodoscope::EstimateFocalPlaneTime( void )
 {
+  /*! \brief Calculates the Drift Chamber start time and fBetaNoTrk (velocity determined without track info)
+   *
+   *  - Called by  THcHodoscope::Decode  
+   *  - selects good scintillator paddle hits
+   *     + loops through hits in each scintillator plane and fills histogram array, "timehist", with corrected times for positive 
+   *        and negative ends of each paddle
+   *     + Determines the peak of "timehist"    
+   *
+   */
 
   Int_t timehist[200];
 

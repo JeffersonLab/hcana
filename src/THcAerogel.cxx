@@ -1,4 +1,4 @@
-/** \class ThcAerogel
+/** \class THcAerogel
     \ingroup Detectors
 
 Class for an Aerogel detector consisting of pairs of PMT's

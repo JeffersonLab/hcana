@@ -1,4 +1,4 @@
-/** \class ThcDriftChamber
+/** \class THcDriftChamber
     \ingroup DetSupport
 
 Subdetector class to hold a bunch of planes constituting a chamber
