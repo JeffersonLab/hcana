@@ -1,5 +1,5 @@
 /** \class THcScintillatorPlane
-    \ingroup Detectors
+    \ingroup DetSupport
 
 This class implements a single plane of scintillators.  The THaHodoscope
 class instatiates one object per plane.
