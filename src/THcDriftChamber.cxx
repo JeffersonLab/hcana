@@ -1,5 +1,5 @@
-/** \class ThcDriftChamber
-    \ingroup Detectors
+/** \class THcDriftChamber
+    \ingroup DetSupport
 
 Subdetector class to hold a bunch of planes constituting a chamber
 This class will be created by the THcDC class which will also create

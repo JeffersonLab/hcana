@@ -1,7 +1,7 @@
 /** \class THcScintillatorPlane
-    \ingroup Detectors
+    \ingroup DetSupport
 
-This class implements a single plane of scintillators.  The THaHodoscope
+This class implements a single plane of scintillators.  The THcHodoscope
 class instatiates one object per plane.
 
 */
@@ -237,6 +237,10 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 //_____________________________________________________________________________
 void THcScintillatorPlane::Clear( Option_t* )
 {
+  /*! \brief Clears fHodoHits,frPosTDCHits,frNegTDCHits,frPosADCHits,frNegADCHits
+   * 
+   * -  Clears fHodoHits,frPosTDCHits,frNegTDCHits,frPosADCHits,frNegADCHits
+   */ 
   //cout << " Calling THcScintillatorPlane::Clear " << GetName() << endl;
   // Clears the hit lists
   fHodoHits->Clear();
@@ -250,7 +254,8 @@ void THcScintillatorPlane::Clear( Option_t* )
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::Decode( const THaEvData& evdata )
 {
-  // Doesn't actually get called.  Use Fill method instead
+  /*! \brief Does nothing. Data decode in  THcScintillatorPlane::Processhits which is called by THcHodoscope::Decode 
+   */ 
   cout << " Calling THcScintillatorPlane::Decode " << GetName() << endl;
 
   return 0;
@@ -258,6 +263,8 @@ Int_t THcScintillatorPlane::Decode( const THaEvData& evdata )
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::CoarseProcess( TClonesArray& tracks )
 {
+  /*! \brief Does nothing
+   */ 
  
   cout <<"*******************************\n";
   cout <<"NOW IN THcScintilatorPlane::CoarseProcess!!!!\n";
@@ -270,6 +277,8 @@ Int_t THcScintillatorPlane::CoarseProcess( TClonesArray& tracks )
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::FineProcess( TClonesArray& tracks )
 {
+  /*! \brief Does nothing
+   */ 
   return 0;
 }
 
@@ -277,14 +286,22 @@ Int_t THcScintillatorPlane::FineProcess( TClonesArray& tracks )
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 {
-  // Extract the data for this plane from hit list
-  // Assumes that the hit list is sorted by plane, so we stop when the
-  // plane doesn't agree and return the index for the next hit.
-  // GN: Select only events that have at least one of their TDC signals in the
-  // right range. 
-  // Also subtract the pedestals from the adc signal (as per the ENGINE) we're not checking here
-  // if the actual ADC is larger than the pedestal value we subtract!!
-
+  /*! \brief Extract scintillator paddle hits from raw data starting at "nexthit" 
+   * - Called by THcHodoscope::Decode 
+   * - Loops through "rawhits" array  starting at index of "nexthit"
+   * - Assumes that the hit list is sorted by plane and looping ends when plane number of hit doesn't match fPlaneNum  
+   * - Fills THcSignalHit objects frPosTDCHits and frNegTDCHits when TDC > 0
+   * - Fills THcSignalHit objects frPosADCHits and frNegaDCHit with pedestal subtracted ADC when value larger than 50
+   * - For hits that have TDC value for either positive or negative PMT within  fScinTdcMin and fScinTdcMax
+   *  + Creates new  fHodoHits[fNScinHits] =  THcHodoHit
+   *  + Calculates pulse height correction to the positive and negative PMT times
+   *  + Correct times for time traveled in paddle 
+   *  + Correct times for time of flight using beta from central spectrometer momentum and particle type
+   *  + Calls  SetCorrectedTime method of THcHodoHit
+   *  + Increments fNScinHits
+   * - Returns value of nexthit + number of hits processed
+   * 
+  */
   //raw
   Int_t nrPosTDCHits=0;
   Int_t nrNegTDCHits=0;
@@ -367,9 +384,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 {
-  // Extract the data for this plane from hit list, accumulating into
-  // arrays for calculating pedestals.
-
+  /*! \brief Extract the data for this plane from raw hit list THcRawHodoHit, accumulating into arrays for calculating pedestals.
+   *  
+   * - Loop through raw data for scintillator plane
+   */
   Int_t nrawhits = rawhits->GetLast()+1;
   // cout << "THcScintillatorPlane::AcculatePedestals " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
 
@@ -410,9 +428,11 @@ Int_t THcScintillatorPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nex
 //_____________________________________________________________________________
 void THcScintillatorPlane::CalculatePedestals( )
 {
-  // Use the accumulated pedestal data to calculate pedestals
-  // Later add check to see if pedestals have drifted ("Danger Will Robinson!")
-  //  cout << "Plane: " << fPlaneNum << endl;
+ /*! \brief   Calculate pedestals from arrays made in THcScintillatorPlane::AccumulatePedestals
+  * 
+  * - Calculate pedestals from arrays made in THcScintillatorPlane::AccumulatePedestals
+  * - In old fortran ENGINE code, a comparison was made between calculated pedestals and the pedestals read in by the FASTBUS modules for zero supression. This is not implemented. 
+  */
   for(UInt_t i=0; i<fNelem;i++) {
     
     // Positive tubes
@@ -432,6 +452,11 @@ void THcScintillatorPlane::CalculatePedestals( )
 //_____________________________________________________________________________
 void THcScintillatorPlane::InitializePedestals( )
 {
+ /*! \brief   called by THcScintillatorPlane::ReadDatabase
+  * 
+  * - Initialize variables used in  THcScintillatorPlane::AccumulatePedestals and THcScintillatorPlane::CalculatePedestals
+  * - Minimum number of pedestal events needed for calculation, fMinPeds, hadrcoded to 500 
+  */
   fNPedestalEvents = 0;
   fMinPeds = 500; 		// In engine, this is set in parameter file
   fPosPedSum = new Int_t [fNelem];
