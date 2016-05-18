@@ -1,16 +1,13 @@
-// Author : Buddhini Waidyawansa
-// Date : 12-09-2013
+/** \class THcRaster
+    \ingroup DetSupport
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcRaster                                                                 //
-//                                                                           //
-//  A class to decode the fast raster signals.                               //
-//  Measures the two magnet currents which are propotioanl to horizontal and //
-//  vertical beam position                                                   //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+  A class to decode the fast raster signals.                               
+  Measures the two magnet currents which are proportional to horizontal and 
+  vertical beam position                                                   
 
+\author Buddhini Waidyawansa
+
+*/
 #include "THcRaster.h"
 #include "THaEvData.h"
 #include "THaDetMap.h"

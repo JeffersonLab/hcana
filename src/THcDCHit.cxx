@@ -1,11 +1,9 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcDCHit                                                                 //
-//                                                                           //
-// Class representing a single hit for the VDC                               //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** \class THcDCHit
+    \ingroup DetSupport
 
+Drift chamber wire hit info
+
+*/
 #include "THcDCHit.h"
 #include "THcDCTimeToDistConv.h"
 

@@ -1,15 +1,14 @@
-//*-- Author :    Stephen Wood  17-Oct-2013
+/** \class THcFormula
+    \ingroup Base
 
-//////////////////////////////////////////////////////////////////////////
-//
-// THcFormula
-//
-// Tweaked THaFormula.  If cutname.scaler is used in a formula, then
-// it is evaluated as the number of times that the cut passed.
-// Use EVariableType of kUndefined to indicate cut scaler in list of
-// variables used in the formula
-//
-//////////////////////////////////////////////////////////////////////////
+ Tweaked THaFormula.  If cutname.scaler is used in a formula, then
+ it is evaluated as the number of times that the cut passed.
+ Use EVariableType of kUndefined to indicate cut scaler in list of
+ variables used in the formula
+
+\author S. A. Wood
+
+*/
 
 #include "THcFormula.h"
 #include "THcParmList.h"

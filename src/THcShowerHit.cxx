@@ -1,3 +1,7 @@
+/** \classTHcShowerHit 
+    \ingroup DetSupport
+
+*/
 #include "THcShowerHit.h"
 
 //ClassImp(THcShowerHit)

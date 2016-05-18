@@ -1,11 +1,10 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcRawDCHit                                                                  //
-//                                                                           //
-// Class representing for drift chamber wire (or other device with           //
-//   a single multihit TDC channel per detector element                      //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** \class  THcRawDCHit
+    \ingroup DetSupport
+
+ Class representing for drift chamber wire (or other device with      
+   a single multihit TDC channel per detector element                 
+
+*/
 
 #include "THcRawDCHit.h"
 

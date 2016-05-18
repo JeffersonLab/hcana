@@ -1,14 +1,10 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcHodoEff                                                                //
-//                                                                           //
-// Class for accumulating statistics for and calculating hodoscope           //
-// efficiencies.                                                             //
-//                                                                           //
-// Moddled after VDCeff                                                      //
-// For now trying to emulate work done in h_scin_eff/h_scin_eff_shutdown     //
-///////////////////////////////////////////////////////////////////////////////
+/** \class THcHodoEff
+    \ingroup DetSupport
 
+ Class for accumulating statistics for and calculating hodoscope
+ efficiencies.                                                  
+
+*/
 #include "THaEvData.h"
 #include "THaCutList.h"
 #include "VarDef.h"

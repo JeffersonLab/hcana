@@ -1,5 +1,5 @@
 /** \class THcParmList
-    \ingroup Core
+    \ingroup Base
 
 A class that can read and hold the parmaters from the CTP formatted
 parameter files used by the Fortran ENGINE.

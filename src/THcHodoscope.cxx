@@ -7,12 +7,6 @@ This differs from Hall A scintillator class in that it is the whole
 hodoscope array, not just one plane.
 
 */
-// Date July 8 2014:
-// Zafr Ahmed
-// Beta and chis square are calculated for each of the hodoscope track.
-// Two new variables are added. fBeta and fBetaChisq
-//
-///////////////////////////////////////////////////////////////////////////////
 
 #include "THcSignalHit.h"
 #include "THcHodoHit.h"
@@ -40,7 +34,7 @@ hodoscope array, not just one plane.
 #include "TClonesArray.h"
 #include "TMath.h"
 
-s#include "THaTrackProj.h"
+#include "THaTrackProj.h"
 #include <vector>
 
 #include <cstring>

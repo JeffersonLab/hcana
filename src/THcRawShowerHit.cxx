@@ -1,19 +1,18 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcRawShowerHit                                                           //
-//                                                                           //
-// Class representing a single raw hit for a hodoscope paddle                //
-//                                                                           //
-// Contains plane, counter and pos/neg adc and tdc values                    //
-//                                                                           //
-// Enhanced to work with FADC250 data samples.  If fNPosSamples/fNNegSamples //
-// is greater than 1, assume that the data held in the hit is the sampled    //
-// waveform.  Signals 0,1 will return the integrated pulse with dynamic      //
-// pedestal subtraction (first four samples comprise the pedestal).  Signals //
-// 2,3 are reserved for time information.  Signals 4,5 are pedestals and     //
-// 6 and 7 are the straight sum of all the samples.                          //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** \class THcRawShowerHit
+    \ingroup DetSupport
+
+ Class representing a single raw hit for a hodoscope paddle                
+
+ Contains plane, counter and pos/neg adc and tdc values                    
+                                                                           
+ Enhanced to work with FADC250 data samples.  If fNPosSamples/fNNegSamples 
+ is greater than 1, assume that the data held in the hit is the sampled    
+ waveform.  Signals 0,1 will return the integrated pulse with dynamic      
+ pedestal subtraction (first four samples comprise the pedestal).  Signals 
+ 2,3 are reserved for time information.  Signals 4,5 are pedestals and     
+ 6 and 7 are the straight sum of all the samples.                          
+
+*/
 
 #include "THcRawShowerHit.h"
 #include <iostream>

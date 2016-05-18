@@ -1,14 +1,14 @@
-//*-- Author: Stephen Wood
+/** \class THcDetectorMap
+    \ingroup Base
 
-//////////////////////////////////////////////////////////////////////////
-//
-// THcDetectorMap
-//
-// Class to read and Hall C style detector map
-//   FillMap method builds a map for a specific detector
-//
-//////////////////////////////////////////////////////////////////////////
 
+
+ Class to read and Hall C style detector map
+   FillMap method builds a map for a specific detector
+
+\author S. A. Wood
+
+*/
 #include "THcDetectorMap.h"
 
 #include "TObjArray.h"

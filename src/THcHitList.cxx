@@ -1,15 +1,11 @@
-//*-- Author :    Stephen Wood 30-March-2012
+/** \class THcHitList
+    \ingroup Base
 
-//////////////////////////////////////////////////////////////////////////
-//
-// THcHitList
-//
-// Class to build a Hall C ENGINE style list of raw hits from the raw data.
-// Detectors that use hit lists need to inherit from this class
-// as well as THaTrackingDetector or THaNonTrackingDetector
-//
-//////////////////////////////////////////////////////////////////////////
+ Class to build a Hall C ENGINE style list of raw hits from the raw data.
+ Detectors that use hit lists need to inherit from this class
+ as well as THaTrackingDetector or THaNonTrackingDetector
 
+*/
 #include "THcHitList.h"
 #include "TError.h"
 #include "TClass.h"

@@ -1,12 +1,14 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcRawHodoHit                                                           //
-//                                                                           //
-// Class representing a single raw hit for a hodoscope paddle                //
-//                                                                           //
-// Contains plane, counter and pos/neg adc and tdc values                    //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** \class THcRawHodoHit
+    \ingroup DetSupport
+
+Raw Aerogel Hit Info
+
+Class representing a single raw hit for a hodoscope paddle  
+                                                            
+ Contains plane, counter and pos/neg adc and tdc values   
+                                                          
+
+*/
 
 #include <cstring>
 #include <cstdio>

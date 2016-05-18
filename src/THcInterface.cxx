@@ -1,14 +1,11 @@
-//*-- Author :    Ole Hansen   12/05/2000
+/** \class THcInterface
+    \ingroup Base
 
-//////////////////////////////////////////////////////////////////////////
-//
-// THcInterface
-//
-// THcInterface is the interactive interface to the Hall A Analyzer.
-// It allows interactive access to all analyzer classes as well as
-// all of standard ROOT.
-//
-//////////////////////////////////////////////////////////////////////////
+ THcInterface is the interactive interface to the Hall A Analyzer.
+ It allows interactive access to all analyzer classes as well as
+ all of standard ROOT.
+
+*/
 
 #include "TROOT.h"
 #include "TClass.h"
