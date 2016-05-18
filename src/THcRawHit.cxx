@@ -1,12 +1,11 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcRawHit                                                                 //
-//                                                                           //
-// Abstract class for a single raw hit                                       //
-//                                                                           //
-// Contains plane, counter and at least one data value                       //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** \class THcRawHit
+    \ingroup DetSupport
+
+ Abstract class for a single raw hit                        
+
+ Contains plane, counter and at least one data value        
+
+*/
 
 #include "THcRawHit.h"
 

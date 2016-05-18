@@ -1,65 +1,17 @@
-//*-- Author :    Stephen Wood 20-Apr-2012
+/** \class THcHallCSpectrometer
+    \ingroup Base
 
-//////////////////////////////////////////////////////////////////////////
-//
-// THcHallCSpectrometer
-//
-// A standard Hall C spectrometer.
-// Contains no standard detectors,
-//  May add hodoscope
-//
-// The usual name of this object is either "H", "S", or "P"
-// for HMS, SOS, or suPerHMS respectively
-//
-// Defines the functions FindVertices() and TrackCalc(), which are common
-// to both the LeftHRS and the RightHRS.
-//
-// Special configurations of the HRS (e.g. more detectors, different 
-// detectors) can be supported in on e of three ways:
-//
-//   1. Use the AddDetector() method to include a new detector
-//      in this apparatus.  The detector will be decoded properly,
-//      and its variables will be available for cuts and histograms.
-//      Its processing methods will also be called by the generic Reconstruct()
-//      algorithm implemented in THaSpectrometer::Reconstruct() and should
-//      be correctly handled if the detector class follows the standard 
-//      interface design.
-//
-//   2. Write a derived class that creates the detector in the
-//      constructor.  Write a new Reconstruct() method or extend the existing
-//      one if necessary.
-//
-//   3. Write a new class inheriting from THaSpectrometer, using this
-//      class as an example.  This is appropriate if your HRS 
-//      configuration has fewer or different detectors than the 
-//      standard HRS. (It might not be sensible to provide a RemoveDetector() 
-//      method since Reconstruct() relies on the presence of the 
-//      standard detectors to some extent.)
-//
-//  For timing calculations, S1 is treated as the scintillator at the
-//  'reference distance', corresponding to the pathlength correction
-//  matrix.
-//
-//
-//  Golden track using scin. Zafar Ahmed. August 19 2014
-//      Goldent track is moved to THcHallCSpectrometer::TrackCalc()
-//      if  fSelUsingScin == 0 then golden track is calculated just 
-//      like podd. i.e. it is the first track with minimum chi2/ndf 
-//      with sorting ON
-//
-//      if fSelUsingScin == 1 then golden track is calculetd just like
-//      engine/HTRACKING/h_select_best_track_using_scin.h. This method 
-//      gives the best track with minimum value of chi2/ndf but with 
-//      additional cuts on the tracks. These cuts are on dedx, beta 
-//      and on energy.
-//
-//  Golden track using prune. Zafar Ahmed. September 23 2014
-//      Selection of golden track using prune method is added.
-//      A bug is also fixed in THcHodoscope class
-//      Number of pmts hits, focal plane time, good time for plane 4 
-//      and good time for plane 3 are set to the tracks in 
-//      THcHodoscope class.
-//
+ A standard Hall C spectrometer.
+ Contains no standard detectors,
+
+ The usual name of this object is either "H", "S", "P"
+ for HMS, SOS, or suPerHMS respectively
+
+
+
+\author S. A. Wood
+
+*/
 //////////////////////////////////////////////////////////////////////////
 
 #include "THcHallCSpectrometer.h"

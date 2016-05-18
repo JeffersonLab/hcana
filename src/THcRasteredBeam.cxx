@@ -1,13 +1,11 @@
-// Author : Buddhini Waidyawansa
-// Date : 01-08-2014
+/** \class THcRasteredBeam
+    \ingroup Detectors
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcRasteredBeam                                                           //
-//                                                                           //
-//  A class to handle the raster processing tasks                            //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+  A class to handle the raster processing tasks                            
+
+\author Buddhini Waidyawansa
+
+*/
 
 #include "THcRasteredBeam.h"
 #include "THcRaster.h"

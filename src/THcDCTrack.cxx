@@ -1,9 +1,9 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcDCTrack                                                                //
-//                                                                           //
-// Class representing a track found from linking DC Space points             //
-///////////////////////////////////////////////////////////////////////////////
+/** \class THcDCTrack
+    \ingroup DetSupport
+
+ Class representing a track found from linking DC Space points    
+
+*/
 
 #include "THcDCHit.h"
 #include "THcDCTrack.h"
