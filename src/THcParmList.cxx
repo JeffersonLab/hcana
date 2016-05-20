@@ -1,8 +1,21 @@
 /** \class THcParmList
     \ingroup Base
 
-A class that can read and hold the parmaters from the CTP formatted
-parameter files used by the Fortran ENGINE.
+A THcParmList object holds an arbitrary list of parameters and
+their values.  Parameters may be integers, real numbers or strings.
+Integers and floating point numbers can be one dimensional arrays.
+(Strings can not be arrays.)  In addition to values, each parameter
+may have a title/description.  (No titles are saved for string parameters.)
+
+The Hall C analyzer make one instance of this class available via the
+global `gHcParms`.  The detector classes look for their
+configuration parameters in that list.
+
+This class is built on THaVarList, adding a method to load the list of
+parameters from Hall C ENGINE style CTP parameter files and a method
+to retrieve a set of parameters from the list.
+
+An instance of THaTextvars is created to hold the string parameters.
 
 */
 
@@ -29,6 +42,7 @@ Int_t  fDebug   = 1;  // Keep this at one while we're working on the code
 
 ClassImp(THcParmList)
 
+/// Create empty numerical and string parameter lists
 THcParmList::THcParmList() : THaVarList()
 {
   TextList = new THaTextvars;
@@ -43,19 +57,42 @@ inline static bool IsComment( const string& s, string::size_type pos )
 void THcParmList::Load( const char* fname, Int_t RunNumber )
 {
   /**
-Read a CTP style parameter file.
+Load the parameter cache by reading a CTP style parameter file.  Most
+parameter files used in the ENGINE should work.
 
-Parameter values and arrays of values are cached in a THaVarList
-and are available for use elsewhere in the analyzer.
-Text strings are saved in a THaTextvars list.
-Parameter files can contain "include" statements of the form
+A line in the file of the form
+~~~
+   varname = value1[, value2, value3, value4]  [; Comment]
+~~~
+adds the variable `varname` to the parameter cache and the value after
+the equal sign is stored.  If a list of values is given, then the
+values are saved as an array.  Lists of values may be continued on
+additional lines.  Lines without a `=` are interpreted as such continuation
+lines.  Text after a ";" is treated as a comment.  If this comment is
+on a line defining a parameter, then it is saved as the
+title/description for the parameter.
+
+Values may be expressions composed of numbers and previously defined
+parameters.  These expressions are evaluated with THaFormula.
+
+Lines of the form
+~~~
+   varname = "A string"
+~~~
+or
+~~~
+   varname = 'A string'
+~~~
+create string parameters.
+
+A parameter file can load other files with the include statement
 ~~~
    #include "filename"
 ~~~
 
-If a run number is given, ignore input until a line with a matching
-run number or run number range is found.  All parameters following
-the are read until a non matching run number or range is encountered.
+The ENGINE CTP support parameter "blocks" which were marked with
+`begin` and `end` statements.  These statements are ignored.
+
   */
 
   static const char* const whtspc = " \t";
@@ -438,13 +475,32 @@ the are read until a non matching run number or range is encountered.
 //_____________________________________________________________________________
 Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
 {
-  // Load a number of entries from the database.
-  // For array entries, the number of elements to be read in
-  // must be given, and the memory already allocated
-  // NOTE: initial code taken wholesale from THaDBFile. 
-  // GN 2012
-  // If prefix is specified, prepend each requested parameter name with
-  // the prefix.
+  /**
+
+Retrieve parameter values from the parameter cache.
+
+The following example loads several parameters held in the `gHcParms`
+parameter cache into scalar variables or arrays.
+~~~
+  DBRequest list[]={
+    {"nplanes", &fNPlanes, kInt},
+    {"name", &fName, kString},
+    {"array", fArray, kDouble, fArraySize},
+    {"optional", &FOptionalvar, kDouble, 0, 1},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list,"h");
+~~~
+If a string is passed as the second parameter of LoadParmValues, then
+that string is prepended to the parameter names given in the DBRequest
+list.  In the above example, the values for the parameters `hnplanes`,
+`hname`, `harray`, and `hoptional` are loaded.
+
+If a requested parameter is not found in the parameter cache, an error
+is printed.  If the 5th element of a DBRequest structure is true (non
+zero), then there will be no error if the parameter is missing.
+
+  */
   
   const DBRequest *ti = list;
   Int_t cnt=0;
@@ -455,7 +511,7 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
   while ( ti && ti->name ) {
     string keystr(prefix); keystr.append(ti->name);
     const char* key = keystr.c_str();
-    ///    cout <<"Now at "<<ti->name<<endl;
+    //    cout <<"Now at "<<ti->name<<endl;
     this_cnt = 0;
     if(this->Find(key)) {
       VarType ty = this->Find(key)->GetType();

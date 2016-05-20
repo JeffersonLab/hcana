@@ -1,32 +1,35 @@
 /** \class THcScalerEvtHandler
     \ingroup Base
 
-   Event handler for Hall C scalers
+ Event handler for Hall C scalers
 
 
-   This class does the following
-      For a particular set of event types (here, event type 0)
-      decode the scalers and put some variables into global variables.
-      The global variables can then appear in the Podd output tree T.
-      In addition, a tree "TS" is created by this class; it contains
-      just the scaler data by itself.  Note, the "fName" is concatenated
-      with "TS" to ensure the tree is unqiue; further, "fName" is
-      concatenated with the name of the global variables, for uniqueness.
-      The list of global variables and how they are tied to the
-      scaler module and channels is defined here; eventually this
-      will be modified to use a scaler.map file
-      NOTE: if you don't have the scaler map file (e.g. Leftscalevt.map)
-      there will be no variable output to the Trees.
+This class does the following
 
-   To use in the analyzer, your setup script needs something like this
-       gHaEvtHandlers->Add (new THcScalerEvtHandler("HMS","HC scaler event type 0"));
+For a particular set of event types (here, event type 0)
+decode the scalers and put some variables into global variables.
+The global variables can then appear in the Podd output tree T.
+In addition, a tree "TS" is created by this class; it contains
+just the scaler data by itself.  Note, the "fName" is concatenated
+with "TS" to ensure the tree is unqiue; further, "fName" is
+concatenated with the name of the global variables, for uniqueness.
+The list of global variables and how they are tied to the
+scaler module and channels is defined here; eventually this
+will be modified to use a scaler.map file
 
-   To enable debugging you may try this in the setup script
- 
+NOTE: if you don't have the scaler map file (e.g. Leftscalevt.map)
+there will be no variable output to the Trees.
+
+To use in the analyzer, your setup script needs something like this
+~~~
+     gHaEvtHandlers->Add (new THcScalerEvtHandler("HMS","HC scaler event type 0"));
+~~~
+To enable debugging you may try this in the setup script
+~~~
      THcScalerEvtHandler *hscaler = new THcScalerEvtHandler("HS","HC scaler event type 0");
      hscaler->SetDebugFile("HScaler.txt");
      gHaEvtHandlers->Add (hscaler);
-
+~~~
 \author  E. Brash based on THaScalerEvtHandler by R. Michaels
 */
 

@@ -28,6 +28,8 @@ public:
   static TClass* GetDecoder();
   static TClass* SetDecoder( TClass* c );
 
+  virtual const char* SetPrompt(const char *newPrompt);
+
 protected:
   static THcInterface*  fgAint;  //Pointer indicating that interface already exists
 

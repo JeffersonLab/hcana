@@ -1,7 +1,7 @@
 /** \class THcInterface
     \ingroup Base
 
- THcInterface is the interactive interface to the Hall A Analyzer.
+ THcInterface is the interactive interface to the Hall C Analyzer.
  It allows interactive access to all analyzer classes as well as
  all of standard ROOT.
 
@@ -57,9 +57,14 @@ THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
 			    void* options, int numOptions, Bool_t noLogo ) :
   TRint( appClassName, argc, argv, options, numOptions, kTRUE )
 {
-  // Create the Hall A analyzer application environment. The THcInterface 
-  // environment provides an interface to the the interactive ROOT system 
-  // via inheritance of TRint as well as access to the Hall A analyzer classes.
+  /**
+Create the Hall A/C analyzer application environment. The THcInterface 
+environment provides an interface to the the interactive ROOT system 
+via inheritance of TRint as well as access to the Hall A/C analyzer classes.
+
+This class is copy of THaInterface with the addition of of the global
+`gHcParms` to hold parameters.  It does not inherit from THaInterface.
+  */
 
   if( fgAint ) {
     Error("THcInterface", "only one instance of THcInterface allowed");
@@ -70,7 +75,7 @@ THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
   if( !noLogo )
     PrintLogo();
 
-  SetPrompt("analyzerThcInterface [%d] ");
+  SetPrompt("hcana [%d] ");
   gHaVars    = new THaVarList;
   gHcParms    = new THcParmList;
   gHaCuts    = new THaCutList( gHaVars );
@@ -176,7 +181,7 @@ void THcInterface::PrintLogo()
 void THcInterface::PrintLogo( Bool_t lite )
 #endif
 {
-   // Print the Hall A analyzer logo on standard output.
+  /// Print the Hall C analyzer logo on standard output.
 
    Int_t iday,imonth,iyear,mille;
    static const char* months[] = {"Jan","Feb","Mar","Apr","May",
@@ -206,12 +211,13 @@ void THcInterface::PrintLogo( Bool_t lite )
      Printf("  *            W E L C O M E  to  the            *");
      Printf("  *          H A L L C ++  A N A L Y Z E R       *");
      Printf("  *                                              *");
-     Printf("  *        Release %10s %18s *",halla_version,__DATE__);
+     Printf("  *            Based on                          *");
+     Printf("  *  PODD Release %10s %18s *",halla_version,__DATE__);
      Printf("  *  Based on ROOT %8s %20s *",root_version,root_date);
      //   Printf("  *             Development version              *");
      Printf("  *                                              *");
      Printf("  *            For information visit             *");
-     Printf("  *        http://hallaweb.jlab.org/root/        *");
+     Printf("  *      http://hallcweb.jlab.org/hcana/docs/    *");
      Printf("  *                                              *");
      Printf("  ************************************************");
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,18,0)
@@ -230,7 +236,7 @@ void THcInterface::PrintLogo( Bool_t lite )
 //_____________________________________________________________________________
 TClass* THcInterface::GetDecoder()
 {
-  // Get class of the current decoder
+  /// Get class of the current decoder
   cout << "In THcInterface::GetDecoder ... " << gHaDecoder << endl;
   return gHaDecoder;
 }
@@ -238,9 +244,9 @@ TClass* THcInterface::GetDecoder()
 //_____________________________________________________________________________
 TClass* THcInterface::SetDecoder( TClass* c )
 {
-  // Set the type of decoder to be used. Make sure the specified class
-  // actually inherits from the standard THaEvData decoder.
-  // Returns the decoder class (i.e. its argument) or NULL if error.
+  /// Set the type of decoder to be used. Make sure the specified class
+  /// actually inherits from the standard THaEvData decoder.
+  /// Returns the decoder class (i.e. its argument) or NULL if error.
 
   if( !c ) {
     ::Error("THcInterface::SetDecoder", "argument is NULL");
@@ -256,6 +262,27 @@ TClass* THcInterface::SetDecoder( TClass* c )
 
   gHaDecoder = c;
   return gHaDecoder;
+}
+
+//_____________________________________________________________________________
+//_____________________________________________________________________________
+const char* THcInterface::SetPrompt( const char* newPrompt )
+{
+  /// Make sure the prompt is and stays "hcana [%d]". ROOT 6 resets the
+  /// interpreter prompt for every line without respect to any user-set
+  /// default prompt.
+
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,0,0)
+  return TRint::SetPrompt(newPrompt);
+#else
+  TString s;
+  if( newPrompt ) {
+    s = newPrompt;
+    if( s.Index("root") == 0 )
+      s.Replace(0,4,"hcana");
+  }
+  return TRint::SetPrompt(s.Data());
+#endif
 }
 
 //_____________________________________________________________________________

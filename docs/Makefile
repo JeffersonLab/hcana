@@ -7,10 +7,11 @@ export DOXYGEN_SOURCE_DIRECTORY := ..
 PODDDIR = ../podd/docs
 # THISDIR is location of this directory relative to the podd docs directory
 THISDIR = ../../docs
+INSTALLPATH = jlabl1:/group/hallc/www/hallcweb/html/hcana/docs/
 
 all: doxygen
 
-doxygen: Doxyfile Doxygen_podd.tag ROOT.tag
+doxygen html/index.html: Doxyfile Doxygen_podd.tag ROOT.tag
 	doxygen
 
 Doxyfile_podd: $(PODDDIR)/Doxyfile
@@ -28,3 +29,6 @@ clean:
 	rm Doxyfile_podd
 	rm Doxygen_podd.tag
 
+# Must have permission to write to $(INSTALLPATH)
+install: doxygen
+	rsync -av --delete html/ $(INSTALLPATH)

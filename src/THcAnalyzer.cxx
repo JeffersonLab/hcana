@@ -13,8 +13,8 @@ defined.  It performs a standard analysis consisting of
 At the end of each step, testing and histogramming are done for
 the appropriate block defined in the global test/histogram lists.
 
-Hall C has their own analyzer class because some things are bound to
-be different.
+Hall C ENGINE style reports are implemented with the PrintReport
+method.  This can be used for generating end of run summary sheets.
 
 \author S. A. Wood,  13-March-2012
 
@@ -59,10 +59,10 @@ THcAnalyzer::~THcAnalyzer()
 //_____________________________________________________________________________
 void THcAnalyzer::PrintReport(const char* templatefile, const char* ofile)
 {
-  // Generate "reports" such as end of run scaler/efficiency sheets
-  // Reads a template file, copying that file to the output, replacing
-  // variables and expressions inside of braces ({}) with evaluated values.
-  // Similar but not identical to ENGINE/CTP report templates.
+  /// Generate "reports" such as end of run scaler/efficiency sheets
+  /// Reads a template file, copying that file to the output, replacing
+  /// variables and expressions inside of braces ({}) with evaluated values.
+  /// Similar but not identical to ENGINE/CTP report templates.
   ifstream ifile;
   ifile.open(templatefile);
 
@@ -139,12 +139,12 @@ void THcAnalyzer::PrintReport(const char* templatefile, const char* ofile)
 //_____________________________________________________________________________
 void THcAnalyzer::LoadInfo()
 {
-  // Create several THcParms variables in gHcParms containing 
-  // run information such as
+  /// Create several THcParms variables in gHcParms containing 
+  /// run information such as
   // run number, first event analyzed, number of events, etc.
-  //    gen_run_number - Current run
-  //    gen_run_starting_event - Id of first event analyzed
-  //    gen_event_id_number - Id of last event analyzed
+  ///    `gen_run_number` - Current run
+  ///    `gen_run_starting_event` - Id of first event analyzed
+  ///    `gen_event_id_number` - Id of last event analyzed
   Int_t* runnum;
   Int_t* firstevent;
   Int_t* lastevent;

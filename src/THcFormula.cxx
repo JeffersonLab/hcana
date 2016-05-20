@@ -1,10 +1,14 @@
 /** \class THcFormula
     \ingroup Base
 
- Tweaked THaFormula.  If cutname.scaler is used in a formula, then
- it is evaluated as the number of times that the cut passed.
- Use EVariableType of kUndefined to indicate cut scaler in list of
- variables used in the formula
+Enhanced THaFormula for use in report files.
+
+In addition to global variables (gHaVars) and cuts (gHaCuts),
+THcFormula expressions have access hcana parameters (gHcParms).
+
+The number of times a cut has been try, as well as the number of times
+that the cut has been tested can be accessed with cutname.`scaler` (or
+.`npassed`) and cutname.`ncalled`.  
 
 \author S. A. Wood
 
@@ -32,8 +36,8 @@ enum EFuncCode { kLength, kSum, kMean, kStdDev, kMax, kMin,
 //_____________________________________________________________________________
 static inline Int_t NumberOfSetBits( UInt_t v )
 {
-  // Count number of bits set in 32-bit integer. From
-  // http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
+  /// Count number of bits set in 32-bit integer. From
+  /// http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
 
   v = v - ((v >> 1) & 0x55555555);
   v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
@@ -43,7 +47,7 @@ static inline Int_t NumberOfSetBits( UInt_t v )
 //_____________________________________________________________________________
 static inline Int_t NumberOfSetBits( ULong64_t v )
 {
-  // Count number of bits in 64-bit integer
+  /// Count number of bits in 64-bit integer
 
   const ULong64_t mask32 = (1LL<<32)-1;
   return NumberOfSetBits( static_cast<UInt_t>(mask32 & v) ) +

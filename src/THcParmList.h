@@ -61,7 +61,7 @@ public:
 
 private:
 
-  THaTextvars* TextList;
+  THaTextvars* TextList;  //! Dictionary of string parameters
 
 #ifdef WITH_CCDB
   SQLiteCalibration* CCDB_obj;
