@@ -151,7 +151,7 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
   DBRequest list[]={
     {"stat_slop", &fStatSlop, kDouble},
     {"stat_maxchisq",&fMaxChisq, kDouble},
-    {"hodo_slop", fHodoSlop, kDouble, fNPlanes},
+    {"hodo_slop", fHodoSlop, kDouble, (UInt_t)fNPlanes},
     {0}
   };
   //  fMaxShTrk = 0.05;		// For cut on fraction of momentum seen in shower
@@ -257,8 +257,8 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
   Double_t hitDistance[fNPlanes];
   Int_t hitCounter[fNPlanes];
   Int_t checkHit[fNPlanes];
-  Bool_t goodTdcBothSides[fNPlanes];
-  Bool_t goodTdcOneSide[fNPlanes];
+  // Bool_t goodTdcBothSides[fNPlanes];
+  // Bool_t goodTdcOneSide[fNPlanes];
 
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     // Should really have plane object self identify as X or Y
@@ -267,8 +267,7 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
       hitCounter[ip] = TMath::Max(
 		       TMath::Min(
 		       TMath::Nint((hitPos[ip]-fCenterFirst[ip])/
-				   fSpacing[ip]+1),
-		       TMath::Nint( fNCounters[ip] )),1);
+				   fSpacing[ip]+1),fNCounters[ip] ),1);
       hitDistance[ip] =  hitPos[ip] - (fSpacing[ip]*(hitCounter[ip]-1) + 
 				       fCenterFirst[ip]);
     } else {			// Y Plane
@@ -276,8 +275,7 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
       hitCounter[ip] = TMath::Max(
 		       TMath::Min(
 		       TMath::Nint((fCenterFirst[ip]-hitPos[ip])/
-				   fSpacing[ip]+1),
-		       TMath::Nint( fNCounters[ip] )),1);
+				   fSpacing[ip]+1), fNCounters[ip] ),1);
       hitDistance[ip] =  hitPos[ip] -(fCenterFirst[ip] - 
 				      fSpacing[ip]*(hitCounter[ip]-1));
     }
@@ -292,8 +290,8 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
        
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     Int_t hitcounter=hitCounter[ip];
-    goodTdcBothSides[ip] = kFALSE;
-    goodTdcOneSide[ip] = kFALSE;
+    // goodTdcBothSides[ip] = kFALSE;
+    // goodTdcOneSide[ip] = kFALSE;
     checkHit[ip] = 2;
     Int_t nphits=fPlanes[ip]->GetNScinHits();
     TClonesArray* hodoHits = fPlanes[ip]->GetHits();
@@ -313,15 +311,15 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
   // Record position differences between track and center of scin
   // and increment 'should have hit' counters
   for(Int_t ip=0;ip<fNPlanes;ip++) {
-    Int_t hitcounter = hitCounter[ip];
+    // Int_t hitcounter = hitCounter[ip];
     Double_t dist = hitDistance[ip];
     if(TMath::Abs(dist) <= fStatSlop &&
        theTrack->GetChi2()/theTrack->GetNDoF() <= fMaxChisq &&
        theTrack->GetEnergy() >= 0.05 ) 
       {
 	fStatTrk[fHod->GetScinIndex(ip,hitCounter[ip]-1)]++;		
-	Double_t delta = theTrack->GetDp();
-	Int_t idel = TMath::Floor(delta+10.0);
+	// Double_t delta = theTrack->GetDp();
+	// Int_t idel = TMath::Floor(delta+10.0);
 	// Should
 	// if(idel >=0 && idel < 20) {
 	//   fStatTrkDel[ip][hitcounter][idel]++;
@@ -372,7 +370,7 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
 	    fHodoAndEffi[fHod->GetScinIndex(ip,hitCounter[ip]-1)]++;
 	    fHodoOrEffi[fHod->GetScinIndex(ip,hitCounter[ip]-1)]++;
 	    
-	    Double_t delta = theTrack->GetDp();
+	    // Double_t delta = theTrack->GetDp();
 	    // Int_t idel = TMath::Floor(delta+10.0);
 	    // if(idel >=0 && idel < 20) {
 	    //   fStatAndHitDel[ip][hitcounter][idel]++;
@@ -404,12 +402,12 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
 	}
 	// Determine if one or both PMTs had a good tdc
 	
-	if(goodTdcPos && goodTdcNeg) {
-	  goodTdcBothSides[ip] = kTRUE;
-	}
-	if(goodTdcPos || goodTdcNeg) {
-	  goodTdcOneSide[ip] = kTRUE;
-	}
+	// if(goodTdcPos && goodTdcNeg) {
+	//  goodTdcBothSides[ip] = kTRUE;
+	// }
+	// if(goodTdcPos || goodTdcNeg) {
+	//  goodTdcOneSide[ip] = kTRUE;
+	// }
       }
       
       /*
