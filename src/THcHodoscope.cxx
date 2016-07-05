@@ -590,6 +590,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   EstimateFocalPlaneTime();
 
   if (fdebugprintscinraw == 1) {
+    cout << " Event number = " << evdata.GetEvNum()<<endl;
   for(UInt_t ihit = 0; ihit < fNRawHits ; ihit++) {
     THcRawHodoHit* hit = (THcRawHodoHit *) fRawHitList->At(ihit);
     cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
@@ -638,12 +639,10 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
 	  timehist[k]++;
 	}
       }
-      ihit++;
     }
   }
 
   // Find the bin with most hits
-  ihit=0;
   Int_t binmax=0;
   Int_t maxhit=0;
   for(Int_t i=0;i<200;i++) {
@@ -655,8 +654,9 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
 
   ihit = 0;
   Double_t fpTimeSum = 0.0;
-  Int_t jhit = 0;
   fNfptimes=0;
+  Int_t  Ngood_hits_plane=0;
+  Double_t Plane_fptime_sum=0.0;
     
   fNoTrkPlaneInfo.clear();
   fNoTrkHitInfo.clear();
@@ -665,30 +665,34 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
     fNoTrkPlaneInfo[ip].goodplanetime = kFALSE;
     Int_t nphits=fPlanes[ip]->GetNScinHits();
     TClonesArray* hodoHits = fPlanes[ip]->GetHits();
+    Ngood_hits_plane=0;
+    Plane_fptime_sum=0.0;
     for(Int_t i=0;i<nphits;i++) {
       fNoTrkHitInfo.push_back(NoTrkHitInfo());
-      fNoTrkHitInfo[jhit].goodtwotimes = kFALSE;
-      fNoTrkHitInfo[jhit].goodscintime = kFALSE;
+      fNoTrkHitInfo[i].goodtwotimes = kFALSE;
+      fNoTrkHitInfo[i].goodscintime = kFALSE;
       Double_t tmin = 0.5*binmax;
       Double_t postime=((THcHodoHit*) hodoHits->At(i))->GetPosTOFCorrectedTime();
       Double_t negtime=((THcHodoHit*) hodoHits->At(i))->GetNegTOFCorrectedTime();
       if ((postime>tmin) && (postime<tmin+fTofTolerance) &&
 	  (negtime>tmin) && (negtime<tmin+fTofTolerance)) {
-	fNoTrkHitInfo[jhit].goodtwotimes = kTRUE;
-	fNoTrkHitInfo[jhit].goodscintime = kTRUE;
+	fNoTrkHitInfo[i].goodtwotimes = kTRUE;
+	fNoTrkHitInfo[i].goodscintime = kTRUE;
 	// Both tubes fired
 	Int_t index=((THcHodoHit*)hodoHits->At(i))->GetPaddleNumber()-1;
 	Double_t fptime = ((THcHodoHit*)hodoHits->At(i))->GetScinCorrectedTime() 
 	  - (fPlanes[ip]->GetZpos()+(index%2)*fPlanes[ip]->GetDzpos())
 	  / (29.979 * fBetaNominal);
 	if(TMath::Abs(fptime-fStartTimeCenter)<=fStartTimeSlop) {
-	  // Should also fill the all FP times histogram
+          Ngood_hits_plane++;
+	  Plane_fptime_sum+=fptime;
 	  fpTimeSum += fptime;
 	  fNfptimes++;
 	  fNoTrkPlaneInfo[ip].goodplanetime = kTRUE;
 	}
       }
-      jhit++;
+      fPlanes[ip]->SetFpTime(Plane_fptime_sum/float(Ngood_hits_plane));
+      fPlanes[ip]->SetNGoodHits(Ngood_hits_plane);
     }
     ihit++;
   }

@@ -226,8 +226,9 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     {"negtdchits", "List of Negative TDC hits",      "frNegTDCHits.THcSignalHit.GetPaddleNumber()"},
     {"posadchits", "List of Positive ADC hits",      "frPosADCHits.THcSignalHit.GetPaddleNumber()"},
     {"negadchits", "List of Negative ADC hits",      "frNegADCHits.THcSignalHit.GetPaddleNumber()"},
-    //    {"fptime", "Time at focal plane",     //     "GetFpTime()"},
-    {"nhits", "Number of hits",           "GetNScinHits() "},
+    {"fptime", "Time at focal plane",     "GetFpTime()"},
+    {"nhits", "Number of paddle hits (passed TDC Min and Max cuts for both ends)",           "GetNScinHits() "},
+    {"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
     { 0 }
   };
 

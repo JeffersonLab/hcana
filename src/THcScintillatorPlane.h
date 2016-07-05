@@ -40,7 +40,8 @@ class THcScintillatorPlane : public THaSubDetector {
   virtual void  CalculatePedestals( );
 
   Int_t GetNelem() {return fNelem;}; // return number of paddles in this plane
-  Int_t GetNScinHits() {return fNScinHits;}; // # hits in plane (that pass min/max TDC cuts)
+  Int_t GetNScinHits() {return fNScinHits;}; // Get # hits in plane (that pass min/max TDC cuts)
+  Int_t GetNGoodHits() {return fNGoodHits;}; // Get # hits in plane (used in determining focal plane time)
   Double_t GetSpacing() {return fSpacing;}; // spacing of paddles 
   Double_t GetSize() {return fSize;};    // paddle size
   Double_t GetHodoSlop() {return fHodoSlop;}; // hodo slop
@@ -50,6 +51,10 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t GetPosRight() {return fPosRight;};
   Double_t GetPosOffset() {return fPosOffset;};
   Double_t GetPosCenter(Int_t PaddleNo) {return fPosCenter[PaddleNo];}; // counting from zero!
+  Double_t GetFpTime() {return fFptime;};
+ 
+  void SetFpTime(Double_t f) {fFptime=f;};
+  void SetNGoodHits(Int_t ng) {fNGoodHits=ng;};
 
   TClonesArray* fParentHitList;
 
@@ -67,7 +72,8 @@ class THcScintillatorPlane : public THaSubDetector {
   UInt_t fTotPlanes;            /* so we can read variables that are not indexed by plane id */
   UInt_t fNelem;		/* Need since we don't inherit from 
 				 detector base class */
-  Int_t fNScinHits;                 /* Number of hits in this plane */
+  Int_t fNScinHits;                 /* number of hits in plane (that pass min/max TDC cuts) */
+  Int_t fNGoodHits;                 /* number of hits in plane (used in determining focal plane time) */
   Int_t fMaxHits;               /* maximum number of hits to be considered - useful for dimensioning arrays */
   Double_t fSpacing;            /* paddle spacing */
   Double_t fSize;               /* paddle size */
@@ -95,6 +101,7 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t *fHodoSigma;
 
   Double_t fTolerance; /* need this for Focal Plane Time estimation */
+  Double_t fFptime;
   /* Pedestal Quantities */
   Int_t fNPedestalEvents;	/* Number of pedestal events */
   Int_t fMinPeds;		/* Only analyze/update if num events > */
