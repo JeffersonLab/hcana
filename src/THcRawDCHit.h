@@ -17,7 +17,7 @@ public:
   THcRawDCHit& operator=( const THcRawDCHit& );
   virtual ~THcRawDCHit() {}
 
-  virtual void Clear( Option_t* opt="" ) { fNHits=0; }
+  virtual void Clear( Option_t* opt="" ) { fNHits=0; fHasRef=kFALSE; }
 
   void SetData(Int_t signal, Int_t data);
   void SetReference(Int_t signal, Int_t reference);

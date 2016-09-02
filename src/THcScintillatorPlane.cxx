@@ -329,29 +329,30 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Int_t padnum=hit->fCounter;
 
     Int_t index=padnum-1;
-    if (hit->fTDC_pos > 0) 
-      ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->fTDC_pos);
-    if (hit->fTDC_neg > 0) 
-      ((THcSignalHit*) frNegTDCHits->ConstructedAt(nrNegTDCHits++))->Set(padnum, hit->fTDC_neg);
-    if ((hit->fADC_pos-fPosPed[index]) >= 50) 
-      ((THcSignalHit*) frPosADCHits->ConstructedAt(nrPosADCHits++))->Set(padnum, hit->fADC_pos-fPosPed[index]);
-    if ((hit->fADC_neg-fNegPed[index]) >= 50) 
-      ((THcSignalHit*) frNegADCHits->ConstructedAt(nrNegADCHits++))->Set(padnum, hit->fADC_neg-fNegPed[index]);
+    // Need to be finding first hit in TDC range, not the first hit overall
+    if (hit->fNRawHits[2] > 0) 
+      ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->GetTDCPos());
+    if (hit->fNRawHits[3] > 0) 
+      ((THcSignalHit*) frNegTDCHits->ConstructedAt(nrNegTDCHits++))->Set(padnum, hit->GetTDCNeg());
+    if ((hit->GetADCPos()-fPosPed[index]) >= 50) 
+      ((THcSignalHit*) frPosADCHits->ConstructedAt(nrPosADCHits++))->Set(padnum, hit->GetADCPos()-fPosPed[index]);
+    if ((hit->GetADCNeg()-fNegPed[index]) >= 50) 
+      ((THcSignalHit*) frNegADCHits->ConstructedAt(nrNegADCHits++))->Set(padnum, hit->GetADCNeg()-fNegPed[index]);
     // check TDC values
-    if (((hit->fTDC_pos >= fScinTdcMin) && (hit->fTDC_pos <= fScinTdcMax)) ||
-	((hit->fTDC_neg >= fScinTdcMin) && (hit->fTDC_neg <= fScinTdcMax))) {
+    if (((hit->GetTDCPos() >= fScinTdcMin) && (hit->GetTDCPos() <= fScinTdcMax)) ||
+	((hit->GetTDCNeg() >= fScinTdcMin) && (hit->GetTDCNeg() <= fScinTdcMax))) {
 
       // If TDC values are all good, transfer the raw hit to the HodoHit list
       new( (*fHodoHits)[fNScinHits]) THcHodoHit(hit, fPosPed[index], fNegPed[index], this);
       
       // Do the pulse height correction to the time.  (Position dependent corrections later)
-      Double_t timec_pos = hit->fTDC_pos*fScinTdcToTime - fHodoPosPhcCoeff[index]*
+      Double_t timec_pos = hit->GetTDCPos()*fScinTdcToTime - fHodoPosPhcCoeff[index]*
 	TMath::Sqrt(TMath::Max(0.0,
-			       (hit->fADC_pos-fPosPed[index])/fHodoPosMinPh[index]-1.0))
+			       (hit->GetADCPos()-fPosPed[index])/fHodoPosMinPh[index]-1.0))
 	- fHodoPosTimeOffset[index];
-      Double_t timec_neg = hit->fTDC_neg*fScinTdcToTime - fHodoNegPhcCoeff[index]*
+      Double_t timec_neg = hit->GetTDCNeg()*fScinTdcToTime - fHodoNegPhcCoeff[index]*
 	TMath::Sqrt(TMath::Max(0.0,
-			       (hit->fADC_neg-fNegPed[index])/fHodoNegMinPh[index]-1.0))
+			       (hit->GetADCNeg()-fNegPed[index])/fHodoNegMinPh[index]-1.0))
 	- fHodoNegTimeOffset[index];
 
       // Find hit position using ADCs
@@ -399,8 +400,8 @@ Int_t THcScintillatorPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nex
       break;
     }
     Int_t element = hit->fCounter - 1; // Should check if in range
-    Int_t adcpos = hit->fADC_pos;
-    Int_t adcneg = hit->fADC_neg;
+    Int_t adcpos = hit->GetADCPos();
+    Int_t adcneg = hit->GetADCNeg();
 
     if(adcpos <= fPosPedLimit[element]) {
       fPosPedSum[element] += adcpos;

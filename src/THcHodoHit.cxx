@@ -17,10 +17,10 @@ THcHodoHit::THcHodoHit( THcRawHodoHit *hit, Double_t posPed,
 			     Double_t negPed, THcScintillatorPlane* sp)
 {
   if(hit) {
-    fPosTDC = hit->fTDC_pos;
-    fNegTDC = hit->fTDC_neg;
-    fPosADC_Ped = hit->fADC_pos - posPed;
-    fNegADC_Ped = hit->fADC_neg - negPed;
+    fPosTDC = hit->GetTDCPos();
+    fNegTDC = hit->GetTDCNeg();
+    fPosADC_Ped = hit->GetADCPos() - posPed;
+    fNegADC_Ped = hit->GetADCNeg() - negPed;
     fPaddleNumber = hit->fCounter;
   } else {
     fPosTDC = -1;

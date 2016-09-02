@@ -78,10 +78,13 @@ public:
 
   Int_t GetNPlanes() { return fNPlanes;}
   THcScintillatorPlane* GetPlane(Int_t ip) { return fPlanes[ip];}
-  UInt_t GetNPaddles(Int_t iii) { return fNPaddle[iii];}
-  Double_t GetHodoSlop(Int_t iii) { return fHodoSlop[iii];}
-  Double_t GetPlaneCenter(Int_t iii) { return fPlaneCenter[iii];}
-  Double_t GetPlaneSpacing(Int_t iii) { return fPlaneSpacing[iii];}
+  UInt_t GetNPaddles(Int_t ip) { return fNPaddle[ip];}
+  Double_t GetHodoSlop(Int_t ip) { return fHodoSlop[ip];}
+  Double_t GetPlaneCenter(Int_t ip) { return fPlaneCenter[ip];}
+  Double_t GetPlaneSpacing(Int_t ip) { return fPlaneSpacing[ip];}
+  Int_t GetTdcWinMin(Int_t ip) const { return fTdcWinMin[ip];}
+  Int_t GetTdcWinMax(Int_t ip) const { return fTdcWinMax[ip];}
+
 
   //  Double_t GetBeta() const {return fBeta[];}
 
@@ -184,6 +187,8 @@ protected:
   Double_t     fNormETot;
   Double_t     fNCerNPE;
   Double_t*    fHodoSlop;
+  Int_t*       fTdcWinMin;
+  Int_t*       fTdcWinMax;
   Int_t        fdebugprintscinraw;
   Int_t        fTestSum;
   Int_t        fTrackEffTestNScinPlanes;
