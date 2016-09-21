@@ -51,9 +51,13 @@ struct Functor
 //_____________________________________________________________________________
 Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
 {
-  // Build a DAQ hardware to detector element map for detector detectorname
-  // Reads through the entire list of mappings, adding one element to
-  // detmap for each electronics channel that maps to detectorname.
+/**
+  \param detmap destination of DAQ hardware to detector element map
+  \param name of the detector
+
+  Called be each detector object to build a DAQ hardware to detector
+  element map for the detector.
+*/
 
   list<ModChanList>::iterator imod;
   list<ChaninMod>::iterator ichan;
@@ -142,15 +146,15 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
       Int_t this_signal = (*ichan).signal;
       Int_t this_plane = (*ichan).plane;
       Int_t this_refchan = (*ichan).refchan;
-      if(last_chan+1!=this_chan || last_counter+1 != this_counter 
+      if(last_chan+1!=this_chan || last_counter+1 != this_counter
 	 || last_plane != this_plane || last_signal!=this_signal
 	 || last_refchan != this_refchan) {
 	if(last_chan >= 0) {
 	  if(ichan != clistp->begin()) {
-	    //	    cout << "AddModule " << slot << " " << first_chan << 
+	    //	    cout << "AddModule " << slot << " " << first_chan <<
 	    //  " " << last_chan << " " << first_counter << endl;
 	    detmap->AddModule((UShort_t)roc, (UShort_t)slot,
-			      (UShort_t)first_chan, (UShort_t)last_chan, 
+			      (UShort_t)first_chan, (UShort_t)last_chan,
 			      (UInt_t) first_counter, model, (Int_t) -1,
 			      (Int_t) last_refchan, (UInt_t)last_plane, (UInt_t)last_signal);
 	  }
@@ -167,42 +171,53 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
       //	(*ichan).plane << " " <<  (*ichan).counter << endl;
     }
     detmap->AddModule((UShort_t)roc, (UShort_t)slot,
-		      (UShort_t)first_chan, (UShort_t)last_chan, 
+		      (UShort_t)first_chan, (UShort_t)last_chan,
 		      (UInt_t) first_counter, model, (Int_t) 0,
 		      (Int_t) -1, (UInt_t)last_plane, (UInt_t)last_signal);
   }
-  
+
   return(0);
 }
 
 //_____________________________________________________________________________
 void THcDetectorMap::Load(const char *fname)
 {
-// Load a Hall C ENGINE style detector map file.  The map file maps
-// a given roc, slot/module, and channel # into a given detector id#, plane
-// number, counter number and signal type.  The mapping between detector
-// names and ids is found in the comments at the begging of the map file.
-// This method looks for those comments, of the form:
-//   XXX_ID = n
-// to establish that mapping between detector name and detector ID.
-//
-// Lines of the form
-//  DETECTOR = n  
-//  ROC = n
-//  SLOT = n
-// are used to establish the module (roc and slot) and the detector
-// for the mapping lines that follow.
-// The actual mappings are of the form 
-//  subadd, plane, counter [, signal]
-// Each of these lines, combined with the detector, roc, slot values
-// establish the roc, slot, subadess -> detector, plane, counter#, sigtype map
-// Other lines that may be in the map file are
-//  NSUBADD = n
-//  BSUB = n
-//  MASK = hex value
-// These define characteristics of the electronics module (# channels,
-//  The bit number specifying the location of the subaddress in a data word
-//  and hex mask that the data word is anded with to retrieve data)
+  /**
+  \param fname name of file containing ENGINE style detector map
+
+  Load a Hall C ENGINE style detector map file.  The map file maps
+  a given roc, slot/module, and channel # into a given detector id#, plane
+  number, counter number and signal type.  The mapping between detector
+  names and ids is found in the comments at the begging of the map file.
+  This method looks for those comments, of the form:
+    * XXX_ID = n
+  to establish that mapping between detector name and detector ID.
+
+  Lines of the form
+  ~~~~
+      DETECTOR = n
+      ROC = n
+      SLOT = n
+ ~~~~
+ are used to establish the module (roc and slot) and the detector
+ for the mapping lines that follow.
+
+ The actual mappings are of the form
+~~~~
+      subadd, plane, counter [, signal]
+~~~~
+ Each of these lines, combined with the detector, roc, slot values
+ establish the roc, slot, subadess -> detector, plane, counter#, sigtype map
+ Other lines that may be in the map file are
+~~~~
+      NSUBADD = n
+      BSUB = n
+      MASK = hex value
+~~~~
+ These define characteristics of the electronics module (# channels,
+ The bit number specifying the location of the subaddress in a data word
+ and hex mask that the data word is anded with to retrieve data)
+*/
 
   static const char* const whtspc = " \t";
 
@@ -279,7 +294,7 @@ void THcDetectorMap::Load(const char *fname)
   // Decide if line is ROC/NSUBADD/MASK/BSUB/DETECTOR/SLOT = something
   // or chan, plane, counter[, signal]
 
-  
+
     if((pos=line.find_first_of("=")) != string::npos) { // Setting parameter
       strcpy(varname, (line.substr(0,pos)).c_str());
       Int_t valuestartpos = pos+1;
@@ -291,7 +306,7 @@ void THcDetectorMap::Load(const char *fname)
 	//	     << line.substr(commapos+1) << "|" << endl;
 	value = atoi(line.substr(valuestartpos,commapos-valuestartpos).c_str());
 	value2 = atoi(line.substr(commapos+1).c_str());
-      } else {	
+      } else {
 	value = atoi(line.substr(valuestartpos).c_str());
       }
       // Some if statements
@@ -362,4 +377,3 @@ void THcDetectorMap::Load(const char *fname)
   cout << endl;
 
 }
-
