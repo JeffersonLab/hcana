@@ -26,6 +26,7 @@ class THcDetectorMap : public TObject {
     Int_t roc;
     Int_t slot;
     Int_t refchan;
+    Int_t refindex;
     Int_t channel;
     Int_t did;
     Int_t plane;
@@ -41,6 +42,7 @@ class THcDetectorMap : public TObject {
     Int_t counter;
     Int_t signal;
     Int_t refchan;
+    Int_t refindex;
   };
   struct ModChanList {
     Int_t roc;

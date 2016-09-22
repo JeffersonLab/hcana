@@ -94,6 +94,7 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
       Achan.counter = fTable[ich].counter;
       Achan.signal = fTable[ich].signal;
       Achan.refchan = fTable[ich].refchan;
+      Achan.refindex = fTable[ich].refindex;
       for(imod=mlist.begin(); imod!= mlist.end(); ++imod) {
 	if((*imod).roc == roc && (*imod).slot == slot) {
 	  //	  cout << "Pushing chan " << Achan.channel << " to " << roc
@@ -140,22 +141,24 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
     Int_t first_counter = -1;
     Int_t last_counter = -1;
     Int_t last_refchan = -1;
+    Int_t last_refindex = -1;
     for(ichan=clistp->begin(); ichan!=clistp->end(); ++ichan) {
       Int_t this_chan = (*ichan).channel;
       Int_t this_counter = (*ichan).counter;
       Int_t this_signal = (*ichan).signal;
       Int_t this_plane = (*ichan).plane;
       Int_t this_refchan = (*ichan).refchan;
+      Int_t this_refindex = (*ichan).refindex;
       if(last_chan+1!=this_chan || last_counter+1 != this_counter
 	 || last_plane != this_plane || last_signal!=this_signal
-	 || last_refchan != this_refchan) {
+	 || last_refchan != this_refchan || last_refindex != this_refindex) {
 	if(last_chan >= 0) {
 	  if(ichan != clistp->begin()) {
 	    //	    cout << "AddModule " << slot << " " << first_chan <<
 	    //  " " << last_chan << " " << first_counter << endl;
 	    detmap->AddModule((UShort_t)roc, (UShort_t)slot,
 			      (UShort_t)first_chan, (UShort_t)last_chan,
-			      (UInt_t) first_counter, model, (Int_t) -1,
+			      (UInt_t) first_counter, model, (Int_t) last_refindex,
 			      (Int_t) last_refchan, (UInt_t)last_plane, (UInt_t)last_signal);
 	  }
 	}
@@ -164,6 +167,7 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
       }
       last_chan = this_chan;
       last_refchan = this_refchan;
+      last_refindex = this_refindex;
       last_counter = this_counter;
       last_plane = this_plane;
       last_signal = this_signal;
@@ -173,7 +177,7 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
     detmap->AddModule((UShort_t)roc, (UShort_t)slot,
 		      (UShort_t)first_chan, (UShort_t)last_chan,
 		      (UInt_t) first_counter, model, (Int_t) 0,
-		      (Int_t) -1, (UInt_t)last_plane, (UInt_t)last_signal);
+		      (Int_t) last_refindex, (UInt_t)last_plane, (UInt_t)last_signal);
   }
 
   return(0);
@@ -190,17 +194,20 @@ void THcDetectorMap::Load(const char *fname)
   number, counter number and signal type.  The mapping between detector
   names and ids is found in the comments at the begging of the map file.
   This method looks for those comments, of the form:
-    * XXX_ID = n
+  ~~~~
+    ! XXX_ID = n
+  ~~~~
   to establish that mapping between detector name and detector ID.
 
   Lines of the form
   ~~~~
       DETECTOR = n
       ROC = n
-      SLOT = n
+      SLOT = n [, subadd]
  ~~~~
  are used to establish the module (roc and slot) and the detector
- for the mapping lines that follow.
+ for the mapping lines that follow.  If a SLOT line has a second value,
+ that value is the channel of that slot that contains a reference time.
 
  The actual mappings are of the form
 ~~~~
@@ -217,6 +224,25 @@ void THcDetectorMap::Load(const char *fname)
  These define characteristics of the electronics module (# channels,
  The bit number specifying the location of the subaddress in a data word
  and hex mask that the data word is anded with to retrieve data)
+
+ A channel giving a reference time for a given slot can be set by putting
+~~~~
+     REFCHAN = subadd
+~~~~
+ after a SLOT line.  (The above SLOT=n,subadd is deprecated).  The line:
+~~~~
+     REFINDEX = index
+~~~~
+ indicates that all following mapping definition use the index'th reference
+ time.  It must be given after each SLOT command.  A channel for a reference
+ time is given by specifying a plane number of at least 1000 in a mapping line
+~~~~
+     subadd, 1000, 0, index
+~~~~
+ The reference time may be used by any channel of the same detector in the
+ same ROC.  If a reference time is used by several different detectors, this
+ mapping line must be duplicated for each detector.  More than one reference
+ time may be specified per ROC by mulitple values for index.
 */
 
   static const char* const whtspc = " \t";
@@ -237,7 +263,8 @@ void THcDetectorMap::Load(const char *fname)
   Int_t bsub=0;
   Int_t detector=0;
   Int_t slot=0;
-  Int_t refchan=0;
+  Int_t refchan=-1;
+  Int_t refindex=-1;
   Int_t model=0;
 
   fNchans = 0;
@@ -312,8 +339,12 @@ void THcDetectorMap::Load(const char *fname)
       // Some if statements
       if(strcasecmp(varname,"detector")==0) {
 	detector = value;
+	refindex = -1;		// New detector resets ref time info
+	refchan = -1;
       } else if (strcasecmp(varname,"roc")==0) {
 	roc = value;
+	refindex = -1;		// New roc resets ref time info
+	refchan = -1;
       } else if (strcasecmp(varname,"nsubadd")==0) {
 	nsubadd = value;
       } else if (strcasecmp(varname,"mask")==0) { // mask not used here
@@ -322,7 +353,12 @@ void THcDetectorMap::Load(const char *fname)
 	bsub = value;
       } else if (strcasecmp(varname,"slot")==0) {
 	slot = value;
-	refchan = value2;
+	refchan = value2;  	// Deprecating this
+	refindex = -1;
+      } else if (strcasecmp(varname,"refchan")==0) {
+	refchan = value;	// Applies to just current slot
+      } else if (strcasecmp(varname,"refindex")==0) {
+	refindex = value;	// Applies to just current slot
       }
       if(nsubadd == 96) {
 	model = 1877;
@@ -359,6 +395,7 @@ void THcDetectorMap::Load(const char *fname)
       fTable[fNchans].roc=roc;
       fTable[fNchans].slot=slot;
       fTable[fNchans].refchan=refchan;
+      fTable[fNchans].refindex=refindex;
       fTable[fNchans].channel=channel;
       fTable[fNchans].did=detector;
       fTable[fNchans].plane=plane;
