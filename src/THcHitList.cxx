@@ -36,8 +36,58 @@ void THcHitList::InitHitList(THaDetMap* detmap,
   for(Int_t i=0;i<maxhits;i++) {
     fRawHitList->ConstructedAt(i);
   }
-  
+
   fdMap = detmap;
+
+  /* Pull out all the reference channels */
+  fNRefIndex = 0;
+  fRefIndexMaps.clear();
+  /* Find the biggest refindex */
+  for (Int_t i=0; i < fdMap->GetSize(); i++) {
+    THaDetMap::Module* d = fdMap->GetModule(i);
+    if(d->plane >= 1000) {
+      Int_t refindex = d->signal;
+      if(refindex>=fNRefIndex) {
+	fNRefIndex = refindex+1;
+      }
+    }
+  }
+  // Create the vector.  Could roll this into last loop
+  for(Int_t i=0;i<fNRefIndex;i++) {
+    RefIndexMap map;
+    map.defined = kFALSE;
+    map.hashit = kFALSE;
+    fRefIndexMaps.push_back(map);
+  }
+  // Put the refindex mapping information in the vector
+  for (Int_t i=0; i < fdMap->GetSize(); i++) {
+    THaDetMap::Module* d = fdMap->GetModule(i);
+    if(d->plane >= 1000) {	// This is a reference time definition
+      Int_t refindex = d->signal;
+      if(refindex >= 0) {
+	fRefIndexMaps[refindex].crate = d->crate;
+	fRefIndexMaps[refindex].slot = d->slot;
+	fRefIndexMaps[refindex].channel = d->lo;
+	fRefIndexMaps[refindex].defined = kTRUE;
+      } else {
+	cout << "Hitlist: Invalid refindex mapping" << endl;
+      }
+    }
+  }
+  // Should add another loop over fdMap and check that all detector
+  // channels that have a refindex, use a defined index
+  for (Int_t i=0; i < fdMap->GetSize(); i++) {
+    THaDetMap::Module* d = fdMap->GetModule(i);
+    if(d->plane < 1000) {
+      Int_t refindex = d->refindex;
+      if(!fRefIndexMaps[refindex].defined) {
+	cout << "Refindex " << refindex << " not defined for " <<
+		" (" << d->crate << ", " << d->slot <<
+		", " << d->lo << ")" << endl;
+      }
+    }
+  }
+	  
 }
 
 Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
@@ -53,26 +103,43 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
   fRawHitList->Clear( );
   fNRawHits = 0;
 
+  // Get the indexed reference times for this event
+  for(Int_t i=0;i<fNRefIndex;i++) {
+    if(fRefIndexMaps[i].defined) {
+      if(evdata.GetNumHits(fRefIndexMaps[i].crate,
+			   fRefIndexMaps[i].slot,
+			   fRefIndexMaps[i].channel) > 0) {
+	// Only take first hit in this reference channel
+	fRefIndexMaps[i].reftime =
+	  evdata.GetData(fRefIndexMaps[i].crate,fRefIndexMaps[i].slot,
+			 fRefIndexMaps[i].channel,0);
+	fRefIndexMaps[i].hashit = kTRUE;
+      } else {
+	fRefIndexMaps[i].hashit = kFALSE;
+      }
+    }
+  }
   for ( Int_t i=0; i < fdMap->GetSize(); i++ ) {
     THaDetMap::Module* d = fdMap->GetModule(i);
 
     // Loop over all channels that have a hit.
     //    cout << "Crate/Slot: " << d->crate << "/" << d->slot << endl;
+    Int_t plane = d->plane;
+    if (plane >= 1000) continue; // Skip reference times
+    Int_t signal = d->signal;
     for ( Int_t j=0; j < evdata.GetNumChan( d->crate, d->slot); j++) {
       THcRawHit* rawhit=0;
-      
+
       Int_t chan = evdata.GetNextChan( d->crate, d->slot, j );
       if( chan < d->lo || chan > d->hi ) continue;     // Not one of my channels
-      
+
       // Need to convert crate, slot, chan into plane, counter, signal
       // Search hitlist for this plane,counter,signal
-      Int_t plane = d->plane;
-      Int_t signal = d->signal;
       Int_t counter = d->reverse ? d->first + d->hi - chan : d->first + chan - d->lo;
       //cout << d->crate << " " << d->slot << " " << chan << " " << plane << " "
       // << counter << " " << signal << endl;
       // Search hit list for plane and counter
-      // We could do sorting 
+      // We could do sorting
       UInt_t thishit = 0;
       while(thishit < fNRawHits) {
 	rawhit = (THcRawHit*) (*fRawHitList)[thishit];
@@ -90,7 +157,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	rawhit->fPlane = plane;
 	rawhit->fCounter = counter;
       }
-	
+
       // Get the data from this channel
       // Allow for multiple hits
       Int_t nMHits = evdata.GetNumHits(d->crate, d->slot, chan);
@@ -100,10 +167,22 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	rawhit->SetData(signal,data);
       }
       // Get the reference time.  Only take the first hit
+      // If a reference channel
+      // was specified, it takes precidence of reference index
       if(d->refchan >= 0) {
 	if( evdata.GetNumHits(d->crate,d->slot,d->refchan) > 0) {
 	  Int_t reftime = evdata.GetData(d->crate, d->slot, d->refchan, 0);
 	  rawhit->SetReference(signal, reftime);
+	}
+      } else {
+	if(d->refindex >=0 && d->refindex < fNRefIndex) {
+	  if(fRefIndexMaps[d->refindex].hashit) {
+	    rawhit->SetReference(signal, fRefIndexMaps[d->refindex].reftime);
+	  } else {
+	    cout << "HitList: refindex " << d->refindex <<
+	      " missing for (" << d->crate << ", " << d->slot <<
+	      ", " << chan << ")" << endl;
+	  }
 	}
       }
     }

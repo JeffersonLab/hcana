@@ -23,6 +23,8 @@ public:
   void SetReference(Int_t signal, Int_t reference);
   Int_t GetData(Int_t signal);
   Int_t GetData(Int_t signal, UInt_t ihit);
+  Int_t GetRawData(Int_t signal);
+  Int_t GetRawData(Int_t signal, UInt_t ihit);
   Int_t GetReference(Int_t signal);
   
 

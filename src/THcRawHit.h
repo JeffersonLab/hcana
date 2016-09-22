@@ -26,7 +26,8 @@ public:
   //  virtual Bool_t  operator!=( const THcRawHit& ) = 0;
 
   virtual void SetData(Int_t signal, Int_t data) {};
-  virtual Int_t GetData(Int_t signal) {return 0;};
+  virtual Int_t GetData(Int_t signal) {return 0;}; /* Ref time subtracted */
+  virtual Int_t GetRawData(Int_t signal) {return 0;} /* Ref time not subtracted */
   virtual void SetReference(Int_t signal, Int_t reference) {};
   virtual Bool_t HasReference(Int_t signal) {return fHasRef;};
   virtual Int_t GetReference(Int_t signal) {return 0;};

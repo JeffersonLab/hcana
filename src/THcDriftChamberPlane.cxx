@@ -316,7 +316,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     for(UInt_t mhit=0; mhit<hit->fNHits; mhit++) {
       fNRawhits++;
       /* Sort into early, late and ontime */
-      Int_t rawtdc = hit->fTDC[mhit];
+      Int_t rawtdc = hit->GetRawData(0,mhit);
       if((rawtdc-reftime) < fTdcWinMin) {
 	// Increment early counter  (Actually late because TDC is backward)
       } else if ((rawtdc-reftime) > fTdcWinMax) {
