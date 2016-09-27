@@ -328,27 +328,27 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
     THcAerogelHit* hit = (THcAerogelHit *) fRawHitList->At(ihit);
     
    // TDC positive hit
-    if(hit->fTDC_pos >  0) {
+    if(hit->fNRawHits[2] >  0) {
       THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
-      sighit->Set(hit->fCounter, hit->fTDC_pos);
+      sighit->Set(hit->fCounter, hit->GetTDCPos());
     }
 
     // TDC negative hit
-    if(hit->fTDC_neg >  0) {
+    if(hit->fNRawHits[3] >  0) {
       THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
-      sighit->Set(hit->fCounter, hit->fTDC_neg);
+      sighit->Set(hit->fCounter, hit->GetTDCNeg());
     }
 
     // ADC positive hit
-    if(hit->fADC_pos >  0) {
+    if(hit->fADC_pos[0] >  0) {
       THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
-      sighit->Set(hit->fCounter, hit->fADC_pos);
+      sighit->Set(hit->fCounter, hit->GetADCPos());
     }
 
     // ADC negative hit
-    if(hit->fADC_neg >  0) {   
+    if(hit->fADC_neg[1] >  0) {   
       THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
-      sighit->Set(hit->fCounter, hit->fADC_neg);
+      sighit->Set(hit->fCounter, hit->GetADCNeg());
     }
 
     ihit++;
@@ -380,20 +380,20 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
 
     Int_t npmt = hit->fCounter - 1;
     // Should probably check that npmt is in range
-    fA_Pos[npmt] = hit->fADC_pos;
-    fA_Neg[npmt] = hit->fADC_neg;
-    fA_Pos_p[npmt] = hit->fADC_pos - fPosPedMean[npmt];
-    fA_Neg_p[npmt] = hit->fADC_neg - fNegPedMean[npmt];
-    fT_Pos[npmt] = hit->fTDC_pos;
-    fT_Neg[npmt] = hit->fTDC_neg;
+    fA_Pos[npmt] = hit->GetADCPos();
+    fA_Neg[npmt] = hit->GetADCNeg();
+    fA_Pos_p[npmt] = hit->GetADCPos() - fPosPedMean[npmt];
+    fA_Neg_p[npmt] = hit->GetADCNeg() - fNegPedMean[npmt];
+    fT_Pos[npmt] = hit->GetTDCPos();
+    fT_Neg[npmt] = hit->GetTDCNeg();
 
-    if(hit->fADC_pos < 8000) {
+    if(fA_Pos[npmt] < 8000) {
       fPosNpe[npmt] = fPosGain[npmt]*fA_Pos_p[npmt];
     } else {
       fPosNpe[npmt] = 100.0;
     }
 
-    if(hit->fADC_neg < 8000) {
+    if(fA_Neg[npmt] < 8000) {
       fNegNpe[npmt] = fNegGain[npmt]*fA_Neg_p[npmt];
     } else {
       fNegNpe[npmt] = 100.0;
@@ -411,10 +411,10 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       fNADCNegHits++;
       fNGoodHits++;
     }
-    if(hit->fTDC_pos > 0 && hit->fTDC_pos < 8000) {
+    if(fT_Pos[npmt] > 0 && fT_Pos[npmt] < 8000) {
       fNTDCPosHits++;
     }
-    if(hit->fTDC_neg > 0 && hit->fTDC_neg < 8000) {
+    if(fT_Neg[npmt] > 0 && fT_Neg[npmt] < 8000) {
       fNTDCNegHits++;
     }      
 
@@ -519,8 +519,8 @@ void THcAerogel::AccumulatePedestals(TClonesArray* rawhits)
     THcAerogelHit* hit = (THcAerogelHit *) rawhits->At(ihit);
 
     Int_t element = hit->fCounter - 1;
-    Int_t adcpos = hit->fADC_pos;
-    Int_t adcneg = hit->fADC_pos;
+    Int_t adcpos = hit->GetADCPos();
+    Int_t adcneg = hit->GetADCNeg();
     if(adcpos <= fPosPedLimit[element]) {
       fPosPedSum[element] += adcpos;
       fPosPedSum2[element] += adcpos*adcpos;
