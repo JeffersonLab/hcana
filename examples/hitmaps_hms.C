@@ -25,7 +25,7 @@
   h[15] = hnegadc4;
   
   for(Int_t ipad=1;ipad<=8;ipad++) {
-    TPad *pt = c1->cd(ipad);
+    c1->cd(ipad);
     Int_t ihp = 2*(ipad-1);
     Int_t ihn = ihp+1;
     h[ihp]->SetFillColor(kGreen);
