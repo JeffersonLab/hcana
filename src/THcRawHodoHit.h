@@ -34,6 +34,7 @@ class THcRawHodoHit : public THcRawHit {
   Int_t GetRawData(Int_t signal);
   Int_t GetRawData(Int_t signal, UInt_t ihit);
   Int_t GetReference(Int_t signal);
+  Bool_t HasReference(Int_t signal);
   
   //  virtual Bool_t  IsSortable () const {return kTRUE; }
   //  virtual Int_t   Compare(const TObject* obj) const;

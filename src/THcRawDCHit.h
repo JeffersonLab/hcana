@@ -12,7 +12,7 @@ public:
   friend class THcDC;
 
   THcRawDCHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter), 
-    fNHits(0) {
+    fNHits(0), fHasRef{kFALSE} {
   }
   THcRawDCHit& operator=( const THcRawDCHit& );
   virtual ~THcRawDCHit() {}
@@ -26,7 +26,7 @@ public:
   Int_t GetRawData(Int_t signal);
   Int_t GetRawData(Int_t signal, UInt_t ihit);
   Int_t GetReference(Int_t signal);
-  
+  Bool_t HasReference(Int_t signal) {return fHasRef;}
 
   virtual Bool_t  IsSortable () const {return kTRUE; }
   virtual Int_t   Compare(const TObject* obj) const;
@@ -36,6 +36,7 @@ protected:
   UInt_t fNHits;
   Int_t fTDC[MAXHITS];
   Int_t fReferenceTime;
+  Int_t fHasRef;
 
 private:
 

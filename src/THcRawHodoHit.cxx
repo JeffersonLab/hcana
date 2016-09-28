@@ -92,9 +92,11 @@ Int_t THcRawHodoHit::GetReference(Int_t signal) {
     return(0);
   }
 }
+Bool_t THcRawHodoHit::HasReference(Int_t signal) {
+  return(fHasRef[signal]);
+}
 
   // Do we use this?
-#if 0
 //_____________________________________________________________________________
 THcRawHodoHit& THcRawHodoHit::operator=( const THcRawHodoHit& rhs )
 {
@@ -102,16 +104,26 @@ THcRawHodoHit& THcRawHodoHit::operator=( const THcRawHodoHit& rhs )
 
   THcRawHit::operator=(rhs);
   if ( this != &rhs ) {
-    fPlane = rhs.fPlane;
-    fCounter = rhs.fCounter;
-    fADC_pos = rhs.fADC_pos;
-    fADC_neg = rhs.fADC_neg;
-    fTDC_pos = rhs.fTDC_pos;
-    fTDC_neg = rhs.fTDC_neg;
+    for(Int_t is=0;is<4;is++) {
+      fReferenceTime[is] = rhs.fReferenceTime[is];
+      fNRawHits[is] = rhs.fNRawHits[is];
+      fHasRef[is] = rhs.fHasRef[is];
+    }
+    for(Int_t ih=0;ih<fNRawHits[0];ih++) {
+      fADC_pos[ih] = rhs.fADC_pos[ih];
+    }
+    for(Int_t ih=0;ih<fNRawHits[1];ih++) {
+      fADC_neg[ih] = rhs.fADC_neg[ih];
+    }
+    for(Int_t ih=0;ih<fNRawHits[2];ih++) {
+      fTDC_pos[ih] = rhs.fTDC_pos[ih];
+    }
+    for(Int_t ih=0;ih<fNRawHits[3];ih++) {
+      fTDC_neg[ih] = rhs.fTDC_neg[ih];
+    }
   }
   return *this;
 }
-#endif
 
 
 //////////////////////////////////////////////////////////////////////////

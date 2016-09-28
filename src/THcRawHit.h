@@ -12,10 +12,12 @@ class THcRawHit : public TObject {
 
 public:
   THcRawHit(Int_t plane=0, Int_t counter=0) :
-    fPlane(plane), fCounter(counter), fHasRef(kFALSE) {};
+    fPlane(plane), fCounter(counter) {};
  THcRawHit( const THcRawHit& rhs ) : TObject(rhs) {}
   THcRawHit& operator=( const THcRawHit& rhs )
-    { TObject::operator=(rhs); return *this; };
+    { TObject::operator=(rhs);
+      if (this != &rhs) { fPlane = rhs.fPlane; fCounter = rhs.fCounter; }
+      return *this; };
 
   virtual ~THcRawHit() {}
 
@@ -29,7 +31,7 @@ public:
   virtual Int_t GetData(Int_t signal) {return 0;}; /* Ref time subtracted */
   virtual Int_t GetRawData(Int_t signal) {return 0;} /* Ref time not subtracted */
   virtual void SetReference(Int_t signal, Int_t reference) {};
-  virtual Bool_t HasReference(Int_t signal) {return fHasRef;};
+  virtual Bool_t HasReference(Int_t signal) {return kFALSE;};
   virtual Int_t GetReference(Int_t signal) {return 0;};
 
   // Derived objects must be sortable and supply Compare method
@@ -40,7 +42,6 @@ public:
 
   Int_t fPlane;
   Int_t fCounter;
-  Bool_t fHasRef;
 
  private:
 

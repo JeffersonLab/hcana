@@ -101,9 +101,9 @@ THcRawDCHit& THcRawDCHit::operator=( const THcRawDCHit& rhs )
 
   THcRawHit::operator=(rhs);
   if ( this != &rhs ) {
-    fPlane = rhs.fPlane;
-    fCounter = rhs.fCounter;
     fNHits = rhs.fNHits;
+    fReferenceTime = rhs.fReferenceTime;
+    fHasRef = rhs.fHasRef;
     for(UInt_t ihit=0;ihit<fNHits;ihit++) {
       fTDC[ihit] = rhs.fTDC[ihit];
     }
