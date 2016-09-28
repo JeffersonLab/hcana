@@ -295,9 +295,9 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
     THcCherenkovHit* hit = (THcCherenkovHit *) fRawHitList->At(ihit);
     
     // ADC hit
-    if(hit->fADC_pos >  0) {
+    if(hit->GetADCPos() >  0) {
       THcSignalHit *sighit = (THcSignalHit*) fADCHits->ConstructedAt(nADCHits++);
-      sighit->Set(hit->fCounter, hit->fADC_pos);
+      sighit->Set(hit->fCounter, hit->GetADCPos());
     }
 
     ihit++;
@@ -331,13 +331,13 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
       cout << "ihit != npmt " << endl;
 
     fNPMT[npmt] = hit->fCounter;
-    fADC[npmt] = hit->fADC_pos;
-    fADC_P[npmt] = hit->fADC_pos - fPedMean[npmt];
+    fADC[npmt] = hit->GetADCPos();
+    fADC_P[npmt] = hit->GetADCPos() - fPedMean[npmt];
     
-    if ( ( fADC_P[npmt] > fCerWidth[npmt] ) && ( hit->fADC_pos < 8000 ) ) {
+    if ( ( fADC_P[npmt] > fCerWidth[npmt] ) && ( hit->GetADCPos() < 8000 ) ) {
       fNPE[npmt] = fGain[npmt]*fADC_P[npmt];
       fNCherHit ++;
-    } else if (  hit->fADC_pos > 8000 ) {
+    } else if (  hit->GetADCPos() > 8000 ) {
       fNPE[npmt] = 100.0;
     } else {
       fNPE[npmt] = 0.0;
@@ -434,7 +434,7 @@ void THcCherenkov::AccumulatePedestals(TClonesArray* rawhits)
     THcCherenkovHit* hit = (THcCherenkovHit *) rawhits->At(ihit);
 
     Int_t element = hit->fCounter - 1;
-    Int_t nadc = hit->fADC_pos;
+    Int_t nadc = hit->GetADCPos();
     if(nadc <= fPedLimit[element]) {
       fPedSum[element] += nadc;
       fPedSum2[element] += nadc*nadc;
