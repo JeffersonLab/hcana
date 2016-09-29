@@ -311,31 +311,24 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
     Int_t wireNum = hit->fCounter;
     THcDCWire* wire = GetWire(wireNum);
-    Int_t wire_last = -1;
-    Int_t reftime = hit->GetReference(0);
+    // Int_t reftime = hit->GetReference(0);
     for(UInt_t mhit=0; mhit<hit->fNHits; mhit++) {
       fNRawhits++;
       /* Sort into early, late and ontime */
-      Int_t rawtdc = hit->GetRawData(0,mhit);
-      if((rawtdc-reftime) < fTdcWinMin) {
+      Int_t rawtdc = hit->GetData(0,mhit); // Get the ref time subtracted time
+      if(rawtdc < fTdcWinMin) {
 	// Increment early counter  (Actually late because TDC is backward)
-      } else if ((rawtdc-reftime) > fTdcWinMax) {
+      } else if (rawtdc > fTdcWinMax) {
 	// Increment late count 
       } else {
-	// A good hit
-	if(wire_last == wireNum) {
-	  // Increment extra hit counter 
-	  // Are we choosing the correct hit in the case of multiple hits?
-	  // Are we choose the same hit that ENGINE chooses?
-	  // cout << "Extra hit " << fPlaneNum << " " << wireNum << " " << rawtdc << endl;
-	} else {
-	  Double_t time = -StartTime   // (comes from h_trans_scin
-	    - (rawtdc-reftime)*fNSperChan + fPlaneTimeZero;
-	  // How do we get this start time from the hodoscope to here
-	  // (or at least have it ready by coarse process)
-	  new( (*fHits)[nextHit++] ) THcDCHit(wire, rawtdc, time, this);
-	}
-	wire_last = wireNum;
+	Double_t time = -StartTime   // (comes from h_trans_scin
+	  - rawtdc*fNSperChan + fPlaneTimeZero; // fNSperChan > 0 for 1877
+	// < 0 for Caen1190.  
+	//	  - (rawtdc-reftime)*fNSperChan + fPlaneTimeZero;
+	// How do we get this start time from the hodoscope to here
+	// (or at least have it ready by coarse process)
+	new( (*fHits)[nextHit++] ) THcDCHit(wire, rawtdc, time, this);
+	break;			// Take just the first hit in the time window
       }
     }
     ihit++;
