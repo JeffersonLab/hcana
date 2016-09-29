@@ -173,6 +173,10 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	if( evdata.GetNumHits(d->crate,d->slot,d->refchan) > 0) {
 	  Int_t reftime = evdata.GetData(d->crate, d->slot, d->refchan, 0);
 	  rawhit->SetReference(signal, reftime);
+	} else {
+	  cout << "HitList: refchan " << d->refindex <<
+	      " missing for (" << d->crate << ", " << d->slot <<
+	      ", " << chan << ")" << endl;
 	}
       } else {
 	if(d->refindex >=0 && d->refindex < fNRefIndex) {

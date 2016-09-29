@@ -176,8 +176,8 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
     }
     detmap->AddModule((UShort_t)roc, (UShort_t)slot,
 		      (UShort_t)first_chan, (UShort_t)last_chan,
-		      (UInt_t) first_counter, model, (Int_t) 0,
-		      (Int_t) last_refindex, (UInt_t)last_plane, (UInt_t)last_signal);
+		      (UInt_t) first_counter, model, (Int_t) last_refindex,
+		      (Int_t) last_refchan, (UInt_t)last_plane, (UInt_t)last_signal);
   }
 
   return(0);
