@@ -16,9 +16,12 @@
 class THcHodoHit : public TObject {
 
 public:
-  THcHodoHit( THcRawHodoHit* hit=NULL, Double_t posPed=0.0, 
-	      Double_t negPed=0.0, THcScintillatorPlane* sp=NULL);
-      
+
+  THcHodoHit(Int_t postdc, Int_t negtdc, Double_t posadc, Double_t negadc,
+	     Int_t ipad, THcScintillatorPlane* sp) :
+  fPosTDC(postdc), fNegTDC(negtdc), fPosADC_Ped(posadc), fNegADC_Ped(negadc),
+    fPaddleNumber(ipad), fPlane(sp) {};
+
   virtual ~THcHodoHit() {}
 
   Bool_t IsSortable () const { return kFALSE; }
@@ -49,11 +52,12 @@ public:
 protected:
   static const Double_t kBig;  //!
 
-  Int_t fPaddleNumber;
   Int_t fPosTDC;
   Int_t fNegTDC;
   Double_t fPosADC_Ped;		// Pedestal subtracted ADC
   Double_t fNegADC_Ped;		// Pedestal subtracted ADC
+  Int_t fPaddleNumber;
+
   Double_t fPosCorrectedTime;	// Pulse height corrected time
   Double_t fNegCorrectedTime;	// Pulse height corrected time
   Double_t fScinCorrectedTime;  // Time average corrected for position

@@ -74,6 +74,9 @@ class THcScintillatorPlane : public THaSubDetector {
 				 detector base class */
   Int_t fNScinHits;                 /* number of hits in plane (that pass min/max TDC cuts) */
   Int_t fNGoodHits;                 /* number of hits in plane (used in determining focal plane time) */
+
+  // Constants
+  Int_t fTdcOffset;		/* Overall offset to raw tdc */
   Int_t fMaxHits;               /* maximum number of hits to be considered - useful for dimensioning arrays */
   Double_t fSpacing;            /* paddle spacing */
   Double_t fSize;               /* paddle size */

@@ -43,6 +43,9 @@ class THcRawHodoHit : public THcRawHit {
   Int_t GetTDCPos() {return GetData(2, 0);}
   Int_t GetTDCNeg() {return GetData(3, 0);}
 
+  Int_t GetTDCPos(UInt_t ihit) {return GetData(2, ihit);}
+  Int_t GetTDCNeg(UInt_t ihit) {return GetData(3, ihit);}
+
  protected:
   Int_t fADC_pos[MAXHITS];
   Int_t fADC_neg[MAXHITS];

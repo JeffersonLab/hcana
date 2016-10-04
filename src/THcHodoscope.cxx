@@ -309,8 +309,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fyLoScin = new Int_t [fNHodoscopes]; 
   fyHiScin = new Int_t [fNHodoscopes]; 
   fHodoSlop = new Double_t [fNPlanes];
-  fTdcWinMin = new Int_t [fNPlanes];
-  fTdcWinMax = new Int_t [fNPlanes];
 
   DBRequest list[]={
     {"start_time_center",                &fStartTimeCenter,                      kDouble},
@@ -341,8 +339,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"normalized_energy_tot",            &fNormETot,              kDouble,         0,  1},
     {"hodo_slop",                        fHodoSlop,               kDouble,  (UInt_t) fNPlanes},
     {"debugprintscinraw",                &fdebugprintscinraw,               kInt,  0,1},
-    {"hodo_tdc_min_win",                 fTdcWinMin,              kInt,     (UInt_t) fNPlanes, 1},
-    {"hodo_tdc_max_win",                 fTdcWinMax,              kInt,     (UInt_t) fNPlanes, 1},
+    {"hodo_tdc_offset",                  fTdcOffset,              kInt,     (UInt_t) fNPlanes, 1},
     {0}
   };
 
@@ -353,9 +350,11 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fTofTolerance = 3.0;
   fNCerNPE = 2.0;
   fNormETot = 0.7;
+  // Gets added to each reference time corrected raw TDC value
+  // to make sure valid range is all positive.
+  fTdcOffset = new Int_t [fNPlanes];
   for(Int_t ip=0;ip<fNPlanes;ip++) { // Set a large default window
-    fTdcWinMin[ip] = -65000;
-    fTdcWinMax[ip] = 65000;
+    fTdcOffset[ip] = 0;
   }
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
@@ -508,6 +507,7 @@ void THcHodoscope::DeleteArrays()
   delete [] fNPlaneTime;          fNPlaneTime = NULL;
   delete [] fSumPlaneTime;        fSumPlaneTime = NULL;
   delete [] fNScinHits;           fNScinHits = NULL;
+  delete [] fTdcOffset;           fTdcOffset = NULL;
 
 }
 

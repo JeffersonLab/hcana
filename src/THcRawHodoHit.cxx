@@ -14,6 +14,7 @@ Class representing a single raw hit for a hodoscope paddle
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <cassert>
 
 #include "THcRawHodoHit.h"
 
@@ -36,7 +37,9 @@ Int_t THcRawHodoHit::GetData(Int_t signal) {
 }
 Int_t THcRawHodoHit::GetData(Int_t signal, UInt_t ihit) {
   Int_t value;
-  if(ihit>= fNRawHits[signal]) {
+  if(ihit > 0 && ihit>= fNRawHits[signal]) {
+    cout << "THcRawHodoHit::GetData(): requested hit #" << ihit << " out of range: "
+	 << fNRawHits[signal] << endl;
     return(-1);
   }
   if(signal==0) {
@@ -48,6 +51,8 @@ Int_t THcRawHodoHit::GetData(Int_t signal, UInt_t ihit) {
   } else if (signal==3) {
     value = fTDC_neg[ihit];
   } else {
+    cout << "THcRawHodoHit::GetData(): requested invalid signal #"
+	 << signal << endl;
     return(-1);			// Actually should throw an exception
   }
   // We are return -1 as a error, but reference subtracted
@@ -65,6 +70,8 @@ Int_t THcRawHodoHit::GetRawData(Int_t signal) {
 // Return a requested raw hit
 Int_t THcRawHodoHit::GetRawData(Int_t signal, UInt_t ihit) {
   if(ihit>= fNRawHits[signal]) {
+    cout << "THcRawHodoHit::GetRawData(): requested hit #" << ihit << " out of "
+	 << fNRawHits[signal] << endl;
     return(-1);
   }
   if(signal==0) {
@@ -76,6 +83,8 @@ Int_t THcRawHodoHit::GetRawData(Int_t signal, UInt_t ihit) {
   } else if (signal==3) {
     return(fTDC_neg[ihit]);
   } else {
+    cout << "THcRawHodoHit::GetData(): requested invalid signal #"
+	 << signal << endl;
     return(-1);			// Actually should throw an exception
   }
 }
@@ -109,16 +118,16 @@ THcRawHodoHit& THcRawHodoHit::operator=( const THcRawHodoHit& rhs )
       fNRawHits[is] = rhs.fNRawHits[is];
       fHasRef[is] = rhs.fHasRef[is];
     }
-    for(Int_t ih=0;ih<fNRawHits[0];ih++) {
+    for(UInt_t ih=0;ih<fNRawHits[0];ih++) {
       fADC_pos[ih] = rhs.fADC_pos[ih];
     }
-    for(Int_t ih=0;ih<fNRawHits[1];ih++) {
+    for(UInt_t ih=0;ih<fNRawHits[1];ih++) {
       fADC_neg[ih] = rhs.fADC_neg[ih];
     }
-    for(Int_t ih=0;ih<fNRawHits[2];ih++) {
+    for(UInt_t ih=0;ih<fNRawHits[2];ih++) {
       fTDC_pos[ih] = rhs.fTDC_pos[ih];
     }
-    for(Int_t ih=0;ih<fNRawHits[3];ih++) {
+    for(UInt_t ih=0;ih<fNRawHits[3];ih++) {
       fTDC_neg[ih] = rhs.fTDC_neg[ih];
     }
   }

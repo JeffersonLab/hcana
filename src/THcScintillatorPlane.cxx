@@ -155,6 +155,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   // Retrieve parameters we need from parent class
   // Common for all planes
   fHodoSlop= ((THcHodoscope*) GetParent())->GetHodoSlop(fPlaneNum-1);
+  fTdcOffset= ((THcHodoscope*) GetParent())->GetTdcOffset(fPlaneNum-1);
   fScinTdcMin=((THcHodoscope *)GetParent())->GetTdcMin();
   fScinTdcMax=((THcHodoscope *)GetParent())->GetTdcMax();
   fScinTdcToTime=((THcHodoscope *)GetParent())->GetTdcToTime();
@@ -321,6 +322,11 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   //  cout << "THcScintillatorPlane: raw htis = " << nrawhits << endl;
   
+  // A THcRawHodoHit contains all the information (tdc and adc for both
+  // pmts) for a single paddle for a single trigger.  The tdc information
+  // might include multiple hits if it uses a multihit tdc.
+  // Use "ihit" as the index over THcRawHodoHit objects.  Use
+  // "thit" to index over multiple tdc hits within an "ihit".
   while(ihit < nrawhits) {
     THcRawHodoHit* hit = (THcRawHodoHit *) rawhits->At(ihit);
     if(hit->fPlane > fPlaneNum) {
@@ -331,28 +337,49 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Int_t index=padnum-1;
     // Need to be finding first hit in TDC range, not the first hit overall
     if (hit->fNRawHits[2] > 0) 
-      ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->GetTDCPos());
+      ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->GetTDCPos()+fTdcOffset);
     if (hit->fNRawHits[3] > 0) 
-      ((THcSignalHit*) frNegTDCHits->ConstructedAt(nrNegTDCHits++))->Set(padnum, hit->GetTDCNeg());
+      ((THcSignalHit*) frNegTDCHits->ConstructedAt(nrNegTDCHits++))->Set(padnum, hit->GetTDCNeg()+fTdcOffset);
     if ((hit->GetADCPos()-fPosPed[index]) >= 50) 
       ((THcSignalHit*) frPosADCHits->ConstructedAt(nrPosADCHits++))->Set(padnum, hit->GetADCPos()-fPosPed[index]);
     if ((hit->GetADCNeg()-fNegPed[index]) >= 50) 
       ((THcSignalHit*) frNegADCHits->ConstructedAt(nrNegADCHits++))->Set(padnum, hit->GetADCNeg()-fNegPed[index]);
-    // check TDC values
-    if (((hit->GetTDCPos() >= fScinTdcMin) && (hit->GetTDCPos() <= fScinTdcMax)) ||
-	((hit->GetTDCNeg() >= fScinTdcMin) && (hit->GetTDCNeg() <= fScinTdcMax))) {
 
-      // If TDC values are all good, transfer the raw hit to the HodoHit list
-      new( (*fHodoHits)[fNScinHits]) THcHodoHit(hit, fPosPed[index], fNegPed[index], this);
+    Bool_t tdcraw_pos=kFALSE;
+    Bool_t tdcraw_neg=kFALSE;
+    Int_t tdcpos, tdcneg;
+    // Find first in range hit from multihit tdcs
+    for(UInt_t thit=0; thit<hit->fNRawHits[2]; thit++) {
+      tdcpos = hit->GetTDCPos(thit);
+      if(tdcpos >= fScinTdcMin && tdcpos <= fScinTdcMax) {
+	tdcraw_pos = kTRUE;
+	break;
+      }
+    }
+    for(UInt_t thit=0; thit<hit->fNRawHits[3]; thit++) {
+      tdcneg = hit->GetTDCNeg(thit);
+      if(tdcneg >= fScinTdcMin && tdcneg <= fScinTdcMax) {
+	tdcraw_neg = kTRUE;
+	break;
+      }
+    }
+    // Proceed if there is a valid TDC on each end of the bar
+    if(tdcraw_pos && tdcraw_neg) {
+      Double_t adc_pos = hit->GetADCPos()-fPosPed[index];
+      Double_t adc_neg = hit->GetADCNeg()-fNegPed[index];
+
+      new( (*fHodoHits)[fNScinHits]) THcHodoHit(tdcraw_pos, tdcraw_neg,
+						adc_pos, adc_neg,
+						hit->fCounter, this);
       
       // Do the pulse height correction to the time.  (Position dependent corrections later)
-      Double_t timec_pos = hit->GetTDCPos()*fScinTdcToTime - fHodoPosPhcCoeff[index]*
+      Double_t timec_pos = tdcraw_pos*fScinTdcToTime - fHodoPosPhcCoeff[index]*
 	TMath::Sqrt(TMath::Max(0.0,
-			       (hit->GetADCPos()-fPosPed[index])/fHodoPosMinPh[index]-1.0))
+			       (adc_pos)/fHodoPosMinPh[index]-1.0))
 	- fHodoPosTimeOffset[index];
-      Double_t timec_neg = hit->GetTDCNeg()*fScinTdcToTime - fHodoNegPhcCoeff[index]*
+      Double_t timec_neg = tdcraw_neg*fScinTdcToTime - fHodoNegPhcCoeff[index]*
 	TMath::Sqrt(TMath::Max(0.0,
-			       (hit->GetADCNeg()-fNegPed[index])/fHodoNegMinPh[index]-1.0))
+			       (adc_neg)/fHodoNegMinPh[index]-1.0))
 	- fHodoNegTimeOffset[index];
 
       // Find hit position using ADCs
