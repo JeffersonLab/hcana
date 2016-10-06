@@ -93,6 +93,8 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
 
   Double_t *fPosPedMean; 	/* Can be supplied in parameters and then */
   Double_t *fNegPedMean;	/* be overwritten from ped analysis */
+
+  Int_t fTdcOffset; /* Global TDC offset */
   
   void Setup(const char* name, const char* description);
   virtual void  InitializePedestals( );

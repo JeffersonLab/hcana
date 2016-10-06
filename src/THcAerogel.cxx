@@ -197,6 +197,8 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fPosPedMean = new Double_t[fNelem];
   fNegPedMean = new Double_t[fNelem];
 
+  fTdcOffset = 0;		// Offset to make reference time subtracted times positve
+
   DBRequest list[]={
     {"aero_pos_gain", fPosGain, kDouble, (UInt_t) fNelem},
     {"aero_neg_gain", fNegGain, kDouble, (UInt_t) fNelem},
@@ -204,6 +206,7 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_neg_ped_limit", fNegPedLimit, kInt, (UInt_t) fNelem},
     {"aero_pos_ped_mean", fPosPedMean, kDouble, (UInt_t) fNelem,optional},
     {"aero_neg_ped_mean", fNegPedMean, kDouble, (UInt_t) fNelem,optional},
+    {"aero_tdc_offset", &fTdcOffset, kInt, 0, optional},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
@@ -326,66 +329,64 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
   Int_t nNegADCHits=0;
   while(ihit < fNhits) {
     THcAerogelHit* hit = (THcAerogelHit *) fRawHitList->At(ihit);
-    
+
+    Int_t adc_pos;
+    Int_t adc_neg;
+    Int_t tdc_pos=-1;
+    Int_t tdc_neg=-1;
    // TDC positive hit
     if(hit->fNRawHits[2] >  0) {
       THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
-      sighit->Set(hit->fCounter, hit->GetTDCPos());
+      tdc_pos = hit->GetTDCPos()+fTdcOffset;
+      sighit->Set(hit->fCounter, tdc_pos);
     }
 
     // TDC negative hit
     if(hit->fNRawHits[3] >  0) {
       THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
-      sighit->Set(hit->fCounter, hit->GetTDCNeg());
+      tdc_neg = hit->GetTDCNeg()+fTdcOffset;
+      sighit->Set(hit->fCounter, tdc_neg);
     }
 
     // ADC positive hit
-    if(hit->fADC_pos[0] >  0) {
+    if((adc_pos = hit->GetADCPos()) > 0) {
       THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
-      sighit->Set(hit->fCounter, hit->GetADCPos());
+      sighit->Set(hit->fCounter, adc_pos);
     }
 
     // ADC negative hit
-    if(hit->fADC_neg[1] >  0) {   
+    if((adc_neg = hit->GetADCNeg()) > 0) {   
       THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
-      sighit->Set(hit->fCounter, hit->GetADCNeg());
+      sighit->Set(hit->fCounter, adc_neg);
     }
 
-    ihit++;
-  }
-  return ihit;
-}
+    // For each TDC, identify the first hit that is positive.
+    tdc_pos = -1;
+    tdc_neg = -1;
+    for(UInt_t thit=0; thit<hit->fNRawHits[2]; thit++) {
+      Int_t tdc = hit->GetTDCPos(thit);
+      if(tdc >=0 ) {
+	tdc_pos = tdc;
+	break;
+      }
+    }
+    for(UInt_t thit=0; thit<hit->fNRawHits[3]; thit++) {
+      Int_t tdc = hit->GetTDCNeg(thit);
+      if(tdc >= 0) {
+	tdc_neg = tdc;
+	break;
+      }
+    }
 
-//_____________________________________________________________________________
-Int_t THcAerogel::ApplyCorrections( void )
-{
-  return(0);
-}
-
-//_____________________________________________________________________________
-Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
-{
-  
-  for(Int_t ihit=0; ihit < fNhits; ihit++) {
-    THcAerogelHit* hit = (THcAerogelHit *) fRawHitList->At(ihit);
-
-    // Pedestal subtraction and gain adjustment
-
-    // An ADC value of less than zero occurs when that particular
-    // channel has been sparsified away and has not been read. 
-    // The NPE for that tube will be assigned zero by this code.
-    // An ADC value of greater than 8192 occurs when the ADC overflows on
-    // an input that is too large. Tubes with this characteristic will
-    // be assigned NPE = 100.0.
-
+    // Fill the the per detector ADC and TDC arrasy
     Int_t npmt = hit->fCounter - 1;
-    // Should probably check that npmt is in range
-    fA_Pos[npmt] = hit->GetADCPos();
-    fA_Neg[npmt] = hit->GetADCNeg();
-    fA_Pos_p[npmt] = hit->GetADCPos() - fPosPedMean[npmt];
-    fA_Neg_p[npmt] = hit->GetADCNeg() - fNegPedMean[npmt];
-    fT_Pos[npmt] = hit->GetTDCPos();
-    fT_Neg[npmt] = hit->GetTDCNeg();
+
+    fA_Pos[npmt] = adc_pos;
+    fA_Neg[npmt] = adc_neg;
+    fA_Pos_p[npmt] = fA_Pos[npmt] - fPosPedMean[npmt];
+    fA_Neg_p[npmt] = fA_Neg[npmt] - fNegPedMean[npmt];
+    fT_Pos[npmt] = tdc_pos;
+    fT_Neg[npmt] = tdc_neg;
 
     if(fA_Pos[npmt] < 8000) {
       fPosNpe[npmt] = fPosGain[npmt]*fA_Pos_p[npmt];
@@ -418,13 +419,9 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       fNTDCNegHits++;
     }      
 
-    // Fill raw adc variables with actual tubve values
-    // mainly for diagnostic purposes
-    
-
-
+    ihit++;
   }
-      
+
   if(fPosNpeSum > 0.5 || fNegNpeSum > 0.5) {
     fNpeSum = fPosNpeSum + fNegNpeSum;
   } else {
@@ -460,6 +457,22 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
   //         aero_tp(npmt)= haero_tdc_pos(ihit)
   //
   //      enddo
+
+
+  return ihit;
+}
+
+//_____________________________________________________________________________
+Int_t THcAerogel::ApplyCorrections( void )
+{
+  return(0);
+}
+
+//_____________________________________________________________________________
+Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
+{
+  
+  // All code previously here moved into decode
 
   ApplyCorrections();
 
