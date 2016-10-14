@@ -524,6 +524,11 @@ void THcHodoscope::ClearEvent()
   fBetaP = 0.;
   fBetaNoTrk = 0.0;
   fBetaNoTrkChiSq = 0.0;
+  fStartTime  = 0.0;
+  fGoodStartTime = kFALSE;
+  fGoodScinHits = 0;
+  fScinShould = 0;
+  fScinDid = 0;
 
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     fPlanes[ip]->Clear();
@@ -827,9 +832,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   Int_t ntracks = tracks.GetLast()+1; // Number of reconstructed tracks
   Int_t timehist[200];
   // -------------------------------------------------
-
-  fGoodScinHits = 0;
-  fScinShould = 0; fScinDid = 0;
 
   if (tracks.GetLast()+1 > 0 ) {
 
