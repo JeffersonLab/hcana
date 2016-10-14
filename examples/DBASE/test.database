@@ -5,7 +5,7 @@ g_decode_map_filename="MAPS/jun04.map"
 # Values taken from Logbook.  Not necessarily official.
 gpbeam    = 4.015
 hpcentral = 2.074
-htheta_lab = 10.99
+htheta_lab = 19.99
 spcentral = 1.73
 stheta_lab = -32.32
 hpartmass = 0.13957
