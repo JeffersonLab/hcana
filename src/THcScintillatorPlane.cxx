@@ -223,10 +223,14 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 
   // Register variables in global list
   RVarDef vars[] = {
-    {"postdchits", "List of Positive TDC hits",      "frPosTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negtdchits", "List of Negative TDC hits",      "frNegTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"posadchits", "List of Positive ADC hits",      "frPosADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negadchits", "List of Negative ADC hits",      "frNegADCHits.THcSignalHit.GetPaddleNumber()"},
+    {"postdcpad", "List of Positive TDC Counter Number",      "frPosTDCHits.THcSignalHit.GetPaddleNumber()"},
+    {"negtdcpad", "List of Negative TDC Counter Number",      "frNegTDCHits.THcSignalHit.GetPaddleNumber()"},
+    {"posadcpad", "List of Positive ADC Counter Number",      "frPosADCHits.THcSignalHit.GetPaddleNumber()"},
+    {"negadcpad", "List of Negative ADC Counter Number",      "frNegADCHits.THcSignalHit.GetPaddleNumber()"},
+    {"postdcval", "List of Positive TDC Values",              "frPosTDCHits.THcSignalHit.GetData()"},
+    {"negtdcval", "List of Negative TDC Values",              "frNegTDCHits.THcSignalHit.GetData()"},
+    {"posadcval", "List of Positive ADC Values",              "frPosADCHits.THcSignalHit.GetData()"},
+    {"negadcval", "List of Negative ADC Values",              "frNegADCHits.THcSignalHit.GetData()"},
     {"fptime", "Time at focal plane",     "GetFpTime()"},
     {"nhits", "Number of paddle hits (passed TDC Min and Max cuts for both ends)",           "GetNScinHits() "},
     {"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
