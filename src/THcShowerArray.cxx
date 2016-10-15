@@ -198,9 +198,9 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   Double_t cal_arr_gain_cor[fNelem];
 
   DBRequest list1[]={
-    {"cal_arr_ped_limit", fPedLimit, kInt,    fNelem},
-    {"cal_arr_cal_const", cal_arr_cal_const, kDouble, fNelem},
-    {"cal_arr_gain_cor",  cal_arr_gain_cor,  kDouble, fNelem},
+    {"cal_arr_ped_limit", fPedLimit, kInt, static_cast<UInt_t>(fNelem)},
+    {"cal_arr_cal_const", cal_arr_cal_const, kDouble, static_cast<UInt_t>(fNelem)},
+    {"cal_arr_gain_cor",  cal_arr_gain_cor,  kDouble, static_cast<UInt_t>(fNelem)},
     //    {"cal_min_peds", &fShMinPeds, kInt},
     {0}
   };
