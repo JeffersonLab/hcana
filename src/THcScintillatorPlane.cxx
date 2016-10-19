@@ -349,39 +349,40 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     if ((hit->GetADCNeg()-fNegPed[index]) >= 50) 
       ((THcSignalHit*) frNegADCHits->ConstructedAt(nrNegADCHits++))->Set(padnum, hit->GetADCNeg()-fNegPed[index]);
 
-    Bool_t tdcraw_pos=kFALSE;
-    Bool_t tdcraw_neg=kFALSE;
-    Int_t tdcpos, tdcneg;
-    // Find first in range hit from multihit tdcs
+    Bool_t btdcraw_pos=kFALSE;
+    Bool_t btdcraw_neg=kFALSE;
+    Int_t tdc_pos=-1;
+    Int_t tdc_neg=-1;
+    // Find first in range hit from multihit tdc
     for(UInt_t thit=0; thit<hit->fNRawHits[2]; thit++) {
-      tdcpos = hit->GetTDCPos(thit);
-      if(tdcpos >= fScinTdcMin && tdcpos <= fScinTdcMax) {
-	tdcraw_pos = kTRUE;
+      tdc_pos = hit->GetTDCPos(thit)+fTdcOffset;
+      if(tdc_pos >= fScinTdcMin && tdc_pos <= fScinTdcMax) {
+	btdcraw_pos = kTRUE;
 	break;
       }
     }
     for(UInt_t thit=0; thit<hit->fNRawHits[3]; thit++) {
-      tdcneg = hit->GetTDCNeg(thit);
-      if(tdcneg >= fScinTdcMin && tdcneg <= fScinTdcMax) {
-	tdcraw_neg = kTRUE;
+      tdc_neg = hit->GetTDCNeg(thit)+fTdcOffset;
+      if(tdc_neg >= fScinTdcMin && tdc_neg <= fScinTdcMax) {
+	btdcraw_neg = kTRUE;
 	break;
       }
     }
-    // Proceed if there is a valid TDC on each end of the bar
-    if(tdcraw_pos && tdcraw_neg) {
+    // Proceed if there is a valid TDC on either end of the bar
+    if(btdcraw_pos || btdcraw_neg) {
       Double_t adc_pos = hit->GetADCPos()-fPosPed[index];
       Double_t adc_neg = hit->GetADCNeg()-fNegPed[index];
 
-      new( (*fHodoHits)[fNScinHits]) THcHodoHit(tdcraw_pos, tdcraw_neg,
+      new( (*fHodoHits)[fNScinHits]) THcHodoHit(tdc_pos, tdc_neg,
 						adc_pos, adc_neg,
 						hit->fCounter, this);
       
       // Do the pulse height correction to the time.  (Position dependent corrections later)
-      Double_t timec_pos = tdcraw_pos*fScinTdcToTime - fHodoPosPhcCoeff[index]*
+      Double_t timec_pos = tdc_pos*fScinTdcToTime - fHodoPosPhcCoeff[index]*
 	TMath::Sqrt(TMath::Max(0.0,
 			       (adc_pos)/fHodoPosMinPh[index]-1.0))
 	- fHodoPosTimeOffset[index];
-      Double_t timec_neg = tdcraw_neg*fScinTdcToTime - fHodoNegPhcCoeff[index]*
+      Double_t timec_neg = tdc_neg*fScinTdcToTime - fHodoNegPhcCoeff[index]*
 	TMath::Sqrt(TMath::Max(0.0,
 			       (adc_neg)/fHodoNegMinPh[index]-1.0))
 	- fHodoNegTimeOffset[index];
