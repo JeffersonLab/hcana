@@ -12,6 +12,7 @@
 #include "TClonesArray.h"
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
+#include "THcHodoHit.h"
 #include "THcRawHodoHit.h"
 #include "THcScintillatorPlane.h"
 #include "THcShower.h"
@@ -259,17 +260,25 @@ protected:
   // Used in TOF calculation (FineProcess) to hold information about hits
   // within a given plane
   struct TOFPInfo {
-    Double_t time_pos;
-    Double_t time_neg;
+    Bool_t onTrack;
     Bool_t keep_pos;
     Bool_t keep_neg;
+    Double_t time_pos; // Times also corrected for particle
+    Double_t time_neg; // flight time
+    Double_t scin_pos_time; // Times corrected for position on
+    Double_t scin_neg_time; // the bar
     //    Double_t adcPh;
     //    Double_t path;
     //    Double_t time;
-    Double_t scin_pos_time;
-    Double_t scin_neg_time;
-    TOFPInfo () : time_pos(-99.0), time_neg(-99.0), keep_pos(kFALSE),
-		  keep_neg(kFALSE), scin_pos_time(0.0), scin_neg_time(0.0) {}
+    Double_t scinTrnsCoord;
+    Double_t scinLongCoord;
+    Int_t planeIndex;
+    Int_t hitNumInPlane;
+    THcHodoHit *hit;
+    TOFPInfo () : onTrack(kFALSE), keep_pos(kFALSE), keep_neg(kFALSE),
+      time_pos(-99.0), time_neg(-99.0), 
+		 
+scin_pos_time(0.0), scin_neg_time(0.0) {}
   };
   std::vector<TOFPInfo> fTOFPInfo;
   
