@@ -683,15 +683,15 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
     Plane_fptime_sum=0.0;
     for(Int_t i=0;i<nphits;i++) {
       fNoTrkHitInfo.push_back(NoTrkHitInfo());
-      fNoTrkHitInfo[i].goodtwotimes = kFALSE;
-      fNoTrkHitInfo[i].goodscintime = kFALSE;
+      fNoTrkHitInfo[ihit].goodtwotimes = kFALSE;
+      fNoTrkHitInfo[ihit].goodscintime = kFALSE;
       Double_t tmin = 0.5*binmax;
       Double_t postime=((THcHodoHit*) hodoHits->At(i))->GetPosTOFCorrectedTime();
       Double_t negtime=((THcHodoHit*) hodoHits->At(i))->GetNegTOFCorrectedTime();
       if ((postime>tmin) && (postime<tmin+fTofTolerance) &&
 	  (negtime>tmin) && (negtime<tmin+fTofTolerance)) {
-	fNoTrkHitInfo[i].goodtwotimes = kTRUE;
-	fNoTrkHitInfo[i].goodscintime = kTRUE;
+	fNoTrkHitInfo[ihit].goodtwotimes = kTRUE;
+	fNoTrkHitInfo[ihit].goodscintime = kTRUE;
 	// Both tubes fired
 	Int_t index=((THcHodoHit*)hodoHits->At(i))->GetPaddleNumber()-1;
 	Double_t fptime = ((THcHodoHit*)hodoHits->At(i))->GetScinCorrectedTime() 
