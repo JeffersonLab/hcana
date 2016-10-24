@@ -1494,7 +1494,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 
   // * now define a 3/4 or 4/4 trigger of only good scintillators the value
   // * is specified in htracking.param...
-  if ( fTestSum > fTrackEffTestNScinPlanes ){
+  if ( fTestSum >= fTrackEffTestNScinPlanes ){
     fGoodScinHits = 1;
     for (Int_t ifidx = fxLoScin[0]; ifidx < fxHiScin[0]; ifidx ++ ){
       if ( fSweet1XScin == ifidx )
