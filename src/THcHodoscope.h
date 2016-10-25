@@ -68,6 +68,13 @@ public:
   Double_t GetHodoPosTimeOffset(Int_t iii) const {return fHodoPosTimeOffset[iii];}
   Double_t GetHodoNegTimeOffset(Int_t iii) const {return fHodoNegTimeOffset[iii];}
   Double_t GetHodoVelLight(Int_t iii) const {return fHodoVelLight[iii];}
+  Double_t GetHodoPosInvAdcOffset(Int_t iii) const {return fHodoPosInvAdcOffset[iii];}
+  Double_t GetHodoNegInvAdcOffset(Int_t iii) const {return fHodoNegInvAdcOffset[iii];}
+  Double_t GetHodoPosInvAdcLinear(Int_t iii) const {return fHodoPosInvAdcLinear[iii];}
+  Double_t GetHodoNegInvAdcLinear(Int_t iii) const {return fHodoNegInvAdcLinear[iii];}
+  Double_t GetHodoPosInvAdcAdc(Int_t iii) const {return fHodoPosInvAdcAdc[iii];}
+  Double_t GetHodoNegInvAdcAdc(Int_t iii) const {return fHodoNegInvAdcAdc[iii];}
+
   Double_t GetStartTimeCenter() const {return fStartTimeCenter;}
   Double_t GetStartTimeSlop() const {return fStartTimeSlop;}
   Double_t GetBetaNotrk() const {return fBetaNoTrk;}
@@ -113,6 +120,8 @@ public:
 protected:
 
   Int_t fAnalyzePedestals;
+
+  Int_t fNHits;
 
   // Calibration
 
@@ -242,19 +251,19 @@ protected:
   //  } fDataDest[NDEST];     // Lookup table for decoder
 
   // Inforamtion for each plane
-  struct NoTrkPlaneInfo {
-    Bool_t goodplanetime;
-    NoTrkPlaneInfo () : goodplanetime(kFALSE) {}
-  };
-  std::vector<NoTrkPlaneInfo> fNoTrkPlaneInfo;
+  //  struct NoTrkPlaneInfo {
+  //    Bool_t goodplanetime;
+  //    NoTrkPlaneInfo () : goodplanetime(kFALSE) {}
+  //  };
+  //  std::vector<NoTrkPlaneInfo> fNoTrkPlaneInfo;
   
   // Inforamtion for each plane
-  struct NoTrkHitInfo {
-    Bool_t goodtwotimes;
-    Bool_t goodscintime;
-    NoTrkHitInfo () : goodtwotimes(kFALSE) {}
-  };
-  std::vector<NoTrkHitInfo> fNoTrkHitInfo;
+  //  struct NoTrkHitInfo {
+  //    Bool_t goodtwotimes;
+  //    Bool_t goodscintime;
+  //    NoTrkHitInfo () : goodtwotimes(kFALSE) {}
+  //  };
+  //  std::vector<NoTrkHitInfo> fNoTrkHitInfo;
 
 
   // Used in TOF calculation (FineProcess) to hold information about hits
@@ -291,6 +300,7 @@ scin_pos_time(0.0), scin_neg_time(0.0) {}
     Bool_t good_tdc_pos;
     Bool_t good_tdc_neg;
     Double_t scin_time;
+    Double_t scin_time_fp;
     Double_t scin_sigma;
     Double_t dedx;
     TOFCalc() : good_scin_time(kFALSE), good_tdc_pos(kFALSE),

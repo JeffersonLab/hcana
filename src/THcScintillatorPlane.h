@@ -83,8 +83,8 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t fZpos;               /* z position */
   Double_t fDzpos;
   Double_t fHodoSlop;           /* max allowed slop for this plane */
-  Double_t fPosLeft;            /* NOTE: "left" = "top" for a Y scintillator */
-  Double_t fPosRight;           /* NOTE: "right" = "bottom" for a Y scintillator */
+  Double_t fPosLeft;            /* NOTE: "left" = "bottom" for a Y scintillator */
+  Double_t fPosRight;           /* NOTE: "right" = "top" for a Y scintillator */
   Double_t fPosOffset;
   Double_t *fPosCenter;         /* array with centers for all scintillators in the plane */
   Double_t fScinTdcMin;
@@ -94,13 +94,19 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t fScinTdcToTime;
   Double_t fTofTolerance;
   Double_t fBetaNominal;
-  Double_t *fHodoPosMinPh;	// Minimum pulse height per paddle for this plane
-  Double_t *fHodoNegMinPh;	// Minimum pulse height per paddle for this plane
-  Double_t *fHodoPosPhcCoeff;    // Pulse height to time coefficient per paddle for this plane
-  Double_t *fHodoNegPhcCoeff;    // Pulse height to time coefficient per paddlefor this plane
-  Double_t *fHodoPosTimeOffset;
-  Double_t *fHodoNegTimeOffset;
+  //  Double_t *fHodoPosMinPh;	// Minimum pulse height per paddle for this plane
+  //  Double_t *fHodoNegMinPh;	// Minimum pulse height per paddle for this plane
+  //  Double_t *fHodoPosPhcCoeff;    // Pulse height to time coefficient per paddle for this plane
+  //  Double_t *fHodoNegPhcCoeff;    // Pulse height to time coefficient per paddlefor this plane
+  //  Double_t *fHodoPosTimeOffset;
+  //  Double_t *fHodoNegTimeOffset;
   Double_t *fHodoVelLight;
+  Double_t *fHodoPosInvAdcOffset;
+  Double_t *fHodoNegInvAdcOffset;
+  Double_t *fHodoPosInvAdcLinear;
+  Double_t *fHodoNegInvAdcLinear;
+  Double_t *fHodoPosInvAdcAdc;
+  Double_t *fHodoNegInvAdcAdc;
   Double_t *fHodoSigma;
 
   Double_t fTolerance; /* need this for Focal Plane Time estimation */
