@@ -339,13 +339,17 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"hodo_slop",                        fHodoSlop,               kDouble,  (UInt_t) fNPlanes},
     {"debugprintscinraw",                &fdebugprintscinraw,               kInt,  0,1},
     {"hodo_tdc_offset",                  fTdcOffset,              kInt,     (UInt_t) fNPlanes, 1},
+    {"dumptof",                          &fDumpTOF,               kInt,    0, 1},
+    {"dumptof_filename",                 &fTOFDumpFile,           kString, 0, 1},
     {0}
   };
 
   // Defaults if not defined in parameter file
 
   fdebugprintscinraw=0;
-  fTofUsingInvAdc = 0;
+  fDumpTOF = 0;
+  fTOFDumpFile="";
+  fTofUsingInvAdc = 1;
   fTofTolerance = 3.0;
   fNCerNPE = 2.0;
   fNormETot = 0.7;
@@ -357,6 +361,17 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   }
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+
+  if(fDumpTOF) {
+    fDumpOut.open(fTOFDumpFile);
+    if(fDumpOut.is_open()) {
+      fDumpOut << "Hodoscope Time of Flight calibration data" << endl;
+    } else {
+      fDumpTOF = 0;
+      cout << "WARNING: Unable to open TOF Dump file " << fTOFDumpFile << endl;
+      cout << "Data for TOF calibration not being written." << endl;
+    }
+  }
 
   cout << " x1 lo = " << fxLoScin[0] 
        << " x2 lo = " << fxLoScin[1] 
@@ -852,6 +867,15 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   Int_t timehist[200];
   // -------------------------------------------------
 
+  if(fDumpTOF) {
+    Int_t ntothits = 0;
+    for(Int_t ip = 0; ip < fNPlanes; ip++ ) {
+	ntothits += fPlanes[ip]->GetNScinHits();
+    }
+    fDumpOut << "ntrk,tothits " << ntracks << " " << ntothits
+	     << " " << fScinTdcToTime << endl;
+  }
+
   if (tracks.GetLast()+1 > 0 ) {
 
     // **MAIN LOOP: Loop over all tracks and get corrected time, tof, beta...
@@ -967,19 +991,23 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	    
 	    fTOFPInfo[ihhit].onTrack = kTRUE;
 
+	    Double_t zcor = zposition/(29.979*fBetaP)*
+		TMath::Sqrt(1. + theTrack->GetTheta()*theTrack->GetTheta()
+			    + theTrack->GetPhi()*theTrack->GetPhi());
+	    fTOFPInfo[ihhit].zcor = zcor;
+
 	    Double_t tdc_pos = hit->GetPosTDC();
 	    if(tdc_pos >=fScinTdcMin && tdc_pos <= fScinTdcMax ) {
 	      Double_t adc_pos = hit->GetPosADC();
 	      Double_t pathp = fPlanes[ip]->GetPosLeft() - scinLongCoord;
+	      fTOFPInfo[ihhit].pathp = pathp;
 	      Double_t timep = tdc_pos*fScinTdcToTime
 		- fHodoPosInvAdcOffset[fPIndex]
 		- pathp/fHodoPosInvAdcLinear[fPIndex]
 		- fHodoPosInvAdcAdc[fPIndex]
 		/TMath::Sqrt(TMath::Max(20.0,adc_pos));
 	      fTOFPInfo[ihhit].scin_pos_time = timep;
-	      timep -=  zposition/(29.979*fBetaP)*
-		TMath::Sqrt(1. + theTrack->GetTheta()*theTrack->GetTheta()
-			    + theTrack->GetPhi()*theTrack->GetPhi());
+	      timep -= zcor;
 	      fTOFPInfo[ihhit].time_pos = timep;
 	      
 	      for ( Int_t k = 0; k < 200; k++ ){ // Line 211
@@ -993,15 +1021,14 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	    if(tdc_neg >=fScinTdcMin && tdc_neg <= fScinTdcMax ) {
 	      Double_t adc_neg = hit->GetNegADC();
 	      Double_t pathn =  scinLongCoord - fPlanes[ip]->GetPosRight();
+	      fTOFPInfo[ihhit].pathn = pathn;
 	      Double_t timen = tdc_neg*fScinTdcToTime
 		- fHodoNegInvAdcOffset[fPIndex]
 		- pathn/fHodoNegInvAdcLinear[fPIndex]
 		- fHodoNegInvAdcAdc[fPIndex]
 		/TMath::Sqrt(TMath::Max(20.0,adc_neg));
 	      fTOFPInfo[ihhit].scin_neg_time = timen;
-	      timen -=  zposition/(29.979*fBetaP)*
-		TMath::Sqrt( 1. + theTrack->GetTheta()*theTrack->GetTheta()
-			     + theTrack->GetPhi()*theTrack->GetPhi());
+	      timen -=  zcor;
 	      fTOFPInfo[ihhit].time_neg = timen;
 	      
 	      for ( Int_t k = 0; k < 200; k++ ){ // Line 230
@@ -1030,6 +1057,13 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	}
       }
 	
+      if(fDumpTOF) {
+	fDumpOut << "trk=" << itrack << " " << jmax << " " <<
+	  theTrack->GetX() << " " << theTrack->GetY() << " " <<
+	  theTrack->GetTheta() << " " << theTrack->GetPhi() <<  " " <<
+	  theTrack->GetP() << endl;
+      }
+
       if(jmax > 0) {
 	Double_t tmin = 0.5 * jmax;
 	
@@ -1081,10 +1115,22 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  if ( fTOFPInfo[ihhit].keep_pos ) { // 301
 	    fTOFCalc[ihhit].good_tdc_pos = kTRUE;
 	    fGoodFlags[itrack][ip][iphit].goodTdcPos = kTRUE;
+	    if(fDumpTOF) {
+	      fDumpOut << "1 " << ip+1 << " " << paddle+1 << " " <<
+		hit->GetPosTDC()*fScinTdcToTime << " " << fTOFPInfo[ihhit].pathp << 
+		" "  << fTOFPInfo[ihhit].zcor << " " << fTOFPInfo[ihhit].time_pos <<
+		" " << hit->GetPosADC() << endl;
+	    }
 	  }	    
 	  if ( fTOFPInfo[ihhit].keep_neg ) { //
 	    fTOFCalc[ihhit].good_tdc_neg = kTRUE;
 	    fGoodFlags[itrack][ip][iphit].goodTdcNeg = kTRUE;
+	    if(fDumpTOF) {
+	      fDumpOut << "2 " << ip+1 << " " << paddle+1 << " " <<
+		hit->GetNegTDC()*fScinTdcToTime << " " << fTOFPInfo[ihhit].pathn << 
+		" "  << fTOFPInfo[ihhit].zcor << " " << fTOFPInfo[ihhit].time_neg <<
+		" " << hit->GetNegADC() << endl;
+	    }
 	  }	    
 
 	  // ** Calculate ave time for scin and error.

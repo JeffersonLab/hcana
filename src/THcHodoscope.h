@@ -209,6 +209,11 @@ protected:
   Int_t*       fyHiScin;
   Int_t        fNHodoscopes;
 
+  Int_t        fDumpTOF;
+  ofstream      fDumpOut;
+  string       fTOFDumpFile;
+
+
   Int_t fHitSweet1X;
   Int_t fHitSweet1Y;
   Int_t fHitSweet2X;
@@ -276,9 +281,9 @@ protected:
     Double_t time_neg; // flight time
     Double_t scin_pos_time; // Times corrected for position on
     Double_t scin_neg_time; // the bar
-    //    Double_t adcPh;
-    //    Double_t path;
-    //    Double_t time;
+    Double_t pathp;
+    Double_t pathn;
+    Double_t zcor;
     Double_t scinTrnsCoord;
     Double_t scinLongCoord;
     Int_t planeIndex;
