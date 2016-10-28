@@ -21,3 +21,12 @@ hpartmass = 0.00051099
 47000-48000
 g_ctp_parm_filename="PARAM/general.param"
 g_decode_map_filename="MAPS/jan03.map"
+65605
+g_ctp_parm_filename="PARAM/daq07/online07.param"
+g_decode_map_filename="MAPS/july04_daq07.map"
+# From DBASE/online07.kinematics
+hpartmass = 0.00051099
+gpbeam = 4.197
+htheta_lab = 20.00
+hpcentral = 2.0
+gtarg_num=4

@@ -1,0 +1,169 @@
+; modified for e04-001/e06-009 NucR
+;
+; This is the target parameter file.  Numbers 1-9 are solid targets,
+; and 11-16 will always be the cryotargets(H 4.5cm and 12.4cm, He 4cm and 15 cm,
+; and D 4.4 cm and 12.4cm). Some of the solid targets don't exist any more (one
+; of the Fe, the C_sl and Au_6%, the dummy-15)
+;The target order is:
+;
+;    Au_3%         Cu_2%      Fe_1%
+;    C_1%          C_3%       BeO
+;    C_0.5% (z=0)  Be         ---
+;
+;    dummy-15
+;    H  4.5cm      H  12.4cm
+;    He 4cm        He 15cm
+;    LD2  4.4cm    LD2  12.4cm
+;    dummy-4
+;    quintar(all layers)
+;    quintar     z=0cm, z=+6cm, z=+3cm, z=-3cm, z=-6cm
+;
+; non-existant targets have A=Z=M=...=0
+; empty/dummy cells have A=Z=M=...= SAME AS DEUTERIUM.
+;
+; As of now (7/13/96) the values for the BeO are guesses
+
+; 1=tuna can, 2=beer can, 21=solid
+ gtarg_type   =  21.     ,    21.     ,   21.
+	         21.     ,    21.     ,   21.
+                 21.     ,    21.     ,   21.
+                 21.
+                 1.      ,     1.
+                 1.      ,     1.
+                 1.      ,     1.
+                 21.
+                 21.
+
+  gtarg_z     = 79.0     ,    29.0    ,   26.0
+                 6.0     ,     6.0    ,   12.0
+                 6.0     ,     4.0    ,   0.0
+                 13.0
+                 1.0     ,     1.0
+                 1.0     ,     1.0
+                 1.0     ,     1.0
+                 13.0
+		 8.8
+;this is averaged z: 2x Al, 3x C
+		 6.0     ,     6.0    ,    13.0  ,  13.0  ,  6.0
+
+  gtarg_a     = 197.0     ,    64.0    ,    56.0
+                12.0     ,    12.0    ,    25.0
+                12.0     ,     9.0    ,    0.0
+                 27.0
+                 1.0     ,     1.0
+                 2.0     ,     2.0
+                 2.0     ,     2.0
+                 27.0
+		 18.0
+;this is averaged z: 2x Al, 3x C
+		 12.0    ,    12.0    ,   27.0  ,  27.0  ,  12.0
+
+  gtarg_mass  = 196.96655   ,   63.546   ,    55.845
+                12.0107   ,   12.0107   ,    25.0  
+                12.0107     ,  9.012182     ,   0.0    
+                 26.98
+                 1.00727647 ,    1.00727647 
+                 2.01355322 ,    2.01355322
+                 2.01355322 ,    2.01355322
+                 26.98
+		17.9986
+;this is averaged z: 2x Al, 3x C
+		12.011   ,   12.011   ,  26.98  ,  26.98  ,  12.011
+
+; Next is the radiation length in percent...
+  gtarg_lrad  =  3.72    ,    1.81    ,     1.0
+                 1.06     ,    2.92    ,     1.0
+                 0.50     ,    0.0     ,     0.0
+                 2.2472 
+                 0.48 ,    1.43353
+                 0.528   ,    1.982
+                 0.56 ,    1.63804
+                 2.11
+		 3.8429
+;added the radiation lengths of all five layers
+		 0.53191 , 0.53191, 1.1236 , 1.1236 , 0.53191
+		 
+
+; Next is the thickness of the target in g/cm^2...
+  gtarg_thick =  0.240  ,    0.233  ,     0.1187
+                 0.452  , 1.2454  ,     0.2
+                 0.227  ,   1.2454     ,     0.0
+                 0.529
+                 0.295   ,    0.9016
+                 0.648   ,    2.430
+                 0.681  ,    2.0808
+                 0.507
+		 1.215
+		 0.225  ,  0.225  ,  0.27  ,  0.27  ,  0.225
+
+; Finally, the density of the target in g/cm^3.  These are estimates based
+; on the nominal thickness (cm) of the targets which can be off by ~5% ...
+
+  gtarg_dens  =  19.3    ,  8.96    ,     1.3
+                 2.18   ,    2.18   ,     2.0
+                 2.0     ,   2.0     ,    0.0
+                 2.7
+                 0.0723   ,    0.0723
+                 0.167   ,    0.167
+                 0.167   ,    0.167
+                 2.68
+		 2.7
+		 2.25  ,  2.25  ,  2.7  ,  2.7  ,  2.25
+
+; Target angle:  =90 deg. is perpendicluar to beam
+;                <90 deg. is face towards HMS
+;                >90 deg. is face towards SOS 
+; for E99118 target was rotated 20.3deg. to face HMS =>69.7deg. = 1.2164945rad
+  gtarg_theta =  1.5707936 
+
+;general target energy loss parameters. Vansyoc Mar.98
+
+
+;target cell****************
+
+      gcell_radius = 1.0
+      gz_cell 	 =  13.0
+      ga_cell 	 =  27.0
+      gcell_den 	=   2.70
+      gwall_thk	 =  0.03429
+      gend_thk  	=   0.03429
+      gfront_thk  =  0.020574            
+;Air cap between the chamber and the entrance window
+      gair_dens 	=   0.00121
+      gair_thk 	=   0.018
+      gair_a 	=   14.68
+      gair _z 	=   7.32
+
+
+;HMS********
+;    HMS scattering chamber window specs.********** 
+      hscat_win_thk  = 0.109728
+      hscat_win_den =  2.70
+      hscat_win_z   =  13.0
+      hscat_win_a   =  27.0
+;    HMS entrance window specs.********************
+      hdet_ent_thk  =  0.049098
+      hdet_ent_den  =  0.878636
+      hdet_ent_z    =  2.67
+      hdet_ent_a    =  4.67
+;SOS********
+;    SOS scattering chamber window specs.**********
+      sscat_win_thk =  0.054864
+      sscat_win_den =  2.70
+      sscat_win_z   =  13.0
+      sscat_win_a   =  27.0
+;    SOS entrance window specs.********************
+      sdet_ent_thk  =  0.016421
+      sdet_ent_den  =  0.862
+      sdet_ent_z    =  2.67
+      sdet_ent_a    =  4.67
+;eloss debug   0 = off,1 = on
+;      gelossdebug = 0
+;use old cryo geometry? (1)
+;      old_tgeom = 1
+
+;
+
+
+
+
