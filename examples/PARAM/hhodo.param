@@ -11,7 +11,7 @@
 ; new variable for picking good hits for tof fitting
 ; this should not be set tight until you are ready to fit
 ; tof and you figured out good values
-   htof_tolerance = 3.0
+   htof_tolerance = 30.0
 ;                                                                               
 ; hms_tof_params                                                                
 ; hnum_scin_counters, hhodo_zpos, hhodo_center_coord, hhodo_width               
@@ -284,3 +284,5 @@ hhodo_neg_invadc_adc=     0.00,     0.00,    33.27,     0.00
                         78.19,     0.00,    51.72,     0.00
                         75.03,     0.00,    49.34,     0.00
                          0.00,     0.00,    53.40,     0.00
+
+htofusinginvadc=0

@@ -66,12 +66,12 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete [] fScinZpos;
   delete [] fPosCenter;
   
-  //  delete [] fHodoPosMinPh; fHodoPosMinPh = NULL;
-  //  delete [] fHodoNegMinPh; fHodoNegMinPh = NULL;
-  //  delete [] fHodoPosPhcCoeff; fHodoPosPhcCoeff = NULL;
-  //  delete [] fHodoNegPhcCoeff; fHodoNegPhcCoeff = NULL;
-  //  delete [] fHodoPosTimeOffset; fHodoPosTimeOffset = NULL;
-  //  delete [] fHodoNegTimeOffset; fHodoNegTimeOffset = NULL;
+  delete [] fHodoPosMinPh; fHodoPosMinPh = NULL;
+  delete [] fHodoNegMinPh; fHodoNegMinPh = NULL;
+  delete [] fHodoPosPhcCoeff; fHodoPosPhcCoeff = NULL;
+  delete [] fHodoNegPhcCoeff; fHodoNegPhcCoeff = NULL;
+  delete [] fHodoPosTimeOffset; fHodoPosTimeOffset = NULL;
+  delete [] fHodoNegTimeOffset; fHodoNegTimeOffset = NULL;
   delete [] fHodoPosInvAdcOffset; fHodoPosInvAdcOffset = NULL;
   delete [] fHodoNegInvAdcOffset; fHodoNegInvAdcOffset = NULL;
   delete [] fHodoPosInvAdcLinear; fHodoPosInvAdcLinear = NULL;
@@ -154,8 +154,11 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
     {Form("scin_%s_%s",GetName(),tmpright), &fPosRight,kDouble},
     {Form("scin_%s_offset",GetName()), &fPosOffset, kDouble},
     {Form("scin_%s_center",GetName()), fPosCenter,kDouble,fNelem},
+    {"tofusinginvadc",   &fTofUsingInvAdc,        kInt,            0,  1},       
     {0}
   };
+
+  fTofUsingInvAdc = 1;
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   // fetch the parameter from the temporary list
 
@@ -171,12 +174,12 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   fStartTimeCenter=((THcHodoscope *)GetParent())->GetStartTimeCenter();
   fStartTimeSlop=((THcHodoscope *)GetParent())->GetStartTimeSlop();
   // Parameters for this plane
-  //  fHodoPosMinPh = new Double_t[fNelem];
-  //  fHodoNegMinPh = new Double_t[fNelem];
-  //  fHodoPosPhcCoeff = new Double_t[fNelem];
-  //  fHodoNegPhcCoeff = new Double_t[fNelem];
-  //  fHodoPosTimeOffset = new Double_t[fNelem];
-  //  fHodoNegTimeOffset = new Double_t[fNelem];
+  fHodoPosMinPh = new Double_t[fNelem];
+  fHodoNegMinPh = new Double_t[fNelem];
+  fHodoPosPhcCoeff = new Double_t[fNelem];
+  fHodoNegPhcCoeff = new Double_t[fNelem];
+  fHodoPosTimeOffset = new Double_t[fNelem];
+  fHodoNegTimeOffset = new Double_t[fNelem];
   fHodoVelLight = new Double_t[fNelem];
   fHodoPosInvAdcOffset = new Double_t[fNelem];
   fHodoNegInvAdcOffset = new Double_t[fNelem];
@@ -187,12 +190,12 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   fHodoSigma = new Double_t[fNelem];
   for(Int_t j=0;j<(Int_t) fNelem;j++) {
     Int_t index=((THcHodoscope *)GetParent())->GetScinIndex(fPlaneNum-1,j);
-    //    fHodoPosMinPh[j] = ((THcHodoscope *)GetParent())->GetHodoPosMinPh(index);
-    //    fHodoNegMinPh[j] = ((THcHodoscope *)GetParent())->GetHodoNegMinPh(index);
-    //    fHodoPosPhcCoeff[j] = ((THcHodoscope *)GetParent())->GetHodoPosPhcCoeff(index);
-    //    fHodoNegPhcCoeff[j] = ((THcHodoscope *)GetParent())->GetHodoNegPhcCoeff(index);
-    //    fHodoPosTimeOffset[j] = ((THcHodoscope *)GetParent())->GetHodoPosTimeOffset(index);
-    //    fHodoNegTimeOffset[j] = ((THcHodoscope *)GetParent())->GetHodoNegTimeOffset(index);
+    fHodoPosMinPh[j] = ((THcHodoscope *)GetParent())->GetHodoPosMinPh(index);
+    fHodoNegMinPh[j] = ((THcHodoscope *)GetParent())->GetHodoNegMinPh(index);
+    fHodoPosPhcCoeff[j] = ((THcHodoscope *)GetParent())->GetHodoPosPhcCoeff(index);
+    fHodoNegPhcCoeff[j] = ((THcHodoscope *)GetParent())->GetHodoNegPhcCoeff(index);
+    fHodoPosTimeOffset[j] = ((THcHodoscope *)GetParent())->GetHodoPosTimeOffset(index);
+    fHodoNegTimeOffset[j] = ((THcHodoscope *)GetParent())->GetHodoNegTimeOffset(index);
     fHodoPosInvAdcOffset[j] = ((THcHodoscope *)GetParent())->GetHodoPosInvAdcOffset(index);
     fHodoNegInvAdcOffset[j] = ((THcHodoscope *)GetParent())->GetHodoNegInvAdcOffset(index);
     fHodoPosInvAdcLinear[j] = ((THcHodoscope *)GetParent())->GetHodoPosInvAdcLinear(index);
@@ -402,12 +405,22 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       if(btdcraw_pos && btdcraw_neg) {
       
 	// Do the pulse height correction to the time.  (Position dependent corrections later)
-	Double_t timec_pos = tdc_pos*fScinTdcToTime
-	  - fHodoPosInvAdcOffset[index]
-	  - fHodoPosInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0,adc_pos));
-	Double_t timec_neg = tdc_neg*fScinTdcToTime
-	  - fHodoNegInvAdcOffset[index]
-	  - fHodoNegInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0,adc_neg));
+	Double_t timec_pos, timec_neg;
+	if(fTofUsingInvAdc) {
+	  timec_pos = tdc_pos*fScinTdcToTime
+	    - fHodoPosInvAdcOffset[index]
+	    - fHodoPosInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0,adc_pos));
+	  timec_neg = tdc_neg*fScinTdcToTime
+	    - fHodoNegInvAdcOffset[index]
+	    - fHodoNegInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0,adc_neg));
+	} else {		// Old style
+	  timec_pos = tdc_pos*fScinTdcToTime - fHodoPosPhcCoeff[index]*
+	    TMath::Sqrt(TMath::Max(0.0,adc_pos/fHodoPosMinPh[index]-1.0))
+	    - fHodoPosTimeOffset[index];
+	  timec_neg = tdc_neg*fScinTdcToTime - fHodoNegPhcCoeff[index]*
+	    TMath::Sqrt(TMath::Max(0.0,adc_neg/fHodoNegMinPh[index]-1.0))
+	    - fHodoNegTimeOffset[index];
+	}
 	// Find hit position using ADCs
 	// If postime larger, then hit was nearer negative side.
 	// Some incarnations use fixed velocity of 15 cm/nsec
@@ -418,14 +431,22 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	hit_position=TMath::Min(hit_position,fPosLeft);
 	hit_position=TMath::Max(hit_position,fPosRight);
 	// Position depenent time corrections
-	timec_pos -= (fPosLeft-hit_position)/
-	  fHodoPosInvAdcLinear[index];
-	timec_neg -= (hit_position-fPosRight)/
-	  fHodoNegInvAdcLinear[index];
-	Double_t scin_corrected_time = 0.5*(timec_pos+timec_neg);
-	Double_t postime = timec_pos - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
-	Double_t negtime = timec_neg - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
-	
+	Double_t scin_corrected_time, postime, negtime;
+	if(fTofUsingInvAdc) {
+	  timec_pos -= (fPosLeft-hit_position)/
+	    fHodoPosInvAdcLinear[index];
+	  timec_neg -= (hit_position-fPosRight)/
+	    fHodoNegInvAdcLinear[index];
+	  scin_corrected_time = 0.5*(timec_pos+timec_neg);
+	  postime = timec_pos - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  negtime = timec_neg - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	} else {
+	  postime=timec_pos-(fPosLeft-hit_position)/fHodoVelLight[index];
+	  negtime=timec_neg-(hit_position-fPosRight)/fHodoVelLight[index];
+	  scin_corrected_time = 0.5*(postime+negtime);
+	  postime = postime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  negtime = negtime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	}
 	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,
 								     postime, negtime,
 								     scin_corrected_time);

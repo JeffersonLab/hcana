@@ -94,12 +94,13 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t fScinTdcToTime;
   Double_t fTofTolerance;
   Double_t fBetaNominal;
-  //  Double_t *fHodoPosMinPh;	// Minimum pulse height per paddle for this plane
-  //  Double_t *fHodoNegMinPh;	// Minimum pulse height per paddle for this plane
-  //  Double_t *fHodoPosPhcCoeff;    // Pulse height to time coefficient per paddle for this plane
-  //  Double_t *fHodoNegPhcCoeff;    // Pulse height to time coefficient per paddlefor this plane
-  //  Double_t *fHodoPosTimeOffset;
-  //  Double_t *fHodoNegTimeOffset;
+  Double_t *fHodoPosMinPh;	// Minimum pulse height per paddle for this plane
+  Double_t *fHodoNegMinPh;	// Minimum pulse height per paddle for this plane
+  Double_t *fHodoPosPhcCoeff;    // Pulse height to time coefficient per paddle for this plane
+  Double_t *fHodoNegPhcCoeff;    // Pulse height to time coefficient per paddlefor this plane
+  Double_t *fHodoPosTimeOffset;
+  Double_t *fHodoNegTimeOffset;
+  Int_t fTofUsingInvAdc;
   Double_t *fHodoVelLight;
   Double_t *fHodoPosInvAdcOffset;
   Double_t *fHodoNegInvAdcOffset;

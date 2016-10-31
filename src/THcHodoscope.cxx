@@ -1001,11 +1001,18 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	      Double_t adc_pos = hit->GetPosADC();
 	      Double_t pathp = fPlanes[ip]->GetPosLeft() - scinLongCoord;
 	      fTOFPInfo[ihhit].pathp = pathp;
-	      Double_t timep = tdc_pos*fScinTdcToTime
-		- fHodoPosInvAdcOffset[fPIndex]
-		- pathp/fHodoPosInvAdcLinear[fPIndex]
-		- fHodoPosInvAdcAdc[fPIndex]
-		/TMath::Sqrt(TMath::Max(20.0,adc_pos));
+	      Double_t timep = tdc_pos*fScinTdcToTime;
+	      if(fTofUsingInvAdc) {
+		timep -= fHodoPosInvAdcOffset[fPIndex]
+		  + pathp/fHodoPosInvAdcLinear[fPIndex]
+		  + fHodoPosInvAdcAdc[fPIndex]
+		  /TMath::Sqrt(TMath::Max(20.0,adc_pos));
+	      } else {
+		timep -= fHodoPosPhcCoeff[fPIndex]*
+		  TMath::Sqrt(TMath::Max(0.0,adc_pos/fHodoPosMinPh[fPIndex]-1.0))
+		  + pathp/fHodoVelLight[fPIndex]
+		  + fHodoPosTimeOffset[fPIndex];
+	      }
 	      fTOFPInfo[ihhit].scin_pos_time = timep;
 	      timep -= zcor;
 	      fTOFPInfo[ihhit].time_pos = timep;
@@ -1022,11 +1029,18 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	      Double_t adc_neg = hit->GetNegADC();
 	      Double_t pathn =  scinLongCoord - fPlanes[ip]->GetPosRight();
 	      fTOFPInfo[ihhit].pathn = pathn;
-	      Double_t timen = tdc_neg*fScinTdcToTime
-		- fHodoNegInvAdcOffset[fPIndex]
-		- pathn/fHodoNegInvAdcLinear[fPIndex]
-		- fHodoNegInvAdcAdc[fPIndex]
-		/TMath::Sqrt(TMath::Max(20.0,adc_neg));
+	      Double_t timen = tdc_neg*fScinTdcToTime;
+	      if(fTofUsingInvAdc) {
+		timen -= fHodoNegInvAdcOffset[fPIndex]
+		  + pathn/fHodoNegInvAdcLinear[fPIndex]
+		  + fHodoNegInvAdcAdc[fPIndex]
+		  /TMath::Sqrt(TMath::Max(20.0,adc_neg));
+	      } else {
+		timen -= fHodoNegPhcCoeff[fPIndex]*
+		  TMath::Sqrt(TMath::Max(0.0,adc_neg/fHodoNegMinPh[fPIndex]-1.0))
+		  + pathn/fHodoVelLight[fPIndex]
+		  + fHodoNegTimeOffset[fPIndex];
+	      }
 	      fTOFPInfo[ihhit].scin_neg_time = timen;
 	      timen -=  zcor;
 	      fTOFPInfo[ihhit].time_neg = timen;
