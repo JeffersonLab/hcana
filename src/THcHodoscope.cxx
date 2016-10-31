@@ -363,7 +363,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   if(fDumpTOF) {
-    fDumpOut.open(fTOFDumpFile);
+    fDumpOut.open(fTOFDumpFile.c_str());
     if(fDumpOut.is_open()) {
       fDumpOut << "Hodoscope Time of Flight calibration data" << endl;
     } else {
