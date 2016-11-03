@@ -1,0 +1,84 @@
+;
+; Parameters that were built into Fortran analyzer that we want
+; to pass as parameters so that the resulting code can be more generic.
+;
+
+hhodo_num_planes = 4
+hhodo_plane_names = "1x 1y 2x 2y"
+
+hcal_num_layers = 4
+
+rraster_num_signals = 4
+
+# Exclusion band width for the calorimeter's fiducial volume.
+hcal_fv_delta = 5.
+
+# Constants for the coordiante correction of the calorimeter energy depositions
+hcal_a_cor = 200.
+hcal_b_cor = 8000.
+hcal_c_cor = 64.36, 64.36	# for positive and negative sides
+hcal_d_cor =  1.66,  1.66
+
+hcal_layer_names = "1pr 2ta 3ta 4ta"
+
+haero_num_pairs = 8
+
+# Names of planes so that parameter names can be constructed
+hdc_plane_names = "1x1 1y1 1u1 1v1 1y2 1x2 2x1 2y1 2u1 2v1 2y2 2x2"
+
+# The following were defined in REPLAY.PARAM
+h_recon_coeff_filename =    'PARAM/hms_recon_coeff.dat'  ;hms optics matrix
+
+# The following are set to zero to replicate historical ENGINE behavior
+# For new analyses they should be set to 1.  If not defined here,
+# hcana will default 1, the new and correct behaviour.
+
+# If 1, Let a hit have different L/R assignment for different space points
+# instead of L/R assignment from first sp it appears in.
+hdc_fix_lr = 0
+# If 1, don't do the the propagation along the wire each time the hit
+# appears in a space point.  (Which means the correction accumulates)
+hdc_fix_propcorr = 0
+
+# SOS parameters
+shodo_num_planes = 4
+shodo_plane_names = "1x 1y 2x 2y"
+
+scal_num_layers = 4
+
+# Exclusion band width for the calorimeter's fiducial volume.
+# (saw) Don't know what this should be.  Copied it from HMS.
+scal_fv_delta = 5.
+
+# Constants for the coordiante correction of the calorimeter energy depositions
+scal_a_cor = 400.
+scal_b_cor = 12000.
+scal_c_cor = -87.1628, -100.	# The positive side constants reproduce
+scal_d_cor =  1.65054,    3.	# correction in Engine to accuracy better 0.005.
+
+scal_layer_names = "1pr 2ta 3ta 4ta"
+
+# Names of planes so that parameter names can be constructed
+sdc_plane_names = "1u1 1u2 1x1 1x2 1v1 1v2 2u1 2u2 2x1 2x2 2v1 2v2"
+
+# The following were defined in REPLAY.PARAM
+s_recon_coeff_filename =    'PARAM/sos_recon_coeff.dat'  ;sos optics matrix
+
+# Fortran ENGINE only had this as a parameter for HMS.  Need it here
+# because same code used for both spectrometers
+sntracks_max_fp = 10
+
+# The following are set to zero to replicate historical ENGINE behavior
+# For new analyses they should be set to 1.  If not defined here,
+# hcana will default 1, the new and correct behaviour.
+
+# If 1, Let a hit have different L/R assignment for different space points
+# instead of L/R assignment from first sp it appears in.
+sdc_fix_lr = 0
+# If 1, don't do the the propagation along the wire each time the hit
+# appears in a space point.  (Which means the correction accumulates)
+sdc_fix_propcorr = 0
+
+# Total number of PMTs in Gas Cherenkov detector.
+hcer_tot_pmts = 2
+

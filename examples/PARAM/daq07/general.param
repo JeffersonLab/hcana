@@ -1,0 +1,23 @@
+#real raddeg
+raddeg=3.14159265/180
+
+; hms/sosflags.param include spectrometer offsets and options.
+#include "PARAM/daq07/genflags.param"
+#include "PARAM/daq07/hmsflags.param"
+#include "PARAM/daq07/sosflags.param"
+
+#include "PARAM/daq07/gdebug.param"
+#include "PARAM/daq07/hdebug.param"
+#include "PARAM/daq07/sdebug.param"
+#include "PARAM/daq07/htracking.param"
+#include "PARAM/daq07/stracking.param"
+
+#include "PARAM/daq07/gtarget.param"
+#include "PARAM/daq07/hdc_offsets.param"
+#include "PARAM/daq07/hdc.pos"
+#include "PARAM/daq07/hhodo.pos"
+#include "PARAM/daq07/hcal.pos"
+#include "PARAM/daq07/sdc_offsets.param"
+#include "PARAM/daq07/sdc.pos"
+#include "PARAM/daq07/shodo.pos"
+#include "PARAM/daq07/scal.pos"

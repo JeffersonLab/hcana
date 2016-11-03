@@ -20,7 +20,8 @@ public:
   THcHodoHit(Int_t postdc, Int_t negtdc, Double_t posadc, Double_t negadc,
 	     Int_t ipad, THcScintillatorPlane* sp) :
   fPosTDC(postdc), fNegTDC(negtdc), fPosADC_Ped(posadc), fNegADC_Ped(negadc),
-    fPaddleNumber(ipad), fPlane(sp) {};
+    fPaddleNumber(ipad), fHasCorrectedTimes(kFALSE), 
+    fTwoGoodTimes(kFALSE), fPlane(sp) {};
 
   virtual ~THcHodoHit() {}
 
@@ -36,6 +37,8 @@ public:
   Double_t GetPosTOFCorrectedTime() const { return fPosTOFCorrectedTime;}
   Double_t GetNegTOFCorrectedTime() const { return fNegTOFCorrectedTime;}
   Double_t GetScinCorrectedTime() const { return fScinCorrectedTime;}
+  Bool_t GetTwoGoodTimes() const { return fTwoGoodTimes;}
+  Bool_t GetHasCorrectedTimes() const { return fHasCorrectedTimes;}
   Int_t GetPaddleNumber() const { return fPaddleNumber; }
 
   void SetCorrectedTimes(Double_t pos, Double_t neg, Double_t) {
@@ -47,6 +50,10 @@ public:
     fPosCorrectedTime = pos; fNegCorrectedTime = neg;
     fPosTOFCorrectedTime = postof; fNegTOFCorrectedTime = negtof;
     fScinCorrectedTime = timeave;
+    fHasCorrectedTimes = kTRUE;
+  }
+  void SetTwoGoodTimes(Bool_t flag) {
+    fTwoGoodTimes = flag;
   }
 
 protected:
@@ -64,6 +71,10 @@ protected:
                                 // based on ADCs.
   Double_t fPosTOFCorrectedTime; // Times corrected for z position
   Double_t fNegTOFCorrectedTime; // using nominal beta
+
+  Bool_t fHasCorrectedTimes;
+  Bool_t fTwoGoodTimes;
+  
   THcScintillatorPlane* fPlane;	// Pointer to parent scintillator plane
   
   
