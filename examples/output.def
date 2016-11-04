@@ -129,18 +129,18 @@ TH1F hcaladc_B13n 'HMS Cal ADC B13n - PED' H.cal.2ta.aneg_p[12] 150 50 500
 
 # Can we use variables for the constants.  In CTP we used hdc_nwire(i)
 #
-TH1F hdc1x1_wm 'HDC 1X1 Wiremap' H.dc.1x1.tdchits 113 0.5 113.5
-TH1F hdc1y1_wm 'HDC 1Y1 Wiremap' H.dc.1y1.tdchits 52 0.5 52.5
-TH1F hdc1u1_wm 'HDC 1U1 Wiremap' H.dc.1u1.tdchits 107 0.5 107.5
-TH1F hdc1v1_wm 'HDC 1V1 Wiremap' H.dc.1v1.tdchits 107 0.5 107.5
-TH1F hdc1y2_wm 'HDC 1Y2 Wiremap' H.dc.1y2.tdchits 52 0.5 52.5
-TH1F hdc1x2_wm 'HDC 1X2 Wiremap' H.dc.1x2.tdchits 113 0.5 113.5
-TH1F hdc2x1_wm 'HDC 2X1 Wiremap' H.dc.2x1.tdchits 113 0.5 113.5
-TH1F hdc2y1_wm 'HDC 2Y1 Wiremap' H.dc.2y1.tdchits 52 0.5 52.5
-TH1F hdc2u1_wm 'HDC 2U1 Wiremap' H.dc.2u1.tdchits 107 0.5 107.5
-TH1F hdc2v1_wm 'HDC 2V1 Wiremap' H.dc.2v1.tdchits 107 0.5 107.5
-TH1F hdc2y2_wm 'HDC 2Y2 Wiremap' H.dc.2y2.tdchits 52 0.5 52.5
-TH1F hdc2x2_wm 'HDC 2X2 Wiremap' H.dc.2x2.tdchits 113 0.5 113.5
+TH1F hdc1x1_wm 'HDC 1X1 Wiremap' H.dc.1x1.wirenum 113 0.5 113.5
+TH1F hdc1y1_wm 'HDC 1Y1 Wiremap' H.dc.1y1.wirenum 52 0.5 52.5
+TH1F hdc1u1_wm 'HDC 1U1 Wiremap' H.dc.1u1.wirenum 107 0.5 107.5
+TH1F hdc1v1_wm 'HDC 1V1 Wiremap' H.dc.1v1.wirenum 107 0.5 107.5
+TH1F hdc1y2_wm 'HDC 1Y2 Wiremap' H.dc.1y2.wirenum 52 0.5 52.5
+TH1F hdc1x2_wm 'HDC 1X2 Wiremap' H.dc.1x2.wirenum 113 0.5 113.5
+TH1F hdc2x1_wm 'HDC 2X1 Wiremap' H.dc.2x1.wirenum 113 0.5 113.5
+TH1F hdc2y1_wm 'HDC 2Y1 Wiremap' H.dc.2y1.wirenum 52 0.5 52.5
+TH1F hdc2u1_wm 'HDC 2U1 Wiremap' H.dc.2u1.wirenum 107 0.5 107.5
+TH1F hdc2v1_wm 'HDC 2V1 Wiremap' H.dc.2v1.wirenum 107 0.5 107.5
+TH1F hdc2y2_wm 'HDC 2Y2 Wiremap' H.dc.2y2.wirenum 52 0.5 52.5
+TH1F hdc2x2_wm 'HDC 2X2 Wiremap' H.dc.2x2.wirenum 113 0.5 113.5
 
 # Drift Time and Drift Distance Spectra
 TH1F hdc1x1_dt 'HDC 1X1 Drift Time' H.dc.1x1.time 200 -100 300
@@ -211,18 +211,18 @@ TH1F snegadc3 'SOS s2x- ADC hits' S.hod.2x.negadcpad 16 0.5 16.5
 TH1F sposadc4 'SOS s2y+ ADC hits' S.hod.2y.posadcpad 9 0.5 9.5
 TH1F snegadc4 'SOS s2y- ADC hits' S.hod.2y.negadcpad 9 0.5 9.5
 
-TH1F sdc1u1_wm 'SDC 1U1 Wiremap' S.dc.1u1.tdchits 48 0.5 48.5
-TH1F sdc1u2_wm 'SDC 1U2 Wiremap' S.dc.1u2.tdchits 48 0.5 48.5
-TH1F sdc1x1_wm 'SDC 1X1 Wiremap' S.dc.1x1.tdchits 64 0.5 64.5
-TH1F sdc1x2_wm 'SDC 1X2 Wiremap' S.dc.1x2.tdchits 64 0.5 64.5
-TH1F sdc1v1_wm 'SDC 1V1 Wiremap' S.dc.1v1.tdchits 48 0.5 48.5
-TH1F sdc1v2_wm 'SDC 1V2 Wiremap' S.dc.1v2.tdchits 48 0.5 48.5
-TH1F sdc2u1_wm 'SDC 2U1 Wiremap' S.dc.2u1.tdchits 48 0.5 48.5
-TH1F sdc2u2_wm 'SDC 2U2 Wiremap' S.dc.2u2.tdchits 48 0.5 48.5
-TH1F sdc2x1_wm 'SDC 2X1 Wiremap' S.dc.2x1.tdchits 64 0.5 64.5
-TH1F sdc2x2_wm 'SDC 2X2 Wiremap' S.dc.2x2.tdchits 64 0.5 64.5
-TH1F sdc2v1_wm 'SDC 2V1 Wiremap' S.dc.2v1.tdchits 48 0.5 48.5
-TH1F sdc2v2_wm 'SDC 2V2 Wiremap' S.dc.2v2.tdchits 48 0.5 48.5
+TH1F sdc1u1_wm 'SDC 1U1 Wiremap' S.dc.1u1.wirenum 48 0.5 48.5
+TH1F sdc1u2_wm 'SDC 1U2 Wiremap' S.dc.1u2.wirenum 48 0.5 48.5
+TH1F sdc1x1_wm 'SDC 1X1 Wiremap' S.dc.1x1.wirenum 64 0.5 64.5
+TH1F sdc1x2_wm 'SDC 1X2 Wiremap' S.dc.1x2.wirenum 64 0.5 64.5
+TH1F sdc1v1_wm 'SDC 1V1 Wiremap' S.dc.1v1.wirenum 48 0.5 48.5
+TH1F sdc1v2_wm 'SDC 1V2 Wiremap' S.dc.1v2.wirenum 48 0.5 48.5
+TH1F sdc2u1_wm 'SDC 2U1 Wiremap' S.dc.2u1.wirenum 48 0.5 48.5
+TH1F sdc2u2_wm 'SDC 2U2 Wiremap' S.dc.2u2.wirenum 48 0.5 48.5
+TH1F sdc2x1_wm 'SDC 2X1 Wiremap' S.dc.2x1.wirenum 64 0.5 64.5
+TH1F sdc2x2_wm 'SDC 2X2 Wiremap' S.dc.2x2.wirenum 64 0.5 64.5
+TH1F sdc2v1_wm 'SDC 2V1 Wiremap' S.dc.2v1.wirenum 48 0.5 48.5
+TH1F sdc2v2_wm 'SDC 2V2 Wiremap' S.dc.2v2.wirenum 48 0.5 48.5
 
 TH1F sdc1u1_dd 'SDC 1U1 Drift Distance' S.dc.1u1.dist 300 -0.1 0.6
 TH1F sdc1u2_dd 'SDC 1U2 Drift Distance' S.dc.1u2.dist 300 -0.1 0.6
