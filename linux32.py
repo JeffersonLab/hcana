@@ -23,7 +23,9 @@ def config(env,args):
 	if int(checkheaders):
 		env.Append(CHECKHEADERS= '1')
 
-	env.Append(CXXFLAGS = '-m32 -Wall -Woverloaded-virtual')
+	env.Append(CXXFLAGS = '-m32')
+	env.Append(CXXFLAGS = '-Wall')
+	env.Append(CXXFLAGS = '-Woverloaded-virtual')
 	env.Append(CPPDEFINES = '-DLINUXVERS')
 
 	cxxversion = env.subst('$CXXVERSION')
