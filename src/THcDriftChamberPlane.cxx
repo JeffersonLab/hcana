@@ -239,7 +239,7 @@ Int_t THcDriftChamberPlane::DefineVariables( EMode mode )
 
   // Register variables in global list
   RVarDef vars[] = {
-    {"tdchits", "List of TDC hits", 
+    {"wirenum", "List of TDC wire number", 
      "fHits.THcDCHit.GetWireNum()"},
     {"rawtdc", "Raw TDC Values", 
      "fHits.THcDCHit.GetRawTime()"},
