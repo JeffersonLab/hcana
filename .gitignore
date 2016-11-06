@@ -15,6 +15,7 @@ THaDecDict.h
 haDict.h
 haDict.C
 hcana
+evio*
 
 # scons stuff
 config.log
