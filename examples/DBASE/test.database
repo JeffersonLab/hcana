@@ -1,7 +1,7 @@
 # ENGINE style parameter vs. run number database
 50017
 g_ctp_parm_filename="PARAM/general.param"
-g_decode_map_filename="MAPS/jun04.map"
+g_decode_map_filename="MAPS/raster_jun04.map"
 # Values taken from Logbook.  Not necessarily official.
 gpbeam    = 4.015
 hpcentral = 2.074

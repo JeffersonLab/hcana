@@ -58,6 +58,9 @@
   SOS->AddDetector( new THcShower("cal", "Shower" ));
   SOS->AddDetector( new THcDC("dc", "Drift Chambers" ));
 
+  THaApparatus* BEAM = new THcRasteredBeam("RB","Rastered Beamline");
+  gHaApps->Add( BEAM );
+
   // setup physics
   gHaPhysics->Add( new THaGoldenTrack( "H.gold", "HMS Golden Track", "H" ));
   gHaPhysics->Add( new THaGoldenTrack( "S.gold", "SOS Golden Track", "S" ));
