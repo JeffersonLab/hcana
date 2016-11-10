@@ -28,8 +28,8 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Int_t      Process();
 
   //  TVector3 GetPosition()  const { return fPosition[2]; }
-  TVector3 GetPosition()  const { return fPosition[0]; }
-  TVector3 GetDirection() const { return fDirection; } // Hall C we don't use raster direction yet.
+  TVector3 GetPosition()  const { return fPosition[1]; }
+  TVector3 GetDirection() const { return fDirection; }
 
   Double_t GetCurrentX() { return fRawPos[0]; }
   Double_t GetCurrentY() { return fRawPos[1]; }
@@ -41,6 +41,13 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Int_t DefineVariables( EMode mode );
 
   Double_t       fgpbeam;   //beam momentum
+  Double_t       fgfrx_dist;     //Distance of raster to target
+  Double_t       fgfry_dist;
+  Double_t       fgbeam_xoff; // Beam offsets
+  Double_t       fgbeam_xpoff; // Beam offsets
+  Double_t       fgbeam_yoff; // Beam offsets
+  Double_t       fgbeam_ypoff; // Beam offsets
+  Int_t          fgusefr;   /* Use Raster for beam position */
 
   Double_t       fRawXADC;  // X raw ADC
   Double_t       fRawYADC;  // Y raw ADC
