@@ -1,17 +1,19 @@
 /** \class  THcRawDCHit
     \ingroup DetSupport
 
- Class representing for drift chamber wire (or other device with      
-   a single multihit TDC channel per detector element                 
+ Class representing for drift chamber wire (or other device with
+   a single multihit TDC channel per detector element
 
 */
 
 #include "THcRawDCHit.h"
+#include <stdexcept>
 
 using namespace std;
 
 
 void THcRawDCHit::SetData(Int_t signal, Int_t data) {
+  if (fNHits >= fMaxNSamplesTDC) {throw std::runtime_error("Too many samples for `THcRawDCHit` TDC!");}
   fTDC[fNHits++] = data;
 }
 
@@ -114,4 +116,3 @@ THcRawDCHit& THcRawDCHit::operator=( const THcRawDCHit& rhs )
 
 //////////////////////////////////////////////////////////////////////////
 ClassImp(THcRawDCHit)
-
