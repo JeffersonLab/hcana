@@ -852,14 +852,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   Int_t timehist[200];
   // -------------------------------------------------
 
-  if(fDumpTOF) {
-    Int_t ntothits = 0;
-    for(Int_t ip = 0; ip < fNPlanes; ip++ ) {
-	ntothits += fPlanes[ip]->GetNScinHits();
-    }
-    fDumpOut << "ntrk,tothits " << ntracks << " " << ntothits
-	     << " " << fScinTdcToTime << endl;
-  }
 
   if (tracks.GetLast()+1 > 0 ) {
 
@@ -1056,12 +1048,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	}
       }
 	
-      if(fDumpTOF) {
-	fDumpOut << "trk=" << itrack << " " << jmax << " " <<
-	  theTrack->GetX() << " " << theTrack->GetY() << " " <<
-	  theTrack->GetTheta() << " " << theTrack->GetPhi() <<  " " <<
-	  theTrack->GetP() << endl;
-      }
 
       if(jmax > 0) {
 	Double_t tmin = 0.5 * jmax;
@@ -1114,7 +1100,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  if ( fTOFPInfo[ih].keep_pos ) { // 301
 	    fTOFCalc[ih].good_tdc_pos = kTRUE;
 	    fGoodFlags[itrack][ip][iphit].goodTdcPos = kTRUE;
-	    if(fDumpTOF) {
+	    if(fDumpTOF && ntracks==1) {
 	      fDumpOut << "1 " << ip+1 << " " << paddle+1 << " " <<
 		hit->GetPosTDC()*fScinTdcToTime << " " << fTOFPInfo[ih].pathp << 
 		" "  << fTOFPInfo[ih].zcor << " " << fTOFPInfo[ih].time_pos <<
@@ -1124,7 +1110,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  if ( fTOFPInfo[ih].keep_neg ) { //
 	    fTOFCalc[ih].good_tdc_neg = kTRUE;
 	    fGoodFlags[itrack][ip][iphit].goodTdcNeg = kTRUE;
-	    if(fDumpTOF) {
+	    if(fDumpTOF && ntracks==1) {
 	      fDumpOut << "2 " << ip+1 << " " << paddle+1 << " " <<
 		hit->GetNegTDC()*fScinTdcToTime << " " << fTOFPInfo[ih].pathn << 
 		" "  << fTOFPInfo[ih].zcor << " " << fTOFPInfo[ih].time_neg <<
@@ -1609,6 +1595,9 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
        ( fChern->GetCerNPE() > fNCerNPE ) && ( tracks.GetLast() + 1 > 0 ) ) {
       fScinDid = 1;
   }
+	    if(fDumpTOF && ntracks==1) {
+	      fDumpOut << "0 "  << endl;
+	    }
   
   return 0;
   
