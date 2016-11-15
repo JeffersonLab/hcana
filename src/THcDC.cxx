@@ -217,20 +217,12 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   //  };
   //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
 
-  // Will need to determine which apparatus it belongs to and use the
-  // appropriate detector ID in the FillMap call
-  char EngineDID[4];
-
+  char EngineDID[] = "xDC";
   EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
-  EngineDID[1] = 'D';
-  EngineDID[2] = 'C';
-  EngineDID[3] = '\0';
-  
   if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
     static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.", 
-	     EngineDID);
-      return kInitError;
+    Error( Here(here), "Error filling detectormap for %s.", EngineDID );
+    return kInitError;
   }
 
   return fStatus = kOK;

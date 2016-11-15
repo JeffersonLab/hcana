@@ -10,6 +10,7 @@ block S.dc.*
 block S.hod.*
 block S.cal.*
 block g.evtyp
+block RB.*
 
 # TDC hits per paddle
 TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.postdcpad 16 0.5 16.5

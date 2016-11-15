@@ -1,0 +1,1 @@
+gfortran -W -ff2c -fbounds-check -fno-automatic  -fdefault-real-8  tofcal.f -L$CERN_ROOT/lib -lmathlib -lpacklib -lkernlib  -o tofcal

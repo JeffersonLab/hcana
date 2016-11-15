@@ -150,13 +150,12 @@ THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
   if( (status = THaNonTrackingDetector::Init( date )) )
     return fStatus=status;
 
-  // Will need to determine which apparatus it belongs to and use the
-  // appropriate detector ID in the FillMap call
-  if( gHcDetectorMap->FillMap(fDetMap, "HAERO") < 0 ) {
+  char EngineDID[] = "xAERO";
+  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
     static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.", 
-	     "HAERO");
-      return kInitError;
+    Error( Here(here), "Error filling detectormap for %s.", EngineDID );
+    return kInitError;
   }
 
   return fStatus = kOK;

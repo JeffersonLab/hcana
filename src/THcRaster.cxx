@@ -8,6 +8,8 @@
 \author Buddhini Waidyawansa
 
 */
+#include "TMath.h"
+
 #include "THcRaster.h"
 #include "THaEvData.h"
 #include "THaDetMap.h"
@@ -16,7 +18,6 @@
 #include "THcParmList.h"
 #include "THcGlobals.h"
 #include "THaGlobals.h"
-
 
 //#include "THcHitList.h"
 
@@ -84,11 +85,24 @@ Int_t THcRaster::ReadDatabase( const TDatime& date )
     {"frx_adcpercm",&fFrXADCperCM, kDouble},
     {"fry_adcpercm",&fFrYADCperCM, kDouble},
     {"pbeam",&fgpbeam, kDouble},
+    {"frx_dist", &fgfrx_dist, kDouble},
+    {"fry_dist", &fgfry_dist, kDouble},
+    {"beam_x", &fgbeam_xoff, kDouble,0,1},
+    {"beam_xp", &fgbeam_xpoff, kDouble,0,1},
+    {"beam_y", &fgbeam_yoff, kDouble,0,1},
+    {"beam_yp", &fgbeam_ypoff, kDouble,0,1},
+    {"usefr", &fgusefr, kInt,0,1},
     {0}
   };
 
+  // Default offsets to zero
+  fgbeam_xoff = 0.0;
+  fgbeam_xpoff = 0.0;
+  fgbeam_yoff = 0.0;
+  fgbeam_ypoff = 0.0;
+  fgusefr = 0;
   // get the calibration factors from gbeam.param file
-   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   return kOK;
 
@@ -298,8 +312,21 @@ Int_t THcRaster::Process( ){
 
   // std::cout<<" X = "<<fXpos<<" Y = "<<fYpos<<std::endl;
   
-  fDirection.SetXYZ(0.0,0.0,1.0); // Set arbitrarily to avoid run time warnings
 
+  Double_t tt;
+  Double_t tp;
+  if(fgusefr != 0) {
+    fPosition[1].SetXYZ(fXpos+fgbeam_xoff, fYpos+fgbeam_yoff, 0.0);
+    tt = fXpos/fgfrx_dist+fgbeam_xpoff;
+    tp = fYpos/fgfry_dist+fgbeam_ypoff;
+  } else {			// Just use fixed beam position and angle
+    fPosition[0].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
+    tt = fgbeam_xpoff;
+    tp = fgbeam_ypoff;
+  }
+  fDirection.SetXYZ(tt, tp ,1.0); // Set arbitrarily to avoid run time warnings
+  fDirection *= 1.0/TMath::Sqrt(1.0+tt*tt+tp*tp);
+    
   return 0;
 }
 

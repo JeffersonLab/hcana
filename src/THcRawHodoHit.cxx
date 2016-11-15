@@ -3,10 +3,10 @@
 
 Raw Hodoscope Hit Info
 
-Class representing a single raw hit for a hodoscope paddle  
-                                                            
- Contains plane, counter and pos/neg adc and tdc values   
-                                                          
+Class representing a single raw hit for a hodoscope paddle
+
+ Contains plane, counter and pos/neg adc and tdc values
+
 
 */
 
@@ -15,6 +15,7 @@ Class representing a single raw hit for a hodoscope paddle
 #include <cstdlib>
 #include <iostream>
 #include <cassert>
+#include <stdexcept>
 
 #include "THcRawHodoHit.h"
 
@@ -22,12 +23,16 @@ using namespace std;
 
 void THcRawHodoHit::SetData(Int_t signal, Int_t data) {
   if(signal==0) {
+    if (fNRawHits[0] >= fMaxNSamplesADC) {throw std::runtime_error("Too many samples for `THcRawHodoHit` ADC+!");}
     fADC_pos[fNRawHits[0]++] = data;
   } else if (signal==1) {
+    if (fNRawHits[1] >= fMaxNSamplesADC) {throw std::runtime_error("Too many samples for `THcRawHodoHit` ADC-!");}
     fADC_neg[fNRawHits[1]++] = data;
   } else if(signal==2) {
+    if (fNRawHits[2] >= fMaxNSamplesTDC) {throw std::runtime_error("Too many samples for `THcRawHodoHit` TDC+!");}
     fTDC_pos[fNRawHits[2]++] = data;
   } else if (signal==3) {
+    if (fNRawHits[3] >= fMaxNSamplesTDC) {throw std::runtime_error("Too many samples for `THcRawHodoHit` TDC-!");}
     fTDC_neg[fNRawHits[3]++] = data;
   }
 }
@@ -56,7 +61,7 @@ Int_t THcRawHodoHit::GetData(Int_t signal, UInt_t ihit) {
     return(-1);			// Actually should throw an exception
   }
   // We are return -1 as a error, but reference subtracted
-  // time can be negative.  
+  // time can be negative.
   if(fHasRef[signal]) {
     value -= fReferenceTime[signal];
   }
@@ -137,4 +142,3 @@ THcRawHodoHit& THcRawHodoHit::operator=( const THcRawHodoHit& rhs )
 
 //////////////////////////////////////////////////////////////////////////
 ClassImp(THcRawHodoHit)
-
