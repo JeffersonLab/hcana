@@ -150,14 +150,12 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
     }
   }
 
-  char EngineDID[] = " CAL";
+  char EngineDID[] = "xCAL";
   EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
-
   if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
     static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.", 
-	     EngineDID);
-      return kInitError;
+    Error( Here(here), "Error filling detectormap for %s.", EngineDID );
+    return kInitError;
   }
 
   if(fHasArray) {
