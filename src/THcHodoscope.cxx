@@ -199,13 +199,12 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   //  };
   //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
 
-  char EngineDID[]="xSCIN";
+  char EngineDID[] = "xSCIN";
   EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
   if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
     static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.", 
-	     EngineDID);
-      return kInitError;
+    Error( Here(here), "Error filling detectormap for %s.", EngineDID );
+    return kInitError;
   }
 
   fNScinHits     = new Int_t [fNPlanes];
