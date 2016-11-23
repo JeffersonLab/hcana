@@ -115,14 +115,6 @@ THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
 
   cout << "THcCherenkov::Init " << GetName() << endl;
 
-  // Should probably put this in ReadDatabase as we will know the
-  // maximum number of hits after setting up the detector map
-  InitHitList(fDetMap, "THcCherenkovHit", 100); // 100 is max hits
-
-  EStatus status;
-  if( (status = THaNonTrackingDetector::Init( date )) )
-    return fStatus=status;
-
   char EngineDID[] = "xCER";
   EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
   if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
@@ -130,6 +122,14 @@ THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
     Error( Here(here), "Error filling detectormap for %s.", EngineDID );
     return kInitError;
   }
+
+  // Should probably put this in ReadDatabase as we will know the
+  // maximum number of hits after setting up the detector map
+  InitHitList(fDetMap, "THcCherenkovHit", fDetMap->GetTotNumChan()+1);
+
+  EStatus status;
+  if( (status = THaNonTrackingDetector::Init( date )) )
+    return fStatus=status;
 
   return fStatus = kOK;
 }

@@ -173,13 +173,20 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   cout << "In THcHodoscope::Init()" << endl;
   Setup(GetName(), GetTitle());
 
+  char EngineDID[] = "xSCIN";
+  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
+    static const char* const here = "Init()";
+    Error( Here(here), "Error filling detectormap for %s.", EngineDID );
+    return kInitError;
+  }
+
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
   // But it needs to happen before the sub detectors are initialized
   // so that they can get the pointer to the hitlist.
 
-
-  InitHitList(fDetMap, "THcRawHodoHit", 100);
+  InitHitList(fDetMap, "THcRawHodoHit", fDetMap->GetTotNumChan()+1);
 
   EStatus status;
   // This triggers call of ReadDatabase and DefineVariables
@@ -198,14 +205,6 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   //    { &fLTNhit, &fLANhit, fLT, fLT_c, fLA, fLA_p, fLA_c, fLOff, fLPed, fLGain }
   //  };
   //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
-
-  char EngineDID[] = "xSCIN";
-  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
-  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
-    static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.", EngineDID );
-    return kInitError;
-  }
 
   fNScinHits     = new Int_t [fNPlanes];
   fGoodPlaneTime = new Bool_t [fNPlanes];

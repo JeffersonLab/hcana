@@ -130,10 +130,18 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
 {
   Setup(GetName(), GetTitle());
 
+  char EngineDID[] = "xCAL";
+  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
+    static const char* const here = "Init()";
+    Error( Here(here), "Error filling detectormap for %s.", EngineDID );
+    return kInitError;
+  }
+
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
 
-  InitHitList(fDetMap, "THcRawShowerHit", 100);
+  InitHitList(fDetMap, "THcRawShowerHit", fDetMap->GetTotNumChan()+1);
 
   EStatus status;
   if( (status = THaNonTrackingDetector::Init( date )) )
@@ -148,14 +156,6 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
     if((status = fArray->Init( date ))) {
       return fStatus = status;
     }
-  }
-
-  char EngineDID[] = "xCAL";
-  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
-  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
-    static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.", EngineDID );
-    return kInitError;
   }
 
   if(fHasArray) {

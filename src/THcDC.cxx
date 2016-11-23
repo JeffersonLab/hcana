@@ -178,9 +178,17 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   Setup(GetName(), GetTitle());	// Create the subdetectors here
   EffInit();
 
+  char EngineDID[] = "xDC";
+  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
+    static const char* const here = "Init()";
+    Error( Here(here), "Error filling detectormap for %s.", EngineDID );
+    return kInitError;
+  }
+
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
-  InitHitList(fDetMap, "THcRawDCHit", 1000);
+  InitHitList(fDetMap, "THcRawDCHit", fDetMap->GetTotNumChan()+1);
 
   EStatus status;
   // This triggers call of ReadDatabase and DefineVariables
@@ -216,14 +224,6 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   //    { &fLTNhit, &fLANhit, fLT, fLT_c, fLA, fLA_p, fLA_c, fLOff, fLPed, fLGain }
   //  };
   //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
-
-  char EngineDID[] = "xDC";
-  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
-  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
-    static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.", EngineDID );
-    return kInitError;
-  }
 
   return fStatus = kOK;
 }

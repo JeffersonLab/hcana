@@ -140,15 +140,8 @@ void THcAerogel::DeleteArrays()
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
 {
+
   cout << "THcAerogel::Init " << GetName() << endl;
-
-  // Should probably put this in ReadDatabase as we will know the
-  // maximum number of hits after setting up the detector map
-  InitHitList(fDetMap, "THcAerogelHit", 100);
-
-  EStatus status;
-  if( (status = THaNonTrackingDetector::Init( date )) )
-    return fStatus=status;
 
   char EngineDID[] = "xAERO";
   EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
@@ -157,6 +150,14 @@ THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
     Error( Here(here), "Error filling detectormap for %s.", EngineDID );
     return kInitError;
   }
+
+  // Should probably put this in ReadDatabase as we will know the
+  // maximum number of hits after setting up the detector map
+  InitHitList(fDetMap, "THcAerogelHit", fDetMap->GetTotNumChan()+1);
+
+  EStatus status;
+  if( (status = THaNonTrackingDetector::Init( date )) )
+    return fStatus=status;
 
   return fStatus = kOK;
 }

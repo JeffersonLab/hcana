@@ -139,12 +139,6 @@ THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
 {
   cout << "THcRaster::Init()" << endl;
 
-  THcHitList::InitHitList(fDetMap,"THcRasterRawHit",4);
-
-  EStatus status;
-  if( (status = THaBeamDet::Init( date )) )
-    return fStatus=status;
-
   // Fill detector map with RASTER type channels
   if( gHcDetectorMap->FillMap(fDetMap, "RASTER") < 0 ) {
     static const char* const here = "Init()";
@@ -152,6 +146,12 @@ THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
   	   "RASTER");
     return kInitError;
   }
+
+  THcHitList::InitHitList(fDetMap,"THcRasterRawHit",fDetMap->GetTotNumChan()+1);
+
+  EStatus status;
+  if( (status = THaBeamDet::Init( date )) )
+    return fStatus=status;
 
   return fStatus = kOK;
 
