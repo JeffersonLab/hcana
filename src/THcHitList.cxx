@@ -74,20 +74,19 @@ void THcHitList::InitHitList(THaDetMap* detmap,
       }
     }
   }
-  // Should add another loop over fdMap and check that all detector
-  // channels that have a refindex, use a defined index
+  // Loop to check that requested refindex's are defined
   for (Int_t i=0; i < fdMap->GetSize(); i++) {
     THaDetMap::Module* d = fdMap->GetModule(i);
-    if(d->plane < 1000) {
-      Int_t refindex = d->refindex;
+    Int_t refindex = d->refindex;
+    if(d->plane < 1000 && refindex >= 0) {
       if(!fRefIndexMaps[refindex].defined) {
 	cout << "Refindex " << refindex << " not defined for " <<
-		" (" << d->crate << ", " << d->slot <<
-		", " << d->lo << ")" << endl;
+	  " (" << d->crate << ", " << d->slot <<
+	  ", " << d->lo << ")" << endl;
       }
     }
   }
-	  
+
 }
 
 Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
