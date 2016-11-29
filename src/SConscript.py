@@ -27,6 +27,7 @@ THcCherenkov.cxx THcCherenkovHit.cxx \
 THcFormula.cxx \
 THcRaster.cxx THcRasteredBeam.cxx THcRasterRawHit.cxx \
 THcScalerEvtHandler.cxx \
+THcTrigApp.cxx THcTrigDet.cxx THcTrigRawHit.cxx
 THcHodoEff.cxx
 """)
 
@@ -55,4 +56,3 @@ Clean(srclib,localmajorcleantarget)
 
 #baseenv.Install('../',srclib)
 #baseenv.Alias('install',['../'])
-
