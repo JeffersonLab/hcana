@@ -36,6 +36,7 @@ An instance of THaTextvars is created to hold the string parameters.
 #include <fstream>
 #include <cassert>
 #include <cstdlib>
+#include <stdexcept>
 
 using namespace std;
 Int_t  fDebug   = 1;  // Keep this at one while we're working on the code    
@@ -573,7 +574,8 @@ zero), then there will be no error if the parameter is missing.
     }
     if (this_cnt<=0) {
       if ( !ti->optional ) {
-	Fatal("THcParmList","Could not find %s in database!",key);
+        string msg = string("Could not find `") + key + "` in database!";
+        throw std::runtime_error("<THcParmList::LoadParmValues>: " + msg);
       }
     }
     cnt += this_cnt;
