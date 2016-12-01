@@ -46,6 +46,8 @@ All the parameters read by this apparatus are prefixed with the returned string.
 
 #include "THcTrigApp.h"
 
+#include <algorithm>
+
 #include "TDatime.h"
 
 #include "THcGlobals.h"
@@ -59,7 +61,7 @@ THcTrigApp::THcTrigApp(const char* name, const char* description)
 {
   // Construct the kwPrefix here. Better place would be in `Setup` method.
   string kwPrefix = name;
-  transform(kwPrefix.begin(), kwPrefix.end(), kwPrefix.begin(), ::tolower);
+  std::transform(kwPrefix.begin(), kwPrefix.end(), kwPrefix.begin(), ::tolower);
   fKwPrefix = kwPrefix;
 }
 
