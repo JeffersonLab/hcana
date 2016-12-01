@@ -59,6 +59,7 @@ Note: not yet finalized!
 #include "THcTrigDet.h"
 
 #include <algorithm>
+#include <stdexcept>
 
 #include "TDatime.h"
 
