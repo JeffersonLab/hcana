@@ -58,6 +58,8 @@ Note: not yet finalized!
 
 #include "THcTrigDet.h"
 
+#include <algorithm>
+
 #include "TDatime.h"
 
 #include "THaApparatus.h"
@@ -107,7 +109,7 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
 
   // Fill in detector map.
   string EngineDID = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
-  transform(EngineDID.begin(), EngineDID.end(), EngineDID.begin(), ::toupper);
+  std::transform(EngineDID.begin(), EngineDID.end(), EngineDID.begin(), ::toupper);
   if (gHcDetectorMap->FillMap(fDetMap, EngineDID.c_str()) < 0) {
     static const char* const here = "Init()";
     Error(Here(here), "Error filling detectormap for %s.", EngineDID.c_str());
@@ -153,7 +155,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
 void THcTrigDet::Setup(const char* name, const char* description) {
   // Prefix for parameters in `param` file.
   string kwPrefix = string(GetApparatus()->GetName()) + "_" + name;
-  transform(kwPrefix.begin(), kwPrefix.end(), kwPrefix.begin(), ::tolower);
+  std::transform(kwPrefix.begin(), kwPrefix.end(), kwPrefix.begin(), ::tolower);
   fKwPrefix = kwPrefix;
 }
 
