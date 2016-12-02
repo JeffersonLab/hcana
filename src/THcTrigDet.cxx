@@ -59,9 +59,11 @@ Note: not yet finalized!
 #include "THcTrigDet.h"
 
 #include <algorithm>
+#include <iostream>
 #include <stdexcept>
 
 #include "TDatime.h"
+#include "TString.h"
 
 #include "THaApparatus.h"
 #include "THaEvData.h"
@@ -188,27 +190,27 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   std::vector<RVarDef> vars;
 
   // Push the variable names for ADC channels.
-  std::vector<std::string> varNamesAdc(fNumAdc);
-  std::vector<std::string> varTitlesAdc(fNumAdc);
+  std::vector<TString> varTitlesAdc(fNumAdc);
+  std::vector<TString> varNamesAdc(fNumAdc);
   for (int i=0; i<fNumAdc; ++i) {
-    varNamesAdc.at(i) = "fAdcVals[" + to_string(i) + "]";
+    varNamesAdc.at(i) = TString::Format("fAdcVals[%d]", i);
     varTitlesAdc.at(i) = fAdcNames.at(i) + "_adc";
     vars.push_back({
-      varTitlesAdc.at(i).c_str(),
-      varTitlesAdc.at(i).c_str(),
-      varNamesAdc.at(i).c_str()
+      varTitlesAdc.at(i).Data(),
+      varTitlesAdc.at(i).Data(),
+      varNamesAdc.at(i).Data()
     });
   }
   // Push the variable names for TDC channels.
-  std::vector<std::string> varNamesTdc(fNumTdc);
-  std::vector<std::string> varTitlesTdc(fNumTdc);
+  std::vector<TString> varTitlesTdc(fNumTdc);
+  std::vector<TString> varNamesTdc(fNumTdc);
   for (int i=0; i<fNumTdc; ++i) {
-    varNamesTdc.at(i) = "fTdcVals[" + to_string(i) + "]";
+    varNamesTdc.at(i) = TString::Format("fTdcVals[%d]", i);
     varTitlesTdc.at(i) = fTdcNames.at(i) + "_tdc";
     vars.push_back({
-      varTitlesTdc.at(i).c_str(),
-      varTitlesTdc.at(i).c_str(),
-      varNamesTdc.at(i).c_str()
+      varTitlesTdc.at(i).Data(),
+      varTitlesTdc.at(i).Data(),
+      varNamesTdc.at(i).Data()
     });
   }
 
