@@ -96,11 +96,11 @@ Int_t THcRawShowerHit::GetData(Int_t signal) {
 // Return a requested sample
 Int_t THcRawShowerHit::GetSample(Int_t signal, UInt_t isample) {
   if(signal==0) {
-    if(isample >=0 && isample< fNPosSamples) {
+    if(isample < fNPosSamples) {
       return(fADC_pos[isample]);
     }
   } else if (signal==1) {
-    if(isample >=0 && isample< fNNegSamples) {
+    if(isample < fNNegSamples) {
       return(fADC_neg[isample]);
     }
   }
