@@ -111,8 +111,6 @@ THcCherenkov::~THcCherenkov()
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
 {
-  static const char* const here = "Init()";
-
   cout << "THcCherenkov::Init " << GetName() << endl;
 
   char EngineDID[] = "xCER";
