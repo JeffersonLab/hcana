@@ -10,7 +10,7 @@ public:
   friend class THcDC;
 
   THcRawDCHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter),
-    fNHits(0), fHasRef{kFALSE} {
+    fNHits(0), fHasRef(kFALSE) {
   }
   THcRawDCHit& operator=( const THcRawDCHit& );
   virtual ~THcRawDCHit() {}
