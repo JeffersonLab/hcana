@@ -149,15 +149,14 @@ Double_t THcFormula::DefinedValue( Int_t i )
   // If the variable is a string, return value of its character value
   
   typedef vector<Double_t>::size_type vsiz_t;
-  typedef vector<Double_t>::iterator  viter_t;
-
+  
   assert( i>=0 && i<(Int_t)fVarDef.size() );
 
   if( IsInvalid() )
     return 1.0;
 
   FVarDef_t& def = fVarDef[i];
-  switch( def.type ) {
+  switch( (Int_t) def.type ) {
   case kVariable:
   case kString:
   case kArray:
@@ -222,7 +221,7 @@ Double_t THcFormula::DefinedValue( Int_t i )
 	SetBit(kInvalid);
 	return 1.0;
       }
-      Double_t y;
+      Double_t y = 0.0;
       if( code == kNumSetBits ) {
 	// Number of set bits is intended for unsigned int-type expressions
 	y = func->EvalInstance(fInstance);

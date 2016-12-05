@@ -185,9 +185,9 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     size_t ichan = scalerloc[i]->ichan;
     if (evcount==0) {
     	if (fDebugFile) *fDebugFile << "Debug dvarsFirst "<<i<<"   "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
-    	if ((ivar >= 0 && ivar < scalerloc.size()) &&
-		(isca >= 0 && isca < scalers.size()) &&
-		(ichan >= 0 && ichan < MAXCHAN)) {
+    	if ((ivar < scalerloc.size()) &&
+		(isca < scalers.size()) &&
+		(ichan < MAXCHAN)) {
       			if (scalerloc[ivar]->ikind == ICOUNT) dvarsFirst[ivar] = scalers[isca]->GetData(ichan);
       			if (scalerloc[ivar]->ikind == IRATE)  dvarsFirst[ivar] = scalers[isca]->GetRate(ichan);
       			if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
@@ -196,9 +196,9 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     	}
     }else{
     	if (fDebugFile) *fDebugFile << "Debug dvars "<<i<<"   "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
-    	if ((ivar >= 0 && ivar < scalerloc.size()) &&
-		(isca >= 0 && isca < scalers.size()) &&
-		(ichan >= 0 && ichan < MAXCHAN)) {
+    	if ((ivar < scalerloc.size()) &&
+		(isca < scalers.size()) &&
+		(ichan < MAXCHAN)) {
       			if (scalerloc[ivar]->ikind == ICOUNT) dvars[ivar] = scalers[isca]->GetData(ichan)-dvarsFirst[ivar];
       			if (scalerloc[ivar]->ikind == IRATE)  dvars[ivar] = scalers[isca]->GetRate(ichan);
       			if (fDebugFile) *fDebugFile << "   dvars  "<<scalerloc[ivar]->ikind<<"  "<<dvars[ivar]<<endl;
