@@ -157,7 +157,7 @@ Double_t THcFormula::DefinedValue( Int_t i )
     return 1.0;
 
   FVarDef_t& def = fVarDef[i];
-  switch( def.type ) {
+  switch( (Int_t) def.type ) {
   case kVariable:
   case kString:
   case kArray:
