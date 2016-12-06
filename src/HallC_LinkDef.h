@@ -57,9 +57,9 @@
 #pragma link C++ class THcRasterRawHit+;
 #pragma link C++ class THcScalerEvtHandler+;
 #pragma link C++ class THcHodoEff+;
-
 #pragma link C++ class THcTrigApp+;
 #pragma link C++ class THcTrigDet+;
 #pragma link C++ class THcTrigRawHit+;
+#pragma link C++ class THcDummySpectrometer+;
 
 #endif
