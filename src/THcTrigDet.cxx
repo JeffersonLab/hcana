@@ -8,9 +8,38 @@ This class behaves as a detector, but it does not correspond to any physical
 detector in the hall. Its purpose is to gather all the trigger related data
 comming from a specific source, like HMS.
 
-Use only with THcTrigApp class.
+Can hold up to 100 ADC and TDC channels, though the limit can be changed if
+needed. It just seemed like a reasonable starting value.
 
-Note: not yet finalized!
+# Defined variables
+
+For ADC channels it defines:
+  - ADC value: `var_adc`
+  - pedestal: `var_adcPed`
+  - multiplicity: `var_adcMult`
+
+For TDC channels it defines:
+  - TDC value: `var_tdc`
+  - multiplicity: `var_tdcMult`
+
+# Parameter file variables
+
+The names and number of channels is defined in a parameter file. The detector
+looks for next variables:
+  - `prefix_numAdc = number_of_ADC_channels`
+  - `prefix_numTdc = number_of_TDC_channels`
+  - `prefix_adcNames = "varName1 varName2 ... varNameNumAdc"`
+  - `prefix_tdcNames = "varName1 varName2 ... varNameNumTdc"`
+
+# Map file information
+
+ADC channels must be assigned plane `1` and signal `0` while TDC channels must
+be assigned plane `2` and signal `1`.
+
+Each channel within a plane must be assigned a consecutive "bar" number, which
+is then used to get the correct variable name from parameter file.
+
+Use only with THcTrigApp class.
 */
 
 /**
@@ -45,7 +74,7 @@ Note: not yet finalized!
 
 \brief Clears variables before next event.
 
-\param[in] opt Maybe used in base clas...
+\param[in] opt Maybe used in base clas... Not sure.
 */
 
 /**
@@ -55,6 +84,8 @@ Note: not yet finalized!
 
 \param[in] evData Raw data to decode.
 */
+
+//TODO: Check if fNumAdc < fMaxAdcChannels && fNumTdc < fMaxTdcChannels.
 
 #include "THcTrigDet.h"
 
@@ -84,7 +115,8 @@ THcTrigDet::THcTrigDet(
   THaDetector(name, description, app), THcHitList(),
   fKwPrefix(""),
   fNumAdc(0), fNumTdc(0), fAdcNames(), fTdcNames(),
-  fAdcVals(), fTdcVals()
+  fAdcVal(), fAdcPedestal(), fAdcMultiplicity(),
+  fTdcVal(), fTdcMultiplicity()
 {}
 
 
@@ -96,8 +128,8 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
   Setup(GetName(), GetTitle());
 
   // Initialize all variables.
-  for (int i=0; i<fMaxAdcChannels; ++i) fAdcVals[i] = -1.0;
-  for (int i=0; i<fMaxTdcChannels; ++i) fTdcVals[i] = -1.0;
+  for (int i=0; i<fMaxAdcChannels; ++i) fAdcVal[i] = -1.0;
+  for (int i=0; i<fMaxTdcChannels; ++i) fTdcVal[i] = -1.0;
 
   // Call initializer for base class.
   // This also calls `ReadDatabase` and `DefineVariables`.
@@ -125,9 +157,11 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
 
 
 void THcTrigDet::Clear(Option_t* opt) {
+  THaAnalysisObject::Clear(opt);
+
   // Reset all data.
-  for (int i=0; i<fNumAdc; ++i) fAdcVals[i] = 0.0;
-  for (int i=0; i<fNumTdc; ++i) fTdcVals[i] = 0.0;
+  for (int i=0; i<fNumAdc; ++i) fAdcVal[i] = 0.0;
+  for (int i=0; i<fNumTdc; ++i) fTdcVal[i] = 0.0;
 }
 
 
@@ -140,8 +174,15 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
   while (iHit < numHits) {
     THcTrigRawHit* hit = dynamic_cast<THcTrigRawHit*>(fRawHitList->At(iHit));
 
-    if (hit->fPlane == 1) fAdcVals[hit->fCounter-1] = hit->GetData(0);
-    else if (hit->fPlane == 2) fTdcVals[hit->fCounter-1] = hit->GetData(1);
+    if (hit->fPlane == 1) {
+      fAdcVal[hit->fCounter-1] = hit->GetData(0, 0);
+      fAdcPedestal[hit->fCounter-1] = hit->GetAdcPedestal(0);
+      fAdcMultiplicity[hit->fCounter-1] = hit->GetMultiplicity(0);
+    }
+    else if (hit->fPlane == 2) {
+      fTdcVal[hit->fCounter-1] = hit->GetData(1, 0);
+      fTdcMultiplicity[hit->fCounter-1] = hit->GetMultiplicity(1);
+    }
     else {
       throw std::out_of_range(
         "`THcTrigDet::Decode`: only planes `1` and `2` available!"
@@ -189,28 +230,55 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
 
   std::vector<RVarDef> vars;
 
-  // Push the variable names for ADC channels.
-  std::vector<TString> varTitlesAdc(fNumAdc);
-  std::vector<TString> varNamesAdc(fNumAdc);
+  //Push the variable names for ADC channels.
+  std::vector<TString> adcValTitle(fNumAdc), adcValVar(fNumAdc);
+  std::vector<TString> adcPedestalTitle(fNumAdc), adcPedestalVar(fNumAdc);
+  std::vector<TString> adcMultiplicityTitle(fNumAdc), adcMultiplicityVar(fNumAdc);
+
   for (int i=0; i<fNumAdc; ++i) {
-    varNamesAdc.at(i) = TString::Format("fAdcVals[%d]", i);
-    varTitlesAdc.at(i) = fAdcNames.at(i) + "_adc";
+    adcValTitle.at(i) = fAdcNames.at(i) + "_adc";
+    adcValVar.at(i) = TString::Format("fAdcVal[%d]", i);
     vars.push_back({
-      varTitlesAdc.at(i).Data(),
-      varTitlesAdc.at(i).Data(),
-      varNamesAdc.at(i).Data()
+      adcValTitle.at(i).Data(),
+      adcValTitle.at(i).Data(),
+      adcValVar.at(i).Data()
+    });
+
+    adcPedestalTitle.at(i) = fAdcNames.at(i) + "_adcPed";
+    adcPedestalVar.at(i) = TString::Format("fAdcPedestal[%d]", i);
+    vars.push_back({
+      adcPedestalTitle.at(i).Data(),
+      adcPedestalTitle.at(i).Data(),
+      adcPedestalVar.at(i).Data()
+    });
+
+    adcMultiplicityTitle.at(i) = fAdcNames.at(i) + "_adcMult";
+    adcMultiplicityVar.at(i) = TString::Format("fAdcMultiplicity[%d]", i);
+    vars.push_back({
+      adcMultiplicityTitle.at(i).Data(),
+      adcMultiplicityTitle.at(i).Data(),
+      adcMultiplicityVar.at(i).Data()
     });
   }
+
   // Push the variable names for TDC channels.
-  std::vector<TString> varTitlesTdc(fNumTdc);
-  std::vector<TString> varNamesTdc(fNumTdc);
+  std::vector<TString> tdcValTitle(fNumTdc), tdcValVar(fNumTdc);
+  std::vector<TString> tdcMultiplicityTitle(fNumTdc), tdcMultiplicityVar(fNumTdc);
   for (int i=0; i<fNumTdc; ++i) {
-    varNamesTdc.at(i) = TString::Format("fTdcVals[%d]", i);
-    varTitlesTdc.at(i) = fTdcNames.at(i) + "_tdc";
+    tdcValTitle.at(i) = fTdcNames.at(i) + "_tdc";
+    tdcValVar.at(i) = TString::Format("fTdcVal[%d]", i);
     vars.push_back({
-      varTitlesTdc.at(i).Data(),
-      varTitlesTdc.at(i).Data(),
-      varNamesTdc.at(i).Data()
+      tdcValTitle.at(i).Data(),
+      tdcValTitle.at(i).Data(),
+      tdcValVar.at(i).Data()
+    });
+
+    tdcMultiplicityTitle.at(i) = fTdcNames.at(i) + "_tdcMult";
+    tdcMultiplicityVar.at(i) = TString::Format("fTdcMultiplicity[%d]", i);
+    vars.push_back({
+      tdcMultiplicityTitle.at(i).Data(),
+      tdcMultiplicityTitle.at(i).Data(),
+      tdcMultiplicityVar.at(i).Data()
     });
   }
 

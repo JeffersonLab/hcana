@@ -14,25 +14,49 @@ class THcTrigRawHit : public THcRawHit {
     virtual void Clear(Option_t* opt="");
 
     void SetData(Int_t signal, Int_t data);
+    void SetSample(Int_t signal, Int_t data);
+    void SetDataTimePedestalPeak(
+      Int_t signal, Int_t data, Int_t time, Int_t pedestal, Int_t peak
+    );
     void SetReference(Int_t signal, Int_t reference);
+
     Int_t GetData(Int_t signal);
+    Int_t GetData(Int_t signal, UInt_t iHit);
+    Int_t GetRawData(Int_t signal);
+    Int_t GetRawData(Int_t signal, UInt_t iHit);
+    Int_t GetAdcTime(UInt_t iHit);
+    Int_t GetAdcPedestal(UInt_t iHit);
+    Int_t GetAdcPeak(UInt_t iHit);
+    Int_t GetNSignals();
+    ESignalType GetSignalType(Int_t signal);
     Int_t GetReference(Int_t signal);
+    Int_t GetMultiplicity(Int_t signal);
+
+    Bool_t HasMulti(Int_t signal);
     Bool_t HasReference(Int_t signal);
 
+
   protected:
-    static const Int_t fMaxAdcSamples = 160;
-    static const Int_t fMaxTdcSamples = 16;
-    static const Int_t fNumPlanes = 2;
+    static const Int_t fMaxNPulsesAdc = 4;
+    static const Int_t fMaxNSamplesAdc = 160;
+    static const Int_t fMaxNHitsTdc = 16;
+    static const Int_t fNPlanes = 2;
 
-    Int_t fAdcVal[fMaxAdcSamples];
-    Int_t fTdcVal[fMaxTdcSamples];
-    UInt_t fNumAdcSamples;
-    UInt_t fNumTdcSamples;
+    Int_t fAdc[fMaxNPulsesAdc];
+    Int_t fAdcTime[fMaxNPulsesAdc];
+    Int_t fAdcPedestal[fMaxNPulsesAdc];
+    Int_t fAdcPeak[fMaxNPulsesAdc];
 
-    Int_t fAdcReferenceTime;
-    Int_t fTdcReferenceTime;
-    Bool_t fHasAdcRef;
-    Bool_t fHasTdcRef;
+    Int_t fAdcSamples[fMaxNSamplesAdc];
+
+    Int_t fTdc[fMaxNHitsTdc];
+
+    Int_t fReferenceTime[fNPlanes];
+    Bool_t fHasReference[fNPlanes];
+    Bool_t fHasMulti[fNPlanes];
+    UInt_t fNRawHits[fNPlanes];
+
+    UInt_t fNRawSamples;
 
   private:
     ClassDef(THcTrigRawHit, 0);
