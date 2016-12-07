@@ -28,6 +28,10 @@ class THcRawShowerHit : public THcRawHit {
   Double_t GetPedestal(Int_t signal, Int_t isamplow, Int_t isamphigh);
   Int_t GetNSamples(Int_t signal);
 
+  Int_t GetNSignals() { return 2;}
+  ESignalType GetSignalType(Int_t signal) {
+    return kADC;
+  }
   //  virtual Bool_t  IsSortable () const {return kTRUE; }
   //  virtual Int_t   Compare(const TObject* obj) const;
 

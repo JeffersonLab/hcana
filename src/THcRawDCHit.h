@@ -26,6 +26,11 @@ public:
   Int_t GetReference(Int_t signal);
   Bool_t HasReference(Int_t signal) {return fHasRef;}
 
+  Int_t GetNSignals() { return 1;}
+  ESignalType GetSignalType(Int_t signal) {
+    return(kTDC);
+  }
+
   virtual Bool_t  IsSortable () const {return kTRUE; }
   virtual Int_t   Compare(const TObject* obj) const;
 
