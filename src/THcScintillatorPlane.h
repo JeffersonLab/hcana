@@ -66,6 +66,10 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* frNegTDCHits;
   TClonesArray* frPosADCHits;
   TClonesArray* frNegADCHits;
+  TClonesArray* frPosADCSums;
+  TClonesArray* frNegADCSums;
+  TClonesArray* frPosADCPeds;
+  TClonesArray* frNegADCPeds;
   TClonesArray* fHodoHits;
 
   Int_t fPlaneNum;		/* Which plane am I 1-4 */
@@ -76,6 +80,14 @@ class THcScintillatorPlane : public THaSubDetector {
   Int_t fNGoodHits;                 /* number of hits in plane (used in determining focal plane time) */
 
   // Constants
+  Int_t fADCMode;		// 0: standard, 1: use FADC ped, 2: integrate sample
+                                // 3: integrate sample, subract dynamic pedestal
+  static const Int_t kADCStandard=0;
+  static const Int_t kADCDynamicPedestal=1;
+  static const Int_t kADCSampleIntegral=2;
+  static const Int_t kADCSampIntDynPed=3;
+  Double_t fADCPedScaleFactor;	// Multiply dynamic pedestal by this before subtracting
+  Int_t fADCDiagCut;		// Cut for ADC in hit maps.  Defaults to 50
   Int_t fTdcOffset;		/* Overall offset to raw tdc */
   Int_t fMaxHits;               /* maximum number of hits to be considered - useful for dimensioning arrays */
   Double_t fSpacing;            /* paddle spacing */

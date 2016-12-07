@@ -38,6 +38,10 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   frNegTDCHits = new TClonesArray("THcSignalHit",16);
   frPosADCHits = new TClonesArray("THcSignalHit",16);
   frNegADCHits = new TClonesArray("THcSignalHit",16);
+  frPosADCSums = new TClonesArray("THcSignalHit",16);
+  frNegADCSums = new TClonesArray("THcSignalHit",16);
+  frPosADCPeds = new TClonesArray("THcSignalHit",16);
+  frNegADCPeds = new TClonesArray("THcSignalHit",16);
   fPlaneNum = planenum;
   fTotPlanes = planenum;
   fNScinHits = 0; 
@@ -60,6 +64,10 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete frNegTDCHits;
   delete frPosADCHits;
   delete frNegADCHits;
+  delete frPosADCSums;
+  delete frNegADCSums;
+  delete frPosADCPeds;
+  delete frNegADCPeds;
   delete fpTimes;
   delete [] fScinTime;
   delete [] fScinSigma;
@@ -155,10 +163,16 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
     {Form("scin_%s_offset",GetName()), &fPosOffset, kDouble},
     {Form("scin_%s_center",GetName()), fPosCenter,kDouble,fNelem},
     {"tofusinginvadc",   &fTofUsingInvAdc,        kInt,            0,  1},       
+    {"hodo_adc_mode", &fADCMode, kInt, 0, 1},
+    {"hodo_pedestal_scale", &fADCPedScaleFactor, kDouble, 0, 1},
+    {"hodo_adc_diag_cut", &fADCDiagCut, kInt, 0, 1},
     {0}
   };
 
   fTofUsingInvAdc = 1;
+  fADCMode = kADCStandard;
+  fADCPedScaleFactor = 1.0;
+  fADCDiagCut = 50.0;
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   // fetch the parameter from the temporary list
 
@@ -253,6 +267,10 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     {"negtdcval", "List of Negative TDC Values",              "frNegTDCHits.THcSignalHit.GetData()"},
     {"posadcval", "List of Positive ADC Values",              "frPosADCHits.THcSignalHit.GetData()"},
     {"negadcval", "List of Negative ADC Values",              "frNegADCHits.THcSignalHit.GetData()"},
+    {"posadcsum", "List of Positive ADC Sample Sums",         "frPosADCSums.THcSignalHit.GetData()"},
+    {"negadcsum", "List of Negative ADC Sample Sums",         "frNegADCSums.THcSignalHit.GetData()"},
+    {"posadcped", "List of Positive ADC Pedestals",           "frPosADCPeds.THcSignalHit.GetData()"},
+    {"negadcped", "List of Negative ADC Pedestals",           "frNegADCPeds.THcSignalHit.GetData()"},
     {"fptime", "Time at focal plane",     "GetFpTime()"},
     {"nhits", "Number of paddle hits (passed TDC Min and Max cuts for either end)",           "GetNScinHits() "},
     {"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
@@ -339,6 +357,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frNegTDCHits->Clear();
   frPosADCHits->Clear();
   frNegADCHits->Clear();
+  frPosADCSums->Clear();
+  frNegADCSums->Clear();
+  frPosADCPeds->Clear();
+  frNegADCPeds->Clear();
   //stripped
   fNScinHits=0;
   fHodoHits->Clear();
@@ -362,8 +384,6 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     Int_t index=padnum-1;
     // Need to be finding first hit in TDC range, not the first hit overall
-    Double_t adc_pos = hit->GetADCPos()-fPosPed[index];
-    Double_t adc_neg = hit->GetADCNeg()-fNegPed[index];
     if (hit->fNRawHits[2] > 0) 
       ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->GetTDCPos()+fTdcOffset);
     if (hit->fNRawHits[3] > 0) 
@@ -371,10 +391,36 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     // For making hit maps, we use >= 50 cut
     // For making raw hists, we don't want the cut
     // We can use a flag to turn on and off these without 50 cut
-    if ((hit->GetADCPos()-fPosPed[index]) >= 50) 
-      ((THcSignalHit*) frPosADCHits->ConstructedAt(nrPosADCHits++))->Set(padnum, adc_pos);
-    if ((hit->GetADCNeg()-fNegPed[index]) >= 50) 
-      ((THcSignalHit*) frNegADCHits->ConstructedAt(nrNegADCHits++))->Set(padnum, adc_neg);
+    // Value of 50 no long valid with different ADC type for FADC
+    Double_t adc_pos;
+    Double_t adc_neg;
+    if(fADCMode == kADCDynamicPedestal) {
+      adc_pos = hit->GetADCPos()-hit->GetPedestalPos()*fADCPedScaleFactor;
+      adc_neg = hit->GetADCNeg()-hit->GetPedestalNeg()*fADCPedScaleFactor;
+    } else if (fADCMode == kADCSampleIntegral) {
+      adc_pos = hit->GetIntegralPos()-fPosPed[index];
+      adc_neg = hit->GetIntegralNeg()-fNegPed[index];
+    } else if (fADCMode == kADCSampIntDynPed) {
+      adc_pos = hit->GetIntegralPos()-hit->GetPedestalPos()*fADCPedScaleFactor;
+      adc_neg = hit->GetIntegralNeg()-hit->GetPedestalNeg()*fADCPedScaleFactor;
+    } else {
+      adc_pos = hit->GetADCPos()-fPosPed[index];
+      adc_neg = hit->GetADCNeg()-fNegPed[index];
+    }
+    if (adc_pos >= fADCDiagCut) {
+      ((THcSignalHit*) frPosADCHits->ConstructedAt(nrPosADCHits))->Set(padnum, adc_pos);
+      Double_t samplesum=hit->GetIntegralPos();
+      Double_t pedestal=hit->GetPedestalPos();
+      ((THcSignalHit*) frPosADCSums->ConstructedAt(nrPosADCHits))->Set(padnum, samplesum);
+      ((THcSignalHit*) frPosADCPeds->ConstructedAt(nrPosADCHits++))->Set(padnum, pedestal);
+    }
+    if (adc_neg >= fADCDiagCut) {
+      ((THcSignalHit*) frNegADCHits->ConstructedAt(nrNegADCHits))->Set(padnum, adc_neg);
+      Double_t samplesum=hit->GetIntegralNeg();
+      Double_t pedestal=hit->GetPedestalNeg();
+      ((THcSignalHit*) frNegADCSums->ConstructedAt(nrNegADCHits))->Set(padnum, samplesum);
+      ((THcSignalHit*) frNegADCPeds->ConstructedAt(nrNegADCHits++))->Set(padnum, pedestal);
+    }
 
     Bool_t btdcraw_pos=kFALSE;
     Bool_t btdcraw_neg=kFALSE;
@@ -397,6 +443,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
     // Proceed if there is a valid TDC on either end of the bar
     if(btdcraw_pos || btdcraw_neg) {
+
 
       new( (*fHodoHits)[fNScinHits]) THcHodoHit(tdc_pos, tdc_neg,
 						adc_pos, adc_neg,
