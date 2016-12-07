@@ -5,9 +5,11 @@ export DOXYGEN_OUTPUT_DIRECTORY
 export DOXYGEN_SOURCE_DIRECTORY := ..
 
 PODDDIR = ../podd/docs
-# THISDIR is location of this directory relative to the podd docs directory
-THISDIR = ../../docs
-INSTALLPATH = jlabl1:/group/hallc/www/hallcweb/html/hcana/docs/
+# THISDIR is absolute location of this directory
+THISDIR = $(PWD)
+INSTALLPATH = jlabl1:/group/hallc/www/hallcweb/html/hcana
+INSTALLPATHHCANA = $(INSTALLPATH)/docs/
+INSTALLPATHPODD = $(INSTALLPATH)/podddocs/
 
 all: doxygen
 
@@ -31,4 +33,5 @@ clean:
 
 # Must have permission to write to $(INSTALLPATH)
 install: doxygen
-	rsync -av --delete html/ $(INSTALLPATH)
+	rsync -av --delete html/ $(INSTALLPATHHCANA)
+	rsync -av --delete $(PODDDIR)/html/ $(INSTALLPATHPODD)
