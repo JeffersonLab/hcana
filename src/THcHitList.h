@@ -6,6 +6,7 @@
 #include "THaEvData.h"
 #include "TClonesArray.h"
 #include "TObject.h"
+#include "Decoder.h"
 
 
 using namespace std;
@@ -54,6 +55,8 @@ protected:
   // picks ridiculously large refindexes?
 
   Int_t fNRefIndex;
+  UInt_t fNSignals;
+  THcRawHit::ESignalType *fSignalTypes;
 
   ClassDef(THcHitList,0);  // List of raw hits sorted by plane, counter
 };
