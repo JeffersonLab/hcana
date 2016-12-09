@@ -37,10 +37,10 @@ class THcTrigRawHit : public THcRawHit {
 
 
   protected:
-    static const Int_t fMaxNPulsesAdc = 4;
-    static const Int_t fMaxNSamplesAdc = 160;
-    static const Int_t fMaxNHitsTdc = 16;
-    static const Int_t fNPlanes = 2;
+    static const UInt_t fMaxNPulsesAdc = 4;
+    static const UInt_t fMaxNSamplesAdc = 160;
+    static const UInt_t fMaxNHitsTdc = 16;
+    static const UInt_t fNPlanes = 2;
 
     Int_t fAdc[fMaxNPulsesAdc];
     Int_t fAdcTime[fMaxNPulsesAdc];
