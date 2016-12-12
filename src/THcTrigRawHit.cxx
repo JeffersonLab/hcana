@@ -219,6 +219,7 @@ Returns `0` if reference time is not available.
 
 #include "THcTrigRawHit.h"
 
+#include <iostream>
 #include <string>
 #include <stdexcept>
 
@@ -273,7 +274,7 @@ void THcTrigRawHit::Clear(Option_t* opt) {
 
   for (UInt_t i=0; i<fNPlanes; ++i) {
     fHasReference[i] = kFALSE;
-    fHasReference[i] = kFALSE;
+    fHasMulti[i] = kFALSE;
     fNRawHits[i] = 0;
   }
   fNRawSamples = 0;
@@ -346,7 +347,14 @@ void THcTrigRawHit::SetDataTimePedestalPeak(
 
 
 void THcTrigRawHit::SetReference(Int_t signal, Int_t reference) {
-  if (signal == 0 || signal == 1) {
+  if (signal == 0) {
+    std::cerr
+      << "Warning:"
+      << " `THcTrigRawHit::SetReference`:"
+      << " signal 0 (ADC) should not have reference time!"
+      << " Check map file!";
+  }
+  else if (signal == 1) {
     fReferenceTime[signal] = reference;
     fHasReference[signal] = kTRUE;
   }
