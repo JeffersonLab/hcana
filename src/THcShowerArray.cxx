@@ -642,13 +642,8 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
 
     // Should probably check that counter # is in range
-    if(fUsingFADC) {
-      fA[hit->fCounter-1] = hit->GetData(0,fPedSampLow,fPedSampHigh,
-					 fDataSampLow,fDataSampHigh);
-      fP[hit->fCounter-1] = hit->GetPedestal(0,fPedSampLow,fPedSampHigh);
-    } else {
-          fA[hit->fCounter-1] = hit->GetData(0);
-    }
+		// TODO: Need to include rich FADC data if available.
+    fA[hit->fCounter-1] = hit->GetData(0);
 
     if(fA[hit->fCounter-1] > threshold) {
       ngood++;
@@ -787,10 +782,8 @@ Int_t THcShowerArray::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 
     Int_t element = hit->fCounter - 1; // Should check if in range
 
-    Int_t adc = fUsingFADC ?
-      hit->GetData(0,fPedSampLow,fPedSampHigh,fDataSampLow,fDataSampHigh)
-      :
-      hit->GetData(0);
+		// TODO: Need to include rich FADC data if available.
+    Int_t adc = hit->GetData(0);
 
     if(adc <= fPedLimit[element]) {
       fPedSum[element] += adc;
@@ -822,10 +815,7 @@ Int_t THcShowerArray::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 	break;
       }
 
-      Int_t adc = fUsingFADC ?
-	hit->GetData(0,fPedSampLow,fPedSampHigh,fDataSampLow,fDataSampHigh)
-	:
-	hit->GetData(0);
+      Int_t adc = hit->GetData(0);
 
       cout << "  hit " << ih << ":"
 	   << "  plane =  " << hit->fPlane
