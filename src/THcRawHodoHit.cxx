@@ -17,6 +17,8 @@ Class representing a single raw hit for a hodoscope paddle
 #include <cassert>
 #include <stdexcept>
 
+#include "TString.h"
+
 #include "THcRawHodoHit.h"
 
 using namespace std;
@@ -126,13 +128,13 @@ Int_t THcRawHodoHit::GetData(Int_t signal, UInt_t ihit) {
   } else if (signal==3) {
     value = fTDC_neg[ihit];
   } else {
-    cout << "THcRawHodoHit::GetData(): requested invalid signal #"
-	 << signal << endl;
-    return(-1);			// Actually should throw an exception
+    TString msg = TString::Format(
+      "THcRawHodoHit::GetData(): requested invalid signal #%d.",
+      signal
+    );
+    throw std::out_of_range(msg.Data());
   }
-  // We are return -1 as a error, but reference subtracted
-  // time can be negative.
-  if(fHasRef[signal]) {
+  if(fHasRef[signal] && (signal == 2 || signal == 3)) {
     value -= fReferenceTime[signal];
   }
   return(value);
@@ -158,16 +160,26 @@ Int_t THcRawHodoHit::GetRawData(Int_t signal, UInt_t ihit) {
   } else if (signal==3) {
     return(fTDC_neg[ihit]);
   } else {
-    cout << "THcRawHodoHit::GetData(): requested invalid signal #"
-	 << signal << endl;
-    return(-1);			// Actually should throw an exception
+    TString msg = TString::Format(
+      "THcRawHodoHit::GetRawData(): requested invalid signal #%d.",
+      signal
+    );
+    throw std::out_of_range(msg.Data());
   }
 }
 
 // Set the reference time
 void THcRawHodoHit::SetReference(Int_t signal, Int_t reference) {
-  fReferenceTime[signal] = reference;
-  fHasRef[signal] = kTRUE;
+  if (signal == 2 || signal == 3) {
+    fReferenceTime[signal] = reference;
+    fHasRef[signal] = kTRUE;
+  } else if (signal == 0 || signal == 1) {
+    std::cerr
+      << "Warning:"
+      << " THcRawHodoHit::SetReference():"
+      << " signals 0 and 1 (ADC) should not have reference time!"
+      << " Check map file!";
+  }
 }
 Int_t THcRawHodoHit::GetReference(Int_t signal) {
   if(fHasRef[signal]) {
@@ -224,8 +236,8 @@ THcRawHodoHit& THcRawHodoHit::operator=( const THcRawHodoHit& rhs )
     for(UInt_t is=0;is<fNRawSamplesNeg;is++) {
       fADC_Samples_neg[is] = rhs.fADC_Samples_neg[is];
     }
-    
-    
+
+
   }
   return *this;
 }
