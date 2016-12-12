@@ -1,51 +1,44 @@
 #ifndef ROOT_THcRawShowerHit
 #define ROOT_THcRawShowerHit
 
+#include "RtypesCore.h"
+
+#include "THcRawAdcHit.h"
 #include "THcRawHit.h"
 
-#define MAXSAMPLES 126
 
 class THcRawShowerHit : public THcRawHit {
-
- public:
   friend class THcShowerPlane;
   friend class THcShowerArray;
 
-  THcRawShowerHit(Int_t plane=0, Int_t counter=0) : 
-    THcRawHit(plane, counter), fNPosSamples(0), fNNegSamples(0) {
-  }
-  THcRawShowerHit& operator=( const THcRawShowerHit& );
-  virtual ~THcRawShowerHit() {}
+  public:
+    THcRawShowerHit(Int_t plane=0, Int_t counter=0);
+    THcRawShowerHit& operator=(const THcRawShowerHit& right);
+    virtual ~THcRawShowerHit();
 
-  virtual void Clear( Option_t* opt="" )
-  { fNPosSamples=0; fNNegSamples=0;}
+    virtual void Clear(Option_t* opt="");
 
-  void SetData(Int_t signal, Int_t data);
-  Int_t GetData(Int_t signal);
-  Int_t GetData(Int_t signal, Int_t isamplow, Int_t isamphigh,
-		Int_t iintegrallow, Int_t iintegralhigh);
-  Int_t GetSample(Int_t signal, UInt_t isample);
-  Double_t GetPedestal(Int_t signal, Int_t isamplow, Int_t isamphigh);
-  Int_t GetNSamples(Int_t signal);
+    virtual void SetData(Int_t signal, Int_t data);
+    virtual void SetSample(Int_t signal, Int_t data);
+    virtual void SetDataTimePedestalPeak(
+      Int_t signal, Int_t data, Int_t time, Int_t pedestal, Int_t peak
+    );
+    virtual void SetReference(Int_t signal, Int_t reference);
 
-  Int_t GetNSignals() { return 2;}
-  ESignalType GetSignalType(Int_t signal) {
-    return kADC;
-  }
-  //  virtual Bool_t  IsSortable () const {return kTRUE; }
-  //  virtual Int_t   Compare(const TObject* obj) const;
+    virtual Int_t GetData(Int_t signal);
+    virtual Int_t GetRawData(Int_t signal);
+    virtual ESignalType GetSignalType(Int_t signal);
+    virtual Int_t GetNSignals();
 
- protected:
-  UInt_t fNPosSamples;
-  UInt_t fNNegSamples;
-  // Is there a way we could pass sample size from the detector initialization
-  Int_t fADC_pos[MAXSAMPLES];
-  Int_t fADC_neg[MAXSAMPLES];
+    THcRawAdcHit& GetRawAdcHitPos();
+    THcRawAdcHit& GetRawAdcHitNeg();
 
- private:
+  protected:
+    THcRawAdcHit fAdcPos;
+    THcRawAdcHit fAdcNeg;
 
-  ClassDef(THcRawShowerHit, 0);	// Raw Shower counter hit
-};  
+  private:
+    ClassDef(THcRawShowerHit, 0);	// Raw Shower counter hit
+};
 
 #endif
- 

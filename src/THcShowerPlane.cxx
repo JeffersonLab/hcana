@@ -29,7 +29,7 @@ using namespace std;
 ClassImp(THcShowerPlane)
 
 //______________________________________________________________________________
-THcShowerPlane::THcShowerPlane( const char* name, 
+THcShowerPlane::THcShowerPlane( const char* name,
 					    const char* description,
 					    const Int_t layernum,
 					    THaDetectorBase* parent )
@@ -87,7 +87,7 @@ THaAnalysisObject::EStatus THcShowerPlane::Init( const TDatime& date )
 //_____________________________________________________________________________
 Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 {
-  
+
   // Retrieve FADC parameters.  In principle may want different dynamic
   // pedestal and integration range for preshower and shower, but for now
   // use same parameters
@@ -97,7 +97,7 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   fUsingFADC=0;
   fPedSampLow=0;
   fPedSampHigh=9;
-  fDataSampLow=23; 
+  fDataSampLow=23;
   fDataSampHigh=49;
   DBRequest list[]={
     {"cal_using_fadc", &fUsingFADC, kInt, 0, 1},
@@ -126,7 +126,7 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   Double_t BlockThick = fParent->GetBlockThick(fLayerNum-1);
 
-  Double_t xOrig = (fParent->GetXPos(fLayerNum-1,0) + 
+  Double_t xOrig = (fParent->GetXPos(fLayerNum-1,0) +
 		    fParent->GetXPos(fLayerNum-1,fNelem-1))/2 +
     BlockThick/2;
 
@@ -263,7 +263,7 @@ Int_t THcShowerPlane::CoarseProcess( TClonesArray& tracks )
 {
 
   // Nothing is done here. See ProcessHits method instead.
-  //  
+  //
 
  return 0;
 }
@@ -320,17 +320,11 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     if(hit->fPlane > fLayerNum) {
       break;
     }
-    
+
     // Should probably check that counter # is in range
-    if(fUsingFADC) {
-      fA_Pos[hit->fCounter-1] = hit->GetData(0,fPedSampLow,fPedSampHigh,
-					 fDataSampLow,fDataSampHigh);
-      fA_Neg[hit->fCounter-1] = hit->GetData(1,fPedSampLow,fPedSampHigh,
-					 fDataSampLow,fDataSampHigh);
-    } else {
-      fA_Pos[hit->fCounter-1] = hit->GetData(0);
-      fA_Neg[hit->fCounter-1] = hit->GetData(1);
-    }
+		// TODO: Need to include rich FADC data if available.
+    fA_Pos[hit->fCounter-1] = hit->GetData(0);
+    fA_Neg[hit->fCounter-1] = hit->GetData(1);
 
     // Sparsify positive side hits, fill the hit list, compute the
     // energy depostion from positive side for the counter.
@@ -354,7 +348,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Double_t thresh_neg = fNegThresh[hit->fCounter -1];
     if(fA_Neg[hit->fCounter-1] >  thresh_neg) {
 
-      THcSignalHit *sighit = 
+      THcSignalHit *sighit =
 	(THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
       sighit->Set(hit->fCounter, fA_Neg[hit->fCounter-1]);
 
@@ -496,7 +490,7 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 
   return(ihit);
 }
-    
+
 //_____________________________________________________________________________
 void THcShowerPlane::CalculatePedestals( )
 {
@@ -504,7 +498,7 @@ void THcShowerPlane::CalculatePedestals( )
   // Later add check to see if pedestals have drifted ("Danger Will Robinson!")
 
   for(Int_t i=0; i<fNelem;i++) {
-    
+
     // Positive tubes
     fPosPed[i] = ((Float_t) fPosPedSum[i]) / TMath::Max(1, fPosPedCount[i]);
     fPosSig[i] = sqrt(((Float_t)fPosPedSum2[i])/TMath::Max(1, fPosPedCount[i])
@@ -540,7 +534,7 @@ void THcShowerPlane::CalculatePedestals( )
     cout << "---------------------------------------------------------------\n";
 
   }
-  
+
 }
 
 //_____________________________________________________________________________
@@ -568,4 +562,4 @@ void THcShowerPlane::InitializePedestals( )
     fNegPedSum2[i] = 0;
     fNegPedCount[i] = 0;
   }
-} 
+}

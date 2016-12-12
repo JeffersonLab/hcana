@@ -28,6 +28,7 @@ THcFormula.cxx
 THcRaster.cxx THcRasteredBeam.cxx THcRasterRawHit.cxx
 THcScalerEvtHandler.cxx
 THcTrigApp.cxx THcTrigDet.cxx THcTrigRawHit.cxx
+THcRawAdcHit.cxx
 THcDummySpectrometer.cxx
 THcHodoEff.cxx
 """)

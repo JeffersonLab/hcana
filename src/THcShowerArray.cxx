@@ -30,7 +30,7 @@ using namespace std;
 ClassImp(THcShowerArray)
 
 //______________________________________________________________________________
-THcShowerArray::THcShowerArray( const char* name, 
+THcShowerArray::THcShowerArray( const char* name,
 				const char* description,
 				const Int_t layernum,
 				THaDetectorBase* parent )
@@ -411,7 +411,7 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
 	 ppcl != (*fClusterList).end(); ppcl++) {
 
       cout << "  Cluster #" << i++
-	   <<":  E=" << clE(*ppcl) 
+	   <<":  E=" << clE(*ppcl)
 	   << "  Epr=" << clEpr(*ppcl)
 	   << "  X=" << clX(*ppcl)
 	   << "  Z=" << clZ(*ppcl)
@@ -539,7 +539,7 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
 	 << "  Y = " << YTrFront
 	 << "  Pathl = " << pathl
 	 << endl;
-    if (fParent->fvTest) 
+    if (fParent->fvTest)
       cout << "  Fiducial volume test: inFidVol = " << inFidVol << endl;
 
     cout << "  Matched cluster #" << mclust << ",  Delta = " << Delta << endl;
@@ -640,15 +640,10 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     if(hit->fPlane != fLayerNum) {
       break;
     }
-    
+
     // Should probably check that counter # is in range
-    if(fUsingFADC) {
-      fA[hit->fCounter-1] = hit->GetData(0,fPedSampLow,fPedSampHigh,
-					 fDataSampLow,fDataSampHigh);
-      fP[hit->fCounter-1] = hit->GetPedestal(0,fPedSampLow,fPedSampHigh);
-    } else {
-          fA[hit->fCounter-1] = hit->GetData(0);
-    }
+		// TODO: Need to include rich FADC data if available.
+    fA[hit->fCounter-1] = hit->GetData(0);
 
     if(fA[hit->fCounter-1] > threshold) {
       ngood++;
@@ -674,7 +669,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     ihit++;
   }
-    
+
 #if 0
   if(ngood > 0) {
     cout << "+";
@@ -787,10 +782,8 @@ Int_t THcShowerArray::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 
     Int_t element = hit->fCounter - 1; // Should check if in range
 
-    Int_t adc = fUsingFADC ?
-      hit->GetData(0,fPedSampLow,fPedSampHigh,fDataSampLow,fDataSampHigh)
-      :
-      hit->GetData(0);
+		// TODO: Need to include rich FADC data if available.
+    Int_t adc = hit->GetData(0);
 
     if(adc <= fPedLimit[element]) {
       fPedSum[element] += adc;
@@ -822,10 +815,7 @@ Int_t THcShowerArray::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 	break;
       }
 
-      Int_t adc = fUsingFADC ?
-	hit->GetData(0,fPedSampLow,fPedSampHigh,fDataSampLow,fDataSampHigh)
-	:
-	hit->GetData(0);
+      Int_t adc = hit->GetData(0);
 
       cout << "  hit " << ih << ":"
 	   << "  plane =  " << hit->fPlane
@@ -847,7 +837,7 @@ void THcShowerArray::CalculatePedestals( )
   // Use the accumulated pedestal data to calculate pedestals.
 
   for(Int_t i=0; i<fNelem;i++) {
-    
+
     fPed[i] = ((Float_t) fPedSum[i]) / TMath::Max(1, fPedCount[i]);
     fSig[i] = sqrt(((Float_t)fPedSum2[i])/TMath::Max(1, fPedCount[i])
 		   - fPed[i]*fPed[i]);
@@ -874,7 +864,7 @@ void THcShowerArray::CalculatePedestals( )
     cout << "---------------------------------------------------------------\n";
 
   }
-  
+
 }
 //_____________________________________________________________________________
 void THcShowerArray::InitializePedestals( )
@@ -894,7 +884,7 @@ void THcShowerArray::InitializePedestals( )
     fPedSum2[i] = 0;
     fPedCount[i] = 0;
   }
-} 
+}
 
 //------------------------------------------------------------------------------
 
