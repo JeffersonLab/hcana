@@ -1,8 +1,6 @@
 #ifndef ROOT_THcRawShowerHit
 #define ROOT_THcRawShowerHit
 
-#include "RtypesCore.h"
-
 #include "THcRawAdcHit.h"
 #include "THcRawHit.h"
 

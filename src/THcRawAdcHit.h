@@ -1,7 +1,6 @@
 #ifndef ROOT_THcRawAdcHit
 #define ROOT_THcRawAdcHit
 
-#include "RtypesCore.h"
 #include "TObject.h"
 
 
