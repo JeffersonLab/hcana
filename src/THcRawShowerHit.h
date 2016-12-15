@@ -36,7 +36,7 @@ class THcRawShowerHit : public THcRawHit {
     THcRawAdcHit fAdcNeg;
 
   private:
-    ClassDef(THcRawShowerHit, 0);	// Raw Shower counter hit
+    ClassDef(THcRawShowerHit, 0);	 // Raw Shower counter hit
 };
 
-#endif
+#endif  // ROOT_THcRawShowerHit

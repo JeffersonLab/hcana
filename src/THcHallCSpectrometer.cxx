@@ -73,7 +73,7 @@ Int_t THcHallCSpectrometer::DefineVariables( EMode mode )
     { 0 }
   };
 
-  
+
   return DefineVarsFromList( vars, mode );
 }
 
@@ -93,7 +93,7 @@ Bool_t THcHallCSpectrometer::GetTrSorting() const
 {
   return ((fProperties & kSortTracks) != 0);
 }
- 
+
 //_____________________________________________________________________________
 void THcHallCSpectrometer::InitializeReconstruction()
 {
@@ -119,11 +119,11 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
 
   // --------------- To get energy from THcShower ----------------------
 
-  const char* detector_name = "hod";  
+  const char* detector_name = "hod";
   //THaApparatus* app = GetDetector();
   THaDetector* det = GetDetector("hod");
   // THaDetector* det = app->GetDetector( shower_detector_name );
-  
+
   if( dynamic_cast<THcHodoscope*>(det) ) {
     fHodo = static_cast<THcHodoscope*>(det);     // fHodo is a membervariable
   } else {
@@ -131,10 +131,10 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     	  detector_name );
     fHodo = NULL;
   }
-  
+
 
   // fShower = static_cast<THcShower*>(det);     // fShower is a membervariable
-  
+
   // --------------- To get energy from THcShower ----------------------
 
 
@@ -195,22 +195,22 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   EnforcePruneLimits();
-  
+
   cout <<  "\n\n\nhodo planes = " << fNPlanes << endl;
   cout <<  "sel using scin = "    << fSelUsingScin << endl;
-  cout <<  "fPruneXp = "          <<  fPruneXp << endl; 
-  cout <<  "fPruneYp = "          <<  fPruneYp << endl; 
-  cout <<  "fPruneYtar = "        <<  fPruneYtar << endl; 
-  cout <<  "fPruneDelta = "       <<  fPruneDelta << endl; 
-  cout <<  "fPruneBeta = "        <<  fPruneBeta << endl; 
-  cout <<  "fPruneDf = "          <<  fPruneDf << endl; 
-  cout <<  "fPruneChiBeta = "     <<  fPruneChiBeta << endl; 
-  cout <<  "fPruneFpTime = "      <<  fPruneFpTime << endl; 
-  cout <<  "fPruneNPMT = "        <<  fPruneNPMT << endl; 
+  cout <<  "fPruneXp = "          <<  fPruneXp << endl;
+  cout <<  "fPruneYp = "          <<  fPruneYp << endl;
+  cout <<  "fPruneYtar = "        <<  fPruneYtar << endl;
+  cout <<  "fPruneDelta = "       <<  fPruneDelta << endl;
+  cout <<  "fPruneBeta = "        <<  fPruneBeta << endl;
+  cout <<  "fPruneDf = "          <<  fPruneDf << endl;
+  cout <<  "fPruneChiBeta = "     <<  fPruneChiBeta << endl;
+  cout <<  "fPruneFpTime = "      <<  fPruneFpTime << endl;
+  cout <<  "fPruneNPMT = "        <<  fPruneNPMT << endl;
   cout <<  "sel using prune = "   <<  fSelUsingPrune << endl;
   cout <<  "fPartMass = "         <<  fPartMass << endl;
-  cout <<  "fPcentral = "         <<  fPcentral << " " <<fPCentralOffset << endl; 
-  cout <<  "fThate_lab = "        <<  fTheta_lab << " " <<fThetaCentralOffset << endl; 
+  cout <<  "fPcentral = "         <<  fPcentral << " " <<fPCentralOffset << endl;
+  cout <<  "fThate_lab = "        <<  fTheta_lab << " " <<fThetaCentralOffset << endl;
   fPcentral= fPcentral*(1.+fPCentralOffset/100.);
   // Check that these offsets are in radians
   fTheta_lab=fTheta_lab + fThetaCentralOffset*TMath::RadToDeg();
@@ -219,7 +219,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   SetCentralAngles(fTheta_lab, ph, false);
   Double_t off_x = 0.0, off_y = 0.0, off_z = 0.0;
   fPointingOffset.SetXYZ( off_x, off_y, off_z );
-  
+
   //
   ifstream ifile;
   ifile.open(reconCoeffFilename.c_str());
@@ -228,7 +228,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     //    return kInitError; // Is this the right return code?
     return kOK;
   }
-  
+
   string line="!";
   int good=1;
   while(good && line[0]=='!') {
@@ -266,7 +266,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
 	   ,&fReconTerms[fNReconTerms].Exp[3]
 	   ,&fReconTerms[fNReconTerms].Exp[4]);
     fNReconTerms++;
-    good = getline(ifile,line).good();    
+    good = getline(ifile,line).good();
   }
   cout << "Read " << fNReconTerms << " matrix element terms"  << endl;
   if(!good) {
@@ -280,15 +280,15 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
 void THcHallCSpectrometer::EnforcePruneLimits()
 {
   // Enforce minimum values for the prune cuts
-  
-  fPruneXp      = TMath::Max( 0.08, fPruneXp); 
-  fPruneYp      = TMath::Max( 0.04, fPruneYp); 
-  fPruneYtar    = TMath::Max( 4.0,  fPruneYtar); 
-  fPruneDelta   = TMath::Max( 13.0, fPruneDelta); 
-  fPruneBeta    = TMath::Max( 0.1,  fPruneBeta); 
-  fPruneDf      = TMath::Max( 1.0,  fPruneDf); 
-  fPruneChiBeta = TMath::Max( 2.0,  fPruneChiBeta); 
-  fPruneFpTime  = TMath::Max( 5.0,  fPruneFpTime); 
+
+  fPruneXp      = TMath::Max( 0.08, fPruneXp);
+  fPruneYp      = TMath::Max( 0.04, fPruneYp);
+  fPruneYtar    = TMath::Max( 4.0,  fPruneYtar);
+  fPruneDelta   = TMath::Max( 13.0, fPruneDelta);
+  fPruneBeta    = TMath::Max( 0.1,  fPruneBeta);
+  fPruneDf      = TMath::Max( 1.0,  fPruneDf);
+  fPruneChiBeta = TMath::Max( 2.0,  fPruneChiBeta);
+  fPruneFpTime  = TMath::Max( 5.0,  fPruneFpTime);
   fPruneNPMT    = TMath::Max( 6.0,  fPruneNPMT);
 }
 
@@ -308,7 +308,7 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 
     Double_t hut[5];
     Double_t hut_rot[5];
-    
+
     hut[0] = track->GetX()/100.0 + fZTrueFocus*track->GetTheta() + fDetOffset_x;//m
     hut[1] = track->GetTheta() + fAngOffset_x;//radians
     hut[2] = track->GetY()/100.0 + fZTrueFocus*track->GetPhi() + fDetOffset_y;//m
@@ -345,7 +345,7 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     }
     // Transfer results to track
     // No beam raster yet
-    //; In transport coordinates phi = hyptar = dy/dz and theta = hxptar = dx/dz 
+    //; In transport coordinates phi = hyptar = dy/dz and theta = hxptar = dx/dz
     //;    but for unknown reasons the yp offset is named  htheta_offset
     //;    and  the xp offset is named  hphi_offset
 
@@ -364,15 +364,15 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
   // If enabled, sort the tracks by chi2/ndof
   if( GetTrSorting() )
     fTracks->Sort();
-  
-  // Find the "Golden Track". 
+
+  // Find the "Golden Track".
   if( GetNTracks() > 0 ) {
     // Select first track in the array. If there is more than one track
     // and track sorting is enabled, then this is the best fit track
     // (smallest chi2/ndof).  Otherwise, it is the track with the best
     // geometrical match (smallest residuals) between the U/V clusters
     // in the upper and lower VDCs (old behavior).
-    // 
+    //
     // Chi2/dof is a well-defined quantity, and the track selected in this
     // way is immediately physically meaningful. The geometrical match
     // criterion is mathematically less well defined and not usually used
@@ -409,11 +409,11 @@ Int_t THcHallCSpectrometer::TrackCalc()
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::BestTrackSimple()
 {
-  
+
   if( GetTrSorting() )
     fTracks->Sort();
-  
-  // Find the "Golden Track". 
+
+  // Find the "Golden Track".
   //  if( GetNTracks() > 0 ) {
   if( fNtracks > 0 ) {
     // Select first track in the array. If there is more than one track
@@ -421,13 +421,13 @@ Int_t THcHallCSpectrometer::BestTrackSimple()
     // (smallest chi2/ndof).  Otherwise, it is the track with the best
     // geometrical match (smallest residuals) between the U/V clusters
     // in the upper and lower VDCs (old behavior).
-    // 
+    //
     // Chi2/dof is a well-defined quantity, and the track selected in this
     // way is immediately physically meaningful. The geometrical match
     // criterion is mathematically less well defined and not usually used
     // in track reconstruction. Hence, chi2 sortiing is preferable, albeit
     // obviously slower.
-      
+
     fGoldenTrack = static_cast<THaTrack*>( fTracks->At(0) );
     fTrkIfo      = *fGoldenTrack;
     fTrk         = fGoldenTrack;
@@ -450,13 +450,13 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
 
     Bool_t* x2Hits        = new Bool_t [fHodo->GetNPaddles(2)];
     Bool_t* y2Hits        = new Bool_t [fHodo->GetNPaddles(3)];
-    for (UInt_t j = 0; j < fHodo->GetNPaddles(2); j++ ){ 
+    for (UInt_t j = 0; j < fHodo->GetNPaddles(2); j++ ){
       x2Hits[j] = kFALSE;
     }
-    for (UInt_t j = 0; j < fHodo->GetNPaddles(3); j++ ){ 
+    for (UInt_t j = 0; j < fHodo->GetNPaddles(3); j++ ){
       y2Hits[j] = kFALSE;
     }
-      
+
     for (Int_t rawindex=0; rawindex<fHodo->GetTotHits(); rawindex++) {
       Int_t ip = fHodo->GetGoodRawPlane(rawindex);
       if(ip==2) {	// X2
@@ -471,21 +471,21 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
     for (Int_t itrack = 0; itrack < fNtracks; itrack++ ){
       Double_t chi2PerDeg;
 
-      THaTrack* aTrack = static_cast<THaTrack*>( fTracks->At(itrack) );      
-      if (!aTrack) return -1;	
+      THaTrack* aTrack = static_cast<THaTrack*>( fTracks->At(itrack) );
+      if (!aTrack) return -1;
 
       if ( aTrack->GetNDoF() > fSelNDegreesMin ){
 	chi2PerDeg =  aTrack->GetChi2() / aTrack->GetNDoF();
 
-	if( ( aTrack->GetDedx()    > fSeldEdX1Min )   && 
-	    ( aTrack->GetDedx()    < fSeldEdX1Max )   && 
+	if( ( aTrack->GetDedx()    > fSeldEdX1Min )   &&
+	    ( aTrack->GetDedx()    < fSeldEdX1Max )   &&
 	    ( aTrack->GetBeta()    > fSelBetaMin  )   &&
 	    ( aTrack->GetBeta()    < fSelBetaMax  )   &&
-	    ( aTrack->GetEnergy()  > fSelEtMin    )   && 
-	    ( aTrack->GetEnergy()  < fSelEtMax    ) )  	    	    
+	    ( aTrack->GetEnergy()  > fSelEtMin    )   &&
+	    ( aTrack->GetEnergy()  < fSelEtMax    ) )
 	  {
 	    Int_t x2D, y2D;
-	      	      
+
 	    if ( fNtracks > 1 ){
 	      Double_t hitpos3  = aTrack->GetX() + aTrack->GetTheta() * ( fScin2XZpos + 0.5 * fScin2XdZpos );
 	      Int_t icounter3  = TMath::Nint( ( hitpos3 - fHodo->GetPlaneCenter(2) ) / fHodo->GetPlaneSpacing(2) ) + 1;
@@ -512,7 +512,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
 	      // Plane 4
 	      mindiff = 1000;
 	      for (UInt_t i = 0; i < fHodo->GetNPaddles(3); i++ ){
-		if ( y2Hits[i] ) {		    
+		if ( y2Hits[i] ) {
 		  Int_t diff = TMath::Abs((Int_t)hitCnt4-(Int_t)i-1);
 		  if (diff < mindiff) mindiff = diff;
 		}
@@ -547,27 +547,27 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
 		  fGoldenTrack = static_cast<THaTrack*>( fTracks->At( fGoodTrack ) );
 		  fTrkIfo      = *fGoldenTrack;
 		  fTrk         = fGoldenTrack;
-		}		  
+		}
 	      } // condition x2D
 	    } // condition y2D
-	  } // conditions for dedx, beta and trac energy		  
+	  } // conditions for dedx, beta and trac energy
       } // confition for fNFreeFP greater than fSelNDegreesMin
-    } // loop over tracks      
+    } // loop over tracks
 
     // Fall back to using track with minimum chi2
     if ( fGoodTrack == -1 ){
-      
+
       chi2Min = 10000000000.0;
       for (Int_t iitrack = 0; iitrack < fNtracks; iitrack++ ){
 	Double_t chi2PerDeg;
 	THaTrack* aTrack = dynamic_cast<THaTrack*>( fTracks->At(iitrack) );
 	if (!aTrack) return -1;
-	  
+
 	if ( aTrack->GetNDoF() > fSelNDegreesMin ){
 	  chi2PerDeg =  aTrack->GetChi2() / aTrack->GetNDoF();
 
 	  if ( chi2PerDeg < chi2Min ){
-	      
+
 	    fGoodTrack = iitrack;
 	    chi2Min = chi2PerDeg;
 
@@ -579,25 +579,25 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
 	}
       } // loop over trakcs
 
-    } 
+    }
 
   } else // Condition for fNtrack > 0
     fGoldenTrack = NULL;
 
   return(0);
 }
-    
+
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::BestTrackUsingPrune()
-{  
+{
   Int_t nGood;
   Double_t chi2Min;
 
   if ( fNtracks > 0 ) {
     chi2Min   = 10000000000.0;
-    fGoodTrack = 0;    
-    Bool_t* keep      = new Bool_t [fNtracks];  
-    Int_t* reject    = new Int_t  [fNtracks];  
+    fGoodTrack = 0;
+    Bool_t* keep      = new Bool_t [fNtracks];
+    Int_t* reject    = new Int_t  [fNtracks];
 
     THaTrack *testTracks[fNtracks];
 
@@ -605,16 +605,16 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
     for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
       keep[ptrack] = kTRUE;
       reject[ptrack] = 0;
-      testTracks[ptrack] = static_cast<THaTrack*>( fTracks->At(ptrack) );      
-      if (!testTracks[ptrack]) return -1;	
-    }      
-      
+      testTracks[ptrack] = static_cast<THaTrack*>( fTracks->At(ptrack) );
+      if (!testTracks[ptrack]) return -1;
+    }
+
     // ! Prune on xptar
     nGood = 0;
     for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
-      if ( ( TMath::Abs( testTracks[ptrack]->GetTTheta() ) < fPruneXp ) && ( keep[ptrack] ) ){	  
+      if ( ( TMath::Abs( testTracks[ptrack]->GetTTheta() ) < fPruneXp ) && ( keep[ptrack] ) ){
 	nGood ++;
-      }	
+      }
     }
     if ( nGood > 0 ) {
       for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
@@ -624,12 +624,12 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 	}
       }
     }
-      
+
     // ! Prune on yptar
     nGood = 0;
     for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
       if ( ( TMath::Abs( testTracks[ptrack]->GetTPhi() ) < fPruneYp ) && ( keep[ptrack] ) ){
-	nGood ++; 
+	nGood ++;
       }
     }
     if (nGood > 0 ) {
@@ -637,18 +637,18 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 	if ( TMath::Abs( testTracks[ptrack]->GetTPhi() ) >= fPruneYp ){
 	  keep[ptrack] = kFALSE;
 	  reject[ptrack] = reject[ptrack] + 2;
-  
-	}		
+
+	}
       }
     }
-      
+
     // !     Prune on ytar
     nGood = 0;
-    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
       if ( ( TMath::Abs( testTracks[ptrack]->GetTY() ) < fPruneYtar ) && ( keep[ptrack] ) ){
-	nGood ++; 
-      }	
-    }      
+	nGood ++;
+      }
+    }
     if (nGood > 0 ) {
       for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( TMath::Abs( testTracks[ptrack]->GetTY() ) >= fPruneYtar ){
@@ -657,14 +657,14 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 	}
       }
     }
-  
+
     // !     Prune on delta
     nGood = 0;
-    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
       if ( ( TMath::Abs( testTracks[ptrack]->GetDp() ) < fPruneDelta ) && ( keep[ptrack] ) ){
-	nGood ++; 
-      }	
-    }            
+	nGood ++;
+      }
+    }
     if (nGood > 0 ) {
       for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( TMath::Abs( testTracks[ptrack]->GetDp() ) >= fPruneDelta ){
@@ -672,38 +672,38 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 	  reject[ptrack] = reject[ptrack] + 20;
 	}
       }
-    }      
-            
+    }
+
     // !     Prune on beta
     nGood = 0;
-    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
       Double_t p = testTracks[ptrack]->GetP();
-      Double_t betaP = p / TMath::Sqrt( p * p + fPartMass * fPartMass );       
+      Double_t betaP = p / TMath::Sqrt( p * p + fPartMass * fPartMass );
       if ( ( TMath::Abs( testTracks[ptrack]->GetBeta() - betaP ) < fPruneBeta ) && ( keep[ptrack] ) ){
-	nGood ++; 
-      }	
+	nGood ++;
+      }
     }
     if (nGood > 0 ) {
-      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	Double_t p = testTracks[ptrack]->GetP();
-	Double_t betaP = p / TMath::Sqrt( p * p + fPartMass * fPartMass );       
-	if ( TMath::Abs( testTracks[ptrack]->GetBeta() - betaP ) >= fPruneBeta ) {	    
+	Double_t betaP = p / TMath::Sqrt( p * p + fPartMass * fPartMass );
+	if ( TMath::Abs( testTracks[ptrack]->GetBeta() - betaP ) >= fPruneBeta ) {
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 100;	          
-	}	  
-      }	
+	  reject[ptrack] = reject[ptrack] + 100;
+	}
+      }
     }
-  
+
     // !     Prune on deg. freedom for track chisq
     nGood = 0;
-    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
       if ( ( testTracks[ptrack]->GetNDoF() >= fPruneDf ) && ( keep[ptrack] ) ){
-	nGood ++; 	  
-      }		
-    }          
+	nGood ++;
+      }
+    }
     if (nGood > 0 ) {
-      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
-	if ( testTracks[ptrack]->GetNDoF() < fPruneDf ){	  
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
+	if ( testTracks[ptrack]->GetNDoF() < fPruneDf ){
 	  keep[ptrack] = kFALSE;
 	  reject[ptrack] = reject[ptrack] + 200;
 	}
@@ -712,13 +712,13 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 
     //!     Prune on num pmt hits
     nGood = 0;
-    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
       if ( ( testTracks[ptrack]->GetNPMT() >= fPruneNPMT ) && ( keep[ptrack] ) ){
-	nGood ++; 	  
-      }	        		
+	nGood ++;
+      }
     }
     if (nGood > 0 ) {
-      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( testTracks[ptrack]->GetNPMT() < fPruneNPMT ){
 	  keep[ptrack] = kFALSE;
 	  reject[ptrack] = reject[ptrack] + 100000;
@@ -728,87 +728,87 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 
     // !     Prune on beta chisqr
     nGood = 0;
-    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
-      if ( ( testTracks[ptrack]->GetBetaChi2() < fPruneChiBeta ) && 
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
+      if ( ( testTracks[ptrack]->GetBetaChi2() < fPruneChiBeta ) &&
 	   ( testTracks[ptrack]->GetBetaChi2() > 0.01 )          &&   ( keep[ptrack] ) ){
-	nGood ++; 	  
-      }	        			
+	nGood ++;
+      }
     }
     if (nGood > 0 ) {
-      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
-	if ( ( testTracks[ptrack]->GetBetaChi2() >= fPruneChiBeta ) || 
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
+	if ( ( testTracks[ptrack]->GetBetaChi2() >= fPruneChiBeta ) ||
 	     ( testTracks[ptrack]->GetBetaChi2() <= 0.01          ) ){
 	  keep[ptrack] = kFALSE;
 	  reject[ptrack] = reject[ptrack] + 1000;
-	}	  	  
+	}
       }
     }
 
     // !     Prune on fptime
     nGood = 0;
-    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
-      if ( ( TMath::Abs( testTracks[ptrack]->GetFPTime() - fHodo->GetStartTimeCenter() ) < fPruneFpTime )  &&   
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
+      if ( ( TMath::Abs( testTracks[ptrack]->GetFPTime() - fHodo->GetStartTimeCenter() ) < fPruneFpTime )  &&
 	   ( keep[ptrack] ) ){
-	nGood ++; 	  
-      }	        			
+	nGood ++;
+      }
     }
     if (nGood > 0 ) {
-      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( TMath::Abs( testTracks[ptrack]->GetFPTime() - fHodo->GetStartTimeCenter() ) >= fPruneFpTime ) {
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 2000;	    	    
+	  reject[ptrack] = reject[ptrack] + 2000;
 	}
       }
     }
-      
+
     // !     Prune on Y2 being hit
     nGood = 0;
-    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
       if ( ( testTracks[ptrack]->GetGoodPlane4() == 1 )  &&  keep[ptrack] ) {
-	nGood ++; 	  	  
-      }	        			
+	nGood ++;
+      }
     }
     if (nGood > 0 ) {
-      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( testTracks[ptrack]->GetGoodPlane4() != 1 ) {
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 10000;	    	    
+	  reject[ptrack] = reject[ptrack] + 10000;
 	}
       }
-    }      
-  
+    }
+
     // !     Prune on X2 being hit
     nGood = 0;
-    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
       if ( ( testTracks[ptrack]->GetGoodPlane3() == 1 )  &&  keep[ptrack] ) {
-	nGood ++; 	  	  
-      }	        			
+	nGood ++;
+      }
     }
     if (nGood > 0 ) {
-      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( testTracks[ptrack]->GetGoodPlane3() != 1 ) {
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 20000;	    	    	    	    
+	  reject[ptrack] = reject[ptrack] + 20000;
 	}
       }
-    }      
-      
+    }
+
     // !     Pick track with best chisq if more than one track passed prune tests
     Double_t chi2PerDeg = 0.;
-    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){	      	
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 
       chi2PerDeg =  testTracks[ptrack]->GetChi2() / testTracks[ptrack]->GetNDoF();
 
       if ( ( chi2PerDeg < chi2Min ) && ( keep[ptrack] ) ){
 	fGoodTrack = ptrack;
 	chi2Min = chi2PerDeg;
-      }	
-    }      
+      }
+    }
 
     fGoldenTrack = static_cast<THaTrack*>( fTracks->At(fGoodTrack) );
     fTrkIfo      = *fGoldenTrack;
     fTrk         = fGoldenTrack;
-      
+
   } else // Condition for fNtrack > 0
     fGoldenTrack = NULL;
 
@@ -823,7 +823,7 @@ Int_t THcHallCSpectrometer::TrackTimes( TClonesArray* Tracks ) {
   // To be useful, a meaningful timing resolution should be assigned
   // to each Scintillator object (part of the database).
 
-  
+
   return 0;
 }
 
@@ -832,7 +832,7 @@ Int_t THcHallCSpectrometer::ReadRunDatabase( const TDatime& date )
 {
   // Override THaSpectrometer with nop method.  All needed kinamatics
   // read in ReadDatabase.
-  
+
   return kOK;
 }
 

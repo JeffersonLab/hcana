@@ -16,7 +16,7 @@ class THcDetectorMap : public TObject {
  public:
   THcDetectorMap();
   virtual ~THcDetectorMap();
-  
+
   virtual void Load(const char *fname);
   virtual Int_t FillMap(THaDetMap* detmap, const char* detectorname);
 
@@ -49,7 +49,7 @@ class THcDetectorMap : public TObject {
     Int_t slot;
     Int_t model;
     std::list<ChaninMod> clist;
-      
+
   };
   std::list<ModChanList> mlist;
 
@@ -68,5 +68,5 @@ class THcDetectorMap : public TObject {
 };
 #endif
 
-  
-  
+
+

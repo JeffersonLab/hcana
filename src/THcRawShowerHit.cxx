@@ -148,5 +148,4 @@ THcRawAdcHit& THcRawShowerHit::GetRawAdcHitNeg() {
 }
 
 
-
 ClassImp(THcRawShowerHit)

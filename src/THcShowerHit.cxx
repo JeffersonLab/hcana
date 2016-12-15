@@ -1,4 +1,4 @@
-/** \classTHcShowerHit 
+/** \classTHcShowerHit
     \ingroup DetSupport
 
 */
@@ -44,8 +44,8 @@ bool THcShowerHit::isNeighbour(THcShowerHit* hit1) {
 //Print out hit information
 //
 void THcShowerHit::show() {
-  cout << "row=" << fRow << "  column=" << fCol 
-       << "  x=" << fX << "  z=" << fZ 
+  cout << "row=" << fRow << "  column=" << fCol
+       << "  x=" << fX << "  z=" << fZ
        << "  E=" << fE << "  Epos=" << fEpos << "  Eneg=" << fEneg << endl;
 }
 

@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 #include "TTree.h"
-#include "TString.h"  
+#include "TString.h"
 
 class HCScalerLoc { // Utility class used by THaScalerEvtHandler
  public:

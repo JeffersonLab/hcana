@@ -47,7 +47,7 @@ void compgoldenenorm(Int_t run=52949)
   l.DrawLatex(xt,0.65*maxy,"Engine");
   l.SetTextColor(kBlue);
   l.DrawLatex(xt,0.75*maxy,"hcana");
-    
+
   // Difference between the histograms.
 
   c1->cd(2);
@@ -62,4 +62,4 @@ void compgoldenenorm(Int_t run=52949)
   dif->SetLineWidth(1);
   dif->SetFillStyle(1111);
   dif->Draw();
-} 
+}

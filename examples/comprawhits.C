@@ -31,7 +31,7 @@ void comprawhits(Int_t run)
     h1[5] = h216;   //D+
   }
 
-  TCanvas *c1 = new TCanvas("c1", "Shower Hit Maps", 1000, 667); 
+  TCanvas *c1 = new TCanvas("c1", "Shower Hit Maps", 1000, 667);
   c1->Divide(2, 3);
 
   for (int j = 0; j < 6; j++){
@@ -39,7 +39,7 @@ void comprawhits(Int_t run)
     h[j]->SetFillColor(kGreen);
     h[j]->SetFillStyle(3345);
     h[j]->Draw();
-    
+
     h1[j]->SetFillColor(kBlue);
     h1[j]->SetFillStyle(3354);
     h1[j]->Draw("same");
@@ -65,4 +65,4 @@ void comprawhits(Int_t run)
     dif->Draw();
   }
 
-} 
+}

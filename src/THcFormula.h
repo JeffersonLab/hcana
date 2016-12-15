@@ -4,7 +4,7 @@
 //////////////////////////////////////////////////////////////////////////
 //
 // THcFormula
-// 
+//
 //////////////////////////////////////////////////////////////////////////
 
 #include "THcGlobals.h"
@@ -16,7 +16,7 @@ class THcFormula : public THaFormula {
 
 public:
 
-  THcFormula( const char* name, const char* formula, 
+  THcFormula( const char* name, const char* formula,
 	      const THcParmList*, const THaVarList*,
 	      const THaCutList* clst);
   THcFormula& operator=( const THcFormula& rhs );

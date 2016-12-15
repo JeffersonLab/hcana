@@ -26,7 +26,7 @@ void compedeps(Int_t run)
     h1[3] = h635;   //D
   }
 
-  TCanvas *c1 = new TCanvas("c1", "Shower raw Edeps", 1000, 667); 
+  TCanvas *c1 = new TCanvas("c1", "Shower raw Edeps", 1000, 667);
   c1->Divide(2, 2);
 
   for (int j = 0; j < 4; j++){
@@ -48,7 +48,7 @@ void compedeps(Int_t run)
   // Difference between the histograms.
   //
 
-  TCanvas *c2 = new TCanvas("c2", "Edep histogram differences", 1000, 667); 
+  TCanvas *c2 = new TCanvas("c2", "Edep histogram differences", 1000, 667);
   c2->Divide(2, 2);
 
   TH1F* d[4] = {h[0]->Clone(),h[0]->Clone(),h[0]->Clone(),h[0]->Clone()};
@@ -67,4 +67,4 @@ void compedeps(Int_t run)
     //    gPad->SetLogy();
   }
 
-} 
+}

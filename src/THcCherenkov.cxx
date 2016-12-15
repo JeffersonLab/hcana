@@ -1,7 +1,7 @@
 /** \class THcCherenkov
     \ingroup Detectors
 
-Class for an Cherenkov detector consisting of two PMT's                         
+Class for an Cherenkov detector consisting of two PMT's
 
 \author Zafar Ahmed
 
@@ -146,13 +146,13 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
 
-  strcpy(parname,prefix);                              // This is taken from 
+  strcpy(parname,prefix);                              // This is taken from
   strcat(parname,"cer_tot_pmts");                      // THcScintillatorPlane
   fNelem = (Int_t)gHcParms->Find(parname)->GetValue(); // class.
 
-  //    fNelem = 2;      // Default if not defined  
+  //    fNelem = 2;      // Default if not defined
   fCerNRegions = 3;
-  
+
   fNPMT = new Int_t[fNelem];
   fADC = new Double_t[fNelem];
   fADC_P = new Double_t[fNelem];
@@ -162,7 +162,7 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fGain = new Double_t[fNelem];
   fPedLimit = new Int_t[fNelem];
   fPedMean = new Double_t[fNelem];
-  
+
   fNPMT = new Int_t[fNelem];
   fADC = new Double_t[fNelem];
   fADC_P = new Double_t[fNelem];
@@ -171,7 +171,7 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fGain = new Double_t[fNelem];
   fPedLimit = new Int_t[fNelem];
   fPedMean = new Double_t[fNelem];
-  
+
 
   fCerTrackCounter = new Int_t [fCerNRegions];
   fCerFiredCounter = new Int_t [fCerNRegions];
@@ -184,18 +184,18 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fCerRegionValue = new Double_t [fCerRegionsValueMax];
 
   DBRequest list[]={
-    {"cer_adc_to_npe", fGain,     kDouble, (UInt_t) fNelem},             
-    {"cer_ped_limit",  fPedLimit, kInt,    (UInt_t) fNelem},             
-    {"cer_width",      fCerWidth, kDouble, (UInt_t) fNelem},             
-    {"cer_chi2max",     &fCerChi2Max,        kDouble},                   
-    {"cer_beta_min",    &fCerBetaMin,        kDouble},                   
-    {"cer_beta_max",    &fCerBetaMax,        kDouble},                   
-    {"cer_et_min",      &fCerETMin,          kDouble},                   
-    {"cer_et_max",      &fCerETMax,          kDouble},                   
-    {"cer_mirror_zpos", &fCerMirrorZPos,     kDouble},                   
-    {"cer_region",      &fCerRegionValue[0], kDouble, (UInt_t) fCerRegionsValueMax}, 
-    {"cer_threshold",   &fCerThresh,         kDouble},                    
-    //    {"cer_regions",     &fCerNRegions,       kInt},                       
+    {"cer_adc_to_npe", fGain,     kDouble, (UInt_t) fNelem},
+    {"cer_ped_limit",  fPedLimit, kInt,    (UInt_t) fNelem},
+    {"cer_width",      fCerWidth, kDouble, (UInt_t) fNelem},
+    {"cer_chi2max",     &fCerChi2Max,        kDouble},
+    {"cer_beta_min",    &fCerBetaMin,        kDouble},
+    {"cer_beta_max",    &fCerBetaMax,        kDouble},
+    {"cer_et_min",      &fCerETMin,          kDouble},
+    {"cer_et_max",      &fCerETMax,          kDouble},
+    {"cer_mirror_zpos", &fCerMirrorZPos,     kDouble},
+    {"cer_region",      &fCerRegionValue[0], kDouble, (UInt_t) fCerRegionsValueMax},
+    {"cer_threshold",   &fCerThresh,         kDouble},
+    //    {"cer_regions",     &fCerNRegions,       kInt},
     {0}
   };
 
@@ -227,7 +227,7 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
-  
+
   // Register variables in global list
 
   // Do we need to put the number of pos/neg TDC/ADC hits into the variables?
@@ -248,14 +248,14 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
   return DefineVarsFromList( vars, mode );
 }
 //_____________________________________________________________________________
-inline 
+inline
 void THcCherenkov::Clear(Option_t* opt)
 {
   // Clear the hit lists
   fADCHits->Clear();
 
   // Clear Cherenkov variables  from h_trans_cer.f
-  
+
   fNhits = 0;	     // Don't really need to do this.  (Be sure this called before Decode)
   fNPEsum = 0.0;
   fNCherHit = 0;
@@ -291,7 +291,7 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
   Int_t nADCHits=0;
   while(ihit < fNhits) {
     THcCherenkovHit* hit = (THcCherenkovHit *) fRawHitList->At(ihit);
-    
+
     // ADC hit
     if(hit->GetADCPos() >  0) {
       THcSignalHit *sighit = (THcSignalHit*) fADCHits->ConstructedAt(nADCHits++);
@@ -318,7 +318,7 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
     // Pedestal subtraction and gain adjustment
 
     // An ADC value of less than zero occurs when that particular
-    // channel has been sparsified away and has not been read. 
+    // channel has been sparsified away and has not been read.
     // The NPE for that tube will be assigned zero by this code.
     // An ADC value of greater than 8192 occurs when the ADC overflows on
     // an input that is too large. Tubes with this characteristic will
@@ -331,7 +331,7 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
     fNPMT[npmt] = hit->fCounter;
     fADC[npmt] = hit->GetADCPos();
     fADC_P[npmt] = hit->GetADCPos() - fPedMean[npmt];
-    
+
     if ( ( fADC_P[npmt] > fCerWidth[npmt] ) && ( hit->GetADCPos() < 8000 ) ) {
       fNPE[npmt] = fGain[npmt]*fADC_P[npmt];
       fNCherHit ++;
@@ -340,7 +340,7 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
     } else {
       fNPE[npmt] = 0.0;
     }
-    
+
     fNPEsum += fNPE[npmt];
 
   }
@@ -359,41 +359,41 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
     THaTrack* theTrack = dynamic_cast<THaTrack*>( tracks.At(0) );
     if (!theTrack) return -1;
 
-    if ( ( ( tracks.GetLast() + 1 ) == 1 ) && 
-	 ( theTrack->GetChi2()/theTrack->GetNDoF() > 0. ) && 
-	 ( theTrack->GetChi2()/theTrack->GetNDoF() <  fCerChi2Max ) && 
+    if ( ( ( tracks.GetLast() + 1 ) == 1 ) &&
+	 ( theTrack->GetChi2()/theTrack->GetNDoF() > 0. ) &&
+	 ( theTrack->GetChi2()/theTrack->GetNDoF() <  fCerChi2Max ) &&
 	 ( theTrack->GetBeta() > fCerBetaMin ) &&
 	 ( theTrack->GetBeta() < fCerBetaMax ) &&
 	 ( ( theTrack->GetEnergy() / theTrack->GetP() ) > fCerETMin ) &&
-	 ( ( theTrack->GetEnergy() / theTrack->GetP() ) < fCerETMax ) 
+	 ( ( theTrack->GetEnergy() / theTrack->GetP() ) < fCerETMax )
 	 ) {
-      
+
       Double_t cerX = theTrack->GetX() + theTrack->GetTheta() * fCerMirrorZPos;
       Double_t cerY = theTrack->GetY() + theTrack->GetPhi()   * fCerMirrorZPos;
-      
-      for ( Int_t ir = 0; ir < fCerNRegions; ir++ ) {
-	
-	//	*     hit must be inside the region in order to continue.   
 
-	if ( ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 0 )] - cerX ) < 
+      for ( Int_t ir = 0; ir < fCerNRegions; ir++ ) {
+
+	//	*     hit must be inside the region in order to continue.
+
+	if ( ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 0 )] - cerX ) <
 	       fCerRegionValue[GetCerIndex( ir, 4 )] ) &&
-	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 1 )] - cerY ) < 
+	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 1 )] - cerY ) <
 	       fCerRegionValue[GetCerIndex( ir, 5 )] ) &&
-	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 2 )] - theTrack->GetTheta() ) < 
+	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 2 )] - theTrack->GetTheta() ) <
 	       fCerRegionValue[GetCerIndex( ir, 6 )] ) &&
-	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 3 )] - theTrack->GetPhi() ) < 
-	       fCerRegionValue[GetCerIndex( ir, 7 )] ) 
+	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 3 )] - theTrack->GetPhi() ) <
+	       fCerRegionValue[GetCerIndex( ir, 7 )] )
 	     ) {
-	
-	  // *     increment the 'should have fired' counters 
-	  fCerTrackCounter[ir] ++;	  
-	  
+
+	  // *     increment the 'should have fired' counters
+	  fCerTrackCounter[ir] ++;
+
 	  // *     increment the 'did fire' counters
 	  if ( fNPEsum > fCerThresh ) {
 	    fCerFiredCounter[ir] ++;
 	  }
 	}
-      } // loop over regions 
+      } // loop over regions
     }
   }
 
@@ -456,7 +456,7 @@ void THcCherenkov::CalculatePedestals( )
   // Later add check to see if pedestals have drifted ("Danger Will Robinson!")
   //  cout << "Plane: " << fPlaneNum << endl;
   for(Int_t i=0; i<fNelem;i++) {
-    
+
     // PMT tubes
     fPed[i] = ((Double_t) fPedSum[i]) / TMath::Max(1, fPedCount[i]);
     fThresh[i] = fPed[i] + 15;
@@ -472,7 +472,7 @@ void THcCherenkov::CalculatePedestals( )
     }
   }
   //  cout << " " << endl;
-  
+
 }
 
 //_____________________________________________________________________________
@@ -502,10 +502,10 @@ void THcCherenkov::Print( const Option_t* opt) const {
 
 //_____________________________________________________________________________
 Double_t THcCherenkov::GetCerNPE() {
-  
+
   return fNPEsum;
 }
 
 ClassImp(THcCherenkov)
 ////////////////////////////////////////////////////////////////////////////////
- 
+

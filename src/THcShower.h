@@ -26,11 +26,11 @@ public:
   virtual EStatus    Init( const TDatime& run_time );
   virtual Int_t      CoarseProcess( TClonesArray& tracks );
   virtual Int_t      FineProcess( TClonesArray& tracks );
-  
+
   Double_t GetNormETot();
 
   Int_t GetNHits() const { return fNhits; }
-  
+
   Int_t GetNBlocks(Int_t NLayer) const { return fNBlocks[NLayer];}
 
   Double_t GetXPos(Int_t NLayer, Int_t NRow) const {
@@ -126,8 +126,8 @@ protected:
   Int_t fNclust;             // Number of clusters
   Int_t fNtracks;            // Number of shower tracks, i.e. number of
                              // cluster-to-track association
-  Double_t fEtot;            // Total energy 
-  Double_t fEtotNorm;        // Total energy divided by spec central momentum 
+  Double_t fEtot;            // Total energy
+  Double_t fEtotNorm;        // Total energy divided by spec central momentum
   Double_t fEtrack;          // Cluster energy associated to the last track
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
