@@ -15,7 +15,7 @@ void comptrackepr(Int_t run)
     h1 = h421;   //epr
   }
 
-  TCanvas *c1 = new TCanvas("c1", "Shower Largest cluster Edep", 1000, 667); 
+  TCanvas *c1 = new TCanvas("c1", "Shower Largest cluster Edep", 1000, 667);
 
   //  gPad->SetLogy();
 
@@ -39,10 +39,10 @@ void comptrackepr(Int_t run)
   l.DrawLatex(xt,0.65*maxy,"Engine");
   l.SetTextColor(kBlue);
   l.DrawLatex(xt,0.75*maxy,"hcana");
-    
+
   // Difference between the histograms.
 
-  TCanvas *c2 = new TCanvas("c2", "Epr differences", 1000, 667); 
+  TCanvas *c2 = new TCanvas("c2", "Epr differences", 1000, 667);
 
   TH1F* dif = h->Clone();
 
@@ -54,4 +54,4 @@ void comptrackepr(Int_t run)
   dif->SetLineWidth(1);
   dif->SetFillStyle(1111);
   dif->Draw();
-} 
+}

@@ -29,7 +29,7 @@ using namespace std;
 ClassImp(THcDriftChamberPlane)
 
 //______________________________________________________________________________
-THcDriftChamberPlane::THcDriftChamberPlane( const char* name, 
+THcDriftChamberPlane::THcDriftChamberPlane( const char* name,
 					    const char* description,
 					    const Int_t planenum,
 					    THaDetectorBase* parent )
@@ -87,12 +87,12 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
 {
 
   // See what file it looks for
-  
+
   char prefix[2];
   UInt_t NumDriftMapBins;
   Double_t DriftMapFirstBin;
   Double_t DriftMapBinSize;
-  
+
   prefix[0]=tolower(GetParent()->GetPrefix()[0]);
   prefix[1]='\0';
   DBRequest list[]={
@@ -176,7 +176,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
 			       + pow(hxpsi*fPsi0+hxchi*hchi0,2)
 			       + pow(hypsi*fPsi0+hychi*hchi0,2) );
   if(z0 < 0.0) hphi0 = -hphi0;
-  
+
   Double_t denom2 = stubxpsi*stubychi - stubxchi*stubypsi;
 
   // Why are there 4, but only 3 used?
@@ -210,7 +210,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   // For HMS, wire numbers start with one, but arrays start with zero.
   // So wire number is index+1
   for (int i=0; i<nWires; i++) {
-    Double_t pos = fPitch*( (fWireOrder==0?(i+1):fNWires-i) 
+    Double_t pos = fPitch*( (fWireOrder==0?(i+1):fNWires-i)
 			    - fCentralWire) - fCenter;
     new((*fWires)[i]) THcDCWire( i+1, pos , 0.0, fTTDConv);
     //if( something < 0 ) wire->SetFlag(1);
@@ -218,7 +218,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
 
   THaApparatus* app = GetApparatus();
   const char* nm = "hod";
-  if(  !app || 
+  if(  !app ||
       !(fglHod = dynamic_cast<THcHodoscope*>(app->GetDetector(nm))) ) {
     static const char* const here = "ReadDatabase()";
     Warning(Here(here),"Hodoscope \"%s\" not found. "
@@ -239,9 +239,9 @@ Int_t THcDriftChamberPlane::DefineVariables( EMode mode )
 
   // Register variables in global list
   RVarDef vars[] = {
-    {"wirenum", "List of TDC wire number", 
+    {"wirenum", "List of TDC wire number",
      "fHits.THcDCHit.GetWireNum()"},
-    {"rawtdc", "Raw TDC Values", 
+    {"rawtdc", "Raw TDC Values",
      "fHits.THcDCHit.GetRawTime()"},
     {"time","Drift times",
      "fHits.THcDCHit.GetTime()"},
@@ -273,7 +273,7 @@ Int_t THcDriftChamberPlane::Decode( const THaEvData& evdata )
 //_____________________________________________________________________________
 Int_t THcDriftChamberPlane::CoarseProcess( TClonesArray& tracks )
 {
- 
+
   //  HitCount();
 
  return 0;
@@ -319,11 +319,11 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       if(rawtdc < fTdcWinMin) {
 	// Increment early counter  (Actually late because TDC is backward)
       } else if (rawtdc > fTdcWinMax) {
-	// Increment late count 
+	// Increment late count
       } else {
 	Double_t time = -StartTime   // (comes from h_trans_scin
 	  - rawtdc*fNSperChan + fPlaneTimeZero; // fNSperChan > 0 for 1877
-	// < 0 for Caen1190.  
+	// < 0 for Caen1190.
 	//	  - (rawtdc-reftime)*fNSperChan + fPlaneTimeZero;
 	// How do we get this start time from the hodoscope to here
 	// (or at least have it ready by coarse process)
@@ -336,6 +336,6 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   return(ihit);
 }
 
-    
-  
-  
+
+
+

@@ -18,7 +18,7 @@ class THcShowerHit {       //HMS calorimeter hit class
   Double_t fE;             //hit mean energy deposition
   Double_t fEpos;          //hit energy deposition from positive PMT
   Double_t fEneg;          //hit energy deposition from negative PMT
-  
+
 public:
 
   THcShowerHit();

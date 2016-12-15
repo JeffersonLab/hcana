@@ -4,7 +4,7 @@
 //////////////////////////////////////////////////////////////////////////
 //
 // THcAnalyzer
-// 
+//
 //////////////////////////////////////////////////////////////////////////
 
 #include "THaAnalyzer.h"
@@ -23,7 +23,7 @@ public:
 protected:
 
   Int_t fPedestalEvtype;
-    
+
 private:
   //  THcAnalyzer( const THcAnalyzer& );
   //  THcAnalyzer& operator=( const THcAnalyzer& );

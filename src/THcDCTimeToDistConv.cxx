@@ -13,7 +13,7 @@ ClassImp(THcDCTimeToDistConv)
 //______________________________________________________________________________
 THcDCTimeToDistConv::~THcDCTimeToDistConv()
 {
-  // Destructor. 
+  // Destructor.
 
 }
 

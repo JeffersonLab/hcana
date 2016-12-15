@@ -11,7 +11,7 @@ class THcRawShowerHit : public THcRawHit {
   friend class THcShowerPlane;
   friend class THcShowerArray;
 
-  THcRawShowerHit(Int_t plane=0, Int_t counter=0) : 
+  THcRawShowerHit(Int_t plane=0, Int_t counter=0) :
     THcRawHit(plane, counter), fNPosSamples(0), fNNegSamples(0) {
   }
   THcRawShowerHit& operator=( const THcRawShowerHit& );
@@ -45,7 +45,7 @@ class THcRawShowerHit : public THcRawHit {
  private:
 
   ClassDef(THcRawShowerHit, 0);	// Raw Shower counter hit
-};  
+};
 
 #endif
- 
+

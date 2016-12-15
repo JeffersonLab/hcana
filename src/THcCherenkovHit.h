@@ -7,7 +7,7 @@ class THcCherenkovHit : public THcRawHodoHit {
 
  public:
   friend class THcCherenkov;
- 
+
  protected:
 
  private:

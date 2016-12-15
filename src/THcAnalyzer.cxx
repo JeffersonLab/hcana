@@ -40,7 +40,7 @@ using namespace std;
 // Pointer to single instance of this object
 //THcAnalyzer* THcAnalyzer::fgAnalyzer = 0;
 
-//FIXME: 
+//FIXME:
 // do we need to "close" scalers/EPICS analysis if we reach the event limit?
 
 //_____________________________________________________________________________
@@ -52,7 +52,7 @@ THcAnalyzer::THcAnalyzer()
 //_____________________________________________________________________________
 THcAnalyzer::~THcAnalyzer()
 {
-  // Destructor. 
+  // Destructor.
 
 }
 
@@ -139,7 +139,7 @@ void THcAnalyzer::PrintReport(const char* templatefile, const char* ofile)
 //_____________________________________________________________________________
 void THcAnalyzer::LoadInfo()
 {
-  /// Create several THcParms variables in gHcParms containing 
+  /// Create several THcParms variables in gHcParms containing
   /// run information such as
   // run number, first event analyzed, number of events, etc.
   ///    `gen_run_number` - Current run
@@ -158,7 +158,7 @@ void THcAnalyzer::LoadInfo()
     gHcParms->Define("gen_run_number","Run Number", *runnum);
   }
   *runnum = fRun->GetNumber();
-  
+
   varptr = gHcParms->Find("gen_run_starting_event");
   if(varptr) {
     firstevent = (Int_t*) varptr->GetValuePointer(); // Assume correct type
@@ -168,7 +168,7 @@ void THcAnalyzer::LoadInfo()
   }
   // May not agree with engine event definintions
   *firstevent = fRun->GetFirstEvent();
-  
+
   varptr = gHcParms->Find("gen_event_id_number");
   if(varptr) {
     lastevent = (Int_t*)varptr->GetValuePointer(); // Assume correct type
@@ -178,7 +178,7 @@ void THcAnalyzer::LoadInfo()
   }
   // Not accurate
   *lastevent = fRun->GetFirstEvent()+fRun->GetNumAnalyzed();
-}  
+}
 
 //_____________________________________________________________________________
 

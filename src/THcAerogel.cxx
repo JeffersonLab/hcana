@@ -135,7 +135,7 @@ void THcAerogel::DeleteArrays()
   delete [] fNegPed; fNegPed = NULL;
   delete [] fNegSig; fNegSig = NULL;
   delete [] fNegThresh; fNegThresh = NULL;
-}  
+}
 
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
@@ -228,20 +228,20 @@ Int_t THcAerogel::DefineVariables( EMode mode )
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
-  
+
   // Register variables in global list
 
   // Do we need to put the number of pos/neg TDC/ADC hits into the variables?
   // No.  They show up in tree as Ndata.H.aero.postdchits for example
 
   RVarDef vars[] = {
-    {"postdchits", "List of Positive TDC hits", 
+    {"postdchits", "List of Positive TDC hits",
      "fPosTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negtdchits", "List of Negative TDC hits", 
+    {"negtdchits", "List of Negative TDC hits",
      "fNegTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"posadchits", "List of Positive ADC hits", 
+    {"posadchits", "List of Positive ADC hits",
      "fPosADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negadchits", "List of Negative ADC hits", 
+    {"negadchits", "List of Negative ADC hits",
      "fNegADCHits.THcSignalHit.GetPaddleNumber()"},
     {"apos",  "Raw Positive ADC Amplitudes",   "fA_Pos"},
     {"aneg",  "Raw Negative ADC Amplitudes",   "fA_Neg"},
@@ -263,7 +263,7 @@ Int_t THcAerogel::DefineVariables( EMode mode )
   return DefineVarsFromList( vars, mode );
 }
 //_____________________________________________________________________________
-inline 
+inline
 void THcAerogel::Clear(Option_t* opt)
 {
   // Clear the hit lists
@@ -273,15 +273,15 @@ void THcAerogel::Clear(Option_t* opt)
   fNegADCHits->Clear();
 
   // Clear Aerogel variables  from h_aero.f
-  
+
   fNhits = 0;	     // Don't really need to do this.  (Be sure this called before Decode)
 
   fPosNpeSum = 0.0;
   fNegNpeSum = 0.0;
   fNpeSum = 0.0;
- 
+
   fNGoodHits = 0;
-    
+
   fNADCPosHits = 0;
   fNADCNegHits = 0;
   fNTDCPosHits = 0;
@@ -315,9 +315,9 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
   }
 
   if(fAnalyzePedestals) {
-     
+
     CalculatePedestals();
-   
+
     fAnalyzePedestals = 0;	// Don't analyze pedestals next event
   }
 
@@ -355,7 +355,7 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
     }
 
     // ADC negative hit
-    if((adc_neg = hit->GetADCNeg()) > 0) {   
+    if((adc_neg = hit->GetADCNeg()) > 0) {
       THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
       sighit->Set(hit->fCounter, adc_neg);
     }
@@ -417,7 +417,7 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
     }
     if(fT_Neg[npmt] > 0 && fT_Neg[npmt] < 8000) {
       fNTDCNegHits++;
-    }      
+    }
 
     ihit++;
   }
@@ -445,7 +445,7 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
   //         npmt=haero_pair_num(ihit)
   //
   //         haero_rawadc_pos(npmt)=haero_adc_pos(ihit)
-  //         aero_ep(npmt)=haero_rawadc_pos(ihit)        
+  //         aero_ep(npmt)=haero_rawadc_pos(ihit)
   //
   //         haero_rawadc_neg(npmt)=haero_adc_neg(ihit)
   //         aero_en(npmt)=haero_rawadc_neg(ihit)
@@ -471,7 +471,7 @@ Int_t THcAerogel::ApplyCorrections( void )
 //_____________________________________________________________________________
 Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
 {
-  
+
   // All code previously here moved into decode
 
   ApplyCorrections();
@@ -565,7 +565,7 @@ void THcAerogel::CalculatePedestals( )
   // Later add check to see if pedestals have drifted ("Danger Will Robinson!")
   //  cout << "Plane: " << fPlaneNum << endl;
   for(Int_t i=0; i<fNelem;i++) {
-    
+
     // Positive tubes
     fPosPed[i] = ((Double_t) fPosPedSum[i]) / TMath::Max(1, fPosPedCount[i]);
     fPosThresh[i] = fPosPed[i] + 15;
@@ -590,7 +590,7 @@ void THcAerogel::CalculatePedestals( )
     }
   }
   //  cout << " " << endl;
-  
+
 }
 void THcAerogel::Print( const Option_t* opt) const {
   THaNonTrackingDetector::Print(opt);
@@ -608,4 +608,4 @@ void THcAerogel::Print( const Option_t* opt) const {
 
 ClassImp(THcAerogel)
 ////////////////////////////////////////////////////////////////////////////////
- 
+

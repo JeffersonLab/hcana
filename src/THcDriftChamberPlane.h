@@ -2,14 +2,14 @@
 #define ROOT_THcDriftChamberPlane
 
 //////////////////////////////////////////////////////////////////////////////
-//                         
+//
 // THcDriftChamberPlane
 //
 // A Hall C scintillator plane
 //
 // May want to later inherit from a THcPlane class if there are similarities
 // in what a plane is shared with other detector types (shower, etc.)
-// 
+//
 //////////////////////////////////////////////////////////////////////////////
 
 #include "THaSubDetector.h"
@@ -25,7 +25,7 @@ class THcHodoscope;
 /*class THaSignalHit;*/
 
 class THcDriftChamberPlane : public THaSubDetector {
-  
+
 public:
   THcDriftChamberPlane( const char* name, const char* description,
 			Int_t planenum, THaDetectorBase* parent = NULL);

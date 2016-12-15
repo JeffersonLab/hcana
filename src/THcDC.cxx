@@ -403,7 +403,7 @@ void THcDC::DeleteArrays()
 }
 
 //_____________________________________________________________________________
-inline 
+inline
 void THcDC::ClearEvent()
 {
   // Reset per-event data.
@@ -419,7 +419,7 @@ void THcDC::ClearEvent()
   for(Int_t i=0;i<fNPlanes;i++) {
     fResiduals[i] = 1000.0;
   }
-  
+
   //  fTrackProj->Clear();
 }
 
@@ -441,7 +441,7 @@ Int_t THcDC::Decode( const THaEvData& evdata )
     for(Int_t ip=0;ip<fNPlanes;ip++) {
       nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
       fN_True_RawHits += fPlanes[ip]->GetNRawhits();
-      
+
     }
 
     // Let each chamber get its hits
@@ -453,7 +453,7 @@ Int_t THcDC::Decode( const THaEvData& evdata )
     Int_t counter=0;
     if (fdebugprintrawdc) {
       cout << " RAW_TOT_HITS = " <<  fNRawHits << endl;
-      cout << " Hit #  " << "Plane  " << " Wire " <<  " Raw TDC " << endl; 
+      cout << " Hit #  " << "Plane  " << " Wire " <<  " Raw TDC " << endl;
       for(UInt_t ihit = 0; ihit < fNRawHits ; ihit++) {
 	THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
 	for(UInt_t imhit = 0; imhit < hit->fNHits; imhit++) {
@@ -478,7 +478,7 @@ Int_t THcDC::ApplyCorrections( void )
 Int_t THcDC::CoarseTrack( TClonesArray& tracks )
 {
   // Calculation of coordinates of particle track cross point with scint
-  // plane in the detector coordinate system. For this, parameters of track 
+  // plane in the detector coordinate system. For this, parameters of track
   // reconstructed in THaVDC::CoarseTrack() are used.
   //
   // Apply corrections and reconstruct the complete hits.
@@ -551,7 +551,7 @@ Int_t THcDC::FineTrack( TClonesArray& tracks )
   // Units of measurements are meters.
 
   // Calculation of coordinates of particle track cross point with scint
-  // plane in the detector coordinate system. For this, parameters of track 
+  // plane in the detector coordinate system. For this, parameters of track
   // reconstructed in THaVDC::FineTrack() are used.
 
   return 0;
@@ -603,7 +603,7 @@ void THcDC::LinkStubs()
   //                  4) check if there is a track-criterion match
   //                       either add to existing track
   //                       or if there is another point in same chamber
-  //                          make a copy containing isp2 rather than 
+  //                          make a copy containing isp2 rather than
   //                            other point in same chamber
   //                  5) If hsingle_stub is set, make a track of all single
   //                     stubs.
@@ -667,7 +667,7 @@ void THcDC::LinkStubs()
 	    }
 	    Double_t dposxp = spstub1[2] - spstub2[2];
 	    Double_t dposyp = spstub1[3] - spstub2[3];
-	      
+
 	    // What is the point of saving these stubmin values.  They
 	    // Don't seem to be used anywhere except that they can be
 	    // printed out if hbypass_track_eff_files is zero.
@@ -675,7 +675,7 @@ void THcDC::LinkStubs()
 	    if(TMath::Abs(dposy)<TMath::Abs(stubminy)) stubminy = dposy;
 	    if(TMath::Abs(dposxp)<TMath::Abs(stubminxp)) stubminxp = dposxp;
 	    if(TMath::Abs(dposyp)<TMath::Abs(stubminyp)) stubminyp = dposyp;
-	      
+
 	    // if hbypass_track_eff_files == 0 then
 	    // Print out each stubminX that is less that its criterion
 
@@ -776,7 +776,7 @@ void THcDC::LinkStubs()
     }
   }
   ///
-  if (fdebuglinkstubs) { 
+  if (fdebuglinkstubs) {
      cout << " Number of tracks from link stubs = " << fNDCTracks << endl;
      printf("%s %s \n","Track","Plane Wire ");
      for (UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
@@ -815,7 +815,7 @@ void THcDC::TrackFit()
   //    single_resolution[ip][itrack] = 1000.0;
   //  }
   // }
-  
+
   Double_t dummychi2 = 1.0E4;
 
   for(UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
@@ -873,7 +873,7 @@ void THcDC::TrackFit()
 	  }
 	}
       }
-      
+
       // Solve 4x4 equations
       TVectorD dray(NUM_FPRAY);
       // Should check that it is invertable
@@ -1054,7 +1054,7 @@ Double_t THcDC::DpsiFun(Double_t ray[4], Int_t plane)
 
   Double_t infinity = 1.0E+20;
   Double_t cinfinity = 1/infinity;
-  Double_t DpsiFun = 
+  Double_t DpsiFun =
     ray[2]*ray[1]*fPlaneCoeffs[plane][0] +
     ray[3]*ray[0]*fPlaneCoeffs[plane][1] +
     ray[2]*fPlaneCoeffs[plane][2] +
@@ -1066,11 +1066,11 @@ Double_t THcDC::DpsiFun(Double_t ray[4], Int_t plane)
     + fPlaneCoeffs[plane][8];
   if(TMath::Abs(denom) < cinfinity) {
     DpsiFun = infinity;
-  } else { 
+  } else {
     DpsiFun = DpsiFun/denom;
   }
   return(DpsiFun);
-}	    
+}
 
 //_____________________________________________________________________________
 Int_t THcDC::End(THaRunBase* run)
@@ -1088,7 +1088,7 @@ void THcDC::EffInit()
 
   delete [] fNChamHits; fNChamHits = new Int_t [fNChambers];
   delete [] fPlaneEvents; fPlaneEvents = new Int_t [fNPlanes];
-  
+
   fTotEvents = 0;
   for(UInt_t i=0;i<fNChambers;i++) {
     fNChamHits[i] = 0;

@@ -43,7 +43,7 @@ protected:
 
   // Data needed for efficiency calculation for one Hodoscope paddle
 
-  Double_t* fZPos;		// 
+  Double_t* fZPos;		//
 
   TString       fName;		// Name of hodoscope
   THcHodoscope* fHod;		// Hodscope object
@@ -82,7 +82,7 @@ protected:
   vector<vector<Int_t> > fBothGood;
   vector<vector<Int_t> > fNegGood;
   vector<vector<Int_t> > fPosGood;
-  
+
   Int_t* fHitPlane;
 
   ClassDef(THcHodoEff,0) 	// Hodoscope efficiency module

@@ -4,13 +4,13 @@
   //
   //  Steering script to test hodoscope decoding
   //
-  
+
   Int_t RunNumber=50017;
   char RunFileNamePattern[]="daq04_%d.log.0";
-  
+
   gHcParms->Define("gen_run_number", "Run Number", RunNumber);
   gHcParms->AddString("g_ctp_database_filename", "DBASE/test.database");
-  
+
   gHcParms->Load(gHcParms->GetString("g_ctp_database_filename"), RunNumber);
 
   // g_ctp_parm_filename and g_decode_map_filename should now be defined
@@ -67,7 +67,7 @@
 
   gHaPhysics->Add(new THcHodoEff("hhodeff","HMS Hodoscope Efficiencies","H.hod"));
   gHaPhysics->Add(new THcHodoEff("shodeff","SOS Hodoscope Efficiencies","S.hod"));
-  
+
 
   // Set up the analyzer - we use the standard one,
   // but this could be an experiment-specific one as well.
@@ -75,13 +75,13 @@
   // tests/cuts, loops over Acpparatus's and PhysicsModules,
   // and executes the output routines.
   THcAnalyzer* analyzer = new THcAnalyzer;
-  
+
 
   // A simple event class to be output to the resulting tree.
   // Creating your own descendant of THaEvent is one way of
   // defining and controlling the output.
   THaEvent* event = new THaEvent;
-  
+
   // Define the run(s) that we want to analyze.
   // We just set up one, but this could be many.
   char RunFileName[100];
@@ -99,10 +99,10 @@
   analyzer->SetOdefFile("output.def");
   analyzer->SetCutFile("hodtest_cuts.def");        // optional
   analyzer->SetCountMode(2);// Counter event number same as gen_event_ID_number
-  
+
   // File to record cuts accounting information
   //  analyzer->SetSummaryFile("summary_example.log"); // optional
-  
+
   analyzer->Process(run);     // start the actual analysis
   analyzer->PrintReport("report.template","report.out");
 }

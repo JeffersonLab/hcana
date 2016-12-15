@@ -1,5 +1,5 @@
 #ifndef ROOT_THcShowerArray
-#define ROOT_THcShowerArray 
+#define ROOT_THcShowerArray
 
 //#define HITPIC 1
 #ifdef HITPIC
@@ -7,13 +7,13 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
-//                         
+//
 // THcShowerArray
 //
 // A Hall C Fly's Eye Shower Array
 //
 // Subdetector for the fly's eye part of the SHMS shower counter.
-// 
+//
 //////////////////////////////////////////////////////////////////////////////
 
 #include "THaSubDetector.h"
@@ -66,7 +66,7 @@ public:
   };
 
   // Fiducial volume limits.
-  Double_t fvXmin(); 
+  Double_t fvXmin();
   Double_t fvYmax();
   Double_t fvXmax();
   Double_t fvYmin();

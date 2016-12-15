@@ -1,7 +1,7 @@
  {
   TFile* f = new TFile("hodtest.root");
- 
-  TCanvas *c1 = new TCanvas("c1", "Drift Chamber Hit Maps", 800, 800); 
+
+  TCanvas *c1 = new TCanvas("c1", "Drift Chamber Hit Maps", 800, 800);
   c1->Divide(2, 6);
 
   TH1F* h[12];
@@ -18,7 +18,7 @@
   h[9] = sdc2x2_wm;
   h[10] = sdc2v1_wm;
   h[11] = sdc2v2_wm;
-  
+
   for(Int_t ih=0;ih<12;ih++) {
     Int_t ipad = 2*(ih%6)+1 + ih/6;
     cout << ipad << endl;

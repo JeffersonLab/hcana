@@ -1,7 +1,7 @@
  {
   TFile* f = new TFile("hodtest.root");
- 
-  TCanvas *c1 = new TCanvas("c1", "Drift Chamber Drift Distance", 800, 800); 
+
+  TCanvas *c1 = new TCanvas("c1", "Drift Chamber Drift Distance", 800, 800);
   c1->Divide(2, 6);
 
   TH1F* h[12];
@@ -18,7 +18,7 @@
   h[9] = hdc2v1_dd;
   h[10] = hdc2y2_dd;
   h[11] = hdc2x2_dd;
-  
+
   for(Int_t ih=0;ih<12;ih++) {
     Int_t ipad = 2*(ih%6)+1 + ih/6;
     cout << ipad << endl;
