@@ -22,6 +22,7 @@ THcHitList::THcHitList()
 
 THcHitList::~THcHitList() {
   // Destructor
+  delete fSignalTypes;
 }
 
 void THcHitList::InitHitList(THaDetMap* detmap,
@@ -35,6 +36,13 @@ void THcHitList::InitHitList(THaDetMap* detmap,
   fNRawHits = 0;
   for(Int_t i=0;i<maxhits;i++) {
     fRawHitList->ConstructedAt(i);
+  }
+  // Query a raw hit object to see what kind of data to deliver
+  THcRawHit* rawhit = (THcRawHit*) (*fRawHitList)[0];
+  fNSignals = rawhit->GetNSignals();
+  fSignalTypes = new THcRawHit::ESignalType[fNSignals];
+  for(UInt_t isig=0;isig<fNSignals;isig++) {
+    fSignalTypes[isig] = rawhit->GetSignalType(isig);
   }
 
   fdMap = detmap;
@@ -74,20 +82,25 @@ void THcHitList::InitHitList(THaDetMap* detmap,
       }
     }
   }
-  // Should add another loop over fdMap and check that all detector
-  // channels that have a refindex, use a defined index
+  // Loop to check that requested refindex's are defined
+  // and that signal #'s are in range
   for (Int_t i=0; i < fdMap->GetSize(); i++) {
     THaDetMap::Module* d = fdMap->GetModule(i);
-    if(d->plane < 1000) {
-      Int_t refindex = d->refindex;
+    Int_t refindex = d->refindex;
+    if(d->plane < 1000 && refindex >= 0) {
       if(!fRefIndexMaps[refindex].defined) {
 	cout << "Refindex " << refindex << " not defined for " <<
-		" (" << d->crate << ", " << d->slot <<
-		", " << d->lo << ")" << endl;
+	  " (" << d->crate << ", " << d->slot <<
+	  ", " << d->lo << ")" << endl;
       }
     }
+    if(d->signal >= fNSignals) {
+      cout << "Invalid signal " << d->signal << " for " <<
+	    " (" << d->crate << ", " << d->slot <<
+	    ", " << d->lo << ")" << endl;
+    }
   }
-	  
+
 }
 
 Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
@@ -127,6 +140,11 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
     Int_t plane = d->plane;
     if (plane >= 1000) continue; // Skip reference times
     Int_t signal = d->signal;
+    UInt_t signaltype = fSignalTypes[signal];
+    Bool_t multifunction = evdata.IsMultifunction(d->crate, d->slot);
+    // Should probably get the Decoder::Module object and use it's
+    // methods.  Saving a THaEvData::GetModule call every time
+
     for ( Int_t j=0; j < evdata.GetNumChan( d->crate, d->slot); j++) {
       THcRawHit* rawhit=0;
 
@@ -160,33 +178,55 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 
       // Get the data from this channel
       // Allow for multiple hits
-      Int_t nMHits = evdata.GetNumHits(d->crate, d->slot, chan);
-      for (Int_t mhit = 0; mhit < nMHits; mhit++) {
-	Int_t data = evdata.GetData( d->crate, d->slot, chan, mhit);
-	// cout << "Signal " << signal << "=" << data << endl;
-	rawhit->SetData(signal,data);
-      }
-      // Get the reference time.  Only take the first hit
-      // If a reference channel
-      // was specified, it takes precidence of reference index
-      if(d->refchan >= 0) {
-	if( evdata.GetNumHits(d->crate,d->slot,d->refchan) > 0) {
-	  Int_t reftime = evdata.GetData(d->crate, d->slot, d->refchan, 0);
-	  rawhit->SetReference(signal, reftime);
-	} else {
-	  cout << "HitList: refchan " << d->refindex <<
-	      " missing for (" << d->crate << ", " << d->slot <<
-	      ", " << chan << ")" << endl;
+      if(signaltype == THcRawHit::kTDC || !multifunction) {
+	Int_t nMHits = evdata.GetNumHits(d->crate, d->slot, chan);
+	for (Int_t mhit = 0; mhit < nMHits; mhit++) {
+	  Int_t data = evdata.GetData( d->crate, d->slot, chan, mhit);
+	  // cout << "Signal " << signal << "=" << data << endl;
+	  rawhit->SetData(signal,data);
 	}
-      } else {
-	if(d->refindex >=0 && d->refindex < fNRefIndex) {
-	  if(fRefIndexMaps[d->refindex].hashit) {
-	    rawhit->SetReference(signal, fRefIndexMaps[d->refindex].reftime);
+	// Get the reference time.  Only take the first hit
+	// If a reference channel
+	// was specified, it takes precidence of reference index
+	if(d->refchan >= 0) {
+	  if( evdata.GetNumHits(d->crate,d->slot,d->refchan) > 0) {
+	    Int_t reftime = evdata.GetData(d->crate, d->slot, d->refchan, 0);
+	    rawhit->SetReference(signal, reftime);
 	  } else {
-	    cout << "HitList: refindex " << d->refindex <<
+	    cout << "HitList: refchan " << d->refindex <<
 	      " missing for (" << d->crate << ", " << d->slot <<
 	      ", " << chan << ")" << endl;
 	  }
+	} else {
+	  if(d->refindex >=0 && d->refindex < fNRefIndex) {
+	    if(fRefIndexMaps[d->refindex].hashit) {
+	      rawhit->SetReference(signal, fRefIndexMaps[d->refindex].reftime);
+	    } else {
+	      cout << "HitList: refindex " << d->refindex <<
+		" missing for (" << d->crate << ", " << d->slot <<
+		", " << chan << ")" << endl;
+	    }
+	  }
+	}
+      } else {			// This is a Flash ADC
+	// Copy the samples
+	Int_t nsamples=evdata.GetNumEvents(Decoder::kSampleADC, d->crate, d->slot, chan);
+
+	// If nsamples comes back zero, may want to suppress further attempts to
+	// get sample data for this or all modules
+	for (Int_t isamp=0;isamp<nsamples;isamp++) {
+	  rawhit->SetSample(signal,evdata.GetData(Decoder::kSampleADC, d->crate, d->slot, chan, isamp));
+	}
+	// Now get the pulse mode data
+	// Pulse area will go into regular SetData, others will use special hit methods
+	Int_t npulses=evdata.GetNumEvents(Decoder::kPulseIntegral, d->crate, d->slot, chan);
+	// Assume that the # of pulses for kPulseTime, kPulsePeak and kPulsePedestal are same;
+	for (Int_t ipulse=0;ipulse<npulses;ipulse++) {
+	  rawhit->SetDataTimePedestalPeak(signal,
+					  evdata.GetData(Decoder::kPulseIntegral, d->crate, d->slot, chan, ipulse),
+					  evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, chan, ipulse),
+					  evdata.GetData(Decoder::kPulsePedestal, d->crate, d->slot, chan, ipulse),
+					  evdata.GetData(Decoder::kPulsePeak, d->crate, d->slot, chan, ipulse));
 	}
       }
     }

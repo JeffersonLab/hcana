@@ -4,9 +4,9 @@
 Raw Aerogel Hit Info
 Inherits from THcRawHodoHit
 
- Contains plane, counter and pos/neg adc                             
-                                                                     
-                                                             
+ Contains plane, counter and pos/neg adc
+
+
 
 
 

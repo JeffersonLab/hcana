@@ -20,13 +20,13 @@ public:
   THcHodoHit(Int_t postdc, Int_t negtdc, Double_t posadc, Double_t negadc,
 	     Int_t ipad, THcScintillatorPlane* sp) :
   fPosTDC(postdc), fNegTDC(negtdc), fPosADC_Ped(posadc), fNegADC_Ped(negadc),
-    fPaddleNumber(ipad), fHasCorrectedTimes(kFALSE), 
+    fPaddleNumber(ipad), fHasCorrectedTimes(kFALSE),
     fTwoGoodTimes(kFALSE), fPlane(sp) {};
 
   virtual ~THcHodoHit() {}
 
   Bool_t IsSortable () const { return kFALSE; }
-  
+
   // Get and Set Functions
   Double_t GetPosADC() const { return fPosADC_Ped; }
   Double_t GetNegADC() const { return fNegADC_Ped; }
@@ -74,14 +74,14 @@ protected:
 
   Bool_t fHasCorrectedTimes;
   Bool_t fTwoGoodTimes;
-  
+
   THcScintillatorPlane* fPlane;	// Pointer to parent scintillator plane
-  
-  
+
+
 private:
   THcHodoHit( const THcHodoHit& );
   THcHodoHit& operator=( const THcHodoHit& );
-  
+
   ClassDef(THcHodoHit,0)             // Drift Chamber Hit
 };
 

@@ -34,7 +34,7 @@
 //class THaScintillator;
 
 class THcHallCSpectrometer : public THaSpectrometer {
-  
+
 public:
   THcHallCSpectrometer( const char* name, const char* description );
   virtual ~THcHallCSpectrometer();
@@ -129,7 +129,7 @@ protected:
   Double_t fPhiOffset; // Zero order term in xptar optics matrix (rad)
   Double_t fDeltaOffset; // Zero order term in delta optics matrix (%)
   Double_t fThetaCentralOffset; // Offset of Central spectrometer angle (rad)
-  Double_t fOopCentralOffset; //Offset of central out-of-plane angle (rad) 
+  Double_t fOopCentralOffset; //Offset of central out-of-plane angle (rad)
   Double_t fPCentralOffset; // Offset Central spectrometer momentum (%)
   Double_t fTheta_lab; // Central spectrometer angle (deg)
   // For spectrometer central momentum use fPcentral in THaSpectrometer.h

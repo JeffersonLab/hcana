@@ -1,9 +1,9 @@
 /** \class THcRaster
     \ingroup DetSupport
 
-  A class to decode the fast raster signals.                               
-  Measures the two magnet currents which are proportional to horizontal and 
-  vertical beam position                                                   
+  A class to decode the fast raster signals.
+  Measures the two magnet currents which are proportional to horizontal and
+  vertical beam position
 
 \author Buddhini Waidyawansa
 
@@ -61,7 +61,7 @@ THcRaster::~THcRaster()
 }
 
 
- 
+
 
 //_____________________________________________________________________________
 Int_t THcRaster::ReadDatabase( const TDatime& date )
@@ -118,7 +118,7 @@ Int_t THcRaster::DefineVariables( EMode mode )
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
-  
+
   // Register variables in global list
 
   RVarDef vars[] = {
@@ -139,19 +139,19 @@ THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
 {
   cout << "THcRaster::Init()" << endl;
 
-  THcHitList::InitHitList(fDetMap,"THcRasterRawHit",4);
+  // Fill detector map with RASTER type channels
+  if( gHcDetectorMap->FillMap(fDetMap, "RASTER") < 0 ) {
+    static const char* const here = "Init()";
+    Error( Here(here), "Error filling detectormap for %s.",
+  	   "RASTER");
+    return kInitError;
+  }
+
+  THcHitList::InitHitList(fDetMap,"THcRasterRawHit",fDetMap->GetTotNumChan()+1);
 
   EStatus status;
   if( (status = THaBeamDet::Init( date )) )
     return fStatus=status;
-
-  // Fill detector map with RASTER type channels
-  if( gHcDetectorMap->FillMap(fDetMap, "RASTER") < 0 ) {
-    static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.", 
-  	   "RASTER");
-    return kInitError;
-  }
 
   return fStatus = kOK;
 
@@ -163,9 +163,9 @@ void THcRaster::AccumulatePedestals(TClonesArray* rawhits)
 {
   /*
   Extract data from the hit list, accumulating into arrays for
-  calculating pedestals. 
-  From ENGINE/g_analyze_misc.f - 
-  
+  calculating pedestals.
+  From ENGINE/g_analyze_misc.f -
+
   * JRA: Code to check FR pedestals.  Since the raster is a fixed frequency
   * and the pedestals come at a fixed rate, it is possible to keep getting
   * the same value for each pedestal event, and get the wrong zero value.
@@ -206,8 +206,8 @@ void THcRaster::CalculatePedestals( )
 {
   /*
   Use the accumulated pedestal data to calculate pedestals
-  From ENGINE/g_analyze_misc.f - 
-  
+  From ENGINE/g_analyze_misc.f -
+
      if (numfr.eq.1000) then
        avefrx = sumfrx / float(numfr)
        avefry = sumfry / float(numfr)
@@ -222,7 +222,7 @@ void THcRaster::CalculatePedestals( )
      endif
   */
   for(Int_t i=0;i<2;i++){
-    fAvgPedADC[i] = fPedADC[i]/ fNPedestalEvents; 
+    fAvgPedADC[i] = fPedADC[i]/ fNPedestalEvents;
     // std::cout<<" raster pedestal "<<fAvgPedADC[i]<<std::endl;
   }
 
@@ -240,14 +240,14 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
 
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t fNhits = THcHitList::DecodeToHitList(evdata);
-  
+
   // Get the pedestals from the first 1000 events
-  //if(fNPedestalEvents < 10) 
+  //if(fNPedestalEvents < 10)
   if((gHaCuts->Result("Pedestal_event")) & (fNPedestalEvents < 1000)){
-      AccumulatePedestals(fRawHitList);    
+      AccumulatePedestals(fRawHitList);
       fAnalyzePedestals = 1;	// Analyze pedestals first normal events
       fNPedestalEvents++;
-      
+
       return(0);
     }
   if(fAnalyzePedestals) {
@@ -256,24 +256,24 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
   }
 
   Int_t ihit = 0;
-  
+
   while(ihit < fNhits) {
     THcRasterRawHit* hit = (THcRasterRawHit *) fRawHitList->At(ihit);
-    
+
     if(hit->fADC_xsig>0) {
       fRawXADC = hit->fADC_xsig;
       //std::cout<<" Raw X ADC = "<<fRawXADC<<std::endl;
     }
-    
+
     if(hit->fADC_ysig>0) {
       fRawYADC = hit->fADC_ysig;
       //std::cout<<" Raw Y ADC = "<<fRawYADC<<std::endl;
-    } 
+    }
     ihit++;
-  }  
+  }
 
   return 0;
-  
+
 }
 
 
@@ -287,7 +287,7 @@ Int_t THcRaster::Process( ){
   /*
     calculate raster position from ADC value.
     From ENGINE/g_analyze_misc.f -
-    
+
     gfrx_adc = gfrx_raw_adc - gfrx_adc_ped
     gfry_adc = gfry_raw_adc - gfry_adc_ped
   */
@@ -303,7 +303,7 @@ Int_t THcRaster::Process( ){
     gfrx = (gfrx_adc/gfrx_adcpercm)*(gfr_cal_mom/ebeam)
     gfry = (gfry_adc/gfry_adcpercm)*(gfr_cal_mom/ebeam)
   */
- 
+
   if(gHcParms->Find("gpbeam")){
     eBeam=*(Double_t *)gHcParms->Find("gpbeam")->GetValuePointer();
   }
@@ -311,7 +311,7 @@ Int_t THcRaster::Process( ){
   fYpos = (fYADC/fFrYADCperCM)*(fFrCalMom/eBeam);
 
   // std::cout<<" X = "<<fXpos<<" Y = "<<fYpos<<std::endl;
-  
+
 
   Double_t tt;
   Double_t tp;
@@ -326,7 +326,7 @@ Int_t THcRaster::Process( ){
   }
   fDirection.SetXYZ(tt, tp ,1.0); // Set arbitrarily to avoid run time warnings
   fDirection *= 1.0/TMath::Sqrt(1.0+tt*tt+tp*tp);
-    
+
   return 0;
 }
 

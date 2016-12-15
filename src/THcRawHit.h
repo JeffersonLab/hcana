@@ -21,6 +21,8 @@ public:
 
   virtual ~THcRawHit() {}
 
+  enum ESignalType { kUndefined, kTDC, kADC};
+
   // This line causes problem
   //  virtual void Clear( Option_t* opt="" )=0;
 
@@ -28,8 +30,14 @@ public:
   //  virtual Bool_t  operator!=( const THcRawHit& ) = 0;
 
   virtual void SetData(Int_t signal, Int_t data) {};
+  virtual void SetSample(Int_t signal, Int_t data) {};
+  virtual void SetDataTimePedestalPeak(Int_t signal, Int_t data,
+				       Int_t time, Int_t pedestal, Int_t peak) {};
   virtual Int_t GetData(Int_t signal) {return 0;}; /* Ref time subtracted */
   virtual Int_t GetRawData(Int_t signal) {return 0;} /* Ref time not subtracted */
+  virtual ESignalType GetSignalType(Int_t signal) {return kUndefined;}
+  virtual Int_t GetNSignals() { return 1;}
+
   virtual void SetReference(Int_t signal, Int_t reference) {};
   virtual Bool_t HasReference(Int_t signal) {return kFALSE;};
   virtual Int_t GetReference(Int_t signal) {return 0;};

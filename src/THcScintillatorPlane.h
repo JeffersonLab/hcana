@@ -2,14 +2,14 @@
 #define ROOT_THcScintillatorPlane
 
 //////////////////////////////////////////////////////////////////////////////
-//                         
+//
 // THcScintillatorPlane
 //
 // A Hall C scintillator plane
 //
 // May want to later inherit from a THcPlane class if there are similarities
 // in what a plane is shared with other detector types (shower, etc.)
-// 
+//
 //////////////////////////////////////////////////////////////////////////////
 
 #include "THaSubDetector.h"
@@ -19,7 +19,7 @@ class THaEvData;
 class THaSignalHit;
 
 class THcScintillatorPlane : public THaSubDetector {
-  
+
  public:
   THcScintillatorPlane( const char* name, const char* description,
 			Int_t planenum, THaDetectorBase* parent = NULL);
@@ -42,7 +42,7 @@ class THcScintillatorPlane : public THaSubDetector {
   Int_t GetNelem() {return fNelem;}; // return number of paddles in this plane
   Int_t GetNScinHits() {return fNScinHits;}; // Get # hits in plane (that pass min/max TDC cuts)
   Int_t GetNGoodHits() {return fNGoodHits;}; // Get # hits in plane (used in determining focal plane time)
-  Double_t GetSpacing() {return fSpacing;}; // spacing of paddles 
+  Double_t GetSpacing() {return fSpacing;}; // spacing of paddles
   Double_t GetSize() {return fSize;};    // paddle size
   Double_t GetHodoSlop() {return fHodoSlop;}; // hodo slop
   Double_t GetZpos() {return fZpos;};   //return the z position
@@ -52,7 +52,7 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t GetPosOffset() {return fPosOffset;};
   Double_t GetPosCenter(Int_t PaddleNo) {return fPosCenter[PaddleNo];}; // counting from zero!
   Double_t GetFpTime() {return fFptime;};
- 
+
   void SetFpTime(Double_t f) {fFptime=f;};
   void SetNGoodHits(Int_t ng) {fNGoodHits=ng;};
 
@@ -66,16 +66,28 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* frNegTDCHits;
   TClonesArray* frPosADCHits;
   TClonesArray* frNegADCHits;
+  TClonesArray* frPosADCSums;
+  TClonesArray* frNegADCSums;
+  TClonesArray* frPosADCPeds;
+  TClonesArray* frNegADCPeds;
   TClonesArray* fHodoHits;
 
   Int_t fPlaneNum;		/* Which plane am I 1-4 */
   UInt_t fTotPlanes;            /* so we can read variables that are not indexed by plane id */
-  UInt_t fNelem;		/* Need since we don't inherit from 
+  UInt_t fNelem;		/* Need since we don't inherit from
 				 detector base class */
   Int_t fNScinHits;                 /* number of hits in plane (that pass min/max TDC cuts) */
   Int_t fNGoodHits;                 /* number of hits in plane (used in determining focal plane time) */
 
   // Constants
+  Int_t fADCMode;		// 0: standard, 1: use FADC ped, 2: integrate sample
+                                // 3: integrate sample, subract dynamic pedestal
+  static const Int_t kADCStandard=0;
+  static const Int_t kADCDynamicPedestal=1;
+  static const Int_t kADCSampleIntegral=2;
+  static const Int_t kADCSampIntDynPed=3;
+  Double_t fADCPedScaleFactor;	// Multiply dynamic pedestal by this before subtracting
+  Int_t fADCDiagCut;		// Cut for ADC in hit maps.  Defaults to 50
   Int_t fTdcOffset;		/* Overall offset to raw tdc */
   Int_t fMaxHits;               /* maximum number of hits to be considered - useful for dimensioning arrays */
   Double_t fSpacing;            /* paddle spacing */

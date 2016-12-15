@@ -41,7 +41,7 @@ Int_t THcRawDCHit::GetRawData(Int_t signal) {
 
 // Return a requested hit with reference time subtracted
 Int_t THcRawDCHit::GetData(Int_t signal, UInt_t ihit) {
-  if(ihit >=0 && ihit< fNHits) {
+  if(ihit < fNHits) {
     if(fHasRef) {
       return(fTDC[ihit]-fReferenceTime);
     } else {
@@ -54,7 +54,7 @@ Int_t THcRawDCHit::GetData(Int_t signal, UInt_t ihit) {
 
 // Return a requested raw hit
 Int_t THcRawDCHit::GetRawData(Int_t signal, UInt_t ihit) {
-  if(ihit >=0 && ihit< fNHits) {
+  if(ihit < fNHits) {
     return(fTDC[ihit]);
   } else {
     return(-1);

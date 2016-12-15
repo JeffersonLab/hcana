@@ -55,10 +55,10 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Double_t       fYADC;     // Y ADC
   Double_t       fXpos;     // X position
   Double_t       fYpos;     // Y position
-  
 
-  Double_t       fPedADC[2];     // ADC poedestals 
-  Double_t       fAvgPedADC[2];     // Avergage ADC poedestals 
+
+  Double_t       fPedADC[2];     // ADC poedestals
+  Double_t       fAvgPedADC[2];     // Avergage ADC poedestals
 
   Double_t       fRawPos[2];     // current in Raster ADCs for position
   TVector3       fPosition[2];   // Beam position at 1st, 2nd BPM or at the target (meters)
@@ -76,7 +76,7 @@ class THcRaster : public THaBeamDet, public THcHitList {
   void   AccumulatePedestals(TClonesArray* rawhits);
 
   ClassDef(THcRaster, 0);	// add THcRaster to ROOT library
-};  
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 

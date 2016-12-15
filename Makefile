@@ -31,9 +31,11 @@ SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcRasteredBeam.cxx\
 	src/THcRasterRawHit.cxx \
 	src/THcScalerEvtHandler.cxx \
-	src/THcHodoEff.cxx
+	src/THcHodoEff.cxx \
+	src/THcTrigApp.cxx src/THcTrigDet.cxx src/THcTrigRawHit.cxx \
+	src/THcDummySpectrometer.cxx
 
-# Name of your package. 
+# Name of your package.
 # The shared library that will be built will get the name lib$(PACKAGE).so
 PACKAGE = HallC
 
@@ -100,8 +102,8 @@ INCLUDES      = $(ROOTCFLAGS) $(addprefix -I, $(INCDIRS) )
 USERLIB       = lib$(PACKAGE).so
 USERDICT      = $(PACKAGE)Dict
 
-LIBS          = 
-GLIBS         = 
+LIBS          =
+GLIBS         =
 
 ifeq ($(ARCH),solarisCC5)
 # Solaris CC 5.0
@@ -147,8 +149,8 @@ ifdef WITH_DEBUG
 CXXFLAGS     += -DWITH_DEBUG
 endif
 
-CCDBLIBS = 
-CCDBFLAGS = 
+CCDBLIBS =
+CCDBFLAGS =
 ifdef CCDB_HOME
 CCDBLIBS     += -L$(CCDB_HOME)/lib -lccdb
 CCDBFLAGS  += -I$(CCDB_HOME)/include -DWITH_CCDB
@@ -170,7 +172,7 @@ DISTFILE      = $(PKG).tar.gz
 #------------------------------------------------------------------------------
 OBJ           = $(SRC:.cxx=.o)
 RCHDR	      = $(SRC:.cxx=.h) src/THcGlobals.h
-HDR           = $(SRC:.cxx=.h) 
+HDR           = $(SRC:.cxx=.h)
 DEP           = $(SRC:.cxx=.d) src/main.d
 OBJS          = $(OBJ) $(USERDICT).o
 HDR_COMPILEDATA = $(ANALYZER)/src/ha_compiledata.h
@@ -192,7 +194,7 @@ endif
 
 src/THcInterface.d:  $(HDR_COMPILEDATA)
 
-hcana:		src/main.o $(LIBDC) $(LIBHALLA) $(USERLIB) 
+hcana:		src/main.o $(LIBDC) $(LIBHALLA) $(USERLIB)
 		$(LD) $(LDFLAGS) $< -lHallC $(HALLALIBS) $(EVIOLIB) -L. $(CCDBLIBS) \
 		$(GLIBS) -o $@
 
@@ -201,7 +203,7 @@ $(USERLIB):	$(HDR) $(OBJS)
 		@echo "$@ done"
 
 $(HDR_COMPILEDATA) $(LIBHALLA) $(LIBDC): $(ANALYZER)/Makefile
-		@echo "Building Podd"		
+		@echo "Building Podd"
 		@cd $(ANALYZER) ; export PODD_EXTRA_DEFINES=-DHALLC_MODS ; make
 
 $(USERDICT).cxx: $(RCHDR) $(HDR) $(LINKDEF)

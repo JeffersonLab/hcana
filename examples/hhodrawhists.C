@@ -43,7 +43,7 @@
 	TString ndata_name = "Ndata."+base_name+"pad";
 	TString padlist_name = base_name+"pad";
 	TString vallist_name = base_name+"val";
-	
+
 	// Set branch addresses
 
 	T->SetBranchAddress(ndata_name, &nhits[ip][iside][isignal]);
@@ -51,7 +51,7 @@
 	T->SetBranchAddress(vallist_name, &values[ip][iside][isignal][0]);
 
 	// Create histograms
-	// ADC and TDC histogram for each 
+	// ADC and TDC histogram for each
 	Int_t nbins,hmin,hmax;
 	if(signals[isignal]=="adc") {
 	  nbins = ADC_NBINS;
@@ -94,7 +94,7 @@
 	    Int_t ibar=TMath::Nint(paddles[ip][iside][isignal][ihit])-1;
 	    Double_t val = values[ip][iside][isignal][ihit];
 	    Int_t hindex = hindex_base + ibar;
-	    
+
 	    //	    cout << ip << " " << iside << " " << isignal << " " << ihit
 	    //		 << " " << ibar << " " << hindex << endl;
 	    h[hindex]->Fill(val);

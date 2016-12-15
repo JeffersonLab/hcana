@@ -36,9 +36,10 @@ An instance of THaTextvars is created to hold the string parameters.
 #include <fstream>
 #include <cassert>
 #include <cstdlib>
+#include <stdexcept>
 
 using namespace std;
-Int_t  fDebug   = 1;  // Keep this at one while we're working on the code    
+Int_t  fDebug   = 1;  // Keep this at one while we're working on the code
 
 ClassImp(THcParmList)
 
@@ -111,7 +112,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
     Error (here, "error opening parameter file %s",fname);
     return;			// Need a success argument returned
   }
-  
+
   string line;
   char varname[100];
   Int_t InRunRange;
@@ -170,7 +171,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
 
     // Get rid of trailing comments and leading and trailing whitespace
     // Need to save the comment and put it in the thVar
-    
+
     while( (pos = line.find_first_of("#;/", pos+1)) != string::npos ) {
       if( IsComment(line, pos) ) {
 	current_comment.assign(line,pos+1,line.length());
@@ -202,7 +203,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
     }
 
     // Get rid of all white space not in quotes
-    // Step through one char at a time 
+    // Step through one char at a time
     pos = 0;
     int inquote=0;
     char quotechar=' ';
@@ -244,7 +245,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
 	  } else {
 	    InRunRange = 0;
 	  }
-	} else {		// A single number.  Run 
+	} else {		// A single number.  Run
 	  if(atoi(line.c_str()) == RunNumber) {
 	    InRunRange = 1;
 	  } else {
@@ -290,11 +291,11 @@ The ENGINE CTP support parameter "blocks" which were marked with
       }
       continue;
     }
-      
+
     TString values((line.substr(valuestartpos)).c_str());
     TObjArray *vararr = values.Tokenize(",");
     Int_t nvals = vararr->GetLast()+1;
-    
+
     Int_t* ip=0;
     Double_t* fp=0;
     // or expressions
@@ -328,7 +329,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
     // else (variable doesn't exist)
     //      make array of newlength
     //      create varname
-    //  
+    //
     // There is some code duplication here.  Refactor later
 
     Int_t newlength = currentindex + nvals;
@@ -426,7 +427,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
 	  }
 	}
 	currentindex += nvals;
-      }	
+      }
     } else {
       if(currentindex !=0) {
 	cout << "currentindex=" << currentindex << " shouldn't be!" << endl;
@@ -452,7 +453,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
 	}
       }
       currentindex = nvals;
-      
+
       char *arrayname=new char [strlen(varname)+20];
       sprintf(arrayname,"%s[%d]",varname,nvals);
       if(ttype==0) {
@@ -501,7 +502,7 @@ is printed.  If the 5th element of a DBRequest structure is true (non
 zero), then there will be no error if the parameter is missing.
 
   */
-  
+
   const DBRequest *ti = list;
   Int_t cnt=0;
   Int_t this_cnt=0;
@@ -533,7 +534,7 @@ zero), then there will be no error if the parameter is missing.
 	switch (ti->type) {
 	case (kDouble) :
 	  if(ty == kInt) {
-	    *static_cast<Double_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();	    
+	    *static_cast<Double_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();
 	  } else if (ty == kDouble) {
 	    *static_cast<Double_t*>(ti->var)=*(Double_t *)this->Find(key)->GetValuePointer();
 	  } else {
@@ -573,7 +574,8 @@ zero), then there will be no error if the parameter is missing.
     }
     if (this_cnt<=0) {
       if ( !ti->optional ) {
-	Fatal("THcParmList","Could not find %s in database!",key);
+        string msg = string("Could not find `") + key + "` in database!";
+        throw std::runtime_error("<THcParmList::LoadParmValues>: " + msg);
       }
     }
     cnt += this_cnt;
@@ -587,14 +589,14 @@ zero), then there will be no error if the parameter is missing.
 Int_t THcParmList::GetArray(const char* attr, Int_t* array, Int_t size)
 {
   // Read in a set of Int_t's in to a C-style array.
-  
+
   return ReadArray(attr,array,size);
 }
 //_____________________________________________________________________________
 Int_t THcParmList::GetArray(const char* attr, Double_t* array, Int_t size)
 {
   // Read in a set of Double_t's in to a vector.
-  
+
   return ReadArray(attr,array,size);
 }
 
@@ -673,7 +675,7 @@ Int_t THcParmList::CloseCCDB()
   delete CCDB_obj;
   return(0);
 }
-Int_t THcParmList::LoadCCDBDirectory(const char* directory, 
+Int_t THcParmList::LoadCCDBDirectory(const char* directory,
 				     const char* prefix)
 {
   // Load all parameters in directory
@@ -755,10 +757,10 @@ Int_t THcParmList::LoadCCDBDirectory(const char* directory,
       } else {
 	cout << namepaths[iname] << ": Multicolumn CCDB variables not supported" << endl;
       }
-    }	
+    }
   }
   return 0;
 }
 
 #endif
-  
+

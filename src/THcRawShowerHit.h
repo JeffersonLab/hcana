@@ -11,7 +11,7 @@ class THcRawShowerHit : public THcRawHit {
   friend class THcShowerPlane;
   friend class THcShowerArray;
 
-  THcRawShowerHit(Int_t plane=0, Int_t counter=0) : 
+  THcRawShowerHit(Int_t plane=0, Int_t counter=0) :
     THcRawHit(plane, counter), fNPosSamples(0), fNNegSamples(0) {
   }
   THcRawShowerHit& operator=( const THcRawShowerHit& );
@@ -28,6 +28,10 @@ class THcRawShowerHit : public THcRawHit {
   Double_t GetPedestal(Int_t signal, Int_t isamplow, Int_t isamphigh);
   Int_t GetNSamples(Int_t signal);
 
+  Int_t GetNSignals() { return 2;}
+  ESignalType GetSignalType(Int_t signal) {
+    return kADC;
+  }
   //  virtual Bool_t  IsSortable () const {return kTRUE; }
   //  virtual Int_t   Compare(const TObject* obj) const;
 
@@ -41,7 +45,7 @@ class THcRawShowerHit : public THcRawHit {
  private:
 
   ClassDef(THcRawShowerHit, 0);	// Raw Shower counter hit
-};  
+};
 
 #endif
- 
+

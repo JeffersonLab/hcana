@@ -1,16 +1,16 @@
 /** \class THcRawShowerHit
     \ingroup DetSupport
 
- Class representing a single raw hit for a hodoscope paddle                
+ Class representing a single raw hit for a hodoscope paddle
 
- Contains plane, counter and pos/neg adc and tdc values                    
-                                                                           
- Enhanced to work with FADC250 data samples.  If fNPosSamples/fNNegSamples 
- is greater than 1, assume that the data held in the hit is the sampled    
- waveform.  Signals 0,1 will return the integrated pulse with dynamic      
- pedestal subtraction (first four samples comprise the pedestal).  Signals 
- 2,3 are reserved for time information.  Signals 4,5 are pedestals and     
- 6 and 7 are the straight sum of all the samples.                          
+ Contains plane, counter and pos/neg adc and tdc values
+
+ Enhanced to work with FADC250 data samples.  If fNPosSamples/fNNegSamples
+ is greater than 1, assume that the data held in the hit is the sampled
+ waveform.  Signals 0,1 will return the integrated pulse with dynamic
+ pedestal subtraction (first four samples comprise the pedestal).  Signals
+ 2,3 are reserved for time information.  Signals 4,5 are pedestals and
+ 6 and 7 are the straight sum of all the samples.
 
 */
 
@@ -26,7 +26,7 @@ void THcRawShowerHit::SetData(Int_t signal, Int_t data) {
     fADC_pos[fNPosSamples++] = data;
   } else if (signal==1) {
     fADC_neg[fNNegSamples++] = data;
-  } 
+  }
 }
 
 Int_t THcRawShowerHit::GetData(Int_t signal, Int_t isamplow, Int_t isamphigh,
@@ -67,10 +67,10 @@ Int_t THcRawShowerHit::GetData(Int_t signal, Int_t isamplow, Int_t isamphigh,
       adcsum += fADC_neg[isample] - pedestal;
     }
     return(adcsum);
-  } 
+  }
   return(-1); // Actually should throw exception
 }
-  
+
 // Return sum of samples
 // For Fastbus ADC, this will simply be the hardware ADC value as there
 // is just one sample.  For Flash ADCs, this should return the
@@ -89,18 +89,18 @@ Int_t THcRawShowerHit::GetData(Int_t signal) {
       adcsum += fADC_neg[isample];
     }
     return(adcsum);
-  } 
+  }
   return(-1); // Actually should throw exception
 }
 
 // Return a requested sample
 Int_t THcRawShowerHit::GetSample(Int_t signal, UInt_t isample) {
   if(signal==0) {
-    if(isample >=0 && isample< fNPosSamples) {
+    if(isample < fNPosSamples) {
       return(fADC_pos[isample]);
     }
   } else if (signal==1) {
-    if(isample >=0 && isample< fNNegSamples) {
+    if(isample < fNNegSamples) {
       return(fADC_neg[isample]);
     }
   }
@@ -127,7 +127,7 @@ Double_t THcRawShowerHit::GetPedestal(Int_t signal, Int_t isamplow, Int_t isamph
   }
   return(pedestal);
 }
-      
+
 // Return the number of samples
 Int_t THcRawShowerHit::GetNSamples(Int_t signal) {
   if(signal==0) {
@@ -164,4 +164,4 @@ THcRawShowerHit& THcRawShowerHit::operator=( const THcRawShowerHit& rhs )
 //////////////////////////////////////////////////////////////////////////
 ClassImp(THcRawShowerHit)
 
- 
+

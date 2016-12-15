@@ -26,7 +26,7 @@ using namespace std;
 ClassImp(THcScintillatorPlane)
 
 //______________________________________________________________________________
-THcScintillatorPlane::THcScintillatorPlane( const char* name, 
+THcScintillatorPlane::THcScintillatorPlane( const char* name,
 					    const char* description,
 					    const Int_t planenum,
 					    THaDetectorBase* parent )
@@ -38,9 +38,13 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   frNegTDCHits = new TClonesArray("THcSignalHit",16);
   frPosADCHits = new TClonesArray("THcSignalHit",16);
   frNegADCHits = new TClonesArray("THcSignalHit",16);
+  frPosADCSums = new TClonesArray("THcSignalHit",16);
+  frNegADCSums = new TClonesArray("THcSignalHit",16);
+  frPosADCPeds = new TClonesArray("THcSignalHit",16);
+  frNegADCPeds = new TClonesArray("THcSignalHit",16);
   fPlaneNum = planenum;
   fTotPlanes = planenum;
-  fNScinHits = 0; 
+  fNScinHits = 0;
   //
   fMaxHits=53;
 
@@ -60,12 +64,16 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete frNegTDCHits;
   delete frPosADCHits;
   delete frNegADCHits;
+  delete frPosADCSums;
+  delete frNegADCSums;
+  delete frPosADCPeds;
+  delete frNegADCPeds;
   delete fpTimes;
   delete [] fScinTime;
   delete [] fScinSigma;
   delete [] fScinZpos;
   delete [] fPosCenter;
-  
+
   delete [] fHodoPosMinPh; fHodoPosMinPh = NULL;
   delete [] fHodoNegMinPh; fHodoNegMinPh = NULL;
   delete [] fHodoPosPhcCoeff; fHodoPosPhcCoeff = NULL;
@@ -116,11 +124,11 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 {
 
   // See what file it looks for
-  
+
   //  static const char* const here = "ReadDatabase()";
   char prefix[2];
   char parname[100];
-  
+
   prefix[0]=tolower(GetParent()->GetPrefix()[0]);
   prefix[1]='\0';
 
@@ -131,13 +139,13 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   strcat(parname,"_nr");
   fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
   //
-  // Based on the signs of these quantities in the .pos file the correspondence 
+  // Based on the signs of these quantities in the .pos file the correspondence
   // should be bot=>left  and top=>right when comparing x and y-type scintillators
   char tmpleft[6], tmpright[6];
   if (fPlaneNum==1 || fPlaneNum==3) {
     strcpy(tmpleft,"left");
     strcpy(tmpright,"right");
-  } 
+  }
   else {
     strcpy(tmpleft,"bot");
     strcpy(tmpright,"top");
@@ -154,11 +162,17 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
     {Form("scin_%s_%s",GetName(),tmpright), &fPosRight,kDouble},
     {Form("scin_%s_offset",GetName()), &fPosOffset, kDouble},
     {Form("scin_%s_center",GetName()), fPosCenter,kDouble,fNelem},
-    {"tofusinginvadc",   &fTofUsingInvAdc,        kInt,            0,  1},       
+    {"tofusinginvadc",   &fTofUsingInvAdc,        kInt,            0,  1},
+    {"hodo_adc_mode", &fADCMode, kInt, 0, 1},
+    {"hodo_pedestal_scale", &fADCPedScaleFactor, kDouble, 0, 1},
+    {"hodo_adc_diag_cut", &fADCDiagCut, kInt, 0, 1},
     {0}
   };
 
   fTofUsingInvAdc = 1;
+  fADCMode = kADCStandard;
+  fADCPedScaleFactor = 1.0;
+  fADCDiagCut = 50.0;
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   // fetch the parameter from the temporary list
 
@@ -207,7 +221,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
     Double_t negsigma = ((THcHodoscope *)GetParent())->GetHodoNegSigma(index);
     fHodoSigma[j] = TMath::Sqrt(possigma*possigma+negsigma*negsigma)/2.0;
   }
-  
+
   cout <<" plane num = "<<fPlaneNum<<endl;
   cout <<" nelem     = "<<fNelem<<endl;
   cout <<" zpos      = "<<fZpos<<endl;
@@ -219,9 +233,9 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   cout <<"PosRight = "<<fPosRight<<endl;
   cout <<"PosOffset = "<<fPosOffset<<endl;
   cout <<"PosCenter[0] = "<<fPosCenter[0]<<endl;
-  
+
   // Think we will make special methods to pass most
-  // How generic do we want to make this class?  
+  // How generic do we want to make this class?
   // The way we get parameter data is going to be pretty specific to
   // our parameter file naming conventions.  But on the other hand,
   // the Hall A analyzer read database is pretty specific.
@@ -253,6 +267,10 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     {"negtdcval", "List of Negative TDC Values",              "frNegTDCHits.THcSignalHit.GetData()"},
     {"posadcval", "List of Positive ADC Values",              "frPosADCHits.THcSignalHit.GetData()"},
     {"negadcval", "List of Negative ADC Values",              "frNegADCHits.THcSignalHit.GetData()"},
+    {"posadcsum", "List of Positive ADC Sample Sums",         "frPosADCSums.THcSignalHit.GetData()"},
+    {"negadcsum", "List of Negative ADC Sample Sums",         "frNegADCSums.THcSignalHit.GetData()"},
+    {"posadcped", "List of Positive ADC Pedestals",           "frPosADCPeds.THcSignalHit.GetData()"},
+    {"negadcped", "List of Negative ADC Pedestals",           "frNegADCPeds.THcSignalHit.GetData()"},
     {"fptime", "Time at focal plane",     "GetFpTime()"},
     {"nhits", "Number of paddle hits (passed TDC Min and Max cuts for either end)",           "GetNScinHits() "},
     {"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
@@ -266,9 +284,9 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 void THcScintillatorPlane::Clear( Option_t* )
 {
   /*! \brief Clears fHodoHits,frPosTDCHits,frNegTDCHits,frPosADCHits,frNegADCHits
-   * 
+   *
    * -  Clears fHodoHits,frPosTDCHits,frNegTDCHits,frPosADCHits,frNegADCHits
-   */ 
+   */
   //cout << " Calling THcScintillatorPlane::Clear " << GetName() << endl;
   // Clears the hit lists
   fHodoHits->Clear();
@@ -282,8 +300,8 @@ void THcScintillatorPlane::Clear( Option_t* )
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::Decode( const THaEvData& evdata )
 {
-  /*! \brief Does nothing. Data decode in  THcScintillatorPlane::Processhits which is called by THcHodoscope::Decode 
-   */ 
+  /*! \brief Does nothing. Data decode in  THcScintillatorPlane::Processhits which is called by THcHodoscope::Decode
+   */
   cout << " Calling THcScintillatorPlane::Decode " << GetName() << endl;
 
   return 0;
@@ -292,8 +310,8 @@ Int_t THcScintillatorPlane::Decode( const THaEvData& evdata )
 Int_t THcScintillatorPlane::CoarseProcess( TClonesArray& tracks )
 {
   /*! \brief Does nothing
-   */ 
- 
+   */
+
   cout <<"*******************************\n";
   cout <<"NOW IN THcScintilatorPlane::CoarseProcess!!!!\n";
   cout <<"*******************************\n";
@@ -306,7 +324,7 @@ Int_t THcScintillatorPlane::CoarseProcess( TClonesArray& tracks )
 Int_t THcScintillatorPlane::FineProcess( TClonesArray& tracks )
 {
   /*! \brief Does nothing
-   */ 
+   */
   return 0;
 }
 
@@ -314,21 +332,21 @@ Int_t THcScintillatorPlane::FineProcess( TClonesArray& tracks )
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 {
-  /*! \brief Extract scintillator paddle hits from raw data starting at "nexthit" 
-   * - Called by THcHodoscope::Decode 
+  /*! \brief Extract scintillator paddle hits from raw data starting at "nexthit"
+   * - Called by THcHodoscope::Decode
    * - Loops through "rawhits" array  starting at index of "nexthit"
-   * - Assumes that the hit list is sorted by plane and looping ends when plane number of hit doesn't match fPlaneNum  
+   * - Assumes that the hit list is sorted by plane and looping ends when plane number of hit doesn't match fPlaneNum
    * - Fills THcSignalHit objects frPosTDCHits and frNegTDCHits when TDC > 0
    * - Fills THcSignalHit objects frPosADCHits and frNegaDCHit with pedestal subtracted ADC when value larger than 50
    * - For hits that have TDC value for either positive or negative PMT within  fScinTdcMin and fScinTdcMax
    *  + Creates new  fHodoHits[fNScinHits] =  THcHodoHit
    *  + Calculates pulse height correction to the positive and negative PMT times
-   *  + Correct times for time traveled in paddle 
+   *  + Correct times for time traveled in paddle
    *  + Correct times for time of flight using beta from central spectrometer momentum and particle type
    *  + Calls  SetCorrectedTime method of THcHodoHit
    *  + Increments fNScinHits
    * - Returns value of nexthit + number of hits processed
-   * 
+   *
   */
   //raw
   Int_t nrPosTDCHits=0;
@@ -339,6 +357,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frNegTDCHits->Clear();
   frPosADCHits->Clear();
   frNegADCHits->Clear();
+  frPosADCSums->Clear();
+  frNegADCSums->Clear();
+  frPosADCPeds->Clear();
+  frNegADCPeds->Clear();
   //stripped
   fNScinHits=0;
   fHodoHits->Clear();
@@ -347,7 +369,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   Int_t ihit = nexthit;
 
   //  cout << "THcScintillatorPlane: raw htis = " << nrawhits << endl;
-  
+
   // A THcRawHodoHit contains all the information (tdc and adc for both
   // pmts) for a single paddle for a single trigger.  The tdc information
   // might include multiple hits if it uses a multihit tdc.
@@ -362,19 +384,43 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     Int_t index=padnum-1;
     // Need to be finding first hit in TDC range, not the first hit overall
-    Double_t adc_pos = hit->GetADCPos()-fPosPed[index];
-    Double_t adc_neg = hit->GetADCNeg()-fNegPed[index];
-    if (hit->fNRawHits[2] > 0) 
+    if (hit->fNRawHits[2] > 0)
       ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->GetTDCPos()+fTdcOffset);
-    if (hit->fNRawHits[3] > 0) 
+    if (hit->fNRawHits[3] > 0)
       ((THcSignalHit*) frNegTDCHits->ConstructedAt(nrNegTDCHits++))->Set(padnum, hit->GetTDCNeg()+fTdcOffset);
     // For making hit maps, we use >= 50 cut
     // For making raw hists, we don't want the cut
     // We can use a flag to turn on and off these without 50 cut
-    if ((hit->GetADCPos()-fPosPed[index]) >= 50) 
-      ((THcSignalHit*) frPosADCHits->ConstructedAt(nrPosADCHits++))->Set(padnum, adc_pos);
-    if ((hit->GetADCNeg()-fNegPed[index]) >= 50) 
-      ((THcSignalHit*) frNegADCHits->ConstructedAt(nrNegADCHits++))->Set(padnum, adc_neg);
+    // Value of 50 no long valid with different ADC type for FADC
+    Double_t adc_pos;
+    Double_t adc_neg;
+    if(fADCMode == kADCDynamicPedestal) {
+      adc_pos = hit->GetADCPos()-hit->GetPedestalPos()*fADCPedScaleFactor;
+      adc_neg = hit->GetADCNeg()-hit->GetPedestalNeg()*fADCPedScaleFactor;
+    } else if (fADCMode == kADCSampleIntegral) {
+      adc_pos = hit->GetIntegralPos()-fPosPed[index];
+      adc_neg = hit->GetIntegralNeg()-fNegPed[index];
+    } else if (fADCMode == kADCSampIntDynPed) {
+      adc_pos = hit->GetIntegralPos()-hit->GetPedestalPos()*fADCPedScaleFactor;
+      adc_neg = hit->GetIntegralNeg()-hit->GetPedestalNeg()*fADCPedScaleFactor;
+    } else {
+      adc_pos = hit->GetADCPos()-fPosPed[index];
+      adc_neg = hit->GetADCNeg()-fNegPed[index];
+    }
+    if (adc_pos >= fADCDiagCut) {
+      ((THcSignalHit*) frPosADCHits->ConstructedAt(nrPosADCHits))->Set(padnum, adc_pos);
+      Double_t samplesum=hit->GetIntegralPos();
+      Double_t pedestal=hit->GetPedestalPos();
+      ((THcSignalHit*) frPosADCSums->ConstructedAt(nrPosADCHits))->Set(padnum, samplesum);
+      ((THcSignalHit*) frPosADCPeds->ConstructedAt(nrPosADCHits++))->Set(padnum, pedestal);
+    }
+    if (adc_neg >= fADCDiagCut) {
+      ((THcSignalHit*) frNegADCHits->ConstructedAt(nrNegADCHits))->Set(padnum, adc_neg);
+      Double_t samplesum=hit->GetIntegralNeg();
+      Double_t pedestal=hit->GetPedestalNeg();
+      ((THcSignalHit*) frNegADCSums->ConstructedAt(nrNegADCHits))->Set(padnum, samplesum);
+      ((THcSignalHit*) frNegADCPeds->ConstructedAt(nrNegADCHits++))->Set(padnum, pedestal);
+    }
 
     Bool_t btdcraw_pos=kFALSE;
     Bool_t btdcraw_neg=kFALSE;
@@ -398,12 +444,13 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     // Proceed if there is a valid TDC on either end of the bar
     if(btdcraw_pos || btdcraw_neg) {
 
+
       new( (*fHodoHits)[fNScinHits]) THcHodoHit(tdc_pos, tdc_neg,
 						adc_pos, adc_neg,
 						hit->fCounter, this);
     // Do corrections if valid TDC on both ends of bar
       if(btdcraw_pos && btdcraw_neg) {
-      
+
 	// Do the pulse height correction to the time.  (Position dependent corrections later)
 	Double_t timec_pos, timec_neg;
 	if(fTofUsingInvAdc) {
@@ -465,7 +512,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 Int_t THcScintillatorPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 {
   /*! \brief Extract the data for this plane from raw hit list THcRawHodoHit, accumulating into arrays for calculating pedestals.
-   *  
+   *
    * - Loop through raw data for scintillator plane
    */
   Int_t nrawhits = rawhits->GetLast()+1;
@@ -509,12 +556,12 @@ Int_t THcScintillatorPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nex
 void THcScintillatorPlane::CalculatePedestals( )
 {
  /*! \brief   Calculate pedestals from arrays made in THcScintillatorPlane::AccumulatePedestals
-  * 
+  *
   * - Calculate pedestals from arrays made in THcScintillatorPlane::AccumulatePedestals
-  * - In old fortran ENGINE code, a comparison was made between calculated pedestals and the pedestals read in by the FASTBUS modules for zero supression. This is not implemented. 
+  * - In old fortran ENGINE code, a comparison was made between calculated pedestals and the pedestals read in by the FASTBUS modules for zero supression. This is not implemented.
   */
   for(UInt_t i=0; i<fNelem;i++) {
-    
+
     // Positive tubes
     fPosPed[i] = ((Double_t) fPosPedSum[i]) / TMath::Max(1, fPosPedCount[i]);
     fPosThresh[i] = fPosPed[i] + 15;
@@ -526,16 +573,16 @@ void THcScintillatorPlane::CalculatePedestals( )
     //    cout <<"Pedestals "<< i+1 << " " << fPosPed[i] << " " << fNegPed[i] << endl;
   }
   //  cout << " " << endl;
-  
+
 }
 
 //_____________________________________________________________________________
 void THcScintillatorPlane::InitializePedestals( )
 {
  /*! \brief   called by THcScintillatorPlane::ReadDatabase
-  * 
+  *
   * - Initialize variables used in  THcScintillatorPlane::AccumulatePedestals and THcScintillatorPlane::CalculatePedestals
-  * - Minimum number of pedestal events needed for calculation, fMinPeds, hadrcoded to 500 
+  * - Minimum number of pedestal events needed for calculation, fMinPeds, hadrcoded to 500
   */
   fNPedestalEvents = 0;
   fMinPeds = 500; 		// In engine, this is set in parameter file

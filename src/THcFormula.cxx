@@ -8,7 +8,7 @@ THcFormula expressions have access hcana parameters (gHcParms).
 
 The number of times a cut has been try, as well as the number of times
 that the cut has been tested can be accessed with cutname.`scaler` (or
-.`npassed`) and cutname.`ncalled`.  
+.`npassed`) and cutname.`ncalled`.
 
 \author S. A. Wood
 
@@ -55,7 +55,7 @@ static inline Int_t NumberOfSetBits( ULong64_t v )
 }
 
 //_____________________________________________________________________________
-THcFormula::THcFormula(const char* name, const char* expression, 
+THcFormula::THcFormula(const char* name, const char* expression,
 		       const THcParmList* plst, const THaVarList* vlst,
 		       const THaCutList* clst ) :
   THaFormula()
@@ -101,7 +101,7 @@ THcFormula::~THcFormula()
 //_____________________________________________________________________________
 Int_t THcFormula::DefinedCut( TString& name )
 {
-  // Check if 'name' is a known cut. If so, enter it in the local list of 
+  // Check if 'name' is a known cut. If so, enter it in the local list of
   // variables used in this formula.
 
   EVariableType thistype;
@@ -147,9 +147,8 @@ Double_t THcFormula::DefinedValue( Int_t i )
   // If the i-th variable is a cut, return its last result
   // (calculated at the last evaluation).
   // If the variable is a string, return value of its character value
-  
+
   typedef vector<Double_t>::size_type vsiz_t;
-  typedef vector<Double_t>::iterator  viter_t;
 
   assert( i>=0 && i<(Int_t)fVarDef.size() );
 
@@ -157,7 +156,7 @@ Double_t THcFormula::DefinedValue( Int_t i )
     return 1.0;
 
   FVarDef_t& def = fVarDef[i];
-  switch( def.type ) {
+  switch( (Int_t) def.type ) {
   case kVariable:
   case kString:
   case kArray:
@@ -222,7 +221,7 @@ Double_t THcFormula::DefinedValue( Int_t i )
 	SetBit(kInvalid);
 	return 1.0;
       }
-      Double_t y;
+      Double_t y = 0.0;
       if( code == kNumSetBits ) {
 	// Number of set bits is intended for unsigned int-type expressions
 	y = func->EvalInstance(fInstance);
@@ -273,7 +272,7 @@ Double_t THcFormula::DefinedValue( Int_t i )
   }
   assert(false); // not reached
   return kBig;
-}  
+}
 
 
 //_____________________________________________________________________________
