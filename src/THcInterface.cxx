@@ -53,13 +53,13 @@ THcInterface* THcInterface::fgAint = NULL;  // Pointer to this interface
 static TString fgTZ;
 
 //_____________________________________________________________________________
-THcInterface::THcInterface( const char* appClassName, int* argc, char** argv, 
+THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
 			    void* options, int numOptions, Bool_t noLogo ) :
   TRint( appClassName, argc, argv, options, numOptions, kTRUE )
 {
   /**
-Create the Hall A/C analyzer application environment. The THcInterface 
-environment provides an interface to the the interactive ROOT system 
+Create the Hall A/C analyzer application environment. The THcInterface
+environment provides an interface to the the interactive ROOT system
 via inheritance of TRint as well as access to the Hall A/C analyzer classes.
 
 This class is copy of THaInterface with the addition of of the global
@@ -97,9 +97,9 @@ This class is copy of THaInterface with the addition of of the global
   //FIXME: investigate
   TTree::SetMaxTreeSize(1500000000);
 
-  // Make the Podd header directory(s) available so scripts don't have to 
+  // Make the Podd header directory(s) available so scripts don't have to
   // specify an explicit path.
-  // If $ANALYZER defined, we take our includes from there, otherwise we fall 
+  // If $ANALYZER defined, we take our includes from there, otherwise we fall
   // back to the compile-time directories (which may have moved!)
   TString s = gSystem->Getenv("ANALYZER");
   if( s.IsNull() ) {
@@ -111,7 +111,7 @@ This class is copy of THaInterface with the addition of of the global
     if( dp ) {
       gSystem->FreeDirectory(dp);
       s = p;
-    } else 
+    } else
       s = s+"/src " + s+"/hana_decode ";
   }
   // Directories names separated by blanks.
@@ -128,14 +128,14 @@ This class is copy of THaInterface with the addition of of the global
     s.Remove(0,s.Index(re)+ss.Length());
     ss = s(re);
   }
-  
+
   // Because of lack of foresight, the analyzer uses TDatime objects,
   // which are kept in localtime() and hence are not portable, and also
   // uses localtime() directly in several places. As a result, database
-  // lookups depend on the timezone of the machine that the replay is done on! 
-  // If this timezone is different from the one in which the data were taken, 
+  // lookups depend on the timezone of the machine that the replay is done on!
+  // If this timezone is different from the one in which the data were taken,
   // mismatches may occur. This is bad.
-  // FIXME: Use TTimeStamp to keep time in UTC internally. 
+  // FIXME: Use TTimeStamp to keep time in UTC internally.
   // To be done in version 1.5
   //
   // As a temporary workaround, we assume that all data were taken in
@@ -144,7 +144,7 @@ This class is copy of THaInterface with the addition of of the global
   fgTZ = gSystem->Getenv("TZ");
   gSystem->Setenv("TZ","US/Eastern");
 
-  
+
   fgAint = this;
 }
 
@@ -192,7 +192,7 @@ void THcInterface::PrintLogo( Bool_t lite )
    iday   = idatqq%100;
    imonth = (idatqq/100)%100;
    iyear  = (idatqq/10000);
-   if ( iyear < 90 ) 
+   if ( iyear < 90 )
      mille = 2000 + iyear;
    else if ( iyear < 1900 )
      mille = 1900 + iyear;
@@ -253,7 +253,7 @@ TClass* THcInterface::SetDecoder( TClass* c )
     return NULL;
   }
   if( !c->InheritsFrom("THaEvData")) {
-    ::Error("THcInterface::SetDecoder", 
+    ::Error("THcInterface::SetDecoder",
 	    "decoder class must inherit from THaEvData");
     return NULL;
   }

@@ -2,7 +2,7 @@
     \ingroup DetSupport
 
  Class for accumulating statistics for and calculating hodoscope
- efficiencies.                                                  
+ efficiencies.
 
 */
 #include "THaEvData.h"
@@ -97,17 +97,17 @@ THaAnalysisObject::EStatus THcHodoEff::Init( const TDatime& run_time )
 
   // Standard initialization. Calls ReadDatabase(), ReadRunDatabase(),
   // and DefineVariables() (see THaAnalysisObject::Init)
-  
+
   fHod = dynamic_cast<THcHodoscope*>
     ( FindModule( fName.Data(), "THcHodoscope"));
 
   fSpectro = static_cast<THaSpectrometer*>(fHod->GetApparatus());
-  
+
   if( THaPhysicsModule::Init( run_time ) != kOK )
     return fStatus;
 
   cout << "THcHodoEff::Init nplanes=" << fHod->GetNPlanes() << endl;
-  cout << "THcHodoEff::Init Apparatus = " << fHod->GetName() << 
+  cout << "THcHodoEff::Init Apparatus = " << fHod->GetName() <<
     " " <<
      (fHod->GetApparatus())->GetName() << endl;
 
@@ -119,7 +119,7 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
 {
   // Read database. Gets variable needed for efficiency calculation
   // Get # of planes and their z positions here.
-  
+
   fNPlanes = fHod->GetNPlanes();
   fPlanes = new THcScintillatorPlane* [fNPlanes];
   fPosZ = new Double_t[fNPlanes];
@@ -143,7 +143,7 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
   fHodoOrEffi = new Int_t[totalpaddles];
   fHodoAndEffi = new Int_t[totalpaddles];
   fStatTrk = new Int_t[totalpaddles];
-  
+
   char prefix[2];
   prefix[0] = tolower((fHod->GetApparatus())->GetName()[0]);
   prefix[1] = '\0';
@@ -156,7 +156,7 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
   };
   //  fMaxShTrk = 0.05;		// For cut on fraction of momentum seen in shower
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-  
+
   cout << "\n\nTHcHodoEff::ReadDatabase nplanes=" << fHod->GetNPlanes() << endl;
   // Setup statistics arrays
   // Better method to put this in?
@@ -219,7 +219,7 @@ Int_t THcHodoEff::DefineVariables( EMode mode )
 
   //  fEffiTest = 0;
   //  gHcParms->Define(Form("hodoeffi"),"Testing effi",fEffiTest);
-  
+
   const RVarDef vars[] = {
     // Move these into THcHallCSpectrometer using track fTracks
     // {"effitestvar",    "efficiency test var",      "fEffiTest"},
@@ -243,7 +243,7 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
   // Project the golden track to each
   // plane.  Need to get track at Focal Plane, not tgt.
   //
-  // Assumes that planes are X, Y, X, Y 
+  // Assumes that planes are X, Y, X, Y
   THaTrack* theTrack = fSpectro->GetGoldenTrack();
   // Since fSpectro knows the index of the golden track, we can
   // get other information about the track from fSpectro.
@@ -251,7 +251,7 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
 
   if(!theTrack) return 0;
   Int_t trackIndex = theTrack->GetTrkNum()-1;
-  
+
   // May make these member variables
   Double_t hitPos[fNPlanes];
   Double_t hitDistance[fNPlanes];
@@ -268,7 +268,7 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
 		       TMath::Min(
 		       TMath::Nint((hitPos[ip]-fCenterFirst[ip])/
 				   fSpacing[ip]+1),fNCounters[ip] ),1);
-      hitDistance[ip] =  hitPos[ip] - (fSpacing[ip]*(hitCounter[ip]-1) + 
+      hitDistance[ip] =  hitPos[ip] - (fSpacing[ip]*(hitCounter[ip]-1) +
 				       fCenterFirst[ip]);
     } else {			// Y Plane
       hitPos[ip] = theTrack->GetY() + theTrack->GetPhi()*fPosZ[ip];
@@ -276,10 +276,10 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
 		       TMath::Min(
 		       TMath::Nint((fCenterFirst[ip]-hitPos[ip])/
 				   fSpacing[ip]+1), fNCounters[ip] ),1);
-      hitDistance[ip] =  hitPos[ip] -(fCenterFirst[ip] - 
+      hitDistance[ip] =  hitPos[ip] -(fCenterFirst[ip] -
 				      fSpacing[ip]*(hitCounter[ip]-1));
     }
-        
+
 
   }
 
@@ -287,7 +287,7 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
   // dpos stuff not implemented
   // Why do dpos stuff here, does any other part need the dpos historgrams
   // Look to VDCEff code to see how to create and fill histograms
-       
+
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     Int_t hitcounter=hitCounter[ip];
     // goodTdcBothSides[ip] = kFALSE;
@@ -307,7 +307,7 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
       }
     }
   }
-       
+
   // Record position differences between track and center of scin
   // and increment 'should have hit' counters
   for(Int_t ip=0;ip<fNPlanes;ip++) {
@@ -315,9 +315,9 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
     Double_t dist = hitDistance[ip];
     if(TMath::Abs(dist) <= fStatSlop &&
        theTrack->GetChi2()/theTrack->GetNDoF() <= fMaxChisq &&
-       theTrack->GetEnergy() >= 0.05 ) 
+       theTrack->GetEnergy() >= 0.05 )
       {
-	fStatTrk[fHod->GetScinIndex(ip,hitCounter[ip]-1)]++;		
+	fStatTrk[fHod->GetScinIndex(ip,hitCounter[ip]-1)]++;
 	// Double_t delta = theTrack->GetDp();
 	// Int_t idel = TMath::Floor(delta+10.0);
 	// Should
@@ -330,13 +330,13 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
    }
   // Is there a hit on or adjacent to paddle that track
   // passes through?
-  
+
   // May collapse this loop into last
-  
+
   // record the hits as a "didhit" if track is near center of
   // scintillator, the chisqared of the track is good and it is the
   // first "didhit" in that plane.
-  
+
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     Int_t hitcounter = hitCounter[ip];
     Double_t dist = hitDistance[ip];
@@ -349,14 +349,14 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
       Bool_t onTrack, goodScinTime, goodTdcNeg, goodTdcPos;
       fHod->GetFlags(trackIndex,ip,ihit,
 		     onTrack, goodScinTime, goodTdcNeg, goodTdcPos);
-      
+
       if(TMath::Abs(dist) <= fStatSlop &&
 	 TMath::Abs(hitcounter-counter) <= checkHit[ip] &&
 	 fHitPlane[ip] == 0 &&
-	 theTrack->GetChi2()/theTrack->GetNDoF() <= fMaxChisq && 
+	 theTrack->GetChi2()/theTrack->GetNDoF() <= fMaxChisq &&
 	 theTrack->GetEnergy() >= 0.05 ) {
 	fHitPlane[ip]++;
-	
+
 	// Need to find out hgood_tdc_pos(igoldentrack,ihit) and neg
 	if(goodTdcPos) {
 	  if(goodTdcNeg) {	// Both fired
@@ -364,12 +364,12 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
 	    fStatNegHit[ip][hitcounter]++;
 	    fStatAndHit[ip][hitcounter]++;
 	    fStatOrHit[ip][hitcounter]++;
-	    
+
 	    fHodoPosEffi[fHod->GetScinIndex(ip,hitCounter[ip]-1)]++;
 	    fHodoNegEffi[fHod->GetScinIndex(ip,hitCounter[ip]-1)]++;
 	    fHodoAndEffi[fHod->GetScinIndex(ip,hitCounter[ip]-1)]++;
 	    fHodoOrEffi[fHod->GetScinIndex(ip,hitCounter[ip]-1)]++;
-	    
+
 	    // Double_t delta = theTrack->GetDp();
 	    // Int_t idel = TMath::Floor(delta+10.0);
 	    // if(idel >=0 && idel < 20) {
@@ -387,7 +387,7 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
 	  fHodoNegEffi[fHod->GetScinIndex(ip,hitCounter[ip]-1)]++;
 	  fHodoOrEffi[fHod->GetScinIndex(ip,hitCounter[ip]-1)]++;
 	}
-		
+
 	// Increment pos/neg/both fired.  Track independent, so
 	// no chisquared cut, but note that only scintillators on the
 	// track are examined.
@@ -401,7 +401,7 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
 	  fNegGood[ip][hitcounter]++;
 	}
 	// Determine if one or both PMTs had a good tdc
-	
+
 	// if(goodTdcPos && goodTdcNeg) {
 	//  goodTdcBothSides[ip] = kTRUE;
 	// }
@@ -409,25 +409,25 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
 	//  goodTdcOneSide[ip] = kTRUE;
 	// }
       }
-      
+
       /*
 	For each plane, see of other 3 fired.  This means that they were enough
 	to form a 3/4 trigger, and so the fraction of times this plane fired is
 	the plane trigger efficiency.  NOTE: we only require a TDC hit, not a
 	TDC hit within the SCIN 3/4 trigger window, so high rates will make
 	this seem better than it is.  Also, make sure we're not near the edge
-	of the hodoscope (at the last plane), using the same hhodo_slop param. 
+	of the hodoscope (at the last plane), using the same hhodo_slop param.
 	as for h_tof.f
 	NOTE ALSO: to make this check simpler, we are assuming that all planes
 	have identical active areas.  y_scin = y_cent + y_offset, so shift track
 	position by offset for comparing to edges.
       */
-      
+
       // Need to add calculation and cuts on
       // xatback and yatback in order to set the
       // htrig_hododidflag, htrig_hodoshouldflag and otherthreehit flags
       //
-      
+
       ++fNevt;
     }
   }

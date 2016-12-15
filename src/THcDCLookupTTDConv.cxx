@@ -43,11 +43,11 @@ Double_t THcDCLookupTTDConv::ConvertTimeToDist(Double_t time)
   } else if (ib+1 >= fNumBins) {
     frac = 1.0;
   }
-  
+
   Double_t drift_distance = fMaxDriftDistance * frac;
 
 
   return(drift_distance);
-}  
+}
 
 ////////////////////////////////////////////////////////////////////////////////

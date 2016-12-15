@@ -4,7 +4,7 @@
 //////////////////////////////////////////////////////////////////////////
 //
 // THcInterface
-// 
+//
 //////////////////////////////////////////////////////////////////////////
 
 #include "TRint.h"
@@ -16,7 +16,7 @@ class THcInterface : public TRint {
 
 public:
   THcInterface( const char* appClassName, int* argc, char** argv,
-		void* options = NULL, int numOptions = 0, 
+		void* options = NULL, int numOptions = 0,
 		Bool_t noLogo = kFALSE );
   virtual ~THcInterface();
 

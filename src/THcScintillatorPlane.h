@@ -2,14 +2,14 @@
 #define ROOT_THcScintillatorPlane
 
 //////////////////////////////////////////////////////////////////////////////
-//                         
+//
 // THcScintillatorPlane
 //
 // A Hall C scintillator plane
 //
 // May want to later inherit from a THcPlane class if there are similarities
 // in what a plane is shared with other detector types (shower, etc.)
-// 
+//
 //////////////////////////////////////////////////////////////////////////////
 
 #include "THaSubDetector.h"
@@ -19,7 +19,7 @@ class THaEvData;
 class THaSignalHit;
 
 class THcScintillatorPlane : public THaSubDetector {
-  
+
  public:
   THcScintillatorPlane( const char* name, const char* description,
 			Int_t planenum, THaDetectorBase* parent = NULL);
@@ -42,7 +42,7 @@ class THcScintillatorPlane : public THaSubDetector {
   Int_t GetNelem() {return fNelem;}; // return number of paddles in this plane
   Int_t GetNScinHits() {return fNScinHits;}; // Get # hits in plane (that pass min/max TDC cuts)
   Int_t GetNGoodHits() {return fNGoodHits;}; // Get # hits in plane (used in determining focal plane time)
-  Double_t GetSpacing() {return fSpacing;}; // spacing of paddles 
+  Double_t GetSpacing() {return fSpacing;}; // spacing of paddles
   Double_t GetSize() {return fSize;};    // paddle size
   Double_t GetHodoSlop() {return fHodoSlop;}; // hodo slop
   Double_t GetZpos() {return fZpos;};   //return the z position
@@ -52,7 +52,7 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t GetPosOffset() {return fPosOffset;};
   Double_t GetPosCenter(Int_t PaddleNo) {return fPosCenter[PaddleNo];}; // counting from zero!
   Double_t GetFpTime() {return fFptime;};
- 
+
   void SetFpTime(Double_t f) {fFptime=f;};
   void SetNGoodHits(Int_t ng) {fNGoodHits=ng;};
 
@@ -74,7 +74,7 @@ class THcScintillatorPlane : public THaSubDetector {
 
   Int_t fPlaneNum;		/* Which plane am I 1-4 */
   UInt_t fTotPlanes;            /* so we can read variables that are not indexed by plane id */
-  UInt_t fNelem;		/* Need since we don't inherit from 
+  UInt_t fNelem;		/* Need since we don't inherit from
 				 detector base class */
   Int_t fNScinHits;                 /* number of hits in plane (that pass min/max TDC cuts) */
   Int_t fNGoodHits;                 /* number of hits in plane (used in determining focal plane time) */

@@ -43,10 +43,10 @@ public:
 
   virtual Int_t      Decode( const THaEvData& );
   virtual EStatus    Init( const TDatime& run_time );
-  
+
   virtual Int_t      CoarseProcess( TClonesArray& tracks );
   virtual Int_t      FineProcess( TClonesArray& tracks );
-  
+
   void EstimateFocalPlaneTime(void);
   virtual Int_t      ApplyCorrections( void );
   Double_t GetStartTime() const { return fStartTime; }
@@ -127,7 +127,7 @@ protected:
 
   // Per-event data
   Bool_t fGoodStartTime;
-  Double_t fStartTime; 
+  Double_t fStartTime;
   Int_t fNfptimes;
 
   Double_t     fBetaP;
@@ -138,7 +138,7 @@ protected:
 
   // Potential Hall C parameters.  Mostly here for demonstration
   Int_t fNPlanes;		// Number of planes
-  UInt_t fMaxScinPerPlane,fMaxHodoScin; // max number of scin/plane; product of the first two 
+  UInt_t fMaxScinPerPlane,fMaxHodoScin; // max number of scin/plane; product of the first two
   Double_t fStartTimeCenter, fStartTimeSlop, fScinTdcToTime;
   Double_t fTofTolerance;
   Double_t fPathLengthCentral;
@@ -218,7 +218,7 @@ protected:
   Int_t fHitSweet1Y;
   Int_t fHitSweet2X;
   Int_t fHitSweet2Y;
-  
+
   Int_t fSweet1XScin;
   Int_t fSweet1YScin;
   Int_t fSweet2XScin;
@@ -226,7 +226,7 @@ protected:
 
   //  Double_t**   fScinHit;                // [fNPlanes] Array
 
-  Double_t*    fFPTime;               // [fNPlanes] Array 
+  Double_t*    fFPTime;               // [fNPlanes] Array
 
 
   Double_t* fSumPlaneTime; // [fNPlanes]
@@ -240,7 +240,7 @@ protected:
 
   // Useful derived quantities
   // double tan_angle, sin_angle, cos_angle;
-  
+
   //  static const char NDEST = 2;
   //  struct DataDest {
   //    Int_t*    nthit;
@@ -261,7 +261,7 @@ protected:
   //    NoTrkPlaneInfo () : goodplanetime(kFALSE) {}
   //  };
   //  std::vector<NoTrkPlaneInfo> fNoTrkPlaneInfo;
-  
+
   // Inforamtion for each plane
   //  struct NoTrkHitInfo {
   //    Bool_t goodtwotimes;
@@ -290,12 +290,12 @@ protected:
     Int_t hitNumInPlane;
     THcHodoHit *hit;
     TOFPInfo () : onTrack(kFALSE), keep_pos(kFALSE), keep_neg(kFALSE),
-      time_pos(-99.0), time_neg(-99.0), 
-		 
+      time_pos(-99.0), time_neg(-99.0),
+
 scin_pos_time(0.0), scin_neg_time(0.0) {}
   };
   std::vector<TOFPInfo> fTOFPInfo;
-  
+
   // Used to hold information about all hits within the hodoscope for the TOF
   struct TOFCalc {
     Int_t hit_paddle;
@@ -331,13 +331,13 @@ scin_pos_time(0.0), scin_neg_time(0.0) {}
   };
   std::vector<std::vector<std::vector<GoodFlags> > > fGoodFlags;
   //
-    
+
   void           ClearEvent();
   void           DeleteArrays();
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
   enum ESide { kLeft = 0, kRight = 1 };
-  
+
   virtual  Double_t TimeWalkCorrection(const Int_t& paddle,
 					   const ESide side);
   void Setup(const char* name, const char* description);

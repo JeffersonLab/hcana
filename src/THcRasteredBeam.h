@@ -24,7 +24,7 @@ class THcRasteredBeam : public THaBeam {
   virtual Int_t Reconstruct() ;
 
   ClassDef(THcRasteredBeam, 0);	// add THcRasteredBeam to ROOT library
-};  
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 

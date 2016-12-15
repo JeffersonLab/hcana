@@ -18,7 +18,7 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   THcCherenkov( const char* name, const char* description = "",
 		THaApparatus* a = NULL );
   virtual ~THcCherenkov();
-  
+
   virtual void 	     Clear( Option_t* opt="" );
   virtual Int_t      Decode( const THaEvData& );
   virtual EStatus    Init( const TDatime& run_time );
@@ -41,7 +41,7 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   //  Double_t GetCerNPE() { return fNPEsum;}
   Double_t GetCerNPE();
 
-  THcCherenkov();  // for ROOT I/O		
+  THcCherenkov();  // for ROOT I/O
  protected:
   Int_t         fAnalyzePedestals;
 
@@ -79,12 +79,12 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Int_t         fMinPeds;
   Int_t*        fPedSum;	  /* Accumulators for pedestals */
   Int_t*        fPedSum2;
-  Int_t*        fPedLimit; 
-  Double_t*     fPedMean; 	  /* Can be supplied in parameters and then */ 
-  Int_t*        fPedCount; 
+  Int_t*        fPedLimit;
+  Double_t*     fPedMean; 	  /* Can be supplied in parameters and then */
+  Int_t*        fPedCount;
   Double_t*     fPed;
   Double_t*     fThresh;
-  
+
   void Setup(const char* name, const char* description);
   virtual void  InitializePedestals( );
 

@@ -15,7 +15,7 @@ void comptrackxy(Int_t run)
     h1 = h419;   //Y vs Y
   }
 
-  TCanvas *c1 = new TCanvas("c1", "Shower Largest cluster X", 1000, 667); 
+  TCanvas *c1 = new TCanvas("c1", "Shower Largest cluster X", 1000, 667);
 
   //  gPad->SetLogy();
 
@@ -41,10 +41,10 @@ void comptrackxy(Int_t run)
   l.SetTextColor(kBlue);
   l.DrawLatex(xt,0.045*maxy,"hcana");
   */
-    
+
   // Difference between the histograms.
 
-  TCanvas *c2 = new TCanvas("c2", "X differences", 1000, 667); 
+  TCanvas *c2 = new TCanvas("c2", "X differences", 1000, 667);
 
   TH1F* dif = h->Clone();
 
@@ -56,4 +56,4 @@ void comptrackxy(Int_t run)
   //  dif->SetLineWidth(1);
   //  dif->SetFillStyle(1111);
   dif->Draw("LEGO2");
-} 
+}

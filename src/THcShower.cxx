@@ -56,13 +56,13 @@ void THcShower::Setup(const char* name, const char* description)
   prefix[0] = tolower(GetApparatus()->GetName()[0]);
   prefix[1] = '\0';
 
-  
+
   string layernamelist;
   fHasArray = 0;		// Flag for presence of fly's eye array
   DBRequest list[]={
     {"cal_num_layers", &fNLayers, kInt},
     {"cal_layer_names", &layernamelist, kString},
-    {"cal_array",&fHasArray, kInt,0, 1}, 
+    {"cal_array",&fHasArray, kInt,0, 1},
     {0}
   };
 
@@ -71,7 +71,7 @@ void THcShower::Setup(const char* name, const char* description)
   vector<string> layer_names = vsplit(layernamelist);
 
   if(layer_names.size() != fNTotLayers) {
-    cout << "THcShower::Setup ERROR: Number of layers " << fNTotLayers 
+    cout << "THcShower::Setup ERROR: Number of layers " << fNTotLayers
 	 << " doesn't agree with number of layer names "
 	 << layer_names.size() << endl;
     // Should quit.  Is there an official way to quit?
@@ -82,7 +82,7 @@ void THcShower::Setup(const char* name, const char* description)
     fLayerNames[i] = new char[layer_names[i].length()+1];
     strcpy(fLayerNames[i], layer_names[i].c_str());
   }
-  
+
   char *desc = new char[strlen(description)+100];
   fPlanes = new THcShowerPlane* [fNLayers];
 
@@ -91,7 +91,7 @@ void THcShower::Setup(const char* name, const char* description)
     strcat(desc, " Plane ");
     strcat(desc, fLayerNames[i]);
 
-    fPlanes[i] = new THcShowerPlane(fLayerNames[i], desc, i+1, this); 
+    fPlanes[i] = new THcShowerPlane(fLayerNames[i], desc, i+1, this);
 
   }
   if(fHasArray) {
@@ -191,7 +191,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   //  static const char* const here = "ReadDatabase()";
   char prefix[2];
 
-  // Read data from database 
+  // Read data from database
   // Pull values from the THcParmList instead of reading a database
   // file like Hall A does.
 
@@ -336,7 +336,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   for (UInt_t i=0; i<fNLayers; i++) fNTotBlocks += fNBlocks[i];
 
   // Debug output.
-  if (fdbg_init_cal) 
+  if (fdbg_init_cal)
     cout << "  Total number of blocks in the layers of calorimeter: " << dec
 	 << fNTotBlocks << endl;
 
@@ -545,7 +545,7 @@ void THcShower::DeleteArrays()
 }
 
 //_____________________________________________________________________________
-inline 
+inline
 void THcShower::Clear(Option_t* opt)
 {
 
@@ -620,7 +620,7 @@ Int_t THcShower::Decode( const THaEvData& evdata )
   }
   THcHallCSpectrometer *app = static_cast<THcHallCSpectrometer*>(GetApparatus());
   fEtotNorm=fEtot/(app->GetPcentral());
- 
+
   return nhits;
 }
 
@@ -628,11 +628,11 @@ Int_t THcShower::Decode( const THaEvData& evdata )
 Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 {
   // Calculation of coordinates of particle track cross point with shower
-  // plane in the detector coordinate system. For this, parameters of track 
+  // plane in the detector coordinate system. For this, parameters of track
   // reconstructed in THaVDC::CoarseTrack() are used.
   //
   // Apply corrections and reconstruct the complete hits.
-  
+
   // Clustering of hits.
   //
 
@@ -707,7 +707,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 	 ppcl != (*fClusterList).end(); ppcl++) {
 
       cout << "  Cluster #" << i++
-	   <<":  E=" << clE(*ppcl) 
+	   <<":  E=" << clE(*ppcl)
 	   << "  Epr=" << clEpr(*ppcl)
 	   << "  X=" << clX(*ppcl)
 	   << "  Z=" << clZ(*ppcl)
@@ -972,10 +972,10 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 	 << "  Y = " << YTrFront
 	 << "  Pathl = " << pathl
 	 << endl;
-    if (fvTest) 
+    if (fvTest)
       cout << "  Fiducial volume test: inFidVol = " << inFidVol << endl;
 
-    cout << "  Matched cluster #" << mclust << ",  delatX= " << deltaX 
+    cout << "  Matched cluster #" << mclust << ",  delatX= " << deltaX
     	 << endl;
     cout << "---------------------------------------------------------------\n";
   }
@@ -1014,7 +1014,7 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
       // Coordinate correction factors for positive and negative sides,
       // different for double PMT counters in the 1-st two layes and for
       // single PMT counters in the rear two layers.
-      Float_t corpos = 1.;   
+      Float_t corpos = 1.;
       Float_t corneg = 1.;
 
       if (ip < fNegCols) {
@@ -1099,7 +1099,7 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 
 Double_t THcShower::GetNormETot( ){
   return fEtotNorm;
-} 
+}
 
 ClassImp(THcShower)
 ////////////////////////////////////////////////////////////////////////////////
