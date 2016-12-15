@@ -24,6 +24,12 @@ class THcRawAdcHit : public TObject {
     Int_t GetAdcPeak(UInt_t iPulse=0);
     Int_t GetSample(UInt_t iSample);
 
+    Double_t GetAverage(UInt_t iSampleLow, UInt_t iSampleHigh);
+    Int_t GetIntegral(UInt_t iSampleLow, UInt_t iSampleHigh);
+    Double_t GetData(
+      UInt_t iPedLow, UInt_t iPedHigh, UInt_t iIntLow, UInt_t iIntHigh
+    );
+
     UInt_t GetNPulses();
     UInt_t GetNSamples();
 

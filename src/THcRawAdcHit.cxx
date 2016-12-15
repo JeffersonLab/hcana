@@ -179,9 +179,55 @@ Int_t THcRawAdcHit::GetSample(UInt_t iSample) {
     );
     throw std::out_of_range(msg.Data());
   }
+  else if (iSample >= fNSamples && iSample == 0) {
+    return 0;
+  }
   else {
     return fAdcSample[iSample];
   }
+}
+
+
+Double_t THcRawAdcHit::GetAverage(UInt_t iSampleLow, UInt_t iSampleHigh) {
+  if (iSampleHigh >= fNSamples || iSampleLow >= fNSamples) {
+    TString msg = TString::Format(
+      "`THcRawAdcHit::GetAverage`: not this many samples available!"
+    );
+    throw std::out_of_range(msg.Data());
+  }
+  else {
+    Double_t average = 0.0;
+    for (UInt_t i=iSampleLow; i<=iSampleHigh; ++i) {
+      average += fAdcSample[i];
+    }
+    return average / (iSampleHigh - iSampleLow + 1);
+  }
+}
+
+
+Int_t THcRawAdcHit::GetIntegral(UInt_t iSampleLow, UInt_t iSampleHigh) {
+  if (iSampleHigh >= fNSamples || iSampleLow >= fNSamples) {
+    TString msg = TString::Format(
+      "`THcRawAdcHit::GetAverage`: not this many samples available!"
+    );
+    throw std::out_of_range(msg.Data());
+  }
+  else {
+    Int_t integral = 0;
+    for (UInt_t i=iSampleLow; i<=iSampleHigh; ++i) {
+      integral += fAdcSample[i];
+    }
+    return integral;
+  }
+}
+
+
+Double_t THcRawAdcHit::GetData(
+  UInt_t iPedLow, UInt_t iPedHigh, UInt_t iIntLow, UInt_t iIntHigh
+) {
+  return
+    GetIntegral(iIntLow, iIntHigh)
+    - GetAverage(iPedHigh, iPedLow) * (iIntHigh - iIntLow + 1);
 }
 
 

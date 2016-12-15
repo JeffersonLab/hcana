@@ -322,9 +322,18 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
 
     // Should probably check that counter # is in range
-		// TODO: Need to include rich FADC data if available.
-    fA_Pos[hit->fCounter-1] = hit->GetData(0);
-    fA_Neg[hit->fCounter-1] = hit->GetData(1);
+		if (fUsingFADC) {
+			fA_Pos[hit->fCounter-1] = hit->GetRawAdcHitPos().GetData(
+				fPedSampLow, fPedSampHigh, fDataSampLow, fDataSampHigh
+			);
+			fA_Neg[hit->fCounter-1] = hit->GetRawAdcHitNeg().GetData(
+				fPedSampLow, fPedSampHigh, fDataSampLow, fDataSampHigh
+			);
+		}
+		else {
+			fA_Pos[hit->fCounter-1] = hit->GetData(0);
+			fA_Neg[hit->fCounter-1] = hit->GetData(1);
+		}
 
     // Sparsify positive side hits, fill the hit list, compute the
     // energy depostion from positive side for the counter.
