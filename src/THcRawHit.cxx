@@ -1,9 +1,9 @@
 /** \class THcRawHit
     \ingroup DetSupport
 
- Abstract class for a single raw hit                        
+ Abstract class for a single raw hit
 
- Contains plane, counter and at least one data value        
+ Contains plane, counter and at least one data value
 
 */
 

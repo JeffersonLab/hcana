@@ -51,7 +51,7 @@ Int_t THcRasterRawHit::GetData(Int_t signal) {
   } else if (signal==4) {
     return(fADC_ysig);
   }
-  return(-1); 
+  return(-1);
 }
 
 // Int_t THcRasterRawHit::Compare(const TObject* obj) const

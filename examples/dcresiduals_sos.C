@@ -1,7 +1,7 @@
 {
   TFile* f = new TFile("hodtest.root");
   TTree *T=(TTree*)f->Get("T");
-  TCanvas *c1 = new TCanvas("c1", "Drift Chamber Residuals", 800, 1000); 
+  TCanvas *c1 = new TCanvas("c1", "Drift Chamber Residuals", 800, 1000);
   c1->Divide(2,6);
 
   TH1F* h=new TH1F("h", "Residual", 100, -1.0, 1.0);

@@ -1,15 +1,15 @@
 #ifndef ROOT_THcShowerPlane
-#define ROOT_THcShowerPlane 
+#define ROOT_THcShowerPlane
 
 //////////////////////////////////////////////////////////////////////////////
-//                         
+//
 // THcShowerPlane
 //
 // A Hall C Shower plane
 //
 // May want to later inherit from a THcPlane class if there are similarities
 // in what a plane is shared with other detector types (shower, etc.)
-// 
+//
 //////////////////////////////////////////////////////////////////////////////
 
 #include "THaSubDetector.h"
@@ -23,7 +23,7 @@ class THaEvData;
 class THaSignalHit;
 
 class THcShowerPlane : public THaSubDetector {
-  
+
 public:
   THcShowerPlane( const char* name, const char* description,
 			Int_t planenum, THaDetectorBase* parent = NULL);
@@ -128,7 +128,7 @@ protected:
   Double_t  fEplane_neg;   // Energy deposition in the plane from negative PMTs
 
   // These lists are not used actively for now.
-  TClonesArray* fPosADCHits;    // List of positive ADC hits 
+  TClonesArray* fPosADCHits;    // List of positive ADC hits
   TClonesArray* fNegADCHits;    // List of negative ADC hits
 
   Int_t fLayerNum;		// Layer # 1-4

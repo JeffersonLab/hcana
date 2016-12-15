@@ -20,7 +20,7 @@ public:
       return *this; };
 
   virtual ~THcRawHit() {}
- 
+
   enum ESignalType { kUndefined, kTDC, kADC};
 
   // This line causes problem
@@ -50,7 +50,7 @@ public:
 
   Int_t fPlane;
   Int_t fCounter;
- 
+
  private:
 
   ClassDef(THcRawHit,0)      // Raw Hit Base Class

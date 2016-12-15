@@ -77,9 +77,9 @@ protected:
   Double_t fX_fp, fY_fp, fZ_fp;
   Double_t fXp_fp, fYp_fp;
   Double_t fChi2_fp;
-  
+
   virtual void AddHit(THcDCHit * hit, Double_t dist, Int_t lr);
-  
+
 private:
   // Hide copy ctor and op=
   THcDCTrack( const THcDCTrack& );

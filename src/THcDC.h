@@ -31,11 +31,11 @@ public:
   virtual EStatus    Init( const TDatime& run_time );
   virtual Int_t      CoarseTrack( TClonesArray& tracks );
   virtual Int_t      FineTrack( TClonesArray& tracks );
-  
+
   virtual Int_t      ApplyCorrections( void );
 
   //  Int_t GetNHits() const { return fNhit; }
-  
+
   //  Int_t GetNTracks() const { return fNDCTracks; }
   //  const TClonesArray* GetTrackHits() const { return fTrackProj; }
 
@@ -129,7 +129,7 @@ protected:
 
   // Each of these will be dimensioned with the number of planes
   // A THcDCPlane class object will need to access the value for
-  // its plane number.  Should we have a Get method for each or 
+  // its plane number.  Should we have a Get method for each or
   Int_t* fTdcWinMin;
   Int_t* fTdcWinMax;
   Double_t* fCentralTime;
@@ -155,8 +155,8 @@ protected:
 
   // Useful derived quantities
   // double tan_angle, sin_angle, cos_angle;
-  
-  // Intermediate structure for building 
+
+  // Intermediate structure for building
   static const char MAXTRACKS = 10;
 
   std::vector<THcDriftChamberPlane*> fPlanes; // List of plane objects

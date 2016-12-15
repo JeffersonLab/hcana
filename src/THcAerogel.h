@@ -18,7 +18,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   THcAerogel( const char* name, const char* description = "",
 		THaApparatus* a = NULL );
   virtual ~THcAerogel();
-  
+
   virtual void 	     Clear( Option_t* opt="" );
   virtual Int_t      Decode( const THaEvData& );
   void               InitArrays();
@@ -36,7 +36,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
 
   virtual void Print(const Option_t* opt) const;
 
-  THcAerogel();  // for ROOT I/O		
+  THcAerogel();  // for ROOT I/O
  protected:
   Int_t fAnalyzePedestals;
 
@@ -95,7 +95,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   Double_t *fNegPedMean;	/* be overwritten from ped analysis */
 
   Int_t fTdcOffset; /* Global TDC offset */
-  
+
   void Setup(const char* name, const char* description);
   virtual void  InitializePedestals( );
 

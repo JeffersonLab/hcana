@@ -44,7 +44,7 @@ public:
   Double_t GetY() {return fY;};
   THcDCHit* GetHit(Int_t ihit) {return fHits[ihit].dchit;};
   //  std::vector<THcDCHit*>* GetHitVectorP() {return &fHits;};
-  //std::vector<Hit>* GetHitStuffVectorP() {return &fHits;}; 
+  //std::vector<Hit>* GetHitStuffVectorP() {return &fHits;};
   void ReplaceHit(Int_t ihit, THcDCHit *hit) {
     fHits[ihit].dchit = hit;
     fHits[ihit].distCorr = 0.0;
