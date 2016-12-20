@@ -95,7 +95,8 @@ Int_t THcTrigApp::DefineVariables(THaAnalysisObject::EMode mode) {
   fIsSetup = (mode == kDefine);
 
   std::vector<RVarDef> vars;
-  vars.push_back({0});
+  RVarDef end {0};
+  vars.push_back(end);
 
   return DefineVarsFromList(vars.data(), mode);
 }

@@ -238,27 +238,30 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   for (int i=0; i<fNumAdc; ++i) {
     adcValTitle.at(i) = fAdcNames.at(i) + "_adc";
     adcValVar.at(i) = TString::Format("fAdcVal[%d]", i);
-    vars.push_back({
+    RVarDef entry1 {
       adcValTitle.at(i).Data(),
       adcValTitle.at(i).Data(),
       adcValVar.at(i).Data()
-    });
+    };
+    vars.push_back(entry1);
 
     adcPedestalTitle.at(i) = fAdcNames.at(i) + "_adcPed";
     adcPedestalVar.at(i) = TString::Format("fAdcPedestal[%d]", i);
-    vars.push_back({
+    RVarDef entry2 {
       adcPedestalTitle.at(i).Data(),
       adcPedestalTitle.at(i).Data(),
       adcPedestalVar.at(i).Data()
-    });
+    };
+    vars.push_back(entry2);
 
     adcMultiplicityTitle.at(i) = fAdcNames.at(i) + "_adcMult";
     adcMultiplicityVar.at(i) = TString::Format("fAdcMultiplicity[%d]", i);
-    vars.push_back({
+    RVarDef entry3 {
       adcMultiplicityTitle.at(i).Data(),
       adcMultiplicityTitle.at(i).Data(),
       adcMultiplicityVar.at(i).Data()
-    });
+    };
+    vars.push_back(entry3);
   }
 
   // Push the variable names for TDC channels.
@@ -267,22 +270,25 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   for (int i=0; i<fNumTdc; ++i) {
     tdcValTitle.at(i) = fTdcNames.at(i) + "_tdc";
     tdcValVar.at(i) = TString::Format("fTdcVal[%d]", i);
-    vars.push_back({
+    RVarDef entry1 {
       tdcValTitle.at(i).Data(),
       tdcValTitle.at(i).Data(),
       tdcValVar.at(i).Data()
-    });
+    };
+    vars.push_back(entry1);
 
     tdcMultiplicityTitle.at(i) = fTdcNames.at(i) + "_tdcMult";
     tdcMultiplicityVar.at(i) = TString::Format("fTdcMultiplicity[%d]", i);
-    vars.push_back({
+    RVarDef entry2 {
       tdcMultiplicityTitle.at(i).Data(),
       tdcMultiplicityTitle.at(i).Data(),
       tdcMultiplicityVar.at(i).Data()
-    });
+    };
+    vars.push_back(entry2);
   }
 
-  vars.push_back({0});
+  RVarDef end {0};
+  vars.push_back(end);
 
   return DefineVarsFromList(vars.data(), mode);
 }

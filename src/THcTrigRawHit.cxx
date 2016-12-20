@@ -352,7 +352,8 @@ void THcTrigRawHit::SetReference(Int_t signal, Int_t reference) {
       << "Warning:"
       << " `THcTrigRawHit::SetReference`:"
       << " signal 0 (ADC) should not have reference time!"
-      << " Check map file!";
+      << " Check map file!"
+      << std::endl;
   }
   else if (signal == 1) {
     fReferenceTime[signal] = reference;

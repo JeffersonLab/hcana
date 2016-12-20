@@ -40,10 +40,10 @@ EnsureSConsVersion(2,1,0)
 #
 baseenv.Append(MAIN_DIR= Dir('.').abspath)
 baseenv.Append(HC_DIR= baseenv.subst('$MAIN_DIR'))
-baseenv.Append(HC_SRC= baseenv.subst('$HC_DIR')+'/src ') 
+baseenv.Append(HC_SRC= baseenv.subst('$HC_DIR')+'/src ')
 baseenv.Append(HA_DIR= baseenv.subst('$HC_DIR')+'/podd ')
-baseenv.Append(HA_SRC= baseenv.subst('$HA_DIR')+'/src ') 
-baseenv.Append(HA_DC= baseenv.subst('$HA_DIR')+'/hana_decode ') 
+baseenv.Append(HA_SRC= baseenv.subst('$HA_DIR')+'/src ')
+baseenv.Append(HA_DC= baseenv.subst('$HA_DIR')+'/hana_decode ')
 baseenv.Append(MAJORVERSION = '1')
 baseenv.Append(MINORVERSION = '6')
 baseenv.Append(PATCH = '0')
@@ -58,7 +58,7 @@ print "Software Version = %s" % baseenv.subst('$VERSION')
 ivercode = 65536*int(float(baseenv.subst('$SOVERSION')))+ 256*int(10*(float(baseenv.subst('$SOVERSION'))-int(float(baseenv.subst('$SOVERSION')))))+ int(float(baseenv.subst('$PATCH')))
 baseenv.Append(VERCODE = ivercode)
 #
-# evio environment 
+# evio environment
 #
 evio_libdir = os.getenv('EVIO_LIBDIR')
 evio_incdir = os.getenv('EVIO_INCDIR')
@@ -73,8 +73,8 @@ if evio_libdir is None or evio_incdir is None:
 	platform = uname[0];
 	machine = uname[4];
 	evio_name = platform + '-' + machine
-	print "evio_name = %s" % evio_name	
-	evio_local_lib = "%s/evio-%s/%s/lib" % (evio_local,evio_version,evio_name) 
+	print "evio_name = %s" % evio_name
+	evio_local_lib = "%s/evio-%s/%s/lib" % (evio_local,evio_version,evio_name)
 	evio_local_inc = "%s/evio-%s/%s/include" % (evio_local,evio_version,evio_name)
 	evio_tarfile = "%s/evio-%s.tgz" % (evio_local,evio_version)
 
@@ -177,7 +177,7 @@ def which(program):
 	import os
 	def is_exe(fpath):
 		return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-	
+
 	fpath, fname = os.path.split(program)
 	if fpath:
 		if is_exe(program):
@@ -219,6 +219,18 @@ pbaseenv=baseenv.Clone()
 pbaseenv.Prepend(LIBS=[hallclib,hallalib,dclib,eviolib])
 baseenv.Prepend(LIBS=[hallalib,dclib,eviolib])
 Export('pbaseenv')
+
+if pbaseenv['CXX'] == 'g++':
+	gxxVersion = [int(i) for i in pbaseenv['CXXVERSION'].split('.')]
+	if (gxxVersion[0] < 4) or (gxxVersion[0] == 4 and gxxVersion[1] < 4):
+		print('Error: g++ version too old! Need at least g++ 4.4!')
+		Exit(1)
+	elif gxxVersion[0] == 4 and 4 <= gxxVersion[1] < 7:
+		if '-std=c++0x' not in pbaseenv['CXXFLAGS']:
+			pbaseenv.Append(CXXFLAGS='-std=c++0x')
+	else:
+		if '-std=c++11' not in pbaseenv['CXXFLAGS']:
+			pbaseenv.Append(CXXFLAGS='-std=c++11')
 
 SConscript(dirs = directorylist,name='SConscript.py',exports='baseenv')
 
