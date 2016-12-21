@@ -68,7 +68,7 @@ class THcRawHodoHit : public THcRawHit {
   }
 
  protected:
-  static const UInt_t fMaxNSamplesADC = 160;
+  static const UInt_t fMaxNSamplesADC = 511;
   static const UInt_t fMaxNPulsesADC = 4;
   static const UInt_t fMaxNHitsTDC = 16;
   Int_t fADC_pos[fMaxNPulsesADC];

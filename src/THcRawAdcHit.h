@@ -37,7 +37,7 @@ class THcRawAdcHit : public TObject {
 
   protected:
     static const UInt_t fMaxNPulses = 4;
-    static const UInt_t fMaxNSamples = 160;
+    static const UInt_t fMaxNSamples = 511;
 
     Int_t fAdc[fMaxNPulses];
     Int_t fAdcTime[fMaxNPulses];
