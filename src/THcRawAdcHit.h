@@ -35,13 +35,28 @@ class THcRawAdcHit : public TObject {
 
     Bool_t HasMulti();
 
+    Int_t GetPedRaw();
+    Int_t GetPeakIntRaw(UInt_t iPulse=0);
+    Int_t GetPeakAmpRaw(UInt_t iPulse=0);
+    //Int_t GetPeakTimeRaw(UInt_t iPulse=0);  // TODO: Figure out what to do with time.
+
+    Double_t GetPed();
+    Double_t GetPeakInt(UInt_t iPulse=0);
+    Double_t GetPeakAmp(UInt_t iPulse=0);
+    //Double_t GetPeakTime(UInt_t iPulse=0);
+
+
   protected:
     static const UInt_t fMaxNPulses = 4;
     static const UInt_t fMaxNSamples = 511;
 
-    Int_t fAdc[fMaxNPulses];
+    Int_t fNPedestalSamples;  // TODO: Get this from prestart event...
+    Int_t fNPeakSamples;
+    Double_t fPeakPedestalRatio;
+
+    Int_t fAdc[fMaxNPulses];  // TODO: Rename these...
     Int_t fAdcTime[fMaxNPulses];
-    Int_t fAdcPedestal[fMaxNPulses];
+    Int_t fAdcPedestal[fMaxNPulses];  // TODO: There should only be 1 pedestal...
     Int_t fAdcPeak[fMaxNPulses];
     Int_t fAdcSample[fMaxNSamples];
 

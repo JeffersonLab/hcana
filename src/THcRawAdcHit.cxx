@@ -1,5 +1,5 @@
 /**
-\class THcTrigRawHit
+\class THcRawAdcHit
 \ingroup DetSupport
 
 \brief Class representing a single raw ADC hit.
@@ -16,6 +16,8 @@ It supports rich data from flash 250 ADC modules.
 
 THcRawAdcHit::THcRawAdcHit() :
   TObject(),
+  fNPedestalSamples(4), fNPeakSamples(10),
+  fPeakPedestalRatio(1.0*fNPeakSamples/fNPedestalSamples),
   fAdc(), fAdcTime(), fAdcPedestal(), fAdcPeak(), fAdcSample(),
   fHasMulti(kFALSE), fNPulses(0), fNSamples(0)
 {}
@@ -49,15 +51,15 @@ THcRawAdcHit::~THcRawAdcHit() {}
 void THcRawAdcHit::Clear(Option_t* opt) {
   TObject::Clear(opt);
 
-  //for (UInt_t i=0; i<fMaxNPulses; ++i) {
-  //  fAdc[i] = 0;
-  //  fAdcTime[i] = 0;
-  //  fAdcPedestal[i] = 0;
-  //  fAdcPeak[i] = 0;
-  //}
-  //for (UInt_t i=0; i<fMaxNSamples; ++i) {
-  //  fAdcSample[i] = 0 ;
-  //}
+  for (UInt_t i=0; i<fNPulses; ++i) {
+    fAdc[i] = 0;
+    fAdcTime[i] = 0;
+    fAdcPedestal[i] = 0;
+    fAdcPeak[i] = 0;
+  }
+  for (UInt_t i=0; i<fNSamples; ++i) {
+    fAdcSample[i] = 0 ;
+  }
   fHasMulti = kFALSE;
   fNPulses = 0;
   fNSamples = 0;
@@ -243,6 +245,36 @@ UInt_t THcRawAdcHit::GetNSamples() {
 
 Bool_t THcRawAdcHit::HasMulti() {
   return fHasMulti;
+}
+
+
+Int_t THcRawAdcHit::GetPedRaw() {
+  return fAdcPedestal[0];
+}
+
+
+Int_t THcRawAdcHit::GetPeakIntRaw(UInt_t iPulse) {
+  return fAdc[iPulse];
+}
+
+
+Int_t THcRawAdcHit::GetPeakAmpRaw(UInt_t iPulse) {
+  return fAdcPeak[iPulse];
+}
+
+
+Double_t THcRawAdcHit::GetPed() {
+  return 1.0 * fAdcPedestal[0]/fNPedestalSamples;
+}
+
+
+Double_t THcRawAdcHit::GetPeakInt(UInt_t iPulse) {
+  return fAdc[iPulse] - fAdcPedestal[0] * fPeakPedestalRatio;
+}
+
+
+Double_t THcRawAdcHit::GetPeakAmp(UInt_t iPulse) {
+  return fAdcPeak[iPulse] - 1.0 * fAdcPedestal[0]/fNPedestalSamples;
 }
 
 
