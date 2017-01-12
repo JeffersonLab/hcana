@@ -43,11 +43,20 @@ using std::setprecision;
 
 //_____________________________________________________________________________
 THcCherenkov::THcCherenkov( const char* name, const char* description,
-				  THaApparatus* apparatus ) :
+                            THaApparatus* apparatus ) :
   THaNonTrackingDetector(name,description,apparatus)
 {
   // Normal constructor with name and description
   fADCHits = new TClonesArray("THcSignalHit",16);
+
+  frAdcPedRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPeakIntRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPeakAmpRaw = new TClonesArray("THcSignalHit", 16);
+
+  frAdcPed = new TClonesArray("THcSignalHit", 16);
+  frAdcPeakInt = new TClonesArray("THcSignalHit", 16);
+  frAdcPeakAmp = new TClonesArray("THcSignalHit", 16);
+
   cout << "fADCHits " << fADCHits << endl;
   InitArrays();
   cout << "fADCHits " << fADCHits << endl;
@@ -60,6 +69,14 @@ THcCherenkov::THcCherenkov( ) :
 {
   // Constructor
   fADCHits = NULL;
+
+  frAdcPedRaw = NULL;
+  frAdcPeakIntRaw = NULL;
+  frAdcPeakAmpRaw = NULL;
+
+  frAdcPed = NULL;
+  frAdcPeakInt = NULL;
+  frAdcPeakAmp = NULL;
 
   InitArrays();
 }
@@ -103,6 +120,14 @@ THcCherenkov::~THcCherenkov()
 {
   // Destructor
   delete fADCHits; fADCHits = NULL;
+
+  delete frAdcPedRaw; frAdcPedRaw = NULL;
+  delete frAdcPeakIntRaw; frAdcPeakIntRaw = NULL;
+  delete frAdcPeakAmpRaw; frAdcPeakAmpRaw = NULL;
+
+  delete frAdcPed; frAdcPed = NULL;
+  delete frAdcPeakInt; frAdcPeakInt = NULL;
+  delete frAdcPeakAmp; frAdcPeakAmp = NULL;
 
   DeleteArrays();
 
@@ -242,6 +267,17 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
     {"ncherhit",        "Number of Hits(Cherenkov)",             "fNCherHit"},
     {"certrackcounter", "Tracks inside Cherenkov region",        "fCerTrackCounter"},
     {"cerfiredcounter", "Tracks with engough Cherenkov NPEs ",   "fCerFiredCounter"},
+
+    {"adcCounter",    "List of ADC counter numbers.",     "frPosAdcPeakIntRaw.THcSignalHit.GetPaddleNumber()"},
+
+    {"adcPedRaw",     "List of raw ADC pedestals",        "frAdcPedRaw.THcSignalHit.GetData()"},
+    {"adcPeakIntRaw", "List of raw ADC peak integrals.",  "frAdcPeakIntRaw.THcSignalHit.GetData()"},
+    {"adcPeakAmpRaw", "List of raw ADC peak amplitudes.", "frAdcPeakAmpRaw.THcSignalHit.GetData()"},
+
+    {"adcPed",        "List of ADC pedestals",            "frAdcPed.THcSignalHit.GetData()"},
+    {"adcPeakInt",    "List of ADC peak integrals.",      "frAdcPeakInt.THcSignalHit.GetData()"},
+    {"adcPeakAmp",    "List of ADC peak amplitudes.",     "frAdcPeakAmp.THcSignalHit.GetData()"},
+
     { 0 }
   };
 
@@ -267,6 +303,14 @@ void THcCherenkov::Clear(Option_t* opt)
     fNPE[itube] = 0;
   }
 
+  frAdcPedRaw->Clear();
+  frAdcPeakIntRaw->Clear();
+  frAdcPeakAmpRaw->Clear();
+
+  frAdcPed->Clear();
+  frAdcPeakInt->Clear();
+  frAdcPeakAmp->Clear();
+
 }
 
 //_____________________________________________________________________________
@@ -289,8 +333,26 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
 
   Int_t ihit = 0;
   Int_t nADCHits=0;
+
+  UInt_t nrAdcHits = 0;
+
   while(ihit < fNhits) {
     THcCherenkovHit* hit = (THcCherenkovHit *) fRawHitList->At(ihit);
+
+    Int_t padnum = hit->fCounter;
+
+    THcRawAdcHit& rawAdcHit = hit->GetRawAdcHitPos();
+    for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
+      ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPedRaw());
+      ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPed());
+
+      ((THcSignalHit*) frAdcPeakIntRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPeakIntRaw());
+      ((THcSignalHit*) frAdcPeakInt->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPeakInt());
+
+      ((THcSignalHit*) frAdcPeakAmpRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPeakAmpRaw());
+      ((THcSignalHit*) frAdcPeakAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPeakAmp());
+      ++nrAdcHits;
+    }
 
     // ADC hit
     if(hit->GetRawAdcHitPos().GetPeakIntRaw() >  0) {

@@ -15,6 +15,8 @@ class instatiates one object per plane.
 #include "THcHitList.h"
 #include "THcHodoscope.h"
 #include "TClass.h"
+#include "THcRawAdcHit.h"
+#include "THcRawTdcHit.h"
 
 #include <cstring>
 #include <cstdio>
@@ -27,7 +29,7 @@ ClassImp(THcScintillatorPlane)
 
 //______________________________________________________________________________
 THcScintillatorPlane::THcScintillatorPlane( const char* name,
-					    const char* description,
+              const char* description,
 					    const Int_t planenum,
 					    THaDetectorBase* parent )
   : THaSubDetector(name,description,parent)
@@ -42,6 +44,27 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   frNegADCSums = new TClonesArray("THcSignalHit",16);
   frPosADCPeds = new TClonesArray("THcSignalHit",16);
   frNegADCPeds = new TClonesArray("THcSignalHit",16);
+
+  frPosTdcTimeRaw = new TClonesArray("THcSignalHit", 16);
+  frPosAdcPedRaw = new TClonesArray("THcSignalHit", 16);
+  frPosAdcPeakIntRaw = new TClonesArray("THcSignalHit", 16);
+  frPosAdcPeakAmpRaw = new TClonesArray("THcSignalHit", 16);
+
+  frPosTdcTime = new TClonesArray("THcSignalHit", 16);
+  frPosAdcPed = new TClonesArray("THcSignalHit", 16);
+  frPosAdcPeakInt = new TClonesArray("THcSignalHit", 16);
+  frPosAdcPeakAmp = new TClonesArray("THcSignalHit", 16);
+
+  frNegTdcTimeRaw = new TClonesArray("THcSignalHit", 16);
+  frNegAdcPedRaw = new TClonesArray("THcSignalHit", 16);
+  frNegAdcPeakIntRaw = new TClonesArray("THcSignalHit", 16);
+  frNegAdcPeakAmpRaw = new TClonesArray("THcSignalHit", 16);
+
+  frNegTdcTime = new TClonesArray("THcSignalHit", 16);
+  frNegAdcPed = new TClonesArray("THcSignalHit", 16);
+  frNegAdcPeakInt = new TClonesArray("THcSignalHit", 16);
+  frNegAdcPeakAmp = new TClonesArray("THcSignalHit", 16);
+
   fPlaneNum = planenum;
   fTotPlanes = planenum;
   fNScinHits = 0;
@@ -68,6 +91,27 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete frNegADCSums;
   delete frPosADCPeds;
   delete frNegADCPeds;
+
+  delete frPosTdcTimeRaw;
+  delete frPosAdcPedRaw;
+  delete frPosAdcPeakIntRaw;
+  delete frPosAdcPeakAmpRaw;
+
+  delete frPosTdcTime;
+  delete frPosAdcPed;
+  delete frPosAdcPeakInt;
+  delete frPosAdcPeakAmp;
+
+  delete frNegTdcTimeRaw;
+  delete frNegAdcPedRaw;
+  delete frNegAdcPeakIntRaw;
+  delete frNegAdcPeakAmpRaw;
+
+  delete frNegTdcTime;
+  delete frNegAdcPed;
+  delete frNegAdcPeakInt;
+  delete frNegAdcPeakAmp;
+
   delete fpTimes;
   delete [] fScinTime;
   delete [] fScinSigma;
@@ -271,6 +315,32 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     {"negadcsum", "List of Negative ADC Sample Sums",         "frNegADCSums.THcSignalHit.GetData()"},
     {"posadcped", "List of Positive ADC Pedestals",           "frPosADCPeds.THcSignalHit.GetData()"},
     {"negadcped", "List of Negative ADC Pedestals",           "frNegADCPeds.THcSignalHit.GetData()"},
+
+    {"posTdcCounter",    "List of positive TDC counter numbers.",     "frPosTdcTimeRaw.THcSignalHit.GetPaddleNumber()"},
+    {"posAdcCounter",    "List of positive ADC counter numbers.",     "frPosAdcPeakIntRaw.THcSignalHit.GetPaddleNumber()"},
+    {"negTdcCounter",    "List of negative TDC counter numbers.",     "frNegTdcTimeRaw.THcSignalHit.GetPaddleNumber()"},
+    {"negAdcCounter",    "List of negative ADC counter numbers.",     "frNegAdcPeakIntRaw.THcSignalHit.GetPaddleNumber()"},
+
+    {"posTdcTimeRaw",    "List of positive raw TDC values.",          "frPosTdcTimeRaw.THcSignalHit.GetData()"},
+    {"posAdcPedRaw",     "List of positive raw ADC pedestals",        "frPosAdcPedRaw.THcSignalHit.GetData()"},
+    {"posAdcPeakIntRaw", "List of positive raw ADC peak integrals.",  "frPosAdcPeakIntRaw.THcSignalHit.GetData()"},
+    {"posAdcPeakAmpRaw", "List of positive raw ADC peak amplitudes.", "frPosAdcPeakAmpRaw.THcSignalHit.GetData()"},
+
+    {"posTdcTime",       "List of positive TDC values.",              "frPosTdcTime.THcSignalHit.GetData()"},
+    {"posAdcPed",        "List of positive ADC pedestals",            "frPosAdcPed.THcSignalHit.GetData()"},
+    {"posAdcPeakInt",    "List of positive ADC peak integrals.",      "frPosAdcPeakInt.THcSignalHit.GetData()"},
+    {"posAdcPeakAmp",    "List of positive ADC peak amplitudes.",     "frPosAdcPeakAmp.THcSignalHit.GetData()"},
+
+    {"negTdcTimeRaw",    "List of negative raw TDC values.",          "frNegTdcTimeRaw.THcSignalHit.GetData()"},
+    {"negAdcPedRaw",     "List of negative raw ADC pedestals",        "frNegAdcPedRaw.THcSignalHit.GetData()"},
+    {"negAdcPeakIntRaw", "List of negative raw ADC peak integrals.",  "frNegAdcPeakIntRaw.THcSignalHit.GetData()"},
+    {"negAdcPeakAmpRaw", "List of negative raw ADC peak amplitudes.", "frNegAdcPeakAmpRaw.THcSignalHit.GetData()"},
+
+    {"negTdcTime",       "List of negative TDC values.",              "frNegTdcTime.THcSignalHit.GetData()"},
+    {"negAdcPed",        "List of negative ADC pedestals",            "frNegAdcPed.THcSignalHit.GetData()"},
+    {"negAdcPeakInt",    "List of negative ADC peak integrals.",      "frNegAdcPeakInt.THcSignalHit.GetData()"},
+    {"negAdcPeakAmp",    "List of negative ADC peak amplitudes.",     "frNegAdcPeakAmp.THcSignalHit.GetData()"},
+
     {"fptime", "Time at focal plane",     "GetFpTime()"},
     {"nhits", "Number of paddle hits (passed TDC Min and Max cuts for either end)",           "GetNScinHits() "},
     {"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
@@ -294,6 +364,27 @@ void THcScintillatorPlane::Clear( Option_t* )
   frNegTDCHits->Clear();
   frPosADCHits->Clear();
   frNegADCHits->Clear();
+
+  frPosTdcTimeRaw->Clear();
+  frPosAdcPedRaw->Clear();
+  frPosAdcPeakIntRaw->Clear();
+  frPosAdcPeakAmpRaw->Clear();
+
+  frPosTdcTime->Clear();
+  frPosAdcPed->Clear();
+  frPosAdcPeakInt->Clear();
+  frPosAdcPeakAmp->Clear();
+
+  frNegTdcTimeRaw->Clear();
+  frNegAdcPedRaw->Clear();
+  frNegAdcPeakIntRaw->Clear();
+  frNegAdcPeakAmpRaw->Clear();
+
+  frNegTdcTime->Clear();
+  frNegAdcPed->Clear();
+  frNegAdcPeakInt->Clear();
+  frNegAdcPeakAmp->Clear();
+
   fpTime = -1.e4;
 }
 
@@ -361,6 +452,32 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frNegADCSums->Clear();
   frPosADCPeds->Clear();
   frNegADCPeds->Clear();
+
+  UInt_t nrPosAdcHits = 0;
+  UInt_t nrNegAdcHits = 0;
+  UInt_t nrPosTdcHits = 0;
+  UInt_t nrNegTdcHits = 0;
+
+  frPosTdcTimeRaw->Clear();
+  frPosAdcPedRaw->Clear();
+  frPosAdcPeakIntRaw->Clear();
+  frPosAdcPeakAmpRaw->Clear();
+
+  frPosTdcTime->Clear();
+  frPosAdcPed->Clear();
+  frPosAdcPeakInt->Clear();
+  frPosAdcPeakAmp->Clear();
+
+  frNegTdcTimeRaw->Clear();
+  frNegAdcPedRaw->Clear();
+  frNegAdcPeakIntRaw->Clear();
+  frNegAdcPeakAmpRaw->Clear();
+
+  frNegTdcTime->Clear();
+  frNegAdcPed->Clear();
+  frNegAdcPeakInt->Clear();
+  frNegAdcPeakAmp->Clear();
+
   //stripped
   fNScinHits=0;
   fHodoHits->Clear();
@@ -383,6 +500,44 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Int_t padnum=hit->fCounter;
 
     Int_t index=padnum-1;
+
+    THcRawTdcHit& rawPosTdcHit = hit->GetRawTdcHitPos();
+    for (UInt_t thit=0; thit<rawPosTdcHit.GetNHits(); ++thit) {
+      ((THcSignalHit*) frPosTdcTimeRaw->ConstructedAt(nrPosTdcHits))->Set(padnum, rawPosTdcHit.GetTimeRaw());
+      ((THcSignalHit*) frPosTdcTime->ConstructedAt(nrPosTdcHits))->Set(padnum, rawPosTdcHit.GetTime());
+      ++nrPosTdcHits;
+    }
+    THcRawTdcHit& rawNegTdcHit = hit->GetRawTdcHitNeg();
+    for (UInt_t thit=0; thit<rawNegTdcHit.GetNHits(); ++thit) {
+      ((THcSignalHit*) frNegTdcTimeRaw->ConstructedAt(nrNegTdcHits))->Set(padnum, rawNegTdcHit.GetTimeRaw());
+      ((THcSignalHit*) frNegTdcTime->ConstructedAt(nrNegTdcHits))->Set(padnum, rawNegTdcHit.GetTime());
+      ++nrNegTdcHits;
+    }
+    THcRawAdcHit& rawPosAdcHit = hit->GetRawAdcHitPos();
+    for (UInt_t thit=0; thit<rawPosAdcHit.GetNPulses(); ++thit) {
+      ((THcSignalHit*) frPosAdcPedRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPedRaw());
+      ((THcSignalHit*) frPosAdcPed->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPed());
+
+      ((THcSignalHit*) frPosAdcPeakIntRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPeakIntRaw());
+      ((THcSignalHit*) frPosAdcPeakInt->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPeakInt());
+
+      ((THcSignalHit*) frPosAdcPeakAmpRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPeakAmpRaw());
+      ((THcSignalHit*) frPosAdcPeakAmp->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPeakAmp());
+      ++nrPosAdcHits;
+    }
+    THcRawAdcHit& rawNegAdcHit = hit->GetRawAdcHitNeg();
+    for (UInt_t thit=0; thit<rawNegAdcHit.GetNPulses(); ++thit) {
+      ((THcSignalHit*) frNegAdcPedRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPedRaw());
+      ((THcSignalHit*) frNegAdcPed->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPed());
+
+      ((THcSignalHit*) frNegAdcPeakIntRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPeakIntRaw());
+      ((THcSignalHit*) frNegAdcPeakInt->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPeakInt());
+
+      ((THcSignalHit*) frNegAdcPeakAmpRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPeakAmpRaw());
+      ((THcSignalHit*) frNegAdcPeakAmp->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPeakAmp());
+      ++nrNegAdcHits;
+    }
+
     // Need to be finding first hit in TDC range, not the first hit overall
     if (hit->GetRawTdcHitPos().GetNHits() > 0)
       ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->GetRawTdcHitPos().GetTime()+fTdcOffset);
