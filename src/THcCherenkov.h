@@ -85,6 +85,14 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Double_t*     fPed;
   Double_t*     fThresh;
 
+  TClonesArray* frAdcPedRaw;
+  TClonesArray* frAdcPeakIntRaw;
+  TClonesArray* frAdcPeakAmpRaw;
+
+  TClonesArray* frAdcPed;
+  TClonesArray* frAdcPeakInt;
+  TClonesArray* frAdcPeakAmp;
+
   void Setup(const char* name, const char* description);
   virtual void  InitializePedestals( );
 

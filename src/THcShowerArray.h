@@ -135,6 +135,14 @@ protected:
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
+  TClonesArray* frAdcPedRaw;
+  TClonesArray* frAdcPeakIntRaw;
+  TClonesArray* frAdcPeakAmpRaw;
+
+  TClonesArray* frAdcPed;
+  TClonesArray* frAdcPeakInt;
+  TClonesArray* frAdcPeakAmp;
+
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
   ClassDef(THcShowerArray,0); // Fly;s Eye calorimeter array

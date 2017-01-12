@@ -31,13 +31,21 @@ ClassImp(THcShowerArray)
 
 //______________________________________________________________________________
 THcShowerArray::THcShowerArray( const char* name,
-				const char* description,
+                                const char* description,
 				const Int_t layernum,
 				THaDetectorBase* parent )
   : THaSubDetector(name,description,parent)
 {
   fADCHits = new TClonesArray("THcSignalHit",100);
   fLayerNum = layernum;
+
+	frAdcPedRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPeakIntRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPeakAmpRaw = new TClonesArray("THcSignalHit", 16);
+
+  frAdcPed = new TClonesArray("THcSignalHit", 16);
+  frAdcPeakInt = new TClonesArray("THcSignalHit", 16);
+  frAdcPeakAmp = new TClonesArray("THcSignalHit", 16);
 
   fClusterList = new THcShowerClusterList;         // List of hit clusters
 }
@@ -50,6 +58,14 @@ THcShowerArray::~THcShowerArray()
   delete fYPos;
 
   delete fADCHits;
+
+  delete frAdcPedRaw; frAdcPedRaw = NULL;
+  delete frAdcPeakIntRaw; frAdcPeakIntRaw = NULL;
+  delete frAdcPeakAmpRaw; frAdcPeakAmpRaw = NULL;
+
+  delete frAdcPed; frAdcPed = NULL;
+  delete frAdcPeakInt; frAdcPeakInt = NULL;
+  delete frAdcPeakAmp; frAdcPeakAmp = NULL;
 
   delete [] fA;
   delete [] fP;
@@ -314,6 +330,17 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
     {"e", "Energy Depositions per block", "fE"},
     {"earray", "Energy Deposition in array", "fEarray"},
     { "ntracks", "Number of shower tracks", "fNtracks" },
+
+    {"adcCounter",    "List of ADC counter numbers.",     "frPosAdcPeakIntRaw.THcSignalHit.GetPaddleNumber()"},
+
+    {"adcPedRaw",     "List of raw ADC pedestals",        "frAdcPedRaw.THcSignalHit.GetData()"},
+    {"adcPeakIntRaw", "List of raw ADC peak integrals.",  "frAdcPeakIntRaw.THcSignalHit.GetData()"},
+    {"adcPeakAmpRaw", "List of raw ADC peak amplitudes.", "frAdcPeakAmpRaw.THcSignalHit.GetData()"},
+
+    {"adcPed",        "List of ADC pedestals",            "frAdcPed.THcSignalHit.GetData()"},
+    {"adcPeakInt",    "List of ADC peak integrals.",      "frAdcPeakInt.THcSignalHit.GetData()"},
+    {"adcPeakAmp",    "List of ADC peak amplitudes.",     "frAdcPeakAmp.THcSignalHit.GetData()"},
+
     { 0 }
   };
 
@@ -336,6 +363,14 @@ void THcShowerArray::Clear( Option_t* )
     *i = 0;
   }
   fClusterList->clear();
+
+  frAdcPedRaw->Clear();
+  frAdcPeakIntRaw->Clear();
+  frAdcPeakAmpRaw->Clear();
+
+  frAdcPed->Clear();
+  frAdcPeakInt->Clear();
+  frAdcPeakAmp->Clear();
 
 }
 
@@ -617,6 +652,14 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   Int_t nADCHits=0;
   fADCHits->Clear();
 
+  frAdcPedRaw->Clear();
+  frAdcPeakIntRaw->Clear();
+  frAdcPeakAmpRaw->Clear();
+
+  frAdcPed->Clear();
+  frAdcPeakInt->Clear();
+  frAdcPeakAmp->Clear();
+
   for(Int_t i=0;i<fNelem;i++) {
     fA[i] = 0;
     fA_p[i] = 0;
@@ -634,6 +677,9 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   Int_t ngood = 0;
   Int_t threshold = 100;
+
+  UInt_t nrAdcHits = 0;
+
   while(ihit < nrawhits) {
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
 
@@ -641,6 +687,20 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       break;
     }
 
+    Int_t padnum = hit->fCounter;
+
+    THcRawAdcHit& rawAdcHit = hit->GetRawAdcHitPos();
+    for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
+      ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPedRaw());
+      ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPed());
+
+      ((THcSignalHit*) frAdcPeakIntRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPeakIntRaw());
+      ((THcSignalHit*) frAdcPeakInt->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPeakInt());
+
+      ((THcSignalHit*) frAdcPeakAmpRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPeakAmpRaw());
+      ((THcSignalHit*) frAdcPeakAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPeakAmp());
+      ++nrAdcHits;
+    }
 
 		// Should check that counter # is in range
 		if (fUsingFADC) {

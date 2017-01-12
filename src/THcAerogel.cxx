@@ -26,6 +26,7 @@ configurable.
 #include "TMath.h"
 
 #include "THaTrackProj.h"
+#include "THcRawAdcHit.h"
 
 #include <cstring>
 #include <cstdio>
@@ -36,7 +37,7 @@ using namespace std;
 
 //_____________________________________________________________________________
 THcAerogel::THcAerogel( const char* name, const char* description,
-				  THaApparatus* apparatus ) :
+                        THaApparatus* apparatus ) :
   THaNonTrackingDetector(name,description,apparatus)
 {
   // Normal constructor with name and description
@@ -44,6 +45,22 @@ THcAerogel::THcAerogel( const char* name, const char* description,
   fNegTDCHits = new TClonesArray("THcSignalHit",16);
   fPosADCHits = new TClonesArray("THcSignalHit",16);
   fNegADCHits = new TClonesArray("THcSignalHit",16);
+
+  frPosAdcPedRaw = new TClonesArray("THcSignalHit", 16);
+  frPosAdcPeakIntRaw = new TClonesArray("THcSignalHit", 16);
+  frPosAdcPeakAmpRaw = new TClonesArray("THcSignalHit", 16);
+
+  frPosAdcPed = new TClonesArray("THcSignalHit", 16);
+  frPosAdcPeakInt = new TClonesArray("THcSignalHit", 16);
+  frPosAdcPeakAmp = new TClonesArray("THcSignalHit", 16);
+
+  frNegAdcPedRaw = new TClonesArray("THcSignalHit", 16);
+  frNegAdcPeakIntRaw = new TClonesArray("THcSignalHit", 16);
+  frNegAdcPeakAmpRaw = new TClonesArray("THcSignalHit", 16);
+
+  frNegAdcPed = new TClonesArray("THcSignalHit", 16);
+  frNegAdcPeakInt = new TClonesArray("THcSignalHit", 16);
+  frNegAdcPeakAmp = new TClonesArray("THcSignalHit", 16);
 
   InitArrays();
 
@@ -60,6 +77,22 @@ THcAerogel::THcAerogel( ) :
   fPosADCHits = NULL;
   fNegADCHits = NULL;
 
+  frPosAdcPedRaw = NULL;
+  frPosAdcPeakIntRaw = NULL;
+  frPosAdcPeakAmpRaw = NULL;
+
+  frPosAdcPed = NULL;
+  frPosAdcPeakInt = NULL;
+  frPosAdcPeakAmp = NULL;
+
+  frNegAdcPedRaw = NULL;
+  frNegAdcPeakIntRaw = NULL;
+  frNegAdcPeakAmpRaw = NULL;
+
+  frNegAdcPed = NULL;
+  frNegAdcPeakInt = NULL;
+  frNegAdcPeakAmp = NULL;
+
   InitArrays();
 
 }
@@ -74,6 +107,22 @@ THcAerogel::~THcAerogel()
   delete fNegTDCHits; fNegTDCHits = NULL;
   delete fPosADCHits; fPosADCHits = NULL;
   delete fNegADCHits; fNegADCHits = NULL;
+
+  delete frPosAdcPedRaw; frPosAdcPedRaw = NULL;
+  delete frPosAdcPeakIntRaw; frPosAdcPeakIntRaw = NULL;
+  delete frPosAdcPeakAmpRaw; frPosAdcPeakAmpRaw = NULL;
+
+  delete frPosAdcPed; frPosAdcPed = NULL;
+  delete frPosAdcPeakInt; frPosAdcPeakInt = NULL;
+  delete frPosAdcPeakAmp; frPosAdcPeakAmp = NULL;
+
+  delete frNegAdcPedRaw; frNegAdcPedRaw = NULL;
+  delete frNegAdcPeakIntRaw; frNegAdcPeakIntRaw = NULL;
+  delete frNegAdcPeakAmpRaw; frNegAdcPeakAmpRaw = NULL;
+
+  delete frNegAdcPed; frNegAdcPed = NULL;
+  delete frNegAdcPeakInt; frNegAdcPeakInt = NULL;
+  delete frNegAdcPeakAmp; frNegAdcPeakAmp = NULL;
 }
 
 //_____________________________________________________________________________
@@ -257,6 +306,26 @@ Int_t THcAerogel::DefineVariables( EMode mode )
     {"ntdc_pos_hits", "Number of Positive Tube Hits", "fNTDCPosHits"},
     {"ntdc_neg_hits", "Number of Negative Tube Hits", "fNTDCNegHits"},
     {"ngood_hits", "Total number of good hits", "fNGoodHits"},
+
+    {"posAdcCounter",    "List of positive ADC counter numbers.",     "frPosAdcPeakIntRaw.THcSignalHit.GetPaddleNumber()"},
+    {"negAdcCounter",    "List of negative ADC counter numbers.",     "frNegAdcPeakIntRaw.THcSignalHit.GetPaddleNumber()"},
+
+    {"posAdcPedRaw",     "List of Positive raw ADC pedestals",        "frPosAdcPedRaw.THcSignalHit.GetData()"},
+    {"posAdcPeakIntRaw", "List of Positive raw ADC peak integrals.",  "frPosAdcPeakIntRaw.THcSignalHit.GetData()"},
+    {"posAdcPeakAmpRaw", "List of Positive raw ADC peak amplitudes.", "frPosAdcPeakAmpRaw.THcSignalHit.GetData()"},
+
+    {"posAdcPed",        "List of Positive ADC pedestals",            "frPosAdcPed.THcSignalHit.GetData()"},
+    {"posAdcPeakInt",    "List of Positive ADC peak integrals.",      "frPosAdcPeakInt.THcSignalHit.GetData()"},
+    {"posAdcPeakAmp",    "List of Positive ADC peak amplitudes.",     "frPosAdcPeakAmp.THcSignalHit.GetData()"},
+
+    {"negAdcPedRaw",     "List of Negative raw ADC pedestals",        "frNegAdcPedRaw.THcSignalHit.GetData()"},
+    {"negAdcPeakIntRaw", "List of Negative raw ADC peak integrals.",  "frNegAdcPeakIntRaw.THcSignalHit.GetData()"},
+    {"negAdcPeakAmpRaw", "List of Negative raw ADC peak amplitudes.", "frNegAdcPeakAmpRaw.THcSignalHit.GetData()"},
+
+    {"negAdcPed",        "List of Negative ADC pedestals",            "frNegAdcPed.THcSignalHit.GetData()"},
+    {"negAdcPeakInt",    "List of Negative ADC peak integrals.",      "frNegAdcPeakInt.THcSignalHit.GetData()"},
+    {"negAdcPeakAmp",    "List of Negative ADC peak amplitudes.",     "frNegAdcPeakAmp.THcSignalHit.GetData()"},
+
     { 0 }
   };
 
@@ -298,6 +367,21 @@ void THcAerogel::Clear(Option_t* opt)
     fNegNpe[itube] = 0.0;
   }
 
+  frPosAdcPedRaw->Clear();
+  frPosAdcPeakIntRaw->Clear();
+  frPosAdcPeakAmpRaw->Clear();
+
+  frPosAdcPed->Clear();
+  frPosAdcPeakInt->Clear();
+  frPosAdcPeakAmp->Clear();
+
+  frNegAdcPedRaw->Clear();
+  frNegAdcPeakIntRaw->Clear();
+  frNegAdcPeakAmpRaw->Clear();
+
+  frNegAdcPed->Clear();
+  frNegAdcPeakInt->Clear();
+  frNegAdcPeakAmp->Clear();
 }
 
 //_____________________________________________________________________________
@@ -327,8 +411,39 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
   Int_t nNegTDCHits=0;
   Int_t nPosADCHits=0;
   Int_t nNegADCHits=0;
+
+  UInt_t nrPosAdcHits = 0;
+  UInt_t nrNegAdcHits = 0;
+
   while(ihit < fNhits) {
     THcAerogelHit* hit = (THcAerogelHit *) fRawHitList->At(ihit);
+
+    Int_t padnum = hit->fCounter;
+
+    THcRawAdcHit& rawPosAdcHit = hit->GetRawAdcHitPos();
+    for (UInt_t thit=0; thit<rawPosAdcHit.GetNPulses(); ++thit) {
+      ((THcSignalHit*) frPosAdcPedRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPedRaw());
+      ((THcSignalHit*) frPosAdcPed->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPed());
+
+      ((THcSignalHit*) frPosAdcPeakIntRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPeakIntRaw());
+      ((THcSignalHit*) frPosAdcPeakInt->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPeakInt());
+
+      ((THcSignalHit*) frPosAdcPeakAmpRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPeakAmpRaw());
+      ((THcSignalHit*) frPosAdcPeakAmp->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPeakAmp());
+      ++nrPosAdcHits;
+    }
+    THcRawAdcHit& rawNegAdcHit = hit->GetRawAdcHitNeg();
+    for (UInt_t thit=0; thit<rawNegAdcHit.GetNPulses(); ++thit) {
+      ((THcSignalHit*) frNegAdcPedRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPedRaw());
+      ((THcSignalHit*) frNegAdcPed->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPed());
+
+      ((THcSignalHit*) frNegAdcPeakIntRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPeakIntRaw());
+      ((THcSignalHit*) frNegAdcPeakInt->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPeakInt());
+
+      ((THcSignalHit*) frNegAdcPeakAmpRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPeakAmpRaw());
+      ((THcSignalHit*) frNegAdcPeakAmp->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPeakAmp());
+      ++nrNegAdcHits;
+    }
 
     Int_t adc_pos;
     Int_t adc_neg;
