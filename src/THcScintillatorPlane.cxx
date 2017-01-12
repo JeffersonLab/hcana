@@ -384,10 +384,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     Int_t index=padnum-1;
     // Need to be finding first hit in TDC range, not the first hit overall
-    if (hit->fNRawHits[2] > 0)
-      ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->GetTDCPos()+fTdcOffset);
-    if (hit->fNRawHits[3] > 0)
-      ((THcSignalHit*) frNegTDCHits->ConstructedAt(nrNegTDCHits++))->Set(padnum, hit->GetTDCNeg()+fTdcOffset);
+    if (hit->GetRawTdcHitPos().GetNHits() > 0)
+      ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->GetRawTdcHitPos().GetTime()+fTdcOffset);
+    if (hit->GetRawTdcHitNeg().GetNHits() > 0)
+      ((THcSignalHit*) frNegTDCHits->ConstructedAt(nrNegTDCHits++))->Set(padnum, hit->GetRawTdcHitNeg().GetTime()+fTdcOffset);
     // For making hit maps, we use >= 50 cut
     // For making raw hists, we don't want the cut
     // We can use a flag to turn on and off these without 50 cut
@@ -395,29 +395,29 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Double_t adc_pos;
     Double_t adc_neg;
     if(fADCMode == kADCDynamicPedestal) {
-      adc_pos = hit->GetADCPos()-hit->GetPedestalPos()*fADCPedScaleFactor;
-      adc_neg = hit->GetADCNeg()-hit->GetPedestalNeg()*fADCPedScaleFactor;
+			adc_pos = hit->GetRawAdcHitPos().GetPeakInt();
+			adc_neg = hit->GetRawAdcHitNeg().GetPeakInt();
     } else if (fADCMode == kADCSampleIntegral) {
-      adc_pos = hit->GetIntegralPos()-fPosPed[index];
-      adc_neg = hit->GetIntegralNeg()-fNegPed[index];
+			adc_pos = hit->GetRawAdcHitPos().GetSampleIntRaw() - fPosPed[index];
+			adc_neg = hit->GetRawAdcHitNeg().GetSampleIntRaw() - fNegPed[index];
     } else if (fADCMode == kADCSampIntDynPed) {
-      adc_pos = hit->GetIntegralPos()-hit->GetPedestalPos()*fADCPedScaleFactor;
-      adc_neg = hit->GetIntegralNeg()-hit->GetPedestalNeg()*fADCPedScaleFactor;
+      adc_pos = hit->GetRawAdcHitPos().GetSampleInt();
+      adc_neg = hit->GetRawAdcHitNeg().GetSampleInt();
     } else {
-      adc_pos = hit->GetADCPos()-fPosPed[index];
-      adc_neg = hit->GetADCNeg()-fNegPed[index];
+      adc_pos = hit->GetRawAdcHitPos().GetPeakIntRaw()-fPosPed[index];
+      adc_neg = hit->GetRawAdcHitNeg().GetPeakIntRaw()-fNegPed[index];
     }
     if (adc_pos >= fADCDiagCut) {
       ((THcSignalHit*) frPosADCHits->ConstructedAt(nrPosADCHits))->Set(padnum, adc_pos);
-      Double_t samplesum=hit->GetIntegralPos();
-      Double_t pedestal=hit->GetPedestalPos();
+      Double_t samplesum=hit->GetRawAdcHitPos().GetSampleIntRaw();
+      Double_t pedestal=hit->GetRawAdcHitPos().GetPedRaw();
       ((THcSignalHit*) frPosADCSums->ConstructedAt(nrPosADCHits))->Set(padnum, samplesum);
       ((THcSignalHit*) frPosADCPeds->ConstructedAt(nrPosADCHits++))->Set(padnum, pedestal);
     }
     if (adc_neg >= fADCDiagCut) {
       ((THcSignalHit*) frNegADCHits->ConstructedAt(nrNegADCHits))->Set(padnum, adc_neg);
-      Double_t samplesum=hit->GetIntegralNeg();
-      Double_t pedestal=hit->GetPedestalNeg();
+			Double_t samplesum=hit->GetRawAdcHitNeg().GetSampleIntRaw();
+      Double_t pedestal=hit->GetRawAdcHitNeg().GetPedRaw();
       ((THcSignalHit*) frNegADCSums->ConstructedAt(nrNegADCHits))->Set(padnum, samplesum);
       ((THcSignalHit*) frNegADCPeds->ConstructedAt(nrNegADCHits++))->Set(padnum, pedestal);
     }
@@ -427,15 +427,15 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Int_t tdc_pos=-99;
     Int_t tdc_neg=-99;
     // Find first in range hit from multihit tdc
-    for(UInt_t thit=0; thit<hit->fNRawHits[2]; thit++) {
-      tdc_pos = hit->GetTDCPos(thit)+fTdcOffset;
+    for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
+      tdc_pos = hit->GetRawTdcHitPos().GetTime(thit)+fTdcOffset;
       if(tdc_pos >= fScinTdcMin && tdc_pos <= fScinTdcMax) {
 	btdcraw_pos = kTRUE;
 	break;
       }
     }
-    for(UInt_t thit=0; thit<hit->fNRawHits[3]; thit++) {
-      tdc_neg = hit->GetTDCNeg(thit)+fTdcOffset;
+    for(UInt_t thit=0; thit<hit->GetRawTdcHitNeg().GetNHits(); thit++) {
+      tdc_neg = hit->GetRawTdcHitNeg().GetTime(thit)+fTdcOffset;
       if(tdc_neg >= fScinTdcMin && tdc_neg <= fScinTdcMax) {
 	btdcraw_neg = kTRUE;
 	break;
@@ -525,8 +525,8 @@ Int_t THcScintillatorPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nex
       break;
     }
     Int_t element = hit->fCounter - 1; // Should check if in range
-    Int_t adcpos = hit->GetADCPos();
-    Int_t adcneg = hit->GetADCNeg();
+    Int_t adcpos = hit->GetRawAdcHitPos().GetPeakIntRaw();
+    Int_t adcneg = hit->GetRawAdcHitNeg().GetPeakIntRaw();
 
     if(adcpos <= fPosPedLimit[element]) {
       fPosPedSum[element] += adcpos;
@@ -613,4 +613,3 @@ void THcScintillatorPlane::InitializePedestals( )
 //____________________________________________________________________________
 ClassImp(THcScintillatorPlane)
 ////////////////////////////////////////////////////////////////////////////////
-

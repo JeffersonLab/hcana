@@ -40,4 +40,5 @@ class THcRawShowerHit : public THcRawHit {
     ClassDef(THcRawShowerHit, 0);  // Raw Shower counter hit
 };
 
+
 #endif

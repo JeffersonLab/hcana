@@ -335,27 +335,27 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
     Int_t tdc_pos=-1;
     Int_t tdc_neg=-1;
    // TDC positive hit
-    if(hit->fNRawHits[2] >  0) {
+    if(hit->GetRawTdcHitPos().GetNHits() >  0) {
       THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
-      tdc_pos = hit->GetTDCPos()+fTdcOffset;
+      tdc_pos = hit->GetRawTdcHitPos().GetTime()+fTdcOffset;
       sighit->Set(hit->fCounter, tdc_pos);
     }
 
     // TDC negative hit
-    if(hit->fNRawHits[3] >  0) {
+    if(hit->GetRawTdcHitNeg().GetNHits() >  0) {
       THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
-      tdc_neg = hit->GetTDCNeg()+fTdcOffset;
+      tdc_neg = hit->GetRawTdcHitNeg().GetTime()+fTdcOffset;
       sighit->Set(hit->fCounter, tdc_neg);
     }
 
     // ADC positive hit
-    if((adc_pos = hit->GetADCPos()) > 0) {
+    if((adc_pos = hit->GetRawAdcHitPos().GetPeakInt()) > 0) {
       THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
       sighit->Set(hit->fCounter, adc_pos);
     }
 
     // ADC negative hit
-    if((adc_neg = hit->GetADCNeg()) > 0) {
+    if((adc_neg = hit->GetRawAdcHitNeg().GetPeakInt()) > 0) {
       THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
       sighit->Set(hit->fCounter, adc_neg);
     }
@@ -363,15 +363,15 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
     // For each TDC, identify the first hit that is positive.
     tdc_pos = -1;
     tdc_neg = -1;
-    for(UInt_t thit=0; thit<hit->fNRawHits[2]; thit++) {
-      Int_t tdc = hit->GetTDCPos(thit);
+    for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
+      Int_t tdc = hit->GetRawTdcHitPos().GetTime(thit);
       if(tdc >=0 ) {
 	tdc_pos = tdc;
 	break;
       }
     }
-    for(UInt_t thit=0; thit<hit->fNRawHits[3]; thit++) {
-      Int_t tdc = hit->GetTDCNeg(thit);
+    for(UInt_t thit=0; thit<hit->GetRawTdcHitNeg().GetNHits(); thit++) {
+      Int_t tdc = hit->GetRawTdcHitNeg().GetTime(thit);
       if(tdc >= 0) {
 	tdc_neg = tdc;
 	break;
@@ -532,8 +532,8 @@ void THcAerogel::AccumulatePedestals(TClonesArray* rawhits)
     THcAerogelHit* hit = (THcAerogelHit *) rawhits->At(ihit);
 
     Int_t element = hit->fCounter - 1;
-    Int_t adcpos = hit->GetADCPos();
-    Int_t adcneg = hit->GetADCNeg();
+    Int_t adcpos = hit->GetRawAdcHitPos().GetPeakInt();
+    Int_t adcneg = hit->GetRawAdcHitNeg().GetPeakInt();
     if(adcpos <= fPosPedLimit[element]) {
       fPosPedSum[element] += adcpos;
       fPosPedSum2[element] += adcpos*adcpos;
@@ -608,4 +608,3 @@ void THcAerogel::Print( const Option_t* opt) const {
 
 ClassImp(THcAerogel)
 ////////////////////////////////////////////////////////////////////////////////
-

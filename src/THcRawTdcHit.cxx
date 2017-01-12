@@ -69,6 +69,7 @@ void THcRawTdcHit::SetRefTime(Int_t refTime) {
   fHasRefTime = kTRUE;
 }
 
+
 Int_t THcRawTdcHit::GetTimeRaw(UInt_t iHit) const {
   if (iHit < fNHits) {
     return fTime[iHit];
@@ -107,8 +108,14 @@ Int_t THcRawTdcHit::GetRefTime() const {
   }
 }
 
+
 Int_t THcRawTdcHit::HasRefTime() const {
   return fHasRefTime;
+}
+
+
+UInt_t THcRawTdcHit::GetNHits() const {
+  return fNHits;
 }
 
 

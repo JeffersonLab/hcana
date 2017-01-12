@@ -45,6 +45,8 @@ class THcRawAdcHit : public TObject {
     Double_t GetPeakAmp(UInt_t iPulse=0);
     //Double_t GetPeakTime(UInt_t iPulse=0);
 
+    Int_t GetSampleIntRaw();
+    Double_t GetSampleInt();
 
   protected:
     static const UInt_t fMaxNPulses = 4;

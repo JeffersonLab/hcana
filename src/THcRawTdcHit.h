@@ -21,6 +21,8 @@ class THcRawTdcHit : public TObject {
 
     Int_t HasRefTime() const;
 
+    UInt_t GetNHits() const;
+
   protected:
     static const UInt_t fMaxNHits = 16;
 

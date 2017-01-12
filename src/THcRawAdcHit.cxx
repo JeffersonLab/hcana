@@ -97,9 +97,9 @@ void THcRawAdcHit::SetDataTimePedestalPeak(
     );
   }
   fAdc[fNPulses] = data;
-  fAdcTime[fNPulses] = data;
-  fAdcPedestal[fNPulses] = data;
-  fAdcPeak[fNPulses] = data;
+  fAdcTime[fNPulses] = time;
+  fAdcPedestal[fNPulses] = pedestal;
+  fAdcPeak[fNPulses] = peak;
   fHasMulti = kTRUE;
   ++fNPulses;
 }
@@ -275,6 +275,22 @@ Double_t THcRawAdcHit::GetPeakInt(UInt_t iPulse) {
 
 Double_t THcRawAdcHit::GetPeakAmp(UInt_t iPulse) {
   return fAdcPeak[iPulse] - 1.0 * fAdcPedestal[0]/fNPedestalSamples;
+}
+
+
+Int_t THcRawAdcHit::GetSampleIntRaw() {
+  Int_t integral = 0;
+
+  for (UInt_t iSample=0; iSample<fNSamples; ++iSample) {
+    integral += fAdcSample[iSample];
+  }
+
+  return integral;
+}
+
+
+Double_t THcRawAdcHit::GetSampleInt() {
+  return GetSampleIntRaw() - GetPed()*fNSamples;
 }
 
 
