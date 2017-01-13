@@ -26,7 +26,7 @@ class THcTrigRawHit : public THcRawHit {
     Int_t GetRawData(Int_t signal, UInt_t iHit);
     Int_t GetAdcTime(UInt_t iHit);
     Int_t GetAdcPedestal(UInt_t iHit);
-    Int_t GetAdcPeak(UInt_t iHit);
+    Int_t GetAdcPulse(UInt_t iHit);
     Int_t GetNSignals();
     ESignalType GetSignalType(Int_t signal);
     Int_t GetReference(Int_t signal);
@@ -45,7 +45,7 @@ class THcTrigRawHit : public THcRawHit {
     Int_t fAdc[fMaxNPulsesAdc];
     Int_t fAdcTime[fMaxNPulsesAdc];
     Int_t fAdcPedestal[fMaxNPulsesAdc];
-    Int_t fAdcPeak[fMaxNPulsesAdc];
+    Int_t fAdcPulse[fMaxNPulsesAdc];
 
     Int_t fAdcSamples[fMaxNSamplesAdc];
 

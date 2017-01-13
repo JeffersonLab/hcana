@@ -50,12 +50,12 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
   fADCHits = new TClonesArray("THcSignalHit",16);
 
   frAdcPedRaw = new TClonesArray("THcSignalHit", 16);
-  frAdcPeakIntRaw = new TClonesArray("THcSignalHit", 16);
-  frAdcPeakAmpRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseIntRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseAmpRaw = new TClonesArray("THcSignalHit", 16);
 
   frAdcPed = new TClonesArray("THcSignalHit", 16);
-  frAdcPeakInt = new TClonesArray("THcSignalHit", 16);
-  frAdcPeakAmp = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseInt = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseAmp = new TClonesArray("THcSignalHit", 16);
 
   cout << "fADCHits " << fADCHits << endl;
   InitArrays();
@@ -71,12 +71,12 @@ THcCherenkov::THcCherenkov( ) :
   fADCHits = NULL;
 
   frAdcPedRaw = NULL;
-  frAdcPeakIntRaw = NULL;
-  frAdcPeakAmpRaw = NULL;
+  frAdcPulseIntRaw = NULL;
+  frAdcPulseAmpRaw = NULL;
 
   frAdcPed = NULL;
-  frAdcPeakInt = NULL;
-  frAdcPeakAmp = NULL;
+  frAdcPulseInt = NULL;
+  frAdcPulseAmp = NULL;
 
   InitArrays();
 }
@@ -122,12 +122,12 @@ THcCherenkov::~THcCherenkov()
   delete fADCHits; fADCHits = NULL;
 
   delete frAdcPedRaw; frAdcPedRaw = NULL;
-  delete frAdcPeakIntRaw; frAdcPeakIntRaw = NULL;
-  delete frAdcPeakAmpRaw; frAdcPeakAmpRaw = NULL;
+  delete frAdcPulseIntRaw; frAdcPulseIntRaw = NULL;
+  delete frAdcPulseAmpRaw; frAdcPulseAmpRaw = NULL;
 
   delete frAdcPed; frAdcPed = NULL;
-  delete frAdcPeakInt; frAdcPeakInt = NULL;
-  delete frAdcPeakAmp; frAdcPeakAmp = NULL;
+  delete frAdcPulseInt; frAdcPulseInt = NULL;
+  delete frAdcPulseAmp; frAdcPulseAmp = NULL;
 
   DeleteArrays();
 
@@ -268,15 +268,15 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
     {"certrackcounter", "Tracks inside Cherenkov region",        "fCerTrackCounter"},
     {"cerfiredcounter", "Tracks with engough Cherenkov NPEs ",   "fCerFiredCounter"},
 
-    {"adcCounter",    "List of ADC counter numbers.",     "frPosAdcPeakIntRaw.THcSignalHit.GetPaddleNumber()"},
+    {"adcCounter",    "List of ADC counter numbers.",     "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
 
     {"adcPedRaw",     "List of raw ADC pedestals",        "frAdcPedRaw.THcSignalHit.GetData()"},
-    {"adcPeakIntRaw", "List of raw ADC peak integrals.",  "frAdcPeakIntRaw.THcSignalHit.GetData()"},
-    {"adcPeakAmpRaw", "List of raw ADC peak amplitudes.", "frAdcPeakAmpRaw.THcSignalHit.GetData()"},
+    {"adcPeakIntRaw", "List of raw ADC peak integrals.",  "frAdcPulseIntRaw.THcSignalHit.GetData()"},
+    {"adcPeakAmpRaw", "List of raw ADC peak amplitudes.", "frAdcPulseAmpRaw.THcSignalHit.GetData()"},
 
     {"adcPed",        "List of ADC pedestals",            "frAdcPed.THcSignalHit.GetData()"},
-    {"adcPeakInt",    "List of ADC peak integrals.",      "frAdcPeakInt.THcSignalHit.GetData()"},
-    {"adcPeakAmp",    "List of ADC peak amplitudes.",     "frAdcPeakAmp.THcSignalHit.GetData()"},
+    {"adcPeakInt",    "List of ADC peak integrals.",      "frAdcPulseInt.THcSignalHit.GetData()"},
+    {"adcPeakAmp",    "List of ADC peak amplitudes.",     "frAdcPulseAmp.THcSignalHit.GetData()"},
 
     { 0 }
   };
@@ -304,12 +304,12 @@ void THcCherenkov::Clear(Option_t* opt)
   }
 
   frAdcPedRaw->Clear();
-  frAdcPeakIntRaw->Clear();
-  frAdcPeakAmpRaw->Clear();
+  frAdcPulseIntRaw->Clear();
+  frAdcPulseAmpRaw->Clear();
 
   frAdcPed->Clear();
-  frAdcPeakInt->Clear();
-  frAdcPeakAmp->Clear();
+  frAdcPulseInt->Clear();
+  frAdcPulseAmp->Clear();
 
 }
 
@@ -346,18 +346,18 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
       ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPedRaw());
       ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPed());
 
-      ((THcSignalHit*) frAdcPeakIntRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPeakIntRaw());
-      ((THcSignalHit*) frAdcPeakInt->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPeakInt());
+      ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseIntRaw());
+      ((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseInt());
 
-      ((THcSignalHit*) frAdcPeakAmpRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPeakAmpRaw());
-      ((THcSignalHit*) frAdcPeakAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPeakAmp());
+      ((THcSignalHit*) frAdcPulseAmpRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmpRaw());
+      ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp());
       ++nrAdcHits;
     }
 
     // ADC hit
-    if(hit->GetRawAdcHitPos().GetPeakIntRaw() >  0) {
+    if(hit->GetRawAdcHitPos().GetPulseIntRaw() >  0) {
       THcSignalHit *sighit = (THcSignalHit*) fADCHits->ConstructedAt(nADCHits++);
-      sighit->Set(hit->fCounter, hit->GetRawAdcHitPos().GetPeakIntRaw());
+      sighit->Set(hit->fCounter, hit->GetRawAdcHitPos().GetPulseIntRaw());
     }
 
     ihit++;
@@ -391,13 +391,13 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
       cout << "ihit != npmt " << endl;
 
     fNPMT[npmt] = hit->fCounter;
-    fADC[npmt] = hit->GetRawAdcHitPos().GetPeakIntRaw();
-    fADC_P[npmt] = hit->GetRawAdcHitPos().GetPeakIntRaw() - fPedMean[npmt];
+    fADC[npmt] = hit->GetRawAdcHitPos().GetPulseIntRaw();
+    fADC_P[npmt] = hit->GetRawAdcHitPos().GetPulseIntRaw() - fPedMean[npmt];
 
-    if ( ( fADC_P[npmt] > fCerWidth[npmt] ) && ( hit->GetRawAdcHitPos().GetPeakIntRaw() < 8000 ) ) {
+    if ( ( fADC_P[npmt] > fCerWidth[npmt] ) && ( hit->GetRawAdcHitPos().GetPulseIntRaw() < 8000 ) ) {
       fNPE[npmt] = fGain[npmt]*fADC_P[npmt];
       fNCherHit ++;
-    } else if (  hit->GetRawAdcHitPos().GetPeakIntRaw() > 8000 ) {
+    } else if (  hit->GetRawAdcHitPos().GetPulseIntRaw() > 8000 ) {
       fNPE[npmt] = 100.0;
     } else {
       fNPE[npmt] = 0.0;
@@ -494,7 +494,7 @@ void THcCherenkov::AccumulatePedestals(TClonesArray* rawhits)
     THcCherenkovHit* hit = (THcCherenkovHit *) rawhits->At(ihit);
 
     Int_t element = hit->fCounter - 1;
-    Int_t nadc = hit->GetRawAdcHitPos().GetPeakIntRaw();
+    Int_t nadc = hit->GetRawAdcHitPos().GetPulseIntRaw();
     if(nadc <= fPedLimit[element]) {
       fPedSum[element] += nadc;
       fPedSum2[element] += nadc*nadc;

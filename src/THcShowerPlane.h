@@ -152,20 +152,20 @@ protected:
   Float_t *fNegThresh;
 
   TClonesArray* frPosAdcPedRaw;
-  TClonesArray* frPosAdcPeakIntRaw;
-  TClonesArray* frPosAdcPeakAmpRaw;
+  TClonesArray* frPosAdcPulseIntRaw;
+  TClonesArray* frPosAdcPulseAmpRaw;
 
   TClonesArray* frPosAdcPed;
-  TClonesArray* frPosAdcPeakInt;
-  TClonesArray* frPosAdcPeakAmp;
+  TClonesArray* frPosAdcPulseInt;
+  TClonesArray* frPosAdcPulseAmp;
 
   TClonesArray* frNegAdcPedRaw;
-  TClonesArray* frNegAdcPeakIntRaw;
-  TClonesArray* frNegAdcPeakAmpRaw;
+  TClonesArray* frNegAdcPulseIntRaw;
+  TClonesArray* frNegAdcPulseAmpRaw;
 
   TClonesArray* frNegAdcPed;
-  TClonesArray* frNegAdcPeakInt;
-  TClonesArray* frNegAdcPeakAmp;
+  TClonesArray* frNegAdcPulseInt;
+  TClonesArray* frNegAdcPulseAmp;
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );

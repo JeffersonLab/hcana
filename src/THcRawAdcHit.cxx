@@ -18,7 +18,7 @@ THcRawAdcHit::THcRawAdcHit() :
   TObject(),
   fNPedestalSamples(4), fNPeakSamples(10),
   fPeakPedestalRatio(1.0*fNPeakSamples/fNPedestalSamples),
-  fAdc(), fAdcTime(), fAdcPedestal(), fAdcPeak(), fAdcSample(),
+  fAdc(), fAdcTime(), fAdcPedestal(), fAdcPulse(), fAdcSample(),
   fHasMulti(kFALSE), fNPulses(0), fNSamples(0)
 {}
 
@@ -31,7 +31,7 @@ THcRawAdcHit& THcRawAdcHit::operator=(const THcRawAdcHit& right) {
       fAdc[i] = right.fAdc[i];
       fAdcTime[i] = right.fAdcTime[i];
       fAdcPedestal[i] = right.fAdcPedestal[i];
-      fAdcPeak[i] = right.fAdcPeak[i];
+      fAdcPulse[i] = right.fAdcPulse[i];
     }
     for (UInt_t i=0; i<fMaxNSamples; ++i) {
       fAdcSample[i] = right.fAdcSample[i];
@@ -55,7 +55,7 @@ void THcRawAdcHit::Clear(Option_t* opt) {
     fAdc[i] = 0;
     fAdcTime[i] = 0;
     fAdcPedestal[i] = 0;
-    fAdcPeak[i] = 0;
+    fAdcPulse[i] = 0;
   }
   for (UInt_t i=0; i<fNSamples; ++i) {
     fAdcSample[i] = 0 ;
@@ -99,7 +99,7 @@ void THcRawAdcHit::SetDataTimePedestalPeak(
   fAdc[fNPulses] = data;
   fAdcTime[fNPulses] = time;
   fAdcPedestal[fNPulses] = pedestal;
-  fAdcPeak[fNPulses] = peak;
+  fAdcPulse[fNPulses] = peak;
   fHasMulti = kTRUE;
   ++fNPulses;
 }
@@ -156,16 +156,16 @@ Int_t THcRawAdcHit::GetAdcPedestal(UInt_t iPulse) {
 }
 
 
-Int_t THcRawAdcHit::GetAdcPeak(UInt_t iPulse) {
+Int_t THcRawAdcHit::GetAdcPulse(UInt_t iPulse) {
   if (iPulse >= fNPulses && iPulse != 0) {
     TString msg = TString::Format(
-      "`THcRawAdcHit::GetAdcPeak`: requested pulse %d where only %d pulses available!",
+      "`THcRawAdcHit::GetAdcPulse`: requested pulse %d where only %d pulses available!",
       iPulse, fNPulses
     );
     throw std::out_of_range(msg.Data());
   }
   else if (fHasMulti) {
-    return fAdcPeak[iPulse];
+    return fAdcPulse[iPulse];
   }
   else {
     return 0;
@@ -253,13 +253,13 @@ Int_t THcRawAdcHit::GetPedRaw() {
 }
 
 
-Int_t THcRawAdcHit::GetPeakIntRaw(UInt_t iPulse) {
+Int_t THcRawAdcHit::GetPulseIntRaw(UInt_t iPulse) {
   return fAdc[iPulse];
 }
 
 
-Int_t THcRawAdcHit::GetPeakAmpRaw(UInt_t iPulse) {
-  return fAdcPeak[iPulse];
+Int_t THcRawAdcHit::GetPulseAmpRaw(UInt_t iPulse) {
+  return fAdcPulse[iPulse];
 }
 
 
@@ -268,13 +268,13 @@ Double_t THcRawAdcHit::GetPed() {
 }
 
 
-Double_t THcRawAdcHit::GetPeakInt(UInt_t iPulse) {
+Double_t THcRawAdcHit::GetPulseInt(UInt_t iPulse) {
   return fAdc[iPulse] - fAdcPedestal[0] * fPeakPedestalRatio;
 }
 
 
-Double_t THcRawAdcHit::GetPeakAmp(UInt_t iPulse) {
-  return fAdcPeak[iPulse] - 1.0 * fAdcPedestal[0]/fNPedestalSamples;
+Double_t THcRawAdcHit::GetPulseAmp(UInt_t iPulse) {
+  return fAdcPulse[iPulse] - 1.0 * fAdcPedestal[0]/fNPedestalSamples;
 }
 
 
