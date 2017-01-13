@@ -96,6 +96,24 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
 
   Int_t fTdcOffset; /* Global TDC offset */
 
+  TClonesArray* frPosAdcPedRaw;
+  TClonesArray* frPosAdcPulseIntRaw;
+  TClonesArray* frPosAdcPulseAmpRaw;
+  TClonesArray* frPosAdcPulseTimeRaw;
+
+  TClonesArray* frPosAdcPed;
+  TClonesArray* frPosAdcPulseInt;
+  TClonesArray* frPosAdcPulseAmp;
+
+  TClonesArray* frNegAdcPedRaw;
+  TClonesArray* frNegAdcPulseIntRaw;
+  TClonesArray* frNegAdcPulseAmpRaw;
+  TClonesArray* frNegAdcPulseTimeRaw;
+
+  TClonesArray* frNegAdcPed;
+  TClonesArray* frNegAdcPulseInt;
+  TClonesArray* frNegAdcPulseAmp;
+
   void Setup(const char* name, const char* description);
   virtual void  InitializePedestals( );
 

@@ -151,6 +151,24 @@ protected:
   Float_t *fNegSig;
   Float_t *fNegThresh;
 
+  TClonesArray* frPosAdcPedRaw;
+  TClonesArray* frPosAdcPulseIntRaw;
+  TClonesArray* frPosAdcPulseAmpRaw;
+  TClonesArray* frPosAdcPulseTimeRaw;
+
+  TClonesArray* frPosAdcPed;
+  TClonesArray* frPosAdcPulseInt;
+  TClonesArray* frPosAdcPulseAmp;
+
+  TClonesArray* frNegAdcPedRaw;
+  TClonesArray* frNegAdcPulseIntRaw;
+  TClonesArray* frNegAdcPulseAmpRaw;
+  TClonesArray* frNegAdcPulseTimeRaw;
+
+  TClonesArray* frNegAdcPed;
+  TClonesArray* frNegAdcPulseInt;
+  TClonesArray* frNegAdcPulseAmp;
+
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
   virtual void  InitializePedestals( );

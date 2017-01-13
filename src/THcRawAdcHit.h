@@ -21,7 +21,7 @@ class THcRawAdcHit : public TObject {
     Int_t GetRawData(UInt_t iPulse=0);
     Int_t GetAdcTime(UInt_t iPulse=0);
     Int_t GetAdcPedestal(UInt_t iPulse=0);
-    Int_t GetAdcPeak(UInt_t iPulse=0);
+    Int_t GetAdcPulse(UInt_t iPulse=0);
     Int_t GetSample(UInt_t iSample);
 
     Double_t GetAverage(UInt_t iSampleLow, UInt_t iSampleHigh);
@@ -36,14 +36,14 @@ class THcRawAdcHit : public TObject {
     Bool_t HasMulti();
 
     Int_t GetPedRaw();
-    Int_t GetPeakIntRaw(UInt_t iPulse=0);
-    Int_t GetPeakAmpRaw(UInt_t iPulse=0);
-    //Int_t GetPeakTimeRaw(UInt_t iPulse=0);  // TODO: Figure out what to do with time.
+    Int_t GetPulseIntRaw(UInt_t iPulse=0);
+    Int_t GetPulseAmpRaw(UInt_t iPulse=0);
+    Int_t GetPulseTimeRaw(UInt_t iPulse=0);
 
     Double_t GetPed();
-    Double_t GetPeakInt(UInt_t iPulse=0);
-    Double_t GetPeakAmp(UInt_t iPulse=0);
-    //Double_t GetPeakTime(UInt_t iPulse=0);
+    Double_t GetPulseInt(UInt_t iPulse=0);
+    Double_t GetPulseAmp(UInt_t iPulse=0);
+    //Double_t GetPulseTime(UInt_t iPulse=0);  // TODO: Figure out what to do with time.
 
     Int_t GetSampleIntRaw();
     Double_t GetSampleInt();
@@ -59,7 +59,7 @@ class THcRawAdcHit : public TObject {
     Int_t fAdc[fMaxNPulses];  // TODO: Rename these...
     Int_t fAdcTime[fMaxNPulses];
     Int_t fAdcPedestal[fMaxNPulses];  // TODO: There should only be 1 pedestal...
-    Int_t fAdcPeak[fMaxNPulses];
+    Int_t fAdcPulse[fMaxNPulses];
     Int_t fAdcSample[fMaxNSamples];
 
     Bool_t fHasMulti;

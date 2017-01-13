@@ -72,6 +72,28 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* frNegADCPeds;
   TClonesArray* fHodoHits;
 
+  TClonesArray* frPosTdcTimeRaw;
+  TClonesArray* frPosAdcPedRaw;
+  TClonesArray* frPosAdcPulseIntRaw;
+  TClonesArray* frPosAdcPulseAmpRaw;
+  TClonesArray* frPosAdcPulseTimeRaw;
+
+  TClonesArray* frPosTdcTime;
+  TClonesArray* frPosAdcPed;
+  TClonesArray* frPosAdcPulseInt;
+  TClonesArray* frPosAdcPulseAmp;
+
+  TClonesArray* frNegTdcTimeRaw;
+  TClonesArray* frNegAdcPedRaw;
+  TClonesArray* frNegAdcPulseIntRaw;
+  TClonesArray* frNegAdcPulseAmpRaw;
+  TClonesArray* frNegAdcPulseTimeRaw;
+
+  TClonesArray* frNegTdcTime;
+  TClonesArray* frNegAdcPed;
+  TClonesArray* frNegAdcPulseInt;
+  TClonesArray* frNegAdcPulseAmp;
+
   Int_t fPlaneNum;		/* Which plane am I 1-4 */
   UInt_t fTotPlanes;            /* so we can read variables that are not indexed by plane id */
   UInt_t fNelem;		/* Need since we don't inherit from
@@ -158,5 +180,3 @@ class THcScintillatorPlane : public THaSubDetector {
   ClassDef(THcScintillatorPlane,0); // Scintillator bars in a plane
 };
 #endif
-
-

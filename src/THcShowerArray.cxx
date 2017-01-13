@@ -31,13 +31,22 @@ ClassImp(THcShowerArray)
 
 //______________________________________________________________________________
 THcShowerArray::THcShowerArray( const char* name,
-				const char* description,
+                                const char* description,
 				const Int_t layernum,
 				THaDetectorBase* parent )
   : THaSubDetector(name,description,parent)
 {
   fADCHits = new TClonesArray("THcSignalHit",100);
   fLayerNum = layernum;
+
+	frAdcPedRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseIntRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseAmpRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
+
+  frAdcPed = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseInt = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseAmp = new TClonesArray("THcSignalHit", 16);
 
   fClusterList = new THcShowerClusterList;         // List of hit clusters
 }
@@ -50,6 +59,15 @@ THcShowerArray::~THcShowerArray()
   delete fYPos;
 
   delete fADCHits;
+
+  delete frAdcPedRaw; frAdcPedRaw = NULL;
+  delete frAdcPulseIntRaw; frAdcPulseIntRaw = NULL;
+  delete frAdcPulseAmpRaw; frAdcPulseAmpRaw = NULL;
+  delete frAdcPulseTimeRaw; frAdcPulseTimeRaw = NULL;
+
+  delete frAdcPed; frAdcPed = NULL;
+  delete frAdcPulseInt; frAdcPulseInt = NULL;
+  delete frAdcPulseAmp; frAdcPulseAmp = NULL;
 
   delete [] fA;
   delete [] fP;
@@ -314,6 +332,18 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
     {"e", "Energy Depositions per block", "fE"},
     {"earray", "Energy Deposition in array", "fEarray"},
     { "ntracks", "Number of shower tracks", "fNtracks" },
+
+    {"adcCounter",      "List of ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+
+    {"adcPedRaw",       "List of raw ADC pedestals",         "frAdcPedRaw.THcSignalHit.GetData()"},
+    {"adcPulseIntRaw",  "List of raw ADC pulse integrals.",  "frAdcPulseIntRaw.THcSignalHit.GetData()"},
+    {"adcPulseAmpRaw",  "List of raw ADC pulse amplitudes.", "frAdcPulseAmpRaw.THcSignalHit.GetData()"},
+    {"adcPulseTimeRaw", "List of raw ADC pulse times.",      "frAdcPulseTimeRaw.THcSignalHit.GetData()"},
+
+    {"adcPed",          "List of ADC pedestals",             "frAdcPed.THcSignalHit.GetData()"},
+    {"adcPulseInt",     "List of ADC pulse integrals.",      "frAdcPulseInt.THcSignalHit.GetData()"},
+    {"adcPulseAmp",     "List of ADC pulse amplitudes.",     "frAdcPulseAmp.THcSignalHit.GetData()"},
+
     { 0 }
   };
 
@@ -336,6 +366,15 @@ void THcShowerArray::Clear( Option_t* )
     *i = 0;
   }
   fClusterList->clear();
+
+  frAdcPedRaw->Clear();
+  frAdcPulseIntRaw->Clear();
+  frAdcPulseAmpRaw->Clear();
+  frAdcPulseTimeRaw->Clear();
+
+  frAdcPed->Clear();
+  frAdcPulseInt->Clear();
+  frAdcPulseAmp->Clear();
 
 }
 
@@ -617,6 +656,15 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   Int_t nADCHits=0;
   fADCHits->Clear();
 
+  frAdcPedRaw->Clear();
+  frAdcPulseIntRaw->Clear();
+  frAdcPulseAmpRaw->Clear();
+  frAdcPulseTimeRaw->Clear();
+
+  frAdcPed->Clear();
+  frAdcPulseInt->Clear();
+  frAdcPulseAmp->Clear();
+
   for(Int_t i=0;i<fNelem;i++) {
     fA[i] = 0;
     fA_p[i] = 0;
@@ -634,6 +682,9 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   Int_t ngood = 0;
   Int_t threshold = 100;
+
+  UInt_t nrAdcHits = 0;
+
   while(ihit < nrawhits) {
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
 
@@ -641,6 +692,23 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       break;
     }
 
+    Int_t padnum = hit->fCounter;
+
+    THcRawAdcHit& rawAdcHit = hit->GetRawAdcHitPos();
+    for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
+      ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPedRaw());
+      ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPed());
+
+      ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseIntRaw());
+      ((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseInt());
+
+      ((THcSignalHit*) frAdcPulseAmpRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmpRaw());
+      ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp());
+
+      ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTimeRaw());
+
+      ++nrAdcHits;
+    }
 
 		// Should check that counter # is in range
 		if (fUsingFADC) {

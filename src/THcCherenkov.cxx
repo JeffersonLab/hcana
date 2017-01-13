@@ -43,11 +43,21 @@ using std::setprecision;
 
 //_____________________________________________________________________________
 THcCherenkov::THcCherenkov( const char* name, const char* description,
-				  THaApparatus* apparatus ) :
+                            THaApparatus* apparatus ) :
   THaNonTrackingDetector(name,description,apparatus)
 {
   // Normal constructor with name and description
   fADCHits = new TClonesArray("THcSignalHit",16);
+
+  frAdcPedRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseIntRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseAmpRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
+
+  frAdcPed = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseInt = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseAmp = new TClonesArray("THcSignalHit", 16);
+
   cout << "fADCHits " << fADCHits << endl;
   InitArrays();
   cout << "fADCHits " << fADCHits << endl;
@@ -60,6 +70,15 @@ THcCherenkov::THcCherenkov( ) :
 {
   // Constructor
   fADCHits = NULL;
+
+  frAdcPedRaw = NULL;
+  frAdcPulseIntRaw = NULL;
+  frAdcPulseAmpRaw = NULL;
+  frAdcPulseTimeRaw = NULL;
+
+  frAdcPed = NULL;
+  frAdcPulseInt = NULL;
+  frAdcPulseAmp = NULL;
 
   InitArrays();
 }
@@ -103,6 +122,15 @@ THcCherenkov::~THcCherenkov()
 {
   // Destructor
   delete fADCHits; fADCHits = NULL;
+
+  delete frAdcPedRaw; frAdcPedRaw = NULL;
+  delete frAdcPulseIntRaw; frAdcPulseIntRaw = NULL;
+  delete frAdcPulseAmpRaw; frAdcPulseAmpRaw = NULL;
+  delete frAdcPulseTimeRaw; frAdcPulseTimeRaw = NULL;
+
+  delete frAdcPed; frAdcPed = NULL;
+  delete frAdcPulseInt; frAdcPulseInt = NULL;
+  delete frAdcPulseAmp; frAdcPulseAmp = NULL;
 
   DeleteArrays();
 
@@ -242,6 +270,18 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
     {"ncherhit",        "Number of Hits(Cherenkov)",             "fNCherHit"},
     {"certrackcounter", "Tracks inside Cherenkov region",        "fCerTrackCounter"},
     {"cerfiredcounter", "Tracks with engough Cherenkov NPEs ",   "fCerFiredCounter"},
+
+    {"adcCounter",      "List of ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+
+    {"adcPedRaw",       "List of raw ADC pedestals",         "frAdcPedRaw.THcSignalHit.GetData()"},
+    {"adcPulseIntRaw",  "List of raw ADC pulse integrals.",  "frAdcPulseIntRaw.THcSignalHit.GetData()"},
+    {"adcPulseAmpRaw",  "List of raw ADC pulse amplitudes.", "frAdcPulseAmpRaw.THcSignalHit.GetData()"},
+    {"adcPulseTimeRaw", "List of raw ADC pulse times.",      "frAdcPulseTimeRaw.THcSignalHit.GetData()"},
+
+    {"adcPed",          "List of ADC pedestals",             "frAdcPed.THcSignalHit.GetData()"},
+    {"adcPulseInt",     "List of ADC pulse integrals.",      "frAdcPulseInt.THcSignalHit.GetData()"},
+    {"adcPulseAmp",     "List of ADC pulse amplitudes.",     "frAdcPulseAmp.THcSignalHit.GetData()"},
+
     { 0 }
   };
 
@@ -267,6 +307,15 @@ void THcCherenkov::Clear(Option_t* opt)
     fNPE[itube] = 0;
   }
 
+  frAdcPedRaw->Clear();
+  frAdcPulseIntRaw->Clear();
+  frAdcPulseAmpRaw->Clear();
+  frAdcPulseTimeRaw->Clear();
+
+  frAdcPed->Clear();
+  frAdcPulseInt->Clear();
+  frAdcPulseAmp->Clear();
+
 }
 
 //_____________________________________________________________________________
@@ -289,13 +338,34 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
 
   Int_t ihit = 0;
   Int_t nADCHits=0;
+
+  UInt_t nrAdcHits = 0;
+
   while(ihit < fNhits) {
     THcCherenkovHit* hit = (THcCherenkovHit *) fRawHitList->At(ihit);
 
+    Int_t padnum = hit->fCounter;
+
+    THcRawAdcHit& rawAdcHit = hit->GetRawAdcHitPos();
+    for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
+      ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPedRaw());
+      ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPed());
+
+      ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseIntRaw());
+      ((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseInt());
+
+      ((THcSignalHit*) frAdcPulseAmpRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmpRaw());
+      ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp());
+
+      ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTimeRaw());
+
+      ++nrAdcHits;
+    }
+
     // ADC hit
-    if(hit->GetRawAdcHitPos().GetPeakIntRaw() >  0) {
+    if(hit->GetRawAdcHitPos().GetPulseIntRaw() >  0) {
       THcSignalHit *sighit = (THcSignalHit*) fADCHits->ConstructedAt(nADCHits++);
-      sighit->Set(hit->fCounter, hit->GetRawAdcHitPos().GetPeakIntRaw());
+      sighit->Set(hit->fCounter, hit->GetRawAdcHitPos().GetPulseIntRaw());
     }
 
     ihit++;
@@ -329,13 +399,13 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
       cout << "ihit != npmt " << endl;
 
     fNPMT[npmt] = hit->fCounter;
-    fADC[npmt] = hit->GetRawAdcHitPos().GetPeakIntRaw();
-    fADC_P[npmt] = hit->GetRawAdcHitPos().GetPeakIntRaw() - fPedMean[npmt];
+    fADC[npmt] = hit->GetRawAdcHitPos().GetPulseIntRaw();
+    fADC_P[npmt] = hit->GetRawAdcHitPos().GetPulseIntRaw() - fPedMean[npmt];
 
-    if ( ( fADC_P[npmt] > fCerWidth[npmt] ) && ( hit->GetRawAdcHitPos().GetPeakIntRaw() < 8000 ) ) {
+    if ( ( fADC_P[npmt] > fCerWidth[npmt] ) && ( hit->GetRawAdcHitPos().GetPulseIntRaw() < 8000 ) ) {
       fNPE[npmt] = fGain[npmt]*fADC_P[npmt];
       fNCherHit ++;
-    } else if (  hit->GetRawAdcHitPos().GetPeakIntRaw() > 8000 ) {
+    } else if (  hit->GetRawAdcHitPos().GetPulseIntRaw() > 8000 ) {
       fNPE[npmt] = 100.0;
     } else {
       fNPE[npmt] = 0.0;
@@ -432,7 +502,7 @@ void THcCherenkov::AccumulatePedestals(TClonesArray* rawhits)
     THcCherenkovHit* hit = (THcCherenkovHit *) rawhits->At(ihit);
 
     Int_t element = hit->fCounter - 1;
-    Int_t nadc = hit->GetRawAdcHitPos().GetPeakIntRaw();
+    Int_t nadc = hit->GetRawAdcHitPos().GetPulseIntRaw();
     if(nadc <= fPedLimit[element]) {
       fPedSum[element] += nadc;
       fPedSum2[element] += nadc*nadc;

@@ -107,7 +107,7 @@ void THcRawHodoHit::SetReference(Int_t signal, Int_t reference) {
 
 Int_t THcRawHodoHit::GetData(Int_t signal) {
   if (0 <= signal && signal < fNAdcSignals) {
-    return fAdcHits[signal].GetPeakInt();
+    return fAdcHits[signal].GetPulseInt();
   }
   else if (fNAdcSignals <= signal && signal < fNAdcSignals+fNTdcSignals) {
     return fTdcHits[signal-fNAdcSignals].GetTime();
@@ -122,7 +122,7 @@ Int_t THcRawHodoHit::GetData(Int_t signal) {
 
 Int_t THcRawHodoHit::GetRawData(Int_t signal) {
   if (0 <= signal && signal < fNAdcSignals) {
-    return fAdcHits[signal].GetPeakIntRaw();
+    return fAdcHits[signal].GetPulseIntRaw();
   }
   else if (fNAdcSignals <= signal && signal < fNAdcSignals+fNTdcSignals) {
     return fTdcHits[signal-fNAdcSignals].GetTimeRaw();
