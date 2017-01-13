@@ -1,247 +1,201 @@
-/** \class THcRawHodoHit
-    \ingroup DetSupport
+/**
+\class THcRawHodoHit
+\ingroup DetSupport
 
-Raw Hodoscope Hit Info
+\brief Class representing a single raw hit for a hodoscope paddle.
 
-Class representing a single raw hit for a hodoscope paddle
-
- Contains plane, counter and pos/neg adc and tdc values
-
-
+  - `signal 0` is ADC pos
+  - `signal 1` is ADC neg
+  - `signal 2` is TDC pos
+  - `signal 3` is TDC neg
 */
-
-#include <cstring>
-#include <cstdio>
-#include <cstdlib>
-#include <iostream>
-#include <cassert>
-#include <stdexcept>
-
-#include "TString.h"
 
 #include "THcRawHodoHit.h"
 
-using namespace std;
+#include <iostream>
+#include <stdexcept>
 
-void THcRawHodoHit::SetData(Int_t signal, Int_t data) {
-  if(signal==0) {
-    if (fNRawHits[0] >= fMaxNPulsesADC) {throw std::runtime_error("Too many samples for `THcRawHodoHit` ADC+!");}
-    fADC_pos[fNRawHits[0]++] = data;
-  } else if (signal==1) {
-    if (fNRawHits[1] >= fMaxNPulsesADC) {throw std::runtime_error("Too many samples for `THcRawHodoHit` ADC-!");}
-    fADC_neg[fNRawHits[1]++] = data;
-  } else if(signal==2) {
-    if (fNRawHits[2] >= fMaxNHitsTDC) {throw std::runtime_error("Too many samples for `THcRawHodoHit` TDC+!");}
-    fTDC_pos[fNRawHits[2]++] = data;
-  } else if (signal==3) {
-    if (fNRawHits[3] >= fMaxNHitsTDC) {throw std::runtime_error("Too many samples for `THcRawHodoHit` TDC-!");}
-    fTDC_neg[fNRawHits[3]++] = data;
-  }
-}
 
-void THcRawHodoHit::SetDataTimePedestalPeak(Int_t signal, Int_t data, Int_t time,
-					    Int_t pedestal, Int_t peak) {
-  if(signal==0) {
-    if (fNRawHits[0] >= fMaxNPulsesADC) {throw std::runtime_error("Too many samples for `THcRawHodoHit` ADC+!");}
-    fADC_pos[fNRawHits[0]] = data;
-    fADC_Time_pos[fNRawHits[0]] = time;
-    fADC_Pedestal_pos[fNRawHits[0]] = pedestal;
-    fADC_Peak_pos[fNRawHits[0]++] = peak;
-    fHasMulti[signal]=kTRUE;
-    //    cout << fPlane << "/" << fCounter << "+ " << fNRawHits[0] <<  " " <<
-    //      data << "/" << time << "/" << pedestal << "/" << peak << endl;
-  } else if (signal==1) {
-    if (fNRawHits[1] >= fMaxNPulsesADC) {throw std::runtime_error("Too many samples for `THcRawHodoHit` ADC-!");}
-    fADC_neg[fNRawHits[1]] = data;
-    fADC_Time_neg[fNRawHits[1]] = time;
-    fADC_Pedestal_neg[fNRawHits[1]] = pedestal;
-    fADC_Peak_neg[fNRawHits[1]++] = peak;
-    fHasMulti[signal]=kTRUE;
-    //    cout << fPlane << "/" << fCounter << "- " << fNRawHits[0] <<  " " <<
-    //      data << "/" << time << "/" << pedestal << "/" << peak << endl;
-  }
-}
+THcRawHodoHit::THcRawHodoHit(Int_t plane, Int_t counter) :
+  fAdcHits(), fTdcHits()
+{}
 
-void THcRawHodoHit::SetSample(Int_t signal, Int_t data) {
-  if(signal==0) {
-    if (fNRawSamplesPos >= fMaxNSamplesADC) {throw std::runtime_error("Too many samples for `THcRawHodoHit` ADC+!");}
-    fADC_Samples_pos[fNRawSamplesPos++] = data;
-  } else if (signal==1) {
-    if (fNRawSamplesNeg >= fMaxNSamplesADC) {throw std::runtime_error("Too many samples for `THcRawHodoHit` ADC-!");}
-    fADC_Samples_neg[fNRawSamplesNeg++] = data;
-  }
-}
 
-Int_t THcRawHodoHit::GetIntegralPos() {
-  Int_t sum=0;
-  for(UInt_t i=0;i<fNRawSamplesPos;i++) {
-    sum += fADC_Samples_pos[i];
-  }
-  return(sum);
-}
+THcRawHodoHit& THcRawHodoHit::operator=(const THcRawHodoHit& right) {
+  THcRawHit::operator=(right);
 
-Int_t THcRawHodoHit::GetIntegralNeg() {
-  Int_t sum=0;
-  for(UInt_t i=0;i<fNRawSamplesNeg;i++) {
-    sum += fADC_Samples_neg[i];
-  }
-  return(sum);
-}
-
-Int_t THcRawHodoHit::GetPedestalPos() {
-  if(fHasMulti[0] && fNRawHits[0]>0) {
-    return(fADC_Pedestal_pos[0]);
-  } else {
-    return(0);
-  }
-}
-
-Int_t THcRawHodoHit::GetPedestalNeg() {
-  if(fHasMulti[1] && fNRawHits[1]>0) {
-    return(fADC_Pedestal_neg[0]);
-  } else {
-    return(0);
-  }
-}
-
-Int_t THcRawHodoHit::GetData(Int_t signal) {
-  return(GetData(signal,0));
-}
-Int_t THcRawHodoHit::GetData(Int_t signal, UInt_t ihit) {
-  Int_t value;
-  if(ihit>= fNRawHits[signal]) {
-    if(ihit==0) {
-      // We were not doing this, before, so we could have been sending
-      // stale data for missing tdc or adc hits
-      return(0);
+  if (this != &right) {
+    for (Int_t iAdcSig=0; iAdcSig<fNAdcSignals; ++iAdcSig) {
+      fAdcHits[iAdcSig] = right.fAdcHits[iAdcSig];
     }
-    cout << "THcRawHodoHit::GetData(): requested hit #" << ihit << " out of range: "
-	 << fNRawHits[signal] << endl;
-    return(-1);
-  }
-  if(signal==0) {
-    value = fADC_pos[ihit];
-  } else if (signal==1) {
-    value = fADC_neg[ihit];
-  } else if (signal==2) {
-    value = fTDC_pos[ihit];
-  } else if (signal==3) {
-    value = fTDC_neg[ihit];
-  } else {
-    TString msg = TString::Format(
-      "THcRawHodoHit::GetData(): requested invalid signal #%d.",
-      signal
-    );
-    throw std::out_of_range(msg.Data());
-  }
-  if(fHasRef[signal] && (signal == 2 || signal == 3)) {
-    value -= fReferenceTime[signal];
-  }
-  return(value);
-}
-
-Int_t THcRawHodoHit::GetRawData(Int_t signal) {
-  return(GetRawData(signal,0));
-}
-
-// Return a requested raw hit
-Int_t THcRawHodoHit::GetRawData(Int_t signal, UInt_t ihit) {
-  if(ihit>= fNRawHits[signal]) {
-    cout << "THcRawHodoHit::GetRawData(): requested hit #" << ihit << " out of "
-	 << fNRawHits[signal] << endl;
-    return(-1);
-  }
-  if(signal==0) {
-    return(fADC_pos[ihit]);
-  } else if (signal==1) {
-    return(fADC_neg[ihit]);
-  } else if (signal==2) {
-    return(fTDC_pos[ihit]);
-  } else if (signal==3) {
-    return(fTDC_neg[ihit]);
-  } else {
-    TString msg = TString::Format(
-      "THcRawHodoHit::GetRawData(): requested invalid signal #%d.",
-      signal
-    );
-    throw std::out_of_range(msg.Data());
-  }
-}
-
-// Set the reference time
-void THcRawHodoHit::SetReference(Int_t signal, Int_t reference) {
-  if (signal == 2 || signal == 3) {
-    fReferenceTime[signal] = reference;
-    fHasRef[signal] = kTRUE;
-  } else if (signal == 0 || signal == 1) {
-    std::cerr
-      << "Warning:"
-      << " THcRawHodoHit::SetReference():"
-      << " signals 0 and 1 (ADC) should not have reference time!"
-      << " Check map file!";
-  }
-}
-Int_t THcRawHodoHit::GetReference(Int_t signal) {
-  if(fHasRef[signal]) {
-    return(fReferenceTime[signal]);
-  } else {
-    return(0);
-  }
-}
-Bool_t THcRawHodoHit::HasReference(Int_t signal) {
-  return(fHasRef[signal]);
-}
-Bool_t THcRawHodoHit::HasMulti(Int_t signal) {
-  return(fHasMulti[signal]);
-}
-
-  // Do we use this?
-//_____________________________________________________________________________
-THcRawHodoHit& THcRawHodoHit::operator=( const THcRawHodoHit& rhs )
-{
-  // Assignment operator.
-
-  cout << "operator=" << endl;
-  THcRawHit::operator=(rhs);
-  if ( this != &rhs ) {
-    for(Int_t is=0;is<4;is++) {
-      fReferenceTime[is] = rhs.fReferenceTime[is];
-      fNRawHits[is] = rhs.fNRawHits[is];
-      fHasRef[is] = rhs.fHasRef[is];
-      fHasMulti[is] = rhs.fHasMulti[is];
+    for (Int_t iTdcSig=0; iTdcSig<fNTdcSignals; ++iTdcSig) {
+      fTdcHits[iTdcSig] = right.fTdcHits[iTdcSig];
     }
-    for(UInt_t ih=0;ih<fNRawHits[0];ih++) {
-      fADC_pos[ih] = rhs.fADC_pos[ih];
-      fADC_Time_pos[ih] = rhs.fADC_Time_pos[ih];
-      fADC_Pedestal_pos[ih] = rhs.fADC_Pedestal_pos[ih];
-      fADC_Peak_pos[ih] = rhs.fADC_Peak_pos[ih];
-    }
-    for(UInt_t ih=0;ih<fNRawHits[1];ih++) {
-      fADC_neg[ih] = rhs.fADC_neg[ih];
-      fADC_Time_neg[ih] = rhs.fADC_Time_neg[ih];
-      fADC_Pedestal_neg[ih] = rhs.fADC_Pedestal_neg[ih];
-      fADC_Peak_neg[ih] = rhs.fADC_Peak_neg[ih];
-    }
-    for(UInt_t ih=0;ih<fNRawHits[2];ih++) {
-      fTDC_pos[ih] = rhs.fTDC_pos[ih];
-    }
-    for(UInt_t ih=0;ih<fNRawHits[3];ih++) {
-      fTDC_neg[ih] = rhs.fTDC_neg[ih];
-    }
-    fNRawSamplesPos = rhs.fNRawSamplesPos;
-    fNRawSamplesNeg = rhs.fNRawSamplesNeg;
-    for(UInt_t is=0;is<fNRawSamplesPos;is++) {
-      fADC_Samples_pos[is] = rhs.fADC_Samples_pos[is];
-    }
-    for(UInt_t is=0;is<fNRawSamplesNeg;is++) {
-      fADC_Samples_neg[is] = rhs.fADC_Samples_neg[is];
-    }
-
-
   }
+
   return *this;
 }
 
 
-//////////////////////////////////////////////////////////////////////////
+THcRawHodoHit::~THcRawHodoHit() {}
+
+
+void THcRawHodoHit::Clear(Option_t* opt) {
+  THcRawHit::Clear(opt);
+
+  for (Int_t iAdcSig=0; iAdcSig<fNAdcSignals; ++iAdcSig) {
+    fAdcHits[iAdcSig].Clear();
+  }
+  for (Int_t iTdcSig=0; iTdcSig<fNTdcSignals; ++iTdcSig) {
+    fTdcHits[iTdcSig].Clear();
+  }
+}
+
+
+void THcRawHodoHit::SetData(Int_t signal, Int_t data) {
+  if (0 <= signal && signal < fNAdcSignals) {
+    fAdcHits[signal].SetData(data);
+  }
+  else if (fNAdcSignals <= signal && signal < fNAdcSignals+fNTdcSignals) {
+    fTdcHits[signal-fNAdcSignals].SetTime(data);
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::SetData`: only signals `0` to `3` available!"
+    );
+  }
+}
+
+
+void THcRawHodoHit::SetSample(Int_t signal, Int_t data) {
+  if (0 <= signal && signal < fNAdcSignals) {
+    fAdcHits[signal].SetSample(data);
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::SetSample`: only signals `0` and `1` available!"
+    );
+  }
+}
+
+
+void THcRawHodoHit::SetDataTimePedestalPeak(
+  Int_t signal, Int_t data, Int_t time, Int_t pedestal, Int_t peak
+) {
+  if (0 <= signal && signal < fNAdcSignals) {
+    fAdcHits[signal].SetDataTimePedestalPeak(data, time, pedestal, peak);
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::SetDataTimePedestalPeak`: only signals `0` and `1` available!"
+    );
+  }
+}
+
+
+void THcRawHodoHit::SetReference(Int_t signal, Int_t reference) {
+  if (fNAdcSignals <= signal && signal < fNAdcSignals+fNTdcSignals) {
+    fTdcHits[signal-fNAdcSignals].SetRefTime(reference);
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::SetReference`: only signals `2` and `3` available!"
+    );
+  }
+}
+
+
+Int_t THcRawHodoHit::GetData(Int_t signal) {
+  if (0 <= signal && signal < fNAdcSignals) {
+    return fAdcHits[signal].GetPeakInt();
+  }
+  else if (fNAdcSignals <= signal && signal < fNAdcSignals+fNTdcSignals) {
+    return fTdcHits[signal-fNAdcSignals].GetTime();
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::GetData`: only signals `0` to `3` available!"
+    );
+  }
+}
+
+
+Int_t THcRawHodoHit::GetRawData(Int_t signal) {
+  if (0 <= signal && signal < fNAdcSignals) {
+    return fAdcHits[signal].GetPeakIntRaw();
+  }
+  else if (fNAdcSignals <= signal && signal < fNAdcSignals+fNTdcSignals) {
+    return fTdcHits[signal-fNAdcSignals].GetTimeRaw();
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::GetRawData`: only signals `0` to `3` available!"
+    );
+  }
+}
+
+
+Int_t THcRawHodoHit::GetReference(Int_t signal) {
+  if (fNAdcSignals <= signal && signal < fNAdcSignals+fNTdcSignals) {
+    return fTdcHits[signal-fNAdcSignals].GetRefTime();
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::GetReference`: only signals `2` and `3` available!"
+    );
+  }
+}
+
+
+THcRawHit::ESignalType THcRawHodoHit::GetSignalType(Int_t signal) {
+  if (0 <= signal && signal < fNAdcSignals) {
+    return kADC;
+  }
+  else if (fNAdcSignals <= signal && signal < fNAdcSignals+fNTdcSignals) {
+    return kTDC;
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::GetSignalType`: only signals `0` to `3` available!"
+    );
+  }
+}
+
+
+Int_t THcRawHodoHit::GetNSignals() {
+  return fNAdcSignals + fNTdcSignals;
+}
+
+Bool_t THcRawHodoHit::HasReference(Int_t signal) {
+  if (fNAdcSignals <= signal && signal < fNAdcSignals+fNTdcSignals) {
+    return fTdcHits[signal-fNAdcSignals].HasRefTime();
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::HasReference`: only signals `2` and `3` available!"
+    );
+  }
+}
+
+
+THcRawAdcHit& THcRawHodoHit::GetRawAdcHitPos() {
+  return fAdcHits[0];
+}
+
+
+THcRawAdcHit& THcRawHodoHit::GetRawAdcHitNeg() {
+  return fAdcHits[1];
+}
+
+
+THcRawTdcHit& THcRawHodoHit::GetRawTdcHitPos() {
+  return fTdcHits[0];
+}
+
+
+THcRawTdcHit& THcRawHodoHit::GetRawTdcHitNeg() {
+  return fTdcHits[1];
+}
+
+
 ClassImp(THcRawHodoHit)

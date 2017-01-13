@@ -32,11 +32,13 @@ class THcRawShowerHit : public THcRawHit {
     THcRawAdcHit& GetRawAdcHitNeg();
 
   protected:
-    THcRawAdcHit fAdcPos;
-    THcRawAdcHit fAdcNeg;
+    static const Int_t fNAdcSignals = 2;
+
+    THcRawAdcHit fAdcHits[fNAdcSignals];
 
   private:
-    ClassDef(THcRawShowerHit, 0);	// Raw Shower counter hit
+    ClassDef(THcRawShowerHit, 0);  // Raw Shower counter hit
 };
+
 
 #endif

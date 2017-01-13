@@ -61,6 +61,7 @@
 #pragma link C++ class THcTrigDet+;
 #pragma link C++ class THcTrigRawHit+;
 #pragma link C++ class THcRawAdcHit+;
+#pragma link C++ class THcRawTdcHit+;
 #pragma link C++ class THcDummySpectrometer+;
 
 #endif

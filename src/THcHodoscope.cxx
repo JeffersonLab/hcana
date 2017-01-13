@@ -620,10 +620,10 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   if (fdebugprintscinraw == 1) {
     cout << " Event number = " << evdata.GetEvNum()<<endl;
   for(UInt_t ihit = 0; ihit < fNRawHits ; ihit++) {
-    THcRawHodoHit* hit = (THcRawHodoHit *) fRawHitList->At(ihit);
-    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
-	 << hit->fADC_pos << " " << hit->fADC_neg << " "  <<  hit->fTDC_pos
-	 << " " <<  hit->fTDC_neg << endl;
+//    THcRawHodoHit* hit = (THcRawHodoHit *) fRawHitList->At(ihit);
+//    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
+//	 << hit->fADC_pos << " " << hit->fADC_neg << " "  <<  hit->fTDC_pos
+//	 << " " <<  hit->fTDC_neg << endl;
   }
   cout << endl;
   }

@@ -2,7 +2,7 @@
 \class THcRawShowerHit
 \ingroup DetSupport
 
-\brief Class representing a single raw hit for a hodoscope paddle.
+\brief Class representing a single raw hit for a shower paddle.
 
   - `signal 0` is ADC pos
   - `signal 1` is ADC neg
@@ -15,7 +15,7 @@
 
 
 THcRawShowerHit::THcRawShowerHit(Int_t plane, Int_t counter) :
-  fAdcPos(), fAdcNeg()
+  fAdcHits()
 {}
 
 
@@ -23,8 +23,9 @@ THcRawShowerHit& THcRawShowerHit::operator=(const THcRawShowerHit& right) {
   THcRawHit::operator=(right);
 
   if (this != &right) {
-    fAdcPos = right.fAdcPos;
-    fAdcNeg = right.fAdcNeg;
+    for (Int_t iAdcSig=0; iAdcSig<fNAdcSignals; ++iAdcSig) {
+      fAdcHits[iAdcSig] = right.fAdcHits[iAdcSig];
+    }
   }
 
   return *this;
@@ -37,36 +38,31 @@ THcRawShowerHit::~THcRawShowerHit() {}
 void THcRawShowerHit::Clear(Option_t* opt) {
   THcRawHit::Clear(opt);
 
-  fAdcPos.Clear();
-  fAdcNeg.Clear();
+  for (Int_t iAdcSig=0; iAdcSig<fNAdcSignals; ++iAdcSig) {
+    fAdcHits[iAdcSig].Clear();
+  }
 }
 
 
 void THcRawShowerHit::SetData(Int_t signal, Int_t data) {
-  if (signal == 0) {
-    fAdcPos.SetData(data);
-  }
-  else if (signal == 1) {
-    fAdcNeg.SetData(data);
+  if (0 <= signal && signal < fNAdcSignals) {
+    fAdcHits[signal].SetData(data);
   }
   else {
     throw std::out_of_range(
-      "`THcTrigRawHit::GetData`: only signals `0` and `1` available!"
+      "`THcRawShowerHit::SetData`: only signals `0` and `1` available!"
     );
   }
 }
 
 
 void THcRawShowerHit::SetSample(Int_t signal, Int_t data) {
-  if (signal == 0) {
-    fAdcPos.SetSample(data);
-  }
-  else if (signal == 1) {
-    fAdcNeg.SetSample(data);
+  if (0 <= signal && signal < fNAdcSignals) {
+    fAdcHits[signal].SetSample(data);
   }
   else {
     throw std::out_of_range(
-      "`THcTrigRawHit::GetData`: only signals `0` and `1` available!"
+      "`THcRawShowerHit::SetSample`: only signals `0` and `1` available!"
     );
   }
 }
@@ -75,15 +71,12 @@ void THcRawShowerHit::SetSample(Int_t signal, Int_t data) {
 void THcRawShowerHit::SetDataTimePedestalPeak(
   Int_t signal, Int_t data, Int_t time, Int_t pedestal, Int_t peak
 ) {
-  if (signal == 0) {
-    fAdcPos.SetDataTimePedestalPeak(data, time, pedestal, peak);
-  }
-  else if (signal == 1) {
-    fAdcNeg.SetDataTimePedestalPeak(data, time, pedestal, peak);
+  if (0 <= signal && signal < fNAdcSignals) {
+    fAdcHits[signal].SetDataTimePedestalPeak(data, time, pedestal, peak);
   }
   else {
     throw std::out_of_range(
-      "`THcTrigRawHit::GetData`: only signals `0` and `1` available!"
+      "`THcRawShowerHit::SetDataTimePedestalPeak`: only signals `0` and `1` available!"
     );
   }
 }
@@ -99,54 +92,54 @@ void THcRawShowerHit::SetReference(Int_t signal, Int_t reference) {
 
 
 Int_t THcRawShowerHit::GetData(Int_t signal) {
-  if (signal == 0) {
-    return fAdcPos.GetRawData();
-  }
-  else if (signal == 1) {
-    return fAdcNeg.GetRawData();
+  if (0 <= signal && signal < fNAdcSignals) {
+    return fAdcHits[signal].GetRawData();
   }
   else {
     throw std::out_of_range(
-      "`THcTrigRawHit::GetData`: only signals `0` and `1` available!"
+      "`THcRawShowerHit::GetData`: only signals `0` and `1` available!"
     );
   }
 }
 
 
 Int_t THcRawShowerHit::GetRawData(Int_t signal) {
-  if (signal == 0) {
-    return fAdcPos.GetRawData();
-  }
-  else if (signal == 1) {
-    return fAdcNeg.GetRawData();
+  if (0 <= signal && signal < fNAdcSignals) {
+    return fAdcHits[signal].GetRawData();
   }
   else {
     throw std::out_of_range(
-      "`THcTrigRawHit::GetData`: only signals `0` and `1` available!"
+      "`THcRawShowerHit::GetRawData`: only signals `0` and `1` available!"
     );
   }
 }
 
 
 THcRawHit::ESignalType THcRawShowerHit::GetSignalType(Int_t signal) {
-  return kADC;
+  if (0 <= signal && signal < fNAdcSignals) {
+    return kADC;
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawShowerHit::GetSignalType`: only signals `0` and `1` available!"
+    );
+  }
 }
 
 
 Int_t THcRawShowerHit::GetNSignals() {
-  return 2;
+  return fNAdcSignals;
 }
 
 
 THcRawAdcHit& THcRawShowerHit::GetRawAdcHitPos() {
-  return fAdcPos;
+  return fAdcHits[0];
 }
 
 
 THcRawAdcHit& THcRawShowerHit::GetRawAdcHitNeg() {
-  return fAdcNeg;
+  return fAdcHits[1];
 }
-
 
 
 ClassImp(THcRawShowerHit)
