@@ -74,23 +74,25 @@ class THcScintillatorPlane : public THaSubDetector {
 
   TClonesArray* frPosTdcTimeRaw;
   TClonesArray* frPosAdcPedRaw;
-  TClonesArray* frPosAdcPeakIntRaw;
-  TClonesArray* frPosAdcPeakAmpRaw;
+  TClonesArray* frPosAdcPulseIntRaw;
+  TClonesArray* frPosAdcPulseAmpRaw;
+  TClonesArray* frPosAdcPulseTimeRaw;
 
   TClonesArray* frPosTdcTime;
   TClonesArray* frPosAdcPed;
-  TClonesArray* frPosAdcPeakInt;
-  TClonesArray* frPosAdcPeakAmp;
+  TClonesArray* frPosAdcPulseInt;
+  TClonesArray* frPosAdcPulseAmp;
 
   TClonesArray* frNegTdcTimeRaw;
   TClonesArray* frNegAdcPedRaw;
-  TClonesArray* frNegAdcPeakIntRaw;
-  TClonesArray* frNegAdcPeakAmpRaw;
+  TClonesArray* frNegAdcPulseIntRaw;
+  TClonesArray* frNegAdcPulseAmpRaw;
+  TClonesArray* frNegAdcPulseTimeRaw;
 
   TClonesArray* frNegTdcTime;
   TClonesArray* frNegAdcPed;
-  TClonesArray* frNegAdcPeakInt;
-  TClonesArray* frNegAdcPeakAmp;
+  TClonesArray* frNegAdcPulseInt;
+  TClonesArray* frNegAdcPulseAmp;
 
   Int_t fPlaneNum;		/* Which plane am I 1-4 */
   UInt_t fTotPlanes;            /* so we can read variables that are not indexed by plane id */

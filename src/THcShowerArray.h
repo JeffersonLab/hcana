@@ -136,12 +136,13 @@ protected:
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
   TClonesArray* frAdcPedRaw;
-  TClonesArray* frAdcPeakIntRaw;
-  TClonesArray* frAdcPeakAmpRaw;
+  TClonesArray* frAdcPulseIntRaw;
+  TClonesArray* frAdcPulseAmpRaw;
+  TClonesArray* frAdcPulseTimeRaw;
 
   TClonesArray* frAdcPed;
-  TClonesArray* frAdcPeakInt;
-  TClonesArray* frAdcPeakAmp;
+  TClonesArray* frAdcPulseInt;
+  TClonesArray* frAdcPulseAmp;
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );

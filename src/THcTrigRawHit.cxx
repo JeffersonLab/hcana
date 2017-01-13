@@ -154,7 +154,7 @@ available, `0` is returned.
 */
 
 /**
-\fn Int_t THcTrigRawHit::GetAdcPeak(UInt_t iHit)
+\fn Int_t THcTrigRawHit::GetAdcPulse(UInt_t iHit)
 
 \brief Gets the position of ADC peak.
 
@@ -231,7 +231,7 @@ THcTrigRawHit::THcTrigRawHit(
   Int_t plane, Int_t counter
 ) :
   THcRawHit(plane, counter),
-  fAdc(), fAdcTime(), fAdcPedestal(), fAdcPeak(), fAdcSamples(), fTdc(),
+  fAdc(), fAdcTime(), fAdcPedestal(), fAdcPulse(), fAdcSamples(), fTdc(),
   fReferenceTime(), fHasReference(), fHasMulti(), fNRawHits(), fNRawSamples(0)
 {}
 
@@ -245,7 +245,7 @@ THcTrigRawHit& THcTrigRawHit::operator=(const THcTrigRawHit& right) {
       fAdc[i] = right.fAdc[i];
       fAdcTime[i] = right.fAdcTime[i];
       fAdcPedestal[i] = right.fAdcPedestal[i];
-      fAdcPeak[i] = right.fAdcPeak[i];
+      fAdcPulse[i] = right.fAdcPulse[i];
     }
     for (UInt_t i=0; i<fMaxNSamplesAdc; ++i) {
       fAdcSamples[i] = right.fAdcSamples[i];
@@ -336,7 +336,7 @@ void THcTrigRawHit::SetDataTimePedestalPeak(
     fAdc[fNRawHits[signal]] = data;
     fAdcTime[fNRawHits[signal]] = time;
     fAdcPedestal[fNRawHits[signal]] = pedestal;
-    fAdcPeak[fNRawHits[signal]] = peak;
+    fAdcPulse[fNRawHits[signal]] = peak;
     fHasMulti[signal] = kTRUE;
     ++fNRawHits[signal];
   }
@@ -461,13 +461,13 @@ Int_t THcTrigRawHit::GetAdcPedestal(UInt_t iHit) {
 }
 
 
-Int_t THcTrigRawHit::GetAdcPeak(UInt_t iHit) {
+Int_t THcTrigRawHit::GetAdcPulse(UInt_t iHit) {
   Int_t value = 0;
   Int_t signal = 0;
 
   if (iHit >= fNRawHits[signal] && iHit != 0) {
     TString msg = TString::Format(
-      "`THcTrigRawHit::GetAdcPeak`: requested hit %d for signal %d where only %d hit available!",
+      "`THcTrigRawHit::GetAdcPulse`: requested hit %d for signal %d where only %d hit available!",
       iHit, signal, fNRawHits[signal]
     );
     throw std::out_of_range(msg.Data());
@@ -476,7 +476,7 @@ Int_t THcTrigRawHit::GetAdcPeak(UInt_t iHit) {
     value = 0;
   }
   else {
-    if (fHasMulti[0]) value = fAdcPeak[iHit];
+    if (fHasMulti[0]) value = fAdcPulse[iHit];
     else value = 0;
   }
 
