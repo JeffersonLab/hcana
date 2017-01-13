@@ -38,12 +38,12 @@ class THcRawAdcHit : public TObject {
     Int_t GetPedRaw();
     Int_t GetPulseIntRaw(UInt_t iPulse=0);
     Int_t GetPulseAmpRaw(UInt_t iPulse=0);
-    //Int_t GetPulseTimeRaw(UInt_t iPulse=0);  // TODO: Figure out what to do with time.
+    Int_t GetPulseTimeRaw(UInt_t iPulse=0);
 
     Double_t GetPed();
     Double_t GetPulseInt(UInt_t iPulse=0);
     Double_t GetPulseAmp(UInt_t iPulse=0);
-    //Double_t GetPulseTime(UInt_t iPulse=0);
+    //Double_t GetPulseTime(UInt_t iPulse=0);  // TODO: Figure out what to do with time.
 
     Int_t GetSampleIntRaw();
     Double_t GetSampleInt();

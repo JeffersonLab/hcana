@@ -76,6 +76,7 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* frPosAdcPedRaw;
   TClonesArray* frPosAdcPulseIntRaw;
   TClonesArray* frPosAdcPulseAmpRaw;
+  TClonesArray* frPosAdcPulseTimeRaw;
 
   TClonesArray* frPosTdcTime;
   TClonesArray* frPosAdcPed;
@@ -86,6 +87,7 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* frNegAdcPedRaw;
   TClonesArray* frNegAdcPulseIntRaw;
   TClonesArray* frNegAdcPulseAmpRaw;
+  TClonesArray* frNegAdcPulseTimeRaw;
 
   TClonesArray* frNegTdcTime;
   TClonesArray* frNegAdcPed;

@@ -88,6 +88,7 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   TClonesArray* frAdcPedRaw;
   TClonesArray* frAdcPulseIntRaw;
   TClonesArray* frAdcPulseAmpRaw;
+  TClonesArray* frAdcPulseTimeRaw;
 
   TClonesArray* frAdcPed;
   TClonesArray* frAdcPulseInt;

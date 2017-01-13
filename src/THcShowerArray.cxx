@@ -42,6 +42,7 @@ THcShowerArray::THcShowerArray( const char* name,
 	frAdcPedRaw = new TClonesArray("THcSignalHit", 16);
   frAdcPulseIntRaw = new TClonesArray("THcSignalHit", 16);
   frAdcPulseAmpRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
 
   frAdcPed = new TClonesArray("THcSignalHit", 16);
   frAdcPulseInt = new TClonesArray("THcSignalHit", 16);
@@ -62,6 +63,7 @@ THcShowerArray::~THcShowerArray()
   delete frAdcPedRaw; frAdcPedRaw = NULL;
   delete frAdcPulseIntRaw; frAdcPulseIntRaw = NULL;
   delete frAdcPulseAmpRaw; frAdcPulseAmpRaw = NULL;
+  delete frAdcPulseTimeRaw; frAdcPulseTimeRaw = NULL;
 
   delete frAdcPed; frAdcPed = NULL;
   delete frAdcPulseInt; frAdcPulseInt = NULL;
@@ -331,15 +333,16 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
     {"earray", "Energy Deposition in array", "fEarray"},
     { "ntracks", "Number of shower tracks", "fNtracks" },
 
-    {"adcCounter",    "List of ADC counter numbers.",     "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+    {"adcCounter",      "List of ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
 
-    {"adcPedRaw",     "List of raw ADC pedestals",        "frAdcPedRaw.THcSignalHit.GetData()"},
-    {"adcPeakIntRaw", "List of raw ADC peak integrals.",  "frAdcPulseIntRaw.THcSignalHit.GetData()"},
-    {"adcPeakAmpRaw", "List of raw ADC peak amplitudes.", "frAdcPulseAmpRaw.THcSignalHit.GetData()"},
+    {"adcPedRaw",       "List of raw ADC pedestals",         "frAdcPedRaw.THcSignalHit.GetData()"},
+    {"adcPulseIntRaw",  "List of raw ADC pulse integrals.",  "frAdcPulseIntRaw.THcSignalHit.GetData()"},
+    {"adcPulseAmpRaw",  "List of raw ADC pulse amplitudes.", "frAdcPulseAmpRaw.THcSignalHit.GetData()"},
+    {"adcPulseTimeRaw", "List of raw ADC pulse times.",      "frAdcPulseTimeRaw.THcSignalHit.GetData()"},
 
-    {"adcPed",        "List of ADC pedestals",            "frAdcPed.THcSignalHit.GetData()"},
-    {"adcPeakInt",    "List of ADC peak integrals.",      "frAdcPulseInt.THcSignalHit.GetData()"},
-    {"adcPeakAmp",    "List of ADC peak amplitudes.",     "frAdcPulseAmp.THcSignalHit.GetData()"},
+    {"adcPed",          "List of ADC pedestals",             "frAdcPed.THcSignalHit.GetData()"},
+    {"adcPulseInt",     "List of ADC pulse integrals.",      "frAdcPulseInt.THcSignalHit.GetData()"},
+    {"adcPulseAmp",     "List of ADC pulse amplitudes.",     "frAdcPulseAmp.THcSignalHit.GetData()"},
 
     { 0 }
   };
@@ -367,6 +370,7 @@ void THcShowerArray::Clear( Option_t* )
   frAdcPedRaw->Clear();
   frAdcPulseIntRaw->Clear();
   frAdcPulseAmpRaw->Clear();
+  frAdcPulseTimeRaw->Clear();
 
   frAdcPed->Clear();
   frAdcPulseInt->Clear();
@@ -655,6 +659,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frAdcPedRaw->Clear();
   frAdcPulseIntRaw->Clear();
   frAdcPulseAmpRaw->Clear();
+  frAdcPulseTimeRaw->Clear();
 
   frAdcPed->Clear();
   frAdcPulseInt->Clear();
@@ -699,6 +704,9 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       ((THcSignalHit*) frAdcPulseAmpRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmpRaw());
       ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp());
+
+      ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTimeRaw());
+
       ++nrAdcHits;
     }
 

@@ -42,6 +42,7 @@ THcShowerPlane::THcShowerPlane( const char* name,
   frPosAdcPedRaw = new TClonesArray("THcSignalHit", 16);
   frPosAdcPulseIntRaw = new TClonesArray("THcSignalHit", 16);
   frPosAdcPulseAmpRaw = new TClonesArray("THcSignalHit", 16);
+  frPosAdcPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
 
   frPosAdcPed = new TClonesArray("THcSignalHit", 16);
   frPosAdcPulseInt = new TClonesArray("THcSignalHit", 16);
@@ -50,6 +51,7 @@ THcShowerPlane::THcShowerPlane( const char* name,
   frNegAdcPedRaw = new TClonesArray("THcSignalHit", 16);
   frNegAdcPulseIntRaw = new TClonesArray("THcSignalHit", 16);
   frNegAdcPulseAmpRaw = new TClonesArray("THcSignalHit", 16);
+  frNegAdcPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
 
   frNegAdcPed = new TClonesArray("THcSignalHit", 16);
   frNegAdcPulseInt = new TClonesArray("THcSignalHit", 16);
@@ -73,6 +75,7 @@ THcShowerPlane::~THcShowerPlane()
   frPosAdcPedRaw = NULL;
   frPosAdcPulseIntRaw = NULL;
   frPosAdcPulseAmpRaw = NULL;
+  frPosAdcPulseTimeRaw = NULL;
 
   frPosAdcPed = NULL;
   frPosAdcPulseInt = NULL;
@@ -81,6 +84,7 @@ THcShowerPlane::~THcShowerPlane()
   frNegAdcPedRaw = NULL;
   frNegAdcPulseIntRaw = NULL;
   frNegAdcPulseAmpRaw = NULL;
+  frNegAdcPulseTimeRaw = NULL;
 
   frNegAdcPed = NULL;
   frNegAdcPulseInt = NULL;
@@ -249,24 +253,26 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
     {"eplane_pos", "Energy Deposition per plane from pos. PMTs","fEplane_pos"},
     {"eplane_neg", "Energy Deposition per plane from neg. PMTs","fEplane_neg"},
 
-    {"posAdcCounter",    "List of positive ADC counter numbers.",     "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
-    {"negAdcCounter",    "List of negative ADC counter numbers.",     "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+    {"posAdcCounter",      "List of positive ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+    {"negAdcCounter",      "List of negative ADC counter numbers.",      "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
 
-    {"posAdcPedRaw",     "List of Positive raw ADC pedestals",        "frPosAdcPedRaw.THcSignalHit.GetData()"},
-    {"posAdcPulseIntRaw", "List of Positive raw ADC peak integrals.",  "frPosAdcPulseIntRaw.THcSignalHit.GetData()"},
-    {"posAdcPulseAmpRaw", "List of Positive raw ADC peak amplitudes.", "frPosAdcPulseAmpRaw.THcSignalHit.GetData()"},
+    {"posAdcPedRaw",       "List of positive raw ADC pedestals",         "frPosAdcPedRaw.THcSignalHit.GetData()"},
+    {"posAdcPulseIntRaw",  "List of positive raw ADC pulse integrals.",  "frPosAdcPulseIntRaw.THcSignalHit.GetData()"},
+    {"posAdcPulseAmpRaw",  "List of positive raw ADC pulse amplitudes.", "frPosAdcPulseAmpRaw.THcSignalHit.GetData()"},
+    {"posAdcPulseTimeRaw", "List of positive raw ADC pulse times.",      "frPosAdcPulseTimeRaw.THcSignalHit.GetData()"},
 
-    {"posAdcPed",        "List of Positive ADC pedestals",            "frPosAdcPed.THcSignalHit.GetData()"},
-    {"posAdcPulseInt",    "List of Positive ADC peak integrals.",      "frPosAdcPulseInt.THcSignalHit.GetData()"},
-    {"posAdcPulseAmp",    "List of Positive ADC peak amplitudes.",     "frPosAdcPulseAmp.THcSignalHit.GetData()"},
+    {"posAdcPed",          "List of positive ADC pedestals",             "frPosAdcPed.THcSignalHit.GetData()"},
+    {"posAdcPulseInt",     "List of positive ADC pulse integrals.",      "frPosAdcPulseInt.THcSignalHit.GetData()"},
+    {"posAdcPulseAmp",     "List of positive ADC pulse amplitudes.",     "frPosAdcPulseAmp.THcSignalHit.GetData()"},
 
-    {"negAdcPedRaw",     "List of Negative raw ADC pedestals",        "frNegAdcPedRaw.THcSignalHit.GetData()"},
-    {"negAdcPulseIntRaw", "List of Negative raw ADC peak integrals.",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"},
-    {"negAdcPulseAmpRaw", "List of Negative raw ADC peak amplitudes.", "frNegAdcPulseAmpRaw.THcSignalHit.GetData()"},
+    {"negAdcPedRaw",       "List of negative raw ADC pedestals",         "frNegAdcPedRaw.THcSignalHit.GetData()"},
+    {"negAdcPulseIntRaw",  "List of negative raw ADC pulse integrals.",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"},
+    {"negAdcPulseAmpRaw",  "List of negative raw ADC pulse amplitudes.", "frNegAdcPulseAmpRaw.THcSignalHit.GetData()"},
+    {"negAdcPulseTimeRaw", "List of negative raw ADC pulse times.",      "frNegAdcPulseTimeRaw.THcSignalHit.GetData()"},
 
-    {"negAdcPed",        "List of Negative ADC pedestals",            "frNegAdcPed.THcSignalHit.GetData()"},
-    {"negAdcPulseInt",    "List of Negative ADC peak integrals.",      "frNegAdcPulseInt.THcSignalHit.GetData()"},
-    {"negAdcPulseAmp",    "List of Negative ADC peak amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"},
+    {"negAdcPed",          "List of negative ADC pedestals",             "frNegAdcPed.THcSignalHit.GetData()"},
+    {"negAdcPulseInt",     "List of negative ADC pulse integrals.",      "frNegAdcPulseInt.THcSignalHit.GetData()"},
+    {"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"},
 
     { 0 }
   };
@@ -284,6 +290,7 @@ void THcShowerPlane::Clear( Option_t* )
   frPosAdcPedRaw->Clear();
   frPosAdcPulseIntRaw->Clear();
   frPosAdcPulseAmpRaw->Clear();
+  frPosAdcPulseTimeRaw->Clear();
 
   frPosAdcPed->Clear();
   frPosAdcPulseInt->Clear();
@@ -292,6 +299,7 @@ void THcShowerPlane::Clear( Option_t* )
   frNegAdcPedRaw->Clear();
   frNegAdcPulseIntRaw->Clear();
   frNegAdcPulseAmpRaw->Clear();
+  frNegAdcPulseTimeRaw->Clear();
 
   frNegAdcPed->Clear();
   frNegAdcPulseInt->Clear();
@@ -362,6 +370,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frPosAdcPedRaw->Clear();
   frPosAdcPulseIntRaw->Clear();
   frPosAdcPulseAmpRaw->Clear();
+  frPosAdcPulseTimeRaw->Clear();
 
   frPosAdcPed->Clear();
   frPosAdcPulseInt->Clear();
@@ -370,6 +379,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frNegAdcPedRaw->Clear();
   frNegAdcPulseIntRaw->Clear();
   frNegAdcPulseAmpRaw->Clear();
+  frNegAdcPulseTimeRaw->Clear();
 
   frNegAdcPed->Clear();
   frNegAdcPulseInt->Clear();
@@ -420,6 +430,9 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       ((THcSignalHit*) frPosAdcPulseAmpRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseAmpRaw());
       ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseAmp());
+
+      ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTimeRaw());
+
       ++nrPosAdcHits;
     }
     THcRawAdcHit& rawNegAdcHit = hit->GetRawAdcHitNeg();
@@ -432,6 +445,9 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       ((THcSignalHit*) frNegAdcPulseAmpRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseAmpRaw());
       ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseAmp());
+
+      ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTimeRaw());
+
       ++nrNegAdcHits;
     }
 

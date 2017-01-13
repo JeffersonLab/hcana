@@ -263,6 +263,11 @@ Int_t THcRawAdcHit::GetPulseAmpRaw(UInt_t iPulse) {
 }
 
 
+Int_t THcRawAdcHit::GetPulseTimeRaw(UInt_t iPulse) {
+  return fAdcTime[iPulse];
+}
+
+
 Double_t THcRawAdcHit::GetPed() {
   return 1.0 * fAdcPedestal[0]/fNPedestalSamples;
 }

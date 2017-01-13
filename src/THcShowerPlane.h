@@ -154,6 +154,7 @@ protected:
   TClonesArray* frPosAdcPedRaw;
   TClonesArray* frPosAdcPulseIntRaw;
   TClonesArray* frPosAdcPulseAmpRaw;
+  TClonesArray* frPosAdcPulseTimeRaw;
 
   TClonesArray* frPosAdcPed;
   TClonesArray* frPosAdcPulseInt;
@@ -162,6 +163,7 @@ protected:
   TClonesArray* frNegAdcPedRaw;
   TClonesArray* frNegAdcPulseIntRaw;
   TClonesArray* frNegAdcPulseAmpRaw;
+  TClonesArray* frNegAdcPulseTimeRaw;
 
   TClonesArray* frNegAdcPed;
   TClonesArray* frNegAdcPulseInt;

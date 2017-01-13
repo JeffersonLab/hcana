@@ -99,6 +99,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   TClonesArray* frPosAdcPedRaw;
   TClonesArray* frPosAdcPulseIntRaw;
   TClonesArray* frPosAdcPulseAmpRaw;
+  TClonesArray* frPosAdcPulseTimeRaw;
 
   TClonesArray* frPosAdcPed;
   TClonesArray* frPosAdcPulseInt;
@@ -107,6 +108,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   TClonesArray* frNegAdcPedRaw;
   TClonesArray* frNegAdcPulseIntRaw;
   TClonesArray* frNegAdcPulseAmpRaw;
+  TClonesArray* frNegAdcPulseTimeRaw;
 
   TClonesArray* frNegAdcPed;
   TClonesArray* frNegAdcPulseInt;
