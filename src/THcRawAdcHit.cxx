@@ -18,6 +18,7 @@ THcRawAdcHit::THcRawAdcHit() :
   TObject(),
   fNPedestalSamples(4), fNPeakSamples(9),
   fPeakPedestalRatio(1.0*fNPeakSamples/fNPedestalSamples),
+  fChannelToTimeFactor(0.0625),
   fAdc(), fAdcTime(), fAdcPedestal(), fAdcPulse(), fAdcSample(),
   fHasMulti(kFALSE), fNPulses(0), fNSamples(0)
 {}
@@ -105,7 +106,7 @@ void THcRawAdcHit::SetDataTimePedestalPeak(
 }
 
 
-Int_t THcRawAdcHit::GetRawData(UInt_t iPulse) {
+Int_t THcRawAdcHit::GetRawData(UInt_t iPulse) const {
   if (iPulse >= fNPulses && iPulse != 0) {
     TString msg = TString::Format(
       "`THcRawAdcHit::GetRawData`: requested pulse %d where only %d pulses available!",
@@ -122,7 +123,7 @@ Int_t THcRawAdcHit::GetRawData(UInt_t iPulse) {
 }
 
 
-Int_t THcRawAdcHit::GetAdcTime(UInt_t iPulse) {
+Int_t THcRawAdcHit::GetAdcTime(UInt_t iPulse) const {
   if (iPulse >= fNPulses && iPulse != 0) {
     TString msg = TString::Format(
       "`THcRawAdcHit::GetAdcTime`: requested pulse %d where only %d pulses available!",
@@ -139,7 +140,7 @@ Int_t THcRawAdcHit::GetAdcTime(UInt_t iPulse) {
 }
 
 
-Int_t THcRawAdcHit::GetAdcPedestal(UInt_t iPulse) {
+Int_t THcRawAdcHit::GetAdcPedestal(UInt_t iPulse) const {
   if (iPulse >= fNPulses && iPulse != 0) {
     TString msg = TString::Format(
       "`THcRawAdcHit::GetAdcPedestal`: requested pulse %d where only %d pulses available!",
@@ -156,7 +157,7 @@ Int_t THcRawAdcHit::GetAdcPedestal(UInt_t iPulse) {
 }
 
 
-Int_t THcRawAdcHit::GetAdcPulse(UInt_t iPulse) {
+Int_t THcRawAdcHit::GetAdcPulse(UInt_t iPulse) const {
   if (iPulse >= fNPulses && iPulse != 0) {
     TString msg = TString::Format(
       "`THcRawAdcHit::GetAdcPulse`: requested pulse %d where only %d pulses available!",
@@ -173,7 +174,7 @@ Int_t THcRawAdcHit::GetAdcPulse(UInt_t iPulse) {
 }
 
 
-Int_t THcRawAdcHit::GetSample(UInt_t iSample) {
+Int_t THcRawAdcHit::GetSample(UInt_t iSample) const {
   if (iSample >= fNSamples && iSample != 0) {
     TString msg = TString::Format(
       "`THcRawAdcHit::GetSample`: requested sample %d where only %d sample available!",
@@ -190,7 +191,7 @@ Int_t THcRawAdcHit::GetSample(UInt_t iSample) {
 }
 
 
-Double_t THcRawAdcHit::GetAverage(UInt_t iSampleLow, UInt_t iSampleHigh) {
+Double_t THcRawAdcHit::GetAverage(UInt_t iSampleLow, UInt_t iSampleHigh) const {
   if (iSampleHigh >= fNSamples || iSampleLow >= fNSamples) {
     TString msg = TString::Format(
       "`THcRawAdcHit::GetAverage`: not this many samples available!"
@@ -207,7 +208,7 @@ Double_t THcRawAdcHit::GetAverage(UInt_t iSampleLow, UInt_t iSampleHigh) {
 }
 
 
-Int_t THcRawAdcHit::GetIntegral(UInt_t iSampleLow, UInt_t iSampleHigh) {
+Int_t THcRawAdcHit::GetIntegral(UInt_t iSampleLow, UInt_t iSampleHigh) const {
   if (iSampleHigh >= fNSamples || iSampleLow >= fNSamples) {
     TString msg = TString::Format(
       "`THcRawAdcHit::GetAverage`: not this many samples available!"
@@ -226,64 +227,69 @@ Int_t THcRawAdcHit::GetIntegral(UInt_t iSampleLow, UInt_t iSampleHigh) {
 
 Double_t THcRawAdcHit::GetData(
   UInt_t iPedLow, UInt_t iPedHigh, UInt_t iIntLow, UInt_t iIntHigh
-) {
+) const {
   return
     GetIntegral(iIntLow, iIntHigh)
     - GetAverage(iPedHigh, iPedLow) * (iIntHigh - iIntLow + 1);
 }
 
 
-UInt_t THcRawAdcHit::GetNPulses() {
+UInt_t THcRawAdcHit::GetNPulses() const {
   return fNPulses;
 }
 
 
-UInt_t THcRawAdcHit::GetNSamples() {
+UInt_t THcRawAdcHit::GetNSamples() const {
   return fNSamples;
 }
 
 
-Bool_t THcRawAdcHit::HasMulti() {
+Bool_t THcRawAdcHit::HasMulti() const {
   return fHasMulti;
 }
 
 
-Int_t THcRawAdcHit::GetPedRaw() {
+Int_t THcRawAdcHit::GetPedRaw() const {
   return fAdcPedestal[0];
 }
 
 
-Int_t THcRawAdcHit::GetPulseIntRaw(UInt_t iPulse) {
+Int_t THcRawAdcHit::GetPulseIntRaw(UInt_t iPulse) const {
   return fAdc[iPulse];
 }
 
 
-Int_t THcRawAdcHit::GetPulseAmpRaw(UInt_t iPulse) {
+Int_t THcRawAdcHit::GetPulseAmpRaw(UInt_t iPulse) const {
   return fAdcPulse[iPulse];
 }
 
 
-Int_t THcRawAdcHit::GetPulseTimeRaw(UInt_t iPulse) {
+Int_t THcRawAdcHit::GetPulseTimeRaw(UInt_t iPulse) const {
   return fAdcTime[iPulse];
 }
 
 
-Double_t THcRawAdcHit::GetPed() {
+Double_t THcRawAdcHit::GetPed() const {
   return static_cast<Double_t>(fAdcPedestal[0])/static_cast<Double_t>(fNPedestalSamples);
 }
 
 
-Double_t THcRawAdcHit::GetPulseInt(UInt_t iPulse) {
+Double_t THcRawAdcHit::GetPulseInt(UInt_t iPulse) const {
   return static_cast<Double_t>(fAdc[iPulse]) - static_cast<Double_t>(fAdcPedestal[0])*fPeakPedestalRatio;
 }
 
 
-Double_t THcRawAdcHit::GetPulseAmp(UInt_t iPulse) {
+Double_t THcRawAdcHit::GetPulseAmp(UInt_t iPulse) const {
   return static_cast<Double_t>(fAdcPulse[iPulse]) - static_cast<Double_t>(fAdcPedestal[0])/static_cast<Double_t>(fNPedestalSamples);
 }
 
 
-Int_t THcRawAdcHit::GetSampleIntRaw() {
+//Int_t THcRawAdcHit::GetPulseTime(UInt_t iPulse) const {
+//  return static_cast<Double_t>(fAdcTime[iPulse]);
+//}
+
+
+Int_t THcRawAdcHit::GetSampleIntRaw() const {
   Int_t integral = 0;
 
   for (UInt_t iSample=0; iSample<fNSamples; ++iSample) {
@@ -294,7 +300,7 @@ Int_t THcRawAdcHit::GetSampleIntRaw() {
 }
 
 
-Double_t THcRawAdcHit::GetSampleInt() {
+Double_t THcRawAdcHit::GetSampleInt() const {
   return static_cast<Double_t>(GetSampleIntRaw()) - GetPed()*static_cast<Double_t>(fNSamples);
 }
 

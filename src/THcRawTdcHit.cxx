@@ -14,6 +14,7 @@
 
 THcRawTdcHit::THcRawTdcHit() :
   TObject(),
+  fChannelToTimeFactor(0.1),
   fTime(), fRefTime(0), fHasRefTime(kFALSE), fNHits(0)
 {}
 
