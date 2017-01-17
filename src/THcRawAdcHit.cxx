@@ -16,7 +16,7 @@ It supports rich data from flash 250 ADC modules.
 
 THcRawAdcHit::THcRawAdcHit() :
   TObject(),
-  fNPedestalSamples(4), fNPeakSamples(10),
+  fNPedestalSamples(4), fNPeakSamples(9),
   fPeakPedestalRatio(1.0*fNPeakSamples/fNPedestalSamples),
   fAdc(), fAdcTime(), fAdcPedestal(), fAdcPulse(), fAdcSample(),
   fHasMulti(kFALSE), fNPulses(0), fNSamples(0)
@@ -269,17 +269,17 @@ Int_t THcRawAdcHit::GetPulseTimeRaw(UInt_t iPulse) {
 
 
 Double_t THcRawAdcHit::GetPed() {
-  return 1.0 * fAdcPedestal[0]/fNPedestalSamples;
+  return static_cast<Double_t>(fAdcPedestal[0])/static_cast<Double_t>(fNPedestalSamples);
 }
 
 
 Double_t THcRawAdcHit::GetPulseInt(UInt_t iPulse) {
-  return fAdc[iPulse] - fAdcPedestal[0] * fPeakPedestalRatio;
+  return static_cast<Double_t>(fAdc[iPulse]) - static_cast<Double_t>(fAdcPedestal[0])*fPeakPedestalRatio;
 }
 
 
 Double_t THcRawAdcHit::GetPulseAmp(UInt_t iPulse) {
-  return fAdcPulse[iPulse] - 1.0 * fAdcPedestal[0]/fNPedestalSamples;
+  return static_cast<Double_t>(fAdcPulse[iPulse]) - static_cast<Double_t>(fAdcPedestal[0])/static_cast<Double_t>(fNPedestalSamples);
 }
 
 
@@ -295,7 +295,7 @@ Int_t THcRawAdcHit::GetSampleIntRaw() {
 
 
 Double_t THcRawAdcHit::GetSampleInt() {
-  return GetSampleIntRaw() - GetPed()*fNSamples;
+  return static_cast<Double_t>(GetSampleIntRaw()) - GetPed()*static_cast<Double_t>(fNSamples);
 }
 
 
