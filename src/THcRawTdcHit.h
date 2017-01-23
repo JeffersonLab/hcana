@@ -19,7 +19,7 @@ class THcRawTdcHit : public TObject {
     Int_t GetTime(UInt_t iHit=0) const;
     Int_t GetRefTime() const;
 
-    Int_t HasRefTime() const;
+    Bool_t HasRefTime() const;
 
     UInt_t GetNHits() const;
 

@@ -1,11 +1,217 @@
 /**
 \class THcRawAdcHit
 \ingroup DetSupport
-
 \brief Class representing a single raw ADC hit.
 
 It supports rich data from flash 250 ADC modules.
 */
+
+/**
+\fn THcRawAdcHit::THcRawAdcHit()
+\brief Constructor.
+*/
+
+/**
+\fn THcRawAdcHit& THcRawAdcHit::operator=(const THcRawAdcHit& right)
+\brief Assignment operator.
+\param[in] right Raw ADC hit to be assigned.
+*/
+
+/**
+\fn THcRawAdcHit::~THcRawAdcHit()
+\brief Destructor.
+*/
+
+/**
+\fn void THcRawAdcHit::Clear(Option_t* opt="")
+\brief Clears variables before next event.
+\param[in] opt Maybe used in base clas... Not sure.
+*/
+
+/**
+\fn void THcRawAdcHit::SetData(Int_t data)
+\brief Sets raw ADC value.
+\param[in] data Raw ADC value. In channels.
+\throw std::out_of_range Tried to set too many pulses.
+
+Should be used for old style ADCs.
+*/
+
+/**
+\fn void THcRawAdcHit::SetSample(Int_t data)
+\brief Sets raw signal sample.
+\param[in] data Raw signal sample. In channels.
+\throw std::out_of_range Tried to set too many samples.
+*/
+
+/**
+\fn void THcRawAdcHit::SetDataTimePedestalPeak(Int_t data, Int_t time, Int_t pedestal, Int_t peak)
+\brief Sets various bits of ADC data.
+\param[in] data Raw pulse integral. In channels.
+\param[in] time Raw pulse time. In subsamples.
+\param[in] pedestal Raw signal pedestal. In channels.
+\param[in] peak Raw pulse amplitude. In channels.
+\throw std::out_of_range Tried to set too many pulses.
+
+Should be used for flash 250 modules.
+*/
+
+/**
+\fn Int_t THcRawAdcHit::GetRawData(UInt_t iPulse=0) const
+\brief Gets raw pulse integral. In channels.
+\param[in] iPulse Sequential number of requested pulse.
+\throw std::out_of_range Tried to get nonexisting pulse.
+
+Returns 0 if tried to access first pulse but no pulses are set.
+*/
+
+/**
+\fn Int_t THcRawAdcHit::GetAdcTime(UInt_t iPulse=0) const
+\brief Gets raw pulse time. In subsamples.
+\param[in] iPulse Sequential number of requested pulse.
+\throw std::out_of_range Tried to get nonexisting pulse.
+
+Returns 0 if tried to access first pulse but no pulses are set.
+Returns 0 if no pulse time is set.
+*/
+
+/**
+\fn Int_t THcRawAdcHit::GetAdcPedestal(UInt_t iPulse=0) const
+\brief Gets raw signal pedestal. In channels.
+\param[in] iPulse Sequential number of requested pulse.
+\throw std::out_of_range Tried to get nonexisting pulse.
+
+Returns 0 if tried to access first pulse but no pulses are set.
+Returns 0 if no signal pedestal is set.
+*/
+
+/**
+\fn Int_t THcRawAdcHit::GetAdcPulse(UInt_t iPulse=0) const
+\brief Gets raw pulse amplitude. In channels.
+\param[in] iPulse Sequential number of requested pulse.
+\throw std::out_of_range Tried to get nonexisting pulse.
+
+Returns 0 if tried to access first pulse but no pulses are set.
+Returns 0 if no pulse peak is set.
+*/
+
+/**
+\fn Int_t THcRawAdcHit::GetSample(UInt_t iSample) const
+\brief Gets raw signal sample. In channels.
+\param[in] iSample Sequential number of requested sample.
+\throw std::out_of_range Tried to get nonexisting sample.
+
+Returns 0 if tried to access first sample but no samples are set.
+*/
+
+/**
+\fn Double_t THcRawAdcHit::GetAverage(UInt_t iSampleLow, UInt_t iSampleHigh) const
+\brief Gets average of raw samples. In channels.
+\param[in] iSampleLow Sequential number of first sample to be averaged.
+\param[in] iSampleHigh Sequential number of last sample to be averaged.
+\throw std::out_of_range Tried to average over nonexisting sample.
+*/
+
+/**
+\fn Int_t THcRawAdcHit::GetIntegral(UInt_t iSampleLow, UInt_t iSampleHigh) const
+\brief Gets integral of raw samples. In channels.
+\param[in] iSampleLow Sequential number of first sample to be integrated.
+\param[in] iSampleHigh Sequential number of last sample to be integrated.
+\throw std::out_of_range Tried to integrate over nonexisting sample.
+*/
+
+/**
+\fn Double_t THcRawAdcHit::GetData(UInt_t iPedLow, UInt_t iPedHigh, UInt_t iIntLow, UInt_t iIntHigh) const
+\brief Gets pedestal subtracted integral of samples. In channels.
+\param[in] iPedLow Sequential number of first sample to be averaged for pedestal value.
+\param[in] iPedHigh Sequential number of last sample to be averaged for pedestal value.
+\param[in] iIntLow Sequential number of first sample to be integrated.
+\param[in] iIntHigh Sequential number of last sample to be integrated.
+*/
+
+/**
+\fn UInt_t THcRawAdcHit::GetNPulses() const
+\brief Gets number of set pulses.
+*/
+
+/**
+\fn UInt_t THcRawAdcHit::GetNSamples() const
+\brief Gets number of set samples.
+*/
+
+/**
+\fn Bool_t THcRawAdcHit::HasMulti() const
+\brief Queries whether data is from flash 250 module.
+*/
+
+/**
+\fn Int_t THcRawAdcHit::GetPedRaw() const
+\brief Gets raw signal pedestal. In channels.
+
+Returns 0 if no signal pedestal is set.
+*/
+
+/**
+\fn Int_t THcRawAdcHit::GetPulseIntRaw(UInt_t iPulse=0) const
+\brief Gets raw pulse integral. In channels.
+\param[in] iPulse Sequential number of requested pulse.
+
+Check iPulse validity before calling!
+*/
+
+/**
+\fn Int_t THcRawAdcHit::GetPulseAmpRaw(UInt_t iPulse=0) const
+\brief Gets raw pulse amplitude. In channels.
+\param[in] iPulse Sequential number of requested pulse.
+
+Check iPulse validity before calling!
+*/
+
+/**
+\fn Int_t THcRawAdcHit::GetPulseTimeRaw(UInt_t iPulse=0) const
+\brief Gets raw pulse time. In subsamples.
+\param[in] iPulse Sequential number of requested pulse.
+
+Check iPulse validity before calling!
+*/
+
+/**
+\fn Double_t THcRawAdcHit::GetPed() const
+\brief Gets sample pedestal. In channels.
+
+Returns 0 if no signal pedestal is set.
+*/
+
+/**
+\fn Double_t THcRawAdcHit::GetPulseInt(UInt_t iPulse=0) const
+\brief Gets pedestal subtracted pulse integral. In channels.
+\param[in] iPulse Sequential number of requested pulse.
+
+Check iPulse validity before calling!
+*/
+
+/**
+\fn Double_t THcRawAdcHit::GetPulseAmp(UInt_t iPulse=0) const
+\brief Gets pedestal subtracted pulse amplitude. In channels.
+\param[in] iPulse Sequential number of requested pulse.
+
+Check iPulse validity before calling!
+*/
+
+/**
+\fn Int_t THcRawAdcHit::GetSampleIntRaw() const
+\brief Gets raw integral of samples. In channels.
+*/
+
+/**
+\fn Double_t THcRawAdcHit::GetSampleInt() const
+\brief Gets pedestal subtracted integral of samples. In channels.
+*/
+
+// TODO: Disallow using both SetData and SetDataTimePedestalPeak.
+// TODO: Add checks to new getters.
+// TODO: Deprecate and remove old getters.
+
 
 #include "THcRawAdcHit.h"
 
