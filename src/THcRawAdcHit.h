@@ -19,10 +19,6 @@ class THcRawAdcHit : public TObject {
     );
 
     Int_t GetRawData(UInt_t iPulse=0) const;
-    Int_t GetAdcTime(UInt_t iPulse=0) const;
-    Int_t GetAdcPedestal(UInt_t iPulse=0) const;
-    Int_t GetAdcPulse(UInt_t iPulse=0) const;
-    Int_t GetSample(UInt_t iSample) const;
 
     Double_t GetAverage(UInt_t iSampleLow, UInt_t iSampleHigh) const;
     Int_t GetIntegral(UInt_t iSampleLow, UInt_t iSampleHigh) const;
@@ -39,11 +35,13 @@ class THcRawAdcHit : public TObject {
     Int_t GetPulseIntRaw(UInt_t iPulse=0) const;
     Int_t GetPulseAmpRaw(UInt_t iPulse=0) const;
     Int_t GetPulseTimeRaw(UInt_t iPulse=0) const;
+    Int_t GetSampleRaw(UInt_t iSample=0) const;
 
     Double_t GetPed() const;
     Double_t GetPulseInt(UInt_t iPulse=0) const;
     Double_t GetPulseAmp(UInt_t iPulse=0) const;
     //Int_t GetPulseTime(UInt_t iPulse=0) const;
+    //Int_t GetSample(UInt_t iSample=0) const;
 
     Int_t GetSampleIntRaw() const;
     Double_t GetSampleInt() const;
@@ -55,13 +53,13 @@ class THcRawAdcHit : public TObject {
     Int_t fNPedestalSamples;  // TODO: Get this from prestart event...
     Int_t fNPeakSamples;
     Double_t fPeakPedestalRatio;
-    Double_t fChannelToTimeFactor;
+    Double_t fSubsampleToTimeFactor;
 
-    Int_t fAdc[fMaxNPulses];  // TODO: Rename these...
-    Int_t fAdcTime[fMaxNPulses];
-    Int_t fAdcPedestal[fMaxNPulses];  // TODO: There should only be 1 pedestal...
-    Int_t fAdcPulse[fMaxNPulses];
-    Int_t fAdcSample[fMaxNSamples];
+    Int_t fPed;
+    Int_t fPulseInt[fMaxNPulses];
+    Int_t fPulseAmp[fMaxNPulses];
+    Int_t fPulseTime[fMaxNPulses];
+    Int_t fSample[fMaxNSamples];
 
     Bool_t fHasMulti;
     UInt_t fNPulses;

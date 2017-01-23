@@ -66,45 +66,6 @@ Returns 0 if tried to access first pulse but no pulses are set.
 */
 
 /**
-\fn Int_t THcRawAdcHit::GetAdcTime(UInt_t iPulse=0) const
-\brief Gets raw pulse time. In subsamples.
-\param[in] iPulse Sequential number of requested pulse.
-\throw std::out_of_range Tried to get nonexisting pulse.
-
-Returns 0 if tried to access first pulse but no pulses are set.
-Returns 0 if no pulse time is set.
-*/
-
-/**
-\fn Int_t THcRawAdcHit::GetAdcPedestal(UInt_t iPulse=0) const
-\brief Gets raw signal pedestal. In channels.
-\param[in] iPulse Sequential number of requested pulse.
-\throw std::out_of_range Tried to get nonexisting pulse.
-
-Returns 0 if tried to access first pulse but no pulses are set.
-Returns 0 if no signal pedestal is set.
-*/
-
-/**
-\fn Int_t THcRawAdcHit::GetAdcPulse(UInt_t iPulse=0) const
-\brief Gets raw pulse amplitude. In channels.
-\param[in] iPulse Sequential number of requested pulse.
-\throw std::out_of_range Tried to get nonexisting pulse.
-
-Returns 0 if tried to access first pulse but no pulses are set.
-Returns 0 if no pulse peak is set.
-*/
-
-/**
-\fn Int_t THcRawAdcHit::GetSample(UInt_t iSample) const
-\brief Gets raw signal sample. In channels.
-\param[in] iSample Sequential number of requested sample.
-\throw std::out_of_range Tried to get nonexisting sample.
-
-Returns 0 if tried to access first sample but no samples are set.
-*/
-
-/**
 \fn Double_t THcRawAdcHit::GetAverage(UInt_t iSampleLow, UInt_t iSampleHigh) const
 \brief Gets average of raw samples. In channels.
 \param[in] iSampleLow Sequential number of first sample to be averaged.
@@ -155,52 +116,50 @@ Returns 0 if no signal pedestal is set.
 \fn Int_t THcRawAdcHit::GetPulseIntRaw(UInt_t iPulse=0) const
 \brief Gets raw pulse integral. In channels.
 \param[in] iPulse Sequential number of requested pulse.
-
-Check iPulse validity before calling!
+\throw std::out_of_range Tried to get nonexisting pulse.
 */
 
 /**
 \fn Int_t THcRawAdcHit::GetPulseAmpRaw(UInt_t iPulse=0) const
 \brief Gets raw pulse amplitude. In channels.
 \param[in] iPulse Sequential number of requested pulse.
-
-Check iPulse validity before calling!
+\throw std::out_of_range Tried to get nonexisting pulse.
 */
 
 /**
 \fn Int_t THcRawAdcHit::GetPulseTimeRaw(UInt_t iPulse=0) const
 \brief Gets raw pulse time. In subsamples.
 \param[in] iPulse Sequential number of requested pulse.
+\throw std::out_of_range Tried to get nonexisting pulse.
+*/
 
-Check iPulse validity before calling!
+/**
+\fn Int_t THcRawAdcHit::GetSampleRaw(UInt_t iSample=0) const
+\brief Gets raw sample. In channels.
+\param[in] iSample Sequential number of requested sample.
+\throw std::out_of_range Tried to get nonexisting sample.
 */
 
 /**
 \fn Double_t THcRawAdcHit::GetPed() const
 \brief Gets sample pedestal. In channels.
-
-Returns 0 if no signal pedestal is set.
 */
 
 /**
 \fn Double_t THcRawAdcHit::GetPulseInt(UInt_t iPulse=0) const
 \brief Gets pedestal subtracted pulse integral. In channels.
 \param[in] iPulse Sequential number of requested pulse.
-
-Check iPulse validity before calling!
 */
 
 /**
 \fn Double_t THcRawAdcHit::GetPulseAmp(UInt_t iPulse=0) const
 \brief Gets pedestal subtracted pulse amplitude. In channels.
 \param[in] iPulse Sequential number of requested pulse.
-
-Check iPulse validity before calling!
 */
 
 /**
 \fn Int_t THcRawAdcHit::GetSampleIntRaw() const
-\brief Gets raw integral of samples. In channels.
+\brief Gets raw integral of sTimeFacamples. In channels.
 */
 
 /**
@@ -209,8 +168,6 @@ Check iPulse validity before calling!
 */
 
 // TODO: Disallow using both SetData and SetDataTimePedestalPeak.
-// TODO: Add checks to new getters.
-// TODO: Deprecate and remove old getters.
 
 
 #include "THcRawAdcHit.h"
@@ -224,8 +181,8 @@ THcRawAdcHit::THcRawAdcHit() :
   TObject(),
   fNPedestalSamples(4), fNPeakSamples(9),
   fPeakPedestalRatio(1.0*fNPeakSamples/fNPedestalSamples),
-  fChannelToTimeFactor(0.0625),
-  fAdc(), fAdcTime(), fAdcPedestal(), fAdcPulse(), fAdcSample(),
+  fSubsampleToTimeFactor(0.0625),
+  fPed(0), fPulseInt(), fPulseAmp(), fPulseTime(), fSample(),
   fHasMulti(kFALSE), fNPulses(0), fNSamples(0)
 {}
 
@@ -234,14 +191,14 @@ THcRawAdcHit& THcRawAdcHit::operator=(const THcRawAdcHit& right) {
   TObject::operator=(right);
 
   if (this != &right) {
+    fPed = right.fPed;
     for (UInt_t i=0; i<fMaxNPulses; ++i) {
-      fAdc[i] = right.fAdc[i];
-      fAdcTime[i] = right.fAdcTime[i];
-      fAdcPedestal[i] = right.fAdcPedestal[i];
-      fAdcPulse[i] = right.fAdcPulse[i];
+      fPulseInt[i] = right.fPulseInt[i];
+      fPulseAmp[i] = right.fPulseAmp[i];
+      fPulseTime[i] = right.fPulseTime[i];
     }
     for (UInt_t i=0; i<fMaxNSamples; ++i) {
-      fAdcSample[i] = right.fAdcSample[i];
+      fSample[i] = right.fSample[i];
     }
     fHasMulti = right.fHasMulti;
     fNPulses = right.fNPulses;
@@ -258,14 +215,14 @@ THcRawAdcHit::~THcRawAdcHit() {}
 void THcRawAdcHit::Clear(Option_t* opt) {
   TObject::Clear(opt);
 
+  fPed = 0;
   for (UInt_t i=0; i<fNPulses; ++i) {
-    fAdc[i] = 0;
-    fAdcTime[i] = 0;
-    fAdcPedestal[i] = 0;
-    fAdcPulse[i] = 0;
+    fPulseInt[i] = 0;
+    fPulseAmp[i] = 0;
+    fPulseTime[i] = 0;
   }
   for (UInt_t i=0; i<fNSamples; ++i) {
-    fAdcSample[i] = 0 ;
+    fSample[i] = 0 ;
   }
   fHasMulti = kFALSE;
   fNPulses = 0;
@@ -279,7 +236,7 @@ void THcRawAdcHit::SetData(Int_t data) {
       "`THcRawAdcHit::SetData`: too many pulses!"
     );
   }
-  fAdc[fNPulses] = data;
+  fPulseInt[fNPulses] = data;
   ++fNPulses;
 }
 
@@ -290,7 +247,7 @@ void THcRawAdcHit::SetSample(Int_t data) {
       "`THcRawAdcHit::SetSample`: too many samples!"
     );
   }
-  fAdcSample[fNSamples] = data;
+  fSample[fNSamples] = data;
   ++fNSamples;
 }
 
@@ -303,10 +260,10 @@ void THcRawAdcHit::SetDataTimePedestalPeak(
       "`THcRawAdcHit::SetData`: too many pulses!"
     );
   }
-  fAdc[fNPulses] = data;
-  fAdcTime[fNPulses] = time;
-  fAdcPedestal[fNPulses] = pedestal;
-  fAdcPulse[fNPulses] = peak;
+  fPulseInt[fNPulses] = data;
+  fPulseTime[fNPulses] = time;
+  fPed = pedestal;
+  fPulseAmp[fNPulses] = peak;
   fHasMulti = kTRUE;
   ++fNPulses;
 }
@@ -324,75 +281,7 @@ Int_t THcRawAdcHit::GetRawData(UInt_t iPulse) const {
     return 0;
   }
   else {
-    return fAdc[iPulse];
-  }
-}
-
-
-Int_t THcRawAdcHit::GetAdcTime(UInt_t iPulse) const {
-  if (iPulse >= fNPulses && iPulse != 0) {
-    TString msg = TString::Format(
-      "`THcRawAdcHit::GetAdcTime`: requested pulse %d where only %d pulses available!",
-      iPulse, fNPulses
-    );
-    throw std::out_of_range(msg.Data());
-  }
-  else if (fHasMulti) {
-    return fAdcTime[iPulse];
-  }
-  else {
-    return 0;
-  }
-}
-
-
-Int_t THcRawAdcHit::GetAdcPedestal(UInt_t iPulse) const {
-  if (iPulse >= fNPulses && iPulse != 0) {
-    TString msg = TString::Format(
-      "`THcRawAdcHit::GetAdcPedestal`: requested pulse %d where only %d pulses available!",
-      iPulse, fNPulses
-    );
-    throw std::out_of_range(msg.Data());
-  }
-  else if (fHasMulti) {
-    return fAdcPedestal[iPulse];
-  }
-  else {
-    return 0;
-  }
-}
-
-
-Int_t THcRawAdcHit::GetAdcPulse(UInt_t iPulse) const {
-  if (iPulse >= fNPulses && iPulse != 0) {
-    TString msg = TString::Format(
-      "`THcRawAdcHit::GetAdcPulse`: requested pulse %d where only %d pulses available!",
-      iPulse, fNPulses
-    );
-    throw std::out_of_range(msg.Data());
-  }
-  else if (fHasMulti) {
-    return fAdcPulse[iPulse];
-  }
-  else {
-    return 0;
-  }
-}
-
-
-Int_t THcRawAdcHit::GetSample(UInt_t iSample) const {
-  if (iSample >= fNSamples && iSample != 0) {
-    TString msg = TString::Format(
-      "`THcRawAdcHit::GetSample`: requested sample %d where only %d sample available!",
-      iSample, fNSamples
-    );
-    throw std::out_of_range(msg.Data());
-  }
-  else if (iSample >= fNSamples && iSample == 0) {
-    return 0;
-  }
-  else {
-    return fAdcSample[iSample];
+    return fPulseInt[iPulse];
   }
 }
 
@@ -407,7 +296,7 @@ Double_t THcRawAdcHit::GetAverage(UInt_t iSampleLow, UInt_t iSampleHigh) const {
   else {
     Double_t average = 0.0;
     for (UInt_t i=iSampleLow; i<=iSampleHigh; ++i) {
-      average += fAdcSample[i];
+      average += fSample[i];
     }
     return average / (iSampleHigh - iSampleLow + 1);
   }
@@ -424,7 +313,7 @@ Int_t THcRawAdcHit::GetIntegral(UInt_t iSampleLow, UInt_t iSampleHigh) const {
   else {
     Int_t integral = 0;
     for (UInt_t i=iSampleLow; i<=iSampleHigh; ++i) {
-      integral += fAdcSample[i];
+      integral += fSample[i];
     }
     return integral;
   }
@@ -456,37 +345,87 @@ Bool_t THcRawAdcHit::HasMulti() const {
 
 
 Int_t THcRawAdcHit::GetPedRaw() const {
-  return fAdcPedestal[0];
+  return fPed;
 }
 
 
 Int_t THcRawAdcHit::GetPulseIntRaw(UInt_t iPulse) const {
-  return fAdc[iPulse];
+  if (iPulse < fNPulses) {
+    return fPulseInt[iPulse];
+  }
+  else if (iPulse == 0) {
+    return 0;
+  }
+  else {
+    TString msg = TString::Format(
+      "`THcRawAdcHit::GetPulseIntRaw`: Trying to get pulse %d where only %d pulses available!",
+      iPulse, fNPulses
+    );
+    throw std::out_of_range(msg.Data());
+  }
 }
 
 
 Int_t THcRawAdcHit::GetPulseAmpRaw(UInt_t iPulse) const {
-  return fAdcPulse[iPulse];
+  if (iPulse < fNPulses) {
+    return fPulseAmp[iPulse];
+  }
+  else if (iPulse == 0) {
+    return 0;
+  }
+  else {
+    TString msg = TString::Format(
+      "`THcRawAdcHit::GetPulseAmpRaw`: Trying to get pulse %d where only %d pulses available!",
+      iPulse, fNPulses
+    );
+    throw std::out_of_range(msg.Data());
+  }
 }
 
 
 Int_t THcRawAdcHit::GetPulseTimeRaw(UInt_t iPulse) const {
-  return fAdcTime[iPulse];
+  if (iPulse < fNPulses) {
+    return fPulseTime[iPulse];
+  }
+  else if (iPulse == 0) {
+    return 0;
+  }
+  else {
+    TString msg = TString::Format(
+      "`THcRawAdcHit::GetPulseTimeRaw`: Trying to get pulse %d where only %d pulses available!",
+      iPulse, fNPulses
+    );
+    throw std::out_of_range(msg.Data());
+  }
+}
+
+
+Int_t THcRawAdcHit::GetSampleRaw(UInt_t iSample) const {
+  if (iSample < fNSamples) {
+    return fSample[iSample];
+  }
+  else {
+    TString msg = TString::Format(
+      "`THcRawAdcHit::GetSampleRaw`: Trying to get sample %d where only %d samples available!",
+      iSample, fNSamples
+    );
+    throw std::out_of_range(msg.Data());
+  }
 }
 
 
 Double_t THcRawAdcHit::GetPed() const {
-  return static_cast<Double_t>(fAdcPedestal[0])/static_cast<Double_t>(fNPedestalSamples);
+  return static_cast<Double_t>(fPed)/static_cast<Double_t>(fNPedestalSamples);
 }
 
 
 Double_t THcRawAdcHit::GetPulseInt(UInt_t iPulse) const {
-  return static_cast<Double_t>(fAdc[iPulse]) - static_cast<Double_t>(fAdcPedestal[0])*fPeakPedestalRatio;
+  return static_cast<Double_t>(fPulseInt[iPulse]) - static_cast<Double_t>(fPed)*fPeakPedestalRatio;
 }
 
 
 Double_t THcRawAdcHit::GetPulseAmp(UInt_t iPulse) const {
-  return static_cast<Double_t>(fAdcPulse[iPulse]) - static_cast<Double_t>(fAdcPedestal[0])/static_cast<Double_t>(fNPedestalSamples);
+  return static_cast<Double_t>(fPulseAmp[iPulse]) - static_cast<Double_t>(fPed)/static_cast<Double_t>(fNPedestalSamples);
 }
 
 
@@ -499,7 +438,7 @@ Int_t THcRawAdcHit::GetSampleIntRaw() const {
   Int_t integral = 0;
 
   for (UInt_t iSample=0; iSample<fNSamples; ++iSample) {
-    integral += fAdcSample[iSample];
+    integral += fSample[iSample];
   }
 
   return integral;
