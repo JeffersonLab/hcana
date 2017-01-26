@@ -333,7 +333,7 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
     {"earray", "Energy Deposition in array", "fEarray"},
     { "ntracks", "Number of shower tracks", "fNtracks" },
 
-    {"adcCounter",      "List of ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+    {"adcCounter",      "List of ADC counter numbers.",      "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
 
     {"adcPedRaw",       "List of raw ADC pedestals",         "frAdcPedRaw.THcSignalHit.GetData()"},
     {"adcPulseIntRaw",  "List of raw ADC pulse integrals.",  "frAdcPulseIntRaw.THcSignalHit.GetData()"},
