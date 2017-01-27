@@ -26,10 +26,12 @@ Class for an Cherenkov detector consisting of two PMT's
 
 #include "THaTrackProj.h"
 
+#include <algorithm>
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <string>
 
 using namespace std;
 
@@ -141,11 +143,11 @@ THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
 {
   cout << "THcCherenkov::Init " << GetName() << endl;
 
-  char EngineDID[] = "xCER";
-  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
-  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
+  string EngineDID = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
+  std::transform(EngineDID.begin(), EngineDID.end(), EngineDID.begin(), ::toupper);
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID.c_str()) < 0 ) {
     static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.", EngineDID );
+    Error(Here(here), "Error filling detectormap for %s.", EngineDID.c_str());
     return kInitError;
   }
 
@@ -168,15 +170,12 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
 
   cout << "THcCherenkov::ReadDatabase " << GetName() << endl; // Ahmed
 
-  char prefix[2];
-  char parname[100];
+  string prefix = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
+  std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
 
-  prefix[0]=tolower(GetApparatus()->GetName()[0]);
-  prefix[1]='\0';
+  string parname = prefix + "_tot_pmts";
 
-  strcpy(parname,prefix);                              // This is taken from
-  strcat(parname,"cer_tot_pmts");                      // THcScintillatorPlane
-  fNelem = (Int_t)gHcParms->Find(parname)->GetValue(); // class.
+  fNelem = (Int_t)gHcParms->Find(parname.c_str())->GetValue(); // class.
 
   //    fNelem = 2;      // Default if not defined
   fCerNRegions = 3;
@@ -212,22 +211,22 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fCerRegionValue = new Double_t [fCerRegionsValueMax];
 
   DBRequest list[]={
-    {"cer_adc_to_npe", fGain,     kDouble, (UInt_t) fNelem},
-    {"cer_ped_limit",  fPedLimit, kInt,    (UInt_t) fNelem},
-    {"cer_width",      fCerWidth, kDouble, (UInt_t) fNelem},
-    {"cer_chi2max",     &fCerChi2Max,        kDouble},
-    {"cer_beta_min",    &fCerBetaMin,        kDouble},
-    {"cer_beta_max",    &fCerBetaMax,        kDouble},
-    {"cer_et_min",      &fCerETMin,          kDouble},
-    {"cer_et_max",      &fCerETMax,          kDouble},
-    {"cer_mirror_zpos", &fCerMirrorZPos,     kDouble},
-    {"cer_region",      &fCerRegionValue[0], kDouble, (UInt_t) fCerRegionsValueMax},
-    {"cer_threshold",   &fCerThresh,         kDouble},
+    {"_adc_to_npe", fGain,     kDouble, (UInt_t) fNelem},
+    {"_ped_limit",  fPedLimit, kInt,    (UInt_t) fNelem},
+    {"_width",      fCerWidth, kDouble, (UInt_t) fNelem},
+    {"_chi2max",     &fCerChi2Max,        kDouble},
+    {"_beta_min",    &fCerBetaMin,        kDouble},
+    {"_beta_max",    &fCerBetaMax,        kDouble},
+    {"_et_min",      &fCerETMin,          kDouble},
+    {"_et_max",      &fCerETMax,          kDouble},
+    {"_mirror_zpos", &fCerMirrorZPos,     kDouble},
+    {"_region",      &fCerRegionValue[0], kDouble, (UInt_t) fCerRegionsValueMax},
+    {"_threshold",   &fCerThresh,         kDouble},
     //    {"cer_regions",     &fCerNRegions,       kInt},
     {0}
   };
 
-  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  gHcParms->LoadParmValues((DBRequest*)&list,prefix.c_str());
 
   fIsInit = true;
 
@@ -395,8 +394,8 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
     // be assigned NPE = 100.0.
     Int_t npmt = hit->fCounter - 1;                             // tube = hcer_tube_num(nhit)
     // Should probably check that npmt is in range
-    if ( ihit != npmt )
-      cout << "ihit != npmt " << endl;
+    // if ( ihit != npmt )
+    //   cout << "ihit != npmt, ihit = " << ihit << ", npmt = " << npmt << ", fNhits = " << fNhits << endl;
 
     fNPMT[npmt] = hit->fCounter;
     fADC[npmt] = hit->GetRawAdcHitPos().GetPulseIntRaw();
