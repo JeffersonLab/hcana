@@ -143,11 +143,11 @@ THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
 {
   cout << "THcCherenkov::Init " << GetName() << endl;
 
-  char EngineDID[] = "xCER";
-  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
-  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
+  string EngineDID = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
+  std::transform(EngineDID.begin(), EngineDID.end(), EngineDID.begin(), ::toupper);
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID.c_str()) < 0 ) {
     static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.", EngineDID );
+    Error(Here(here), "Error filling detectormap for %s.", EngineDID.c_str());
     return kInitError;
   }
 
@@ -270,7 +270,7 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
     {"certrackcounter", "Tracks inside Cherenkov region",        "fCerTrackCounter"},
     {"cerfiredcounter", "Tracks with engough Cherenkov NPEs ",   "fCerFiredCounter"},
 
-    {"adcCounter",      "List of ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+    {"adcCounter",      "List of ADC counter numbers.",      "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
 
     {"adcPedRaw",       "List of raw ADC pedestals",         "frAdcPedRaw.THcSignalHit.GetData()"},
     {"adcPulseIntRaw",  "List of raw ADC pulse integrals.",  "frAdcPulseIntRaw.THcSignalHit.GetData()"},
@@ -394,8 +394,8 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
     // be assigned NPE = 100.0.
     Int_t npmt = hit->fCounter - 1;                             // tube = hcer_tube_num(nhit)
     // Should probably check that npmt is in range
-    if ( ihit != npmt )
-      cout << "ihit != npmt " << endl;
+    // if ( ihit != npmt )
+    //   cout << "ihit != npmt, ihit = " << ihit << ", npmt = " << npmt << ", fNhits = " << fNhits << endl;
 
     fNPMT[npmt] = hit->fCounter;
     fADC[npmt] = hit->GetRawAdcHitPos().GetPulseIntRaw();
