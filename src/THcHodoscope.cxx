@@ -282,8 +282,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fMaxHodoScin=fMaxScinPerPlane*fNPlanes;
   if (fDebug>=1)  cout <<"fMaxScinPerPlane = "<<fMaxScinPerPlane<<" fMaxHodoScin = "<<fMaxHodoScin<<endl;
 
-  fHodoVelLight=new Double_t [fMaxHodoScin];
-  fHodoPosSigma=new Double_t [fMaxHodoScin];
+   fHodoVelLight=new Double_t [fMaxHodoScin];
+ fHodoPosSigma=new Double_t [fMaxHodoScin];
   fHodoNegSigma=new Double_t [fMaxHodoScin];
   fHodoPosMinPh=new Double_t [fMaxHodoScin];
   fHodoNegMinPh=new Double_t [fMaxHodoScin];
@@ -306,6 +306,10 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fyLoScin = new Int_t [fNHodoscopes];
   fyHiScin = new Int_t [fNHodoscopes];
   fHodoSlop = new Double_t [fNPlanes];
+   fTdcOffset = new Int_t [fNPlanes];
+  for(Int_t ip=0;ip<fNPlanes;ip++) { // Set a large default window
+   fTdcOffset[ip] = 0 ;
+  }
 
   DBRequest list[]={
     {"start_time_center",                &fStartTimeCenter,                      kDouble},
@@ -315,15 +319,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"scin_tdc_max",                     &fScinTdcMax,                           kDouble},
     {"tof_tolerance",                    &fTofTolerance,          kDouble,         0,  1},
     {"pathlength_central",               &fPathLengthCentral,                    kDouble},
-    {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
     {"hodo_pos_sigma",                   &fHodoPosSigma[0],       kDouble,  fMaxHodoScin},
     {"hodo_neg_sigma",                   &fHodoNegSigma[0],       kDouble,  fMaxHodoScin},
-    {"hodo_pos_minph",                   &fHodoPosMinPh[0],       kDouble,  fMaxHodoScin},
-    {"hodo_neg_minph",                   &fHodoNegMinPh[0],       kDouble,  fMaxHodoScin},
-    {"hodo_pos_phc_coeff",               &fHodoPosPhcCoeff[0],    kDouble,  fMaxHodoScin},
-    {"hodo_neg_phc_coeff",               &fHodoNegPhcCoeff[0],    kDouble,  fMaxHodoScin},
-    {"hodo_pos_time_offset",             &fHodoPosTimeOffset[0],  kDouble,  fMaxHodoScin},
-    {"hodo_neg_time_offset",             &fHodoNegTimeOffset[0],  kDouble,  fMaxHodoScin},
     {"hodo_pos_ped_limit",               &fHodoPosPedLimit[0],    kInt,     fMaxHodoScin},
     {"hodo_neg_ped_limit",               &fHodoNegPedLimit[0],    kInt,     fMaxHodoScin},
     {"tofusinginvadc",                   &fTofUsingInvAdc,        kInt,            0,  1},
@@ -353,10 +350,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fNormETot = 0.7;
   // Gets added to each reference time corrected raw TDC value
   // to make sure valid range is all positive.
-  fTdcOffset = new Int_t [fNPlanes];
-  for(Int_t ip=0;ip<fNPlanes;ip++) { // Set a large default window
-    fTdcOffset[ip] = 0;
-  }
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
@@ -390,6 +383,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   if (fTofUsingInvAdc) {
     DBRequest list2[]={
+    {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
       {"hodo_pos_invadc_offset",&fHodoPosInvAdcOffset[0],kDouble,fMaxHodoScin},
       {"hodo_neg_invadc_offset",&fHodoNegInvAdcOffset[0],kDouble,fMaxHodoScin},
       {"hodo_pos_invadc_linear",&fHodoPosInvAdcLinear[0],kDouble,fMaxHodoScin},
@@ -399,6 +393,19 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
       {0}
     };
     gHcParms->LoadParmValues((DBRequest*)&list2,prefix);
+  };
+  if (!fTofUsingInvAdc) {
+    DBRequest list3[]={
+    {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
+    {"hodo_pos_minph",                   &fHodoPosMinPh[0],       kDouble,  fMaxHodoScin},
+    {"hodo_neg_minph",                   &fHodoNegMinPh[0],       kDouble,  fMaxHodoScin},
+    {"hodo_pos_phc_coeff",               &fHodoPosPhcCoeff[0],    kDouble,  fMaxHodoScin},
+    {"hodo_neg_phc_coeff",               &fHodoNegPhcCoeff[0],    kDouble,  fMaxHodoScin},
+    {"hodo_pos_time_offset",             &fHodoPosTimeOffset[0],  kDouble,  fMaxHodoScin},
+    {"hodo_neg_time_offset",             &fHodoNegTimeOffset[0],  kDouble,  fMaxHodoScin},
+      {0}
+    };
+    gHcParms->LoadParmValues((DBRequest*)&list3,prefix);
   };
   if (fDebug >=1) {
     cout <<"******* Testing Hodoscope Parameter Reading ***\n";
@@ -452,9 +459,9 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
     {"betap",             "betaP",                "fBetaP"},
     {"betanotrack",       "Beta from scintillator hits",                "fBetaNoTrk"},
     {"betachisqnotrack",  "Chi square of beta from scintillator hits",  "fBetaNoTrkChiSq"},
-    {"fpHitsTime",        "Time at focal plane from all hits",            "fFPTime"},
+    {"fpHitsTime",        "Time at focal plane from all hits",            "fFPTimeAll"},
     {"starttime",         "Hodoscope Start Time",                         "fStartTime"},
-    {"goodstarttime",     "Hodoscope Good Start Time",                    "fGoodStartTime"},
+    {"goodstarttime",     "Hodoscope Good Start Time (logical flag)",                    "fGoodStartTime"},
     {"goodscinhit",       "Hit in fid area",                              "fGoodScinHits"},
     //    {"goodscinhitx",    "Hit in fid x range",                     "fGoodScinHitsX"},
     {"scinshould",        "Total scin Hits in fid area",                  "fScinShould"},
@@ -537,6 +544,7 @@ void THcHodoscope::ClearEvent()
   fBetaNoTrk = 0.0;
   fBetaNoTrkChiSq = 0.0;
   fStartTime  = 0.0;
+  fFPTimeAll= -1000.;
   fGoodStartTime = kFALSE;
   fGoodScinHits = 0;
   fScinShould = 0;
@@ -646,7 +654,6 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
    */
 
   Int_t timehist[200];
-
   for (Int_t i=0;i<200;i++) {
     timehist[i] = 0;
   }
@@ -738,7 +745,6 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
     fStartTime = fStartTimeCenter;
     fGoodStartTime=kFALSE;
   }
-
   if((goodplanetime[0]||goodplanetime[1])
      &&(goodplanetime[2]||goodplanetime[3])) {
 
@@ -1304,7 +1310,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	}
       }
       Double_t fptime = FPTimeSum/nFPTimeSum;
-
+      fFPTimeAll = fptime;
       Double_t dedx=0.0;
       for(UInt_t ih=0;ih<fTOFCalc.size();ih++) {
 	if(fTOFCalc[ih].good_scin_time) {

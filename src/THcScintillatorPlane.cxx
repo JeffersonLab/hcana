@@ -348,7 +348,17 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     {"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"},
 
     {"fptime", "Time at focal plane",     "GetFpTime()"},
+
     {"nhits", "Number of paddle hits (passed TDC Min and Max cuts for either end)",           "GetNScinHits() "},
+    {"GoodPaddle",         "List of Paddle Numbers (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPaddleNumber()"},
+    {"GoodNegTdcChan",         "List of negative TDC values (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetNegTDC()"},
+    {"GoodNegTdcTimeCorr",         "List of negative corrected TDC values (corrected for PMT offset and ADC)",               "fHodoHits.THcHodoHit.GetNegCorrectedTime()"},
+    {"GoodNegTdcTimeTOFCorr",         "List of negative corrected TDC values (corrected for TOF)",               "fHodoHits.THcHodoHit.GetNegTOFCorrectedTime()"},
+    {"GoodNegAdcPulseInt",         "List of negative ADC values (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetNegADC()"},
+    {"GoodPosTdcChan",         "List of positive TDC values (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPosTDC()"},
+    {"GoodPosTdcTimeCorr",         "List of positive corrected TDC values (corrected for PMT offset and ADC)",               "fHodoHits.THcHodoHit.GetPosCorrectedTime()"},
+    {"GoodPosTdcTimeTOFCorr",         "List of positive corrected TDC values (corrected for TOF)",               "fHodoHits.THcHodoHit.GetPosTOFCorrectedTime()"},
+    {"GoodPosAdcPulseInt",         "List of positive ADC values (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPosADC()"},
     {"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
     { 0 }
   };
@@ -595,8 +605,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     Bool_t btdcraw_pos=kFALSE;
     Bool_t btdcraw_neg=kFALSE;
-    Int_t tdc_pos=-99;
-    Int_t tdc_neg=-99;
+    Int_t tdc_pos=-999;
+    Int_t tdc_neg=-999;
     // Find first in range hit from multihit tdc
     for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
       tdc_pos = hit->GetRawTdcHitPos().GetTime(thit)+fTdcOffset;
@@ -613,6 +623,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       }
     }
     // Proceed if there is a valid TDC on either end of the bar
+    //    cout << ihit << " " << hit->fCounter << " " << fNScinHits<< " " << tdc_neg << " " << btdcraw_neg << " " << tdc_pos << " " << btdcraw_pos << " " <<endl;
     if(btdcraw_pos || btdcraw_neg) {
 
 
@@ -665,9 +676,39 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	  postime = postime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	  negtime = negtime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	}
+	//        cout << fNScinHits<< " " << timec_pos << " " << timec_neg << endl;
 	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,
 								     postime, negtime,
 								     scin_corrected_time);
+      } else {
+	Double_t timec_pos,timec_neg;
+        timec_pos=tdc_pos;
+        timec_neg=tdc_neg;
+      if(btdcraw_pos) {
+	if(fTofUsingInvAdc) {
+	  timec_pos = tdc_pos*fScinTdcToTime
+	    - fHodoPosInvAdcOffset[index]
+	    - fHodoPosInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0,adc_pos));
+	} else {		// Old style
+	  timec_pos = tdc_pos*fScinTdcToTime - fHodoPosPhcCoeff[index]*
+	    TMath::Sqrt(TMath::Max(0.0,adc_pos/fHodoPosMinPh[index]-1.0))
+	    - fHodoPosTimeOffset[index];
+	}
+      }
+      if(btdcraw_neg) {
+	if(fTofUsingInvAdc) {
+	  timec_neg = tdc_neg*fScinTdcToTime
+	    - fHodoNegInvAdcOffset[index]
+	    - fHodoNegInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0,adc_neg));
+	} else {		// Old style
+	  timec_neg = tdc_neg*fScinTdcToTime - fHodoNegPhcCoeff[index]*
+	    TMath::Sqrt(TMath::Max(0.0,adc_neg/fHodoNegMinPh[index]-1.0))
+	    - fHodoNegTimeOffset[index];
+	}
+      }
+	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,
+								     timec_pos,timec_neg,
+								     0.0);
       }
       fNScinHits++;		// One or more good time counter
     }

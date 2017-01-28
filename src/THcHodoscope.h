@@ -128,6 +128,7 @@ protected:
   // Per-event data
   Bool_t fGoodStartTime;
   Double_t fStartTime;
+  Double_t fFPTimeAll;
   Int_t fNfptimes;
 
   Double_t     fBetaP;
