@@ -42,7 +42,7 @@
   HMS->AddDetector( new THcDC("dc", "Drift Chambers" ));
   THcAerogel* aerogel = new THcAerogel("aero", "Aerogel Cerenkov" );
   HMS->AddDetector( aerogel );
-  THcCherenkov* cherenkov = new THcCherenkov("cher", "Gas Cerenkov" );
+  THcCherenkov* cherenkov = new THcCherenkov("cer", "Gas Cerenkov" );
   HMS->AddDetector( cherenkov );
 
   THcScalerEvtHandler *hscaler = new THcScalerEvtHandler("HS","HC scaler event type 0");
