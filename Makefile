@@ -33,6 +33,7 @@ SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcScalerEvtHandler.cxx \
 	src/THcHodoEff.cxx \
 	src/THcTrigApp.cxx src/THcTrigDet.cxx src/THcTrigRawHit.cxx \
+	src/THcRawAdcHit.cxx src/THcRawTdcHit.cxx \
 	src/THcDummySpectrometer.cxx
 
 # Name of your package.
