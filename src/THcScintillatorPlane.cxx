@@ -175,18 +175,18 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 
   //  static const char* const here = "ReadDatabase()";
   char prefix[2];
-  char parname[100];
 
   prefix[0]=tolower(GetParent()->GetPrefix()[0]);
   prefix[1]='\0';
 
   // need this further down so read them first! GN
-  strcpy(parname,prefix);
-  strcat(parname,"scin_");
-  strcat(parname,GetName());
-  strcat(parname,"_nr");
-  fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
-  //
+  string parname = "scin_" + string(GetName()) + "_nr";
+  DBRequest list_1[] = {
+    {parname.c_str(), &fNelem, kInt},
+    {0}
+  };
+  gHcParms->LoadParmValues(list_1, prefix);
+
   // Based on the signs of these quantities in the .pos file the correspondence
   // should be bot=>left  and top=>right when comparing x and y-type scintillators
   char tmpleft[6], tmpright[6];

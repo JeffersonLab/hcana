@@ -283,7 +283,13 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
 //_____________________________________________________________________________
 Int_t THcRaster::Process( ){
 
-  Double_t eBeam = 0.001;
+	Double_t eBeam = 0.001;
+  DBRequest list[] = {
+    {"gpbeam", &eBeam, kDouble, 0, 1},
+    {0}
+  };
+  gHcParms->LoadParmValues(list);
+
   /*
     calculate raster position from ADC value.
     From ENGINE/g_analyze_misc.f -
@@ -304,9 +310,6 @@ Int_t THcRaster::Process( ){
     gfry = (gfry_adc/gfry_adcpercm)*(gfr_cal_mom/ebeam)
   */
 
-  if(gHcParms->Find("gpbeam")){
-    eBeam=*(Double_t *)gHcParms->Find("gpbeam")->GetValuePointer();
-  }
   fXpos = (fXADC/fFrXADCperCM)*(fFrCalMom/eBeam);
   fYpos = (fYADC/fFrYADCperCM)*(fFrCalMom/eBeam);
 

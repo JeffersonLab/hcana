@@ -173,9 +173,11 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   string prefix = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
   std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
 
-  string parname = prefix + "_tot_pmts";
-
-  fNelem = (Int_t)gHcParms->Find(parname.c_str())->GetValue(); // class.
+  DBRequest list_1[] = {
+    {"_tot_pmts", &fNelem, kInt},
+    {0}
+  };
+  gHcParms->LoadParmValues(list_1, prefix.c_str());
 
   //    fNelem = 2;      // Default if not defined
   fCerNRegions = 3;
