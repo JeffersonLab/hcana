@@ -170,12 +170,12 @@ TH1F hdc2v1_dd 'HDC 2V1 Drift Distance' H.dc.2v1.dist 300 -0.1 0.6
 TH1F hdc2y2_dd 'HDC 2Y2 Drift Distance' H.dc.2y2.dist 300 -0.1 0.6
 TH1F hdc2x2_dd 'HDC 2X2 Drift Distance' H.dc.2x2.dist 300 -0.1 0.6
 
-formula Hhodtdif1 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[1]
-formula Hhodtdif2 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[2]
-formula Hhodtdif3 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[3]
-formula Hhodtdif4 H.hod.fpHitsTime[1]-H.hod.fpHitsTime[2]
-formula Hhodtdif5 H.hod.fpHitsTime[1]-H.hod.fpHitsTime[3]
-formula Hhodtdif6 H.hod.fpHitsTime[2]-H.hod.fpHitsTime[3]
+formula Hhodtdif1 H.hod.1x.fptime-H.hod.1y.fptime
+formula Hhodtdif2 H.hod.1x.fptime-H.hod.2x.fptime
+formula Hhodtdif3 H.hod.1x.fptime-H.hod.2y.fptime
+formula Hhodtdif4 H.hod.1y.fptime-H.hod.2x.fptime
+formula Hhodtdif5 H.hod.1y.fptime-H.hod.2y.fptime
+formula Hhodtdif6 H.hod.2x.fptime-H.hod.2y.fptime
 
 # Focal Plane times
 TH1F htimedif1 ' Time dif of plane 1 and 2' Hhodtdif1 80 -40. 40.
@@ -185,10 +185,10 @@ TH1F htimedif4 ' Time dif of plane 2 and 3' Hhodtdif4 80 -40. 40.
 TH1F htimedif5 ' Time dif of plane 2 and 4' Hhodtdif5 80 -40. 40.
 TH1F htimedif6 ' Time dif of plane 3 and 4' Hhodtdif6 80 -40. 40.
 
-TH1F hs1xfptime 'HODO s1x fptime' H.hod.fpHitsTime[0] 80 0 80 H.hod.goodstarttime
-TH1F hs1yfptime 'HODO s1y fptime' H.hod.fpHitsTime[1] 80 0 80 H.hod.goodstarttime
-TH1F hs2xfptime 'HODO s2x fptime' H.hod.fpHitsTime[2] 80 0 80 H.hod.goodstarttime
-TH1F hs2yfptime 'HODO s2y fptime' H.hod.fpHitsTime[3] 80 0 80 H.hod.goodstarttime
+TH1F hs1xfptime 'HODO s1x fptime' H.hod.1x.fptime 80 0 80 H.hod.goodstarttime
+TH1F hs1yfptime 'HODO s1y fptime' H.hod.1y.fptime 80 0 80 H.hod.goodstarttime
+TH1F hs2xfptime 'HODO s2x fptime' H.hod.2x.fptime 80 0 80 H.hod.goodstarttime
+TH1F hs2yfptime 'HODO s2y fptime' H.hod.2y.fptime 80 0 80 H.hod.goodstarttime
 TH1F starttime  'HODO start time' H.hod.starttime 80 0 80 H.hod.goodstarttime
 
 #SOS
