@@ -139,7 +139,7 @@ void THcHodoscope::Setup(const char* name, const char* description)
   // --------------- To get energy from THcShower ----------------------
 
   // --------------- To get NPEs from THcCherenkov -------------------
-  const char* chern_detector_name = "cher";
+  const char* chern_detector_name = "cer";
   THaDetector* detc = app->GetDetector( chern_detector_name );
 
   if( dynamic_cast<THcCherenkov*>(detc) ) {
