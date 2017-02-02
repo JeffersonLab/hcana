@@ -137,33 +137,57 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
   if (fDebugFile) *fDebugFile<<"\n\nTHcScalerEvtHandler :: Debugging event type "<<dec<<evdata->GetEvType()<<endl<<endl;
 
   // local copy of data
-
+  // Why do we need a local copy of the data?
   for (Int_t i=0; i<ndata; i++) rdata[i] = evdata->GetRawData(i);
 
-  Int_t nskip=0;
   UInt_t *p = rdata;
-  UInt_t *pstop = rdata+ndata;
-  int j=0;
 
-  ifound = 0;
+  UInt_t *plast = p+*p;		// Index to last word in the bank
 
-  while (p < pstop && j < ndata) {
-	if (fDebugFile) {
-      		*fDebugFile << "p  and  pstop  "<<j++<<"   "<<p<<"   "<<pstop<<"   "<<hex<<*p<<"   "<<dec<<endl;
+  ifound=0;
+  while(p<plast) {
+    p++;			  // point to header
+    if (fDebugFile) {
+      *fDebugFile << "Bank: " << hex << *p << dec << " len: " << *(p-1) << endl;
     }
-    nskip = 1;
-    for (size_t j=0; j<scalers.size(); j++) {
-      nskip = scalers[j]->Decode(p);
-      if (fDebugFile && nskip > 1) {
-	*fDebugFile << "\n===== Scaler # "<<j<<"     fName = "<<fName<<"   nskip = "<<nskip<<endl;
-	scalers[j]->DebugPrint(fDebugFile);
+    if((*p & 0xff00) == 0x1000) {	// Bank Containing banks
+      p++;				// Now pointing to a bank in the bank
+    } else if (((*p & 0xff00) == 0x100) && (*p != 0xC0000100)) {
+      // Bank containing integers.  Look for scaler data
+      // Assume that very first word is a scaler header
+      // At any point in the bank where the word is not a matching
+      // header, we stop.
+      UInt_t *pnext = p+*(p-1);	// Next bank
+      p++;			// First data word
+
+      while(p < pnext) {
+	Int_t nskip = 0;
+	if(fDebugFile) {
+	  *fDebugFile << "Scaler Header: " << hex << *p << dec;
+	}
+	for(size_t j=0; j<scalers.size(); j++) {
+	  if(scalers[j]->IsSlot(*p)) {
+	    nskip = scalers[j]->GetNumChan() + 1;
+	    if(fDebugFile) {
+	      *fDebugFile << " found (" << j << ")  skip " << nskip << endl;
+	    }
+	    scalers[j]->Decode(p);
+	    ifound = 1;
+	    break;
+	  }
+	}
+	if(nskip == 0) {
+	  if(fDebugFile) {
+	    *fDebugFile << endl;
+	  }
+	  break;	// Didn't find a mathing header
+	}
+	p = p + nskip;
       }
-      if (nskip > 1) {
-	ifound = 1;
-	break;
-      }
+      p = pnext;
+    } else {
+      p = p+*(p-1);		// Skip to next bank
     }
-    p = p + nskip;
   }
 
   if (fDebugFile) {
@@ -219,6 +243,11 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
   return 1;
 }
 
+void THcScalerEvtHandler::AddEventType(Int_t evtype)
+{
+  eventtypes.push_back(evtype);
+}
+
 THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
 {
   const int LEN = 200;
@@ -230,7 +259,9 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
   cout << "Howdy !  We are initializing THcScalerEvtHandler !!   name =   "
         << fName << endl;
 
-  eventtypes.push_back(0);  // what events to look for
+  if(eventtypes.size()==0) {
+    eventtypes.push_back(0);  // Default Event Type
+  }
 
   TString dfile;
   dfile = fName + "scaler.txt";
@@ -308,6 +339,8 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
 	}
 	if (scalers.size() > 0) {
 	  UInt_t idx = scalers.size()-1;
+	  // Headers must be unique over whole event, not
+	  // just within a ROC
 	  scalers[idx]->SetHeader(header, mask);
 	  if (clkchan >= 0) {
 		  scalers[idx]->SetClock(defaultDT, clkchan, clkfreq);
