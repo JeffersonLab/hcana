@@ -3,6 +3,8 @@
 
 
 #include "THcRawHit.h"
+#include "THcRawAdcHit.h"
+#include "THcRawTdcHit.h"
 
 
 class THcTrigRawHit : public THcRawHit {
@@ -21,42 +23,22 @@ class THcTrigRawHit : public THcRawHit {
     void SetReference(Int_t signal, Int_t reference);
 
     Int_t GetData(Int_t signal);
-    Int_t GetData(Int_t signal, UInt_t iHit);
     Int_t GetRawData(Int_t signal);
-    Int_t GetRawData(Int_t signal, UInt_t iHit);
-    Int_t GetAdcTime(UInt_t iHit);
-    Int_t GetAdcPedestal(UInt_t iHit);
-    Int_t GetAdcPulse(UInt_t iHit);
-    Int_t GetNSignals();
-    ESignalType GetSignalType(Int_t signal);
     Int_t GetReference(Int_t signal);
-    Int_t GetMultiplicity(Int_t signal);
+    ESignalType GetSignalType(Int_t signal);
+    Int_t GetNSignals();
 
-    Bool_t HasMulti(Int_t signal);
     Bool_t HasReference(Int_t signal);
 
+    THcRawAdcHit& GetRawAdcHit();
+    THcRawTdcHit& GetRawTdcHit();
 
   protected:
-    static const UInt_t fMaxNPulsesAdc = 4;
-    static const UInt_t fMaxNSamplesAdc = 511;
-    static const UInt_t fMaxNHitsTdc = 16;
-    static const UInt_t fNPlanes = 2;
+    static const Int_t fNAdcSignals = 1;
+    static const Int_t fNTdcSignals = 1;
 
-    Int_t fAdc[fMaxNPulsesAdc];
-    Int_t fAdcTime[fMaxNPulsesAdc];
-    Int_t fAdcPedestal[fMaxNPulsesAdc];
-    Int_t fAdcPulse[fMaxNPulsesAdc];
-
-    Int_t fAdcSamples[fMaxNSamplesAdc];
-
-    Int_t fTdc[fMaxNHitsTdc];
-
-    Int_t fReferenceTime[fNPlanes];
-    Bool_t fHasReference[fNPlanes];
-    Bool_t fHasMulti[fNPlanes];
-    UInt_t fNRawHits[fNPlanes];
-
-    UInt_t fNRawSamples;
+    THcRawAdcHit fAdcHits[fNAdcSignals];
+    THcRawTdcHit fTdcHits[fNTdcSignals];
 
   private:
     ClassDef(THcTrigRawHit, 0);

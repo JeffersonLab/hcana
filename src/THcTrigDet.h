@@ -42,12 +42,20 @@ class THcTrigDet : public THaDetector, public THcHitList {
     static const int fMaxAdcChannels = 100;
     static const int fMaxTdcChannels = 100;
 
-    Int_t fAdcVal[fMaxAdcChannels];
-    Int_t fAdcPedestal[fMaxAdcChannels];
-    Int_t fAdcMultiplicity[fMaxAdcChannels];
+    Int_t fTdcTimeRaw[fMaxTdcChannels];
+    Double_t fTdcTime[fMaxTdcChannels];
 
-    Int_t fTdcVal[fMaxTdcChannels];
+    Int_t fAdcPedRaw[fMaxAdcChannels];
+    Int_t fAdcPulseIntRaw[fMaxAdcChannels];
+    Int_t fAdcPulseAmpRaw[fMaxAdcChannels];
+    Int_t fAdcPulseTimeRaw[fMaxAdcChannels];
+
+    Double_t fAdcPed[fMaxAdcChannels];
+    Double_t fAdcPulseInt[fMaxAdcChannels];
+    Double_t fAdcPulseAmp[fMaxAdcChannels];
+
     Int_t fTdcMultiplicity[fMaxTdcChannels];
+    Int_t fAdcMultiplicity[fMaxAdcChannels];
 
   private:
     THcTrigDet();
