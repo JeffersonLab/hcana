@@ -312,6 +312,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   }
 
   DBRequest list[]={
+    {"cosmicflag",                &fCosmicFlag,                      kInt},
     {"start_time_center",                &fStartTimeCenter,                      kDouble},
     {"start_time_slop",                  &fStartTimeSlop,                        kDouble},
     {"scin_tdc_to_time",                 &fScinTdcToTime,                        kDouble},
@@ -348,11 +349,13 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fTofTolerance = 3.0;
   fNCerNPE = 2.0;
   fNormETot = 0.7;
+  fCosmicFlag=0;
   // Gets added to each reference time corrected raw TDC value
   // to make sure valid range is all positive.
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-
+  if (fCosmicFlag==1) cout << " setup for cosmics in TOF"<< endl;
+  cout << " cosmic flag = " << fCosmicFlag << endl;
   if(fDumpTOF) {
     fDumpOut.open(fTOFDumpFile.c_str());
     if(fDumpOut.is_open()) {
@@ -718,9 +721,16 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
 	// Both tubes fired
 	Int_t index=hit->GetPaddleNumber()-1;
 	// Need to put this in a multihit histo
-	Double_t fptime = hit->GetScinCorrectedTime()
+        Double_t fptime;
+        if(fCosmicFlag==1) {
+	   fptime = hit->GetScinCorrectedTime()
+	  + (fPlanes[ip]->GetZpos()+(index%2)*fPlanes[ip]->GetDzpos())
+	  / (29.979 * fBetaNominal);
+	}else{
+	   fptime = hit->GetScinCorrectedTime()
 	  - (fPlanes[ip]->GetZpos()+(index%2)*fPlanes[ip]->GetDzpos())
 	  / (29.979 * fBetaNominal);
+	}
 	if(TMath::Abs(fptime-fStartTimeCenter)<=fStartTimeSlop) {
           Ngood_hits_plane++;
 	  Plane_fptime_sum+=fptime;
@@ -741,9 +751,11 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
   if(fNfptimes>0) {
     fStartTime = fpTimeSum/fNfptimes;
     fGoodStartTime=kTRUE;
+      fFPTimeAll = fStartTime ;
   } else {
     fStartTime = fStartTimeCenter;
     fGoodStartTime=kFALSE;
+    fFPTimeAll = fStartTime ;
   }
   if((goodplanetime[0]||goodplanetime[1])
      &&(goodplanetime[2]||goodplanetime[3])) {
