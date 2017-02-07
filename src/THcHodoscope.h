@@ -142,6 +142,7 @@ protected:
   UInt_t fMaxScinPerPlane,fMaxHodoScin; // max number of scin/plane; product of the first two
   Double_t fStartTimeCenter, fStartTimeSlop, fScinTdcToTime;
   Double_t fTofTolerance;
+  Int_t fCosmicFlag; //
   Double_t fPathLengthCentral;
   Double_t fScinTdcMin, fScinTdcMax; // min and max TDC values
   char** fPlaneNames;
