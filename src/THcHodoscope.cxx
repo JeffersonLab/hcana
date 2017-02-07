@@ -312,7 +312,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   }
 
   DBRequest list[]={
-    {"cosmicflag",                &fCosmicFlag,                      kInt},
+    {"cosmicflag",                       &fCosmicFlag,            kInt,            0,  1},
     {"start_time_center",                &fStartTimeCenter,                      kDouble},
     {"start_time_slop",                  &fStartTimeSlop,                        kDouble},
     {"scin_tdc_to_time",                 &fScinTdcToTime,                        kDouble},
