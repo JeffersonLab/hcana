@@ -891,6 +891,7 @@ void THcDC::TrackFit()
 	Double_t coord=0.0;
 	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
 	  coord += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
+	  cout << "ir = " << ir << ", dray[ir] = " << dray[ir] << endl;
 	}
 	theDCTrack->SetCoord(iplane,coord);
       }
@@ -898,7 +899,12 @@ void THcDC::TrackFit()
       chi2 = 0.0;
       for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
 	Double_t residual = coords[ihit] - theDCTrack->GetCoord(planes[ihit]);
+	// cout << "ihit = " << ihit << ", planes[ihit] = " << planes[ihit] 
+	//      << ", coords[ihit] = " << coords[ihit] 
+	//      << ", theDCTrack->GetCoord(planes[ihit]) = " 
+	//      << theDCTrack->GetCoord(planes[ihit]) << endl;
 	theDCTrack->SetResidual(planes[ihit], residual);
+	// cout << "Getting residual = " << theDCTrack->GetResidual(planes[ihit]) << endl;
 	chi2 += pow(residual/fSigma[planes[ihit]],2);
       }
       theDCTrack->SetVector(dray[0], dray[1], 0.0, dray[2], dray[3]);
@@ -988,9 +994,17 @@ void THcDC::TrackFit()
     }
   }
   if(fNDCTracks>0) {
-    for(Int_t ip=0;ip<fNPlanes;ip++) {
-      THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(0));
-      fResiduals[ip] = theDCTrack->GetResidual(ip);
+    for (UInt_t itrack = 0; itrack < fNDCTracks; itrack++) {
+      //for(Int_t ip=0;ip<fNPlanes;ip++) {
+      THcDCTrack *theDCTrack = static_cast <THcDCTrack*> (fDCTracks->At(itrack));
+      for (UInt_t ihit = 0; ihit < UInt_t (theDCTrack->GetNHits()); ihit++) {
+	//fResiduals[ip] = theDCTrack->GetResidual(ip);
+	THcDCHit *hit = theDCTrack->GetHit(ihit);
+	Int_t plane = hit->GetPlaneNum() - 1;
+	// fResiduals[ip] = theDCTrack->GetResidual(ip);
+	fResiduals[plane] = theDCTrack->GetResidual(plane);
+	// cout << "plane = " << plane << ", fResiduals[plane] = " << fResiduals[plane] << endl;
+      }
     }
   }
   //
