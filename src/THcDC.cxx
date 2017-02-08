@@ -891,7 +891,7 @@ void THcDC::TrackFit()
 	Double_t coord=0.0;
 	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
 	  coord += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
-	  cout << "ir = " << ir << ", dray[ir] = " << dray[ir] << endl;
+	  // cout << "ir = " << ir << ", dray[ir] = " << dray[ir] << endl;
 	}
 	theDCTrack->SetCoord(iplane,coord);
       }
