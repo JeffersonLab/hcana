@@ -456,9 +456,9 @@ Int_t THcDC::Decode( const THaEvData& evdata )
       cout << " Hit #  " << "Plane  " << " Wire " <<  " Raw TDC " << endl;
       for(UInt_t ihit = 0; ihit < fNRawHits ; ihit++) {
 	THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
-	for(UInt_t imhit = 0; imhit < hit->fNHits; imhit++) {
+	for(UInt_t imhit = 0; imhit < hit->GetRawTdcHit().GetNHits(); imhit++) {
 	  counter++;
-	  cout << counter << "      " << hit->fPlane << "     " << hit->fCounter << "     " << hit->fTDC[imhit]	   << endl;
+	  cout << counter << "      " << hit->fPlane << "     " << hit->fCounter << "     " << hit->GetRawTdcHit().GetTimeRaw(imhit)	   << endl;
 	}
       }
       cout << endl;
@@ -899,9 +899,9 @@ void THcDC::TrackFit()
       chi2 = 0.0;
       for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
 	Double_t residual = coords[ihit] - theDCTrack->GetCoord(planes[ihit]);
-	// cout << "ihit = " << ihit << ", planes[ihit] = " << planes[ihit] 
-	//      << ", coords[ihit] = " << coords[ihit] 
-	//      << ", theDCTrack->GetCoord(planes[ihit]) = " 
+	// cout << "ihit = " << ihit << ", planes[ihit] = " << planes[ihit]
+	//      << ", coords[ihit] = " << coords[ihit]
+	//      << ", theDCTrack->GetCoord(planes[ihit]) = "
 	//      << theDCTrack->GetCoord(planes[ihit]) << endl;
 	theDCTrack->SetResidual(planes[ihit], residual);
 	// cout << "Getting residual = " << theDCTrack->GetResidual(planes[ihit]) << endl;

@@ -312,10 +312,10 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Int_t wireNum = hit->fCounter;
     THcDCWire* wire = GetWire(wireNum);
     // Int_t reftime = hit->GetReference(0);
-    for(UInt_t mhit=0; mhit<hit->fNHits; mhit++) {
+    for(UInt_t mhit=0; mhit<hit->GetRawTdcHit().GetNHits(); mhit++) {
       fNRawhits++;
       /* Sort into early, late and ontime */
-      Int_t rawtdc = hit->GetData(0,mhit); // Get the ref time subtracted time
+      Int_t rawtdc = hit->GetRawTdcHit().GetTime(mhit); // Get the ref time subtracted time
       if(rawtdc < fTdcWinMin) {
 	// Increment early counter  (Actually late because TDC is backward)
       } else if (rawtdc > fTdcWinMax) {
@@ -335,7 +335,3 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   }
   return(ihit);
 }
-
-
-
-

@@ -17,7 +17,7 @@
 
 
 THcRawHodoHit::THcRawHodoHit(Int_t plane, Int_t counter) :
-  fAdcHits(), fTdcHits()
+  THcRawHit(plane, counter), fAdcHits(), fTdcHits()
 {}
 
 

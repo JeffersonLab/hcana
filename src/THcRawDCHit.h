@@ -2,50 +2,40 @@
 #define ROOT_THcRawDCHit
 
 #include "THcRawHit.h"
+#include "THcRawTdcHit.h"
+
 
 class THcRawDCHit : public THcRawHit {
-
-public:
   friend class THcDriftChamberPlane;
   friend class THcDC;
 
-  THcRawDCHit(Int_t plane=0, Int_t counter=0) : THcRawHit(plane, counter),
-    fNHits(0), fHasRef(kFALSE) {
-  }
-  THcRawDCHit& operator=( const THcRawDCHit& );
-  virtual ~THcRawDCHit() {}
+  public:
+    THcRawDCHit(Int_t plane=0, Int_t counter=0);
+    THcRawDCHit& operator=(const THcRawDCHit& right);
+    virtual ~THcRawDCHit();
 
-  virtual void Clear( Option_t* opt="" ) { fNHits=0; fHasRef=kFALSE; }
+    virtual void Clear(Option_t* opt="");
 
-  void SetData(Int_t signal, Int_t data);
-  void SetReference(Int_t signal, Int_t reference);
-  Int_t GetData(Int_t signal);
-  Int_t GetData(Int_t signal, UInt_t ihit);
-  Int_t GetRawData(Int_t signal);
-  Int_t GetRawData(Int_t signal, UInt_t ihit);
-  Int_t GetReference(Int_t signal);
-  Bool_t HasReference(Int_t signal) {return fHasRef;}
+    virtual void SetData(Int_t signal, Int_t data);
+    virtual void SetReference(Int_t signal, Int_t reference);
 
-  Int_t GetNSignals() { return 1;}
-  ESignalType GetSignalType(Int_t signal) {
-    return(kTDC);
-  }
+    virtual Int_t GetData(Int_t signal);
+    virtual Int_t GetRawData(Int_t signal);
+    virtual Int_t GetReference(Int_t signal);
+    virtual ESignalType GetSignalType(Int_t signal);
+    virtual Int_t GetNSignals();
 
-  virtual Bool_t  IsSortable () const {return kTRUE; }
-  virtual Int_t   Compare(const TObject* obj) const;
+    virtual Bool_t HasReference(Int_t signal);
 
-  UInt_t GetMaxNSamplesTDC() {return fMaxNSamplesTDC;}
+    THcRawTdcHit& GetRawTdcHit();
 
-protected:
-  static const UInt_t fMaxNSamplesTDC = 128;
-  UInt_t fNHits;
-  Int_t fTDC[fMaxNSamplesTDC];
-  Int_t fReferenceTime;
-  Int_t fHasRef;
+  protected:
+    static const Int_t fNTdcSignals = 1;
 
-private:
+    THcRawTdcHit fTdcHit;
 
-  ClassDef(THcRawDCHit, 0);	// Raw Drift Chamber hit
+  private:
+    ClassDef(THcRawDCHit, 0);	// Raw Drift Chamber hit
 };
 
 #endif
