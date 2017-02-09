@@ -24,7 +24,7 @@ class THcRawTdcHit : public TObject {
     UInt_t GetNHits() const;
 
   protected:
-    static const UInt_t fMaxNHits = 16;
+    static const UInt_t fMaxNHits = 128;
 
     Double_t fChannelToTimeFactor;
 

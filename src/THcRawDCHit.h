@@ -37,7 +37,7 @@ public:
   UInt_t GetMaxNSamplesTDC() {return fMaxNSamplesTDC;}
 
 protected:
-  static const UInt_t fMaxNSamplesTDC = 16;
+  static const UInt_t fMaxNSamplesTDC = 128;
   UInt_t fNHits;
   Int_t fTDC[fMaxNSamplesTDC];
   Int_t fReferenceTime;
