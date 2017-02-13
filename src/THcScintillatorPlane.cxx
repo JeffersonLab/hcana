@@ -307,19 +307,6 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 
   // Register variables in global list
   RVarDef vars[] = {
-    {"postdcpad", "List of Positive TDC Counter Number",      "frPosTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negtdcpad", "List of Negative TDC Counter Number",      "frNegTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"posadcpad", "List of Positive ADC Counter Number",      "frPosADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negadcpad", "List of Negative ADC Counter Number",      "frNegADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"postdcval", "List of Positive TDC Values",              "frPosTDCHits.THcSignalHit.GetData()"},
-    {"negtdcval", "List of Negative TDC Values",              "frNegTDCHits.THcSignalHit.GetData()"},
-    {"posadcval", "List of Positive ADC Values",              "frPosADCHits.THcSignalHit.GetData()"},
-    {"negadcval", "List of Negative ADC Values",              "frNegADCHits.THcSignalHit.GetData()"},
-    {"posadcsum", "List of Positive ADC Sample Sums",         "frPosADCSums.THcSignalHit.GetData()"},
-    {"negadcsum", "List of Negative ADC Sample Sums",         "frNegADCSums.THcSignalHit.GetData()"},
-    {"posadcped", "List of Positive ADC Pedestals",           "frPosADCPeds.THcSignalHit.GetData()"},
-    {"negadcped", "List of Negative ADC Pedestals",           "frNegADCPeds.THcSignalHit.GetData()"},
-
     {"posTdcCounter", "List of positive TDC counter numbers.", "frPosTdcTimeRaw.THcSignalHit.GetPaddleNumber()"},
     {"posAdcCounter", "List of positive ADC counter numbers.", "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
     {"negTdcCounter", "List of negative TDC counter numbers.", "frNegTdcTimeRaw.THcSignalHit.GetPaddleNumber()"},
