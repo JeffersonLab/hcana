@@ -30,7 +30,7 @@ SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcRaster.cxx\
 	src/THcRasteredBeam.cxx\
 	src/THcRasterRawHit.cxx \
-	src/THcScalerEvtHandler.cxx \
+	src/THcScalerEvtHandler.cxx src/THcConfigEvtHandler.cxx \
 	src/THcHodoEff.cxx \
 	src/THcTrigApp.cxx src/THcTrigDet.cxx src/THcTrigRawHit.cxx \
 	src/THcRawAdcHit.cxx src/THcRawTdcHit.cxx \
