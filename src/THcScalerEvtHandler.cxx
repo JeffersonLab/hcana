@@ -50,6 +50,8 @@ To enable debugging you may try this in the setup script
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <map>
+#include <iterator>
 #include "THaVarList.h"
 #include "VarDef.h"
 

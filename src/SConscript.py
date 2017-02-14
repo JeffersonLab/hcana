@@ -26,7 +26,7 @@ THcAerogel.cxx THcAerogelHit.cxx
 THcCherenkov.cxx THcCherenkovHit.cxx
 THcFormula.cxx
 THcRaster.cxx THcRasteredBeam.cxx THcRasterRawHit.cxx
-THcScalerEvtHandler.cxx
+THcScalerEvtHandler.cxx THcConfigEvtHandler.cxx
 THcTrigApp.cxx THcTrigDet.cxx THcTrigRawHit.cxx
 THcRawAdcHit.cxx THcRawTdcHit.cxx
 THcDummySpectrometer.cxx

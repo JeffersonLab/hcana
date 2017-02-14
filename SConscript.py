@@ -21,7 +21,7 @@ src/THcShowerArray.h src/THcShowerHit.h
 src/THcRawShowerHit.h src/THcAerogel.h src/THcAerogelHit.h src/THcCherenkov.h src/THcCherenkovHit.h
 src/THcGlobals.h src/THcDCTrack.h src/THcFormula.h
 src/THcRaster.h src/THcRasteredBeam.h src/THcRasterRawHit.h src/THcScalerEvtHandler.h
-src/THcHodoEff.h
+src/THcConfigEvtHandler.h src/THcHodoEff.h
 src/THcTrigApp.h src/THcTrigDet.h src/THcTrigRawHit.h
 src/THcRawAdcHit.h src/THcRawTdcHit.h
 src/THcDummySpectrometer.h
