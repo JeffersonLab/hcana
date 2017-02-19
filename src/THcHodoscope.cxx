@@ -1357,7 +1357,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
     std::vector<Double_t> scin_temp;
     fScinHitPaddle.push_back(scin_temp); // Create array of hits per plane
 
-    for (UInt_t ipaddle = 0; ipaddle < fNPaddle[0]; ipaddle++ ){
+    for (UInt_t ipaddle = 0; ipaddle < fNPaddle[ip]; ipaddle++ ){
 	  fScinHitPaddle[ip].push_back(0.0);
 	  fScinHitPaddle[ip][ipaddle] = 0.0;
     }
