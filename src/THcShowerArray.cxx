@@ -399,8 +399,8 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
   THcShowerHitSet HitSet;         //set of hits
 
   UInt_t k=0;
-  for (UInt_t i=0; i<fNRows; i++) {
-    for(UInt_t j=0; j < fNColumns; j++) {
+  for(UInt_t j=0; j < fNColumns; j++) {
+    for (UInt_t i=0; i<fNRows; i++) {
 
       if (fA_p[k] > 0) {    //hit
 
