@@ -219,6 +219,9 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   //   fScinHit[m] = new Double_t[fNPaddle[0]];
   // }
 
+  for (int ip=0; ip<fNPlanes; ++ip) {
+    fScinHitPaddle.push_back(std::vector<Int_t>(fNPaddle[ip], 0));
+  }
 
   return fStatus = kOK;
 }
@@ -558,9 +561,11 @@ void THcHodoscope::ClearEvent()
     fFPTime[ip]=0.;
     fPlaneCenter[ip]=0.;
     fPlaneSpacing[ip]=0.;
+    for(Int_t iPaddle=0;iPaddle<fNPaddle[ip]; ++iPaddle) {
+      fScinHitPaddle[ip][iPaddle]=0;
+    }
   }
   fdEdX.clear();
-  fScinHitPaddle.clear();
   fNScinHit.clear();
   fNClust.clear();
   fThreeScin.clear();
@@ -1351,17 +1356,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   //************************now look at some hodoscope tests
   //  *second, we move the scintillators.  here we use scintillator cuts to see
   //  *if a track should have been found.
-
-  for(Int_t ip = 0; ip < fNPlanes; ip++ ) {
-
-    std::vector<Double_t> scin_temp;
-    fScinHitPaddle.push_back(scin_temp); // Create array of hits per plane
-
-    for (UInt_t ipaddle = 0; ipaddle < fNPaddle[ip]; ipaddle++ ){
-	  fScinHitPaddle[ip].push_back(0.0);
-	  fScinHitPaddle[ip][ipaddle] = 0.0;
-    }
-  }
 
   for(Int_t ip = 0; ip < fNPlanes; ip++ ) {
     if (!fPlanes[ip])

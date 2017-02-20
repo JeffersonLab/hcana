@@ -319,7 +319,7 @@ scin_pos_time(0.0), scin_neg_time(0.0) {}
     // Start with a separate vector of vectors for now.
   std::vector<std::vector<Double_t> > fdEdX;	        // Vector over track #
   std::vector<Int_t > fNScinHit;		        // # scins hit for the track
-  std::vector<std::vector<Double_t> > fScinHitPaddle;	// Vector over hits in a plane #
+  std::vector<std::vector<Int_t> > fScinHitPaddle;	// Vector over hits in a plane #
   std::vector<Int_t > fNClust;		                // # scins clusters for the plane
   std::vector<Int_t > fThreeScin;	                // # scins three clusters for the plane
   std::vector<Int_t > fGoodScinHitsX;                   // # hits in fid x range
