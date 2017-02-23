@@ -193,7 +193,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	    Int_t reftime = evdata.GetData(d->crate, d->slot, d->refchan, 0);
 	    rawhit->SetReference(signal, reftime);
 	  } else {
-	    cout << "HitList: refchan " << d->refindex <<
+	    cout << "HitList: refchan " << d->refchan <<
 	      " missing for (" << d->crate << ", " << d->slot <<
 	      ", " << chan << ")" << endl;
 	  }
@@ -203,6 +203,9 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	      rawhit->SetReference(signal, fRefIndexMaps[d->refindex].reftime);
 	    } else {
 	      cout << "HitList: refindex " << d->refindex <<
+          " (" << fRefIndexMaps[d->refindex].crate <<
+          ", " << fRefIndexMaps[d->refindex].slot <<
+          ", " << fRefIndexMaps[d->refindex].channel << ")" <<
 		" missing for (" << d->crate << ", " << d->slot <<
 		", " << chan << ")" << endl;
 	    }
