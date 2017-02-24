@@ -33,6 +33,8 @@ class THcTrigRawHit : public THcRawHit {
     THcRawAdcHit& GetRawAdcHit();
     THcRawTdcHit& GetRawTdcHit();
 
+    void SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED);
+
   protected:
     static const Int_t fNAdcSignals = 1;
     static const Int_t fNTdcSignals = 1;

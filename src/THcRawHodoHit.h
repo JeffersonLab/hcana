@@ -39,6 +39,8 @@ class THcRawHodoHit : public THcRawHit {
     THcRawTdcHit& GetRawTdcHitPos();
     THcRawTdcHit& GetRawTdcHitNeg();
 
+    void SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED);
+
   protected:
     static const Int_t fNAdcSignals = 2;
     static const Int_t fNTdcSignals = 2;
