@@ -873,6 +873,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   Int_t timehist[200];
   // -------------------------------------------------
 
+  //  fDumpOut << " ntrack =  " << ntracks  << endl;
 
   if (tracks.GetLast()+1 > 0 ) {
 
@@ -983,7 +984,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 
 	  // Index to access the 2d arrays of paddle/scintillator properties
 	  Int_t fPIndex = GetScinIndex(ip,paddle);
-
+          
 	  if ( TMath::Abs( scinCenter - scinTrnsCoord ) <
 	       ( fPlanes[ip]->GetSize() * 0.5 + fPlanes[ip]->GetHodoSlop() ) ){ // Line 293
 
@@ -1090,7 +1091,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	THcHodoHit *hit = fTOFPInfo[ih].hit;
 	Int_t iphit = fTOFPInfo[ih].hitNumInPlane;
 	Int_t ip = fTOFPInfo[ih].planeIndex;
-
+	//         fDumpOut << " looping over hits = " << ih << " plane = " << ip+1 << endl;
 	GoodFlags flags;
 	// Flags are used by THcHodoEff
 	fGoodFlags[itrack][ip].push_back(flags);
@@ -1346,6 +1347,10 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
     } // Main loop over tracks ends here.
 
   } // If condition for at least one track
+
+   if(fDumpTOF && ntracks==1 ) {
+	      fDumpOut << "0 "  << endl;
+	    }
 
   //-----------------------------------------------------------------------
   //
@@ -1605,9 +1610,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
        ( fChern->GetCerNPE() > fNCerNPE ) && ( tracks.GetLast() + 1 > 0 ) ) {
       fScinDid = 1;
   }
-	    if(fDumpTOF && ntracks==1) {
-	      fDumpOut << "0 "  << endl;
-	    }
 
   return 0;
 
