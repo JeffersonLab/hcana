@@ -10,6 +10,10 @@
 #include "TError.h"
 #include "TClass.h"
 
+#include "THcConfigEvtHandler.h"
+#include "THaGlobals.h"
+#include "TList.h"
+
 using namespace std;
 
 THcHitList::THcHitList()
@@ -17,6 +21,7 @@ THcHitList::THcHitList()
   // Normal constructor.
 
   fRawHitList = NULL;
+  fPSE125 = NULL;
 
 }
 
@@ -101,6 +106,10 @@ void THcHitList::InitHitList(THaDetMap* detmap,
     }
   }
 
+  fPSE125 = static_cast<THcConfigEvtHandler*>(gHaEvtHandlers->FindObject("HC"));
+  if (!fPSE125) {
+    cout << "THcHitList::InitHitList : Prestart event 125 not found." << endl;
+  }
 }
 
 Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
@@ -111,6 +120,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
   // multiple signal types (e.g. ADC+, ADC-, TDC+, TDC-), or multiple
   // hits for multihit tdcs.
   // The hit list is sorted (by plane, counter) after filling.
+
 
   // cout << " Clearing TClonesArray " << endl;
   fRawHitList->Clear( );
@@ -212,6 +222,15 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	  }
 	}
       } else {			// This is a Flash ADC
+
+        if (fPSE125) {  // Set F250 parameters.
+          rawhit->SetF250Params(
+            fPSE125->GetNSA(d->crate),
+            fPSE125->GetNSB(d->crate),
+            fPSE125->GetNPED(d->crate)
+          );
+        }
+
 	// Copy the samples
 	Int_t nsamples=evdata.GetNumEvents(Decoder::kSampleADC, d->crate, d->slot, chan);
 

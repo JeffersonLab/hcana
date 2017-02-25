@@ -31,6 +31,8 @@ class THcRawShowerHit : public THcRawHit {
     THcRawAdcHit& GetRawAdcHitPos();
     THcRawAdcHit& GetRawAdcHitNeg();
 
+    void SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED);
+
   protected:
     static const Int_t fNAdcSignals = 2;
 
