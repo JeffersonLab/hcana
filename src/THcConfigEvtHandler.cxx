@@ -99,7 +99,7 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
         Int_t *thresholds = new Int_t [16];
         cinfo->FADC250.thresholds.insert(std::make_pair(slot, thresholds));
         for(Int_t i=0;i<16;i++) {
-          thresholds[i] = evdata->GetRawData(ip+i);
+          thresholds[i] = evdata->GetRawData(ip+1+i);
         }
         ip +=18;
         if(ip>=evlen) {
@@ -151,12 +151,44 @@ void THcConfigEvtHandler::PrintConfig()
 /**
   Stub of method to pretty print the config data
 */
-  cout << "Configuration Data" << endl;
   std::map<Int_t, CrateInfo_t *>::iterator it = CrateInfoMap.begin();
   while(it != CrateInfoMap.end()) {
     Int_t roc = it->first;
-    CrateInfo_t *cinfo = it->second;
-    cout<<roc<<" "<<cinfo->FADC250.present<< " " << cinfo->CAEN1190.present << endl;
+    cout << "================= Configuration Data ROC " << roc << "==================" << endl;
+   CrateInfo_t *cinfo = it->second;
+   if(cinfo->CAEN1190.present) {
+      cout << "    CAEN 1190 Configuration" << endl;
+      cout << "        Resolution: " << cinfo->CAEN1190.resolution << " ps" << endl;
+      cout << "        T Offset:   " << cinfo->CAEN1190.timewindow_offset << endl;
+      cout << "        T Width:    " << cinfo->CAEN1190.timewindow_width << endl;
+    } else if (cinfo->FADC250.present) {
+      cout << "    FADC250 Configuration" << endl;
+      cout << "       Mode:   " << cinfo->FADC250.mode << endl;
+      cout << "       Latency: " << cinfo->FADC250.window_lat << "  Width: "<< cinfo->FADC250.window_width << endl;
+      cout << "       DAQ Level: " << cinfo->FADC250.daq_level << "  Threshold: " << cinfo->FADC250.threshold << endl;
+      cout << "       NPED: " << cinfo->FADC250.nped << "  NSA: " << cinfo->FADC250.nsa << "  NSB: " << cinfo->FADC250.nsb << endl;
+      cout << "       MAXPED: " << cinfo->FADC250.maxped << "  NP: " << cinfo->FADC250.np << "  NSAT: " << cinfo->FADC250.nsat << endl;
+
+      // Loop over FADC slots
+      cout << "       Thresholds";
+      std::map<Int_t, Int_t *>::iterator itt = cinfo->FADC250.thresholds.begin();
+      while(itt != cinfo->FADC250.thresholds.end()) {
+        Int_t slot = itt->first;
+        cout << " " << setw(5) << slot;
+        itt++;
+      }
+      cout << endl;
+      for(Int_t ichan=0;ichan<16;ichan++) {
+        cout << "           " << setw(2) << ichan << "    ";
+        std::map<Int_t, Int_t *>::iterator itt = cinfo->FADC250.thresholds.begin();
+        while(itt != cinfo->FADC250.thresholds.end()) {
+          Int_t *thresholds = itt->second;
+          cout << " " << setw(5) << thresholds[ichan];
+          itt++;
+        }
+        cout << endl;
+      }
+    }
     it++;
   }
 }
