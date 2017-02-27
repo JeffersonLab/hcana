@@ -223,7 +223,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	}
       } else {			// This is a Flash ADC
 
-        if (fPSE125) {  // Set F250 parameters.
+        if (fPSE125 && fPSE125->IsPresent(d->crate)) {  // Set F250 parameters.
           rawhit->SetF250Params(
             fPSE125->GetNSA(d->crate),
             fPSE125->GetNSB(d->crate),

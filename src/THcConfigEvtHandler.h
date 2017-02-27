@@ -25,6 +25,7 @@ public:
   virtual Int_t Analyze(THaEvData *evdata);
   virtual void AddEventType(Int_t evtype);
   virtual void PrintConfig();
+  virtual Int_t IsPresent(Int_t crate);
   virtual Int_t GetNSA(Int_t crate);
   virtual Int_t GetNSB(Int_t crate);
   virtual Int_t GetNPED(Int_t crate);

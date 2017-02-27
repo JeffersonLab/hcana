@@ -459,6 +459,13 @@ Double_t THcRawAdcHit::GetSampleInt() const {
 
 
 void THcRawAdcHit::SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED) {
+  if (NSA < 0 || NSB < 0 || NPED < 0) {
+    TString msg = TString::Format(
+      "`THcRawAdcHit::SetF250Params`: One of the params is negative!  NSA = %d  NSB = %d  NPED = %d",
+      NSA, NSB, NPED
+    );
+    throw std::invalid_argument(msg.Data());
+  }
   fNPedestalSamples = NPED;
   fNPeakSamples = NSA + NSB;
   fPeakPedestalRatio = 1.0*fNPeakSamples/fNPedestalSamples;

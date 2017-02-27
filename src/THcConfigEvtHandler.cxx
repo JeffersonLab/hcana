@@ -193,6 +193,14 @@ void THcConfigEvtHandler::PrintConfig()
     it++;
   }
 }
+
+Int_t THcConfigEvtHandler::IsPresent(Int_t crate) {
+  if(CrateInfoMap.find(crate)!=CrateInfoMap.end()) {
+    CrateInfo_t *cinfo = CrateInfoMap[crate];
+    return cinfo->FADC250.present;
+  }
+  return(0);
+}
 Int_t THcConfigEvtHandler::GetNSA(Int_t crate) {
   if(CrateInfoMap.find(crate)!=CrateInfoMap.end()) {
     CrateInfo_t *cinfo = CrateInfoMap[crate];
