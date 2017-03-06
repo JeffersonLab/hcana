@@ -94,6 +94,7 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* frNegAdcPulseInt;
   TClonesArray* frNegAdcPulseAmp;
 
+  Int_t fCosmicFlag; //
   Int_t fPlaneNum;		/* Which plane am I 1-4 */
   UInt_t fTotPlanes;            /* so we can read variables that are not indexed by plane id */
   UInt_t fNelem;		/* Need since we don't inherit from

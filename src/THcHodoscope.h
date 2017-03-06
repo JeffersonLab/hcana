@@ -126,6 +126,7 @@ protected:
   // Calibration
 
   // Per-event data
+  Bool_t fSHMS;
   Bool_t fGoodStartTime;
   Double_t fStartTime;
   Double_t fFPTimeAll;
@@ -212,8 +213,9 @@ protected:
   Int_t        fNHodoscopes;
 
   Int_t        fDumpTOF;
-  ofstream      fDumpOut;
+  ofstream    fDumpOut;
   string       fTOFDumpFile;
+  Bool_t      fGoodEventTOFCalib;
 
 
   Int_t fHitSweet1X;
