@@ -50,7 +50,7 @@
       open(unit=9,file=filename,err=998)
        if(filename(1:1).ne.'h'.and.filename(1:1).ne.'s') then
         write(6,'(1x,''error, input file name '',
-     >   '' should start with h or s'')')
+     >   '' sould start with h or s'')')
         goto 999
        endif
        write(*,*) ' filling adc histograms'
@@ -102,7 +102,7 @@ c         write(13,'(1x,''adcmin='',f6.1)') adcmin(i)
 
 ! Do everything twice, 2nd time with tighter tolerance (ttol) on
 ! time differences, based on first pass
-      ttol=5.0
+      ttol=20.0
       do iloop=1,2
          write(*,*) ' loop = ',iloop
 ! Initialize the fitting arrays
@@ -128,7 +128,6 @@ c         write(13,'(1x,''adcmin='',f6.1)') adcmin(i)
           n=n+1
           read(string,'(1x,i1,2i3,5f10.3)') ipn,ipl,idt, 
      >      tr(n),p(n),zc(n),tc1(n),adc(n)
-
 ! linearize the detector numbers
           idet(n) = 100*(ipn-1) + 20*(ipl-1) + idt
           if(idet(n).lt.1.or.idet(n).gt.200) write(6,'(1x,
@@ -149,7 +148,6 @@ c          adc(n) = min(500, max(0., adc(n)))
 
 ! Loop over all pairs, if at least 6
  11     if(n.ge.6) then
-
 ! see if this is first time a detector is used
           do j=1,n
             nhit(idet(j))=nhit(idet(j))+1
@@ -158,7 +156,7 @@ c          adc(n) = min(500, max(0., adc(n)))
 ! Note that detector had has a fixed time offset (ip1) of zero
 ! since all times are relative)
             if(nhit(idet(j)).eq.1) then
-              if(idet(j).eq.4) then
+              if(idet(j).eq.10) then
                 ip1(idet(j))=0
               else
 
@@ -334,17 +332,17 @@ c          adc(n) = min(500, max(0., adc(n)))
       enddo
 
       write(10+iloop,'(/a,''hodo_pos_invadc_linear ='',3(f8.2,'',''),
-     >  f8.2)')filename(1:1),( -1./min(-0.02,vel(i)),i=1,80,20)
+     >  f8.2)')filename(1:1),( -1./min(-1./15.,vel(i)),i=1,80,20)
       do j=2,16
        write(10+iloop,'(1x,''                        '',3(f8.2,'',''),
-     >  f8.2)')(-1./min(-0.02,vel(i)),i=j,79+j,20)
+     >  f8.2)')(-1./min(-1./15.,vel(i)),i=j,79+j,20)
       enddo
 
       write(10+iloop,'(/a,''hodo_neg_invadc_linear ='',3(f8.2,'',''),
-     >  f8.2)')filename(1:1),( -1./min(-0.02,vel(i)),i=101,180,20)
+     >  f8.2)')filename(1:1),( -1./min(-1./15.,vel(i)),i=101,180,20)
       do j=2,16
        write(10+iloop,'(1x,''                        '',3(f8.2,'',''),
-     >  f8.2)')(-1./min(-0.02,vel(i)),i=100+j,179+j,20)
+     >  f8.2)')(-1./min(-1./15.,vel(i)),i=100+j,179+j,20)
       enddo
 
       write(10+iloop,'(/a,''hodo_pos_invadc_adc='',3(f9.2,'',''),

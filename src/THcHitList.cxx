@@ -203,7 +203,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	    Int_t reftime = evdata.GetData(d->crate, d->slot, d->refchan, 0);
 	    rawhit->SetReference(signal, reftime);
 	  } else {
-	    cout << "HitList: refchan " << d->refchan <<
+	    cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
 	      " missing for (" << d->crate << ", " << d->slot <<
 	      ", " << chan << ")" << endl;
 	  }
@@ -212,7 +212,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	    if(fRefIndexMaps[d->refindex].hashit) {
 	      rawhit->SetReference(signal, fRefIndexMaps[d->refindex].reftime);
 	    } else {
-	      cout << "HitList: refindex " << d->refindex <<
+	      cout << "HitList(event=" << evdata.GetEvNum() << "): refindex " << d->refindex <<
           " (" << fRefIndexMaps[d->refindex].crate <<
           ", " << fRefIndexMaps[d->refindex].slot <<
           ", " << fRefIndexMaps[d->refindex].channel << ")" <<
@@ -223,7 +223,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	}
       } else {			// This is a Flash ADC
 
-        if (fPSE125 && fPSE125->IsPresent(d->crate)) {  // Set F250 parameters.
+        if (fPSE125) {  // Set F250 parameters.
           rawhit->SetF250Params(
             fPSE125->GetNSA(d->crate),
             fPSE125->GetNSB(d->crate),

@@ -214,15 +214,19 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
     {"hodo_adc_mode", &fADCMode, kInt, 0, 1},
     {"hodo_pedestal_scale", &fADCPedScaleFactor, kDouble, 0, 1},
     {"hodo_adc_diag_cut", &fADCDiagCut, kInt, 0, 1},
-    {0}
+   {"cosmicflag",                       &fCosmicFlag,            kInt,            0,  1},
+     {0}
   };
 
   fTofUsingInvAdc = 1;
   fADCMode = kADCStandard;
   fADCPedScaleFactor = 1.0;
   fADCDiagCut = 50.0;
-  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-  // fetch the parameter from the temporary list
+  fCosmicFlag=0;
+   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+   if (fCosmicFlag==1) cout << " setup for cosmics in scint plane"<< endl;
+  cout << " cosmic flag = " << fCosmicFlag << endl;
+ // fetch the parameter from the temporary list
 
   // Retrieve parameters we need from parent class
   // Common for all planes
@@ -675,14 +679,24 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	  timec_neg -= (hit_position-fPosRight)/
 	    fHodoNegInvAdcLinear[index];
 	  scin_corrected_time = 0.5*(timec_pos+timec_neg);
+	  if (fCosmicFlag) {
+	  postime = timec_pos + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  negtime = timec_neg + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  } else {
 	  postime = timec_pos - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	  negtime = timec_neg - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  }
 	} else {
 	  postime=timec_pos-(fPosLeft-hit_position)/fHodoVelLight[index];
 	  negtime=timec_neg-(hit_position-fPosRight)/fHodoVelLight[index];
 	  scin_corrected_time = 0.5*(postime+negtime);
-	  postime = postime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
-	  negtime = negtime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  if (fCosmicFlag) {
+	  postime = timec_pos + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  negtime = timec_neg + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  } else {
+	  postime = timec_pos - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  negtime = timec_neg - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  }
 	}
 	//        cout << fNScinHits<< " " << timec_pos << " " << timec_neg << endl;
         ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPaddleCenter(fPosCenter[index]);
