@@ -145,8 +145,8 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 
   for (UInt_t j=0; j<fNColumns; j++)
     for (UInt_t i=0; i<fNRows; i++) {
-      fXPos[i][j] = fXFront - (fNRows-1)*fXStep/2 + fXStep*i;
-      fYPos[i][j] = fYFront + (fNColumns-1)*fYStep/2 - fYStep*j;
+      fXPos[i][j] = fXFront - (fNRows+1)*fXStep/2+fXStep*(i+1);
+      fYPos[i][j] = fYFront + (fNColumns+1)*fYStep/2-fYStep*(j+1);
   }
 
   fOrigin.SetXYZ(fXFront, fYFront, fZFront);
@@ -710,18 +710,16 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       ++nrAdcHits;
     }
 
-		// Should check that counter # is in range
-		if (fUsingFADC) {
-			fA[hit->fCounter-1] = hit->GetRawAdcHitPos().GetData(
-				fPedSampLow, fPedSampHigh, fDataSampLow, fDataSampHigh
-			);
-			fP[hit->fCounter-1] = hit->GetRawAdcHitPos().GetAverage(
-				fPedSampLow, fPedSampHigh
-			);
-		}
-		else {
-			fA[hit->fCounter-1] = hit->GetData(0);
-		}
+    // Should check that counter # is in range
+    if (fUsingFADC) {
+      fA[hit->fCounter-1] = hit->GetRawAdcHitPos().GetData(
+		   fPedSampLow, fPedSampHigh, fDataSampLow, fDataSampHigh);
+      fP[hit->fCounter-1] = hit->GetRawAdcHitPos().GetAverage(
+				 fPedSampLow, fPedSampHigh);
+    }
+    else {
+      fA[hit->fCounter-1] = hit->GetData(0);
+    }
 
     if(fA[hit->fCounter-1] > threshold) {
       ngood++;
