@@ -653,7 +653,6 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   // Initialize variables.
 
-  Int_t nADCHits=0;
   fADCHits->Clear();
 
   frAdcPedRaw->Clear();
@@ -709,35 +708,33 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       ++nrAdcHits;
     }
+    fADCMode=kADCDynamicPedestal;
+    Double_t adc;
+    Double_t adc_pedsub;
+    if(fADCMode == kADCDynamicPedestal) {
+			adc_pedsub = hit->GetRawAdcHitPos().GetPulseInt();
+			adc= hit->GetRawAdcHitPos().GetPulseIntRaw();
+    } else if (fADCMode == kADCSampleIntegral) {
+			adc_pedsub = hit->GetRawAdcHitPos().GetSampleIntRaw() - fPed[hit->fCounter -1];
+			adc = hit->GetRawAdcHitPos().GetSampleIntRaw();
+    } else if (fADCMode == kADCSampIntDynPed) {
+      adc = hit->GetRawAdcHitPos().GetSampleInt();
+      adc_pedsub = hit->GetRawAdcHitPos().GetSampleIntRaw();
+    } else {
+      adc_pedsub = hit->GetRawAdcHitPos().GetPulseIntRaw()-fPed[hit->fCounter -1];
+      adc = hit->GetRawAdcHitPos().GetPulseIntRaw();
+    }
 
-		// Should check that counter # is in range
-		if (fUsingFADC) {
-			fA[hit->fCounter-1] = hit->GetRawAdcHitPos().GetData(
-				fPedSampLow, fPedSampHigh, fDataSampLow, fDataSampHigh
-			);
-			fP[hit->fCounter-1] = hit->GetRawAdcHitPos().GetAverage(
-				fPedSampLow, fPedSampHigh
-			);
-		}
-		else {
-			fA[hit->fCounter-1] = hit->GetData(0);
-		}
-
+    fA[hit->fCounter-1] = adc;
+    threshold=hit->GetRawAdcHitPos().GetPedRaw()+100;
     if(fA[hit->fCounter-1] > threshold) {
       ngood++;
     }
 
     // Sparsify hits, fill the hit list, compute the energy depostion.
-
+    fThresh[hit->fCounter -1] = hit->GetRawAdcHitPos().GetPedRaw()+100;
     if(fA[hit->fCounter-1] >  fThresh[hit->fCounter -1]) {
-
-      THcSignalHit *sighit = (THcSignalHit*)fADCHits->ConstructedAt(nADCHits++);
-      sighit->Set(hit->fCounter, fA[hit->fCounter-1]);
-
-      fUsingFADC ?
-	fA_p[hit->fCounter-1] = fA[hit->fCounter-1] :
-	fA_p[hit->fCounter-1] = fA[hit->fCounter-1] - fPed[hit->fCounter -1];
-
+	fA_p[hit->fCounter-1] = adc_pedsub;
       fE[hit->fCounter-1] += fA_p[hit->fCounter-1] * fGain[hit->fCounter-1];
     }
 

@@ -98,7 +98,15 @@ protected:
   Double_t** fYPos;              // block Y coordinates
 
   Int_t fUsingFADC;		// != 0 if using FADC in sample mode
-  Int_t fPedSampLow;		// Sample range for
+   Int_t fADCMode;		//    
+   //  1 == Use the pulse int - pulse ped
+    //  2 == Use the sample integral - known ped
+    //  3 == Use the sample integral - sample ped
+ static const Int_t kADCStandard=0;
+  static const Int_t kADCDynamicPedestal=1;
+  static const Int_t kADCSampleIntegral=2;
+  static const Int_t kADCSampIntDynPed=3;
+ Int_t fPedSampLow;		// Sample range for
   Int_t fPedSampHigh;		// dynamic pedestal
   Int_t fDataSampLow;		// Sample range for
   Int_t fDataSampHigh;		// sample integration
