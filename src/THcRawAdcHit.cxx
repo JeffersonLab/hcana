@@ -167,6 +167,14 @@ Returns 0 if no signal pedestal is set.
 \brief Gets pedestal subtracted integral of samples. In channels.
 */
 
+/**
+\fn void THcRawAdcHit::SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED)
+\brief Sets F250 parameters used for pedestal subtraction.
+\param [in] NSA NSA parameter of F250 modules.
+\param [in] NSB NSB parameter of F250 modules.
+\param [in] NPED NPED parameter of F250 modules.
+*/
+
 // TODO: Disallow using both SetData and SetDataTimePedestalPeak.
 
 
@@ -447,6 +455,20 @@ Int_t THcRawAdcHit::GetSampleIntRaw() const {
 
 Double_t THcRawAdcHit::GetSampleInt() const {
   return static_cast<Double_t>(GetSampleIntRaw()) - GetPed()*static_cast<Double_t>(fNSamples);
+}
+
+
+void THcRawAdcHit::SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED) {
+  if (NSA < 0 || NSB < 0 || NPED < 0) {
+    TString msg = TString::Format(
+      "`THcRawAdcHit::SetF250Params`: One of the params is negative!  NSA = %d  NSB = %d  NPED = %d",
+      NSA, NSB, NPED
+    );
+    throw std::invalid_argument(msg.Data());
+  }
+  fNPedestalSamples = NPED;
+  fNPeakSamples = NSA + NSB;
+  fPeakPedestalRatio = 1.0*fNPeakSamples/fNPedestalSamples;
 }
 
 

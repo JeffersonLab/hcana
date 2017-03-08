@@ -121,6 +121,11 @@ It supports rich data from flash 250 ADC modules.
 \brief Gets reference to THcRawTdcHit.
 */
 
+/**
+\fn void THcTrigRawHit::SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED)
+\brief See THcRawAdcHit::SetF250Params.
+*/
+
 // TODO: Check if signal matches plane.
 
 #include "THcTrigRawHit.h"
@@ -304,6 +309,13 @@ THcRawAdcHit& THcTrigRawHit::GetRawAdcHit() {
 
 THcRawTdcHit& THcTrigRawHit::GetRawTdcHit() {
   return fTdcHits[0];
+}
+
+
+void THcTrigRawHit::SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED) {
+  for (Int_t iAdcSig=0; iAdcSig<fNAdcSignals; ++iAdcSig) {
+    fAdcHits[iAdcSig].SetF250Params(NSA, NSB, NPED);
+  }
 }
 
 

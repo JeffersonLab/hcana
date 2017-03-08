@@ -46,6 +46,8 @@ class THcRawAdcHit : public TObject {
     Int_t GetSampleIntRaw() const;
     Double_t GetSampleInt() const;
 
+    void SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED);
+
   protected:
     static const UInt_t fMaxNPulses = 4;
     static const UInt_t fMaxNSamples = 511;
