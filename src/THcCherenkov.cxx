@@ -60,9 +60,8 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
   frAdcPulseInt = new TClonesArray("THcSignalHit", 16);
   frAdcPulseAmp = new TClonesArray("THcSignalHit", 16);
 
-  cout << "fADCHits " << fADCHits << endl;
   InitArrays();
-  cout << "fADCHits " << fADCHits << endl;
+
 
 }
 
@@ -183,6 +182,7 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fCerNRegions = 3;
 
   fNPMT = new Int_t[fNelem];
+  fADC_hit = new Int_t[fNelem];
   fADC = new Double_t[fNelem];
   fADC_P = new Double_t[fNelem];
   fNPE = new Double_t[fNelem];
@@ -192,15 +192,7 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fPedLimit = new Int_t[fNelem];
   fPedMean = new Double_t[fNelem];
 
-  fNPMT = new Int_t[fNelem];
-  fADC = new Double_t[fNelem];
-  fADC_P = new Double_t[fNelem];
-  fNPE = new Double_t[fNelem];
-  fCerWidth = new Double_t[fNelem];
-  fGain = new Double_t[fNelem];
-  fPedLimit = new Int_t[fNelem];
-  fPedMean = new Double_t[fNelem];
-
+ 
 
   fCerTrackCounter = new Int_t [fCerNRegions];
   fCerFiredCounter = new Int_t [fCerNRegions];
@@ -265,6 +257,7 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
   RVarDef vars[] = {
     {"phototubes",      "Nuber of Cherenkov photo tubes",        "fNPMT"},
     {"adc",             "Raw ADC values",                        "fADC"},
+    {"adc_hit",         "ADC hit flag =1 means hit",             "fADC_hit"},
     {"adc_p",           "Pedestal Subtracted ADC values",        "fADC_P"},
     {"npe",             "Number of Photo electrons",             "fNPE"},
     {"npesum",          "Sum of Number of Photo electrons",      "fNPEsum"},
@@ -297,7 +290,7 @@ void THcCherenkov::Clear(Option_t* opt)
 
   // Clear Cherenkov variables  from h_trans_cer.f
 
-  fNhits = 0;	     // Don't really need to do this.  (Be sure this called before Decode)
+  fNhits = 0;	     
   fNPEsum = 0.0;
   fNCherHit = 0;
 
@@ -306,7 +299,8 @@ void THcCherenkov::Clear(Option_t* opt)
     fADC[itube] = 0;
     fADC_P[itube] = 0;
     fNPE[itube] = 0;
-  }
+    fADC_hit[itube] = 0;
+ }
 
   frAdcPedRaw->Clear();
   frAdcPulseIntRaw->Clear();
@@ -359,7 +353,8 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
       ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp(thit));
 
       ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTimeRaw(thit));
-
+      fADC_hit[padnum-1]=1; // 
+      //     cout << dec << "thit = " << thit << " " << padnum << " " << rawAdcHit.GetPulseInt(thit)<< " " << rawAdcHit.GetPulseIntRaw(thit) << " " << rawAdcHit.GetPedRaw() << " " << rawAdcHit.GetPedRaw()*28./4.<< endl;
       ++nrAdcHits;
     }
 
@@ -388,35 +383,16 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
 
     // Pedestal subtraction and gain adjustment
 
-    // An ADC value of less than zero occurs when that particular
-    // channel has been sparsified away and has not been read.
-    // The NPE for that tube will be assigned zero by this code.
-    // An ADC value of greater than 8192 occurs when the ADC overflows on
-    // an input that is too large. Tubes with this characteristic will
-    // be assigned NPE = 100.0.
     Int_t npmt = hit->fCounter - 1;                             // tube = hcer_tube_num(nhit)
-    // Should probably check that npmt is in range
-    // if ( ihit != npmt )
-    //   cout << "ihit != npmt, ihit = " << ihit << ", npmt = " << npmt << ", fNhits = " << fNhits << endl;
-
     fNPMT[npmt] = hit->fCounter;
     fADC[npmt] = hit->GetRawAdcHitPos().GetPulseIntRaw();
-    fADC_P[npmt] = hit->GetRawAdcHitPos().GetPulseIntRaw() - fPedMean[npmt];
+    fADC_P[npmt] = hit->GetRawAdcHitPos().GetPulseInt();
 
-    if ( ( fADC_P[npmt] > fCerWidth[npmt] ) && ( hit->GetRawAdcHitPos().GetPulseIntRaw() < 8000 ) ) {
-      fNPE[npmt] = fGain[npmt]*fADC_P[npmt];
-      fNCherHit ++;
-    } else if (  hit->GetRawAdcHitPos().GetPulseIntRaw() > 8000 ) {
-      fNPE[npmt] = 100.0;
-    } else {
-      fNPE[npmt] = 0.0;
-    }
-
+    fNPE[npmt] = fGain[npmt]*fADC_P[npmt];
+    fNCherHit ++;
     fNPEsum += fNPE[npmt];
-
   }
 
-  ApplyCorrections();
 
   return 0;
 }

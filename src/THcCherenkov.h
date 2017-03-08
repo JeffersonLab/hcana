@@ -51,6 +51,7 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
 
   // Event information
   Int_t         fNhits;
+  Int_t*        fADC_hit;         // [fNelem] Array of flag if ADC hit 1 means  
   Int_t*        fNPMT;            // [fNelem] Array of ADC amplitudes
   Double_t*     fADC;             // [fNelem] Array of ADC amplitudes
   Double_t*     fADC_P;           // [fNelem] Array of ADC amplitudes
