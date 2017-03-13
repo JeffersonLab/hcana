@@ -147,8 +147,12 @@ protected:
   Double_t* fPlaneTimeZero;
   Double_t* fSigma;
   Double_t** fPlaneCoeffs;
-
-  // For accumulating statitics for efficiencies
+  //
+  Double_t fX_fp_best;
+  Double_t fY_fp_best;
+  Double_t fXp_fp_best;
+  Double_t fYp_fp_best;
+ // For accumulating statitics for efficiencies
   Int_t fTotEvents;
   Int_t* fNChamHits;
   Int_t* fPlaneEvents;
