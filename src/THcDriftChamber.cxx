@@ -1080,10 +1080,7 @@ void THcDriftChamber::LeftRight()
 	      for(Int_t ihit=0;ihit<nhits;ihit++) {
 		plusminusbest[ihit] = plusminus[ihit];
 	      }
-	      Double_t *spstub = sp->GetStubP();
-	      for(Int_t i=0;i<4;i++) {
-		spstub[i] = stub[i];
-	      }
+              sp->SetStub(stub);
 	    } else {		// Record best stub failing angle cut
 	      tmp_minchi2 = chi2;
 	      for(Int_t ihit=0;ihit<nhits;ihit++) {
@@ -1098,10 +1095,7 @@ void THcDriftChamber::LeftRight()
 	    for(Int_t ihit=0;ihit<nhits;ihit++) {
 	      plusminusbest[ihit] = plusminus[ihit];
 	    }
-	    Double_t *spstub = sp->GetStubP();
-	    for(Int_t i=0;i<4;i++) {
-	      spstub[i] = stub[i];
-	    }
+            sp->SetStub(stub);
 	  }
 	}
       } else if (nplaneshit >= fNPlanes-2 && fHMSStyleChambers) { // Two planes missing
@@ -1121,27 +1115,21 @@ void THcDriftChamber::LeftRight()
 	  for(Int_t ihit=0;ihit<nhits;ihit++) {
 	    plusminusbest[ihit] = plusminus[ihit];
 	  }
-	  Double_t *spstub = sp->GetStubP();
-	  for(Int_t i=0;i<4;i++) {
-	    spstub[i] = stub[i];
-	  }
+          sp->SetStub(stub);
 	}
       } else {
 	if (fhdebugflagpr) cout << "Insufficient planes hit in THcDriftChamber::LeftRight()" << bitpat <<endl;
       }
     } // End loop of pm combinations
 
-    Double_t *spstub = sp->GetStubP();
     if(minchi2 > 9.9e9) {	// No track passed angle cut
       minchi2 = tmp_minchi2;
       for(Int_t ihit=0;ihit<nhits;ihit++) {
 	plusminusbest[ihit] = tmp_plusminus[ihit];
       }
-      for(Int_t i=0;i<4;i++) {
-	spstub[i] = tmp_stub[i];
-      }
-
+      sp->SetStub(tmp_stub);
     }
+    Double_t *spstub = sp->GetStubP();
 
     // Calculate final coordinate based on plusminusbest
     // Update the hit positions in the space points
@@ -1169,11 +1157,9 @@ void THcDriftChamber::LeftRight()
       - spstub[0]*stub[2]*fSinBeta[pindex];
     stub[1] = spstub[1]
       - spstub[1]*stub[3]*fSinBeta[pindex];
-    for(Int_t i=0;i<4;i++) {
-      spstub[i] = stub[i];
-    }
+    sp->SetStub(stub);
     //if (fhdebugflagpr) cout << " Left/Right space pt " << isp+1 << " " << stub[0]<< " " << stub[1] << " " << stub[2]<< " " << stub[3] << endl;
-      }
+  }
   // Option to print stubs
 }
 //_____________________________________________________________________________
