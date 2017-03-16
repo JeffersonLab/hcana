@@ -164,8 +164,6 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
     return fStatus;
   }
 
-  // Initialize hitlist part of the class.
-  InitHitList(fDetMap, "THcTrigRawHit", 100);
 
   // Fill in detector map.
   string EngineDID = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
@@ -175,6 +173,9 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
     Error(Here(here), "Error filling detectormap for %s.", EngineDID.c_str());
     return kInitError;
   }
+  // Initialize hitlist part of the class.
+  printf(" Init trig det hitlist\n");
+  InitHitList(fDetMap, "THcTrigRawHit", 100);
 
   fStatus = kOK;
   return fStatus;
@@ -231,7 +232,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
       THcRawTdcHit rawTdcHit = hit->GetRawTdcHit();
 
       fTdcTimeRaw[cnt] = rawTdcHit.GetTimeRaw();
-      fTdcTime[cnt] = rawTdcHit.GetTime();
+      fTdcTime[cnt] = rawTdcHit.GetTime()*fTdcChanperNS-fTdcOffset;
 
       fTdcMultiplicity[cnt] = rawTdcHit.GetNHits();
     }
@@ -264,8 +265,12 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
     {"_numTdc", &fNumTdc, kInt},  // Number of TDC channels.
     {"_adcNames", &adcNames, kString},  // Names of ADC channels.
     {"_tdcNames", &tdcNames, kString},  // Names of TDC channels.
+    {"_tdcoffset", &fTdcOffset, kDouble,0,1},  // Offset of tdc channels
+    {"_tdcchanperns", &fTdcChanperNS, kDouble,0,1},  // Convert channesl to ns
     {0}
   };
+  fTdcChanperNS=0.1;
+  fTdcOffset=300.;
   gHcParms->LoadParmValues(list, fKwPrefix.c_str());
 
   // Split the names to std::vector<std::string>.
