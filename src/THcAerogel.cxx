@@ -430,6 +430,8 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
   UInt_t nrPosAdcHits = 0;
   UInt_t nrNegAdcHits = 0;
 
+  cout << ":=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:" << endl;
+
   while(ihit < fNhits) {
     THcAerogelHit* hit = (THcAerogelHit *) fRawHitList->At(ihit);
 
@@ -516,9 +518,9 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
 
     // Fill the the per detector ADC and TDC arrays
     Int_t npmt = hit->fCounter - 1;
-
-    fA_Pos[npmt] = adc_pos;
-    fA_Neg[npmt] = adc_neg;
+    
+    fA_Pos[npmt] = adc_pos;  cout << "pos npmt = " << npmt << ", adc_pos = " << adc_pos << endl;
+    fA_Neg[npmt] = adc_neg;  cout << "neg npmt = " << npmt << ", adc_neg = " << adc_neg << endl;
     fA_Pos_p[npmt] = fA_Pos[npmt] - fPosPedMean[npmt];
     fA_Neg_p[npmt] = fA_Neg[npmt] - fNegPedMean[npmt];
     fT_Pos[npmt] = tdc_pos;
