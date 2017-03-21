@@ -258,17 +258,24 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   InitializePedestals();
 
   DBRequest list[]={
-    {"aero_pos_gain", fPosGain, kDouble, (UInt_t) fNelem},
-    {"aero_neg_gain", fNegGain, kDouble, (UInt_t) fNelem},
-    {"aero_pos_ped_limit", fPosPedLimit, kInt, (UInt_t) fNelem},
-    {"aero_neg_ped_limit", fNegPedLimit, kInt, (UInt_t) fNelem},
-    {"aero_pos_ped_mean", fPosPedMean, kDouble, (UInt_t) fNelem,optional},
-    {"aero_neg_ped_mean", fNegPedMean, kDouble, (UInt_t) fNelem,optional},
-    {"aero_tdc_offset", &fTdcOffset, kInt, 0, optional},
-    {"aero_min_peds", &fMinPeds, kInt, 0, optional},
+    {"aero_pos_gain",      fPosGain,     kDouble, (UInt_t) fNelem},
+    {"aero_neg_gain",      fNegGain,     kDouble, (UInt_t) fNelem},
+    {"aero_pos_ped_limit", fPosPedLimit, kInt,    (UInt_t) fNelem},
+    {"aero_neg_ped_limit", fNegPedLimit, kInt,    (UInt_t) fNelem},
+    {"aero_pos_ped_mean",  fPosPedMean,  kDouble, (UInt_t) fNelem, optional},
+    {"aero_neg_ped_mean",  fNegPedMean,  kDouble, (UInt_t) fNelem, optional},
+    {"aero_tdc_offset",    &fTdcOffset,  kInt,    0,               optional},
+    {"aero_min_peds",      &fMinPeds,    kInt,    0,               optional},
+    {"aero_six_gev_data",  &fSixGevData, kInt,    0, 1},
     {0}
   };
-  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+
+  fSixGevData = 0; // Set 6 GeV data parameter to false unless set in parameter file
+
+  gHcParms->LoadParmValues((DBRequest*)&list, prefix);
+
+  if (fSixGevData) cout << "6 GeV Data Analysis Flag Set To TRUE" << endl;
+  cout << "6 GeV Data Analysis Flag = " << fSixGevData << endl;
 
   fIsInit = true;
 
@@ -290,58 +297,63 @@ Int_t THcAerogel::DefineVariables( EMode mode )
   // Do we need to put the number of pos/neg TDC/ADC hits into the variables?
   // No.  They show up in tree as Ndata.H.aero.postdchits for example
 
-  RVarDef vars[] = {
-    {"postdchits", "List of Positive TDC hits",
-     "fPosTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negtdchits", "List of Negative TDC hits",
-     "fNegTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"posadchits", "List of Positive ADC hits",
-     "fPosADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negadchits", "List of Negative ADC hits",
-     "fNegADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"apos",  "Raw Positive ADC Amplitudes",   "fA_Pos"},
-    {"aneg",  "Raw Negative ADC Amplitudes",   "fA_Neg"},
-    {"apos_p",  "Ped-subtracted Positive ADC Amplitudes",   "fA_Pos_p"},
-    {"aneg_p",  "Ped-subtracted Negative ADC Amplitudes",   "fA_Neg_p"},
-    {"tpos",  "Raw Positive TDC",   "fT_Pos"},
-    {"tneg",  "Raw Negative TDC",   "fT_Neg"},
-    {"pos_npe","PEs Positive Tube","fPosNpe"},
-    {"neg_npe","PEs Negative Tube","fNegNpe"},
-    {"pos_npe_sum", "Total Positive Tube PEs", "fPosNpeSum"},
-    {"neg_npe_sum", "Total Negative Tube PEs", "fNegNpeSum"},
-    {"npe_sum", "Total PEs", "fNpeSum"},
-    {"ntdc_pos_hits", "Number of Positive Tube Hits", "fNTDCPosHits"},
-    {"ntdc_neg_hits", "Number of Negative Tube Hits", "fNTDCNegHits"},
-    {"ngood_hits", "Total number of good hits", "fNGoodHits"},
+  vector<RVarDef> vars;
 
-    {"posGain", "List of positive PMT gains.", "fPosGain"},
-    {"negGain", "List of negative PMT gains.", "fNegGain"},
+  vars.push_back({"posadchits", "List of Positive ADC hits", "fPosADCHits.THcSignalHit.GetPaddleNumber()"});
+  vars.push_back({"negadchits", "List of Negative ADC hits", "fNegADCHits.THcSignalHit.GetPaddleNumber()"});
 
-    {"posAdcCounter",      "List of positive ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
-    {"negAdcCounter",      "List of negative ADC counter numbers.",      "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+  vars.push_back({"apos",  "Raw Positive ADC Amplitudes",   "fA_Pos"});
+  vars.push_back({"aneg",  "Raw Negative ADC Amplitudes",   "fA_Neg"});
 
-    {"posAdcPedRaw",       "List of positive raw ADC pedestals",         "frPosAdcPedRaw.THcSignalHit.GetData()"},
-    {"posAdcPulseIntRaw",  "List of positive raw ADC pulse integrals.",  "frPosAdcPulseIntRaw.THcSignalHit.GetData()"},
-    {"posAdcPulseAmpRaw",  "List of positive raw ADC pulse amplitudes.", "frPosAdcPulseAmpRaw.THcSignalHit.GetData()"},
-    {"posAdcPulseTimeRaw", "List of positive raw ADC pulse times.",      "frPosAdcPulseTimeRaw.THcSignalHit.GetData()"},
+  vars.push_back({"apos_p", "Ped-subtracted Positive ADC Amplitudes", "fA_Pos_p"});
+  vars.push_back({"aneg_p", "Ped-subtracted Negative ADC Amplitudes", "fA_Neg_p"});
 
-    {"posAdcPed",          "List of positive ADC pedestals",             "frPosAdcPed.THcSignalHit.GetData()"},
-    {"posAdcPulseInt",     "List of positive ADC pulse integrals.",      "frPosAdcPulseInt.THcSignalHit.GetData()"},
-    {"posAdcPulseAmp",     "List of positive ADC pulse amplitudes.",     "frPosAdcPulseAmp.THcSignalHit.GetData()"},
+  vars.push_back({"pos_npe",     "PEs Positive Tube",       "fPosNpe"});
+  vars.push_back({"neg_npe",     "PEs Negative Tube",       "fNegNpe"});
+  vars.push_back({"pos_npe_sum", "Total Positive Tube PEs", "fPosNpeSum"});
+  vars.push_back({"neg_npe_sum", "Total Negative Tube PEs", "fNegNpeSum"});
+  vars.push_back({"npe_sum",     "Total PEs",               "fNpeSum"});
 
-    {"negAdcPedRaw",       "List of negative raw ADC pedestals",         "frNegAdcPedRaw.THcSignalHit.GetData()"},
-    {"negAdcPulseIntRaw",  "List of negative raw ADC pulse integrals.",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"},
-    {"negAdcPulseAmpRaw",  "List of negative raw ADC pulse amplitudes.", "frNegAdcPulseAmpRaw.THcSignalHit.GetData()"},
-    {"negAdcPulseTimeRaw", "List of negative raw ADC pulse times.",      "frNegAdcPulseTimeRaw.THcSignalHit.GetData()"},
+  vars.push_back({"ngood_hits", "Total number of good hits", "fNGoodHits"});
 
-    {"negAdcPed",          "List of negative ADC pedestals",             "frNegAdcPed.THcSignalHit.GetData()"},
-    {"negAdcPulseInt",     "List of negative ADC pulse integrals.",      "frNegAdcPulseInt.THcSignalHit.GetData()"},
-    {"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"},
+  vars.push_back({"posGain", "List of positive PMT gains.", "fPosGain"});
+  vars.push_back({"negGain", "List of negative PMT gains.", "fNegGain"});
 
-    { 0 }
-  };
+  vars.push_back({"posAdcCounter",      "List of positive ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
+  vars.push_back({"negAdcCounter",      "List of negative ADC counter numbers.",      "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
 
-  return DefineVarsFromList( vars, mode );
+  vars.push_back({"posAdcPedRaw",       "List of positive raw ADC pedestals",         "frPosAdcPedRaw.THcSignalHit.GetData()"});
+  vars.push_back({"posAdcPulseIntRaw",  "List of positive raw ADC pulse integrals.",  "frPosAdcPulseIntRaw.THcSignalHit.GetData()"});
+  vars.push_back({"posAdcPulseAmpRaw",  "List of positive raw ADC pulse amplitudes.", "frPosAdcPulseAmpRaw.THcSignalHit.GetData()"});
+  vars.push_back({"posAdcPulseTimeRaw", "List of positive raw ADC pulse times.",      "frPosAdcPulseTimeRaw.THcSignalHit.GetData()"});
+
+  vars.push_back({"posAdcPed",          "List of positive ADC pedestals",             "frPosAdcPed.THcSignalHit.GetData()"});
+  vars.push_back({"posAdcPulseInt",     "List of positive ADC pulse integrals.",      "frPosAdcPulseInt.THcSignalHit.GetData()"});
+  vars.push_back({"posAdcPulseAmp",     "List of positive ADC pulse amplitudes.",     "frPosAdcPulseAmp.THcSignalHit.GetData()"});
+
+  vars.push_back({"negAdcPedRaw",       "List of negative raw ADC pedestals",         "frNegAdcPedRaw.THcSignalHit.GetData()"});
+  vars.push_back({"negAdcPulseIntRaw",  "List of negative raw ADC pulse integrals.",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"});
+  vars.push_back({"negAdcPulseAmpRaw",  "List of negative raw ADC pulse amplitudes.", "frNegAdcPulseAmpRaw.THcSignalHit.GetData()"});
+  vars.push_back({"negAdcPulseTimeRaw", "List of negative raw ADC pulse times.",      "frNegAdcPulseTimeRaw.THcSignalHit.GetData()"});
+
+  vars.push_back({"negAdcPed",          "List of negative ADC pedestals",             "frNegAdcPed.THcSignalHit.GetData()"});
+  vars.push_back({"negAdcPulseInt",     "List of negative ADC pulse integrals.",      "frNegAdcPulseInt.THcSignalHit.GetData()"});
+  vars.push_back({"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"});
+
+  if (fSixGevData) {
+    vars.push_back({"postdchits", "List of Positive TDC hits", "fPosTDCHits.THcSignalHit.GetPaddleNumber()"});
+    vars.push_back({"negtdchits", "List of Negative TDC hits", "fNegTDCHits.THcSignalHit.GetPaddleNumber()"});
+    vars.push_back({"tpos", "Raw Positive TDC", "fT_Pos"});
+    vars.push_back({"tneg", "Raw Negative TDC", "fT_Neg"});
+    vars.push_back({"ntdc_pos_hits", "Number of Positive Tube Hits", "fNTDCPosHits"});
+    vars.push_back({"ntdc_neg_hits", "Number of Negative Tube Hits", "fNTDCNegHits"});
+  }
+  
+  RVarDef end {0};
+  vars.push_back(end);
+
+  return DefineVarsFromList(vars.data(), mode);
+
 }
 //_____________________________________________________________________________
 inline
