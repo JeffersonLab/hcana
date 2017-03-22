@@ -236,37 +236,39 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_num_pairs", &fNelem, kInt,0,optional},
     {0}
   };
-  gHcParms->LoadParmValues((DBRequest*)&listextra,prefix);
+  gHcParms->LoadParmValues((DBRequest*)&listextra, prefix);
 
+  fPosNpe  = new Double_t[fNelem];
+  fNegNpe  = new Double_t[fNelem];
+  fPosGain = new Double_t[fNelem];
+  fNegGain = new Double_t[fNelem];
+  
+  // 6 GeV variables
   fA_Pos = new Float_t[fNelem];
   fA_Neg = new Float_t[fNelem];
   fA_Pos_p = new Float_t[fNelem];
   fA_Neg_p = new Float_t[fNelem];
   fT_Pos = new Float_t[fNelem];
   fT_Neg = new Float_t[fNelem];
-
-  fPosGain = new Double_t[fNelem];
-  fNegGain = new Double_t[fNelem];
   fPosPedLimit = new Int_t[fNelem];
   fNegPedLimit = new Int_t[fNelem];
   fPosPedMean = new Double_t[fNelem];
   fNegPedMean = new Double_t[fNelem];
-
-  fTdcOffset = 0;		// Offset to make reference time subtracted times positve
+  fTdcOffset = 0; // Offset to make reference time subtracted times positve
 
   // Create arrays to hold pedestal results
-  InitializePedestals();
+  if (fSixGevData) InitializePedestals();
 
   DBRequest list[]={
     {"aero_pos_gain",      fPosGain,     kDouble, (UInt_t) fNelem},
     {"aero_neg_gain",      fNegGain,     kDouble, (UInt_t) fNelem},
-    {"aero_pos_ped_limit", fPosPedLimit, kInt,    (UInt_t) fNelem},
-    {"aero_neg_ped_limit", fNegPedLimit, kInt,    (UInt_t) fNelem},
+    {"aero_six_gev_data",  &fSixGevData, kInt,    0, 1},
+    {"aero_pos_ped_limit", fPosPedLimit, kInt,    (UInt_t) fNelem, optional},
+    {"aero_neg_ped_limit", fNegPedLimit, kInt,    (UInt_t) fNelem, optional},
     {"aero_pos_ped_mean",  fPosPedMean,  kDouble, (UInt_t) fNelem, optional},
     {"aero_neg_ped_mean",  fNegPedMean,  kDouble, (UInt_t) fNelem, optional},
     {"aero_tdc_offset",    &fTdcOffset,  kInt,    0,               optional},
     {"aero_min_peds",      &fMinPeds,    kInt,    0,               optional},
-    {"aero_six_gev_data",  &fSixGevData, kInt,    0, 1},
     {0}
   };
 
@@ -275,7 +277,6 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 
   if (fSixGevData) cout << "6 GeV Data Analysis Flag Set To TRUE" << endl;
-  cout << "6 GeV Data Analysis Flag = " << fSixGevData << endl;
 
   fIsInit = true;
 
@@ -299,25 +300,16 @@ Int_t THcAerogel::DefineVariables( EMode mode )
 
   vector<RVarDef> vars;
 
-  vars.push_back({"posadchits", "List of Positive ADC hits", "fPosADCHits.THcSignalHit.GetPaddleNumber()"});
-  vars.push_back({"negadchits", "List of Negative ADC hits", "fNegADCHits.THcSignalHit.GetPaddleNumber()"});
-
-  vars.push_back({"apos",  "Raw Positive ADC Amplitudes",   "fA_Pos"});
-  vars.push_back({"aneg",  "Raw Negative ADC Amplitudes",   "fA_Neg"});
-
-  vars.push_back({"apos_p", "Ped-subtracted Positive ADC Amplitudes", "fA_Pos_p"});
-  vars.push_back({"aneg_p", "Ped-subtracted Negative ADC Amplitudes", "fA_Neg_p"});
-
-  vars.push_back({"pos_npe",     "PEs Positive Tube",       "fPosNpe"});
-  vars.push_back({"neg_npe",     "PEs Negative Tube",       "fNegNpe"});
-  vars.push_back({"pos_npe_sum", "Total Positive Tube PEs", "fPosNpeSum"});
-  vars.push_back({"neg_npe_sum", "Total Negative Tube PEs", "fNegNpeSum"});
-  vars.push_back({"npe_sum",     "Total PEs",               "fNpeSum"});
-
-  vars.push_back({"ngood_hits", "Total number of good hits", "fNGoodHits"});
-
   vars.push_back({"posGain", "List of positive PMT gains.", "fPosGain"});
   vars.push_back({"negGain", "List of negative PMT gains.", "fNegGain"});
+  
+  vars.push_back({"posNpe",    "Number of Positive PEs",       "fPosNpe"});
+  vars.push_back({"negNpe",    "Number of Positive PEs",       "fNegNpe"});
+  vars.push_back({"posNpeSum", "Total Number of Negative PEs", "fPosNpeSum"});
+  vars.push_back({"negNpeSum", "Total Number of Negative PEs", "fNegNpeSum"});
+  vars.push_back({"npeSum",    "Total Number of PEs",          "fNpeSum"});
+
+  vars.push_back({"nGoodHits", "Total number of good hits", "fNGoodHits"});
 
   vars.push_back({"posAdcCounter",      "List of positive ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
   vars.push_back({"negAdcCounter",      "List of negative ADC counter numbers.",      "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
@@ -341,12 +333,18 @@ Int_t THcAerogel::DefineVariables( EMode mode )
   vars.push_back({"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"});
 
   if (fSixGevData) {
-    vars.push_back({"postdchits", "List of Positive TDC hits", "fPosTDCHits.THcSignalHit.GetPaddleNumber()"});
-    vars.push_back({"negtdchits", "List of Negative TDC hits", "fNegTDCHits.THcSignalHit.GetPaddleNumber()"});
-    vars.push_back({"tpos", "Raw Positive TDC", "fT_Pos"});
-    vars.push_back({"tneg", "Raw Negative TDC", "fT_Neg"});
-    vars.push_back({"ntdc_pos_hits", "Number of Positive Tube Hits", "fNTDCPosHits"});
-    vars.push_back({"ntdc_neg_hits", "Number of Negative Tube Hits", "fNTDCNegHits"});
+    vars.push_back({"apos",          "Raw Positive ADC Amplitudes",            "fA_Pos"});
+    vars.push_back({"aneg",          "Raw Negative ADC Amplitudes",            "fA_Neg"});
+    vars.push_back({"apos_p",        "Ped-subtracted Positive ADC Amplitudes", "fA_Pos_p"});
+    vars.push_back({"aneg_p",        "Ped-subtracted Negative ADC Amplitudes", "fA_Neg_p"});
+    vars.push_back({"tpos",          "Raw Positive TDC",                       "fT_Pos"});
+    vars.push_back({"tneg",          "Raw Negative TDC",                       "fT_Neg"});
+    vars.push_back({"ntdc_pos_hits", "Number of Positive Tube Hits",           "fNTDCPosHits"});
+    vars.push_back({"ntdc_neg_hits", "Number of Negative Tube Hits",           "fNTDCNegHits"});
+    vars.push_back({"posadchits",    "List of Positive ADC hits",              "fPosADCHits.THcSignalHit.GetPaddleNumber()"});
+    vars.push_back({"negadchits",    "List of Negative ADC hits",              "fNegADCHits.THcSignalHit.GetPaddleNumber()"});
+    vars.push_back({"postdchits",    "List of Positive TDC hits",              "fPosTDCHits.THcSignalHit.GetPaddleNumber()"});
+    vars.push_back({"negtdchits",    "List of Negative TDC hits",              "fNegTDCHits.THcSignalHit.GetPaddleNumber()"});
   }
   
   RVarDef end {0};
@@ -371,7 +369,7 @@ void THcAerogel::Clear(Option_t* opt)
 
   fPosNpeSum = 0.0;
   fNegNpeSum = 0.0;
-  fNpeSum = 0.0;
+  fNpeSum    = 0.0;
 
   fNGoodHits = 0;
 
@@ -416,22 +414,23 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
   // Get the Hall C style hitlist (fRawHitList) for this event
   fNhits = DecodeToHitList(evdata);
 
-  if(gHaCuts->Result("Pedestal_event")) {
+  if (fSixGevData) {
+    if(gHaCuts->Result("Pedestal_event")) {
 
-    AccumulatePedestals(fRawHitList);
+      AccumulatePedestals(fRawHitList);
 
-    fAnalyzePedestals = 1;	// Analyze pedestals first normal events
-    return(0);
+      fAnalyzePedestals = 1;	// Analyze pedestals first normal events
+      return(0);
+    }
+
+    if(fAnalyzePedestals) {
+
+      CalculatePedestals();
+      Print("");
+
+      fAnalyzePedestals = 0;	// Don't analyze pedestals next event
+    }
   }
-
-  if(fAnalyzePedestals) {
-
-    CalculatePedestals();
-    Print("");
-
-    fAnalyzePedestals = 0;	// Don't analyze pedestals next event
-  }
-
 
   Int_t ihit = 0;
   Int_t nPosTDCHits=0;
@@ -442,7 +441,7 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
   UInt_t nrPosAdcHits = 0;
   UInt_t nrNegAdcHits = 0;
 
-  cout << ":=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:" << endl;
+  cout << ":=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:" << endl;
 
   while(ihit < fNhits) {
     THcAerogelHit* hit = (THcAerogelHit *) fRawHitList->At(ihit);
@@ -480,109 +479,126 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
       ++nrNegAdcHits;
     }
 
+    // Fill the the per detector ADC arrays
+    Int_t npmt = hit->fCounter - 1;
+
+    Double_t posAdcPulseInt = rawPosAdcHit.GetPulseInt();
+    Double_t negAdcPulseInt = rawNegAdcHit.GetPulseInt();
+
+    fPosNpe[npmt] = posAdcPulseInt*fPosGain[npmt];
+    fNegNpe[npmt] = negAdcPulseInt*fNegGain[npmt];
+
+    fPosNpeSum += fPosNpe[npmt];
+    fNegNpeSum += fNegNpe[npmt];
+ 
+    // Sum positive and negative hits to fill tot_good_hits
+    if(fPosNpe[npmt] > 0.3) {fNADCPosHits++; fNGoodHits++;}
+    if(fNegNpe[npmt] > 0.3) {fNADCNegHits++; fNGoodHits++;}
+    
+    cout << "\nPMT Num = " << npmt << endl; 
+    cout << "posAdcPulseInt = " << posAdcPulseInt << "\t" 
+    	 << "fPosGain = " << fPosGain[npmt] << "\t" 
+    	 << "fPosNpe = " << fPosNpe[npmt] << "\t" << endl;
+    cout << "negAdcPulseInt = " << negAdcPulseInt << "\t" 
+    	 << "fNegGain = " << fNegGain[npmt] << "\t" 
+    	 << "fNegNpe = " << fNegNpe[npmt] << "\t" << endl;
+    cout << "fPosNpeSum = " << fPosNpeSum << "\t" 
+    	 << "fNegNpeSum = " << fNegNpeSum << endl;
+    
+    // 6 GeV calculations
     Int_t adc_pos;
     Int_t adc_neg;
     Int_t tdc_pos=-1;
     Int_t tdc_neg=-1;
-   // TDC positive hit
-    if(hit->GetRawTdcHitPos().GetNHits() >  0) {
-      THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
-      tdc_pos = hit->GetRawTdcHitPos().GetTime()+fTdcOffset;
-      sighit->Set(hit->fCounter, tdc_pos);
-    }
-
-    // TDC negative hit
-    if(hit->GetRawTdcHitNeg().GetNHits() >  0) {
-      THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
-      tdc_neg = hit->GetRawTdcHitNeg().GetTime()+fTdcOffset;
-      sighit->Set(hit->fCounter, tdc_neg);
-    }
-
-    // ADC positive hit
-    if((adc_pos = hit->GetRawAdcHitPos().GetPulseInt()) > 0) {
-      THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
-      sighit->Set(hit->fCounter, adc_pos);
-    }
-
-    // ADC negative hit
-    if((adc_neg = hit->GetRawAdcHitNeg().GetPulseInt()) > 0) {
-      THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
-      sighit->Set(hit->fCounter, adc_neg);
-    }
-
-    // For each TDC, identify the first hit that is positive.
-    tdc_pos = -1;
-    tdc_neg = -1;
-    for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
-      Int_t tdc = hit->GetRawTdcHitPos().GetTime(thit);
-      if(tdc >=0 ) {
-	tdc_pos = tdc;
-	break;
+    if (fSixGevData) {
+      // ADC positive hit
+      if((adc_pos = hit->GetRawAdcHitPos().GetPulseInt()) > 0) {
+	THcSignalHit *sighit = (THcSignalHit*) fPosADCHits->ConstructedAt(nPosADCHits++);
+	sighit->Set(hit->fCounter, adc_pos);
       }
-    }
-    for(UInt_t thit=0; thit<hit->GetRawTdcHitNeg().GetNHits(); thit++) {
-      Int_t tdc = hit->GetRawTdcHitNeg().GetTime(thit);
-      if(tdc >= 0) {
-	tdc_neg = tdc;
-	break;
+      // ADC negative hit
+      if((adc_neg = hit->GetRawAdcHitNeg().GetPulseInt()) > 0) {
+	THcSignalHit *sighit = (THcSignalHit*) fNegADCHits->ConstructedAt(nNegADCHits++);
+	sighit->Set(hit->fCounter, adc_neg);
       }
-    }
+      // TDC positive hit
+      if(hit->GetRawTdcHitPos().GetNHits() >  0) {
+	THcSignalHit *sighit = (THcSignalHit*) fPosTDCHits->ConstructedAt(nPosTDCHits++);
+	tdc_pos = hit->GetRawTdcHitPos().GetTime()+fTdcOffset;
+	sighit->Set(hit->fCounter, tdc_pos);
+      }
+      // TDC negative hit
+      if(hit->GetRawTdcHitNeg().GetNHits() >  0) {
+	THcSignalHit *sighit = (THcSignalHit*) fNegTDCHits->ConstructedAt(nNegTDCHits++);
+	tdc_neg = hit->GetRawTdcHitNeg().GetTime()+fTdcOffset;
+	sighit->Set(hit->fCounter, tdc_neg);
+      }    
+      // For each TDC, identify the first hit that is positive.
+      tdc_pos = -1;
+      tdc_neg = -1;
+      for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
+	Int_t tdc = hit->GetRawTdcHitPos().GetTime(thit);
+	if(tdc >=0 ) {
+	  tdc_pos = tdc;
+	  break;
+	}
+      }
+      for(UInt_t thit=0; thit<hit->GetRawTdcHitNeg().GetNHits(); thit++) {
+	Int_t tdc = hit->GetRawTdcHitNeg().GetTime(thit);
+	if(tdc >= 0) {
+	  tdc_neg = tdc;
+	  break;
+	}
+      }
 
-    // Fill the the per detector ADC and TDC arrays
-    Int_t npmt = hit->fCounter - 1;
-    
-    fA_Pos[npmt] = adc_pos;  cout << "pos npmt = " << npmt << ", adc_pos = " << adc_pos << endl;
-    fA_Neg[npmt] = adc_neg;  cout << "neg npmt = " << npmt << ", adc_neg = " << adc_neg << endl;
-    fA_Pos_p[npmt] = fA_Pos[npmt] - fPosPedMean[npmt];
-    fA_Neg_p[npmt] = fA_Neg[npmt] - fNegPedMean[npmt];
-    fT_Pos[npmt] = tdc_pos;
-    fT_Neg[npmt] = tdc_neg;
+      fA_Pos[npmt] = adc_pos;  
+      fA_Neg[npmt] = adc_neg;  
+      fA_Pos_p[npmt] = fA_Pos[npmt] - fPosPedMean[npmt];
+      fA_Neg_p[npmt] = fA_Neg[npmt] - fNegPedMean[npmt];
+      fT_Pos[npmt] = tdc_pos;
+      fT_Neg[npmt] = tdc_neg;
 
-    if(fA_Pos[npmt] < 8000) {
-      fPosNpe[npmt] = fPosGain[npmt]*fA_Pos_p[npmt];
-    } else {
-      fPosNpe[npmt] = 100.0;
-    }
+      if(fA_Pos[npmt] < 8000) {
+	fPosNpe[npmt] = fPosGain[npmt]*fA_Pos_p[npmt];
+      } else {
+	fPosNpe[npmt] = 100.0;
+      }
 
-    if(fA_Neg[npmt] < 8000) {
-      fNegNpe[npmt] = fNegGain[npmt]*fA_Neg_p[npmt];
-    } else {
-      fNegNpe[npmt] = 100.0;
-    }
+      if(fA_Neg[npmt] < 8000) {
+	fNegNpe[npmt] = fNegGain[npmt]*fA_Neg_p[npmt];
+      } else {
+	fNegNpe[npmt] = 100.0;
+      }
 
-    fPosNpeSum += fPosNpe[npmt];
-    fNegNpeSum += fNegNpe[npmt];
+      fPosNpeSum += fPosNpe[npmt];
+      fNegNpeSum += fNegNpe[npmt];
 
-    // Sum positive and negative hits to fill tot_good_hits
-    if(fPosNpe[npmt] > 0.3) {
-      fNADCPosHits++;
-      fNGoodHits++;
-    }
-    if(fNegNpe[npmt] > 0.3) {
-      fNADCNegHits++;
-      fNGoodHits++;
-    }
-    if(fT_Pos[npmt] > 0 && fT_Pos[npmt] < 8000) {
-      fNTDCPosHits++;
-    }
-    if(fT_Neg[npmt] > 0 && fT_Neg[npmt] < 8000) {
-      fNTDCNegHits++;
-    }
+      // Sum positive and negative hits to fill tot_good_hits
+      if(fPosNpe[npmt] > 0.3) {fNADCPosHits++; fNGoodHits++;}
+      if(fNegNpe[npmt] > 0.3) {fNADCNegHits++; fNGoodHits++;}      
 
+      if(fT_Pos[npmt] > 0 && fT_Pos[npmt] < 8000) {
+	fNTDCPosHits++;
+      }
+      if(fT_Neg[npmt] > 0 && fT_Neg[npmt] < 8000) {
+	fNTDCNegHits++;
+      }
+
+    }
+   
     ihit++;
+   
   }
 
-  if(fPosNpeSum > 0.5 || fNegNpeSum > 0.5) {
-    fNpeSum = fPosNpeSum + fNegNpeSum;
-  } else {
-    fNpeSum = 0.0;
-  }
-
+  // Calculate total NPE sum
+  if(fPosNpeSum > 0.5 || fNegNpeSum > 0.5) fNpeSum = fPosNpeSum + fNegNpeSum;
+  else fNpeSum = 0.0;
+    
   // If total hits are 0, then give a noticable ridiculous NPE
-  if(fNhits < 1) {
-    fNpeSum = 0.0;
-  }
-
+  if(fNhits < 1) fNpeSum = 0.0;
+  
+  cout << "\nfNpeSum = " << fNpeSum << "\n" << endl;
+   
   // The following code is in the fortran.  It probably doesn't work
   // right because the arrays are not cleared first and the aero_ep,
   // aero_en, ... lines make no sense.
@@ -637,6 +653,7 @@ Int_t THcAerogel::FineProcess( TClonesArray& tracks )
 }
 
 //_____________________________________________________________________________
+// Method for initializing pedestals in the 6 GeV era
 void THcAerogel::InitializePedestals( )
 {
   fNPedestalEvents = 0;
@@ -667,11 +684,10 @@ void THcAerogel::InitializePedestals( )
     fNegPedMean[i] = 0;       // Default pedestal values
   }
 
-  fPosNpe = new Double_t [fNelem];
-  fNegNpe = new Double_t [fNelem];
 }
 
 //_____________________________________________________________________________
+// Method for accumulating pedestals in the 6 GeV era
 void THcAerogel::AccumulatePedestals(TClonesArray* rawhits)
 {
   // Extract data from the hit list, accumulating into arrays for
@@ -684,10 +700,10 @@ void THcAerogel::AccumulatePedestals(TClonesArray* rawhits)
     THcAerogelHit* hit = (THcAerogelHit *) rawhits->At(ihit);
 
     Int_t element = hit->fCounter - 1;
-    Int_t adcpos = hit->GetRawAdcHitPos().GetPulseInt();
-    Int_t adcneg = hit->GetRawAdcHitNeg().GetPulseInt();
+    Int_t adcpos  = hit->GetRawAdcHitPos().GetPulseInt();
+    Int_t adcneg  = hit->GetRawAdcHitNeg().GetPulseInt();
     if(adcpos <= fPosPedLimit[element]) {
-      fPosPedSum[element] += adcpos;
+      fPosPedSum[element]  += adcpos;
       fPosPedSum2[element] += adcpos*adcpos;
       fPosPedCount[element]++;
       if(fPosPedCount[element] == fMinPeds/5) {
@@ -711,6 +727,7 @@ void THcAerogel::AccumulatePedestals(TClonesArray* rawhits)
 }
 
 //_____________________________________________________________________________
+// Method for calculating pedestals in the 6 GeV era
 void THcAerogel::CalculatePedestals( )
 {
   // Use the accumulated pedestal data to calculate pedestals
@@ -745,6 +762,8 @@ void THcAerogel::CalculatePedestals( )
   //  cout << " " << endl;
 
 }
+
+//_____________________________________________________________________________
 void THcAerogel::Print( const Option_t* opt) const {
   THaNonTrackingDetector::Print(opt);
 
