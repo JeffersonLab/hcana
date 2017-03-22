@@ -39,6 +39,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   THcAerogel();  // for ROOT I/O
  protected:
   Int_t fAnalyzePedestals;
+  Int_t fSixGevData;
 
   // Parameters
   Double_t* fPosGain;
