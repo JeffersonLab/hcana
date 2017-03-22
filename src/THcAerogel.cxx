@@ -441,7 +441,7 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
   UInt_t nrPosAdcHits = 0;
   UInt_t nrNegAdcHits = 0;
 
-  cout << ":=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:" << endl;
+  //cout << ":=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:" << endl;
 
   while(ihit < fNhits) {
     THcAerogelHit* hit = (THcAerogelHit *) fRawHitList->At(ihit);
@@ -495,15 +495,15 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
     if(fPosNpe[npmt] > 0.3) {fNADCPosHits++; fNGoodHits++;}
     if(fNegNpe[npmt] > 0.3) {fNADCNegHits++; fNGoodHits++;}
     
-    cout << "\nPMT Num = " << npmt << endl; 
-    cout << "posAdcPulseInt = " << posAdcPulseInt << "\t" 
-    	 << "fPosGain = " << fPosGain[npmt] << "\t" 
-    	 << "fPosNpe = " << fPosNpe[npmt] << "\t" << endl;
-    cout << "negAdcPulseInt = " << negAdcPulseInt << "\t" 
-    	 << "fNegGain = " << fNegGain[npmt] << "\t" 
-    	 << "fNegNpe = " << fNegNpe[npmt] << "\t" << endl;
-    cout << "fPosNpeSum = " << fPosNpeSum << "\t" 
-    	 << "fNegNpeSum = " << fNegNpeSum << endl;
+    // cout << "\nPMT Num = " << npmt << endl; 
+    // cout << "posAdcPulseInt = " << posAdcPulseInt << "\t" 
+    // 	 << "fPosGain = " << fPosGain[npmt] << "\t" 
+    // 	 << "fPosNpe = " << fPosNpe[npmt] << "\t" << endl;
+    // cout << "negAdcPulseInt = " << negAdcPulseInt << "\t" 
+    // 	 << "fNegGain = " << fNegGain[npmt] << "\t" 
+    // 	 << "fNegNpe = " << fNegNpe[npmt] << "\t" << endl;
+    // cout << "fPosNpeSum = " << fPosNpeSum << "\t" 
+    // 	 << "fNegNpeSum = " << fNegNpeSum << endl;
     
     // 6 GeV calculations
     Int_t adc_pos;
@@ -597,7 +597,7 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
   // If total hits are 0, then give a noticable ridiculous NPE
   if(fNhits < 1) fNpeSum = 0.0;
   
-  cout << "\nfNpeSum = " << fNpeSum << "\n" << endl;
+  // cout << "\nfNpeSum = " << fNpeSum << "\n" << endl;
    
   // The following code is in the fortran.  It probably doesn't work
   // right because the arrays are not cleared first and the aero_ep,
