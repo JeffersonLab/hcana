@@ -357,44 +357,6 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 
   }
 
-
-  // ------------------ Moving it to TrackCalc --------------------
-
-  /*
-  // If enabled, sort the tracks by chi2/ndof
-  if( GetTrSorting() )
-    fTracks->Sort();
-
-  // Find the "Golden Track".
-  if( GetNTracks() > 0 ) {
-    // Select first track in the array. If there is more than one track
-    // and track sorting is enabled, then this is the best fit track
-    // (smallest chi2/ndof).  Otherwise, it is the track with the best
-    // geometrical match (smallest residuals) between the U/V clusters
-    // in the upper and lower VDCs (old behavior).
-    //
-    // Chi2/dof is a well-defined quantity, and the track selected in this
-    // way is immediately physically meaningful. The geometrical match
-    // criterion is mathematically less well defined and not usually used
-    // in track reconstruction. Hence, chi2 sortiing is preferable, albeit
-    // obviously slower.
-
-    fGoldenTrack = static_cast<THaTrack*>( fTracks->At(0) );
-    fTrkIfo      = *fGoldenTrack;
-    fTrk         = fGoldenTrack;
-  } else
-    fGoldenTrack = NULL;
-
-  */
-  // ------------------ Moving it to TrackCalc --------------------
-
-  return 0;
-}
-
-//_____________________________________________________________________________
-Int_t THcHallCSpectrometer::TrackCalc()
-{
-
   if ( ( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 ) ) {
     BestTrackSimple();
   } else if (fSelUsingPrune !=0) {
@@ -403,6 +365,28 @@ Int_t THcHallCSpectrometer::TrackCalc()
     BestTrackUsingScin();
   }
 
+
+  return 0;
+}
+
+//_____________________________________________________________________________
+Int_t THcHallCSpectrometer::TrackCalc()
+{
+
+  if( fNtracks > 0 ) {
+    Int_t hit_gold_track=0; // find track with index =0 which is best track
+    for (Int_t itrack = 0; itrack < fNtracks; itrack++ ){
+      THaTrack* aTrack = static_cast<THaTrack*>( fTracks->At(itrack) );
+      if (aTrack->GetIndex()==0) hit_gold_track=itrack;  
+    }
+    
+    fGoldenTrack = static_cast<THaTrack*>( fTracks->At(hit_gold_track) );
+    fTrkIfo      = *fGoldenTrack;
+    fTrk         = fGoldenTrack;
+  } else
+    fGoldenTrack = NULL;
+
+
   return TrackTimes( fTracks );
 }
 
@@ -410,29 +394,14 @@ Int_t THcHallCSpectrometer::TrackCalc()
 Int_t THcHallCSpectrometer::BestTrackSimple()
 {
 
-  if( GetTrSorting() )
-    fTracks->Sort();
+  if( GetTrSorting() )   fTracks->Sort();
 
-  // Find the "Golden Track".
-  //  if( GetNTracks() > 0 ) {
-  if( fNtracks > 0 ) {
-    // Select first track in the array. If there is more than one track
-    // and track sorting is enabled, then this is the best fit track
-    // (smallest chi2/ndof).  Otherwise, it is the track with the best
-    // geometrical match (smallest residuals) between the U/V clusters
-    // in the upper and lower VDCs (old behavior).
-    //
-    // Chi2/dof is a well-defined quantity, and the track selected in this
-    // way is immediately physically meaningful. The geometrical match
-    // criterion is mathematically less well defined and not usually used
-    // in track reconstruction. Hence, chi2 sortiing is preferable, albeit
-    // obviously slower.
-
-    fGoldenTrack = static_cast<THaTrack*>( fTracks->At(0) );
-    fTrkIfo      = *fGoldenTrack;
-    fTrk         = fGoldenTrack;
-  } else
-    fGoldenTrack = NULL;
+  // Assign index=0 to the best track, 
+    for (Int_t itrack = 0; itrack < fNtracks; itrack++ ){
+      THaTrack* aTrack = static_cast<THaTrack*>( fTracks->At(itrack) );
+      aTrack->SetIndex(1);  
+      if (itrack==0) aTrack->SetIndex(0);  
+    }
 
   return(0);
 }
@@ -571,18 +540,19 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
 	    fGoodTrack = iitrack;
 	    chi2Min = chi2PerDeg;
 
-	    fGoldenTrack = aTrack;
-	    fTrkIfo      = *fGoldenTrack;
-	    fTrk         = fGoldenTrack;
-
 	  }
 	}
       } // loop over trakcs
-
+      // Set index for fGoodTrack = 0
+      for (Int_t iitrack = 0; iitrack < fNtracks; iitrack++ ){
+ 	THaTrack* aTrack = dynamic_cast<THaTrack*>( fTracks->At(iitrack) );
+        aTrack->SetIndex(1);
+	if (iitrack==fGoodTrack) aTrack->SetIndex(0);
+      }
+     //
     }
 
-  } else // Condition for fNtrack > 0
-    fGoldenTrack = NULL;
+  }
 
   return(0);
 }
@@ -804,13 +774,16 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 	chi2Min = chi2PerDeg;
       }
     }
+      // Set index=0 for fGoodTrack 
+      for (Int_t iitrack = 0; iitrack < fNtracks; iitrack++ ){
+ 	THaTrack* aTrack = dynamic_cast<THaTrack*>( fTracks->At(iitrack) );
+        aTrack->SetIndex(1);
+	if (iitrack==fGoodTrack) aTrack->SetIndex(0);
+      }
+     //
 
-    fGoldenTrack = static_cast<THaTrack*>( fTracks->At(fGoodTrack) );
-    fTrkIfo      = *fGoldenTrack;
-    fTrk         = fGoldenTrack;
 
-  } else // Condition for fNtrack > 0
-    fGoldenTrack = NULL;
+  } 
 
   return(0);
 }
