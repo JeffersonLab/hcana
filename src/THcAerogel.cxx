@@ -105,8 +105,6 @@ THcAerogel::THcAerogel( ) :
 THcAerogel::~THcAerogel()
 {
   // Destructor
-  DeleteArrays();
-
   delete fPosTDCHits; fPosTDCHits = NULL;
   delete fNegTDCHits; fNegTDCHits = NULL;
   delete fPosADCHits; fPosADCHits = NULL;
@@ -129,6 +127,9 @@ THcAerogel::~THcAerogel()
   delete frNegAdcPed; frNegAdcPed = NULL;
   delete frNegAdcPulseInt; frNegAdcPulseInt = NULL;
   delete frNegAdcPulseAmp; frNegAdcPulseAmp = NULL;
+
+  DeleteArrays();
+
 }
 
 //_____________________________________________________________________________
@@ -233,7 +234,7 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fNelem = 8;			// Default if not defined
   Bool_t optional=true ;
   DBRequest listextra[]={
-    {"aero_num_pairs", &fNelem, kInt,0,optional},
+    {"aero_num_pairs", &fNelem, kInt, 0, optional},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&listextra, prefix);
@@ -433,11 +434,6 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
   }
 
   Int_t ihit = 0;
-  Int_t nPosTDCHits=0;
-  Int_t nNegTDCHits=0;
-  Int_t nPosADCHits=0;
-  Int_t nNegADCHits=0;
-
   UInt_t nrPosAdcHits = 0;
   UInt_t nrNegAdcHits = 0;
 
@@ -478,6 +474,30 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
 
       ++nrNegAdcHits;
     }
+    ihit++;
+  }
+  return ihit;
+}
+
+//_____________________________________________________________________________
+Int_t THcAerogel::ApplyCorrections( void )
+{
+  return(0);
+}
+
+//_____________________________________________________________________________
+Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
+{
+  for(Int_t ihit=0; ihit < fNhits; ihit++) {
+
+    Int_t nPosTDCHits=0;
+    Int_t nNegTDCHits=0;
+    Int_t nPosADCHits=0;
+    Int_t nNegADCHits=0;
+
+    THcAerogelHit* hit = (THcAerogelHit *) fRawHitList->At(ihit);
+    THcRawAdcHit& rawPosAdcHit = hit->GetRawAdcHitPos();
+    THcRawAdcHit& rawNegAdcHit = hit->GetRawAdcHitNeg();
 
     // Fill the the per detector ADC arrays
     Int_t npmt = hit->fCounter - 1;
@@ -585,62 +605,7 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
       }
 
     }
-   
-    ihit++;
-   
   }
-
-  // Calculate total NPE sum
-  if(fPosNpeSum > 0.5 || fNegNpeSum > 0.5) fNpeSum = fPosNpeSum + fNegNpeSum;
-  else fNpeSum = 0.0;
-    
-  // If total hits are 0, then give a noticable ridiculous NPE
-  if(fNhits < 1) fNpeSum = 0.0;
-  
-  // cout << "\nfNpeSum = " << fNpeSum << "\n" << endl;
-   
-  // The following code is in the fortran.  It probably doesn't work
-  // right because the arrays are not cleared first and the aero_ep,
-  // aero_en, ... lines make no sense.
-
-  //* Next, fill the rawadc variables with the actual tube values
-  //*       mainly for diagnostic purposes.
-  //
-  //      do ihit=1,haero_tot_hits
-  //
-  //         npmt=haero_pair_num(ihit)
-  //
-  //         haero_rawadc_pos(npmt)=haero_adc_pos(ihit)
-  //         aero_ep(npmt)=haero_rawadc_pos(ihit)
-  //
-  //         haero_rawadc_neg(npmt)=haero_adc_neg(ihit)
-  //         aero_en(npmt)=haero_rawadc_neg(ihit)
-  //
-  //         haero_rawtdc_neg(npmt)=haero_tdc_neg(ihit)
-  //         aero_tn(npmt)= haero_tdc_neg(ihit)
-  //
-  //         haero_rawtdc_pos(npmt)=haero_tdc_pos(ihit)
-  //         aero_tp(npmt)= haero_tdc_pos(ihit)
-  //
-  //      enddo
-
-
-  return ihit;
-}
-
-//_____________________________________________________________________________
-Int_t THcAerogel::ApplyCorrections( void )
-{
-  return(0);
-}
-
-//_____________________________________________________________________________
-Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
-{
-
-  // All code previously here moved into decode
-
-  ApplyCorrections();
 
   return 0;
 }
@@ -648,7 +613,6 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
 //_____________________________________________________________________________
 Int_t THcAerogel::FineProcess( TClonesArray& tracks )
 {
-
   return 0;
 }
 
