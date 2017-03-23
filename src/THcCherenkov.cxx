@@ -61,8 +61,6 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
   frAdcPulseAmp = new TClonesArray("THcSignalHit", 16);
 
   InitArrays();
-
-
 }
 
 //_____________________________________________________________________________
@@ -82,6 +80,25 @@ THcCherenkov::THcCherenkov( ) :
   frAdcPulseAmp = NULL;
 
   InitArrays();
+}
+
+//_____________________________________________________________________________
+THcCherenkov::~THcCherenkov()
+{
+  // Destructor
+  delete fADCHits; fADCHits = NULL;
+
+  delete frAdcPedRaw; frAdcPedRaw = NULL;
+  delete frAdcPulseIntRaw; frAdcPulseIntRaw = NULL;
+  delete frAdcPulseAmpRaw; frAdcPulseAmpRaw = NULL;
+  delete frAdcPulseTimeRaw; frAdcPulseTimeRaw = NULL;
+
+  delete frAdcPed; frAdcPed = NULL;
+  delete frAdcPulseInt; frAdcPulseInt = NULL;
+  delete frAdcPulseAmp; frAdcPulseAmp = NULL;
+
+  DeleteArrays();
+
 }
 
 //_____________________________________________________________________________
@@ -117,24 +134,6 @@ void THcCherenkov::DeleteArrays()
   delete [] fPedCount; fPedCount = NULL;
   delete [] fPed; fPed = NULL;
   delete [] fThresh; fThresh = NULL;
-}
-//_____________________________________________________________________________
-THcCherenkov::~THcCherenkov()
-{
-  // Destructor
-  delete fADCHits; fADCHits = NULL;
-
-  delete frAdcPedRaw; frAdcPedRaw = NULL;
-  delete frAdcPulseIntRaw; frAdcPulseIntRaw = NULL;
-  delete frAdcPulseAmpRaw; frAdcPulseAmpRaw = NULL;
-  delete frAdcPulseTimeRaw; frAdcPulseTimeRaw = NULL;
-
-  delete frAdcPed; frAdcPed = NULL;
-  delete frAdcPulseInt; frAdcPulseInt = NULL;
-  delete frAdcPulseAmp; frAdcPulseAmp = NULL;
-
-  DeleteArrays();
-
 }
 
 //_____________________________________________________________________________
@@ -191,8 +190,6 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fGain = new Double_t[fNelem];
   fPedLimit = new Int_t[fNelem];
   fPedMean = new Double_t[fNelem];
-
- 
 
   fCerTrackCounter = new Int_t [fCerNRegions];
   fCerFiredCounter = new Int_t [fCerNRegions];
@@ -254,32 +251,34 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
   // Do we need to put the number of pos/neg TDC/ADC hits into the variables?
   // No.  They show up in tree as Ndata.H.aero.postdchits for example
 
-  RVarDef vars[] = {
-    {"phototubes",      "Nuber of Cherenkov photo tubes",        "fNPMT"},
-    {"adc",             "Raw ADC values",                        "fADC"},
-    {"adc_hit",         "ADC hit flag =1 means hit",             "fADC_hit"},
-    {"adc_p",           "Pedestal Subtracted ADC values",        "fADC_P"},
-    {"npe",             "Number of Photo electrons",             "fNPE"},
-    {"npesum",          "Sum of Number of Photo electrons",      "fNPEsum"},
-    {"ncherhit",        "Number of Hits(Cherenkov)",             "fNCherHit"},
-    {"certrackcounter", "Tracks inside Cherenkov region",        "fCerTrackCounter"},
-    {"cerfiredcounter", "Tracks with engough Cherenkov NPEs ",   "fCerFiredCounter"},
+  vector<RVarDef> vars;
+  
+  vars.push_back({"phototubes",      "Nuber of Cherenkov photo tubes",        "fNPMT"});
+  vars.push_back({"adc",             "Raw ADC values",                        "fADC"});
+  vars.push_back({"adc_hit",         "ADC hit flag =1 means hit",             "fADC_hit"});
+  vars.push_back({"adc_p",           "Pedestal Subtracted ADC values",        "fADC_P"});
+  vars.push_back({"npe",             "Number of Photo electrons",             "fNPE"});
+  vars.push_back({"npesum",          "Sum of Number of Photo electrons",      "fNPEsum"});
+  vars.push_back({"ncherhit",        "Number of Hits(Cherenkov)",             "fNCherHit"});
+  vars.push_back({"certrackcounter", "Tracks inside Cherenkov region",        "fCerTrackCounter"});
+  vars.push_back({"cerfiredcounter", "Tracks with engough Cherenkov NPEs ",   "fCerFiredCounter"});
 
-    {"adcCounter",      "List of ADC counter numbers.",      "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+  vars.push_back({"adcCounter",      "List of ADC counter numbers.",      "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
 
-    {"adcPedRaw",       "List of raw ADC pedestals",         "frAdcPedRaw.THcSignalHit.GetData()"},
-    {"adcPulseIntRaw",  "List of raw ADC pulse integrals.",  "frAdcPulseIntRaw.THcSignalHit.GetData()"},
-    {"adcPulseAmpRaw",  "List of raw ADC pulse amplitudes.", "frAdcPulseAmpRaw.THcSignalHit.GetData()"},
-    {"adcPulseTimeRaw", "List of raw ADC pulse times.",      "frAdcPulseTimeRaw.THcSignalHit.GetData()"},
+  vars.push_back({"adcPedRaw",       "List of raw ADC pedestals",         "frAdcPedRaw.THcSignalHit.GetData()"});
+  vars.push_back({"adcPulseIntRaw",  "List of raw ADC pulse integrals.",  "frAdcPulseIntRaw.THcSignalHit.GetData()"});
+  vars.push_back({"adcPulseAmpRaw",  "List of raw ADC pulse amplitudes.", "frAdcPulseAmpRaw.THcSignalHit.GetData()"});
+  vars.push_back({"adcPulseTimeRaw", "List of raw ADC pulse times.",      "frAdcPulseTimeRaw.THcSignalHit.GetData()"});
 
-    {"adcPed",          "List of ADC pedestals",             "frAdcPed.THcSignalHit.GetData()"},
-    {"adcPulseInt",     "List of ADC pulse integrals.",      "frAdcPulseInt.THcSignalHit.GetData()"},
-    {"adcPulseAmp",     "List of ADC pulse amplitudes.",     "frAdcPulseAmp.THcSignalHit.GetData()"},
+  vars.push_back({"adcPed",          "List of ADC pedestals",             "frAdcPed.THcSignalHit.GetData()"});
+  vars.push_back({"adcPulseInt",     "List of ADC pulse integrals.",      "frAdcPulseInt.THcSignalHit.GetData()"});
+  vars.push_back({"adcPulseAmp",     "List of ADC pulse amplitudes.",     "frAdcPulseAmp.THcSignalHit.GetData()"});
 
-    { 0 }
-  };
+  RVarDef end {};
+  vars.push_back(end);  
 
-  return DefineVarsFromList( vars, mode );
+  return DefineVarsFromList(vars.data(), mode);
+
 }
 //_____________________________________________________________________________
 inline
@@ -363,7 +362,6 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
       THcSignalHit *sighit = (THcSignalHit*) fADCHits->ConstructedAt(nADCHits++);
       sighit->Set(hit->fCounter, hit->GetRawAdcHitPos().GetPulseIntRaw());
     }
-
     ihit++;
   }
   return ihit;
