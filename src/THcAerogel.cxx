@@ -63,6 +63,9 @@ THcAerogel::THcAerogel( const char* name, const char* description,
   frNegAdcPed = new TClonesArray("THcSignalHit", 16);
   frNegAdcPulseInt = new TClonesArray("THcSignalHit", 16);
   frNegAdcPulseAmp = new TClonesArray("THcSignalHit", 16);
+  
+  fPosAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
+  fNegAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
 
   InitArrays();
 
@@ -97,6 +100,9 @@ THcAerogel::THcAerogel( ) :
   frNegAdcPulseInt = NULL;
   frNegAdcPulseAmp = NULL;
 
+  fPosAdcErrorFlag = NULL;
+  fNegAdcErrorFlag = NULL;
+
   InitArrays();
 
 }
@@ -127,6 +133,9 @@ THcAerogel::~THcAerogel()
   delete frNegAdcPed; frNegAdcPed = NULL;
   delete frNegAdcPulseInt; frNegAdcPulseInt = NULL;
   delete frNegAdcPulseAmp; frNegAdcPulseAmp = NULL;
+
+  delete fPosAdcErrorFlag; fPosAdcErrorFlag= NULL;
+  delete fNegAdcErrorFlag; fNegAdcErrorFlag= NULL;
 
   DeleteArrays();
 
@@ -333,6 +342,9 @@ Int_t THcAerogel::DefineVariables( EMode mode )
   vars.push_back({"negAdcPulseInt",     "List of negative ADC pulse integrals.",      "frNegAdcPulseInt.THcSignalHit.GetData()"});
   vars.push_back({"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"});
 
+  vars.push_back({"posAdcErrorFlag",    "Error Flag for When FPGA Fails",    "fPosAdcErrorFlag.THcSignalHit.GetData()"});
+  vars.push_back({"negAdcErrorFlag",    "Error Flag for When FPGA Fails",    "fNegAdcErrorFlag.THcSignalHit.GetData()"});
+
   if (fSixGevData) {
     vars.push_back({"apos",          "Raw Positive ADC Amplitudes",            "fA_Pos"});
     vars.push_back({"aneg",          "Raw Negative ADC Amplitudes",            "fA_Neg"});
@@ -407,6 +419,10 @@ void THcAerogel::Clear(Option_t* opt)
   frNegAdcPed->Clear();
   frNegAdcPulseInt->Clear();
   frNegAdcPulseAmp->Clear();
+
+  fPosAdcErrorFlag->Clear();
+  fNegAdcErrorFlag->Clear();
+
 }
 
 //_____________________________________________________________________________
@@ -457,6 +473,9 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
 
       ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTimeRaw(thit));
 
+      if (rawPosAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 0);
+      if (rawPosAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 1);
+
       ++nrPosAdcHits;
     }
     THcRawAdcHit& rawNegAdcHit = hit->GetRawAdcHitNeg();
@@ -471,6 +490,9 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
       ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseAmp(thit));
 
       ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTimeRaw(thit));
+
+      if (rawNegAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 0);
+      if (rawNegAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 1);
 
       ++nrNegAdcHits;
     }

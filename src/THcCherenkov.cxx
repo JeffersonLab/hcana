@@ -3,7 +3,7 @@
 
 Class for an Cherenkov detector consisting of two PMT's
 
-\author Zafar Ahmed
+3\author Zafar Ahmed
 
 */
 
@@ -51,15 +51,17 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
   // Normal constructor with name and description
   fADCHits = new TClonesArray("THcSignalHit",16);
 
-  frAdcPedRaw = new TClonesArray("THcSignalHit", 16);
-  frAdcPulseIntRaw = new TClonesArray("THcSignalHit", 16);
-  frAdcPulseAmpRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPedRaw       = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseIntRaw  = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseAmpRaw  = new TClonesArray("THcSignalHit", 16);
   frAdcPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
 
-  frAdcPed = new TClonesArray("THcSignalHit", 16);
+  frAdcPed      = new TClonesArray("THcSignalHit", 16);
   frAdcPulseInt = new TClonesArray("THcSignalHit", 16);
   frAdcPulseAmp = new TClonesArray("THcSignalHit", 16);
 
+  fAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
+  
   InitArrays();
 }
 
@@ -79,6 +81,8 @@ THcCherenkov::THcCherenkov( ) :
   frAdcPulseInt = NULL;
   frAdcPulseAmp = NULL;
 
+  fAdcErrorFlag = NULL;
+
   InitArrays();
 }
 
@@ -96,6 +100,8 @@ THcCherenkov::~THcCherenkov()
   delete frAdcPed; frAdcPed = NULL;
   delete frAdcPulseInt; frAdcPulseInt = NULL;
   delete frAdcPulseAmp; frAdcPulseAmp = NULL;
+
+  delete fAdcErrorFlag; fAdcErrorFlag= NULL;
 
   DeleteArrays();
 
@@ -274,6 +280,8 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
   vars.push_back({"adcPulseInt",     "List of ADC pulse integrals.",      "frAdcPulseInt.THcSignalHit.GetData()"});
   vars.push_back({"adcPulseAmp",     "List of ADC pulse amplitudes.",     "frAdcPulseAmp.THcSignalHit.GetData()"});
 
+  vars.push_back({"adcErrorFlag",    "Error Flag for When FPGA Fails",    "fAdcErrorFlag.THcSignalHit.GetData()"});
+
   RVarDef end {};
   vars.push_back(end);  
 
@@ -310,6 +318,8 @@ void THcCherenkov::Clear(Option_t* opt)
   frAdcPulseInt->Clear();
   frAdcPulseAmp->Clear();
 
+  fAdcErrorFlag->Clear();
+
 }
 
 //_____________________________________________________________________________
@@ -342,6 +352,7 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
 
     THcRawAdcHit& rawAdcHit = hit->GetRawAdcHitPos();
     for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
+           
       ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPedRaw());
       ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPed());
 
@@ -352,8 +363,14 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
       ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp(thit));
 
       ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTimeRaw(thit));
-      fADC_hit[padnum-1]=1; // 
-      //     cout << dec << "thit = " << thit << " " << padnum << " " << rawAdcHit.GetPulseInt(thit)<< " " << rawAdcHit.GetPulseIntRaw(thit) << " " << rawAdcHit.GetPedRaw() << " " << rawAdcHit.GetPedRaw()*28./4.<< endl;
+
+      // if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) cout << "DANG!" << endl;
+
+      if (rawAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 0);
+      if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 1);
+      
+      fADC_hit[padnum-1] = 1;  
+				  
       ++nrAdcHits;
     }
 
@@ -362,9 +379,10 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
       THcSignalHit *sighit = (THcSignalHit*) fADCHits->ConstructedAt(nADCHits++);
       sighit->Set(hit->fCounter, hit->GetRawAdcHitPos().GetPulseIntRaw());
     }
+
     ihit++;
   }
-  return ihit;
+return ihit;
 }
 
 //_____________________________________________________________________________
@@ -376,6 +394,7 @@ Int_t THcCherenkov::ApplyCorrections( void )
 //_____________________________________________________________________________
 Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
 {
+
   for(Int_t ihit=0; ihit < fNhits; ihit++) {
     THcCherenkovHit* hit = (THcCherenkovHit *) fRawHitList->At(ihit); // nhit = 1, hcer_tot_hits
 

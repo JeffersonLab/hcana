@@ -115,10 +115,14 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   TClonesArray* frNegAdcPulseInt;
   TClonesArray* frNegAdcPulseAmp;
 
+  TClonesArray* fPosAdcErrorFlag;
+  TClonesArray* fNegAdcErrorFlag;
+
   void Setup(const char* name, const char* description);
   virtual void  InitializePedestals( );
 
   ClassDef(THcAerogel,0)   // Generic aerogel class
-};
+}
+;
 
 #endif
