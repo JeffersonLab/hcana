@@ -41,23 +41,34 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   //  Double_t GetCerNPE() { return fNPEsum;}
   Double_t GetCerNPE();
 
+  // Vector/TClonesArray length parameters
+  Int_t MaxNumCerPmt   = 4;
+  Int_t MaxNumAdcPulse = 4;
+
   THcCherenkov();  // for ROOT I/O
  protected:
   Int_t         fAnalyzePedestals;
+  Int_t         fDebugAdc;
 
   // Parameters
-  Double_t*     fGain;
   Double_t*     fCerWidth;
 
   // Event information
   Int_t         fNhits;
   Int_t*        fADC_hit;         // [fNelem] Array of flag if ADC hit 1 means  
   Int_t*        fNPMT;            // [fNelem] Array of ADC amplitudes
-  Double_t*     fADC;             // [fNelem] Array of ADC amplitudes
-  Double_t*     fADC_P;           // [fNelem] Array of ADC amplitudes
-  Double_t*     fNPE;             // [fNelem] Array of ADC amplitudes
-  Double_t      fNPEsum;
+  Double_t*     fGain;
   Int_t         fNCherHit;
+
+  
+  Double_t      fNpeSum;
+
+  vector<Double_t> fGoodAdcPed;
+  vector<Double_t> fGoodAdcPulseInt;
+  vector<Double_t> fGoodAdcPulseIntRaw;
+  vector<Double_t> fGoodAdcPulseAmp;
+  vector<Double_t> fGoodAdcPulseTime;
+  vector<Double_t> fNpe;
 
   Double_t*        fCerRegionValue;
   Double_t         fCerChi2Max;
@@ -75,7 +86,7 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   // Hits
   TClonesArray* fADCHits;
 
-  // Pedestals
+  // 6 Gev pedestal variables
   Int_t         fNPedestalEvents;
   Int_t         fMinPeds;
   Int_t*        fPedSum;	  /* Accumulators for pedestals */
@@ -86,6 +97,7 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Double_t*     fPed;
   Double_t*     fThresh;
 
+  // 12 Gev FADC variables
   TClonesArray* frAdcPedRaw;
   TClonesArray* frAdcPulseIntRaw;
   TClonesArray* frAdcPulseAmpRaw;

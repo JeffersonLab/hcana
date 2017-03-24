@@ -67,6 +67,8 @@ THcAerogel::THcAerogel( const char* name, const char* description,
   fPosAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
   fNegAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
 
+  
+
   InitArrays();
 
 //  fTrackProj = new TClonesArray( "THaTrackProj", 5 );
