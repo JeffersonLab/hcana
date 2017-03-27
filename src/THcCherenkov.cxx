@@ -59,11 +59,9 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
   frAdcPed      = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
   frAdcPulseInt = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
   frAdcPulseAmp = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
-
   fAdcErrorFlag = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
 
-  fNpe = vector<Double_t>(MaxNumCerPmt, 0.0);
-
+  fNpe                 = vector<Double_t>(MaxNumCerPmt, 0.0);
   fGoodAdcPed          = vector<Double_t>(MaxNumCerPmt, 0.0);
   fGoodAdcPulseInt     = vector<Double_t>(MaxNumCerPmt, 0.0);
   fGoodAdcPulseIntRaw  = vector<Double_t>(MaxNumCerPmt, 0.0);
@@ -80,15 +78,14 @@ THcCherenkov::THcCherenkov( ) :
   // Constructor
   fADCHits = NULL;
 
-  frAdcPedRaw = NULL;
-  frAdcPulseIntRaw = NULL;
-  frAdcPulseAmpRaw = NULL;
+  frAdcPedRaw       = NULL;
+  frAdcPulseIntRaw  = NULL;
+  frAdcPulseAmpRaw  = NULL;
   frAdcPulseTimeRaw = NULL;
 
-  frAdcPed = NULL;
+  frAdcPed      = NULL;
   frAdcPulseInt = NULL;
   frAdcPulseAmp = NULL;
-
   fAdcErrorFlag = NULL;
 
   InitArrays();
@@ -100,16 +97,15 @@ THcCherenkov::~THcCherenkov()
   // Destructor
   delete fADCHits; fADCHits = NULL;
 
-  delete frAdcPedRaw; frAdcPedRaw = NULL;
-  delete frAdcPulseIntRaw; frAdcPulseIntRaw = NULL;
-  delete frAdcPulseAmpRaw; frAdcPulseAmpRaw = NULL;
+  delete frAdcPedRaw;       frAdcPedRaw       = NULL;
+  delete frAdcPulseIntRaw;  frAdcPulseIntRaw  = NULL;
+  delete frAdcPulseAmpRaw;  frAdcPulseAmpRaw  = NULL;
   delete frAdcPulseTimeRaw; frAdcPulseTimeRaw = NULL;
 
-  delete frAdcPed; frAdcPed = NULL;
+  delete frAdcPed;      frAdcPed      = NULL;
   delete frAdcPulseInt; frAdcPulseInt = NULL;
   delete frAdcPulseAmp; frAdcPulseAmp = NULL;
-
-  delete fAdcErrorFlag; fAdcErrorFlag= NULL;
+  delete fAdcErrorFlag; fAdcErrorFlag = NULL;
 
   DeleteArrays();
 
@@ -119,7 +115,6 @@ THcCherenkov::~THcCherenkov()
 void THcCherenkov::InitArrays()
 {
   fGain = NULL;
-  fCerWidth = NULL;
   fNPMT = NULL;
   fPedSum = NULL;
   fPedSum2 = NULL;
@@ -133,7 +128,6 @@ void THcCherenkov::InitArrays()
 void THcCherenkov::DeleteArrays()
 {
   delete [] fGain; fGain = NULL;
-  delete [] fCerWidth; fCerWidth = NULL;
   delete [] fNPMT; fNPMT = NULL;
   
   // 6 Gev pedestal variables
@@ -190,10 +184,11 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   //    fNelem = 2;      // Default if not defined
   fCerNRegions = 3;
 
+  Bool_t optional = true;
+
   fNPMT = new Int_t[fNelem];
   fADC_hit = new Int_t[fNelem];
 
-  fCerWidth = new Double_t[fNelem];
   fGain = new Double_t[fNelem];
   fPedLimit = new Int_t[fNelem];
   fPedMean = new Double_t[fNelem];
@@ -209,9 +204,8 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fCerRegionValue = new Double_t [fCerRegionsValueMax];
 
   DBRequest list[]={
+    {"_ped_limit",   fPedLimit,           kInt,    (UInt_t) fNelem, optional},
     {"_adc_to_npe",  fGain,               kDouble, (UInt_t) fNelem},
-    {"_ped_limit",   fPedLimit,           kInt,    (UInt_t) fNelem},
-    {"_width",       fCerWidth,           kDouble, (UInt_t) fNelem},
     {"_chi2max",     &fCerChi2Max,        kDouble},
     {"_beta_min",    &fCerBetaMin,        kDouble},
     {"_beta_max",    &fCerBetaMax,        kDouble},
@@ -308,13 +302,11 @@ void THcCherenkov::Clear(Option_t* opt)
   // Clear the hit lists
   fADCHits->Clear();
 
-  // Clear Cherenkov variables  from h_trans_cer.f
-
   fNhits = 0;	     
   fNpeSum = 0.0;
   fNCherHit = 0;
 
-  for(Int_t itube = 0;itube < fNelem;itube++) {
+  for(Int_t itube = 0; itube < fNelem; itube++) {
     fNPMT[itube] = 0;
     fADC_hit[itube] = 0;
   }
@@ -327,7 +319,6 @@ void THcCherenkov::Clear(Option_t* opt)
   frAdcPed->Clear();
   frAdcPulseInt->Clear();
   frAdcPulseAmp->Clear();
-
   fAdcErrorFlag->Clear();
 
   for (UInt_t ielem = 0; ielem < fGoodAdcPed.size(); ielem++) {
@@ -336,8 +327,7 @@ void THcCherenkov::Clear(Option_t* opt)
     fGoodAdcPulseIntRaw.at(ielem) = 0.0;
     fGoodAdcPulseAmp.at(ielem)    = 0.0;
     fGoodAdcPulseTime.at(ielem)   = 0.0;
-    
-    fNpe.at(ielem) = 0.0;
+    fNpe.at(ielem)                = 0.0;
   }
 
 }
@@ -365,9 +355,9 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
 
   while(ihit < fNhits) {
 
-    THcCherenkovHit* hit = (THcCherenkovHit *) fRawHitList->At(ihit);
-    Int_t padnum = hit->fCounter;
-    THcRawAdcHit& rawAdcHit = hit->GetRawAdcHitPos();
+    THcCherenkovHit* hit       = (THcCherenkovHit*) fRawHitList->At(ihit);
+    Int_t            padnum    = hit->fCounter;
+    THcRawAdcHit&    rawAdcHit = hit->GetRawAdcHitPos();
     
     for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
            
@@ -387,7 +377,9 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
       
       fADC_hit[padnum-1] = 1;  
 
-      //cout << "npmt = " << padnum-1 << "\t" << "thit = " << thit << "\t" << "frAdcPulseInt = " << rawAdcHit.GetPulseInt(thit) << endl;
+      // cout << "fNhits = " << fNhits << "\t" << "npmt = " << padnum-1 << "\t" 
+      // 	   << "thit = " << thit << "\t" 
+      // 	   << "frAdcPulseInt = " << rawAdcHit.GetPulseInt(thit) << endl;
 
       ++nrAdcHits;
     }
@@ -408,27 +400,26 @@ Int_t THcCherenkov::ApplyCorrections( void )
 }
 
 //_____________________________________________________________________________
-Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
+Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
 {
   
-  //cout << "=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:" << endl;
-
   // Loop over the elements in the TClonesArray
   for(Int_t ielem = 0; ielem < frAdcPulseInt->GetEntries(); ielem++) {
 
-    Int_t    npmt        = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
-    Double_t pulsePed    = ((THcSignalHit*) frAdcPed->ConstructedAt(ielem))->GetData();
-    Double_t pulseInt    = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetData();
-    Double_t pulseIntRaw = ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
-    Double_t pulseAmp    = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
-    Double_t pulseTime   = ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
+    Int_t    npmt         = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+    Double_t pulsePed     = ((THcSignalHit*) frAdcPed->ConstructedAt(ielem))->GetData();
+    Double_t pulseInt     = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetData();
+    Double_t pulseIntRaw  = ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
+    Double_t pulseAmp     = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
+    Double_t pulseTime    = ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
+    Bool_t   errorFlag    = ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(ielem))->GetData();  
+    Bool_t   pulseTimeCut = pulseTime > 500 && pulseTime < 2500;
 
-    //cout << "fNhits = " << fNhits << "\t" << "nmpt = " << npmt << "\t" << "ielem = " << ielem << "\t" << "pulseInt = " << pulseInt << endl;
-    
-    Bool_t pulseAmpCut  = pulseAmp > 0;
-    Bool_t pulseTimeCut = pulseTime > 500 && pulseTime < 2500;
+    // cout << "npmt = " << npmt << "\t" << "ielem = " << ielem << "\t"
+    // 	 << "pulseInt = " << pulseInt << "\t" << endl;
 
-    if (pulseAmpCut && pulseTimeCut) {
+    // By default, the last hit within the timing cut will be considered "good"
+    if (!errorFlag && pulseTimeCut) {
       fGoodAdcPed.at(npmt)         = pulsePed;
       fGoodAdcPulseInt.at(npmt)    = pulseInt;
       fGoodAdcPulseIntRaw.at(npmt) = pulseIntRaw;
@@ -438,11 +429,8 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
       fNpe.at(npmt) = fGain[npmt]*fGoodAdcPulseInt.at(npmt);
       fNpeSum += fNpe.at(npmt);
     }
-
     fNPMT[npmt] = npmt + 1;
-
-    fNCherHit ++;
-    
+    fNCherHit ++;  
   }
 
   return 0;
@@ -451,23 +439,33 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
 //_____________________________________________________________________________
 Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 {
+  
+  Int_t lastIndex = tracks.GetLast();
 
-  if ( tracks.GetLast() > -1 ) {
+  if (lastIndex > -1) {
 
-    THaTrack* theTrack = dynamic_cast<THaTrack*>( tracks.At(0) );
-    if (!theTrack) return -1;
+    THaTrack* track = dynamic_cast<THaTrack*> (tracks.At(0));
+    if (!track) return -1;
 
-    if ( ( ( tracks.GetLast() + 1 ) == 1 ) &&
-	 ( theTrack->GetChi2()/theTrack->GetNDoF() > 0. ) &&
-	 ( theTrack->GetChi2()/theTrack->GetNDoF() <  fCerChi2Max ) &&
-	 ( theTrack->GetBeta() > fCerBetaMin ) &&
-	 ( theTrack->GetBeta() < fCerBetaMax ) &&
-	 ( ( theTrack->GetEnergy() / theTrack->GetP() ) > fCerETMin ) &&
-	 ( ( theTrack->GetEnergy() / theTrack->GetP() ) < fCerETMax )
-	 ) {
+    //if ( ( ( tracks.GetLast() + 1 ) == 1 ) &&
+    if ((lastIndex == 0) &&
+	( track->GetChi2()/track->GetNDoF() > 0. ) &&
+	( track->GetChi2()/track->GetNDoF() <  fCerChi2Max ) &&
+	( track->GetBeta() > fCerBetaMin ) &&
+	( track->GetBeta() < fCerBetaMax ) &&
+	( ( track->GetEnergy() / track->GetP() ) > fCerETMin ) &&
+	( ( track->GetEnergy() / track->GetP() ) < fCerETMax )
+	) {
 
-      Double_t cerX = theTrack->GetX() + theTrack->GetTheta() * fCerMirrorZPos;
-      Double_t cerY = theTrack->GetY() + theTrack->GetPhi()   * fCerMirrorZPos;
+      cout << track->GetChi2() << "\t" << track->GetNDoF() << "\t"
+	   << track->GetBeta() << "\t" << track->GetEnergy() << "\t"
+	   << track->GetP() << endl;
+
+      cout << track->GetX() << "\t" << track->GetY() << "\t" 
+	   << track->GetTheta() << "\t" << track->GetPhi() << endl;
+
+      Double_t cerX = track->GetX() + track->GetTheta() * fCerMirrorZPos;
+      Double_t cerY = track->GetY() + track->GetPhi()   * fCerMirrorZPos;
 
       for ( Int_t ir = 0; ir < fCerNRegions; ir++ ) {
 
@@ -477,9 +475,9 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 	       fCerRegionValue[GetCerIndex( ir, 4 )] ) &&
 	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 1 )] - cerY ) <
 	       fCerRegionValue[GetCerIndex( ir, 5 )] ) &&
-	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 2 )] - theTrack->GetTheta() ) <
+	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 2 )] - track->GetTheta() ) <
 	       fCerRegionValue[GetCerIndex( ir, 6 )] ) &&
-	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 3 )] - theTrack->GetPhi() ) <
+	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 3 )] - track->GetPhi() ) <
 	       fCerRegionValue[GetCerIndex( ir, 7 )] )
 	     ) {
 
