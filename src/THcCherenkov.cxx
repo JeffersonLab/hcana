@@ -442,7 +442,7 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 
   cout << "nTracks = " << nTracks << endl;
 
-  if (ntracks >= 1) {
+  if (nTracks >= 1) {
 
     THaTrack* track = dynamic_cast<THaTrack*> (tracks.At(0));
     if (!track) return -1;

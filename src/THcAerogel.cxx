@@ -20,7 +20,7 @@ configurable.
 #include "THcHitList.h"
 #include "THaApparatus.h"
 #include "VarDef.h"
-#include "VarType.h"
+#include "VarType.h" 
 #include "THaTrack.h"
 #include "TClonesArray.h"
 #include "TMath.h"
