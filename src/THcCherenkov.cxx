@@ -1,9 +1,7 @@
 /** \class THcCherenkov
     \ingroup Detectors
 
-    Class for an Cherenkov detector consisting of two PMT's
-
-    3\author Zafar Ahmed
+    Class for Cherenkov detectors
 
 */
 
@@ -440,29 +438,39 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
 Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 {
   
-  Int_t lastIndex = tracks.GetLast();
+  Int_t nTracks = tracks.GetLast() + 1;
 
-  if (lastIndex > -1) {
+  cout << "nTracks = " << nTracks << endl;
+
+  if (ntracks >= 1) {
 
     THaTrack* track = dynamic_cast<THaTrack*> (tracks.At(0));
     if (!track) return -1;
 
-    //if ( ( ( tracks.GetLast() + 1 ) == 1 ) &&
-    if ((lastIndex == 0) &&
-	( track->GetChi2()/track->GetNDoF() > 0. ) &&
+    Double_t trackChi2   = track->GetChi2();
+    Int_t    trackNDoF   = track->GetNDoF();
+    Double_t trackBeta   = track->GetBeta();
+    Double_t trackEnergy = track->GetEnergy();
+    Double_t trackMom    = track->GetP();
+    Double_t trackXfp    = track->GetX();
+    Double_t trackYfp    = track->GetY();
+    Double_t trackTheta  = track->GetTheta();
+    Double_t trackPhi    = track->GetPhi();
+
+    cout << "trackChi2 = " << trackChi2 << "\t" << "trackNDof = " << trackNDoF << "\t"
+	 << "trackBeta = " << trackBeta << "\t" << "trackEnergy = " << trackEnergy << "\t"
+	 << "trackMom = " << trackMom << endl;
+    cout << "trackXfp = " << trackXfp << "\t" << "trackYfp = " << trackYfp << "\t"
+	 << "trackTheta = " << trackTheta << "\t" << "trackPhi = " << trackPhi << endl;
+    cout << "=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:" << endl;
+
+    if (( track->GetChi2()/track->GetNDoF() > 0. ) &&
 	( track->GetChi2()/track->GetNDoF() <  fCerChi2Max ) &&
 	( track->GetBeta() > fCerBetaMin ) &&
 	( track->GetBeta() < fCerBetaMax ) &&
 	( ( track->GetEnergy() / track->GetP() ) > fCerETMin ) &&
 	( ( track->GetEnergy() / track->GetP() ) < fCerETMax )
 	) {
-
-      cout << track->GetChi2() << "\t" << track->GetNDoF() << "\t"
-	   << track->GetBeta() << "\t" << track->GetEnergy() << "\t"
-	   << track->GetP() << endl;
-
-      cout << track->GetX() << "\t" << track->GetY() << "\t" 
-	   << track->GetTheta() << "\t" << track->GetPhi() << endl;
 
       Double_t cerX = track->GetX() + track->GetTheta() * fCerMirrorZPos;
       Double_t cerY = track->GetY() + track->GetPhi()   * fCerMirrorZPos;
