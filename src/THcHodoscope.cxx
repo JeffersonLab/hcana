@@ -258,7 +258,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   //  Int_t plen=strlen(parname);
   cout << " readdatabse hodo fnplanes = " << fNPlanes << endl;
 
-  fBetaP = 0.;
   fBetaNoTrk = 0.;
   fBetaNoTrkChiSq = 0.;
 
@@ -467,7 +466,7 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
 
   RVarDef vars[] = {
     // Move these into THcHallCSpectrometer using track fTracks
-    {"betap",             "betaP",                "fBetaP"},
+    {"beta",       "Beta including track info",                "fBeta"},
     {"betanotrack",       "Beta from scintillator hits",                "fBetaNoTrk"},
     {"betachisqnotrack",  "Chi square of beta from scintillator hits",  "fBetaNoTrkChiSq"},
     {"fpHitsTime",        "Time at focal plane from all hits",            "fFPTimeAll"},
@@ -551,7 +550,7 @@ void THcHodoscope::ClearEvent()
    *
    */
 
-  fBetaP = 0.;
+  fBeta = 0.0;
   fBetaNoTrk = 0.0;
   fBetaNoTrkChiSq = 0.0;
   fStartTime  = 0.0;
@@ -865,17 +864,9 @@ Double_t THcHodoscope::TimeWalkCorrection(const Int_t& paddle,
   return(0.0);
 }
 
-//_____________________________________________________________________________
-Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
-{
-
-  ApplyCorrections();
-
-  return 0;
-}
 
 //_____________________________________________________________________________
-Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
+Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 {
 
   Int_t ntracks = tracks.GetLast()+1; // Number of reconstructed tracks
@@ -915,8 +906,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       //      timeAtFP[itrack] = 0.;
       Double_t sumFPTime = 0.; // Line 138
       fNScinHit.push_back(0);
-      Double_t p = theTrack->GetP(); // Line 142
-      fBetaP = p/( TMath::Sqrt( p * p + fPartMass * fPartMass) );
 
       //! Calculate all corrected hit times and histogram
       //! This uses a copy of code below. Results are save in time_pos,neg
@@ -1000,7 +989,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	       ( fPlanes[ip]->GetSize() * 0.5 + fPlanes[ip]->GetHodoSlop() ) ){ // Line 293
 
 	    fTOFPInfo[ihhit].onTrack = kTRUE;
-	    Double_t zcor = zposition/(29.979*fBetaP)*
+	    Double_t zcor = zposition/(29.979*fBetaNominal)*
 		TMath::Sqrt(1. + theTrack->GetTheta()*theTrack->GetTheta()
 			    + theTrack->GetPhi()*theTrack->GetPhi());
 	    fTOFPInfo[ihhit].zcor = zcor;
@@ -1623,6 +1612,19 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 
   return 0;
 
+}
+//_____________________________________________________________________________
+Int_t THcHodoscope::FineProcess( TClonesArray&  tracks  )
+{
+  Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
+  for (Int_t itrk=0; itrk<Ntracks; itrk++) {
+    THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
+    if (theTrack->GetIndex()==0) {
+    fBeta=theTrack->GetBeta();
+    }
+  }       //over tracks
+
+  return 0;
 }
 //_____________________________________________________________________________
 Int_t THcHodoscope::GetScinIndex( Int_t nPlane, Int_t nPaddle ) {
