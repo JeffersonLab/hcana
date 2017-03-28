@@ -201,8 +201,6 @@ protected:
   Int_t        fTestSum;
   Int_t        fTrackEffTestNScinPlanes;
   Int_t        fGoodScinHits;
-  Int_t        fScinShould;
-  Int_t        fScinDid;
   Int_t*       fxLoScin;
   Int_t*       fxHiScin;
   Int_t*       fyLoScin;
