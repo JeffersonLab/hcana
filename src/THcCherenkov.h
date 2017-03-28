@@ -36,7 +36,7 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
 
   virtual void Print(const Option_t* opt) const;
 
-  Int_t GetCerIndex(Int_t nRegion, Int_t nValue);
+  Int_t GetIndex(Int_t nRegion, Int_t nValue);
 
   //  Double_t GetCerNPE() { return fNPEsum;}
   Double_t GetCerNPE();
@@ -51,18 +51,22 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Int_t         fDebugAdc;
 
   // Parameters
-  Double_t*     fCerWidth;
+  Double_t*     fWidth;
 
   // Event information
   Int_t         fNhits;
-  Int_t*        fADC_hit;         // [fNelem] Array of flag if ADC hit 1 means  
-  Int_t*        fNPMT;            // [fNelem] Array of ADC amplitudes
   Double_t*     fGain;
-  Int_t         fNCherHit;
+    
+  Double_t  fNpeSum;
+  Int_t     fTotNumAdcHits;
+  Int_t     fTotNumGoodAdcHits;
+  Int_t     fTotNumTracksMatched;
+  Int_t     fTotNumTracksFired;
 
-  
-  Double_t      fNpeSum;
-
+  vector<Int_t>    fNumAdcHits;
+  vector<Int_t>    fNumGoodAdcHits;
+  vector<Int_t>    fNumTracksMatched;
+  vector<Int_t>    fNumTracksFired;
   vector<Double_t> fGoodAdcPed;
   vector<Double_t> fGoodAdcPulseInt;
   vector<Double_t> fGoodAdcPulseIntRaw;
@@ -70,18 +74,19 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   vector<Double_t> fGoodAdcPulseTime;
   vector<Double_t> fNpe;
 
-  Double_t*        fCerRegionValue;
-  Double_t         fCerChi2Max;
-  Double_t         fCerBetaMin;
-  Double_t         fCerBetaMax;
-  Double_t         fCerETMin;
-  Double_t         fCerETMax;
-  Double_t         fCerMirrorZPos;
-  Int_t            fCerNRegions;
-  Int_t            fCerRegionsValueMax;
-  Int_t*           fCerTrackCounter;     // [fCerNRegions] Array of Cher regions
-  Int_t*           fCerFiredCounter;     // [fCerNRegions] Array of Cher regions
-  Double_t         fCerThresh;
+  Double_t*        fRegionValue;
+  Double_t         fRedChi2Min;
+  Double_t         fRedChi2Max;
+  Double_t         fBetaMin;
+  Double_t         fBetaMax;
+  Double_t         fENormMin;
+  Double_t         fENormMax;
+  Double_t         fMirrorZPos;
+  Double_t         fNpeThresh;
+  Double_t         fAdcTimeWindowMin;
+  Double_t         fAdcTimeWindowMax;
+  Int_t            fNRegions;
+  Int_t            fRegionsValueMax;
 
   // Hits
   TClonesArray* fADCHits;
