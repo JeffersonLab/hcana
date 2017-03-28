@@ -44,7 +44,7 @@ bool THcShowerHit::isNeighbour(THcShowerHit* hit1) {
 //Print out hit information
 //
 void THcShowerHit::show() {
-  cout << "row=" << fRow << "  column=" << fCol
+  cout << "row=" << fRow+1 << "  column=" << fCol+1
        << "  x=" << fX << "  z=" << fZ
        << "  E=" << fE << "  Epos=" << fEpos << "  Eneg=" << fEneg << endl;
 }
