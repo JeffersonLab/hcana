@@ -209,9 +209,12 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   {
     DBRequest list[]={
       {"cal_num_neg_columns", &fNegCols, kInt, 0, 1},
-      {"cal_slop", &fSlop, kDouble},
+      {"cal_slop", &fSlop, kDouble,0,1},
       {"cal_fv_test", &fvTest, kInt,0,1},
-      {"cal_fv_delta", &fvDelta, kDouble},
+      {"cal_fv_delta", &fvDelta, kDouble,0,1},
+      {"cal_ADCMode", &fADCMode, kInt, 0, 1},
+      {"cal_AdcTimeWindowMin", &fAdcTimeWindowMin, kDouble, 0, 1},
+      {"cal_AdcTimeWindowMax", &fAdcTimeWindowMax, kDouble, 0, 1},
       {"dbg_raw_cal", &fdbg_raw_cal, kInt, 0, 1},
       {"dbg_decoded_cal", &fdbg_decoded_cal, kInt, 0, 1},
       {"dbg_sparsified_cal", &fdbg_sparsified_cal, kInt, 0, 1},
@@ -227,7 +230,9 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     fdbg_clusters_cal = 0;
     fdbg_tracks_cal = 0;
     fdbg_init_cal = 0;
-
+    fAdcTimeWindowMin=0;
+    fAdcTimeWindowMax=10000;
+    fADCMode=kADCDynamicPedestal;
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }
 
@@ -343,6 +348,10 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   //Pedestal limits from hcal.param.
   fShPosPedLimit = new Int_t [fNTotBlocks];
   fShNegPedLimit = new Int_t [fNTotBlocks];
+  for (UInt_t i;i<fNTotBlocks;i++) {
+    fShPosPedLimit[i]=0.;
+    fShNegPedLimit[i]=0.;
+  }
 
   //Calibration constants
   fPosGain = new Double_t [fNTotBlocks];
@@ -350,31 +359,22 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
 
   //Read in parameters from hcal.param
   Double_t hcal_pos_cal_const[fNTotBlocks];
-  //  Double_t hcal_pos_gain_ini[fNTotBlocks];     not used
-  //  Double_t hcal_pos_gain_cur[fNTotBlocks];     not used
-  //  Int_t    hcal_pos_ped_limit[fNTotBlocks];    not used
   Double_t hcal_pos_gain_cor[fNTotBlocks];
 
   Double_t hcal_neg_cal_const[fNTotBlocks];
-  //  Double_t hcal_neg_gain_ini[fNTotBlocks];     not used
-  //  Double_t hcal_neg_gain_cur[fNTotBlocks];     not used
-  //  Int_t    hcal_neg_ped_limit[fNTotBlocks];    not used
   Double_t hcal_neg_gain_cor[fNTotBlocks];
 
   DBRequest list[]={
     {"cal_pos_cal_const", hcal_pos_cal_const, kDouble, fNTotBlocks},
-    //    {"cal_pos_gain_ini",  hcal_pos_gain_ini,  kDouble, fNTotBlocks},
-    //    {"cal_pos_gain_cur",  hcal_pos_gain_cur,  kDouble, fNTotBlocks},
-    {"cal_pos_ped_limit", fShPosPedLimit, kInt,    fNTotBlocks},
+    {"cal_pos_ped_limit", fShPosPedLimit, kInt,    fNTotBlocks,1},
     {"cal_pos_gain_cor",  hcal_pos_gain_cor,  kDouble, fNTotBlocks},
     {"cal_neg_cal_const", hcal_neg_cal_const, kDouble, fNTotBlocks},
-    //    {"cal_neg_gain_ini",  hcal_neg_gain_ini,  kDouble, fNTotBlocks},
-    //    {"cal_neg_gain_cur",  hcal_neg_gain_cur,  kDouble, fNTotBlocks},
-    {"cal_neg_ped_limit", fShNegPedLimit, kInt,    fNTotBlocks},
+    {"cal_neg_ped_limit", fShNegPedLimit, kInt,    fNTotBlocks,1},
     {"cal_neg_gain_cor",  hcal_neg_gain_cor,  kDouble, fNTotBlocks},
-    {"cal_min_peds", &fShMinPeds, kInt},
+    {"cal_min_peds", &fShMinPeds, kInt,0,1},
     {0}
   };
+  fShMinPeds=0.;
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 
   // Debug output.
@@ -507,9 +507,13 @@ Int_t THcShower::DefineVariables( EMode mode )
   RVarDef vars[] = {
     { "nhits", "Number of hits",                                 "fNhits" },
     { "nclust", "Number of clusters",                            "fNclust" },
+    { "nclusttrack", "Number of cluster which matched best track","fNclustTrack" },
+    { "xclusttrack", "X pos of cluster which matched best track","fXclustTrack" },
+    { "xtrack", "X pos of track which matched cluster", "fXTrack" },
     { "etot", "Total energy",                                    "fEtot" },
     { "etotnorm", "Total energy divided by Central Momentum",    "fEtotNorm" },
     { "etrack", "Track energy",                                  "fEtrack" },
+    { "etracknorm", "Total energy divided by track momentum",    "fEtrackNorm" },
     { "ntracks", "Number of shower tracks",                      "fNtracks" },
     { 0 }
   };
@@ -560,10 +564,14 @@ void THcShower::Clear(Option_t* opt)
 
   fNhits = 0;
   fNclust = 0;
+  fNclustTrack = -2;
+  fXclustTrack = -1000;
+  fXTrack = -1000;
   fNtracks = 0;
   fEtot = 0.;
   fEtotNorm = 0.;
   fEtrack = 0.;
+  fEtrackNorm = 0.;
 
   // Purge cluster list
 
@@ -584,7 +592,7 @@ Int_t THcShower::Decode( const THaEvData& evdata )
 
   // Get the Hall C style hitlist (fRawHitList) for this event
   Int_t nhits = DecodeToHitList(evdata);
-
+  
   fEvent = evdata.GetEvNum();
 
   if(gHaCuts->Result("Pedestal_event")) {
@@ -612,14 +620,10 @@ Int_t THcShower::Decode( const THaEvData& evdata )
   Int_t nexthit = 0;
   for(UInt_t ip=0;ip<fNLayers;ip++) {
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
-    fEtot += fPlanes[ip]->GetEplane();
   }
   if(fHasArray) {
     nexthit = fArray->ProcessHits(fRawHitList, nexthit);
-    fEtot += fArray->GetEarray();
   }
-  THcHallCSpectrometer *app = static_cast<THcHallCSpectrometer*>(GetApparatus());
-  fEtotNorm=fEtot/(app->GetPcentral());
 
   return nhits;
 }
@@ -637,27 +641,25 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
   //
 
   // Fill set of unclustered hits.
-
+  for(UInt_t ip=0;ip<fNLayers;ip++) {
+    fPlanes[ip]->CoarseProcessHits();
+    fEtot += fPlanes[ip]->GetEplane();
+  }
+  if(fHasArray) {
+    fArray->CoarseProcessHits();
+    fEtot += fArray->GetEarray();
+  }
+  THcHallCSpectrometer *app = static_cast<THcHallCSpectrometer*>(GetApparatus());
+  fEtotNorm=fEtot/(app->GetPcentral());
+  //
   THcShowerHitSet HitSet;
 
   for(UInt_t j=0; j < fNLayers; j++) {
 
     for (UInt_t i=0; i<fNBlocks[j]; i++) {
 
-      //May be should be done this way.
       //
-      //      Double_t Edep = fPlanes[j]->GetEmean(i);
-      //      if (Edep > 0.) {                                 //hit
-      //	Double_t x = fYPos[j][i] + BlockThick[j]/2.;    //top + thick/2
-      //	Double_t z = fLayerZPos[j] + BlockThick[j]/2.;//front + thick/2
-      //      	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep);
-
-      //ENGINE way.
-      //
-      if (fPlanes[j]->GetApos(i) - fPlanes[j]->GetPosPed(i) >
-	  fPlanes[j]->GetPosThr(i) - fPlanes[j]->GetPosPed(i) ||
-	  fPlanes[j]->GetAneg(i) - fPlanes[j]->GetNegPed(i) >
-	  fPlanes[j]->GetNegThr(i) - fPlanes[j]->GetNegPed(i)) {    //hit
+      if (fPlanes[j]->GetAposP(i) > 0  || fPlanes[j]->GetAnegP(i) >0) {    //hit
 
 	Double_t Edep = fPlanes[j]->GetEmean(i);
 	Double_t Epos = fPlanes[j]->GetEpos(i);
@@ -682,6 +684,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
     cout << "Debug output from THcShower::CoarseProcess for "
 	 << GetApparatus()->GetName() << endl;
 
+    cout << " event = " << fEvent << endl;
     cout << "  List of unclustered hits. Total hits:     " << fNhits << endl;
     THcShowerHitIt it = HitSet.begin();    //<set> version
     for (Int_t i=0; i!=fNhits; i++) {
@@ -700,7 +703,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   if (fdbg_clusters_cal) {
 
-    cout << "  Clustered hits. Number of clusters: " << fNclust << endl;
+    cout << " event = " << fEvent << "  Clustered hits. Number of clusters: " << fNclust << endl;
 
     UInt_t i = 0;
     for (THcShowerClusterListIt ppcl = (*fClusterList).begin();
@@ -729,7 +732,18 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
   // Do same for Array.
 
   if(fHasArray) fArray->CoarseProcess(tracks);
+  //  
+  Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
+  Double_t save_energy=0;
+ for (Int_t itrk=0; itrk<Ntracks; itrk++) {
 
+    THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
+     save_energy = GetShEnergy(theTrack);
+      if (fHasArray) save_energy += fArray->GetShEnergy(theTrack);
+    theTrack->SetEnergy(save_energy);
+  }       //over tracks
+
+  //
   return 0;
 }
 
@@ -761,7 +775,6 @@ void THcShower::ClusterHits(THcShowerHitSet& HitSet,
 	     k++) {
 
 	  if ((**i).isNeighbour(*k)) {
-
 	    (*cluster).insert(*i);      //If the hit #i is neighbouring a hit
 	    HitSet.erase(i);            //in the cluster, then move it
 	                                //into the cluster.
@@ -945,7 +958,7 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
       Double_t dx = TMath::Abs( clX(cluster) - XTrFront );
 
       if (dx <= (0.5*BlockThick[0] + fSlop)) {
-	fNtracks++;  // number of shower tracks (Consistent with engine)
+	fNtracks++;  // lumber of shower tracks (Consistent with engine)
 	if (dx < deltaX) {
 	  mclust = i;
 	  deltaX = dx;
@@ -960,6 +973,7 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShower::MatchCluster for "
 	 << GetApparatus()->GetName() << endl;
+    cout << " event = " << fEvent << endl;
 
     cout << "  Track at DC:"
 	 << "  X = " << Track->GetX()
@@ -1026,6 +1040,7 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
 	corneg = 0.;
       }
 
+      // cout << ip << " clust energy pos = " <<  clEplane(cluster,ip,0)<< " clust energy pos = " <<  clEplane(cluster,ip,1) << endl;
       Etrk += clEplane(cluster,ip,0) * corpos;
       Etrk += clEplane(cluster,ip,1) * corneg;
 
@@ -1039,6 +1054,7 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShower::GetShEnergy for "
 	 << GetApparatus()->GetName() << endl;
+    cout << " event = " << fEvent << endl;
 
     cout << "  Track at the calorimeter: X = " << Xtr << "  Y = " << Ytr;
     if (mclust >= 0)
@@ -1061,15 +1077,23 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
   //
 
   Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
-
   for (Int_t itrk=0; itrk<Ntracks; itrk++) {
-
     THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
-
-    fEtrack = GetShEnergy(theTrack);
-    if (fHasArray) fEtrack += fArray->GetShEnergy(theTrack);
-    theTrack->SetEnergy(fEtrack);
-
+    if (theTrack->GetIndex()==0) {
+    fEtrack=theTrack->GetEnergy();
+    fEtrackNorm=fEtrack/theTrack->GetP();
+     
+     Double_t Xtr = -100.;
+     Double_t Ytr = -100.;
+    fNclustTrack = MatchCluster(theTrack, Xtr, Ytr);
+    fXTrack=Xtr;
+    if (fNclustTrack>=0) {
+    THcShowerCluster* cluster = *(fClusterList->begin()+fNclustTrack);
+    Double_t dx = TMath::Abs( clX(cluster) - Xtr );
+    fXclustTrack=clX(cluster);
+    //cout << fNclustTrack << " " << Xtr << " " << clX(cluster) << " " << dx << " " << Ytr << " " << fEtrack<< endl;
+    }
+    }
   }       //over tracks
 
   //Debug output.
@@ -1078,7 +1102,7 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShower::FineProcess for "
 	 << GetApparatus()->GetName() << endl;
-
+    cout << " event = " << fEvent << endl;
     cout << "  Number of tracks = " << Ntracks << endl;
 
     for (Int_t itrk=0; itrk<Ntracks; itrk++) {
@@ -1088,7 +1112,8 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 	   << "  Y = " << theTrack->GetY()
 	   << "  Theta = " << theTrack->GetTheta()
 	   << "  Phi = " << theTrack->GetPhi()
-	   << "  Energy = " << theTrack->GetEnergy() << endl;
+	   << "  Energy = " << theTrack->GetEnergy() 
+	   << "  Energy/Ptrack = " <<  fEtrackNorm << endl;
     }
 
     cout << "---------------------------------------------------------------\n";
