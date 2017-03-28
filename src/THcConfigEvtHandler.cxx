@@ -86,8 +86,8 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
   // 0xdafadc01 - FADC information for the crate
   // 0xdafadcff - Set of threshold by slot/channel
   // 0xdedc1190 - 1190 TDC information for the crate
-  thisword = evdata->GetRawData(ip);
   while(ip<evlen) {
+    thisword = evdata->GetRawData(ip);
     if (thisword == 0xdafadcff) {
       ip++;
       thisword = evdata->GetRawData(ip);
@@ -128,7 +128,6 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
       cinfo->FADC250.maxped = evdata->GetRawData(ip+11);
       cinfo->FADC250.nsat = evdata->GetRawData(ip+12);
       ip += 13;
-      thisword = evdata->GetRawData(ip);
     } else if (thisword == 0xdedc1190) { // CAEN 1190 information
       cout << "TDC information" << endl;
       cinfo->CAEN1190.present = 1;
@@ -136,7 +135,6 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
       cinfo->CAEN1190.timewindow_offset = evdata->GetRawData(ip+3);
       cinfo->CAEN1190.timewindow_width = evdata->GetRawData(ip+4);
       ip += 6;
-      thisword = evdata->GetRawData(ip);
     } else {
       cout << "Expected header missing" << endl;
       cout << ip << " " << hex << thisword << dec << endl;

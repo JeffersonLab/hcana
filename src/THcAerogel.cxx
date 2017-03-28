@@ -254,6 +254,9 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
 
   fTdcOffset = 0;		// Offset to make reference time subtracted times positve
 
+  // Create arrays to hold pedestal results
+  InitializePedestals();
+
   DBRequest list[]={
     {"aero_pos_gain", fPosGain, kDouble, (UInt_t) fNelem},
     {"aero_neg_gain", fNegGain, kDouble, (UInt_t) fNelem},
@@ -262,14 +265,12 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_pos_ped_mean", fPosPedMean, kDouble, (UInt_t) fNelem,optional},
     {"aero_neg_ped_mean", fNegPedMean, kDouble, (UInt_t) fNelem,optional},
     {"aero_tdc_offset", &fTdcOffset, kInt, 0, optional},
+    {"aero_min_peds", &fMinPeds, kInt, 0, optional},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   fIsInit = true;
-
-  // Create arrays to hold pedestal results
-  InitializePedestals();
 
   return kOK;
 }
@@ -312,6 +313,9 @@ Int_t THcAerogel::DefineVariables( EMode mode )
     {"ntdc_pos_hits", "Number of Positive Tube Hits", "fNTDCPosHits"},
     {"ntdc_neg_hits", "Number of Negative Tube Hits", "fNTDCNegHits"},
     {"ngood_hits", "Total number of good hits", "fNGoodHits"},
+
+    {"posGain", "List of positive PMT gains.", "fPosGain"},
+    {"negGain", "List of negative PMT gains.", "fNegGain"},
 
     {"posAdcCounter",      "List of positive ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
     {"negAdcCounter",      "List of negative ADC counter numbers.",      "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
@@ -411,6 +415,7 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
   if(fAnalyzePedestals) {
 
     CalculatePedestals();
+    Print("");
 
     fAnalyzePedestals = 0;	// Don't analyze pedestals next event
   }
@@ -509,7 +514,7 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
       }
     }
 
-    // Fill the the per detector ADC and TDC arrasy
+    // Fill the the per detector ADC and TDC arrays
     Int_t npmt = hit->fCounter - 1;
 
     fA_Pos[npmt] = adc_pos;
@@ -621,7 +626,7 @@ Int_t THcAerogel::FineProcess( TClonesArray& tracks )
 void THcAerogel::InitializePedestals( )
 {
   fNPedestalEvents = 0;
-  fMinPeds = 500; 		// In engine, this is set in parameter file
+  fMinPeds = 0;                    // Do not calculate pedestals by default
   fPosPedSum = new Int_t [fNelem];
   fPosPedSum2 = new Int_t [fNelem];
   fPosPedLimit = new Int_t [fNelem];
@@ -638,12 +643,14 @@ void THcAerogel::InitializePedestals( )
   for(Int_t i=0;i<fNelem;i++) {
     fPosPedSum[i] = 0;
     fPosPedSum2[i] = 0;
-    fPosPedLimit[i] = 1000;	// In engine, this are set in parameter file
+    fPosPedLimit[i] = 1000;   // In engine, this are set in parameter file
     fPosPedCount[i] = 0;
     fNegPedSum[i] = 0;
     fNegPedSum2[i] = 0;
-    fNegPedLimit[i] = 1000;	// In engine, this are set in parameter file
+    fNegPedLimit[i] = 1000;   // In engine, this are set in parameter file
     fNegPedCount[i] = 0;
+    fPosPedMean[i] = 0;       // Default pedestal values
+    fNegPedMean[i] = 0;       // Default pedestal values
   }
 
   fPosNpe = new Double_t [fNelem];
@@ -720,6 +727,7 @@ void THcAerogel::CalculatePedestals( )
       }
     }
   }
+
   //  cout << " " << endl;
 
 }
@@ -732,9 +740,14 @@ void THcAerogel::Print( const Option_t* opt) const {
   cout << "Aerogel Pedestals" << endl;
   cout << "No.   Neg    Pos" << endl;
   for(Int_t i=0; i<fNelem; i++){
-    cout << " " << i << "    " << fNegPed[i] << "    " << fPosPed[i] << endl;
+    cout << " " << i << "    " << fNegPedMean[i] << "    " << fPosPedMean[i]
+	 << endl;
   }
   cout << endl;
+
+  cout << " fMinPeds = " << fMinPeds << endl;
+  cout << endl;
+
 }
 
 ClassImp(THcAerogel)

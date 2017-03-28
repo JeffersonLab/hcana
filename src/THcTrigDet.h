@@ -36,6 +36,9 @@ class THcTrigDet : public THaDetector, public THcHitList {
     Int_t fNumAdc;
     Int_t fNumTdc;
 
+    Double_t fTdcOffset;
+    Double_t fTdcChanperNS;
+
     std::vector<std::string> fAdcNames;
     std::vector<std::string> fTdcNames;
 

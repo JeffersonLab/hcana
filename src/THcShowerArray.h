@@ -45,10 +45,15 @@ public:
   virtual Bool_t   IsPid()      { return kFALSE; }
 
   virtual Int_t ProcessHits(TClonesArray* rawhits, Int_t nexthit);
+  virtual Int_t CoarseProcessHits();
   virtual Int_t AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit);
   virtual void  CalculatePedestals( );
   virtual void  InitializePedestals( );
-
+  virtual void  FillADC_DynamicPedestal( );
+  virtual void  FillADC_SampleIntegral( );
+  virtual void  FillADC_SampIntDynPed( );
+  virtual void  FillADC_Standard( );
+ 
   // Cluster to track association method.
   Int_t MatchCluster(THaTrack*, Double_t&, Double_t&);
 
@@ -106,7 +111,9 @@ protected:
   static const Int_t kADCDynamicPedestal=1;
   static const Int_t kADCSampleIntegral=2;
   static const Int_t kADCSampIntDynPed=3;
- Int_t fPedSampLow;		// Sample range for
+  Double_t fAdcTimeWindowMin ;
+  Double_t fAdcTimeWindowMax ;
+Int_t fPedSampLow;		// Sample range for
   Int_t fPedSampHigh;		// dynamic pedestal
   Int_t fDataSampLow;		// Sample range for
   Int_t fDataSampHigh;		// sample integration
@@ -137,6 +144,7 @@ protected:
   Double_t  fEarray;         // Total Energy deposition in the array.
 
   Int_t fNhits;              // Total number of hits
+  Int_t fNgoodhits;              // Total number of good hits (pass threshold)
   Int_t fNclust;             // Number of hit clusters
   Int_t fNtracks;            // Number of shower tracks, i.e. number of
                              // cluster-to-track associations
@@ -144,6 +152,7 @@ protected:
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
   TClonesArray* frAdcPedRaw;
+  TClonesArray* frAdcErrorFlag;
   TClonesArray* frAdcPulseIntRaw;
   TClonesArray* frAdcPulseAmpRaw;
   TClonesArray* frAdcPulseTimeRaw;

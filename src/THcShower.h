@@ -71,12 +71,24 @@ public:
     return ( Side == 0 ? fPosGain[nelem] : fNegGain[nelem]);
   }
 
+  Int_t GetADCMode() {
+    return fADCMode;
+  }
+  Double_t GetAdcTimeWindowMin() {
+    return fAdcTimeWindowMin;
+  }
+  Double_t GetAdcTimeWindowMax() {
+    return fAdcTimeWindowMax;
+  }
   Int_t GetMinPeds() {
     return fShMinPeds;
   }
 
   Int_t GetNLayers() {
     return fNLayers;
+  }
+  Int_t GetNBlocks(Int_t layer) {
+    return fNBlocks[layer];
   }
 
   //Coordinate correction for single PMT modules.
@@ -109,6 +121,16 @@ public:
 protected:
 
   Int_t fEvent;
+  Int_t fADCMode;		//   != 0 if using FADC 
+   //  1 == Use the pulse int - pulse ped
+    //  2 == Use the sample integral - known ped
+    //  3 == Use the sample integral - sample ped
+  static const Int_t kADCStandard=0;
+  static const Int_t kADCDynamicPedestal=1;
+  static const Int_t kADCSampleIntegral=2;
+  static const Int_t kADCSampIntDynPed=3;
+  Double_t fAdcTimeWindowMin;
+  Double_t fAdcTimeWindowMax;
 
   Int_t fAnalyzePedestals;   // Flag for pedestal analysis.
 
@@ -124,11 +146,15 @@ protected:
 
   Int_t fNhits;              // Total number of hits
   Int_t fNclust;             // Number of clusters
+  Int_t fNclustTrack;             // NUmber of cluster that match best track
+  Double_t fXclustTrack;             // X pos of cluster that match best track
+  Double_t fXTrack;             // X pos of best track that match cluster
   Int_t fNtracks;            // Number of shower tracks, i.e. number of
                              // cluster-to-track association
   Double_t fEtot;            // Total energy
   Double_t fEtotNorm;        // Total energy divided by spec central momentum
-  Double_t fEtrack;          // Cluster energy associated to the last track
+  Double_t fEtrack;          // Cluster energy associated to the best track
+  Double_t fEtrackNorm;          // Cluster energy associated to the best track
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
