@@ -47,17 +47,14 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
   THaNonTrackingDetector(name,description,apparatus)
 {
   // Normal constructor with name and description
-  fADCHits = new TClonesArray("THcSignalHit", 16);
-
   frAdcPedRaw       = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
   frAdcPulseIntRaw  = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
   frAdcPulseAmpRaw  = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
   frAdcPulseTimeRaw = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
-
-  frAdcPed      = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
-  frAdcPulseInt = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
-  frAdcPulseAmp = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
-  fAdcErrorFlag = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcPed          = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcPulseInt     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcPulseAmp     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  fAdcErrorFlag     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
   
   fNumAdcHits          = vector<Int_t>   (MaxNumCerPmt, 0.0);
   fNumGoodAdcHits      = vector<Int_t>   (MaxNumCerPmt, 0.0);
@@ -78,17 +75,14 @@ THcCherenkov::THcCherenkov( ) :
   THaNonTrackingDetector()
 {
   // Constructor
-  fADCHits = NULL;
-
   frAdcPedRaw       = NULL;
   frAdcPulseIntRaw  = NULL;
   frAdcPulseAmpRaw  = NULL;
   frAdcPulseTimeRaw = NULL;
-
-  frAdcPed      = NULL;
-  frAdcPulseInt = NULL;
-  frAdcPulseAmp = NULL;
-  fAdcErrorFlag = NULL;
+  frAdcPed          = NULL;
+  frAdcPulseInt     = NULL;
+  frAdcPulseAmp     = NULL;
+  fAdcErrorFlag     = NULL;
 
   InitArrays();
 }
@@ -97,17 +91,14 @@ THcCherenkov::THcCherenkov( ) :
 THcCherenkov::~THcCherenkov()
 {
   // Destructor
-  delete fADCHits; fADCHits = NULL;
-
   delete frAdcPedRaw;       frAdcPedRaw       = NULL;
   delete frAdcPulseIntRaw;  frAdcPulseIntRaw  = NULL;
   delete frAdcPulseAmpRaw;  frAdcPulseAmpRaw  = NULL;
   delete frAdcPulseTimeRaw; frAdcPulseTimeRaw = NULL;
-
-  delete frAdcPed;      frAdcPed      = NULL;
-  delete frAdcPulseInt; frAdcPulseInt = NULL;
-  delete frAdcPulseAmp; frAdcPulseAmp = NULL;
-  delete fAdcErrorFlag; fAdcErrorFlag = NULL;
+  delete frAdcPed;          frAdcPed          = NULL;
+  delete frAdcPulseInt;     frAdcPulseInt     = NULL;
+  delete frAdcPulseAmp;     frAdcPulseAmp     = NULL;
+  delete fAdcErrorFlag;     fAdcErrorFlag     = NULL;
 
   DeleteArrays();
 
@@ -116,14 +107,14 @@ THcCherenkov::~THcCherenkov()
 //_____________________________________________________________________________
 void THcCherenkov::InitArrays()
 {
-  fGain = NULL;
-  fPedSum = NULL;
-  fPedSum2 = NULL;
+  fGain     = NULL;
+  fPedSum   = NULL;
+  fPedSum2  = NULL;
   fPedLimit = NULL;
-  fPedMean = NULL;
+  fPedMean  = NULL;
   fPedCount = NULL;
-  fPed = NULL;
-  fThresh = NULL;
+  fPed      = NULL;
+  fThresh   = NULL;
 }
 //_____________________________________________________________________________
 void THcCherenkov::DeleteArrays()
@@ -131,13 +122,13 @@ void THcCherenkov::DeleteArrays()
   delete [] fGain; fGain = NULL;
     
   // 6 Gev pedestal variables
-  delete [] fPedSum; fPedSum = NULL;
-  delete [] fPedSum2; fPedSum2 = NULL;
+  delete [] fPedSum;   fPedSum   = NULL;
+  delete [] fPedSum2;  fPedSum2  = NULL;
   delete [] fPedLimit; fPedLimit = NULL;
-  delete [] fPedMean; fPedMean = NULL;
+  delete [] fPedMean;  fPedMean  = NULL;
   delete [] fPedCount; fPedCount = NULL;
-  delete [] fPed; fPed = NULL;
-  delete [] fThresh; fThresh = NULL;
+  delete [] fPed;      fPed      = NULL;
+  delete [] fThresh;   fThresh   = NULL;
 }
 
 //_____________________________________________________________________________
@@ -147,7 +138,7 @@ THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
 
   string EngineDID = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
   std::transform(EngineDID.begin(), EngineDID.end(), EngineDID.begin(), ::toupper);
-  if( gHcDetectorMap->FillMap(fDetMap, EngineDID.c_str()) < 0 ) {
+  if(gHcDetectorMap->FillMap(fDetMap, EngineDID.c_str()) < 0) {
     static const char* const here = "Init()";
     Error(Here(here), "Error filling detectormap for %s.", EngineDID.c_str());
     return kInitError;
@@ -158,7 +149,7 @@ THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
   InitHitList(fDetMap, "THcCherenkovHit", fDetMap->GetTotNumChan()+1);
 
   EStatus status;
-  if( (status = THaNonTrackingDetector::Init( date )) )
+  if((status = THaNonTrackingDetector::Init( date )))
     return fStatus=status;
 
   return fStatus = kOK;
@@ -181,13 +172,14 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
     {"_tot_pmts", &fNelem, kInt},
     {0}
   };
+
   gHcParms->LoadParmValues(list_1, prefix.c_str());
 
   Bool_t optional = true;
 
   // 6 GeV pedestal paramters
-  fGain     = new Double_t[fNelem];
   fPedLimit = new Int_t[fNelem];
+  fGain     = new Double_t[fNelem];
   fPedMean  = new Double_t[fNelem];
 
   // Region parameters
@@ -257,19 +249,17 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
   vars.push_back({"totNumTracksMatched", "Total Number of Tracks Matched Per Region", "fTotNumTracksMatched"});
   vars.push_back({"totNumTracksFired",   "Total Number of Tracks that Fired",         "fTotNumTracksFired"});
 
-  vars.push_back({"npe",             "Number of PEs",            "fNpe"});
-  vars.push_back({"npeSum",          "Total Number of PEs",      "fNpeSum"});
-
-  vars.push_back({"adcCounter",      "List of ADC counter numbers",      "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
-  vars.push_back({"adcErrorFlag",    "Error Flag for When FPGA Fails",    "fAdcErrorFlag.THcSignalHit.GetData()"});
+  vars.push_back({"npe",          "Number of PEs",                  "fNpe"});
+  vars.push_back({"npeSum",       "Total Number of PEs",            "fNpeSum"});
+  vars.push_back({"adcCounter",   "List of ADC counter numbers",    "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
+  vars.push_back({"adcErrorFlag", "Error Flag for When FPGA Fails", "fAdcErrorFlag.THcSignalHit.GetData()"});
 
   if (fDebugAdc) {   
     vars.push_back({"adcPedRaw",       "List of raw ADC pedestals",        "frAdcPedRaw.THcSignalHit.GetData()"});
     vars.push_back({"adcPulseIntRaw",  "List of raw ADC pulse integrals",  "frAdcPulseIntRaw.THcSignalHit.GetData()"});
     vars.push_back({"adcPulseAmpRaw",  "List of raw ADC pulse amplitudes", "frAdcPulseAmpRaw.THcSignalHit.GetData()"});
     vars.push_back({"adcPulseTimeRaw", "List of raw ADC pulse times",      "frAdcPulseTimeRaw.THcSignalHit.GetData()"});
-
-    vars.push_back({"adcPed",          "List of ADC pedestals",             "frAdcPed.THcSignalHit.GetData()"});
+    vars.push_back({"adcPed",          "List of ADC pedestals",            "frAdcPed.THcSignalHit.GetData()"});
     vars.push_back({"adcPulseInt",     "List of ADC pulse integrals",      "frAdcPulseInt.THcSignalHit.GetData()"});
     vars.push_back({"adcPulseAmp",     "List of ADC pulse amplitudes",     "frAdcPulseAmp.THcSignalHit.GetData()"});
   }
@@ -291,8 +281,6 @@ inline
 void THcCherenkov::Clear(Option_t* opt)
 {
   // Clear the hit lists
-  fADCHits->Clear();
-
   fNhits  = 0;	     
   fNpeSum = 0.0;
   
@@ -494,16 +482,16 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 void THcCherenkov::InitializePedestals( )
 {
   fNPedestalEvents = 0;
-  fMinPeds = 500; 		// In engine, this is set in parameter file
-  fPedSum = new Int_t [fNelem];
-  fPedSum2 = new Int_t [fNelem];
-  fPedCount = new Int_t [fNelem];
+  fMinPeds         = 500; 		// In engine, this is set in parameter file
+  fPedSum          = new Int_t [fNelem];
+  fPedSum2         = new Int_t [fNelem];
+  fPedCount        = new Int_t [fNelem];
 
-  fPed = new Double_t [fNelem];
+  fPed    = new Double_t [fNelem];
   fThresh = new Double_t [fNelem];
-  for(Int_t i=0;i<fNelem;i++) {
-    fPedSum[i] = 0;
-    fPedSum2[i] = 0;
+  for(Int_t i = 0; i < fNelem; i++) {
+    fPedSum[i]   = 0;
+    fPedSum2[i]  = 0;
     fPedCount[i] = 0;
   }
 
@@ -524,7 +512,7 @@ void THcCherenkov::AccumulatePedestals(TClonesArray* rawhits)
     Int_t element = hit->fCounter - 1;
     Int_t nadc = hit->GetRawAdcHitPos().GetPulseIntRaw();
     if(nadc <= fPedLimit[element]) {
-      fPedSum[element] += nadc;
+      fPedSum[element]  += nadc;
       fPedSum2[element] += nadc*nadc;
       fPedCount[element]++;
       if(fPedCount[element] == fMinPeds/5) {
