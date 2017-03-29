@@ -251,17 +251,17 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
 
   vars.push_back({"npe",          "Number of PEs",                  "fNpe"});
   vars.push_back({"npeSum",       "Total Number of PEs",            "fNpeSum"});
-  vars.push_back({"adcCounter",   "List of ADC counter numbers",    "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
+  vars.push_back({"adcCounter",   "ADC counter numbers",            "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
   vars.push_back({"adcErrorFlag", "Error Flag for When FPGA Fails", "fAdcErrorFlag.THcSignalHit.GetData()"});
 
   if (fDebugAdc) {   
-    vars.push_back({"adcPedRaw",       "List of raw ADC pedestals",        "frAdcPedRaw.THcSignalHit.GetData()"});
-    vars.push_back({"adcPulseIntRaw",  "List of raw ADC pulse integrals",  "frAdcPulseIntRaw.THcSignalHit.GetData()"});
-    vars.push_back({"adcPulseAmpRaw",  "List of raw ADC pulse amplitudes", "frAdcPulseAmpRaw.THcSignalHit.GetData()"});
-    vars.push_back({"adcPulseTimeRaw", "List of raw ADC pulse times",      "frAdcPulseTimeRaw.THcSignalHit.GetData()"});
-    vars.push_back({"adcPed",          "List of ADC pedestals",            "frAdcPed.THcSignalHit.GetData()"});
-    vars.push_back({"adcPulseInt",     "List of ADC pulse integrals",      "frAdcPulseInt.THcSignalHit.GetData()"});
-    vars.push_back({"adcPulseAmp",     "List of ADC pulse amplitudes",     "frAdcPulseAmp.THcSignalHit.GetData()"});
+    vars.push_back({"adcPedRaw",       "Raw ADC pedestals",        "frAdcPedRaw.THcSignalHit.GetData()"});
+    vars.push_back({"adcPulseIntRaw",  "Raw ADC pulse integrals",  "frAdcPulseIntRaw.THcSignalHit.GetData()"});
+    vars.push_back({"adcPulseAmpRaw",  "Raw ADC pulse amplitudes", "frAdcPulseAmpRaw.THcSignalHit.GetData()"});
+    vars.push_back({"adcPulseTimeRaw", "Raw ADC pulse times",      "frAdcPulseTimeRaw.THcSignalHit.GetData()"});
+    vars.push_back({"adcPed",          "ADC pedestals",            "frAdcPed.THcSignalHit.GetData()"});
+    vars.push_back({"adcPulseInt",     "ADC pulse integrals",      "frAdcPulseInt.THcSignalHit.GetData()"});
+    vars.push_back({"adcPulseAmp",     "ADC pulse amplitudes",     "frAdcPulseAmp.THcSignalHit.GetData()"});
   }
 
   vars.push_back({"goodAdcPed",          "Good ADC pedestals",           "fGoodAdcPed"});
