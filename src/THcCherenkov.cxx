@@ -56,16 +56,16 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
   frAdcPulseAmp     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
   fAdcErrorFlag     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
   
-  fNumAdcHits          = vector<Int_t>   (MaxNumCerPmt, 0.0);
-  fNumGoodAdcHits      = vector<Int_t>   (MaxNumCerPmt, 0.0);
-  fNumTracksMatched    = vector<Int_t>   (MaxNumCerPmt, 0.0);
-  fNumTracksFired      = vector<Int_t>   (MaxNumCerPmt, 0.0);
-  fNpe                 = vector<Double_t>(MaxNumCerPmt, 0.0);
-  fGoodAdcPed          = vector<Double_t>(MaxNumCerPmt, 0.0);
-  fGoodAdcPulseInt     = vector<Double_t>(MaxNumCerPmt, 0.0);
-  fGoodAdcPulseIntRaw  = vector<Double_t>(MaxNumCerPmt, 0.0);
-  fGoodAdcPulseAmp     = vector<Double_t>(MaxNumCerPmt, 0.0);
-  fGoodAdcPulseTime    = vector<Double_t>(MaxNumCerPmt, 0.0);
+  fNumAdcHits         = vector<Int_t>    (MaxNumCerPmt, 0.0);
+  fNumGoodAdcHits     = vector<Int_t>    (MaxNumCerPmt, 0.0);
+  fNumTracksMatched   = vector<Int_t>    (MaxNumCerPmt, 0.0);
+  fNumTracksFired     = vector<Int_t>    (MaxNumCerPmt, 0.0);
+  fNpe                = vector<Double_t> (MaxNumCerPmt, 0.0);
+  fGoodAdcPed         = vector<Double_t> (MaxNumCerPmt, 0.0);
+  fGoodAdcPulseInt    = vector<Double_t> (MaxNumCerPmt, 0.0);
+  fGoodAdcPulseIntRaw = vector<Double_t> (MaxNumCerPmt, 0.0);
+  fGoodAdcPulseAmp    = vector<Double_t> (MaxNumCerPmt, 0.0);
+  fGoodAdcPulseTime   = vector<Double_t> (MaxNumCerPmt, 0.0);
     
   InitArrays();
 }
@@ -205,7 +205,7 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
     {0}
   };
 
-  fDebugAdc = 1; // Set ADC debug parameter to false unless set in parameter file
+  fDebugAdc = 0; // Set ADC debug parameter to false unless set in parameter file
 
   gHcParms->LoadParmValues((DBRequest*)&list, prefix.c_str());
 
@@ -301,16 +301,12 @@ void THcCherenkov::Clear(Option_t* opt)
 
   for (UInt_t ielem = 0; ielem < fNumAdcHits.size(); ielem++)
     fNumAdcHits.at(ielem) = 0;
-
   for (UInt_t ielem = 0; ielem < fNumGoodAdcHits.size(); ielem++)
     fNumGoodAdcHits.at(ielem) = 0;
-
   for (UInt_t ielem = 0; ielem < fNumTracksMatched.size(); ielem++)
     fNumTracksMatched.at(ielem) = 0;
-
   for (UInt_t ielem = 0; ielem < fNumTracksFired.size(); ielem++)
     fNumTracksFired.at(ielem) = 0;
-
   for (UInt_t ielem = 0; ielem < fGoodAdcPed.size(); ielem++) {
     fGoodAdcPed.at(ielem)         = 0.0;
     fGoodAdcPulseInt.at(ielem)    = 0.0;
@@ -479,7 +475,7 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 }
 
 //_____________________________________________________________________________
-void THcCherenkov::InitializePedestals( )
+void THcCherenkov::InitializePedestals()
 {
   fNPedestalEvents = 0;
   fMinPeds         = 500; 		// In engine, this is set in parameter file
@@ -528,7 +524,7 @@ void THcCherenkov::AccumulatePedestals(TClonesArray* rawhits)
 }
 
 //_____________________________________________________________________________
-void THcCherenkov::CalculatePedestals( )
+void THcCherenkov::CalculatePedestals()
 {
   // Use the accumulated pedestal data to calculate pedestals
   // Later add check to see if pedestals have drifted ("Danger Will Robinson!")
@@ -554,7 +550,7 @@ void THcCherenkov::CalculatePedestals( )
 }
 
 //_____________________________________________________________________________
-Int_t THcCherenkov::GetIndex( Int_t nRegion, Int_t nValue ) {
+Int_t THcCherenkov::GetIndex(Int_t nRegion, Int_t nValue) {
 
   return fNRegions * nValue + nRegion;
 
@@ -562,7 +558,7 @@ Int_t THcCherenkov::GetIndex( Int_t nRegion, Int_t nValue ) {
 
 
 //_____________________________________________________________________________
-void THcCherenkov::Print( const Option_t* opt) const {
+void THcCherenkov::Print(const Option_t* opt) const {
   THaNonTrackingDetector::Print(opt);
 
   // Print out the pedestals

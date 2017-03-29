@@ -32,6 +32,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
 
   void InitArrays();
   void DeleteArrays();
+  Int_t GetIndex(Int_t nRegion, Int_t nValue);
 
   THcAerogel();  // for ROOT I/O
  protected:
@@ -39,8 +40,6 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   Int_t fSixGevData;
 
   // Parameters
-  Double_t* fPosGain;
-  Double_t* fNegGain;
 
   // Event information
   Int_t fNhits;
@@ -57,12 +56,39 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   Int_t    fNADCNegHits;
   Int_t    fNTDCPosHits;
   Int_t    fNTDCNegHits;
-  Double_t fPosNpeSum;
-  Double_t fNegNpeSum;
-  Double_t fNpeSum;
 
-  Double_t* fPosNpe;		// [fNelem] # Photoelectrons per positive tube
-  Double_t* fNegNpe;		// [fNelem] # Photoelectrons per negative tube
+  Int_t     fTotNumAdcHits;
+  Int_t     fTotNumGoodAdcHits;
+  Int_t     fTotNumPosAdcHits;
+  Int_t     fTotNumGoodPosAdcHits;
+  Int_t     fTotNumNegAdcHits;
+  Int_t     fTotNumGoodNegAdcHits;
+  Int_t     fTotNumTracksMatched;
+  Int_t     fTotNumTracksFired;
+  Double_t  fPosNpeSum;
+  Double_t  fNegNpeSum;
+  Double_t  fNpeSum;
+  Double_t* fPosGain;
+  Double_t* fNegGain;
+
+  vector<Int_t>    fNumPosAdcHits;
+  vector<Int_t>    fNumGoodPosAdcHits;
+  vector<Int_t>    fNumNegAdcHits;
+  vector<Int_t>    fNumGoodNegAdcHits;
+  vector<Int_t>    fNumTracksMatched;
+  vector<Int_t>    fNumTracksFired;
+  vector<Double_t> fPosNpe;
+  vector<Double_t> fNegNpe;
+  vector<Double_t> fGoodPosAdcPed;
+  vector<Double_t> fGoodPosAdcPulseInt;
+  vector<Double_t> fGoodPosAdcPulseIntRaw;
+  vector<Double_t> fGoodPosAdcPulseAmp;
+  vector<Double_t> fGoodPosAdcPulseTime;
+  vector<Double_t> fGoodNegAdcPed;
+  vector<Double_t> fGoodNegAdcPulseInt;
+  vector<Double_t> fGoodNegAdcPulseIntRaw;
+  vector<Double_t> fGoodNegAdcPulseAmp;
+  vector<Double_t> fGoodNegAdcPulseTime;
 
   // Hits
   TClonesArray* fPosTDCHits;
@@ -95,6 +121,22 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   Int_t MaxNumPosAeroPmt = 8;
   Int_t MaxNumNegAeroPmt = 8;
   Int_t MaxNumAdcPulse   = 4;
+
+  // Tracking variables
+  Int_t     fNRegions;
+  Int_t     fRegionsValueMax;
+  Int_t     fDebugAdc;
+  Double_t  fRedChi2Min;
+  Double_t  fRedChi2Max;
+  Double_t  fBetaMin;
+  Double_t  fBetaMax;
+  Double_t  fENormMin;
+  Double_t  fENormMax;
+  Double_t  fDiffBoxZPos;
+  Double_t  fNpeThresh;
+  Double_t  fAdcTimeWindowMin;
+  Double_t  fAdcTimeWindowMax;
+  Double_t* fRegionValue;
 
   // 12 GeV FADC variables
   TClonesArray* frPosAdcPedRaw;
