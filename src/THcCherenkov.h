@@ -38,8 +38,8 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Double_t GetCerNPE();
 
   // Vector/TClonesArray length parameters
-  Int_t MaxNumCerPmt   = 4;
-  Int_t MaxNumAdcPulse = 4;
+  static const Int_t MaxNumCerPmt   = 4;
+  static const Int_t MaxNumAdcPulse = 4;
 
   THcCherenkov();  // for ROOT I/O
  protected:

@@ -43,9 +43,9 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
 
   // 12 GeV variables
   // Vector/TClonesArray length parameters
-  Int_t MaxNumPosAeroPmt = 7;
-  Int_t MaxNumNegAeroPmt = 7;
-  Int_t MaxNumAdcPulse   = 4;
+  static const Int_t MaxNumPosAeroPmt = 7;
+  static const Int_t MaxNumNegAeroPmt = 7;
+  static const Int_t MaxNumAdcPulse   = 4;
   // Tracking variables
   Int_t     fNRegions;
   Int_t     fRegionsValueMax;
