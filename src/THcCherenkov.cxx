@@ -1,9 +1,7 @@
 /** \class THcCherenkov
     \ingroup Detectors
 
-Class for an Cherenkov detector consisting of two PMT's
-
-\author Zafar Ahmed
+    Class for Cherenkov detectors
 
 */
 
@@ -23,7 +21,6 @@ Class for an Cherenkov detector consisting of two PMT's
 #include "THaTrack.h"
 #include "TClonesArray.h"
 #include "TMath.h"
-
 #include "THaTrackProj.h"
 
 #include <algorithm>
@@ -32,14 +29,13 @@ Class for an Cherenkov detector consisting of two PMT's
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <iomanip>
 
 using namespace std;
 
 using std::cout;
 using std::cin;
 using std::endl;
-
-#include <iomanip>
 using std::setw;
 using std::setprecision;
 
@@ -49,20 +45,27 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
   THaNonTrackingDetector(name,description,apparatus)
 {
   // Normal constructor with name and description
-  fADCHits = new TClonesArray("THcSignalHit",16);
+  frAdcPedRaw       = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcPulseIntRaw  = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcPulseAmpRaw  = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcPulseTimeRaw = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcPed          = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcPulseInt     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcPulseAmp     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  fAdcErrorFlag     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
 
-  frAdcPedRaw = new TClonesArray("THcSignalHit", 16);
-  frAdcPulseIntRaw = new TClonesArray("THcSignalHit", 16);
-  frAdcPulseAmpRaw = new TClonesArray("THcSignalHit", 16);
-  frAdcPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
-
-  frAdcPed = new TClonesArray("THcSignalHit", 16);
-  frAdcPulseInt = new TClonesArray("THcSignalHit", 16);
-  frAdcPulseAmp = new TClonesArray("THcSignalHit", 16);
+  fNumAdcHits         = vector<Int_t>    (MaxNumCerPmt, 0.0);
+  fNumGoodAdcHits     = vector<Int_t>    (MaxNumCerPmt, 0.0);
+  fNumTracksMatched   = vector<Int_t>    (MaxNumCerPmt, 0.0);
+  fNumTracksFired     = vector<Int_t>    (MaxNumCerPmt, 0.0);
+  fNpe                = vector<Double_t> (MaxNumCerPmt, 0.0);
+  fGoodAdcPed         = vector<Double_t> (MaxNumCerPmt, 0.0);
+  fGoodAdcPulseInt    = vector<Double_t> (MaxNumCerPmt, 0.0);
+  fGoodAdcPulseIntRaw = vector<Double_t> (MaxNumCerPmt, 0.0);
+  fGoodAdcPulseAmp    = vector<Double_t> (MaxNumCerPmt, 0.0);
+  fGoodAdcPulseTime   = vector<Double_t> (MaxNumCerPmt, 0.0);
 
   InitArrays();
-
-
 }
 
 //_____________________________________________________________________________
@@ -70,81 +73,69 @@ THcCherenkov::THcCherenkov( ) :
   THaNonTrackingDetector()
 {
   // Constructor
-  fADCHits = NULL;
-
-  frAdcPedRaw = NULL;
-  frAdcPulseIntRaw = NULL;
-  frAdcPulseAmpRaw = NULL;
+  frAdcPedRaw       = NULL;
+  frAdcPulseIntRaw  = NULL;
+  frAdcPulseAmpRaw  = NULL;
   frAdcPulseTimeRaw = NULL;
-
-  frAdcPed = NULL;
-  frAdcPulseInt = NULL;
-  frAdcPulseAmp = NULL;
+  frAdcPed          = NULL;
+  frAdcPulseInt     = NULL;
+  frAdcPulseAmp     = NULL;
+  fAdcErrorFlag     = NULL;
 
   InitArrays();
 }
 
 //_____________________________________________________________________________
+THcCherenkov::~THcCherenkov()
+{
+  // Destructor
+  delete frAdcPedRaw;       frAdcPedRaw       = NULL;
+  delete frAdcPulseIntRaw;  frAdcPulseIntRaw  = NULL;
+  delete frAdcPulseAmpRaw;  frAdcPulseAmpRaw  = NULL;
+  delete frAdcPulseTimeRaw; frAdcPulseTimeRaw = NULL;
+  delete frAdcPed;          frAdcPed          = NULL;
+  delete frAdcPulseInt;     frAdcPulseInt     = NULL;
+  delete frAdcPulseAmp;     frAdcPulseAmp     = NULL;
+  delete fAdcErrorFlag;     fAdcErrorFlag     = NULL;
+
+  DeleteArrays();
+}
+
+//_____________________________________________________________________________
 void THcCherenkov::InitArrays()
 {
-  fGain = NULL;
-  fCerWidth = NULL;
-  fNPMT = NULL;
-  fADC = NULL;
-  fADC_P = NULL;
-  fNPE = NULL;
-  fPedSum = NULL;
-  fPedSum2 = NULL;
+  fGain     = NULL;
+  fPedSum   = NULL;
+  fPedSum2  = NULL;
   fPedLimit = NULL;
-  fPedMean = NULL;
+  fPedMean  = NULL;
   fPedCount = NULL;
-  fPed = NULL;
-  fThresh = NULL;
+  fPed      = NULL;
+  fThresh   = NULL;
 }
 //_____________________________________________________________________________
 void THcCherenkov::DeleteArrays()
 {
   delete [] fGain; fGain = NULL;
-  delete [] fCerWidth; fCerWidth = NULL;
-  delete [] fNPMT; fNPMT = NULL;
-  delete [] fADC; fADC = NULL;
-  delete [] fADC; fADC_P = NULL;
-  delete [] fNPE; fNPE = NULL;
-  delete [] fPedSum; fPedSum = NULL;
-  delete [] fPedSum2; fPedSum2 = NULL;
+
+  // 6 Gev variables
+  delete [] fPedSum;   fPedSum   = NULL;
+  delete [] fPedSum2;  fPedSum2  = NULL;
   delete [] fPedLimit; fPedLimit = NULL;
-  delete [] fPedMean; fPedMean = NULL;
+  delete [] fPedMean;  fPedMean  = NULL;
   delete [] fPedCount; fPedCount = NULL;
-  delete [] fPed; fPed = NULL;
-  delete [] fThresh; fThresh = NULL;
-}
-//_____________________________________________________________________________
-THcCherenkov::~THcCherenkov()
-{
-  // Destructor
-  delete fADCHits; fADCHits = NULL;
-
-  delete frAdcPedRaw; frAdcPedRaw = NULL;
-  delete frAdcPulseIntRaw; frAdcPulseIntRaw = NULL;
-  delete frAdcPulseAmpRaw; frAdcPulseAmpRaw = NULL;
-  delete frAdcPulseTimeRaw; frAdcPulseTimeRaw = NULL;
-
-  delete frAdcPed; frAdcPed = NULL;
-  delete frAdcPulseInt; frAdcPulseInt = NULL;
-  delete frAdcPulseAmp; frAdcPulseAmp = NULL;
-
-  DeleteArrays();
-
+  delete [] fPed;      fPed      = NULL;
+  delete [] fThresh;   fThresh   = NULL;
 }
 
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
 {
-  cout << "THcCherenkov::Init " << GetName() << endl;
+  cout << "THcCherenkov::Init for: " << GetName() << endl;
 
   string EngineDID = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
   std::transform(EngineDID.begin(), EngineDID.end(), EngineDID.begin(), ::toupper);
-  if( gHcDetectorMap->FillMap(fDetMap, EngineDID.c_str()) < 0 ) {
+  if(gHcDetectorMap->FillMap(fDetMap, EngineDID.c_str()) < 0) {
     static const char* const here = "Init()";
     Error(Here(here), "Error filling detectormap for %s.", EngineDID.c_str());
     return kInitError;
@@ -155,7 +146,7 @@ THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
   InitHitList(fDetMap, "THcCherenkovHit", fDetMap->GetTotNumChan()+1);
 
   EStatus status;
-  if( (status = THaNonTrackingDetector::Init( date )) )
+  if((status = THaNonTrackingDetector::Init( date )))
     return fStatus=status;
 
   return fStatus = kOK;
@@ -167,70 +158,67 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   // This function is called by THaDetectorBase::Init() once at the beginning
   // of the analysis.
 
-  cout << "THcCherenkov::ReadDatabase " << GetName() << endl; // Ahmed
+  cout << "THcCherenkov::ReadDatabase for: " << GetName() << endl; // Ahmed
 
   string prefix = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
   std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
+
+  fNRegions = 4;  // Defualt if not set in paramter file
 
   DBRequest list_1[] = {
     {"_tot_pmts", &fNelem, kInt},
     {0}
   };
+
   gHcParms->LoadParmValues(list_1, prefix.c_str());
 
-  //    fNelem = 2;      // Default if not defined
-  fCerNRegions = 3;
+  Bool_t optional = true;
 
-  fNPMT = new Int_t[fNelem];
-  fADC_hit = new Int_t[fNelem];
-  fADC = new Double_t[fNelem];
-  fADC_P = new Double_t[fNelem];
-  fNPE = new Double_t[fNelem];
+  cout << "Number of " << GetApparatus()->GetName() << "."
+       << GetName() << " PMTs defined = " << fNelem << endl;
 
-  fCerWidth = new Double_t[fNelem];
-  fGain = new Double_t[fNelem];
+  // 6 GeV pedestal paramters
   fPedLimit = new Int_t[fNelem];
-  fPedMean = new Double_t[fNelem];
+  fGain     = new Double_t[fNelem];
+  fPedMean  = new Double_t[fNelem];
 
- 
-
-  fCerTrackCounter = new Int_t [fCerNRegions];
-  fCerFiredCounter = new Int_t [fCerNRegions];
-  for ( Int_t ireg = 0; ireg < fCerNRegions; ireg++ ) {
-    fCerTrackCounter[ireg] = 0;
-    fCerFiredCounter[ireg] = 0;
-  }
-
-  fCerRegionsValueMax = fCerNRegions * 8; // This value 8 should also be in paramter file
-  fCerRegionValue = new Double_t [fCerRegionsValueMax];
+  // Region parameters
+  fRegionsValueMax = fNRegions * 8;
+  fRegionValue     = new Double_t[fRegionsValueMax];
 
   DBRequest list[]={
-    {"_adc_to_npe", fGain,     kDouble, (UInt_t) fNelem},
-    {"_ped_limit",  fPedLimit, kInt,    (UInt_t) fNelem},
-    {"_width",      fCerWidth, kDouble, (UInt_t) fNelem},
-    {"_chi2max",     &fCerChi2Max,        kDouble},
-    {"_beta_min",    &fCerBetaMin,        kDouble},
-    {"_beta_max",    &fCerBetaMax,        kDouble},
-    {"_et_min",      &fCerETMin,          kDouble},
-    {"_et_max",      &fCerETMax,          kDouble},
-    {"_mirror_zpos", &fCerMirrorZPos,     kDouble},
-    {"_region",      &fCerRegionValue[0], kDouble, (UInt_t) fCerRegionsValueMax},
-    {"_threshold",   &fCerThresh,         kDouble},
-    //    {"cer_regions",     &fCerNRegions,       kInt},
+    {"_ped_limit",        fPedLimit,          kInt,     (UInt_t) fNelem, optional},
+    {"_adc_to_npe",       fGain,              kDouble,  (UInt_t) fNelem},
+    {"_red_chi2_min",     &fRedChi2Min,       kDouble},
+    {"_red_chi2_max",     &fRedChi2Max,       kDouble},
+    {"_beta_min",         &fBetaMin,          kDouble},
+    {"_beta_max",         &fBetaMax,          kDouble},
+    {"_enorm_min",        &fENormMin,         kDouble},
+    {"_enorm_max",        &fENormMax,         kDouble},
+    {"_mirror_zpos",      &fMirrorZPos,       kDouble},
+    {"_npe_thresh",       &fNpeThresh,        kDouble},
+    {"_debug_adc",        &fDebugAdc,         kInt, 0, 1},
+    {"_adcTimeWindowMin", &fAdcTimeWindowMin, kDouble},
+    {"_adcTimeWindowMax", &fAdcTimeWindowMax, kDouble},
+    {"_num_regions",      &fNRegions,         kInt},
+    {"_region",           &fRegionValue[0],   kDouble,  (UInt_t) fRegionsValueMax},
     {0}
   };
 
-  gHcParms->LoadParmValues((DBRequest*)&list,prefix.c_str());
+  fDebugAdc = 0; // Set ADC debug parameter to false unless set in parameter file
+
+  gHcParms->LoadParmValues((DBRequest*)&list, prefix.c_str());
+
+  if (fDebugAdc) cout << "Cherenkov ADC Debug Flag Set To TRUE" << endl;
 
   fIsInit = true;
 
-
-  for (Int_t i1 = 0; i1 < fCerNRegions; i1++ ) {
-    cout << "Region " << i1 << endl;
-    for (Int_t i2 = 0; i2 < 8; i2++ ) {
-      cout << fCerRegionValue[GetCerIndex( i1, i2 )] << " ";
-    }
-    cout <<endl;
+  cout << "Track Matching Parameters for: " << GetName() << endl;
+  for (Int_t iregion = 0; iregion < fNRegions; iregion++) {
+    cout << "Region = " << iregion + 1 << endl;
+    for (Int_t ivalue = 0; ivalue < 8; ivalue++)
+      cout << fRegionValue[GetIndex(iregion, ivalue)] << "  ";
+    cout << endl;
   }
 
   // Create arrays to hold pedestal results
@@ -243,64 +231,64 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
 Int_t THcCherenkov::DefineVariables( EMode mode )
 {
   // Initialize global variables for histogramming and tree
-
-  cout << "THcCherenkov::DefineVariables called " << GetName() << endl;
+  cout << "THcCherenkov::DefineVariables called for: " << GetName() << endl;
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
 
   // Register variables in global list
+  vector<RVarDef> vars;
 
-  // Do we need to put the number of pos/neg TDC/ADC hits into the variables?
-  // No.  They show up in tree as Ndata.H.aero.postdchits for example
+  vars.push_back(RVarDef{"adcCounter",   "ADC counter numbers",            "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
+  vars.push_back(RVarDef{"adcErrorFlag", "Error Flag for When FPGA Fails", "fAdcErrorFlag.THcSignalHit.GetData()"});
 
-  RVarDef vars[] = {
-    {"phototubes",      "Nuber of Cherenkov photo tubes",        "fNPMT"},
-    {"adc",             "Raw ADC values",                        "fADC"},
-    {"adc_hit",         "ADC hit flag =1 means hit",             "fADC_hit"},
-    {"adc_p",           "Pedestal Subtracted ADC values",        "fADC_P"},
-    {"npe",             "Number of Photo electrons",             "fNPE"},
-    {"npesum",          "Sum of Number of Photo electrons",      "fNPEsum"},
-    {"ncherhit",        "Number of Hits(Cherenkov)",             "fNCherHit"},
-    {"certrackcounter", "Tracks inside Cherenkov region",        "fCerTrackCounter"},
-    {"cerfiredcounter", "Tracks with engough Cherenkov NPEs ",   "fCerFiredCounter"},
+  vars.push_back(RVarDef{"numGoodAdcHits",    "Number of Good ADC Hits Per PMT", "fNumGoodAdcHits"});    // Cherenkov occupancy
+  vars.push_back(RVarDef{"totNumGoodAdcHits", "Total Number of Good ADC Hits",   "fTotNumGoodAdcHits"}); // Cherenkov multiplicity
 
-    {"adcCounter",      "List of ADC counter numbers.",      "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+  vars.push_back(RVarDef{"numTracksMatched",    "Number of Tracks Matched Per Region",       "fNumTracksMatched"});
+  vars.push_back(RVarDef{"numTracksFired",      "Number of Tracks that Fired Per Region",    "fNumTracksFired"});
+  vars.push_back(RVarDef{"totNumTracksMatched", "Total Number of Tracks Matched Per Region", "fTotNumTracksMatched"});
+  vars.push_back(RVarDef{"totNumTracksFired",   "Total Number of Tracks that Fired",         "fTotNumTracksFired"});
 
-    {"adcPedRaw",       "List of raw ADC pedestals",         "frAdcPedRaw.THcSignalHit.GetData()"},
-    {"adcPulseIntRaw",  "List of raw ADC pulse integrals.",  "frAdcPulseIntRaw.THcSignalHit.GetData()"},
-    {"adcPulseAmpRaw",  "List of raw ADC pulse amplitudes.", "frAdcPulseAmpRaw.THcSignalHit.GetData()"},
-    {"adcPulseTimeRaw", "List of raw ADC pulse times.",      "frAdcPulseTimeRaw.THcSignalHit.GetData()"},
+  vars.push_back(RVarDef{"npe",          "Number of PEs",                  "fNpe"});
+  vars.push_back(RVarDef{"npeSum",       "Total Number of PEs",            "fNpeSum"});
 
-    {"adcPed",          "List of ADC pedestals",             "frAdcPed.THcSignalHit.GetData()"},
-    {"adcPulseInt",     "List of ADC pulse integrals.",      "frAdcPulseInt.THcSignalHit.GetData()"},
-    {"adcPulseAmp",     "List of ADC pulse amplitudes.",     "frAdcPulseAmp.THcSignalHit.GetData()"},
+  vars.push_back(RVarDef{"goodAdcPed",          "Good ADC pedestals",           "fGoodAdcPed"});
+  vars.push_back(RVarDef{"goodAdcPulseInt",     "Good ADC pulse integrals",     "fGoodAdcPulseInt"});
+  vars.push_back(RVarDef{"goodAdcPulseIntRaw",  "Good ADC raw pulse integrals", "fGoodAdcPulseIntRaw"});
+  vars.push_back(RVarDef{"goodAdcPulseAmp",     "Good ADC pulse amplitudes",    "fGoodAdcPulseAmp"});
+  vars.push_back(RVarDef{"goodAdcPulseTime",    "Good ADC pulse times",         "fGoodAdcPulseTime"});
 
-    { 0 }
-  };
+  if (fDebugAdc) {
+    vars.push_back(RVarDef{"numAdcHits",      "Number of ADC Hits Per PMT", "fNumAdcHits"});        // Cherenkov occupancy
+    vars.push_back(RVarDef{"totNumAdcHits",   "Total Number of ADC Hits",   "fTotNumAdcHits"});     // Cherenkov multiplicity
+    vars.push_back(RVarDef{"adcPedRaw",       "Raw ADC pedestals",          "frAdcPedRaw.THcSignalHit.GetData()"});
+    vars.push_back(RVarDef{"adcPulseIntRaw",  "Raw ADC pulse integrals",    "frAdcPulseIntRaw.THcSignalHit.GetData()"});
+    vars.push_back(RVarDef{"adcPulseAmpRaw",  "Raw ADC pulse amplitudes",   "frAdcPulseAmpRaw.THcSignalHit.GetData()"});
+    vars.push_back(RVarDef{"adcPulseTimeRaw", "Raw ADC pulse times",        "frAdcPulseTimeRaw.THcSignalHit.GetData()"});
+    vars.push_back(RVarDef{"adcPed",          "ADC pedestals",              "frAdcPed.THcSignalHit.GetData()"});
+    vars.push_back(RVarDef{"adcPulseInt",     "ADC pulse integrals",        "frAdcPulseInt.THcSignalHit.GetData()"});
+    vars.push_back(RVarDef{"adcPulseAmp",     "ADC pulse amplitudes",       "frAdcPulseAmp.THcSignalHit.GetData()"});
+  }
 
-  return DefineVarsFromList( vars, mode );
+  RVarDef end {};
+  vars.push_back(end);
+
+  return DefineVarsFromList(vars.data(), mode);
+
 }
 //_____________________________________________________________________________
 inline
 void THcCherenkov::Clear(Option_t* opt)
 {
   // Clear the hit lists
-  fADCHits->Clear();
+  fNhits               = 0;
+  fTotNumAdcHits       = 0;
+  fTotNumGoodAdcHits   = 0;
+  fTotNumTracksMatched = 0;
+  fTotNumTracksFired   = 0;
 
-  // Clear Cherenkov variables  from h_trans_cer.f
-
-  fNhits = 0;	     
-  fNPEsum = 0.0;
-  fNCherHit = 0;
-
-  for(Int_t itube = 0;itube < fNelem;itube++) {
-    fNPMT[itube] = 0;
-    fADC[itube] = 0;
-    fADC_P[itube] = 0;
-    fNPE[itube] = 0;
-    fADC_hit[itube] = 0;
- }
+  fNpeSum = 0.0;
 
   frAdcPedRaw->Clear();
   frAdcPulseIntRaw->Clear();
@@ -310,6 +298,24 @@ void THcCherenkov::Clear(Option_t* opt)
   frAdcPed->Clear();
   frAdcPulseInt->Clear();
   frAdcPulseAmp->Clear();
+  fAdcErrorFlag->Clear();
+
+  for (UInt_t ielem = 0; ielem < fNumAdcHits.size(); ielem++)
+    fNumAdcHits.at(ielem) = 0;
+  for (UInt_t ielem = 0; ielem < fNumGoodAdcHits.size(); ielem++)
+    fNumGoodAdcHits.at(ielem) = 0;
+  for (UInt_t ielem = 0; ielem < fNumTracksMatched.size(); ielem++)
+    fNumTracksMatched.at(ielem) = 0;
+  for (UInt_t ielem = 0; ielem < fNumTracksFired.size(); ielem++)
+    fNumTracksFired.at(ielem) = 0;
+  for (UInt_t ielem = 0; ielem < fGoodAdcPed.size(); ielem++) {
+    fGoodAdcPed.at(ielem)         = 0.0;
+    fGoodAdcPulseInt.at(ielem)    = 0.0;
+    fGoodAdcPulseIntRaw.at(ielem) = 0.0;
+    fGoodAdcPulseAmp.at(ielem)    = 0.0;
+    fGoodAdcPulseTime.at(ielem)   = 0.0;
+    fNpe.at(ielem)                = 0.0;
+  }
 
 }
 
@@ -330,40 +336,35 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
     fAnalyzePedestals = 0;	// Don't analyze pedestals next event
   }
 
-
-  Int_t ihit = 0;
-  Int_t nADCHits=0;
-
+  Int_t  ihit      = 0;
   UInt_t nrAdcHits = 0;
 
   while(ihit < fNhits) {
-    THcCherenkovHit* hit = (THcCherenkovHit *) fRawHitList->At(ihit);
 
-    Int_t padnum = hit->fCounter;
+    THcCherenkovHit* hit       = (THcCherenkovHit*) fRawHitList->At(ihit);
+    Int_t            npmt      = hit->fCounter;
+    THcRawAdcHit&    rawAdcHit = hit->GetRawAdcHitPos();
 
-    THcRawAdcHit& rawAdcHit = hit->GetRawAdcHitPos();
-    for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
-      ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPedRaw());
-      ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPed());
+    for (UInt_t thit = 0; thit < rawAdcHit.GetNPulses(); thit++) {
 
-      ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseIntRaw(thit));
-      ((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseInt(thit));
+      ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPedRaw());
+      ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPed());
 
-      ((THcSignalHit*) frAdcPulseAmpRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmpRaw(thit));
-      ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp(thit));
+      ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPulseIntRaw(thit));
+      ((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPulseInt(thit));
 
-      ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTimeRaw(thit));
-      fADC_hit[padnum-1]=1; // 
-      //     cout << dec << "thit = " << thit << " " << padnum << " " << rawAdcHit.GetPulseInt(thit)<< " " << rawAdcHit.GetPulseIntRaw(thit) << " " << rawAdcHit.GetPedRaw() << " " << rawAdcHit.GetPedRaw()*28./4.<< endl;
+      ((THcSignalHit*) frAdcPulseAmpRaw->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPulseAmpRaw(thit));
+      ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPulseAmp(thit));
+
+      ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPulseTimeRaw(thit));
+
+      if (rawAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 0);
+      if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 1);
+
       ++nrAdcHits;
+      fTotNumAdcHits++;
+      fNumAdcHits.at(npmt-1) = npmt;
     }
-
-    // ADC hit
-    if(hit->GetRawAdcHitPos().GetPulseIntRaw() >  0) {
-      THcSignalHit *sighit = (THcSignalHit*) fADCHits->ConstructedAt(nADCHits++);
-      sighit->Set(hit->fCounter, hit->GetRawAdcHitPos().GetPulseIntRaw());
-    }
-
     ihit++;
   }
   return ihit;
@@ -376,24 +377,36 @@ Int_t THcCherenkov::ApplyCorrections( void )
 }
 
 //_____________________________________________________________________________
-Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
+Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
 {
-  for(Int_t ihit=0; ihit < fNhits; ihit++) {
-    THcCherenkovHit* hit = (THcCherenkovHit *) fRawHitList->At(ihit); // nhit = 1, hcer_tot_hits
 
-    // Pedestal subtraction and gain adjustment
+  // Loop over the elements in the TClonesArray
+  for(Int_t ielem = 0; ielem < frAdcPulseInt->GetEntries(); ielem++) {
 
-    Int_t npmt = hit->fCounter - 1;                             // tube = hcer_tube_num(nhit)
-    fNPMT[npmt] = hit->fCounter;
-    fADC[npmt] = hit->GetRawAdcHitPos().GetPulseIntRaw();
-    fADC_P[npmt] = hit->GetRawAdcHitPos().GetPulseInt();
+    Int_t    npmt         = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+    Double_t pulsePed     = ((THcSignalHit*) frAdcPed->ConstructedAt(ielem))->GetData();
+    Double_t pulseInt     = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetData();
+    Double_t pulseIntRaw  = ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
+    Double_t pulseAmp     = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
+    Double_t pulseTime    = ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
+    Bool_t   errorFlag    = ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(ielem))->GetData();
+    Bool_t   pulseTimeCut = pulseTime > fAdcTimeWindowMin && pulseTime < fAdcTimeWindowMax;
 
-    fNPE[npmt] = fGain[npmt]*fADC_P[npmt];
-    fNCherHit ++;
-    fNPEsum += fNPE[npmt];
+    // By default, the last hit within the timing cut will be considered "good"
+    if (!errorFlag && pulseTimeCut) {
+      fGoodAdcPed.at(npmt)         = pulsePed;
+      fGoodAdcPulseInt.at(npmt)    = pulseInt;
+      fGoodAdcPulseIntRaw.at(npmt) = pulseIntRaw;
+      fGoodAdcPulseAmp.at(npmt)    = pulseAmp;
+      fGoodAdcPulseTime.at(npmt)   = pulseTime;
+
+      fNpe.at(npmt) = fGain[npmt]*fGoodAdcPulseInt.at(npmt);
+      fNpeSum += fNpe.at(npmt);
+
+      fTotNumGoodAdcHits++;
+      fNumGoodAdcHits.at(npmt) = npmt + 1;
+    }
   }
-
-
   return 0;
 }
 
@@ -401,69 +414,82 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  ) //tracks
 Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 {
 
-  if ( tracks.GetLast() > -1 ) {
+  Int_t nTracks = tracks.GetLast() + 1;
 
-    THaTrack* theTrack = dynamic_cast<THaTrack*>( tracks.At(0) );
-    if (!theTrack) return -1;
+  for (Int_t itrack = 0; itrack < nTracks; itrack++) {
 
-    if ( ( ( tracks.GetLast() + 1 ) == 1 ) &&
-	 ( theTrack->GetChi2()/theTrack->GetNDoF() > 0. ) &&
-	 ( theTrack->GetChi2()/theTrack->GetNDoF() <  fCerChi2Max ) &&
-	 ( theTrack->GetBeta() > fCerBetaMin ) &&
-	 ( theTrack->GetBeta() < fCerBetaMax ) &&
-	 ( ( theTrack->GetEnergy() / theTrack->GetP() ) > fCerETMin ) &&
-	 ( ( theTrack->GetEnergy() / theTrack->GetP() ) < fCerETMax )
-	 ) {
+    THaTrack* track = dynamic_cast<THaTrack*> (tracks[itrack]);
+    if (track->GetIndex() != 0) continue;  // Select the best track
 
-      Double_t cerX = theTrack->GetX() + theTrack->GetTheta() * fCerMirrorZPos;
-      Double_t cerY = theTrack->GetY() + theTrack->GetPhi()   * fCerMirrorZPos;
+    Double_t trackChi2    = track->GetChi2();
+    Int_t    trackNDoF    = track->GetNDoF();
+    Double_t trackRedChi2 = trackChi2/trackNDoF;
+    Double_t trackBeta    = track->GetBeta();
+    Double_t trackEnergy  = track->GetEnergy();
+    Double_t trackMom     = track->GetP();
+    Double_t trackENorm   = trackEnergy/trackMom;
+    Double_t trackXfp     = track->GetX();
+    Double_t trackYfp     = track->GetY();
+    Double_t trackTheta   = track->GetTheta();
+    Double_t trackPhi     = track->GetPhi();
 
-      for ( Int_t ir = 0; ir < fCerNRegions; ir++ ) {
+    Bool_t trackRedChi2Cut = trackRedChi2 > fRedChi2Min && trackRedChi2 < fRedChi2Max;
+    Bool_t trackBetaCut    = trackBeta    > fBetaMin    && trackBeta    < fBetaMax;
+    Bool_t trackENormCut   = trackENorm   > fENormMin   && trackENorm   < fENormMax;
 
-	//	*     hit must be inside the region in order to continue.
+    if (trackRedChi2Cut && trackBetaCut && trackENormCut) {
 
-	if ( ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 0 )] - cerX ) <
-	       fCerRegionValue[GetCerIndex( ir, 4 )] ) &&
-	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 1 )] - cerY ) <
-	       fCerRegionValue[GetCerIndex( ir, 5 )] ) &&
-	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 2 )] - theTrack->GetTheta() ) <
-	       fCerRegionValue[GetCerIndex( ir, 6 )] ) &&
-	     ( TMath::Abs( fCerRegionValue[GetCerIndex( ir, 3 )] - theTrack->GetPhi() ) <
-	       fCerRegionValue[GetCerIndex( ir, 7 )] )
-	     ) {
+      // Project the track to the Cherenkov mirror planes
+      Double_t xAtCher = trackXfp + trackTheta * fMirrorZPos;
+      Double_t yAtCher = trackYfp + trackPhi   * fMirrorZPos;
 
-	  // *     increment the 'should have fired' counters
-	  fCerTrackCounter[ir] ++;
+      // cout << "Cherenkov Detector: " << GetName() << " has fNRegions = " << fNRegions << endl;
+      // cout << "nTracks = " << nTracks << "\t" << "trackChi2 = " << trackChi2
+      // 	   << "\t" << "trackNDof = " << trackNDoF << "\t" << "trackRedChi2 = " << trackRedChi2 << endl;
+      // cout << "trackBeta = " << trackBeta << "\t" << "trackEnergy = " << trackEnergy << "\t"
+      // 	   << "trackMom = " << trackMom << "\t" << "trackENorm = " << trackENorm << endl;
+      // cout << "trackXfp = " << trackXfp << "\t" << "trackYfp = " << trackYfp << "\t"
+      // 	   << "trackTheta = " << trackTheta << "\t" << "trackPhi = " << trackPhi << endl;
+      // cout << "fMirrorZPos = " << fMirrorZPos << "\t" << "xAtCher = " << xAtCher << "\t" << "yAtCher = " << yAtCher << endl;
+      // cout << "=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:" << endl;
 
-	  // *     increment the 'did fire' counters
-	  if ( fNPEsum > fCerThresh ) {
-	    fCerFiredCounter[ir] ++;
-	  }
-	}
-      } // loop over regions
-    }
-  }
+      for (Int_t iregion = 0; iregion < fNRegions; iregion++) {
+
+	if ((TMath::Abs(fRegionValue[GetIndex(iregion, 0)] - xAtCher)    < fRegionValue[GetIndex(iregion, 4)]) &&
+	    (TMath::Abs(fRegionValue[GetIndex(iregion, 1)] - yAtCher)    < fRegionValue[GetIndex(iregion, 5)]) &&
+	    (TMath::Abs(fRegionValue[GetIndex(iregion, 2)] - trackTheta) < fRegionValue[GetIndex(iregion, 6)]) &&
+	    (TMath::Abs(fRegionValue[GetIndex(iregion, 3)] - trackPhi)   < fRegionValue[GetIndex(iregion, 7)])) {
+
+	  fTotNumTracksMatched++;
+	  fNumTracksMatched.at(iregion) = iregion + 1;
+
+	  if (fNpeSum > fNpeThresh) {
+	    fTotNumTracksFired++;
+	    fNumTracksFired.at(iregion) = iregion + 1;
+	  }  // NPE threshold cut
+	}  // Regional cuts
+      }  // Loop over regions
+    }  // Tracking cuts
+  }  // Track loop
 
   return 0;
 }
 
 //_____________________________________________________________________________
-void THcCherenkov::InitializePedestals( )
+void THcCherenkov::InitializePedestals()
 {
   fNPedestalEvents = 0;
-  fMinPeds = 500; 		// In engine, this is set in parameter file
-  fPedSum = new Int_t [fNelem];
-  fPedSum2 = new Int_t [fNelem];
-  fPedCount = new Int_t [fNelem];
-
-  fPed = new Double_t [fNelem];
-  fThresh = new Double_t [fNelem];
-  for(Int_t i=0;i<fNelem;i++) {
-    fPedSum[i] = 0;
-    fPedSum2[i] = 0;
+  fMinPeds         = 500; 		// In engine, this is set in parameter file
+  fPedSum          = new Int_t [fNelem];
+  fPedSum2         = new Int_t [fNelem];
+  fPedCount        = new Int_t [fNelem];
+  fPed             = new Double_t [fNelem];
+  fThresh          = new Double_t [fNelem];
+  for(Int_t i = 0; i < fNelem; i++) {
+    fPedSum[i]   = 0;
+    fPedSum2[i]  = 0;
     fPedCount[i] = 0;
   }
-
 }
 
 //_____________________________________________________________________________
@@ -481,7 +507,7 @@ void THcCherenkov::AccumulatePedestals(TClonesArray* rawhits)
     Int_t element = hit->fCounter - 1;
     Int_t nadc = hit->GetRawAdcHitPos().GetPulseIntRaw();
     if(nadc <= fPedLimit[element]) {
-      fPedSum[element] += nadc;
+      fPedSum[element]  += nadc;
       fPedSum2[element] += nadc*nadc;
       fPedCount[element]++;
       if(fPedCount[element] == fMinPeds/5) {
@@ -497,7 +523,7 @@ void THcCherenkov::AccumulatePedestals(TClonesArray* rawhits)
 }
 
 //_____________________________________________________________________________
-void THcCherenkov::CalculatePedestals( )
+void THcCherenkov::CalculatePedestals()
 {
   // Use the accumulated pedestal data to calculate pedestals
   // Later add check to see if pedestals have drifted ("Danger Will Robinson!")
@@ -523,34 +549,30 @@ void THcCherenkov::CalculatePedestals( )
 }
 
 //_____________________________________________________________________________
-Int_t THcCherenkov::GetCerIndex( Int_t nRegion, Int_t nValue ) {
-
-  return fCerNRegions * nValue + nRegion;
+Int_t THcCherenkov::GetIndex(Int_t nRegion, Int_t nValue)
+{
+  return fNRegions * nValue + nRegion;
 }
 
 
 //_____________________________________________________________________________
-void THcCherenkov::Print( const Option_t* opt) const {
+void THcCherenkov::Print(const Option_t* opt) const
+{
   THaNonTrackingDetector::Print(opt);
-
   // Print out the pedestals
-
   cout << endl;
   cout << "Cherenkov Pedestals" << endl;
-
   // Ahmed
   cout << "No.   ADC" << endl;
-  for(Int_t i=0; i<fNelem; i++){
+  for(Int_t i=0; i<fNelem; i++)
     cout << " " << i << "    " << fPed[i] << endl;
-  }
-
   cout << endl;
 }
 
 //_____________________________________________________________________________
-Double_t THcCherenkov::GetCerNPE() {
-
-  return fNPEsum;
+Double_t THcCherenkov::GetCerNPE()
+{
+  return fNpeSum;
 }
 
 ClassImp(THcCherenkov)

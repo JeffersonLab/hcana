@@ -128,6 +128,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     {"cal_arr_ADCMode", &fADCMode, kInt, 0, 1},
     {"cal_arr_AdcTimeWindowMin", &fAdcTimeWindowMin, kDouble, 0, 1},
     {"cal_arr_AdcTimeWindowMax", &fAdcTimeWindowMax, kDouble, 0, 1},
+    {"cal_arr_AdcThreshold", &fAdcThreshold, kDouble, 0, 1},
     {"cal_ped_sample_low", &fPedSampLow, kInt, 0, 1},
     {"cal_ped_sample_high", &fPedSampHigh, kInt, 0, 1},
     {"cal_data_sample_low", &fDataSampLow, kInt, 0, 1},
@@ -138,6 +139,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   fADCMode=kADCDynamicPedestal;
   fAdcTimeWindowMin=0;
   fAdcTimeWindowMax=10000;
+  fAdcThreshold=0.;
   fNelem = fNRows*fNColumns;
 
   fXPos = new Double_t* [fNRows];
@@ -791,7 +793,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     //
     for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
       ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPedRaw());
-        fThresh[padnum]=rawAdcHit.GetPedRaw()*rawAdcHit.GetF250_PeakPedestalRatio()+250.;
+        fThresh[padnum-1]=rawAdcHit.GetPedRaw()*rawAdcHit.GetF250_PeakPedestalRatio()+fAdcThreshold;
      ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPed());
 
       ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseIntRaw(thit));

@@ -158,12 +158,6 @@ void THcHodoscope::Setup(const char* name, const char* description)
     fChern = NULL;
   }
 
-  // --------------- To get NPEs from THcCherenkov -------------------
-
-  fScinShould = 0;
-  fScinDid = 0;
-  gHcParms->Define(Form("%shodo_did",prefix),"Total hodo tracks",fScinDid);
-  gHcParms->Define(Form("%shodo_should",prefix),"Total hodo triggers",fScinShould);
 
   // Save the nominal particle mass
   fPartMass = app->GetParticleMass();
@@ -473,9 +467,6 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
     {"starttime",         "Hodoscope Start Time",                         "fStartTime"},
     {"goodstarttime",     "Hodoscope Good Start Time (logical flag)",                    "fGoodStartTime"},
     {"goodscinhit",       "Hit in fid area",                              "fGoodScinHits"},
-    //    {"goodscinhitx",    "Hit in fid x range",                     "fGoodScinHitsX"},
-    {"scinshould",        "Total scin Hits in fid area",                  "fScinShould"},
-    {"scindid",           "Total scin Hits in fid area with a track",     "fScinDid"},
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
@@ -557,9 +548,7 @@ void THcHodoscope::ClearEvent()
   fFPTimeAll= -1000.;
   fGoodStartTime = kFALSE;
   fGoodScinHits = 0;
-  fScinShould = 0;
-  fScinDid = 0;
-
+ 
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     fPlanes[ip]->Clear();
     fFPTime[ip]=0.;
@@ -1398,7 +1387,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
     if ( fScinHitPaddle[ip][0] == 1 )
       icount ++;
 
-    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[0] - 1; ipaddle++ ){
+    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[ip] - 1; ipaddle++ ){
       // !look for number of clusters of 1 or more hits
 
       if ( ( fScinHitPaddle[ip][ipaddle] == 0 ) &&
@@ -1410,7 +1399,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
     fNClust[ip] = icount;
     icount = 0;
 
-    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[0] - 2; ipaddle++ ){
+    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[ip] - 2; ipaddle++ ){
       // !look for three or more adjacent hits
 
       if ( ( fScinHitPaddle[ip][ipaddle] == 1 ) &&
@@ -1427,7 +1416,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
   // *look for clusters in y planes... (10 scins)  !this assume both y planes have same
   // *number of scintillators.
 
-  for (Int_t ip = 1; ip < 4; ip +=2 ) {
+  for (Int_t ip = 1; ip < temp_planes; ip +=2 ) {
     // Planes ip = 1 = 1Y
     // Planes ip = 3 = 2Y
     if (!fPlanes[ip]) return -1;
@@ -1436,7 +1425,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
     if ( fScinHitPaddle[ip][0] == 1 )
       icount ++;
 
-    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[1] - 1; ipaddle++ ){
+    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[ip] - 1; ipaddle++ ){
       //  !look for number of clusters of 1 or more hits
 
       if ( ( fScinHitPaddle[ip][ipaddle] == 0 ) &&
@@ -1448,7 +1437,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
     fNClust[ip] = icount;
     icount = 0;
 
-    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[1] - 2; ipaddle++ ){
+    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[ip] - 2; ipaddle++ ){
       // !look for three or more adjacent hits
 
       if ( ( fScinHitPaddle[ip][ipaddle] == 1 ) &&
@@ -1463,46 +1452,6 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 
   }// Loop over Y planes
 
-  // *now put some "tracking" like cuts on the hslopes, based only on scins...
-  // *by "slope" here, I mean the difference in the position of scin hits in two
-  // *like-planes.  For example, a track that those great straight through will
-  // *have a slope of zero.  If it moves one scin over from s1x to s2x it has an
-  // *x-slope of 1...  I pick the minimum slope if there are multiple scin hits.
-
-  Double_t bestXpScin = 100.0;
-  Double_t bestYpScin = 100.0;
-
-  for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[0]; ipaddle++ ){
-    for (Int_t ipaddle2 = 0; ipaddle2 < (Int_t) fNPaddle[0]; ipaddle2++ ){
-
-      if ( ( fScinHitPaddle[0][ipaddle] == 1 ) &&
-	   ( fScinHitPaddle[2][ipaddle2] == 1 ) ){
-
-	Double_t slope = TMath::Abs(ipaddle - ipaddle2);
-
-	if ( slope < bestXpScin ) {
-	  bestXpScin = slope;
-
-	}
-      }
-    }  // Second loop over X paddles
-  } // First loop over X paddles
-
-
-  for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[1]; ipaddle++ ){
-    for (Int_t ipaddle2 = 0; ipaddle2 < (Int_t) fNPaddle[1]; ipaddle2++ ){
-
-      if ( ( fScinHitPaddle[1][ipaddle] == 1 ) &&
-	   ( fScinHitPaddle[3][ipaddle2] == 1 ) ){
-
-	Double_t slope = TMath::Abs(ipaddle - ipaddle2);
-
-	if ( slope < bestYpScin ) {
-	  bestYpScin = slope;
-	}
-      }
-    }  // Second loop over Y paddles
-  } // First loop over Y paddles
 
   // *next we mask out the edge scintillators, and look at triggers that happened
   // *at the center of the acceptance.  To change which scins are in the mask
@@ -1513,6 +1462,10 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
     fGoodScinHitsX.push_back(0);
   }
 
+  fHitSweet1X=0;
+  fHitSweet2X=0;
+  fHitSweet1Y=0;
+  fHitSweet2Y=0;
   // *first x plane.  first see if there are hits inside the scin region
   for (Int_t ifidx = fxLoScin[0]-1; ifidx < fxHiScin[0]; ifidx ++ ){
     if ( fScinHitPaddle[0][ifidx] == 1 ){
@@ -1578,7 +1531,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
   fTestSum = fHitSweet1X + fHitSweet2X + fHitSweet1Y + fHitSweet2Y;
 
   // * now define a 3/4 or 4/4 trigger of only good scintillators the value
-  // * is specified in htracking.param...
+  // * is specified in htracking
   if ( fTestSum >= fTrackEffTestNScinPlanes ){
     fGoodScinHits = 1;
     for (Int_t ifidx = fxLoScin[0]; ifidx < fxHiScin[0]; ifidx ++ ){
@@ -1596,19 +1549,6 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
   }
 
 
-  if ( !fChern || !fShower ) {
-    return 0;
-  }
-
-
-  if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > fNormETot ) &&
-       ( fChern->GetCerNPE() > fNCerNPE ) )
-    fScinShould = 1;
-
-  if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > fNormETot ) &&
-       ( fChern->GetCerNPE() > fNCerNPE ) && ( tracks.GetLast() + 1 > 0 ) ) {
-      fScinDid = 1;
-  }
 
   return 0;
 

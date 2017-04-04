@@ -134,13 +134,15 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   char prefix[2];
   prefix[0]=tolower(GetParent()->GetPrefix()[0]);
   prefix[1]='\0';
-  fUsingFADC=0;
   fPedSampLow=0;
   fPedSampHigh=9;
   fDataSampLow=23;
   fDataSampHigh=49;
+    fAdcNegThreshold=0.;
+    fAdcPosThreshold=0.;
   DBRequest list[]={
-    {"cal_using_fadc", &fUsingFADC, kInt, 0, 1},
+    {"cal_AdcNegThreshold", &fAdcNegThreshold, kDouble, 0, 1},
+    {"cal_AdcPosThreshold", &fAdcPosThreshold, kDouble, 0, 1},
     {"cal_ped_sample_low", &fPedSampLow, kInt, 0, 1},
     {"cal_ped_sample_high", &fPedSampHigh, kInt, 0, 1},
     {"cal_data_sample_low", &fDataSampLow, kInt, 0, 1},
@@ -431,7 +433,8 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     THcRawAdcHit& rawPosAdcHit = hit->GetRawAdcHitPos();
     for (UInt_t thit=0; thit<rawPosAdcHit.GetNPulses(); ++thit) {
       ((THcSignalHit*) frPosAdcPedRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPedRaw());
-       fPosThresh[hit->fCounter -1]=rawPosAdcHit.GetPedRaw()*rawPosAdcHit.GetF250_PeakPedestalRatio()+250.;
+       fPosThresh[hit->fCounter -1]=rawPosAdcHit.GetPedRaw()*rawPosAdcHit.GetF250_PeakPedestalRatio()+fAdcPosThreshold;
+       
       ((THcSignalHit*) frPosAdcPed->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPed());
 
       ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseIntRaw(thit));
@@ -451,7 +454,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     THcRawAdcHit& rawNegAdcHit = hit->GetRawAdcHitNeg();
     for (UInt_t thit=0; thit<rawNegAdcHit.GetNPulses(); ++thit) {
       ((THcSignalHit*) frNegAdcPedRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPedRaw());
-       fNegThresh[hit->fCounter -1]=rawNegAdcHit.GetPedRaw()*rawNegAdcHit.GetF250_PeakPedestalRatio()+250.;
+       fNegThresh[hit->fCounter -1]=rawNegAdcHit.GetPedRaw()*rawNegAdcHit.GetF250_PeakPedestalRatio()+fAdcNegThreshold;
       ((THcSignalHit*) frNegAdcPed->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPed());
 
       ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseIntRaw(thit));
@@ -564,7 +567,7 @@ void THcShowerPlane::FillADC_Standard()
     Int_t npad = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetPaddleNumber() - 1;
     Double_t pulseIntRaw = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
       fA_Pos[npad] =pulseIntRaw;
-      if(fA_Pos[npad] >  fPosThresh[npad]) {
+      if(fA_Pos[npad] > fPosThresh[npad]) {
        fA_Pos_p[npad] =pulseIntRaw-fPosPed[npad] ;
        fEpos[npad] = fA_Pos_p[npad]*fParent->GetGain(npad,fLayerNum-1,0);
        fEmean[npad] += fEpos[npad];

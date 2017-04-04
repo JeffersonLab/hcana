@@ -66,7 +66,7 @@ static const UInt_t defaultDT = 4;
 
 THcScalerEvtHandler::THcScalerEvtHandler(const char *name, const char* description)
   : THaEvtTypeHandler(name,description), evcount(0), ifound(0), fNormIdx(-1),
-    dvars(0), dvarsFirst(0), fScalerTree(0)
+    dvars(0), dvarsFirst(0), fScalerTree(0), fUseFirstEvent(kFALSE)
 {
   rdata = new UInt_t[MAXTEVT];
 }
@@ -162,6 +162,19 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
       UInt_t *pnext = p+*(p-1);	// Next bank
       p++;			// First data word
 
+      // Look for normalization scaler module first.
+      if(fNormIdx >= 0) {
+	UInt_t *psave = p;
+	while(p < pnext) {
+	  if(scalers[fNormIdx]->IsSlot(*p)) {
+	    scalers[fNormIdx]->Decode(p);
+	    ifound = 1;
+	    break;
+	  }
+	  p += scalers[fNormIdx]->GetNumChan() + 1;
+	}
+	p = psave;
+      }
       while(p < pnext) {
 	Int_t nskip = 0;
 	if(fDebugFile) {
@@ -170,11 +183,13 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 	for(size_t j=0; j<scalers.size(); j++) {
 	  if(scalers[j]->IsSlot(*p)) {
 	    nskip = scalers[j]->GetNumChan() + 1;
-	    if(fDebugFile) {
-	      *fDebugFile << " found (" << j << ")  skip " << nskip << endl;
+	    if((Int_t) j != fNormIdx) {
+	      if(fDebugFile) {
+		*fDebugFile << " found (" << j << ")  skip " << nskip << endl;
+	      }
+	      scalers[j]->Decode(p);
+	      ifound = 1;
 	    }
-	    scalers[j]->Decode(p);
-	    ifound = 1;
 	    break;
 	  }
 	}
@@ -182,7 +197,7 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 	  if(fDebugFile) {
 	    *fDebugFile << endl;
 	  }
-	  break;	// Didn't find a mathing header
+	  break;	// Didn't find a matching header
 	}
 	p = p + nskip;
       }
@@ -214,12 +229,25 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     	if ((ivar < scalerloc.size()) &&
 		(isca < scalers.size()) &&
 		(ichan < MAXCHAN)) {
+                    if(fUseFirstEvent) {
+                        if (scalerloc[ivar]->ikind == ICOUNT) {
+                                dvars[ivar] = scalers[isca]->GetData(ichan);
+                                dvarsFirst[ivar] = 0;
+                        }
+          	        if (scalerloc[ivar]->ikind == IRATE) {
+                                dvars[ivar] = scalers[isca]->GetRate(ichan);
+                                dvarsFirst[ivar] = dvars[ivar];
+                        }
+          		if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
+
+                    } else {
       			if (scalerloc[ivar]->ikind == ICOUNT) dvarsFirst[ivar] = scalers[isca]->GetData(ichan);
       			if (scalerloc[ivar]->ikind == IRATE)  dvarsFirst[ivar] = scalers[isca]->GetRate(ichan);
       			if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
-    	} else {
+                    }
+        } else {
       			cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
-    	}
+        }
     }else{
     	if (fDebugFile) *fDebugFile << "Debug dvars "<<i<<"   "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
     	if ((ivar < scalerloc.size()) &&
