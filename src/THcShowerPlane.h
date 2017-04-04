@@ -122,6 +122,8 @@ protected:
   Int_t fPedSampHigh;		// dynamic pedestal
   Int_t fDataSampLow;		// Sample range for
   Int_t fDataSampHigh;		// sample integration
+  Double_t fAdcNegThreshold;		// 
+  Double_t fAdcPosThreshold;		// 
 
   Double_t*   fA_Pos;         // [fNelem] ADC amplitudes of blocks
   Double_t*   fA_Neg;         // [fNelem] ADC amplitudes of blocks
