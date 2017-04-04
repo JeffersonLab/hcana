@@ -645,9 +645,8 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
     	fGoodPosAdcPulseTime.at(npmt)   = pulseTime;
 
     	fPosNpe.at(npmt) = fPosGain[npmt]*fGoodPosAdcPulseInt.at(npmt);
-	fPosNpeSum += fPosNpe.at(npmt);
-    	fNpeSum += fPosNpeSum;
-
+ 	fPosNpeSum += fPosNpe.at(npmt);
+ 
 	fTotNumGoodAdcHits++;
     	fTotNumGoodPosAdcHits++;
     	fNumGoodPosAdcHits.at(npmt) = npmt + 1;
@@ -675,14 +674,15 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
     	fGoodNegAdcPulseTime.at(npmt)   = pulseTime;
 
     	fNegNpe.at(npmt) = fNegGain[npmt]*fGoodNegAdcPulseInt.at(npmt);
-	fNegNpeSum += fNegNpe.at(npmt);
-    	fNpeSum += fNegNpeSum;
-
+ 	fNegNpeSum += fNegNpe.at(npmt);
+ 
 	fTotNumGoodAdcHits++;
    	fTotNumGoodNegAdcHits++;
     	fNumGoodNegAdcHits.at(npmt) = npmt + 1;
       }
     }
+
+       fNpeSum = fNegNpeSum + fPosNpeSum;
 
     for(Int_t ihit=0; ihit < fNhits; ihit++) {
 
