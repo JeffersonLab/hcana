@@ -113,6 +113,7 @@ protected:
   static const Int_t kADCSampIntDynPed=3;
   Double_t fAdcTimeWindowMin ;
   Double_t fAdcTimeWindowMax ;
+  Double_t fAdcThreshold ;
 Int_t fPedSampLow;		// Sample range for
   Int_t fPedSampHigh;		// dynamic pedestal
   Int_t fDataSampLow;		// Sample range for
