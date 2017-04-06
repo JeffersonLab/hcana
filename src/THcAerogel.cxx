@@ -39,52 +39,6 @@ THcAerogel::THcAerogel( const char* name, const char* description,
   THaNonTrackingDetector(name,description,apparatus)
 {
 
-  // Normal constructor with name and description
-  frPosAdcPedRaw       = new TClonesArray("THcSignalHit", MaxNumPosAeroPmt*MaxNumAdcPulse);
-  frPosAdcPulseIntRaw  = new TClonesArray("THcSignalHit", MaxNumPosAeroPmt*MaxNumAdcPulse);
-  frPosAdcPulseAmpRaw  = new TClonesArray("THcSignalHit", MaxNumPosAeroPmt*MaxNumAdcPulse);
-  frPosAdcPulseTimeRaw = new TClonesArray("THcSignalHit", MaxNumPosAeroPmt*MaxNumAdcPulse);
-  frPosAdcPed          = new TClonesArray("THcSignalHit", MaxNumPosAeroPmt*MaxNumAdcPulse);
-  frPosAdcPulseInt     = new TClonesArray("THcSignalHit", MaxNumPosAeroPmt*MaxNumAdcPulse);
-  frPosAdcPulseAmp     = new TClonesArray("THcSignalHit", MaxNumPosAeroPmt*MaxNumAdcPulse);
-  frNegAdcPedRaw       = new TClonesArray("THcSignalHit", MaxNumNegAeroPmt*MaxNumAdcPulse);
-  frNegAdcPulseIntRaw  = new TClonesArray("THcSignalHit", MaxNumNegAeroPmt*MaxNumAdcPulse);
-  frNegAdcPulseAmpRaw  = new TClonesArray("THcSignalHit", MaxNumNegAeroPmt*MaxNumAdcPulse);
-  frNegAdcPulseTimeRaw = new TClonesArray("THcSignalHit", MaxNumNegAeroPmt*MaxNumAdcPulse);
-  frNegAdcPed          = new TClonesArray("THcSignalHit", MaxNumNegAeroPmt*MaxNumAdcPulse);
-  frNegAdcPulseInt     = new TClonesArray("THcSignalHit", MaxNumNegAeroPmt*MaxNumAdcPulse);
-  frNegAdcPulseAmp     = new TClonesArray("THcSignalHit", MaxNumNegAeroPmt*MaxNumAdcPulse);
-  fPosAdcErrorFlag     = new TClonesArray("THcSignalHit", MaxNumPosAeroPmt*MaxNumAdcPulse);
-  fNegAdcErrorFlag     = new TClonesArray("THcSignalHit", MaxNumNegAeroPmt*MaxNumAdcPulse);
-
-  fNumPosAdcHits         = vector<Int_t>    (MaxNumPosAeroPmt, 0.0);
-  fNumGoodPosAdcHits     = vector<Int_t>    (MaxNumPosAeroPmt, 0.0);
-  fNumNegAdcHits         = vector<Int_t>    (MaxNumNegAeroPmt, 0.0);
-  fNumGoodNegAdcHits     = vector<Int_t>    (MaxNumNegAeroPmt, 0.0);
-  fNumTracksMatched      = vector<Int_t>    (MaxNumPosAeroPmt, 0.0);
-  fNumTracksFired        = vector<Int_t>    (MaxNumPosAeroPmt, 0.0);
-  fPosNpe                = vector<Double_t> (MaxNumPosAeroPmt, 0.0);
-  fNegNpe                = vector<Double_t> (MaxNumPosAeroPmt, 0.0);
-  fGoodPosAdcPed         = vector<Double_t> (MaxNumPosAeroPmt, 0.0);
-  fGoodPosAdcPulseInt    = vector<Double_t> (MaxNumPosAeroPmt, 0.0);
-  fGoodPosAdcPulseIntRaw = vector<Double_t> (MaxNumPosAeroPmt, 0.0);
-  fGoodPosAdcPulseAmp    = vector<Double_t> (MaxNumPosAeroPmt, 0.0);
-  fGoodPosAdcPulseTime   = vector<Double_t> (MaxNumPosAeroPmt, 0.0);
-  fGoodNegAdcPed         = vector<Double_t> (MaxNumNegAeroPmt, 0.0);
-  fGoodNegAdcPulseInt    = vector<Double_t> (MaxNumNegAeroPmt, 0.0);
-  fGoodNegAdcPulseIntRaw = vector<Double_t> (MaxNumNegAeroPmt, 0.0);
-  fGoodNegAdcPulseAmp    = vector<Double_t> (MaxNumNegAeroPmt, 0.0);
-  fGoodNegAdcPulseTime   = vector<Double_t> (MaxNumNegAeroPmt, 0.0);
-
-  // 6 GeV variables
-  fPosTDCHits = new TClonesArray("THcSignalHit", MaxNumPosAeroPmt*16);
-  fNegTDCHits = new TClonesArray("THcSignalHit", MaxNumNegAeroPmt*16);
-  fPosADCHits = new TClonesArray("THcSignalHit", MaxNumPosAeroPmt*MaxNumAdcPulse);
-  fNegADCHits = new TClonesArray("THcSignalHit", MaxNumNegAeroPmt*MaxNumAdcPulse);
-
-  fPosNpeSixGev = vector<Double_t> (MaxNumPosAeroPmt, 0.0);
-  fNegNpeSixGev = vector<Double_t> (MaxNumPosAeroPmt, 0.0);
-
   InitArrays();
 
 }
@@ -279,6 +233,52 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fT_Neg       = new Float_t[fNelem];
   fPosPedMean  = new Double_t[fNelem];
   fNegPedMean  = new Double_t[fNelem];
+
+  // Normal constructor with name and description
+  frPosAdcPedRaw       = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  frPosAdcPulseIntRaw  = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  frPosAdcPulseAmpRaw  = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  frPosAdcPulseTimeRaw = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  frPosAdcPed          = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  frPosAdcPulseInt     = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  frPosAdcPulseAmp     = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  frNegAdcPedRaw       = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  frNegAdcPulseIntRaw  = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  frNegAdcPulseAmpRaw  = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  frNegAdcPulseTimeRaw = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  frNegAdcPed          = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  frNegAdcPulseInt     = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  frNegAdcPulseAmp     = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  fPosAdcErrorFlag     = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  fNegAdcErrorFlag     = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+
+  fNumPosAdcHits         = vector<Int_t>    (fNelem, 0.0);
+  fNumGoodPosAdcHits     = vector<Int_t>    (fNelem, 0.0);
+  fNumNegAdcHits         = vector<Int_t>    (fNelem, 0.0);
+  fNumGoodNegAdcHits     = vector<Int_t>    (fNelem, 0.0);
+  fNumTracksMatched      = vector<Int_t>    (fNelem, 0.0);
+  fNumTracksFired        = vector<Int_t>    (fNelem, 0.0);
+  fPosNpe                = vector<Double_t> (fNelem, 0.0);
+  fNegNpe                = vector<Double_t> (fNelem, 0.0);
+  fGoodPosAdcPed         = vector<Double_t> (fNelem, 0.0);
+  fGoodPosAdcPulseInt    = vector<Double_t> (fNelem, 0.0);
+  fGoodPosAdcPulseIntRaw = vector<Double_t> (fNelem, 0.0);
+  fGoodPosAdcPulseAmp    = vector<Double_t> (fNelem, 0.0);
+  fGoodPosAdcPulseTime   = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcPed         = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcPulseInt    = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcPulseIntRaw = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcPulseAmp    = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcPulseTime   = vector<Double_t> (fNelem, 0.0);
+
+  // 6 GeV variables
+  fPosTDCHits = new TClonesArray("THcSignalHit", fNelem*16);
+  fNegTDCHits = new TClonesArray("THcSignalHit", fNelem*16);
+  fPosADCHits = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+  fNegADCHits = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
+
+  fPosNpeSixGev = vector<Double_t> (fNelem, 0.0);
+  fNegNpeSixGev = vector<Double_t> (fNelem, 0.0);
 
   // Create arrays to hold pedestal results
   if (fSixGevData) InitializePedestals();
