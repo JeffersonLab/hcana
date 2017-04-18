@@ -4,7 +4,7 @@
 Shower counter class, describing a generic segmented shower detector.     //
 
 */
-
+ 
 #include "THcShower.h"
 #include "THcHallCSpectrometer.h"
 #include "THaEvData.h"
@@ -348,7 +348,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   //Pedestal limits from hcal.param.
   fShPosPedLimit = new Int_t [fNTotBlocks];
   fShNegPedLimit = new Int_t [fNTotBlocks];
-  for (UInt_t i;i<fNTotBlocks;i++) {
+  for (UInt_t i=0; i<fNTotBlocks; i++) {
     fShPosPedLimit[i]=0.;
     fShNegPedLimit[i]=0.;
   }
@@ -1080,19 +1080,19 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
   for (Int_t itrk=0; itrk<Ntracks; itrk++) {
     THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
     if (theTrack->GetIndex()==0) {
-    fEtrack=theTrack->GetEnergy();
-    fEtrackNorm=fEtrack/theTrack->GetP();
+      fEtrack=theTrack->GetEnergy();
+      fEtrackNorm=fEtrack/theTrack->GetP();
      
-     Double_t Xtr = -100.;
-     Double_t Ytr = -100.;
-    fNclustTrack = MatchCluster(theTrack, Xtr, Ytr);
-    fXTrack=Xtr;
-    if (fNclustTrack>=0) {
-    THcShowerCluster* cluster = *(fClusterList->begin()+fNclustTrack);
-    Double_t dx = TMath::Abs( clX(cluster) - Xtr );
-    fXclustTrack=clX(cluster);
-    //cout << fNclustTrack << " " << Xtr << " " << clX(cluster) << " " << dx << " " << Ytr << " " << fEtrack<< endl;
-    }
+      Double_t Xtr = -100.;
+      Double_t Ytr = -100.;
+      fNclustTrack = MatchCluster(theTrack, Xtr, Ytr);
+      fXTrack=Xtr;
+      if (fNclustTrack>=0) {
+	THcShowerCluster* cluster = *(fClusterList->begin()+fNclustTrack);
+	// Double_t dx = TMath::Abs( clX(cluster) - Xtr );
+	fXclustTrack=clX(cluster);
+	//cout << fNclustTrack << " " << Xtr << " " << clX(cluster) << " " << dx << " " << Ytr << " " << fEtrack<< endl;
+      }
     }
   }       //over tracks
 

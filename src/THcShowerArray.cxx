@@ -747,8 +747,8 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 {
   // Extract the data for this layer from hit list.
 
-  THcShower* fParent;
-  fParent = (THcShower*) GetParent();
+  //THcShower* fParent;
+  //fParent = (THcShower*) GetParent();
 
   // Initialize variables.
 

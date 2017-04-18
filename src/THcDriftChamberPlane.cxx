@@ -135,7 +135,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   if (fUsingTzeroPerWire==1) {
   fTzeroWire = new Double_t [fNWires];
   DBRequest list3[]={
-    {Form("tzero%s",GetName()),fTzeroWire,kDouble,fNWires},
+    {Form("tzero%s",GetName()),fTzeroWire,kDouble,(UInt_t) fNWires},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list3,prefix);
