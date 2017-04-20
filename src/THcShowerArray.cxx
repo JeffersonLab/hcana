@@ -58,6 +58,7 @@ THcShowerArray::~THcShowerArray()
   // Destructor
   delete fXPos;
   delete fYPos;
+  delete fZPos;
 
   delete fADCHits;
 
@@ -76,6 +77,7 @@ THcShowerArray::~THcShowerArray()
   delete [] fA_p;
 
   delete [] fE;
+  delete [] fBlock_ClusterID;
 }
 
 //_____________________________________________________________________________
@@ -144,9 +146,11 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 
   fXPos = new Double_t* [fNRows];
   fYPos = new Double_t* [fNRows];
+  fZPos = new Double_t* [fNRows];
   for (UInt_t i=0; i<fNRows; i++) {
     fXPos[i] = new Double_t [fNColumns];
     fYPos[i] = new Double_t [fNColumns];
+    fZPos[i] = new Double_t [fNColumns];
   }
 
   //Looking to the front, the numbering goes from left to right, and from top
@@ -156,6 +160,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     for (UInt_t i=0; i<fNRows; i++) {
       fXPos[i][j] = fXFront - (fNRows-1)*fXStep/2 + fXStep*i;
       fYPos[i][j] = fYFront + (fNColumns-1)*fYStep/2 - fYStep*j;
+      fZPos[i][j] = fZFront ;
   }
 
   fOrigin.SetXYZ(fXFront, fYFront, fZFront);
@@ -195,6 +200,15 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     for (UInt_t i=0; i<fNRows; i++) {
       for (UInt_t j=0; j<fNColumns; j++) {
     	cout << fYPos[i][j] << " ";
+      }
+      cout << endl;
+    }
+    cout << endl;
+
+    cout << "Block Z coordinates:" << endl;
+    for (UInt_t i=0; i<fNRows; i++) {
+      for (UInt_t j=0; j<fNColumns; j++) {
+    	cout << fZPos[i][j] << " ";
       }
       cout << endl;
     }
@@ -296,6 +310,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   fA = new Double_t[fNelem];
   fP = new Double_t[fNelem];
   fA_p = new Double_t[fNelem];
+  fBlock_ClusterID = new Int_t[fNelem];
 
   // Energy depositions per block.
 
@@ -339,6 +354,7 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
     { "nghits", "Number of good hits ( pass threshold on raw ADC)", "fNgoodhits" },
     { "nclust", "Number of clusters", "fNclust" },
     {"e", "Energy Depositions per block", "fE"},
+    {"block_clusterID", "Cluster ID number", "fBlock_ClusterID"},
     {"earray", "Energy Deposition in array", "fEarray"},
     { "ntracks", "Number of shower tracks", "fNtracks" },
 
@@ -369,7 +385,11 @@ void THcShowerArray::Clear( Option_t* )
   fNhits = 0;
   fNgoodhits = 0;
   fNclust = 0;
+  fClustSize = 0;
   fNtracks = 0;
+  fMatchClX = -1000.;
+  fMatchClX = -1000.;
+  fMatchClMaxEnergyBlock = -1000.;
 
   for (THcShowerClusterListIt i=fClusterList->begin(); i!=fClusterList->end();
        ++i) {
@@ -417,7 +437,7 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
       if (fA_p[k] > 0) {    //hit
 
 	THcShowerHit* hit =
-	  new THcShowerHit(i, j, fXPos[i][j], fYPos[i][j], fE[k], 0., 0.);
+	  new THcShowerHit(i, j, fXPos[i][j], fYPos[i][j], fZPos[i][j], fE[k], 0., 0.);
 
 	HitSet.insert(hit);
       }
@@ -447,6 +467,19 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
   fParent->ClusterHits(HitSet, fClusterList);
 
   fNclust = (*fClusterList).size();         //number of clusters
+
+  // Set cluster ID for each block
+  Int_t ncl=0;
+  Int_t block;
+    for (THcShowerClusterListIt ppcl = (*fClusterList).begin();
+	 ppcl != (*fClusterList).end(); ppcl++) {
+      for (THcShowerClusterIt pph=(**ppcl).begin(); pph!=(**ppcl).end();
+	   pph++) {
+       block = ((**pph).hitColumn())*fNRows + (**pph).hitRow()+1;
+       fBlock_ClusterID[block-1] = ncl;
+      }
+      ncl++;
+    }  
 
   //Debug output, print out clustered hits.
 
@@ -552,10 +585,13 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
     for (Int_t i=fNclust-1; i>-1; i--) {
 
       THcShowerCluster* cluster = *(fClusterList->begin()+i);
-
+      fClustSize = (*cluster).size();
       Double_t dx = TMath::Abs( clX(cluster) - XTrFront );
-      Double_t dy = TMath::Abs( clZ(cluster) - YTrFront ); //cluster Z for Y.
+      Double_t dy = TMath::Abs( clY(cluster) - YTrFront ); //cluster Z for Y.
       Double_t distance = TMath::Sqrt(dx*dx+dy*dy);        //cluster-track dist.
+  if (fParent->fdbg_tracks_cal) {  
+    cout << " match clust = " << i << " clX = " << clX(cluster)<< " clY = " << clY(cluster) << " distacne = " << distance << " test = " << (0.5*(fXStep + fYStep) + fParent->fSlop) << endl;
+  }
 
       //Choice of threshold on distance is not unuque. Use the simplest for now.
 
@@ -563,6 +599,9 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
 	fNtracks++;
 	if (distance < Delta) {
 	  mclust = i;
+          fMatchClX= clX(cluster);
+          fMatchClY= clY(cluster);
+          fMatchClMaxEnergyBlock=clMaxEnergyBlock(cluster);
 	  Delta = distance;
 	}
       }
@@ -732,8 +771,10 @@ void THcShowerArray::FillADC_DynamicPedestal()
     Double_t errorflag = ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(ielem))->GetData();
     Bool_t pulseTimeCut = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
     if (errorflag==0 && pulseTimeCut) {
+      fNhits++;
       fA[npad] =pulseIntRaw;
       if(fA[npad] >  fThresh[npad]) {
+       fNgoodhits++;
        fA_p[npad] =pulseInt ;
        fE[npad] = fA_p[npad]*fGain[npad];
        fEarray += fE[npad];
@@ -768,6 +809,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     fA[i] = 0;
     fA_p[i] = 0;
     fE[i] = 0;
+    fBlock_ClusterID[i] = -1;
   }
 
   fEarray = 0;
@@ -1040,4 +1082,15 @@ Double_t THcShowerArray::fvYmin() {
   THcShower* fParent;
   fParent = (THcShower*) GetParent();
   return fYPos[fNRows-1][fNColumns-1] - fYStep/2 + fParent->fvDelta;
+}
+Double_t THcShowerArray::clMaxEnergyBlock(THcShowerCluster* cluster) {
+  Double_t max_energy=-1.;
+  Double_t max_block=-1.;
+  for (THcShowerClusterIt it=(*cluster).begin(); it!=(*cluster).end(); ++it) {
+    if ( (**it).hitE() > max_energy )   {
+       max_energy = (**it).hitE();
+       max_block = ((**it).hitColumn())*fNRows + (**it).hitRow()+1;
+    }
+  }
+  return max_block;
 }
