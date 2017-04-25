@@ -560,6 +560,14 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 {
+
+  //Throw an exception if Hodoscope Class is NOT defined in the analyzer
+  if (fHodo == 0 && fSelUsingPrune!=0)
+    {
+      throw std::runtime_error("The Hodoscope Class was NOT defined in the Hall C analyzer. To resolve issue: \n 1) Include the Hodoscopoe Class in the Hall C Analyzer, OR \n 2) Set the parameter hsel_using_prune = 0(HMS) or psel_using_prune = 0(SHMS)");
+    }
+
+
   Int_t nGood;
   Double_t chi2Min;
 
