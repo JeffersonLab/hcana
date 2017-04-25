@@ -357,11 +357,11 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 
   }
 
-  if ( ( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 ) ) {
+  if (fHodo==0 || ( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 ) ) {
     BestTrackSimple();
-  } else if (fSelUsingPrune !=0) {
+  } else if (fHodo!=0 && fSelUsingPrune !=0) {
     BestTrackUsingPrune();
-  } else {
+  } else if (fHodo!=0){
     BestTrackUsingScin();
   }
 
@@ -560,6 +560,8 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 {
+
+
   Int_t nGood;
   Double_t chi2Min;
 
