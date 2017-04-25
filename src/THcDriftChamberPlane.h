@@ -79,6 +79,7 @@ protected:
   Int_t fPlaneNum;
   Int_t fPlaneIndex;		/* Index of this plane within it's chamber */
   Int_t fChamberNum;
+  Int_t fUsingTzeroPerWire;
   Int_t fNRawhits;
   Int_t fNWires;
   Int_t fWireOrder;
@@ -103,6 +104,8 @@ protected:
   Double_t fCenter;
 
   Double_t fNSperChan;		/* TDC bin size */
+
+  Double_t* fTzeroWire;
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );

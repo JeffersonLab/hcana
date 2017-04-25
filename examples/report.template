@@ -385,12 +385,7 @@ Good Track Requirements:
    4. {hcer_et_min:%6.2f} < calorimeter energy < {hcer_et_max:%6.2f}
 Threshold set at  {hcer_threshold:%6.2f}
 
-Mirror 1 Efficiency = {H.cer.cerfiredcounter[0]/( H.cer.certrackcounter[0] + 0.0001 ):%5.3f}  
-Mirror 1 {H.cer.cerfiredcounter[0]:%6d} of {H.cer.certrackcounter[0]:%6d} good tracks.
-Mirror 2 Efficiency = {H.cer.cerfiredcounter[1]/( H.cer.certrackcounter[1] + 0.0001 ):%5.3f}  
-Mirror 2 {H.cer.cerfiredcounter[1]:%6d} of {H.cer.certrackcounter[1]:%6d} good tracks.
-Overall  Efficiency = {H.cer.cerfiredcounter[2]/( H.cer.certrackcounter[2] + 0.0001 ):%5.3f}  
-Overall  {H.cer.cerfiredcounter[2]:%6d} of {H.cer.certrackcounter[2]:%6d} good tracks.
+Mirror efficiencies removed.  Not supported in latest THcAerogel
 
 ****************************
 * Calorimeter Efficiencies *

@@ -61,6 +61,22 @@ public:
   // spectrometer Track.
 
   Float_t GetShEnergy(THaTrack*);
+  Double_t fMatchClX;
+  Double_t fMatchClY;
+  Double_t fMatchClMaxEnergyBlock;
+  Double_t fClustSize;
+  Double_t GetClMaxEnergyBlock() {
+    return fMatchClMaxEnergyBlock;
+  };
+  Double_t GetClSize() {
+    return fClustSize;
+  };
+  Double_t GetClX() {
+    return fMatchClX;
+  };
+  Double_t GetClY() {
+    return fMatchClY;
+  };
 
   //  Double_t fSpacing;   not used
 
@@ -75,6 +91,7 @@ public:
   Double_t fvYmax();
   Double_t fvXmax();
   Double_t fvYmin();
+  Double_t clMaxEnergyBlock(THcShowerCluster* cluster);
 
 protected:
 
@@ -101,6 +118,7 @@ protected:
   Double_t fZSize;               // Block size along Z
   Double_t** fXPos;              // block X coordinates
   Double_t** fYPos;              // block Y coordinates
+  Double_t** fZPos;              // block Z coordinates
 
   Int_t fUsingFADC;		// != 0 if using FADC in sample mode
    Int_t fADCMode;		//    
@@ -142,6 +160,7 @@ Int_t fPedSampLow;		// Sample range for
   //Energy depositions.
 
   Double_t* fE;              // [fNelem] energy depositions in the blocks.
+  Int_t* fBlock_ClusterID;              // [fNelem] Cluster ID of the block -1 then not in a cluster
   Double_t  fEarray;         // Total Energy deposition in the array.
 
   Int_t fNhits;              // Total number of hits
@@ -161,6 +180,7 @@ Int_t fPedSampLow;		// Sample range for
   TClonesArray* frAdcPed;
   TClonesArray* frAdcPulseInt;
   TClonesArray* frAdcPulseAmp;
+
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );

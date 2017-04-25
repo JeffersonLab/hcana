@@ -367,9 +367,6 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   // Assumes that the hit list is sorted by layer, so we stop when the
   // plane doesn't agree and return the index for the next hit.
 
-  THcShower* fParent;
-  fParent = (THcShower*) GetParent();
-
   // Initialize variables.
 
   fPosADCHits->Clear();
@@ -505,7 +502,7 @@ Int_t THcShowerPlane::CoarseProcessHits()
 
     Int_t nspar = 0;
 
-    for (UInt_t i=0; i<fParent->GetNBlocks(fLayerNum-1); i++) {
+    for (Int_t i=0; i<fNelem; i++) {
 
       if (GetAposP(i) > 0  || GetAnegP(i) >0) {    //hit
 	cout << "  counter =  " << i

@@ -1,4 +1,4 @@
-TdcCounter# See $ANALYZER/examples/output_example.def for examples
+# See $ANALYZER/examples/output_example.def for examples
 #
 block H.dc.*
 block H.hod.*

@@ -4,7 +4,7 @@
 Shower counter class, describing a generic segmented shower detector.     //
 
 */
-
+ 
 #include "THcShower.h"
 #include "THcHallCSpectrometer.h"
 #include "THaEvData.h"
@@ -348,7 +348,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   //Pedestal limits from hcal.param.
   fShPosPedLimit = new Int_t [fNTotBlocks];
   fShNegPedLimit = new Int_t [fNTotBlocks];
-  for (UInt_t i;i<fNTotBlocks;i++) {
+  for (UInt_t i=0; i<fNTotBlocks; i++) {
     fShPosPedLimit[i]=0.;
     fShNegPedLimit[i]=0.;
   }
@@ -506,10 +506,12 @@ Int_t THcShower::DefineVariables( EMode mode )
 
   RVarDef vars[] = {
     { "nhits", "Number of hits",                                 "fNhits" },
-    { "nclust", "Number of clusters",                            "fNclust" },
-    { "nclusttrack", "Number of cluster which matched best track","fNclustTrack" },
-    { "xclusttrack", "X pos of cluster which matched best track","fXclustTrack" },
-    { "xtrack", "X pos of track which matched cluster", "fXTrack" },
+    { "nclust", "Number of layer clusters",                            "fNclust" },
+    { "nclusttrack", "Number of layer cluster which matched best track","fNclustTrack" },
+    { "xclusttrack", "X pos of layer cluster which matched best track","fXclustTrack" },
+    { "xtrack", "X pos of track which matched layer cluster", "fXTrack" },
+    { "yclusttrack", "Y pos of layer cluster which matched best track","fYclustTrack" },
+    { "ytrack", "Y pos of track which matched layer cluster", "fYTrack" },
     { "etot", "Total energy",                                    "fEtot" },
     { "etotnorm", "Total energy divided by Central Momentum",    "fEtotNorm" },
     { "etrack", "Track energy",                                  "fEtrack" },
@@ -517,6 +519,22 @@ Int_t THcShower::DefineVariables( EMode mode )
     { "ntracks", "Number of shower tracks",                      "fNtracks" },
     { 0 }
   };
+
+  if(fHasArray) {
+
+  RVarDef array_vars[] = {
+    { "sizeclustarray", "Number of block in array cluster that matches track", "fSizeClustArray" },
+    { "nclustarraytrack", "Number of cluster for Fly's eye which matched best track","fNclustArrayTrack" },
+    { "nblock_high_ene", "Block number in array with highest energy which matched best track","fNblockHighEnergy" },
+    { "xclustarraytrack", "X pos of cluster which matched best track","fXclustArrayTrack" },
+    { "xtrackarray", "X pos of track which matched cluster", "fXTrackArray" },
+    { "yclustarraytrack", "Y pos of cluster which matched best track","fYclustArrayTrack" },
+    { "ytrackarray", "Y pos of track which matched cluster", "fYTrackArray" },
+    { 0 }
+  };
+
+  DefineVarsFromList( array_vars, mode );
+  }
   return DefineVarsFromList( vars, mode );
 
 }
@@ -567,6 +585,13 @@ void THcShower::Clear(Option_t* opt)
   fNclustTrack = -2;
   fXclustTrack = -1000;
   fXTrack = -1000;
+  fYclustTrack = -1000;
+  fYTrack = -1000;
+  fNclustArrayTrack = -2;
+  fXclustArrayTrack = -1000;
+  fXTrackArray = -1000;
+  fYclustArrayTrack = -1000;
+  fYTrackArray = -1000;
   fNtracks = 0;
   fEtot = 0.;
   fEtotNorm = 0.;
@@ -665,9 +690,17 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 	Double_t Epos = fPlanes[j]->GetEpos(i);
 	Double_t Eneg = fPlanes[j]->GetEneg(i);
 	Double_t x = fXPos[j][i] + BlockThick[j]/2.;        //top + thick/2
+        Double_t y=-1000;
+        if (fHasArray) {
+	  if (Eneg>0) y = fYPos[2*j]/2 ;  
+	  if (Epos>0) y = fYPos[2*j+1]/2 ;  
+	  if (Epos>0 && Eneg>0) y = 0. ;  
+        } else {
+          y=0.;
+	}
 	Double_t z = fLayerZPos[j] + BlockThick[j]/2.;      //front + thick/2
 
-	THcShowerHit* hit = new THcShowerHit(i,j,x,z,Edep,Epos,Eneg);
+	THcShowerHit* hit = new THcShowerHit(i,j,x,y,z,Edep,Epos,Eneg);
 
 	HitSet.insert(hit);   //<set> version
       }
@@ -807,6 +840,10 @@ Double_t addX(Double_t x, THcShowerHit* h) {
   return x + h->hitE() * h->hitX();
 }
 
+Double_t addY(Double_t x, THcShowerHit* h) {
+  return x + h->hitE() * h->hitY();
+}
+
 Double_t addZ(Double_t x, THcShowerHit* h) {
   return x + h->hitE() * h->hitZ();
 }
@@ -823,6 +860,15 @@ Double_t addEneg(Double_t x, THcShowerHit* h) {
   return x + h->hitEneg();
 }
 
+// Y coordinate of center of gravity of cluster, calculated as hit energy
+// weighted average. Put X out of the calorimeter (-100 cm), if there is no
+// energy deposition in the cluster.
+//
+Double_t clY(THcShowerCluster* cluster) {
+  Double_t Etot = accumulate((*cluster).begin(),(*cluster).end(),0.,addE);
+  return (Etot != 0. ?
+	  accumulate((*cluster).begin(),(*cluster).end(),0.,addY)/Etot : -100.);
+}
 // X coordinate of center of gravity of cluster, calculated as hit energy
 // weighted average. Put X out of the calorimeter (-100 cm), if there is no
 // energy deposition in the cluster.
@@ -1077,22 +1123,34 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
   //
 
   Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
+      Double_t Xtr = -100.;
+      Double_t Ytr = -100.;
   for (Int_t itrk=0; itrk<Ntracks; itrk++) {
     THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
     if (theTrack->GetIndex()==0) {
-    fEtrack=theTrack->GetEnergy();
-    fEtrackNorm=fEtrack/theTrack->GetP();
-     
-     Double_t Xtr = -100.;
-     Double_t Ytr = -100.;
-    fNclustTrack = MatchCluster(theTrack, Xtr, Ytr);
-    fXTrack=Xtr;
-    if (fNclustTrack>=0) {
-    THcShowerCluster* cluster = *(fClusterList->begin()+fNclustTrack);
-    Double_t dx = TMath::Abs( clX(cluster) - Xtr );
-    fXclustTrack=clX(cluster);
-    //cout << fNclustTrack << " " << Xtr << " " << clX(cluster) << " " << dx << " " << Ytr << " " << fEtrack<< endl;
-    }
+      fEtrack=theTrack->GetEnergy();
+      fEtrackNorm=fEtrack/theTrack->GetP();
+      Xtr = -100.;
+      Ytr = -100.;               
+      fNclustTrack = MatchCluster(theTrack, Xtr, Ytr);
+      fXTrack=Xtr;
+      fYTrack=Ytr;
+      if (fNclustTrack>=0) {
+	THcShowerCluster* cluster = *(fClusterList->begin()+fNclustTrack);
+	fXclustTrack=clX(cluster);
+        fYclustTrack=clY(cluster);
+      }
+      if (fHasArray) {
+	fNclustArrayTrack = fArray->MatchCluster(theTrack,Xtr,Ytr);      
+        if (fNclustArrayTrack>=0) {
+          fXclustArrayTrack=fArray->GetClX();
+          fYclustArrayTrack=fArray->GetClY();
+          fSizeClustArray=fArray->GetClSize();
+          fNblockHighEnergy=fArray->GetClMaxEnergyBlock();
+          fXTrackArray=Xtr;
+          fYTrackArray=Ytr;
+        }
+      }
     }
   }       //over tracks
 
@@ -1104,6 +1162,11 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 	 << GetApparatus()->GetName() << endl;
     cout << " event = " << fEvent << endl;
     cout << "  Number of tracks = " << Ntracks << endl;
+    if (fNclustTrack>=0) {
+      cout << " matching cluster info " << endl;
+      cout << " X info = " << fXclustTrack << " " << Xtr << " " << fXclustTrack-Xtr << endl;
+      cout << " Y info = " << fYclustTrack << " " << Ytr << " " << fYclustTrack-Ytr << endl;
+    }
 
     for (Int_t itrk=0; itrk<Ntracks; itrk++) {
       THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );

@@ -147,8 +147,17 @@ protected:
   Int_t fNhits;              // Total number of hits
   Int_t fNclust;             // Number of clusters
   Int_t fNclustTrack;             // NUmber of cluster that match best track
+  Int_t fNclustArrayTrack;             // NUmber of cluster that match best track
+  Int_t fSizeClustArray;             // NUmber of blocks in cluster which matches the best track
+  Int_t fNblockHighEnergy;             // NUmber of array block (1-224) that has the highest energy in cluster
   Double_t fXclustTrack;             // X pos of cluster that match best track
   Double_t fXTrack;             // X pos of best track that match cluster
+  Double_t fYclustTrack;             // Y pos of cluster that match best track
+  Double_t fYTrack;             // Y pos of best track that match cluster
+  Double_t fXclustArrayTrack;             // X pos of cluster that match best track
+  Double_t fXTrackArray;             // X pos of best track that match cluster
+  Double_t fYclustArrayTrack;             // Y pos of cluster that match best track
+  Double_t fYTrackArray;             // Y pos of best track that match cluster
   Int_t fNtracks;            // Number of shower tracks, i.e. number of
                              // cluster-to-track association
   Double_t fEtot;            // Total energy
@@ -225,12 +234,14 @@ protected:
 
 Double_t addE(Double_t x, THcShowerHit* h);
 Double_t addX(Double_t x, THcShowerHit* h);
+Double_t addY(Double_t x, THcShowerHit* h);
 Double_t addZ(Double_t x, THcShowerHit* h);
 Double_t addEpr(Double_t x, THcShowerHit* h);
 
 // Methods to calculate coordinates and energy depositions for a given cluster.
 
 Double_t clX(THcShowerCluster* cluster);
+Double_t clY(THcShowerCluster* cluster);
 Double_t clZ(THcShowerCluster* cluster);
 Double_t clE(THcShowerCluster* cluster);
 Double_t clEpr(THcShowerCluster* cluster);
