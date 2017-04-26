@@ -175,18 +175,18 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 
   //  static const char* const here = "ReadDatabase()";
   char prefix[2];
-  char parname[100];
 
   prefix[0]=tolower(GetParent()->GetPrefix()[0]);
   prefix[1]='\0';
 
   // need this further down so read them first! GN
-  strcpy(parname,prefix);
-  strcat(parname,"scin_");
-  strcat(parname,GetName());
-  strcat(parname,"_nr");
-  fNelem = *(Int_t *)gHcParms->Find(parname)->GetValuePointer();
-  //
+  string parname = "scin_" + string(GetName()) + "_nr";
+  DBRequest list_1[] = {
+    {parname.c_str(), &fNelem, kInt},
+    {0}
+  };
+  gHcParms->LoadParmValues(list_1, prefix);
+
   // Based on the signs of these quantities in the .pos file the correspondence
   // should be bot=>left  and top=>right when comparing x and y-type scintillators
   char tmpleft[6], tmpright[6];
@@ -214,15 +214,19 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
     {"hodo_adc_mode", &fADCMode, kInt, 0, 1},
     {"hodo_pedestal_scale", &fADCPedScaleFactor, kDouble, 0, 1},
     {"hodo_adc_diag_cut", &fADCDiagCut, kInt, 0, 1},
-    {0}
+   {"cosmicflag",                       &fCosmicFlag,            kInt,            0,  1},
+     {0}
   };
 
   fTofUsingInvAdc = 1;
   fADCMode = kADCStandard;
   fADCPedScaleFactor = 1.0;
   fADCDiagCut = 50.0;
-  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-  // fetch the parameter from the temporary list
+  fCosmicFlag=0;
+   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+   if (fCosmicFlag==1) cout << " setup for cosmics in scint plane"<< endl;
+  cout << " cosmic flag = " << fCosmicFlag << endl;
+ // fetch the parameter from the temporary list
 
   // Retrieve parameters we need from parent class
   // Common for all planes
@@ -307,19 +311,6 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 
   // Register variables in global list
   RVarDef vars[] = {
-    {"postdcpad", "List of Positive TDC Counter Number",      "frPosTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negtdcpad", "List of Negative TDC Counter Number",      "frNegTDCHits.THcSignalHit.GetPaddleNumber()"},
-    {"posadcpad", "List of Positive ADC Counter Number",      "frPosADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negadcpad", "List of Negative ADC Counter Number",      "frNegADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"postdcval", "List of Positive TDC Values",              "frPosTDCHits.THcSignalHit.GetData()"},
-    {"negtdcval", "List of Negative TDC Values",              "frNegTDCHits.THcSignalHit.GetData()"},
-    {"posadcval", "List of Positive ADC Values",              "frPosADCHits.THcSignalHit.GetData()"},
-    {"negadcval", "List of Negative ADC Values",              "frNegADCHits.THcSignalHit.GetData()"},
-    {"posadcsum", "List of Positive ADC Sample Sums",         "frPosADCSums.THcSignalHit.GetData()"},
-    {"negadcsum", "List of Negative ADC Sample Sums",         "frNegADCSums.THcSignalHit.GetData()"},
-    {"posadcped", "List of Positive ADC Pedestals",           "frPosADCPeds.THcSignalHit.GetData()"},
-    {"negadcped", "List of Negative ADC Pedestals",           "frNegADCPeds.THcSignalHit.GetData()"},
-
     {"posTdcCounter", "List of positive TDC counter numbers.", "frPosTdcTimeRaw.THcSignalHit.GetPaddleNumber()"},
     {"posAdcCounter", "List of positive ADC counter numbers.", "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
     {"negTdcCounter", "List of negative TDC counter numbers.", "frNegTdcTimeRaw.THcSignalHit.GetPaddleNumber()"},
@@ -359,6 +350,10 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     {"GoodPosTdcTimeCorr",         "List of positive corrected TDC values (corrected for PMT offset and ADC)",               "fHodoHits.THcHodoHit.GetPosCorrectedTime()"},
     {"GoodPosTdcTimeTOFCorr",         "List of positive corrected TDC values (corrected for TOF)",               "fHodoHits.THcHodoHit.GetPosTOFCorrectedTime()"},
     {"GoodPosAdcPulseInt",         "List of positive ADC values (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPosADC()"},
+    {"GoodPosAdcPulseAmp",         "List of positive ADC peak amp (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPosADCpeak()"},
+    {"GoodNegAdcPulseAmp",         "List of Negative ADC peak amp (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetNegADCpeak()"},
+    {"GoodPosAdcPulseTime",         "List of positive ADC peak amp (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPosADCtime()"},
+    {"GoodNegAdcPulseTime",         "List of Negative ADC peak amp (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetNegADCtime()"},
     {"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
     { 0 }
   };
@@ -505,7 +500,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   // cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
   Int_t ihit = nexthit;
 
-  //  cout << "THcScintillatorPlane: raw htis = " << nrawhits << endl;
+  //cout << "THcScintillatorPlane: " << GetName() << " raw hits = " << nrawhits << endl;
 
   // A THcRawHodoHit contains all the information (tdc and adc for both
   // pmts) for a single paddle for a single trigger.  The tdc information
@@ -513,6 +508,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   // Use "ihit" as the index over THcRawHodoHit objects.  Use
   // "thit" to index over multiple tdc hits within an "ihit".
   while(ihit < nrawhits) {
+    //cout << " ihit = " << ihit << endl;
     THcRawHodoHit* hit = (THcRawHodoHit *) rawhits->At(ihit);
     if(hit->fPlane > fPlaneNum) {
       break;
@@ -608,6 +604,14 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Int_t tdc_pos=-999;
     Int_t tdc_neg=-999;
     // Find first in range hit from multihit tdc
+    /*
+    for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
+      cout << " plane = " << hit->fPlane << " pos paddle = " << hit->fCounter << " " <<  hit->GetRawTdcHitPos().GetTime(thit)<< " hit = " << thit << endl;
+    }    
+    for(UInt_t thit=0; thit<hit->GetRawTdcHitNeg().GetNHits(); thit++) {
+      cout <<  " plane = " << hit->fPlane << " Neg paddle = " << hit->fCounter << " " <<  hit->GetRawTdcHitNeg().GetTime(thit) << " hit = " << thit << endl;
+    } 
+    */   
     for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
       tdc_pos = hit->GetRawTdcHitPos().GetTime(thit)+fTdcOffset;
       if(tdc_pos >= fScinTdcMin && tdc_pos <= fScinTdcMax) {
@@ -630,6 +634,14 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       new( (*fHodoHits)[fNScinHits]) THcHodoHit(tdc_pos, tdc_neg,
 						adc_pos, adc_neg,
 						hit->fCounter, this);
+      Double_t adc_peak=hit->GetRawAdcHitPos().GetPulseAmp();
+        ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCpeak(adc_peak);
+      adc_peak=hit->GetRawAdcHitNeg().GetPulseAmp();
+        ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCpeak(adc_peak);
+      Double_t time_peak=hit->GetRawAdcHitPos().GetPulseTimeRaw();
+        ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCtime(time_peak);
+      time_peak=hit->GetRawAdcHitNeg().GetPulseTimeRaw();
+        ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCtime(time_peak);
     // Do corrections if valid TDC on both ends of bar
       if(btdcraw_pos && btdcraw_neg) {
 
@@ -667,16 +679,27 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	  timec_neg -= (hit_position-fPosRight)/
 	    fHodoNegInvAdcLinear[index];
 	  scin_corrected_time = 0.5*(timec_pos+timec_neg);
+	  if (fCosmicFlag) {
+	  postime = timec_pos + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  negtime = timec_neg + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  } else {
 	  postime = timec_pos - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	  negtime = timec_neg - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  }
 	} else {
 	  postime=timec_pos-(fPosLeft-hit_position)/fHodoVelLight[index];
 	  negtime=timec_neg-(hit_position-fPosRight)/fHodoVelLight[index];
 	  scin_corrected_time = 0.5*(postime+negtime);
-	  postime = postime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
-	  negtime = negtime-(fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  if (fCosmicFlag) {
+	  postime = timec_pos + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  negtime = timec_neg + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  } else {
+	  postime = timec_pos - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  negtime = timec_neg - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	  }
 	}
 	//        cout << fNScinHits<< " " << timec_pos << " " << timec_neg << endl;
+        ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPaddleCenter(fPosCenter[index]);
 	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,
 								     postime, negtime,
 								     scin_corrected_time);
@@ -706,6 +729,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	    - fHodoNegTimeOffset[index];
 	}
       }
+        ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPaddleCenter(fPosCenter[index]);
 	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,
 								     timec_pos,timec_neg,
 								     0.0);

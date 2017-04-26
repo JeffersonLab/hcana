@@ -82,3 +82,73 @@ sdc_fix_propcorr = 0
 # Total number of PMTs in Gas Cherenkov detector.
 hcer_tot_pmts = 2
 
+#
+# Aerogel and Cerenkov parameters added in 3/31/2017
+#
+
+h_aero_six_gev_data = 1
+
+; Track matching reduced chi2 cut values
+haero_red_chi2_min = 0.0
+haero_red_chi2_max = 25.0
+
+; Track matching beta cut values
+haero_beta_min = 0.0
+haero_beta_max = 1.2
+
+; Track matching normailized energy (E/p) cut values
+haero_enorm_min = 0.0
+haero_enorm_max = 1.5
+
+; ADC time window cut values used to select "good" ADC events
+haero_adcTimeWindowMin = 500.
+haero_adcTimeWindowMax = 2500.
+
+; NPE Threshold for "good" hit (for measureing effic.)
+haero_npe_thresh = 0.5
+
+; Value of zpos for diffusion box cited by Hamlet M. 03/29/2017
+; FIX ME! This value is for the SHMS!
+haero_diff_box_zpos = 231.0
+
+; Number of regions in which tracks can be matched too
+haero_num_regions = 1
+
+; phgcer_region: 8 values for each region
+; central x,y,dx,dy values and x,y,dx,dy half widths.
+; Defined in clomuns, region 1, region 2, region 3, region 4...
+; FIX ME! These values are for the SHMS!
+; Assumes rectangular volume with x = 103.0 cm and y = 113.0 cm
+haero_region =  0.0,
+                0.0,
+                0.0,
+                0.0,
+               51.5,
+               56.5,
+               0.15,
+                0.1
+
+hcer_red_chi2_min = 0.0
+hcer_red_chi2_max = 25.0
+
+hcer_enorm_min = 0.0
+hcer_enorm_max = 1.5
+
+hcer_adcTimeWindowMin = 1500.
+hcer_adcTimeWindowMax = 3500.
+
+; Threshold for good hit (for measureing effic.)
+hcer_npe_thresh = 0.5
+
+hcer_num_regions = 3 ; This value is from the 6 GeV era
+
+; hcer_region: 8 values for each region (1 per mirror + sum)
+; central x,y,dx,dy values and x,y,dx,dy half widths.
+hcer_region =    30,  -30,   0,
+                  0,    0,   0,
+                  0,    0,   0,
+                  0,    0,   0,
+                 20,   20,  60,
+                 30,   30,  30,
+                 .1,   .1,  .1,
+                 .1,   .1,  .1

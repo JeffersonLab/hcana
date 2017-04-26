@@ -40,6 +40,7 @@ hodoscope array, not just one plane.
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 
 using namespace std;
@@ -85,6 +86,10 @@ void THcHodoscope::Setup(const char* name, const char* description)
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
 
+  TString temp(prefix[0]);
+  fSHMS=kFALSE;
+  if (temp == "p" ) fSHMS=kTRUE;
+  cout << " fSHMS = " << fSHMS << endl;
   string planenamelist;
   DBRequest listextra[]={
     {"hodo_num_planes", &fNPlanes, kInt},
@@ -139,7 +144,7 @@ void THcHodoscope::Setup(const char* name, const char* description)
   // --------------- To get energy from THcShower ----------------------
 
   // --------------- To get NPEs from THcCherenkov -------------------
-  const char* chern_detector_name = "cher";
+  const char* chern_detector_name = "cer";
   THaDetector* detc = app->GetDetector( chern_detector_name );
 
   if( dynamic_cast<THcCherenkov*>(detc) ) {
@@ -153,12 +158,6 @@ void THcHodoscope::Setup(const char* name, const char* description)
     fChern = NULL;
   }
 
-  // --------------- To get NPEs from THcCherenkov -------------------
-
-  fScinShould = 0;
-  fScinDid = 0;
-  gHcParms->Define(Form("%shodo_did",prefix),"Total hodo tracks",fScinDid);
-  gHcParms->Define(Form("%shodo_should",prefix),"Total hodo triggers",fScinShould);
 
   // Save the nominal particle mass
   fPartMass = app->GetParticleMass();
@@ -219,6 +218,9 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   //   fScinHit[m] = new Double_t[fNPaddle[0]];
   // }
 
+  for (int ip=0; ip<fNPlanes; ++ip) {
+    fScinHitPaddle.push_back(std::vector<Int_t>(fNPaddle[ip], 0));
+  }
 
   return fStatus = kOK;
 }
@@ -250,7 +252,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   //  Int_t plen=strlen(parname);
   cout << " readdatabse hodo fnplanes = " << fNPlanes << endl;
 
-  fBetaP = 0.;
   fBetaNoTrk = 0.;
   fBetaNoTrkChiSq = 0.;
 
@@ -312,6 +313,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   }
 
   DBRequest list[]={
+    {"cosmicflag",                       &fCosmicFlag,            kInt,            0,  1},
     {"start_time_center",                &fStartTimeCenter,                      kDouble},
     {"start_time_slop",                  &fStartTimeSlop,                        kDouble},
     {"scin_tdc_to_time",                 &fScinTdcToTime,                        kDouble},
@@ -348,15 +350,17 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fTofTolerance = 3.0;
   fNCerNPE = 2.0;
   fNormETot = 0.7;
+  fCosmicFlag=0;
   // Gets added to each reference time corrected raw TDC value
   // to make sure valid range is all positive.
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-
+  if (fCosmicFlag==1) cout << " setup for cosmics in TOF"<< endl;
+  cout << " cosmic flag = " << fCosmicFlag << endl;
   if(fDumpTOF) {
-    fDumpOut.open(fTOFDumpFile.c_str());
-    if(fDumpOut.is_open()) {
-      fDumpOut << "Hodoscope Time of Flight calibration data" << endl;
+      fDumpOut.open(fTOFDumpFile.c_str());
+   if(fDumpOut.is_open()) {
+     //fDumpOut << "Hodoscope Time of Flight calibration data" << endl;
     } else {
       fDumpTOF = 0;
       cout << "WARNING: Unable to open TOF Dump file " << fTOFDumpFile << endl;
@@ -456,16 +460,13 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
 
   RVarDef vars[] = {
     // Move these into THcHallCSpectrometer using track fTracks
-    {"betap",             "betaP",                "fBetaP"},
+    {"beta",       "Beta including track info",                "fBeta"},
     {"betanotrack",       "Beta from scintillator hits",                "fBetaNoTrk"},
     {"betachisqnotrack",  "Chi square of beta from scintillator hits",  "fBetaNoTrkChiSq"},
     {"fpHitsTime",        "Time at focal plane from all hits",            "fFPTimeAll"},
     {"starttime",         "Hodoscope Start Time",                         "fStartTime"},
     {"goodstarttime",     "Hodoscope Good Start Time (logical flag)",                    "fGoodStartTime"},
     {"goodscinhit",       "Hit in fid area",                              "fGoodScinHits"},
-    //    {"goodscinhitx",    "Hit in fid x range",                     "fGoodScinHitsX"},
-    {"scinshould",        "Total scin Hits in fid area",                  "fScinShould"},
-    {"scindid",           "Total scin Hits in fid area with a track",     "fScinDid"},
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
@@ -540,24 +541,24 @@ void THcHodoscope::ClearEvent()
    *
    */
 
-  fBetaP = 0.;
+  fBeta = 0.0;
   fBetaNoTrk = 0.0;
   fBetaNoTrkChiSq = 0.0;
   fStartTime  = 0.0;
   fFPTimeAll= -1000.;
   fGoodStartTime = kFALSE;
   fGoodScinHits = 0;
-  fScinShould = 0;
-  fScinDid = 0;
-
+ 
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     fPlanes[ip]->Clear();
     fFPTime[ip]=0.;
     fPlaneCenter[ip]=0.;
     fPlaneSpacing[ip]=0.;
+    for(UInt_t iPaddle=0;iPaddle<fNPaddle[ip]; ++iPaddle) {
+      fScinHitPaddle[ip][iPaddle]=0;
+    }
   }
   fdEdX.clear();
-  fScinHitPaddle.clear();
   fNScinHit.clear();
   fNClust.clear();
   fThreeScin.clear();
@@ -698,7 +699,9 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
 
   Bool_t goodplanetime[fNPlanes];
   Bool_t twogoodtimes[nscinhits];
-  for(Int_t ip=0;ip<fNPlanes;ip++) {
+  Int_t temp_planes=fNPlanes;
+  if (fSHMS) temp_planes=3;
+  for(Int_t ip=0;ip<temp_planes;ip++) {
     goodplanetime[ip] = kFALSE;
     Int_t nphits=fPlanes[ip]->GetNScinHits();
     TClonesArray* hodoHits = fPlanes[ip]->GetHits();
@@ -714,13 +717,18 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
       if ((postime>tmin) && (postime<tmin+fTofTolerance) &&
 	  (negtime>tmin) && (negtime<tmin+fTofTolerance)) {
 	hit->SetTwoGoodTimes(kTRUE);
-	twogoodtimes[ihit] = kTRUE;
-	// Both tubes fired
-	Int_t index=hit->GetPaddleNumber()-1;
-	// Need to put this in a multihit histo
-	Double_t fptime = hit->GetScinCorrectedTime()
+	twogoodtimes[ihit] = kTRUE;	// Both tubes fired
+        Int_t index=hit->GetPaddleNumber()-1;	 //
+        Double_t fptime;
+        if(fCosmicFlag==1) {
+	   fptime = hit->GetScinCorrectedTime()
+	  + (fPlanes[ip]->GetZpos()+(index%2)*fPlanes[ip]->GetDzpos())
+	  / (29.979 * fBetaNominal);
+	}else{
+	   fptime = hit->GetScinCorrectedTime()
 	  - (fPlanes[ip]->GetZpos()+(index%2)*fPlanes[ip]->GetDzpos())
 	  / (29.979 * fBetaNominal);
+	}
 	if(TMath::Abs(fptime-fStartTimeCenter)<=fStartTimeSlop) {
           Ngood_hits_plane++;
 	  Plane_fptime_sum+=fptime;
@@ -741,9 +749,11 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
   if(fNfptimes>0) {
     fStartTime = fpTimeSum/fNfptimes;
     fGoodStartTime=kTRUE;
+      fFPTimeAll = fStartTime ;
   } else {
     fStartTime = fStartTimeCenter;
     fGoodStartTime=kFALSE;
+    fFPTimeAll = fStartTime ;
   }
   if((goodplanetime[0]||goodplanetime[1])
      &&(goodplanetime[2]||goodplanetime[3])) {
@@ -755,7 +765,9 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
     Double_t sumTZ = 0.;
     Int_t ihhit = 0;
 
-    for(Int_t ip=0;ip<fNPlanes;ip++) {
+    temp_planes=fNPlanes;
+  if (fSHMS) temp_planes=3;
+    for(Int_t ip=0;ip<temp_planes;ip++) {
       Int_t nphits=fPlanes[ip]->GetNScinHits();
       TClonesArray* hodoHits = fPlanes[ip]->GetHits();
 
@@ -768,8 +780,7 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
 						TMath::Power( fHodoNegSigma[GetScinIndex(ip,index)],2) ) );
 	  Double_t scinWeight = 1 / TMath::Power(sigma,2);
 	  Double_t zPosition = fPlanes[ip]->GetZpos() + (index%2)*fPlanes[ip]->GetDzpos();
-
-	  //	  cout << "hit = " << ihhit + 1 << "   zpos = " << zPosition << "   sigma = " << sigma << endl;
+ 	  //	  cout << "hit = " << ihhit + 1 << "   zpos = " << zPosition << "   sigma = " << sigma << endl;
 
 	  sumW  += scinWeight;
 	  sumT  += scinWeight * ((THcHodoHit*)hodoHits->At(i))->GetScinCorrectedTime();
@@ -792,7 +803,7 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
       fBetaNoTrkChiSq = 0.;
       ihhit = 0;
 
-      for (Int_t ip = 0; ip < fNPlanes; ip++ ){                           // Loop over planes
+      for (Int_t ip = 0; ip < temp_planes; ip++ ){                           // Loop over planes
 	Int_t nphits=fPlanes[ip]->GetNScinHits();
 	TClonesArray* hodoHits = fPlanes[ip]->GetHits();
 
@@ -825,6 +836,9 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
       fBetaNoTrkChiSq = -2.;
     } // else condition for fTmpDenom
   }
+   fGoodEventTOFCalib=kFALSE;
+  if (!fSHMS&&goodplanetime[0]&&goodplanetime[1]&&goodplanetime[2]&&goodplanetime[3]&&fPlanes[0]->GetNGoodHits()==1&&fPlanes[1]->GetNGoodHits()==1&&fPlanes[2]->GetNGoodHits()==1&&fPlanes[3]->GetNGoodHits()==1) fGoodEventTOFCalib=kTRUE;
+  if (fSHMS&&goodplanetime[0]&&goodplanetime[1]&&goodplanetime[2]&&fPlanes[0]->GetNGoodHits()==1&&fPlanes[1]->GetNGoodHits()==1&&fPlanes[2]->GetNGoodHits()==1) fGoodEventTOFCalib=kTRUE;
 
 }
 //_____________________________________________________________________________
@@ -839,23 +853,18 @@ Double_t THcHodoscope::TimeWalkCorrection(const Int_t& paddle,
   return(0.0);
 }
 
-//_____________________________________________________________________________
-Int_t THcHodoscope::CoarseProcess( TClonesArray&  tracks  )
-{
-
-  ApplyCorrections();
-
-  return 0;
-}
 
 //_____________________________________________________________________________
-Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
+Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 {
 
   Int_t ntracks = tracks.GetLast()+1; // Number of reconstructed tracks
   Int_t timehist[200];
   // -------------------------------------------------
 
+  //  fDumpOut << " ntrack =  " << ntracks  << endl;
+  Int_t temp_planes=fNPlanes;
+  if (fSHMS) temp_planes=3;
 
   if (tracks.GetLast()+1 > 0 ) {
 
@@ -869,7 +878,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       THaTrack* theTrack = dynamic_cast<THaTrack*>( tracks.At(itrack) );
       if (!theTrack) return -1;
 
-      for (Int_t ip = 0; ip < fNPlanes; ip++ ){
+      for (Int_t ip = 0; ip < temp_planes; ip++ ){
 	fGoodPlaneTime[ip] = kFALSE;
 	fNScinHits[ip] = 0;
 	fNPlaneTime[ip] = 0;
@@ -886,8 +895,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       //      timeAtFP[itrack] = 0.;
       Double_t sumFPTime = 0.; // Line 138
       fNScinHit.push_back(0);
-      Double_t p = theTrack->GetP(); // Line 142
-      fBetaP = p/( TMath::Sqrt( p * p + fPartMass * fPartMass) );
 
       //! Calculate all corrected hit times and histogram
       //! This uses a copy of code below. Results are save in time_pos,neg
@@ -910,7 +917,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
       fTOFPInfo.clear();  // SAW - combine these two?
       Int_t ihhit = 0;		// Hit # overall
 
-      for(Int_t ip = 0; ip < fNPlanes; ip++ ) {
+     for(Int_t ip = 0; ip < temp_planes; ip++ ) {
 
 	std::vector<GoodFlags> goodflagstmp2;
 	fGoodFlags[itrack].push_back(goodflagstmp2);
@@ -966,17 +973,21 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 
 	  // Index to access the 2d arrays of paddle/scintillator properties
 	  Int_t fPIndex = GetScinIndex(ip,paddle);
-
+          
 	  if ( TMath::Abs( scinCenter - scinTrnsCoord ) <
 	       ( fPlanes[ip]->GetSize() * 0.5 + fPlanes[ip]->GetHodoSlop() ) ){ // Line 293
 
 	    fTOFPInfo[ihhit].onTrack = kTRUE;
-
-	    Double_t zcor = zposition/(29.979*fBetaP)*
+	    Double_t zcor = zposition/(29.979*fBetaNominal)*
 		TMath::Sqrt(1. + theTrack->GetTheta()*theTrack->GetTheta()
 			    + theTrack->GetPhi()*theTrack->GetPhi());
 	    fTOFPInfo[ihhit].zcor = zcor;
-
+	    if (fCosmicFlag) {
+	    Double_t zcor = -zposition/(29.979*1.0)*
+		TMath::Sqrt(1. + theTrack->GetTheta()*theTrack->GetTheta()
+			    + theTrack->GetPhi()*theTrack->GetPhi());
+	    fTOFPInfo[ihhit].zcor = zcor;
+	    }
 	    Double_t tdc_pos = hit->GetPosTDC();
 	    if(tdc_pos >=fScinTdcMin && tdc_pos <= fScinTdcMax ) {
 	      Double_t adc_pos = hit->GetPosADC();
@@ -995,7 +1006,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 		  + fHodoPosTimeOffset[fPIndex];
 	      }
 	      fTOFPInfo[ihhit].scin_pos_time = timep;
-	      timep -= zcor;
+ 	      timep -= zcor;
 	      fTOFPInfo[ihhit].time_pos = timep;
 
 	      for ( Int_t k = 0; k < 200; k++ ){ // Line 211
@@ -1073,7 +1084,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	THcHodoHit *hit = fTOFPInfo[ih].hit;
 	Int_t iphit = fTOFPInfo[ih].hitNumInPlane;
 	Int_t ip = fTOFPInfo[ih].planeIndex;
-
+	//         fDumpOut << " looping over hits = " << ih << " plane = " << ip+1 << endl;
 	GoodFlags flags;
 	// Flags are used by THcHodoEff
 	fGoodFlags[itrack][ip].push_back(flags);
@@ -1104,21 +1115,17 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	  if ( fTOFPInfo[ih].keep_pos ) { // 301
 	    fTOFCalc[ih].good_tdc_pos = kTRUE;
 	    fGoodFlags[itrack][ip][iphit].goodTdcPos = kTRUE;
-	    if(fDumpTOF && ntracks==1) {
-	      fDumpOut << "1 " << ip+1 << " " << paddle+1 << " " <<
-		hit->GetPosTDC()*fScinTdcToTime << " " << fTOFPInfo[ih].pathp <<
-		" "  << fTOFPInfo[ih].zcor << " " << fTOFPInfo[ih].time_pos <<
-		" " << hit->GetPosADC() << endl;
+	    if(fDumpTOF && ntracks==1 && fGoodEventTOFCalib) {
+              fDumpOut << fixed << setprecision(2);
+             fDumpOut  << showpoint << " 1" << setw(3) << ip+1 << setw(3) << hit->GetPaddleNumber()  << setw(10) << hit->GetPosTDC()*fScinTdcToTime  << setw(10) << fTOFPInfo[ih].pathp << setw(10) << fTOFPInfo[ih].zcor  << setw(10) << fTOFPInfo[ih].time_pos << setw(10) << hit->GetPosADC() << endl;
 	    }
 	  }
 	  if ( fTOFPInfo[ih].keep_neg ) { //
 	    fTOFCalc[ih].good_tdc_neg = kTRUE;
 	    fGoodFlags[itrack][ip][iphit].goodTdcNeg = kTRUE;
-	    if(fDumpTOF && ntracks==1) {
-	      fDumpOut << "2 " << ip+1 << " " << paddle+1 << " " <<
-		hit->GetNegTDC()*fScinTdcToTime << " " << fTOFPInfo[ih].pathn <<
-		" "  << fTOFPInfo[ih].zcor << " " << fTOFPInfo[ih].time_neg <<
-		" " << hit->GetNegADC() << endl;
+	    if(fDumpTOF && ntracks==1 && fGoodEventTOFCalib) {
+             fDumpOut << fixed << setprecision(2);
+             fDumpOut  << showpoint << " 2" << setw(3) << ip+1 << setw(3) << hit->GetPaddleNumber() << setw(10) << hit->GetNegTDC()*fScinTdcToTime  << setw(10) << fTOFPInfo[ih].pathn << setw(10) << fTOFPInfo[ih].zcor  << setw(10) << fTOFPInfo[ih].time_neg << setw(10) << hit->GetNegADC() << endl;
 	    }
 	  }
 
@@ -1207,11 +1214,10 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 	}
 
       } // Second loop over hits of a scintillator plane ends here
-
-      theTrack->SetGoodPlane3( fGoodPlaneTime[2] ? 1 : 0 );
+       theTrack->SetGoodPlane3( fGoodPlaneTime[2] ? 1 : 0 );
       theTrack->SetGoodPlane4( fGoodPlaneTime[3] ? 1 : 0 );
-
-      //------------------------------------------------------------------------------
+     //
+       //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
@@ -1299,7 +1305,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 
       Double_t FPTimeSum=0.0;
       Int_t nFPTimeSum=0;
-      for (Int_t ip = 0; ip < fNPlanes; ip++ ){
+      for (Int_t ip = 0; ip < temp_planes; ip++ ){
 	if ( fNPlaneTime[ip] != 0 ){
 	  fFPTime[ip] = ( fSumPlaneTime[ip] / fNPlaneTime[ip] );
 	  FPTimeSum += fSumPlaneTime[ip];
@@ -1330,6 +1336,10 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 
   } // If condition for at least one track
 
+   if(fDumpTOF && ntracks==1 && fGoodEventTOFCalib) {
+         fDumpOut << "0 "  << endl;
+	    }
+
   //-----------------------------------------------------------------------
   //
   //   Trnslation of h_track_tests.f file for tracking efficiency
@@ -1340,18 +1350,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   //  *second, we move the scintillators.  here we use scintillator cuts to see
   //  *if a track should have been found.
 
-  for(Int_t ip = 0; ip < fNPlanes; ip++ ) {
-
-    std::vector<Double_t> scin_temp;
-    fScinHitPaddle.push_back(scin_temp); // Create array of hits per plane
-
-    for (UInt_t ipaddle = 0; ipaddle < fNPaddle[0]; ipaddle++ ){
-	  fScinHitPaddle[ip].push_back(0.0);
-	  fScinHitPaddle[ip][ipaddle] = 0.0;
-    }
-  }
-
-  for(Int_t ip = 0; ip < fNPlanes; ip++ ) {
+  for(Int_t ip = 0; ip < temp_planes; ip++ ) {
     if (!fPlanes[ip])
       return -1;
 
@@ -1372,7 +1371,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   //  *Wwe count the number of three adjacent scintillators too.  (A signle track
   //  *shouldn't fire three adjacent scintillators.
 
-  for(Int_t ip = 0; ip < fNPlanes; ip++ ) {
+  for(Int_t ip = 0; ip < temp_planes; ip++ ) {
     // Planes ip = 0 = 1X
     // Planes ip = 2 = 2X
     if (!fPlanes[ip]) return -1;
@@ -1388,7 +1387,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
     if ( fScinHitPaddle[ip][0] == 1 )
       icount ++;
 
-    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[0] - 1; ipaddle++ ){
+    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[ip] - 1; ipaddle++ ){
       // !look for number of clusters of 1 or more hits
 
       if ( ( fScinHitPaddle[ip][ipaddle] == 0 ) &&
@@ -1400,7 +1399,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
     fNClust[ip] = icount;
     icount = 0;
 
-    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[0] - 2; ipaddle++ ){
+    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[ip] - 2; ipaddle++ ){
       // !look for three or more adjacent hits
 
       if ( ( fScinHitPaddle[ip][ipaddle] == 1 ) &&
@@ -1417,7 +1416,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   // *look for clusters in y planes... (10 scins)  !this assume both y planes have same
   // *number of scintillators.
 
-  for (Int_t ip = 1; ip < 4; ip +=2 ) {
+  for (Int_t ip = 1; ip < temp_planes; ip +=2 ) {
     // Planes ip = 1 = 1Y
     // Planes ip = 3 = 2Y
     if (!fPlanes[ip]) return -1;
@@ -1426,7 +1425,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
     if ( fScinHitPaddle[ip][0] == 1 )
       icount ++;
 
-    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[1] - 1; ipaddle++ ){
+    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[ip] - 1; ipaddle++ ){
       //  !look for number of clusters of 1 or more hits
 
       if ( ( fScinHitPaddle[ip][ipaddle] == 0 ) &&
@@ -1438,7 +1437,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
     fNClust[ip] = icount;
     icount = 0;
 
-    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[1] - 2; ipaddle++ ){
+    for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[ip] - 2; ipaddle++ ){
       // !look for three or more adjacent hits
 
       if ( ( fScinHitPaddle[ip][ipaddle] == 1 ) &&
@@ -1453,46 +1452,6 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
 
   }// Loop over Y planes
 
-  // *now put some "tracking" like cuts on the hslopes, based only on scins...
-  // *by "slope" here, I mean the difference in the position of scin hits in two
-  // *like-planes.  For example, a track that those great straight through will
-  // *have a slope of zero.  If it moves one scin over from s1x to s2x it has an
-  // *x-slope of 1...  I pick the minimum slope if there are multiple scin hits.
-
-  Double_t bestXpScin = 100.0;
-  Double_t bestYpScin = 100.0;
-
-  for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[0]; ipaddle++ ){
-    for (Int_t ipaddle2 = 0; ipaddle2 < (Int_t) fNPaddle[0]; ipaddle2++ ){
-
-      if ( ( fScinHitPaddle[0][ipaddle] == 1 ) &&
-	   ( fScinHitPaddle[2][ipaddle2] == 1 ) ){
-
-	Double_t slope = TMath::Abs(ipaddle - ipaddle2);
-
-	if ( slope < bestXpScin ) {
-	  bestXpScin = slope;
-
-	}
-      }
-    }  // Second loop over X paddles
-  } // First loop over X paddles
-
-
-  for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[1]; ipaddle++ ){
-    for (Int_t ipaddle2 = 0; ipaddle2 < (Int_t) fNPaddle[1]; ipaddle2++ ){
-
-      if ( ( fScinHitPaddle[1][ipaddle] == 1 ) &&
-	   ( fScinHitPaddle[3][ipaddle2] == 1 ) ){
-
-	Double_t slope = TMath::Abs(ipaddle - ipaddle2);
-
-	if ( slope < bestYpScin ) {
-	  bestYpScin = slope;
-	}
-      }
-    }  // Second loop over Y paddles
-  } // First loop over Y paddles
 
   // *next we mask out the edge scintillators, and look at triggers that happened
   // *at the center of the acceptance.  To change which scins are in the mask
@@ -1503,6 +1462,10 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
     fGoodScinHitsX.push_back(0);
   }
 
+  fHitSweet1X=0;
+  fHitSweet2X=0;
+  fHitSweet1Y=0;
+  fHitSweet2Y=0;
   // *first x plane.  first see if there are hits inside the scin region
   for (Int_t ifidx = fxLoScin[0]-1; ifidx < fxHiScin[0]; ifidx ++ ){
     if ( fScinHitPaddle[0][ifidx] == 1 ){
@@ -1568,7 +1531,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   fTestSum = fHitSweet1X + fHitSweet2X + fHitSweet1Y + fHitSweet2Y;
 
   // * now define a 3/4 or 4/4 trigger of only good scintillators the value
-  // * is specified in htracking.param...
+  // * is specified in htracking
   if ( fTestSum >= fTrackEffTestNScinPlanes ){
     fGoodScinHits = 1;
     for (Int_t ifidx = fxLoScin[0]; ifidx < fxHiScin[0]; ifidx ++ ){
@@ -1586,25 +1549,22 @@ Int_t THcHodoscope::FineProcess( TClonesArray& tracks )
   }
 
 
-  if ( !fChern || !fShower ) {
-    return 0;
-  }
-
-
-  if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > fNormETot ) &&
-       ( fChern->GetCerNPE() > fNCerNPE ) )
-    fScinShould = 1;
-
-  if ( ( fGoodScinHits == 1 ) && ( fShower->GetNormETot() > fNormETot ) &&
-       ( fChern->GetCerNPE() > fNCerNPE ) && ( tracks.GetLast() + 1 > 0 ) ) {
-      fScinDid = 1;
-  }
-	    if(fDumpTOF && ntracks==1) {
-	      fDumpOut << "0 "  << endl;
-	    }
 
   return 0;
 
+}
+//_____________________________________________________________________________
+Int_t THcHodoscope::FineProcess( TClonesArray&  tracks  )
+{
+  Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
+  for (Int_t itrk=0; itrk<Ntracks; itrk++) {
+    THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
+    if (theTrack->GetIndex()==0) {
+    fBeta=theTrack->GetBeta();
+    }
+  }       //over tracks
+
+  return 0;
 }
 //_____________________________________________________________________________
 Int_t THcHodoscope::GetScinIndex( Int_t nPlane, Int_t nPaddle ) {

@@ -18,6 +18,7 @@ using namespace std;
 //////////////////////////////////////////////////////////////////////////
 
 //class THaDetMap;
+class THcConfigEvtHandler;
 
 class THcHitList {
 
@@ -57,6 +58,8 @@ protected:
   Int_t fNRefIndex;
   UInt_t fNSignals;
   THcRawHit::ESignalType *fSignalTypes;
+
+  THcConfigEvtHandler* fPSE125;
 
   ClassDef(THcHitList,0);  // List of raw hits sorted by plane, counter
 };

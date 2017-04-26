@@ -45,10 +45,15 @@ public:
   virtual Bool_t   IsPid()      { return kFALSE; }
 
   virtual Int_t ProcessHits(TClonesArray* rawhits, Int_t nexthit);
+  virtual Int_t CoarseProcessHits();
   virtual Int_t AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit);
   virtual void  CalculatePedestals( );
   virtual void  InitializePedestals( );
-
+  virtual void  FillADC_DynamicPedestal( );
+  virtual void  FillADC_SampleIntegral( );
+  virtual void  FillADC_SampIntDynPed( );
+  virtual void  FillADC_Standard( );
+ 
   // Cluster to track association method.
   Int_t MatchCluster(THaTrack*, Double_t&, Double_t&);
 
@@ -56,6 +61,22 @@ public:
   // spectrometer Track.
 
   Float_t GetShEnergy(THaTrack*);
+  Double_t fMatchClX;
+  Double_t fMatchClY;
+  Double_t fMatchClMaxEnergyBlock;
+  Double_t fClustSize;
+  Double_t GetClMaxEnergyBlock() {
+    return fMatchClMaxEnergyBlock;
+  };
+  Double_t GetClSize() {
+    return fClustSize;
+  };
+  Double_t GetClX() {
+    return fMatchClX;
+  };
+  Double_t GetClY() {
+    return fMatchClY;
+  };
 
   //  Double_t fSpacing;   not used
 
@@ -70,6 +91,7 @@ public:
   Double_t fvYmax();
   Double_t fvXmax();
   Double_t fvYmin();
+  Double_t clMaxEnergyBlock(THcShowerCluster* cluster);
 
 protected:
 
@@ -96,9 +118,21 @@ protected:
   Double_t fZSize;               // Block size along Z
   Double_t** fXPos;              // block X coordinates
   Double_t** fYPos;              // block Y coordinates
+  Double_t** fZPos;              // block Z coordinates
 
   Int_t fUsingFADC;		// != 0 if using FADC in sample mode
-  Int_t fPedSampLow;		// Sample range for
+   Int_t fADCMode;		//    
+   //  1 == Use the pulse int - pulse ped
+    //  2 == Use the sample integral - known ped
+    //  3 == Use the sample integral - sample ped
+ static const Int_t kADCStandard=0;
+  static const Int_t kADCDynamicPedestal=1;
+  static const Int_t kADCSampleIntegral=2;
+  static const Int_t kADCSampIntDynPed=3;
+  Double_t fAdcTimeWindowMin ;
+  Double_t fAdcTimeWindowMax ;
+  Double_t fAdcThreshold ;
+Int_t fPedSampLow;		// Sample range for
   Int_t fPedSampHigh;		// dynamic pedestal
   Int_t fDataSampLow;		// Sample range for
   Int_t fDataSampHigh;		// sample integration
@@ -126,9 +160,11 @@ protected:
   //Energy depositions.
 
   Double_t* fE;              // [fNelem] energy depositions in the blocks.
+  Int_t* fBlock_ClusterID;              // [fNelem] Cluster ID of the block -1 then not in a cluster
   Double_t  fEarray;         // Total Energy deposition in the array.
 
   Int_t fNhits;              // Total number of hits
+  Int_t fNgoodhits;              // Total number of good hits (pass threshold)
   Int_t fNclust;             // Number of hit clusters
   Int_t fNtracks;            // Number of shower tracks, i.e. number of
                              // cluster-to-track associations
@@ -136,6 +172,7 @@ protected:
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
   TClonesArray* frAdcPedRaw;
+  TClonesArray* frAdcErrorFlag;
   TClonesArray* frAdcPulseIntRaw;
   TClonesArray* frAdcPulseAmpRaw;
   TClonesArray* frAdcPulseTimeRaw;
@@ -143,6 +180,7 @@ protected:
   TClonesArray* frAdcPed;
   TClonesArray* frAdcPulseInt;
   TClonesArray* frAdcPulseAmp;
+
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );

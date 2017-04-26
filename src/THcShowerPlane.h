@@ -39,6 +39,7 @@ public:
   virtual Bool_t   IsPid()      { return kFALSE; }
 
   virtual Int_t ProcessHits(TClonesArray* rawhits, Int_t nexthit);
+  virtual Int_t CoarseProcessHits();
   virtual Int_t AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit);
   virtual void  CalculatePedestals( );
 
@@ -110,10 +111,19 @@ protected:
 
   // Flash ADC parameters
   Int_t fUsingFADC;		// != 0 if using FADC in sample mode
-  Int_t fPedSampLow;		// Sample range for
+   //  1 == Use the pulse int - pulse ped
+    //  2 == Use the sample integral - known ped
+    //  3 == Use the sample integral - sample ped
+ static const Int_t kADCStandard=0;
+  static const Int_t kADCDynamicPedestal=1;
+  static const Int_t kADCSampleIntegral=2;
+  static const Int_t kADCSampIntDynPed=3;
+   Int_t fPedSampLow;		// Sample range for
   Int_t fPedSampHigh;		// dynamic pedestal
   Int_t fDataSampLow;		// Sample range for
   Int_t fDataSampHigh;		// sample integration
+  Double_t fAdcNegThreshold;		// 
+  Double_t fAdcPosThreshold;		// 
 
   Double_t*   fA_Pos;         // [fNelem] ADC amplitudes of blocks
   Double_t*   fA_Neg;         // [fNelem] ADC amplitudes of blocks
@@ -151,6 +161,7 @@ protected:
   Float_t *fNegSig;
   Float_t *fNegThresh;
 
+  TClonesArray* frPosAdcErrorFlag;
   TClonesArray* frPosAdcPedRaw;
   TClonesArray* frPosAdcPulseIntRaw;
   TClonesArray* frPosAdcPulseAmpRaw;
@@ -160,6 +171,7 @@ protected:
   TClonesArray* frPosAdcPulseInt;
   TClonesArray* frPosAdcPulseAmp;
 
+  TClonesArray* frNegAdcErrorFlag;
   TClonesArray* frNegAdcPedRaw;
   TClonesArray* frNegAdcPulseIntRaw;
   TClonesArray* frNegAdcPulseAmpRaw;
@@ -172,6 +184,10 @@ protected:
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
   virtual void  InitializePedestals( );
+  virtual void  FillADC_DynamicPedestal( );
+  virtual void  FillADC_SampleIntegral( );
+  virtual void  FillADC_SampIntDynPed( );
+  virtual void  FillADC_Standard( );
   ClassDef(THcShowerPlane,0); // Calorimeter bars in a plane
 };
 #endif

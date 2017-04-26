@@ -42,6 +42,8 @@ public:
   virtual Bool_t HasReference(Int_t signal) {return kFALSE;};
   virtual Int_t GetReference(Int_t signal) {return 0;};
 
+  virtual void SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED) {};
+
   // Derived objects must be sortable and supply Compare method
   //  virtual Bool_t  IsSortable () const {return kFALSE; }
   //  virtual Int_t   Compare(const TObject* obj) const {return 0;}

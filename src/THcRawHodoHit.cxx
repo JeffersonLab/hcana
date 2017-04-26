@@ -17,7 +17,7 @@
 
 
 THcRawHodoHit::THcRawHodoHit(Int_t plane, Int_t counter) :
-  fAdcHits(), fTdcHits()
+  THcRawHit(plane, counter), fAdcHits(), fTdcHits()
 {}
 
 
@@ -195,6 +195,13 @@ THcRawTdcHit& THcRawHodoHit::GetRawTdcHitPos() {
 
 THcRawTdcHit& THcRawHodoHit::GetRawTdcHitNeg() {
   return fTdcHits[1];
+}
+
+
+void THcRawHodoHit::SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED) {
+  for (Int_t iAdcSig=0; iAdcSig<fNAdcSignals; ++iAdcSig) {
+    fAdcHits[iAdcSig].SetF250Params(NSA, NSB, NPED);
+  }
 }
 
 

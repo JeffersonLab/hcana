@@ -4,7 +4,7 @@ block H.dc.*
 block H.hod.*
 block H.cal.*
 block H.aero.*
-block H.cher.*
+block H.cer.*
 block H.tr.*
 block S.dc.*
 block S.hod.*
@@ -13,24 +13,24 @@ block g.evtyp
 block RB.*
 
 # TDC hits per paddle
-TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.postdcpad 16 0.5 16.5
-TH1F hnegtdc1 'HMS s1x- TDC hits' H.hod.1x.negtdcpad 16 0.5 16.5
-TH1F hpostdc2 'HMS s1y+ TDC hits' H.hod.1y.postdcpad 10 0.5 10.5
-TH1F hnegtdc2 'HMS s1y- TDC hits' H.hod.1y.negtdcpad 10 0.5 10.5
-TH1F hpostdc3 'HMS s2x+ TDC hits' H.hod.2x.postdcpad 16 0.5 16.5
-TH1F hnegtdc3 'HMS s2x- TDC hits' H.hod.2x.negtdcpad 16 0.5 16.5
-TH1F hpostdc4 'HMS s2y+ TDC hits' H.hod.2y.postdcpad 10 0.5 10.5
-TH1F hnegtdc4 'HMS s2y- TDC hits' H.hod.2y.negtdcpad 10 0.5 10.5
+TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.posTdcCounter 16 0.5 16.5
+TH1F hnegtdc1 'HMS s1x- TDC hits' H.hod.1x.negTdcCounter 16 0.5 16.5
+TH1F hpostdc2 'HMS s1y+ TDC hits' H.hod.1y.posTdcCounter 10 0.5 10.5
+TH1F hnegtdc2 'HMS s1y- TDC hits' H.hod.1y.negTdcCounter 10 0.5 10.5
+TH1F hpostdc3 'HMS s2x+ TDC hits' H.hod.2x.posTdcCounter 16 0.5 16.5
+TH1F hnegtdc3 'HMS s2x- TDC hits' H.hod.2x.negTdcCounter 16 0.5 16.5
+TH1F hpostdc4 'HMS s2y+ TDC hits' H.hod.2y.posTdcCounter 10 0.5 10.5
+TH1F hnegtdc4 'HMS s2y- TDC hits' H.hod.2y.negTdcCounter 10 0.5 10.5
 
 # ADC hits per paddle
-TH1F hposadc1 'HMS s1x+ ADC hits' H.hod.1x.posadcpad 16 0.5 16.5
-TH1F hnegadc1 'HMS s1x- ADC hits' H.hod.1x.negadcpad 16 0.5 16.5
-TH1F hposadc2 'HMS s1y+ ADC hits' H.hod.1y.posadcpad 10 0.5 10.5
-TH1F hnegadc2 'HMS s1y- ADC hits' H.hod.1y.negadcpad 10 0.5 10.5
-TH1F hposadc3 'HMS s2x+ ADC hits' H.hod.2x.posadcpad 16 0.5 16.5
-TH1F hnegadc3 'HMS s2x- ADC hits' H.hod.2x.negadcpad 16 0.5 16.5
-TH1F hposadc4 'HMS s2y+ ADC hits' H.hod.2y.posadcpad 10 0.5 10.5
-TH1F hnegadc4 'HMS s2y- ADC hits' H.hod.2y.negadcpad 10 0.5 10.5
+TH1F hposadc1 'HMS s1x+ ADC hits' H.hod.1x.posAdcCounter 16 0.5 16.5
+TH1F hnegadc1 'HMS s1x- ADC hits' H.hod.1x.negAdcCounter 16 0.5 16.5
+TH1F hposadc2 'HMS s1y+ ADC hits' H.hod.1y.posAdcCounter 10 0.5 10.5
+TH1F hnegadc2 'HMS s1y- ADC hits' H.hod.1y.negAdcCounter 10 0.5 10.5
+TH1F hposadc3 'HMS s2x+ ADC hits' H.hod.2x.posAdcCounter 16 0.5 16.5
+TH1F hnegadc3 'HMS s2x- ADC hits' H.hod.2x.negAdcCounter 16 0.5 16.5
+TH1F hposadc4 'HMS s2y+ ADC hits' H.hod.2y.posAdcCounter 10 0.5 10.5
+TH1F hnegadc4 'HMS s2y- ADC hits' H.hod.2y.negAdcCounter 10 0.5 10.5
 
 # ADC hits per Calorimeter layer
 TH1F chposadc1 'HMS Cal A+ ADC hits' H.cal.1pr.posadchits 13 0.5 13.5
@@ -170,12 +170,12 @@ TH1F hdc2v1_dd 'HDC 2V1 Drift Distance' H.dc.2v1.dist 300 -0.1 0.6
 TH1F hdc2y2_dd 'HDC 2Y2 Drift Distance' H.dc.2y2.dist 300 -0.1 0.6
 TH1F hdc2x2_dd 'HDC 2X2 Drift Distance' H.dc.2x2.dist 300 -0.1 0.6
 
-formula Hhodtdif1 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[1]
-formula Hhodtdif2 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[2]
-formula Hhodtdif3 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[3]
-formula Hhodtdif4 H.hod.fpHitsTime[1]-H.hod.fpHitsTime[2]
-formula Hhodtdif5 H.hod.fpHitsTime[1]-H.hod.fpHitsTime[3]
-formula Hhodtdif6 H.hod.fpHitsTime[2]-H.hod.fpHitsTime[3]
+formula Hhodtdif1 H.hod.1x.fptime-H.hod.1y.fptime
+formula Hhodtdif2 H.hod.1x.fptime-H.hod.2x.fptime
+formula Hhodtdif3 H.hod.1x.fptime-H.hod.2y.fptime
+formula Hhodtdif4 H.hod.1y.fptime-H.hod.2x.fptime
+formula Hhodtdif5 H.hod.1y.fptime-H.hod.2y.fptime
+formula Hhodtdif6 H.hod.2x.fptime-H.hod.2y.fptime
 
 # Focal Plane times
 TH1F htimedif1 ' Time dif of plane 1 and 2' Hhodtdif1 80 -40. 40.
@@ -185,32 +185,32 @@ TH1F htimedif4 ' Time dif of plane 2 and 3' Hhodtdif4 80 -40. 40.
 TH1F htimedif5 ' Time dif of plane 2 and 4' Hhodtdif5 80 -40. 40.
 TH1F htimedif6 ' Time dif of plane 3 and 4' Hhodtdif6 80 -40. 40.
 
-TH1F hs1xfptime 'HODO s1x fptime' H.hod.fpHitsTime[0] 80 0 80 H.hod.goodstarttime
-TH1F hs1yfptime 'HODO s1y fptime' H.hod.fpHitsTime[1] 80 0 80 H.hod.goodstarttime
-TH1F hs2xfptime 'HODO s2x fptime' H.hod.fpHitsTime[2] 80 0 80 H.hod.goodstarttime
-TH1F hs2yfptime 'HODO s2y fptime' H.hod.fpHitsTime[3] 80 0 80 H.hod.goodstarttime
+TH1F hs1xfptime 'HODO s1x fptime' H.hod.1x.fptime 80 0 80 H.hod.goodstarttime
+TH1F hs1yfptime 'HODO s1y fptime' H.hod.1y.fptime 80 0 80 H.hod.goodstarttime
+TH1F hs2xfptime 'HODO s2x fptime' H.hod.2x.fptime 80 0 80 H.hod.goodstarttime
+TH1F hs2yfptime 'HODO s2y fptime' H.hod.2y.fptime 80 0 80 H.hod.goodstarttime
 TH1F starttime  'HODO start time' H.hod.starttime 80 0 80 H.hod.goodstarttime
 
 #SOS
 # TDC hits per paddle
-TH1F spostdc1 'SOS s1x+ TDC hits' S.hod.1x.postdcpad 9 0.5 9.5
-TH1F snegtdc1 'SOS s1x- TDC hits' S.hod.1x.negtdcpad 9 0.5 9.5
-TH1F spostdc2 'SOS s1y+ TDC hits' S.hod.1y.postdcpad 9 0.5 9.5
-TH1F snegtdc2 'SOS s1y- TDC hits' S.hod.1y.negtdcpad 9 0.5 9.5
-TH1F spostdc3 'SOS s2x+ TDC hits' S.hod.2x.postdcpad 16 0.5 16.5
-TH1F snegtdc3 'SOS s2x- TDC hits' S.hod.2x.negtdcpad 16 0.5 16.5
-TH1F spostdc4 'SOS s2y+ TDC hits' S.hod.2y.postdcpad 9 0.5 9.5
+TH1F spostdc1 'SOS s1x+ TDC hits' S.hod.1x.posTdcCounter 9 0.5 9.5
+TH1F snegtdc1 'SOS s1x- TDC hits' S.hod.1x.negTdcCounter 9 0.5 9.5
+TH1F spostdc2 'SOS s1y+ TDC hits' S.hod.1y.posTdcCounter 9 0.5 9.5
+TH1F snegtdc2 'SOS s1y- TDC hits' S.hod.1y.negTdcCounter 9 0.5 9.5
+TH1F spostdc3 'SOS s2x+ TDC hits' S.hod.2x.posTdcCounter 16 0.5 16.5
+TH1F snegtdc3 'SOS s2x- TDC hits' S.hod.2x.negTdcCounter 16 0.5 16.5
+TH1F spostdc4 'SOS s2y+ TDC hits' S.hod.2y.posTdcCounter 9 0.5 9.5
 TH1F snegtdc4 'SOS s2y- TDC hits' S.hod.2y.negtdcpad 9 0.5 9.5
 
 # ADC hits per paddle
-TH1F sposadc1 'SOS s1x+ ADC hits' S.hod.1x.posadcpad 9 0.5 9.5
-TH1F snegadc1 'SOS s1x- ADC hits' S.hod.1x.negadcpad 9 0.5 9.5
-TH1F sposadc2 'SOS s1y+ ADC hits' S.hod.1y.posadcpad 9 0.5 9.5
-TH1F snegadc2 'SOS s1y- ADC hits' S.hod.1y.negadcpad 9 0.5 9.5
-TH1F sposadc3 'SOS s2x+ ADC hits' S.hod.2x.posadcpad 16 0.5 16.5
-TH1F snegadc3 'SOS s2x- ADC hits' S.hod.2x.negadcpad 16 0.5 16.5
-TH1F sposadc4 'SOS s2y+ ADC hits' S.hod.2y.posadcpad 9 0.5 9.5
-TH1F snegadc4 'SOS s2y- ADC hits' S.hod.2y.negadcpad 9 0.5 9.5
+TH1F sposadc1 'SOS s1x+ ADC hits' S.hod.1x.posAdcCounter 9 0.5 9.5
+TH1F snegadc1 'SOS s1x- ADC hits' S.hod.1x.negAdcCounter 9 0.5 9.5
+TH1F sposadc2 'SOS s1y+ ADC hits' S.hod.1y.posAdcCounter 9 0.5 9.5
+TH1F snegadc2 'SOS s1y- ADC hits' S.hod.1y.negAdcCounter 9 0.5 9.5
+TH1F sposadc3 'SOS s2x+ ADC hits' S.hod.2x.posAdcCounter 16 0.5 16.5
+TH1F snegadc3 'SOS s2x- ADC hits' S.hod.2x.negAdcCounter 16 0.5 16.5
+TH1F sposadc4 'SOS s2y+ ADC hits' S.hod.2y.posAdcCounter 9 0.5 9.5
+TH1F snegadc4 'SOS s2y- ADC hits' S.hod.2y.negAdcCounter 9 0.5 9.5
 
 TH1F sdc1u1_wm 'SDC 1U1 Wiremap' S.dc.1u1.wirenum 48 0.5 48.5
 TH1F sdc1u2_wm 'SDC 1U2 Wiremap' S.dc.1u2.wirenum 48 0.5 48.5
@@ -239,7 +239,7 @@ TH1F sdc2v1_dd 'SDC 2V1 Drift Distance' S.dc.2v1.dist 300 -0.1 0.6
 TH1F sdc2v2_dd 'SDC 2V2 Drift Distance' S.dc.2v2.dist 300 -0.1 0.6
 
 # Scaler variables
-variable HSS1 
+variable HSS1
 variable HSS1r
 variable HShPRE50
 variable HShPRE50r

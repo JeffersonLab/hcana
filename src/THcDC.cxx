@@ -340,6 +340,10 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "y", "Y at focal plane", "fDCTracks.THcDCTrack.GetY()"},
     { "xp", "XP at focal plane", "fDCTracks.THcDCTrack.GetXP()"},
     { "yp", "YP at focal plane", "fDCTracks.THcDCTrack.GetYP()"},
+    { "x_fp", "X at focal plane (best chi2 track)", "fX_fp_best"},
+    { "y_fp", "Y at focal plane( best chi2 track)", "fY_fp_best"},
+    { "xp_fp", "XP at focal plane (best chi2 track)", "fXp_fp_best"},
+    { "yp_fp", "YP at focal plane(best chi2 track) ", "fYp_fp_best"},
     { "residual", "Residuals", "fResiduals"},
     { 0 }
   };
@@ -411,6 +415,10 @@ void THcDC::ClearEvent()
   fNhits = 0;
   fNthits = 0;
   fN_True_RawHits=0;
+  fX_fp_best=-10000.;
+  fY_fp_best=-10000.;
+  fXp_fp_best=-10000.;
+  fYp_fp_best=-10000.;
 
   for(UInt_t i=0;i<fNChambers;i++) {
     fChambers[i]->Clear();
@@ -456,9 +464,9 @@ Int_t THcDC::Decode( const THaEvData& evdata )
       cout << " Hit #  " << "Plane  " << " Wire " <<  " Raw TDC " << endl;
       for(UInt_t ihit = 0; ihit < fNRawHits ; ihit++) {
 	THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
-	for(UInt_t imhit = 0; imhit < hit->fNHits; imhit++) {
+	for(UInt_t imhit = 0; imhit < hit->GetRawTdcHit().GetNHits(); imhit++) {
 	  counter++;
-	  cout << counter << "      " << hit->fPlane << "     " << hit->fCounter << "     " << hit->fTDC[imhit]	   << endl;
+	  cout << counter << "      " << hit->fPlane << "     " << hit->fCounter << "     " << hit->GetRawTdcHit().GetTimeRaw(imhit)	   << endl;
 	}
       }
       cout << endl;
@@ -498,8 +506,10 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
   if (fdebugflagstubs)  PrintStubs();
   // Now link the stubs between chambers
   LinkStubs();
-  if(fNDCTracks > 0) {
-    TrackFit();
+ if(fNDCTracks > 0) {
+     Double_t chi2_best=10000000.;
+     Int_t itrack_best=0;
+     TrackFit();
     // Copy tracks into podd tracks list
     for(UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
       THaTrack* theTrack = NULL;
@@ -512,12 +522,21 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
       theTrack->SetFlag((UInt_t) 0);
       // Need to look at how engine does chi2 and track selection.  Reduced?
       theTrack->SetChi2(tr->GetChisq(),tr->GetNFree());
+      if (tr->GetChisq()<chi2_best) {
+	chi2_best =  tr->GetChisq();
+        itrack_best=itrack;
+      }
       // CalcFocalPlaneCoords.  Aren't our tracks already in focal plane coords
       // We should have some kind of track ID so that the THaTrack can be
       // associate back with the DC track
       // Assign the track number
       theTrack->SetTrkNum(itrack+1);
     }
+      THcDCTrack *tr1 = static_cast<THcDCTrack*>( fDCTracks->At(itrack_best));
+      fX_fp_best=tr1->GetX();
+      fY_fp_best=tr1->GetY();
+      fXp_fp_best=tr1->GetXP();
+      fYp_fp_best=tr1->GetYP();
   }
 
   // Check for internal TrackFit errors
@@ -891,6 +910,7 @@ void THcDC::TrackFit()
 	Double_t coord=0.0;
 	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
 	  coord += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
+	  // cout << "ir = " << ir << ", dray[ir] = " << dray[ir] << endl;
 	}
 	theDCTrack->SetCoord(iplane,coord);
       }
@@ -898,7 +918,12 @@ void THcDC::TrackFit()
       chi2 = 0.0;
       for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
 	Double_t residual = coords[ihit] - theDCTrack->GetCoord(planes[ihit]);
+	// cout << "ihit = " << ihit << ", planes[ihit] = " << planes[ihit]
+	//      << ", coords[ihit] = " << coords[ihit]
+	//      << ", theDCTrack->GetCoord(planes[ihit]) = "
+	//      << theDCTrack->GetCoord(planes[ihit]) << endl;
 	theDCTrack->SetResidual(planes[ihit], residual);
+	// cout << "Getting residual = " << theDCTrack->GetResidual(planes[ihit]) << endl;
 	chi2 += pow(residual/fSigma[planes[ihit]],2);
       }
       theDCTrack->SetVector(dray[0], dray[1], 0.0, dray[2], dray[3]);
@@ -988,9 +1013,21 @@ void THcDC::TrackFit()
     }
   }
   if(fNDCTracks>0) {
-    for(Int_t ip=0;ip<fNPlanes;ip++) {
-      THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(0));
-      fResiduals[ip] = theDCTrack->GetResidual(ip);
+    Double_t chi_max=1000000;
+    for (UInt_t itrack = 0; itrack < fNDCTracks; itrack++) {
+      //for(Int_t ip=0;ip<fNPlanes;ip++) {
+      THcDCTrack *theDCTrack = static_cast <THcDCTrack*> (fDCTracks->At(itrack));
+	if (theDCTrack->GetChisq() < chi_max) {
+            chi_max = theDCTrack->GetChisq();
+         for (UInt_t ihit = 0; ihit < UInt_t (theDCTrack->GetNHits()); ihit++) {
+	//fResiduals[ip] = theDCTrack->GetResidual(ip);
+	THcDCHit *hit = theDCTrack->GetHit(ihit);
+	Int_t plane = hit->GetPlaneNum() - 1;
+	// fResiduals[ip] = theDCTrack->GetResidual(ip);
+             fResiduals[plane] = theDCTrack->GetResidual(plane);
+ 	}
+	//	cout << "track = " << itrack+1 << "plane = " << plane << ", fResiduals[plane] = " << fResiduals[plane] << "chi =  "  << theDCTrack->GetChisq()<< endl;
+      }
     }
   }
   //

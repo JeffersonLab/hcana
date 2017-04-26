@@ -92,13 +92,14 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   UInt_t NumDriftMapBins;
   Double_t DriftMapFirstBin;
   Double_t DriftMapBinSize;
-
+  fUsingTzeroPerWire=0;
   prefix[0]=tolower(GetParent()->GetPrefix()[0]);
   prefix[1]='\0';
   DBRequest list[]={
     {"driftbins", &NumDriftMapBins, kInt},
     {"drift1stbin", &DriftMapFirstBin, kDouble},
     {"driftbinsz", &DriftMapBinSize, kDouble},
+    {"_using_tzero_per_wire", &fUsingTzeroPerWire, kInt,0,1},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
@@ -109,6 +110,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list2,prefix);
+
 
   // Retrieve parameters we need from parent class
   THcDC* fParent;
@@ -129,6 +131,25 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   fDriftTimeSign = fParent->GetDriftTimeSign(fPlaneNum);
 
   fNSperChan = fParent->GetNSperChan();
+
+  if (fUsingTzeroPerWire==1) {
+  fTzeroWire = new Double_t [fNWires];
+  DBRequest list3[]={
+    {Form("tzero%s",GetName()),fTzeroWire,kDouble,(UInt_t) fNWires},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list3,prefix);
+  printf(" using tzero per wire plane = %s  nwires = %d  \n",GetName(),fNWires);
+      for (Int_t iw=0;iw < fNWires;iw++) {
+	printf("%d  %f ",iw+1,fTzeroWire[iw]) ;
+ 	if ( iw!=0 && iw%8 == 0) printf("\n") ;
+	}
+  } else {
+  fTzeroWire = new Double_t [fNWires];
+  for (Int_t iw=0;iw < fNWires;iw++) {
+    fTzeroWire[iw]=0.0;
+    } 
+  }
 
   // Calculate Geometry Constants
   // Do we want to move all this to the Chamber of DC Package leve
@@ -312,17 +333,18 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Int_t wireNum = hit->fCounter;
     THcDCWire* wire = GetWire(wireNum);
     // Int_t reftime = hit->GetReference(0);
-    for(UInt_t mhit=0; mhit<hit->fNHits; mhit++) {
+    for(UInt_t mhit=0; mhit<hit->GetRawTdcHit().GetNHits(); mhit++) {
       fNRawhits++;
       /* Sort into early, late and ontime */
-      Int_t rawtdc = hit->GetData(0,mhit); // Get the ref time subtracted time
+      Int_t rawtdc = hit->GetRawTdcHit().GetTime(mhit); // Get the ref time subtracted time
       if(rawtdc < fTdcWinMin) {
 	// Increment early counter  (Actually late because TDC is backward)
       } else if (rawtdc > fTdcWinMax) {
 	// Increment late count
       } else {
 	Double_t time = -StartTime   // (comes from h_trans_scin
-	  - rawtdc*fNSperChan + fPlaneTimeZero; // fNSperChan > 0 for 1877
+	  - rawtdc*fNSperChan + fPlaneTimeZero - fTzeroWire[wireNum-1]; // fNSperChan > 0 for 1877
+	// (cout << " Plane = " << GetName() << " wire = " << wireNum << " " <<  fPlaneTimeZero << " "  << fTzeroWire[wireNum-1] << endl;
 	// < 0 for Caen1190.
 	//	  - (rawtdc-reftime)*fNSperChan + fPlaneTimeZero;
 	// How do we get this start time from the hodoscope to here
@@ -335,7 +357,3 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   }
   return(ihit);
 }
-
-
-
-

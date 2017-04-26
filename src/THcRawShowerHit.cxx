@@ -142,4 +142,11 @@ THcRawAdcHit& THcRawShowerHit::GetRawAdcHitNeg() {
 }
 
 
+void THcRawShowerHit::SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED) {
+  for (Int_t iAdcSig=0; iAdcSig<fNAdcSignals; ++iAdcSig) {
+    fAdcHits[iAdcSig].SetF250Params(NSA, NSB, NPED);
+  }
+}
+
+
 ClassImp(THcRawShowerHit)

@@ -17,12 +17,12 @@ class THcDCHit : public TObject {
 
 public:
   THcDCHit( THcDCWire* wire=NULL, Int_t rawtime=0, Double_t time=0.0,
-	    THcDriftChamberPlane* wp=0) :
+    THcDriftChamberPlane* wp=0) :
     fWire(wire), fRawTime(rawtime), fTime(time), fWirePlane(wp),
     fDist(0.0), ftrDist(kBig) {
-    ConvertTimeToDist();
-    fCorrected = 0;
-  }
+      if (wire) ConvertTimeToDist();
+      fCorrected = 0;
+    }
   virtual ~THcDCHit() {}
 
   virtual Double_t ConvertTimeToDist();
@@ -44,7 +44,7 @@ public:
   THcDriftChamberPlane* GetWirePlane() const { return fWirePlane; }
 
 
-  void     SetWire(THcDCWire * wire) { fWire = wire; }
+  void     SetWire(THcDCWire * wire) { fWire = wire; ConvertTimeToDist(); }
   void     SetRawTime(Int_t time)     { fRawTime = time; }
   void     SetTime(Double_t time)     { fTime = time; }
   void     SetDist(Double_t dist)     { fDist = dist; }

@@ -11,15 +11,23 @@ comming from a specific source, like HMS.
 Can hold up to 100 ADC and TDC channels, though the limit can be changed if
 needed. It just seemed like a reasonable starting value.
 
+Only outputs the first hit for each channel to the Root tree leaf.
+
 # Defined variables
 
 For ADC channels it defines:
-  - ADC value: `var_adc`
-  - pedestal: `var_adcPed`
+  - raw pedestal: `var_adcPedRaw`
+  - raw pulse integral: `var_adcPulseIntRaw`
+  - raw pulse amplitude: `var_adcPulseAmpRaw`
+  - raw pulse time: `var_adcPulseTimeRaw`
+  - single sample pedestal value: `var_adcPed`
+  - pedestal subtracted pulse integral: `var_adcPulseInt`
+  - pedestal subtracted pulse amplitude: `var_adcPulseAmp`
   - multiplicity: `var_adcMult`
 
 For TDC channels it defines:
-  - TDC value: `var_tdc`
+  - raw TDC time: `var_tdcTimeRaw`
+  - refence time subtracted TDC time: `var_tdcTime`
   - multiplicity: `var_tdcMult`
 
 # Parameter file variables
@@ -102,6 +110,8 @@ Use only with THcTrigApp class.
 #include "THcDetectorMap.h"
 #include "THcGlobals.h"
 #include "THcParmList.h"
+#include "THcRawAdcHit.h"
+#include "THcRawTdcHit.h"
 #include "THcTrigApp.h"
 #include "THcTrigRawHit.h"
 
@@ -115,8 +125,10 @@ THcTrigDet::THcTrigDet(
   THaDetector(name, description, app), THcHitList(),
   fKwPrefix(""),
   fNumAdc(0), fNumTdc(0), fAdcNames(), fTdcNames(),
-  fAdcVal(), fAdcPedestal(), fAdcMultiplicity(),
-  fTdcVal(), fTdcMultiplicity()
+  fTdcTimeRaw(), fTdcTime(),
+  fAdcPedRaw(), fAdcPulseIntRaw(), fAdcPulseAmpRaw(), fAdcPulseTimeRaw(),
+  fAdcPed(), fAdcPulseInt(), fAdcPulseAmp(),
+  fTdcMultiplicity(), fAdcMultiplicity()
 {}
 
 
@@ -128,8 +140,21 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
   Setup(GetName(), GetTitle());
 
   // Initialize all variables.
-  for (int i=0; i<fMaxAdcChannels; ++i) fAdcVal[i] = -1.0;
-  for (int i=0; i<fMaxTdcChannels; ++i) fTdcVal[i] = -1.0;
+  for (int i=0; i<fMaxAdcChannels; ++i) {
+    fAdcPedRaw[i] = 0;
+    fAdcPulseIntRaw[i] = 0;
+    fAdcPulseAmpRaw[i] = 0;
+    fAdcPulseTimeRaw[i] = 0;
+    fAdcPed[i] = 0.0;
+    fAdcPulseInt[i] = 0.0;
+    fAdcPulseAmp[i] = 0.0;
+    fAdcMultiplicity[i] = 0;
+  };
+  for (int i=0; i<fMaxTdcChannels; ++i) {
+    fTdcTimeRaw[i] = 0;
+    fTdcTime[i] = 0.0;
+    fTdcMultiplicity[i] = 0;
+  };
 
   // Call initializer for base class.
   // This also calls `ReadDatabase` and `DefineVariables`.
@@ -139,8 +164,6 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
     return fStatus;
   }
 
-  // Initialize hitlist part of the class.
-  InitHitList(fDetMap, "THcTrigRawHit", 100);
 
   // Fill in detector map.
   string EngineDID = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
@@ -150,6 +173,9 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
     Error(Here(here), "Error filling detectormap for %s.", EngineDID.c_str());
     return kInitError;
   }
+  // Initialize hitlist part of the class.
+  printf(" Init trig det hitlist\n");
+  InitHitList(fDetMap, "THcTrigRawHit", 100);
 
   fStatus = kOK;
   return fStatus;
@@ -160,8 +186,21 @@ void THcTrigDet::Clear(Option_t* opt) {
   THaAnalysisObject::Clear(opt);
 
   // Reset all data.
-  for (int i=0; i<fNumAdc; ++i) fAdcVal[i] = 0.0;
-  for (int i=0; i<fNumTdc; ++i) fTdcVal[i] = 0.0;
+  for (int i=0; i<fNumAdc; ++i) {
+    fAdcPedRaw[i] = 0;
+    fAdcPulseIntRaw[i] = 0;
+    fAdcPulseAmpRaw[i] = 0;
+    fAdcPulseTimeRaw[i] = 0;
+    fAdcPed[i] = 0.0;
+    fAdcPulseInt[i] = 0.0;
+    fAdcPulseAmp[i] = 0.0;
+    fAdcMultiplicity[i] = 0;
+  };
+  for (int i=0; i<fNumTdc; ++i) {
+    fTdcTimeRaw[i] = 0;
+    fTdcTime[i] = 0.0;
+    fTdcMultiplicity[i] = 0;
+  };
 }
 
 
@@ -174,14 +213,28 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
   while (iHit < numHits) {
     THcTrigRawHit* hit = dynamic_cast<THcTrigRawHit*>(fRawHitList->At(iHit));
 
+    Int_t cnt = hit->fCounter-1;
     if (hit->fPlane == 1) {
-      fAdcVal[hit->fCounter-1] = hit->GetData(0, 0);
-      fAdcPedestal[hit->fCounter-1] = hit->GetAdcPedestal(0);
-      fAdcMultiplicity[hit->fCounter-1] = hit->GetMultiplicity(0);
+      THcRawAdcHit rawAdcHit = hit->GetRawAdcHit();
+
+      fAdcPedRaw[cnt] = rawAdcHit.GetPedRaw();
+      fAdcPulseIntRaw[cnt] = rawAdcHit.GetPulseIntRaw();
+      fAdcPulseAmpRaw[cnt] = rawAdcHit.GetPulseAmpRaw();
+      fAdcPulseTimeRaw[cnt] = rawAdcHit.GetPulseTimeRaw();
+
+      fAdcPed[cnt] = rawAdcHit.GetPed();
+      fAdcPulseInt[cnt] = rawAdcHit.GetPulseInt();
+      fAdcPulseAmp[cnt] = rawAdcHit.GetPulseAmp();
+
+      fAdcMultiplicity[cnt] = rawAdcHit.GetNPulses();
     }
     else if (hit->fPlane == 2) {
-      fTdcVal[hit->fCounter-1] = hit->GetData(1, 0);
-      fTdcMultiplicity[hit->fCounter-1] = hit->GetMultiplicity(1);
+      THcRawTdcHit rawTdcHit = hit->GetRawTdcHit();
+
+      fTdcTimeRaw[cnt] = rawTdcHit.GetTimeRaw();
+      fTdcTime[cnt] = rawTdcHit.GetTime()*fTdcChanperNS-fTdcOffset;
+
+      fTdcMultiplicity[cnt] = rawTdcHit.GetNHits();
     }
     else {
       throw std::out_of_range(
@@ -212,8 +265,12 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
     {"_numTdc", &fNumTdc, kInt},  // Number of TDC channels.
     {"_adcNames", &adcNames, kString},  // Names of ADC channels.
     {"_tdcNames", &tdcNames, kString},  // Names of TDC channels.
+    {"_tdcoffset", &fTdcOffset, kDouble,0,1},  // Offset of tdc channels
+    {"_tdcchanperns", &fTdcChanperNS, kDouble,0,1},  // Convert channesl to ns
     {0}
   };
+  fTdcChanperNS=0.1;
+  fTdcOffset=300.;
   gHcParms->LoadParmValues(list, fKwPrefix.c_str());
 
   // Split the names to std::vector<std::string>.
@@ -231,60 +288,121 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   std::vector<RVarDef> vars;
 
   //Push the variable names for ADC channels.
-  std::vector<TString> adcValTitle(fNumAdc), adcValVar(fNumAdc);
-  std::vector<TString> adcPedestalTitle(fNumAdc), adcPedestalVar(fNumAdc);
+  std::vector<TString> adcPedRawTitle(fNumAdc), adcPedRawVar(fNumAdc);
+  std::vector<TString> adcPulseIntRawTitle(fNumAdc), adcPulseIntRawVar(fNumAdc);
+  std::vector<TString> adcPulseAmpRawTitle(fNumAdc), adcPulseAmpRawVar(fNumAdc);
+  std::vector<TString> adcPulseTimeRawTitle(fNumAdc), adcPulseTimeRawVar(fNumAdc);
+  std::vector<TString> adcPedTitle(fNumAdc), adcPedVar(fNumAdc);
+  std::vector<TString> adcPulseIntTitle(fNumAdc), adcPulseIntVar(fNumAdc);
+  std::vector<TString> adcPulseAmpTitle(fNumAdc), adcPulseAmpVar(fNumAdc);
   std::vector<TString> adcMultiplicityTitle(fNumAdc), adcMultiplicityVar(fNumAdc);
 
   for (int i=0; i<fNumAdc; ++i) {
-    adcValTitle.at(i) = fAdcNames.at(i) + "_adc";
-    adcValVar.at(i) = TString::Format("fAdcVal[%d]", i);
+    adcPedRawTitle.at(i) = fAdcNames.at(i) + "_adcPedRaw";
+    adcPedRawVar.at(i) = TString::Format("fAdcPedRaw[%d]", i);
     RVarDef entry1 {
-      adcValTitle.at(i).Data(),
-      adcValTitle.at(i).Data(),
-      adcValVar.at(i).Data()
+      adcPedRawTitle.at(i).Data(),
+      adcPedRawTitle.at(i).Data(),
+      adcPedRawVar.at(i).Data()
     };
     vars.push_back(entry1);
 
-    adcPedestalTitle.at(i) = fAdcNames.at(i) + "_adcPed";
-    adcPedestalVar.at(i) = TString::Format("fAdcPedestal[%d]", i);
+    adcPulseIntRawTitle.at(i) = fAdcNames.at(i) + "_adcPulseIntRaw";
+    adcPulseIntRawVar.at(i) = TString::Format("fAdcPulseIntRaw[%d]", i);
     RVarDef entry2 {
-      adcPedestalTitle.at(i).Data(),
-      adcPedestalTitle.at(i).Data(),
-      adcPedestalVar.at(i).Data()
+      adcPulseIntRawTitle.at(i).Data(),
+      adcPulseIntRawTitle.at(i).Data(),
+      adcPulseIntRawVar.at(i).Data()
     };
     vars.push_back(entry2);
 
-    adcMultiplicityTitle.at(i) = fAdcNames.at(i) + "_adcMult";
-    adcMultiplicityVar.at(i) = TString::Format("fAdcMultiplicity[%d]", i);
+    adcPulseAmpRawTitle.at(i) = fAdcNames.at(i) + "_adcPulseAmpRaw";
+    adcPulseAmpRawVar.at(i) = TString::Format("fAdcPulseAmpRaw[%d]", i);
     RVarDef entry3 {
+      adcPulseAmpRawTitle.at(i).Data(),
+      adcPulseAmpRawTitle.at(i).Data(),
+      adcPulseAmpRawVar.at(i).Data()
+    };
+    vars.push_back(entry3);
+
+    adcPulseTimeRawTitle.at(i) = fAdcNames.at(i) + "_adcPulseTimeRaw";
+    adcPulseTimeRawVar.at(i) = TString::Format("fAdcPulseTimeRaw[%d]", i);
+    RVarDef entry4 {
+      adcPulseTimeRawTitle.at(i).Data(),
+      adcPulseTimeRawTitle.at(i).Data(),
+      adcPulseTimeRawVar.at(i).Data()
+    };
+    vars.push_back(entry4);
+
+    adcPedTitle.at(i) = fAdcNames.at(i) + "_adcPed";
+    adcPedVar.at(i) = TString::Format("fAdcPed[%d]", i);
+    RVarDef entry5 {
+      adcPedTitle.at(i).Data(),
+      adcPedTitle.at(i).Data(),
+      adcPedVar.at(i).Data()
+    };
+    vars.push_back(entry5);
+
+    adcPulseIntTitle.at(i) = fAdcNames.at(i) + "_adcPulseInt";
+    adcPulseIntVar.at(i) = TString::Format("fAdcPulseInt[%d]", i);
+    RVarDef entry6 {
+      adcPulseIntTitle.at(i).Data(),
+      adcPulseIntTitle.at(i).Data(),
+      adcPulseIntVar.at(i).Data()
+    };
+    vars.push_back(entry6);
+
+    adcPulseAmpTitle.at(i) = fAdcNames.at(i) + "_adcPulseAmp";
+    adcPulseAmpVar.at(i) = TString::Format("fAdcPulseAmp[%d]", i);
+    RVarDef entry7 {
+      adcPulseAmpTitle.at(i).Data(),
+      adcPulseAmpTitle.at(i).Data(),
+      adcPulseAmpVar.at(i).Data()
+    };
+    vars.push_back(entry7);
+
+    adcMultiplicityTitle.at(i) = fAdcNames.at(i) + "_adcMultiplicity";
+    adcMultiplicityVar.at(i) = TString::Format("fAdcMultiplicity[%d]", i);
+    RVarDef entry8 {
       adcMultiplicityTitle.at(i).Data(),
       adcMultiplicityTitle.at(i).Data(),
       adcMultiplicityVar.at(i).Data()
     };
-    vars.push_back(entry3);
+    vars.push_back(entry8);
   }
 
   // Push the variable names for TDC channels.
-  std::vector<TString> tdcValTitle(fNumTdc), tdcValVar(fNumTdc);
+  std::vector<TString> tdcTimeRawTitle(fNumTdc), tdcTimeRawVar(fNumTdc);
+  std::vector<TString> tdcTimeTitle(fNumTdc), tdcTimeVar(fNumTdc);
   std::vector<TString> tdcMultiplicityTitle(fNumTdc), tdcMultiplicityVar(fNumTdc);
+
   for (int i=0; i<fNumTdc; ++i) {
-    tdcValTitle.at(i) = fTdcNames.at(i) + "_tdc";
-    tdcValVar.at(i) = TString::Format("fTdcVal[%d]", i);
+    tdcTimeRawTitle.at(i) = fTdcNames.at(i) + "_tdcTimeRaw";
+    tdcTimeRawVar.at(i) = TString::Format("fTdcTimeRaw[%d]", i);
     RVarDef entry1 {
-      tdcValTitle.at(i).Data(),
-      tdcValTitle.at(i).Data(),
-      tdcValVar.at(i).Data()
+      tdcTimeRawTitle.at(i).Data(),
+      tdcTimeRawTitle.at(i).Data(),
+      tdcTimeRawVar.at(i).Data()
     };
     vars.push_back(entry1);
 
-    tdcMultiplicityTitle.at(i) = fTdcNames.at(i) + "_tdcMult";
-    tdcMultiplicityVar.at(i) = TString::Format("fTdcMultiplicity[%d]", i);
+    tdcTimeTitle.at(i) = fTdcNames.at(i) + "_tdcTime";
+    tdcTimeVar.at(i) = TString::Format("fTdcTime[%d]", i);
     RVarDef entry2 {
+      tdcTimeTitle.at(i).Data(),
+      tdcTimeTitle.at(i).Data(),
+      tdcTimeVar.at(i).Data()
+    };
+    vars.push_back(entry2);
+
+    tdcMultiplicityTitle.at(i) = fTdcNames.at(i) + "_tdcMultiplicity";
+    tdcMultiplicityVar.at(i) = TString::Format("fTdcMultiplicity[%d]", i);
+    RVarDef entry3 {
       tdcMultiplicityTitle.at(i).Data(),
       tdcMultiplicityTitle.at(i).Data(),
       tdcMultiplicityVar.at(i).Data()
     };
-    vars.push_back(entry2);
+    vars.push_back(entry3);
   }
 
   RVarDef end {0};

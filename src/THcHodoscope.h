@@ -93,11 +93,8 @@ public:
   Int_t GetTdcOffset(Int_t ip) const { return fTdcOffset[ip];}
 
 
-  //  Double_t GetBeta() const {return fBeta[];}
+  Double_t GetBeta() const {return fBeta;}
 
-  // Not used
-  //Double_t GetBeta(Int_t itrack) const {return fBeta[itrack];} // Ahmed
-  //  Int_t GetEvent(){ return fCheckEvent;}
 
   Double_t GetHodoPosSigma(Int_t iii) const {return fHodoPosSigma[iii];}
   Double_t GetHodoNegSigma(Int_t iii) const {return fHodoNegSigma[iii];}
@@ -126,12 +123,13 @@ protected:
   // Calibration
 
   // Per-event data
+  Bool_t fSHMS;
   Bool_t fGoodStartTime;
   Double_t fStartTime;
   Double_t fFPTimeAll;
   Int_t fNfptimes;
 
-  Double_t     fBetaP;
+  Double_t     fBeta;
 
   Double_t     fBetaNoTrk;
   Double_t     fBetaNoTrkChiSq;
@@ -142,6 +140,7 @@ protected:
   UInt_t fMaxScinPerPlane,fMaxHodoScin; // max number of scin/plane; product of the first two
   Double_t fStartTimeCenter, fStartTimeSlop, fScinTdcToTime;
   Double_t fTofTolerance;
+  Int_t fCosmicFlag; //
   Double_t fPathLengthCentral;
   Double_t fScinTdcMin, fScinTdcMax; // min and max TDC values
   char** fPlaneNames;
@@ -202,8 +201,6 @@ protected:
   Int_t        fTestSum;
   Int_t        fTrackEffTestNScinPlanes;
   Int_t        fGoodScinHits;
-  Int_t        fScinShould;
-  Int_t        fScinDid;
   Int_t*       fxLoScin;
   Int_t*       fxHiScin;
   Int_t*       fyLoScin;
@@ -211,8 +208,9 @@ protected:
   Int_t        fNHodoscopes;
 
   Int_t        fDumpTOF;
-  ofstream      fDumpOut;
+  ofstream    fDumpOut;
   string       fTOFDumpFile;
+  Bool_t      fGoodEventTOFCalib;
 
 
   Int_t fHitSweet1X;
@@ -318,7 +316,7 @@ scin_pos_time(0.0), scin_neg_time(0.0) {}
     // Start with a separate vector of vectors for now.
   std::vector<std::vector<Double_t> > fdEdX;	        // Vector over track #
   std::vector<Int_t > fNScinHit;		        // # scins hit for the track
-  std::vector<std::vector<Double_t> > fScinHitPaddle;	// Vector over hits in a plane #
+  std::vector<std::vector<Int_t> > fScinHitPaddle;	// Vector over hits in a plane #
   std::vector<Int_t > fNClust;		                // # scins clusters for the plane
   std::vector<Int_t > fThreeScin;	                // # scins three clusters for the plane
   std::vector<Int_t > fGoodScinHitsX;                   // # hits in fid x range
