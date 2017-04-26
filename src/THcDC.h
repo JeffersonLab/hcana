@@ -38,6 +38,7 @@ public:
 
   //  Int_t GetNTracks() const { return fNDCTracks; }
   //  const TClonesArray* GetTrackHits() const { return fTrackProj; }
+  void SetFocalPlaneBestTrack(Int_t golden_track_index); // Called in THcHallCSpectrometer:
 
   Int_t GetNWires(Int_t plane) const { return fNWires[plane-1];}
   Int_t GetNChamber(Int_t plane) const { return fNChamber[plane-1];}
