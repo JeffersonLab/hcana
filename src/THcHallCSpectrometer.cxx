@@ -357,7 +357,7 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 
   }
 
-  if ( ( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 ) ) {
+  if (fHodo==0 || ( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 ) ) {
     BestTrackSimple();
   } else if (fHodo!=0 && fSelUsingPrune !=0) {
     BestTrackUsingPrune();
