@@ -560,6 +560,14 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 {
+
+  //Throw an exception if Hodoscope Class is NOT defined in the analyzer
+  if (fHodo == 0 && fSelUsingPrune!=0)
+    {
+      throw std::runtime_error("The hodoscope was NOT defined in the replay script and the prune method for tracking was set to 1 (TRUE).  To resolve either: \n 1) Include the hodoscope in the replay script \n 2) Set the tracking parameter sel_using_prune = 0 (FALSE)");
+    }
+
+
   Int_t nGood;
   Double_t chi2Min;
 
