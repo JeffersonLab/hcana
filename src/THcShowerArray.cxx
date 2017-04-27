@@ -388,7 +388,7 @@ void THcShowerArray::Clear( Option_t* )
   fClustSize = 0;
   fNtracks = 0;
   fMatchClX = -1000.;
-  fMatchClX = -1000.;
+  fMatchClY = -1000.;
   fMatchClMaxEnergyBlock = -1000.;
 
   for (THcShowerClusterListIt i=fClusterList->begin(); i!=fClusterList->end();
