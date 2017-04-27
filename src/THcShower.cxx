@@ -597,6 +597,8 @@ void THcShower::Clear(Option_t* opt)
   fEtotNorm = 0.;
   fEtrack = 0.;
   fEtrackNorm = 0.;
+  fSizeClustArray = 0;
+  fNblockHighEnergy = 0.;
 
   // Purge cluster list
 
