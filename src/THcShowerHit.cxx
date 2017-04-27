@@ -10,7 +10,7 @@ using namespace std;
 
 THcShowerHit::THcShowerHit() {         //default constructor
   fCol=fRow=0;
-  fX=fZ=0.;
+  fX=fY=fZ=0.;
   fE=0.;
   fEpos=0.;
   fEneg=0.;
