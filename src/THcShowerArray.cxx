@@ -495,6 +495,7 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
 	   <<":  E=" << clE(*ppcl)
 	   << "  Epr=" << clEpr(*ppcl)
 	   << "  X=" << clX(*ppcl)
+	   << "  Y=" << clY(*ppcl)
 	   << "  Z=" << clZ(*ppcl)
 	   << "  size=" << (**ppcl).size()
 	   << endl;
@@ -578,16 +579,13 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
 
     // Since hits and clusters are in reverse order (with respect to Engine),
     // search backwards to be consistent with Engine.
-    //
-    // Note: cluster Z coordinate is used here as Y, for Z variable
-    // of the THcShowerHit class was used to save Y coordinates of hits.
 
     for (Int_t i=fNclust-1; i>-1; i--) {
 
       THcShowerCluster* cluster = *(fClusterList->begin()+i);
       fClustSize = (*cluster).size();
       Double_t dx = TMath::Abs( clX(cluster) - XTrFront );
-      Double_t dy = TMath::Abs( clY(cluster) - YTrFront ); //cluster Z for Y.
+      Double_t dy = TMath::Abs( clY(cluster) - YTrFront );
       Double_t distance = TMath::Sqrt(dx*dx+dy*dy);        //cluster-track dist.
   if (fParent->fdbg_tracks_cal) {  
     cout << " match clust = " << i << " clX = " << clX(cluster)<< " clY = " << clY(cluster) << " distacne = " << distance << " test = " << (0.5*(fXStep + fYStep) + fParent->fSlop) << endl;
