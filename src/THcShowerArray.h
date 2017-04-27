@@ -61,10 +61,6 @@ public:
   // spectrometer Track.
 
   Float_t GetShEnergy(THaTrack*);
-  Double_t fMatchClX;
-  Double_t fMatchClY;
-  Double_t fMatchClMaxEnergyBlock;
-  Double_t fClustSize;
   Double_t GetClMaxEnergyBlock() {
     return fMatchClMaxEnergyBlock;
   };
@@ -168,6 +164,11 @@ Int_t fPedSampLow;		// Sample range for
   Int_t fNclust;             // Number of hit clusters
   Int_t fNtracks;            // Number of shower tracks, i.e. number of
                              // cluster-to-track associations
+
+  Double_t fMatchClX;
+  Double_t fMatchClY;
+  Double_t fMatchClMaxEnergyBlock;
+  Double_t fClustSize;
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
