@@ -299,7 +299,13 @@ Int_t THcDriftChamberPlane::CoarseProcess( TClonesArray& tracks )
 
  return 0;
 }
-
+//
+Double_t THcDriftChamberPlane::CalcWireFromPos(Double_t pos) {
+  Double_t wire_num_calc=-1000;
+  if (fWireOrder==0) wire_num_calc = (pos+fCenter)/(fPitch)+fCentralWire;
+  if (fWireOrder==1) wire_num_calc = 1-((pos+fCenter)/(fPitch)+fCentralWire-fNWires);
+  return(wire_num_calc);
+}
 //_____________________________________________________________________________
 Int_t THcDriftChamberPlane::FineProcess( TClonesArray& tracks )
 {

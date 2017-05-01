@@ -110,6 +110,8 @@ protected:
   Int_t fN_True_RawHits;
   Int_t fNSp;                   // Number of space points
   Double_t* fResiduals;         //[fNPlanes] Array of residuals
+  Double_t* fWire_hit_did;      //[fNPlanes]
+  Double_t* fWire_hit_should;   //[fNPlanes]
 
   Double_t fNSperChan;		/* TDC bin size */
   Double_t fWireVelocity;
@@ -183,7 +185,7 @@ protected:
   void Setup(const char* name, const char* description);
   void PrintSpacePoints();
   void PrintStubs();
-
+  void EfficiencyPerWire(Int_t golden_track_index);
   ClassDef(THcDC,0)   // Set of Drift Chambers detector
 };
 
