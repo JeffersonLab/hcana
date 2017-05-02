@@ -67,8 +67,8 @@ public:
   Double_t     GetPsi0() { return fPsi0; }
   Double_t*    GetStubCoef() { return fStubCoef; }
   Double_t*    GetPlaneCoef() { return fPlaneCoef; }
-
   THcDriftChamberPlane(); // for ROOT I/O
+  Double_t     CalcWireFromPos(Double_t pos);
 protected:
 
   TClonesArray* fParentHitList;
@@ -76,13 +76,13 @@ protected:
   TClonesArray* fHits;
   TClonesArray* fWires;
 
+  Int_t fWireOrder;
   Int_t fPlaneNum;
   Int_t fPlaneIndex;		/* Index of this plane within it's chamber */
   Int_t fChamberNum;
   Int_t fUsingTzeroPerWire;
   Int_t fNRawhits;
   Int_t fNWires;
-  Int_t fWireOrder;
   Int_t fTdcWinMin;
   Int_t fTdcWinMax;
   Double_t fPitch;

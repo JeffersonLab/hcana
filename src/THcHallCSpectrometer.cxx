@@ -117,8 +117,6 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   cout << "In THcHallCSpectrometer::ReadDatabase()" << endl;
 #endif
 
-  // --------------- To get energy from THcShower ----------------------
-
   const char* detector_name = "hod";
   //THaApparatus* app = GetDetector();
   THaDetector* det = GetDetector("hod");
@@ -133,9 +131,13 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   }
 
 
-  // fShower = static_cast<THcShower*>(det);     // fShower is a membervariable
-
-  // --------------- To get energy from THcShower ----------------------
+  THaDetector* detdc = GetDetector("dc");
+  if( dynamic_cast<THcDC*>(detdc) ) {
+    fDC = static_cast<THcDC*>(detdc);     // fHodo is a membervariable
+  } else {
+    Error("THcHallCSpectrometer", "Cannot find detector DC");
+    fDC = NULL;
+  }
 
 
   // Get the matrix element filename from the variable store
@@ -357,11 +359,11 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 
   }
 
-  if ( ( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 ) ) {
+  if (fHodo==0 || (( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 )) ) {
     BestTrackSimple();
-  } else if (fSelUsingPrune !=0) {
+  } else if (fHodo!=0 && fSelUsingPrune !=0) {
     BestTrackUsingPrune();
-  } else {
+  } else if (fHodo!=0){
     BestTrackUsingScin();
   }
 
@@ -380,6 +382,7 @@ Int_t THcHallCSpectrometer::TrackCalc()
       if (aTrack->GetIndex()==0) hit_gold_track=itrack;  
     }
     
+    fDC->SetFocalPlaneBestTrack(hit_gold_track);
     fGoldenTrack = static_cast<THaTrack*>( fTracks->At(hit_gold_track) );
     fTrkIfo      = *fGoldenTrack;
     fTrk         = fGoldenTrack;
@@ -560,6 +563,8 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 {
+
+
   Int_t nGood;
   Double_t chi2Min;
 

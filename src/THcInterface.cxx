@@ -95,7 +95,9 @@ This class is copy of THaInterface with the addition of of the global
   //  putting it to 1.5 GB, down from the default 1.9 GB since something odd
   //  happens for larger files
   //FIXME: investigate
-  TTree::SetMaxTreeSize(1500000000);
+  //TTree::SetMaxTreeSize(1500000000);
+  // Jure update: 100 GB
+  TTree::SetMaxTreeSize(100000000000LL);
 
   // Make the Podd header directory(s) available so scripts don't have to
   // specify an explicit path.
