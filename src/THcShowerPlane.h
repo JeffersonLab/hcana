@@ -16,8 +16,10 @@
 #include "TClonesArray.h"
 
 #include <iostream>
-
+#include <vector>
 #include <fstream>
+
+using namespace std;
 
 class THaEvData;
 class THaSignalHit;
@@ -124,6 +126,28 @@ protected:
   Int_t fDataSampHigh;		// sample integration
   Double_t fAdcNegThreshold;		// 
   Double_t fAdcPosThreshold;		// 
+
+  /*  //added by carlos
+  vector<Double_t>      fGoodPosAdcPed;
+  vector<Double_t>      fGoodPosAdcPulseInt;
+  vector<Double_t>      fGoodPosAdcPulseAmp;
+  vector<Double_t>      fGoodPosAdcPulseTime;
+  
+  vector<Double_t>      fGoodNegAdcPed;
+  vector<Double_t>      fGoodNegAdcPulseInt;
+  vector<Double_t>      fGoodNegAdcPulseAmp;
+  vector<Double_t>      fGoodNegAdcPulseTime;
+  */
+
+  Double_t*   fGoodPosAdcPed;
+  Double_t*   fGoodPosAdcPulseInt;
+  Double_t*   fGoodPosAdcPulseAmp;
+  Double_t*   fGoodPosAdcPulseTime;
+
+  Double_t*   fGoodNegAdcPed;
+  Double_t*   fGoodNegAdcPulseInt;
+  Double_t*   fGoodNegAdcPulseAmp;
+  Double_t*   fGoodNegAdcPulseTime;
 
   Double_t*   fA_Pos;         // [fNelem] ADC amplitudes of blocks
   Double_t*   fA_Neg;         // [fNelem] ADC amplitudes of blocks
