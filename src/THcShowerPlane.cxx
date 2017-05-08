@@ -24,6 +24,7 @@ One plane of shower blocks with side readout
 #include <iostream>
 
 #include <fstream>
+
 using namespace std;
 
 ClassImp(THcShowerPlane)
@@ -41,6 +42,7 @@ THcShowerPlane::THcShowerPlane( const char* name,
 
   frPosAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
   frPosAdcPedRaw = new TClonesArray("THcSignalHit", 16);
+  frPosAdcThreshold = new TClonesArray("THcSignalHit", 16);
   frPosAdcPulseIntRaw = new TClonesArray("THcSignalHit", 16);
   frPosAdcPulseAmpRaw = new TClonesArray("THcSignalHit", 16);
   frPosAdcPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
@@ -51,6 +53,7 @@ THcShowerPlane::THcShowerPlane( const char* name,
 
   frNegAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
   frNegAdcPedRaw = new TClonesArray("THcSignalHit", 16);
+  frNegAdcThreshold = new TClonesArray("THcSignalHit", 16);
   frNegAdcPulseIntRaw = new TClonesArray("THcSignalHit", 16);
   frNegAdcPulseAmpRaw = new TClonesArray("THcSignalHit", 16);
   frNegAdcPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
@@ -71,37 +74,52 @@ THcShowerPlane::THcShowerPlane( const char* name,
 THcShowerPlane::~THcShowerPlane()
 {
   // Destructor
-  delete fPosADCHits;
-  delete fNegADCHits;
+  delete fPosADCHits; fPosADCHits = NULL;
+  delete fNegADCHits; fNegADCHits = NULL;
 
-  frPosAdcErrorFlag = NULL;
-  frPosAdcPedRaw = NULL;
-  frPosAdcPulseIntRaw = NULL;
-  frPosAdcPulseAmpRaw = NULL;
-  frPosAdcPulseTimeRaw = NULL;
+  delete  frPosAdcErrorFlag; frPosAdcErrorFlag = NULL;
+  delete  frPosAdcPedRaw; frPosAdcPedRaw = NULL;
+  delete  frPosAdcThreshold; frPosAdcThreshold = NULL;
+  delete  frPosAdcPulseIntRaw; frPosAdcPulseIntRaw = NULL;
+  delete  frPosAdcPulseAmpRaw; frPosAdcPulseAmpRaw = NULL;
+  delete  frPosAdcPulseTimeRaw; frPosAdcPulseTimeRaw = NULL;
 
-  frPosAdcPed = NULL;
-  frPosAdcPulseInt = NULL;
-  frPosAdcPulseAmp = NULL;
+  delete  frPosAdcPed; frPosAdcPed = NULL;
+  delete  frPosAdcPulseInt; frPosAdcPulseInt = NULL;
+  delete  frPosAdcPulseAmp; frPosAdcPulseAmp = NULL;
 
-  frNegAdcErrorFlag = NULL;
-  frNegAdcPedRaw = NULL;
-  frNegAdcPulseIntRaw = NULL;
-  frNegAdcPulseAmpRaw = NULL;
-  frNegAdcPulseTimeRaw = NULL;
+  delete  frNegAdcErrorFlag; frNegAdcErrorFlag = NULL;
+  delete  frNegAdcPedRaw; frNegAdcPedRaw = NULL;
+  delete  frNegAdcThreshold; frNegAdcThreshold = NULL;
+  delete  frNegAdcPulseIntRaw; frNegAdcPulseIntRaw = NULL;
+  delete  frNegAdcPulseAmpRaw; frNegAdcPulseAmpRaw = NULL;
+  delete  frNegAdcPulseTimeRaw; frNegAdcPulseTimeRaw = NULL;
 
-  frNegAdcPed = NULL;
-  frNegAdcPulseInt = NULL;
-  frNegAdcPulseAmp = NULL;
+  delete  frNegAdcPed; frNegAdcPed = NULL;
+  delete  frNegAdcPulseInt; frNegAdcPulseInt = NULL;
+  delete  frNegAdcPulseAmp; frNegAdcPulseAmp = NULL;
 
-  delete [] fA_Pos;
-  delete [] fA_Neg;
-  delete [] fA_Pos_p;
-  delete [] fA_Neg_p;
+  delete [] fPosPedSum;
+  delete [] fPosPedSum2;
+  delete [] fPosPedLimit;
+  delete [] fPosPedCount;
 
-  delete [] fEpos;
-  delete [] fEneg;
-  delete [] fEmean;
+  delete [] fNegPedSum;
+  delete [] fNegPedSum2;
+  delete [] fNegPedLimit;
+  delete [] fNegPedCount;
+
+  delete [] fPosPed;
+  delete [] fPosSig;
+  delete [] fPosThresh;
+
+  delete [] fNegPed;
+  delete [] fNegSig;
+  delete [] fNegThresh;
+
+//  delete [] fEpos;
+  // delete [] fEneg;
+  // delete [] fEmean;
 }
 
 //_____________________________________________________________________________
@@ -138,8 +156,8 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   fPedSampHigh=9;
   fDataSampLow=23;
   fDataSampHigh=49;
-    fAdcNegThreshold=0.;
-    fAdcPosThreshold=0.;
+  fAdcNegThreshold=0.;
+  fAdcPosThreshold=0.;
   DBRequest list[]={
     {"cal_AdcNegThreshold", &fAdcNegThreshold, kDouble, 0, 1},
     {"cal_AdcPosThreshold", &fAdcPosThreshold, kDouble, 0, 1},
@@ -147,8 +165,12 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
     {"cal_ped_sample_high", &fPedSampHigh, kInt, 0, 1},
     {"cal_data_sample_low", &fDataSampLow, kInt, 0, 1},
     {"cal_data_sample_high", &fDataSampHigh, kInt, 0, 1},
+    {"cal_debug_adc", &fDebugAdc, kInt, 0, 1},
     {0}
   };
+
+  fDebugAdc   = 0; // Set ADC debug parameter to false unless set in parameter file
+
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 
   // Retrieve more parameters we need from parent class
@@ -196,18 +218,30 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   InitializePedestals();
 
-  // ADC amplitudes per channel.
+  fNumGoodPosAdcHits          = vector<Int_t>    (fNelem, 0.0);
+  fNumGoodNegAdcHits          = vector<Int_t>    (fNelem, 0.0);
 
-  fA_Pos = new Double_t[fNelem];
-  fA_Neg = new Double_t[fNelem];
-  fA_Pos_p = new Double_t[fNelem];
-  fA_Neg_p = new Double_t[fNelem];
+  fGoodPosAdcPulseIntRaw      = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcPulseIntRaw      = vector<Double_t> (fNelem, 0.0);
+
+  fGoodPosAdcPed              = vector<Double_t> (fNelem, 0.0);
+  fGoodPosAdcPulseInt         = vector<Double_t> (fNelem, 0.0);
+  fGoodPosAdcPulseAmp         = vector<Double_t> (fNelem, 0.0);
+  fGoodPosAdcPulseTime        = vector<Double_t> (fNelem, 0.0);
+
+  fGoodNegAdcPed              = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcPulseInt         = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcPulseAmp         = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcPulseTime        = vector<Double_t> (fNelem, 0.0);
 
   // Energy depositions per block (not corrected for track coordinate)
 
-  fEpos = new Double_t[fNelem];
-  fEneg = new Double_t[fNelem];
-  fEmean= new Double_t[fNelem];
+  fEpos                       = vector<Double_t> (fNelem, 0.0);
+  fEneg                       = vector<Double_t> (fNelem, 0.0);
+  fEmean                      = vector<Double_t> (fNelem, 0.0);
+  //  fEpos = new Double_t[fNelem];
+  // fEneg = new Double_t[fNelem];
+  // fEmean= new Double_t[fNelem];
 
   // Debug output.
 
@@ -245,58 +279,83 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
 
   // Register variables in global list
-  RVarDef vars[] = {
-    {"posadchits", "List of Positive ADC hits","fPosADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"negadchits", "List of Negative ADC hits","fNegADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"apos",       "Raw Positive ADC Amplitudes",                   "fA_Pos"},
-    {"aneg",       "Raw Negative ADC Amplitudes",                   "fA_Neg"},
-    {"apos_p",     "Ped-subtracted Positive ADC Amplitudes",        "fA_Pos_p"},
-    {"aneg_p",     "Ped-subtracted Negative ADC Amplitudes",        "fA_Neg_p"},
-    {"epos",       "Energy Depositions from Positive Side PMTs",    "fEpos"},
-    {"eneg",       "Energy Depositions from Negative Side PMTs",    "fEneg"},
-    {"emean",      "Mean Energy Depositions",                       "fEmean"},
-    {"eplane",     "Energy Deposition per plane",                   "fEplane"},
-    {"eplane_pos", "Energy Deposition per plane from pos. PMTs","fEplane_pos"},
-    {"eplane_neg", "Energy Deposition per plane from neg. PMTs","fEplane_neg"},
+  vector<RVarDef> vars;
 
-    {"posAdcCounter",      "List of positive ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
-    {"negAdcCounter",      "List of negative ADC counter numbers.",      "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+  vars.push_back(RVarDef{"posAdcErrorFlag",       "List of positive raw ADC Error Flags",         "frPosAdcErrorFlag.THcSignalHit.GetData()"});
+  vars.push_back(RVarDef{"negAdcErrorFlag",       "List of negative raw ADC Error Flags ",        "frNegAdcErrorFlag.THcSignalHit.GetData()"});
 
-    {"posAdcErrorFlag",       "List of positive raw ADC Error Flags",         "frPosAdcErrorFlag.THcSignalHit.GetData()"},
-    {"posAdcPedRaw",       "List of positive raw ADC pedestals",         "frPosAdcPedRaw.THcSignalHit.GetData()"},
-    {"posAdcPulseIntRaw",  "List of positive raw ADC pulse integrals.",  "frPosAdcPulseIntRaw.THcSignalHit.GetData()"},
-    {"posAdcPulseAmpRaw",  "List of positive raw ADC pulse amplitudes.", "frPosAdcPulseAmpRaw.THcSignalHit.GetData()"},
-    {"posAdcPulseTimeRaw", "List of positive raw ADC pulse times.",      "frPosAdcPulseTimeRaw.THcSignalHit.GetData()"},
+  vars.push_back(RVarDef{"posAdcCounter",      "List of positive ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"}); //PreSh+ raw occupancy
+  vars.push_back(RVarDef{"negAdcCounter",      "List of negative ADC counter numbers.",      "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"}); //PreSh- raw occupancy
 
-    {"posAdcPed",          "List of positive ADC pedestals",             "frPosAdcPed.THcSignalHit.GetData()"},
-    {"posAdcPulseInt",     "List of positive ADC pulse integrals.",      "frPosAdcPulseInt.THcSignalHit.GetData()"},
-    {"posAdcPulseAmp",     "List of positive ADC pulse amplitudes.",     "frPosAdcPulseAmp.THcSignalHit.GetData()"},
+  vars.push_back(RVarDef{"totNumPosAdcHits", "Total Number of Positive ADC Hits",   "fTotNumPosAdcHits"}); // PreSh+ raw multiplicity
+  vars.push_back(RVarDef{"totNumNegAdcHits", "Total Number of Negative ADC Hits",   "fTotNumNegAdcHits"}); // PreSh+ raw multiplicity
+  vars.push_back(RVarDef{"totnumAdcHits",   "Total Number of ADC Hits Per PMT",      "fTotNumAdcHits"});    // PreSh raw multiplicity
 
-    {"negAdcErrorFlag",       "List of negative raw ADC Error Flag ",         "frNegAdcErrorFlag.THcSignalHit.GetData()"},
-    {"negAdcPedRaw",       "List of negative raw ADC pedestals",         "frNegAdcPedRaw.THcSignalHit.GetData()"},
-    {"negAdcPulseIntRaw",  "List of negative raw ADC pulse integrals.",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"},
-    {"negAdcPulseAmpRaw",  "List of negative raw ADC pulse amplitudes.", "frNegAdcPulseAmpRaw.THcSignalHit.GetData()"},
-    {"negAdcPulseTimeRaw", "List of negative raw ADC pulse times.",      "frNegAdcPulseTimeRaw.THcSignalHit.GetData()"},
+  vars.push_back(RVarDef{"numGoodPosAdcHits",    "Number of Good Positive ADC Hits Per PMT", "fNumGoodPosAdcHits"});    // PreSh occupancy
+  vars.push_back(RVarDef{"numGoodNegAdcHits",    "Number of Good Negative ADC Hits Per PMT", "fNumGoodNegAdcHits"});    // PreSh occupancy
+  vars.push_back(RVarDef{"totNumGoodPosAdcHits", "Total Number of Good Positive ADC Hits",   "fTotNumGoodPosAdcHits"}); // PreSh multiplicity
+  vars.push_back(RVarDef{"totNumGoodNegAdcHits", "Total Number of Good Negative ADC Hits",   "fTotNumGoodNegAdcHits"}); // PreSh multiplicity
+  vars.push_back(RVarDef{"totnumGoodAdcHits",   "TotalNumber of Good ADC Hits Per PMT",      "fTotNumGoodAdcHits"});    // PreSh multiplicity
 
-    {"negAdcPed",          "List of negative ADC pedestals",             "frNegAdcPed.THcSignalHit.GetData()"},
-    {"negAdcPulseInt",     "List of negative ADC pulse integrals.",      "frNegAdcPulseInt.THcSignalHit.GetData()"},
-    {"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"},
+  vars.push_back(RVarDef{"goodPosAdcPulseIntRaw",       "Good Positive Raw ADC Pulse Integrals",                   "fGoodPosAdcPulseIntRaw"});
+  vars.push_back(RVarDef{"goodNegAdcPulseIntRaw",       "Good Negative Raw ADC Pulse Integrals",                   "fGoodNegAdcPulseIntRaw"});
 
-    { 0 }
-  };
+  vars.push_back(RVarDef{"goodPosAdcPed",         "Good Positive ADC pedestals",           "fGoodPosAdcPed"});
+  vars.push_back(RVarDef{"goodPosAdcPulseInt",         "Good Positive ADC integrals",           "fGoodPosAdcPulseInt"});
+  vars.push_back(RVarDef{"goodPosAdcPulseAmp",         "Good Positive ADC amplitudes",           "fGoodPosAdcPulseAmp"});
+  vars.push_back(RVarDef{"goodPosAdcPulseTime",         "Good Positive ADC times",           "fGoodPosAdcPulseTime"});
 
-  return DefineVarsFromList( vars, mode );
+  vars.push_back(RVarDef{"goodNegAdcPed",         "Good Negative ADC pedestals",           "fGoodNegAdcPed"});
+  vars.push_back(RVarDef{"goodNegAdcPulseInt",         "Good Negative ADC integrals",           "fGoodNegAdcPulseInt"});
+  vars.push_back(RVarDef{"goodNegAdcPulseAmp",         "Good Negative ADC amplitudes",           "fGoodNegAdcPulseAmp"});
+  vars.push_back(RVarDef{"goodNegAdcPulseTime",         "Good Negative ADC times",           "fGoodNegAdcPulseTime"});
+
+  vars.push_back(RVarDef{"epos",       "Energy Depositions from Positive Side PMTs",    "fEpos"});
+  vars.push_back(RVarDef{"eneg",       "Energy Depositions from Negative Side PMTs",    "fEneg"});
+  vars.push_back(RVarDef{"emean",      "Mean Energy Depositions",                       "fEmean"});
+  vars.push_back(RVarDef{"eplane",     "Energy Deposition per plane",                   "fEplane"});
+  vars.push_back(RVarDef{"eplane_pos", "Energy Deposition per plane from pos. PMTs","fEplane_pos"});
+  vars.push_back(RVarDef{"eplane_neg", "Energy Deposition per plane from neg. PMTs","fEplane_neg"});
+
+
+  if (fDebugAdc) {
+  vars.push_back(RVarDef{"posAdcPedRaw",       "List of positive raw ADC pedestals",         "frPosAdcPedRaw.THcSignalHit.GetData()"});
+  vars.push_back(RVarDef{"posAdcPulseIntRaw",  "List of positive raw ADC pulse integrals.",  "frPosAdcPulseIntRaw.THcSignalHit.GetData()"});
+  vars.push_back(RVarDef{"posAdcPulseAmpRaw",  "List of positive raw ADC pulse amplitudes.", "frPosAdcPulseAmpRaw.THcSignalHit.GetData()"});
+  vars.push_back(RVarDef{"posAdcPulseTimeRaw", "List of positive raw ADC pulse times.",      "frPosAdcPulseTimeRaw.THcSignalHit.GetData()"});
+
+  vars.push_back(RVarDef{"posAdcPed",          "List of positive ADC pedestals",             "frPosAdcPed.THcSignalHit.GetData()"});
+  vars.push_back(RVarDef{"posAdcPulseInt",     "List of positive ADC pulse integrals.",      "frPosAdcPulseInt.THcSignalHit.GetData()"});
+  vars.push_back(RVarDef{"posAdcPulseAmp",     "List of positive ADC pulse amplitudes.",     "frPosAdcPulseAmp.THcSignalHit.GetData()"});
+
+  vars.push_back(RVarDef{"negAdcPedRaw",       "List of negative raw ADC pedestals",         "frNegAdcPedRaw.THcSignalHit.GetData()"});
+  vars.push_back(RVarDef{"negAdcPulseIntRaw",  "List of negative raw ADC pulse integrals.",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"});
+  vars.push_back(RVarDef{"negAdcPulseAmpRaw",  "List of negative raw ADC pulse amplitudes.", "frNegAdcPulseAmpRaw.THcSignalHit.GetData()"});
+  vars.push_back(RVarDef{"negAdcPulseTimeRaw", "List of negative raw ADC pulse times.",      "frNegAdcPulseTimeRaw.THcSignalHit.GetData()"});
+
+  vars.push_back(RVarDef{"negAdcPed",          "List of negative ADC pedestals",             "frNegAdcPed.THcSignalHit.GetData()"});
+  vars.push_back(RVarDef{"negAdcPulseInt",     "List of negative ADC pulse integrals.",      "frNegAdcPulseInt.THcSignalHit.GetData()"});
+  vars.push_back(RVarDef{"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"});
+
+   }
+
+  RVarDef end {0};
+  vars.push_back(end);
+
+  return DefineVarsFromList(vars.data(), mode);
 }
 
 //_____________________________________________________________________________
 void THcShowerPlane::Clear( Option_t* )
 {
   // Clears the hit lists
+
   fPosADCHits->Clear();
   fNegADCHits->Clear();
 
   frPosAdcErrorFlag->Clear();
   frPosAdcPedRaw->Clear();
+  frPosAdcThreshold->Clear();
   frPosAdcPulseIntRaw->Clear();
   frPosAdcPulseAmpRaw->Clear();
   frPosAdcPulseTimeRaw->Clear();
@@ -307,6 +366,7 @@ void THcShowerPlane::Clear( Option_t* )
 
   frNegAdcErrorFlag->Clear();
   frNegAdcPedRaw->Clear();
+  frNegAdcThreshold->Clear();
   frNegAdcPulseIntRaw->Clear();
   frNegAdcPulseAmpRaw->Clear();
   frNegAdcPulseTimeRaw->Clear();
@@ -315,7 +375,40 @@ void THcShowerPlane::Clear( Option_t* )
   frNegAdcPulseInt->Clear();
   frNegAdcPulseAmp->Clear();
 
-  // Debug output.
+  for (UInt_t ielem = 0; ielem < fGoodPosAdcPed.size(); ielem++) {
+    fGoodPosAdcPed.at(ielem)              = 0.0;
+    fGoodPosAdcPulseIntRaw.at(ielem)      = 0.0;
+    fGoodPosAdcPulseInt.at(ielem)         = 0.0;
+    fGoodPosAdcPulseAmp.at(ielem)         = 0.0;
+    fGoodPosAdcPulseTime.at(ielem)        = 0.0;
+    fEpos.at(ielem)                       = 0.0;
+    fNumGoodPosAdcHits.at(ielem)          = 0.0;
+  }
+
+  for (UInt_t ielem = 0; ielem < fGoodNegAdcPed.size(); ielem++) {
+    fGoodNegAdcPed.at(ielem)              = 0.0;
+    fGoodNegAdcPulseIntRaw.at(ielem)      = 0.0;
+    fGoodNegAdcPulseInt.at(ielem)         = 0.0;
+    fGoodNegAdcPulseAmp.at(ielem)         = 0.0;
+    fGoodNegAdcPulseTime.at(ielem)        = 0.0;
+    fEneg.at(ielem)                       = 0.0;
+    fNumGoodNegAdcHits.at(ielem)          = 0.0;
+  }
+
+  for (UInt_t ielem = 0; ielem < fEmean.size(); ielem++) {
+    fEmean.at(ielem)                                = 0.0;
+  }
+
+  fTotNumAdcHits       = 0;
+  fTotNumPosAdcHits    = 0;
+  fTotNumNegAdcHits    = 0;
+
+  fTotNumGoodAdcHits       = 0;
+  fTotNumGoodPosAdcHits    = 0;
+  fTotNumGoodNegAdcHits    = 0;
+
+
+ // Debug output.
   if ( ((THcShower*) GetParent())->fdbg_decoded_cal ) {
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerPlane::Clear for "
@@ -374,6 +467,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   frPosAdcErrorFlag->Clear();
   frPosAdcPedRaw->Clear();
+  frPosAdcThreshold->Clear();
   frPosAdcPulseIntRaw->Clear();
   frPosAdcPulseAmpRaw->Clear();
   frPosAdcPulseTimeRaw->Clear();
@@ -384,6 +478,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   frNegAdcErrorFlag->Clear();
   frNegAdcPedRaw->Clear();
+  frNegAdcThreshold->Clear();
   frNegAdcPulseIntRaw->Clear();
   frNegAdcPulseAmpRaw->Clear();
   frNegAdcPulseTimeRaw->Clear();
@@ -392,15 +487,14 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frNegAdcPulseInt->Clear();
   frNegAdcPulseAmp->Clear();
 
-  for(Int_t i=0;i<fNelem;i++) {
-    fA_Pos[i] = 0;
-    fA_Neg[i] = 0;
-    fA_Pos_p[i] = 0;
-    fA_Neg_p[i] = 0;
+  /*
+    for(Int_t i=0;i<fNelem;i++) {
+
     fEpos[i] = 0;
     fEneg[i] = 0;
     fEmean[i] = 0;
   }
+  */
 
   fEplane = 0;
   fEplane_pos = 0;
@@ -430,8 +524,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     THcRawAdcHit& rawPosAdcHit = hit->GetRawAdcHitPos();
     for (UInt_t thit=0; thit<rawPosAdcHit.GetNPulses(); ++thit) {
       ((THcSignalHit*) frPosAdcPedRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPedRaw());
-       fPosThresh[hit->fCounter -1]=rawPosAdcHit.GetPedRaw()*rawPosAdcHit.GetF250_PeakPedestalRatio()+fAdcPosThreshold;
-       
+      ((THcSignalHit*) frPosAdcThreshold->ConstructedAt(nrPosAdcHits))->Set(padnum,rawPosAdcHit.GetPedRaw()*rawPosAdcHit.GetF250_PeakPedestalRatio()+fAdcPosThreshold);
       ((THcSignalHit*) frPosAdcPed->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPed());
 
       ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseIntRaw(thit));
@@ -442,16 +535,19 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTimeRaw(thit));
       if (rawPosAdcHit.GetPulseAmp(thit)>0&&rawPosAdcHit.GetPulseIntRaw(thit)>0) {
-	((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum,0);        
+	((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum,0);
       } else {
-	((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum,1);        
+	((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum,1);
       }
       ++nrPosAdcHits;
+      fTotNumAdcHits++;
+      fTotNumPosAdcHits++;
+
     }
     THcRawAdcHit& rawNegAdcHit = hit->GetRawAdcHitNeg();
     for (UInt_t thit=0; thit<rawNegAdcHit.GetNPulses(); ++thit) {
       ((THcSignalHit*) frNegAdcPedRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPedRaw());
-       fNegThresh[hit->fCounter -1]=rawNegAdcHit.GetPedRaw()*rawNegAdcHit.GetF250_PeakPedestalRatio()+fAdcNegThreshold;
+      ((THcSignalHit*) frNegAdcThreshold->ConstructedAt(nrNegAdcHits))->Set(padnum,rawNegAdcHit.GetPedRaw()*rawNegAdcHit.GetF250_PeakPedestalRatio()+fAdcNegThreshold);
       ((THcSignalHit*) frNegAdcPed->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPed());
 
       ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseIntRaw(thit));
@@ -467,12 +563,11 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum,1);
       }
       ++nrNegAdcHits;
+      fTotNumAdcHits++;
+      fTotNumNegAdcHits++;
     }
-
     ihit++;
   }
-
-
   return(ihit);
 }
 //_____________________________________________________________________________
@@ -487,7 +582,7 @@ Int_t THcShowerPlane::CoarseProcessHits()
       FillADC_SampleIntegral();
     } else if (ADCMode == kADCSampIntDynPed) {
       FillADC_SampIntDynPed();
-        } else {
+    } else {
       FillADC_Standard();
     }
     //
@@ -552,26 +647,26 @@ void THcShowerPlane::FillADC_Standard()
   for (Int_t ielem=0;ielem<frNegAdcPulseIntRaw->GetEntries();ielem++) {
     Int_t npad = ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(ielem))->GetPaddleNumber() - 1;
     Double_t pulseIntRaw = ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
-      fA_Neg[npad] =pulseIntRaw;
-      if(fA_Neg[npad] >  fNegThresh[npad]) {
-       fA_Neg_p[npad] = pulseIntRaw-fNegPed[npad];
-       fEneg[npad] = fA_Neg_p[npad]*fParent->GetGain(npad,fLayerNum-1,1);
-       fEmean[npad] += fEneg[npad];
-       fEplane_neg += fEneg[npad];
+    fGoodNegAdcPulseIntRaw.at(npad) = pulseIntRaw;
+      if(fGoodNegAdcPulseIntRaw.at(npad) >  fNegThresh[npad]) {
+	fGoodNegAdcPulseInt.at(npad) = pulseIntRaw-fNegPed[npad];
+	fEneg.at(npad) = fGoodNegAdcPulseInt.at(npad)*fParent->GetGain(npad,fLayerNum-1,1);
+	fEmean.at(npad) += fEneg.at(npad);
+	fEplane_neg += fEneg.at(npad);
       }
   }
   for (Int_t ielem=0;ielem<frPosAdcPulseIntRaw->GetEntries();ielem++) {
     Int_t npad = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetPaddleNumber() - 1;
     Double_t pulseIntRaw = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
-      fA_Pos[npad] =pulseIntRaw;
-      if(fA_Pos[npad] > fPosThresh[npad]) {
-       fA_Pos_p[npad] =pulseIntRaw-fPosPed[npad] ;
-       fEpos[npad] = fA_Pos_p[npad]*fParent->GetGain(npad,fLayerNum-1,0);
-       fEmean[npad] += fEpos[npad];
-       fEplane_pos += fEpos[npad];
-      }
+    fGoodPosAdcPulseIntRaw.at(npad) =pulseIntRaw;
+    if(fGoodPosAdcPulseIntRaw.at(npad) > fPosThresh[npad]) {
+      fGoodPosAdcPulseInt.at(npad) =pulseIntRaw-fPosPed[npad] ;
+      fEpos.at(npad) =fGoodPosAdcPulseInt.at(npad)*fParent->GetGain(npad,fLayerNum-1,0);
+      fEmean.at(npad) += fEpos.at(npad);
+      fEplane_pos += fEpos.at(npad);
+    }
   }
-    fEplane= fEplane_neg+fEplane_pos;
+  fEplane= fEplane_neg+fEplane_pos;
 }
 //_____________________________________________________________________________
 void THcShowerPlane::FillADC_DynamicPedestal()
@@ -581,40 +676,68 @@ void THcShowerPlane::FillADC_DynamicPedestal()
   Double_t AdcTimeWindowMin=fParent->GetAdcTimeWindowMin();
   Double_t AdcTimeWindowMax=fParent->GetAdcTimeWindowMax();
   for (Int_t ielem=0;ielem<frNegAdcPulseInt->GetEntries();ielem++) {
-    Int_t npad = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
-    Double_t pulseInt = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetData();
-    Double_t pulseIntRaw = ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
-    Double_t pulseTime = ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
-    Double_t errorflag = ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
-    Bool_t pulseTimeCut = (pulseTime > AdcTimeWindowMin) &&  (pulseTime < AdcTimeWindowMax);
-    if (errorflag==0 && pulseTimeCut) {
-      fA_Neg[npad] =pulseIntRaw;
-      if(fA_Neg[npad] >  fNegThresh[npad]) {
-       fA_Neg_p[npad] =pulseInt ;
-       fEneg[npad] = fA_Neg_p[npad]*fParent->GetGain(npad,fLayerNum-1,1);
-       fEmean[npad] += fEneg[npad];
-       fEplane_neg += fEneg[npad];
+    Int_t    npad         = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+    Double_t pulseInt     = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetData();
+    Double_t pulsePed     = ((THcSignalHit*) frNegAdcPed->ConstructedAt(ielem))->GetData();
+    Double_t pulseAmp     = ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(ielem))->GetData();
+    Double_t pulseIntRaw  = ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
+    Double_t pulseTime    = ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
+    Double_t threshold    = ((THcSignalHit*) frNegAdcThreshold->ConstructedAt(ielem))->GetData();
+    Bool_t   errorflag    = ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
+    Bool_t   pulseTimeCut = (pulseTime > AdcTimeWindowMin) &&  (pulseTime < AdcTimeWindowMax);
+    if (!errorflag && pulseTimeCut) {
+      fGoodNegAdcPulseIntRaw.at(npad) =pulseIntRaw;
+
+      if(fGoodNegAdcPulseIntRaw.at(npad) >  threshold && fGoodNegAdcPulseInt.at(npad)==0) {
+        fGoodNegAdcPulseInt.at(npad) =pulseInt ;
+	fEneg.at(npad) =  fGoodNegAdcPulseInt.at(npad)*fParent->GetGain(npad,fLayerNum-1,1);
+	fEmean.at(npad) += fEneg.at(npad);
+	fEplane_neg += fEneg.at(npad);
+
+	fGoodNegAdcPed.at(npad) = pulsePed;
+      fGoodNegAdcPulseAmp.at(npad) = pulseAmp;
+      fGoodNegAdcPulseTime.at(npad) = pulseTime;
+
+      fTotNumGoodAdcHits++;
+      fTotNumGoodNegAdcHits++;
+      fNumGoodNegAdcHits.at(npad)++;
+
       }
-     }        
+
     }
+  }
   //
   for (Int_t ielem=0;ielem<frPosAdcPulseInt->GetEntries();ielem++) {
-    Int_t npad = ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
-    Double_t pulseInt = ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(ielem))->GetData();
-    Double_t pulseIntRaw = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
-    Double_t pulseTime = ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
-    Double_t errorflag = ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(ielem))->GetData();
-    Bool_t pulseTimeCut = pulseTime > AdcTimeWindowMin &&  pulseTime < AdcTimeWindowMax;
-    if (errorflag==0 && pulseTimeCut) {
-      fA_Pos[npad] =pulseIntRaw;
-      if(fA_Pos[npad] >  fPosThresh[npad]) {
-       fA_Pos_p[npad] =pulseInt ;
-       fEpos[npad] = fA_Pos_p[npad]*fParent->GetGain(npad,fLayerNum-1,0);
-       fEmean[npad] += fEpos[npad];
-       fEplane_pos += fEpos[npad];
+    Int_t    npad         = ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+    Double_t pulsePed     = ((THcSignalHit*) frPosAdcPed->ConstructedAt(ielem))->GetData();
+    Double_t threshold    = ((THcSignalHit*) frPosAdcThreshold->ConstructedAt(ielem))->GetData();
+    Double_t pulseAmp     = ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(ielem))->GetData();
+    Double_t pulseInt     = ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(ielem))->GetData();
+    Double_t pulseIntRaw  = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
+    Double_t pulseTime    = ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
+    Bool_t   errorflag    = ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(ielem))->GetData();
+    Bool_t   pulseTimeCut = (pulseTime > AdcTimeWindowMin) &&  (pulseTime < AdcTimeWindowMax);
+    if (!errorflag && pulseTimeCut) {
+      fGoodPosAdcPulseIntRaw.at(npad) = pulseIntRaw;
+
+      if(fGoodPosAdcPulseIntRaw.at(npad) >  threshold && fGoodPosAdcPulseInt.at(npad)==0) {
+
+       	fGoodPosAdcPulseInt.at(npad) =pulseInt ;
+	fEpos.at(npad) = fGoodPosAdcPulseInt.at(npad)*fParent->GetGain(npad,fLayerNum-1,0);
+	fEmean.at(npad) += fEpos[npad];
+	fEplane_pos += fEpos.at(npad);
+
+	fGoodPosAdcPed.at(npad) = pulsePed;
+	fGoodPosAdcPulseAmp.at(npad) = pulseAmp;
+	fGoodPosAdcPulseTime.at(npad) = pulseTime;
+
+	fTotNumGoodAdcHits++;
+	fTotNumGoodPosAdcHits++;
+	fNumGoodPosAdcHits.at(npad)++;
+
       }
-     }        
     }
+  }
   //
     fEplane= fEplane_neg+fEplane_pos;
 
