@@ -16,8 +16,10 @@
 #include "TClonesArray.h"
 
 #include <iostream>
-
+#include <vector>
 #include <fstream>
+
+using namespace std;
 
 class THaEvData;
 class THaSignalHit;
@@ -76,19 +78,19 @@ public:
   };
 
   Double_t GetAposP(Int_t i) {
-    return fA_Pos_p[i];
+    return fGoodPosAdcPulseInt[i];
   };
 
   Double_t GetAnegP(Int_t i) {
-    return fA_Neg_p[i];
+    return fGoodNegAdcPulseInt[i];
   };
 
   Double_t GetApos(Int_t i) {
-    return fA_Pos[i];
+    return fGoodPosAdcPulseIntRaw[i];
   };
 
   Double_t GetAneg(Int_t i) {
-    return fA_Neg[i];
+    return fGoodNegAdcPulseIntRaw[i];
   };
 
   Double_t GetPosThr(Int_t i) {
@@ -125,10 +127,24 @@ protected:
   Double_t fAdcNegThreshold;		// 
   Double_t fAdcPosThreshold;		// 
 
-  Double_t*   fA_Pos;         // [fNelem] ADC amplitudes of blocks
-  Double_t*   fA_Neg;         // [fNelem] ADC amplitudes of blocks
-  Double_t*   fA_Pos_p;	      // [fNelem] pedestal subtracted ADC amplitudes
-  Double_t*   fA_Neg_p;	      // [fNelem] pedestal subtracted ADC amplitudes
+    //added by carlos
+  vector<Double_t>      fGoodPosAdcPed;
+  vector<Double_t>      fGoodPosAdcPulseInt;
+  vector<Double_t>      fGoodPosAdcPulseAmp;
+  vector<Double_t>      fGoodPosAdcPulseTime;
+  
+  vector<Double_t>      fGoodNegAdcPed;
+  vector<Double_t>      fGoodNegAdcPulseInt;
+  vector<Double_t>      fGoodNegAdcPulseAmp;
+  vector<Double_t>      fGoodNegAdcPulseTime;
+  
+  vector<Double_t>      fGoodPosAdcPulseIntRaw;
+  vector<Double_t>      fGoodNegAdcPulseIntRaw; 
+
+  //Double_t*   fA_Pos;         // [fNelem] ADC amplitudes of blocks
+  //  Double_t*   fA_Neg;         // [fNelem] ADC amplitudes of blocks
+  //Double_t*   fA_Pos_p;	      // [fNelem] pedestal subtracted ADC amplitudes
+  //Double_t*   fA_Neg_p;	      // [fNelem] pedestal subtracted ADC amplitudes
 
   Double_t* fEpos;     // [fNelem] energy depositions seen by positive PMTs
   Double_t* fEneg;     // [fNelem] energy depositions seen by negative PMTs
