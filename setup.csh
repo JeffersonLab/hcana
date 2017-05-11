@@ -15,4 +15,9 @@ setenv HCANALYZER $MYDIR
 if ( ! ($?LD_LIBRARY_PATH) ) then
    setenv LD_LIBRARY_PATH ""
 endif
+# Check if DYLD_LIBRARY_PATH is defined
+if ( ! ($?DYLD_LIBRARY_PATH) ) then
+   setenv DYLD_LIBRARY_PATH ""
+endif
 setenv LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:${ANALYZER}:${HCANALYZER}"
+setenv DYLD_LIBRARY_PATH "${DYLD_LIBRARY_PATH}:${ANALYZER}:${HCANALYZER}"
