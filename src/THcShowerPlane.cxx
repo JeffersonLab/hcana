@@ -279,8 +279,6 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
   vars.push_back(RVarDef{"goodNegAdcPulseAmp",         "Good Negative ADC amplitudes",           "fGoodNegAdcPulseAmp"});
   vars.push_back(RVarDef{"goodNegAdcPulseTime",         "Good Negative ADC times",           "fGoodNegAdcPulseTime"});  
   
-  vars.push_back(RVarDef{"posadchits", "List of Positive ADC hits","fPosADCHits.THcSignalHit.GetPaddleNumber()"});
-  vars.push_back(RVarDef{"negadchits", "List of Negative ADC hits","fNegADCHits.THcSignalHit.GetPaddleNumber()"});
   vars.push_back(RVarDef{"epos",       "Energy Depositions from Positive Side PMTs",    "fEpos"});
   vars.push_back(RVarDef{"eneg",       "Energy Depositions from Negative Side PMTs",    "fEneg"});
   vars.push_back(RVarDef{"emean",      "Mean Energy Depositions",                       "fEmean"});
@@ -358,6 +356,7 @@ void THcShowerPlane::Clear( Option_t* )
    fGoodPosAdcPulseAmp.at(ielem)         = 0.0;
    fGoodPosAdcPulseTime.at(ielem)        = 0.0;
    fEpos.at(ielem)                       = 0.0;
+   fNumGoodPosAdcHits.at(ielem)          = 0.0;
  }
  
  for (UInt_t ielem = 0; ielem < fGoodNegAdcPed.size(); ielem++) {
@@ -367,6 +366,7 @@ void THcShowerPlane::Clear( Option_t* )
    fGoodNegAdcPulseAmp.at(ielem)         = 0.0;
    fGoodNegAdcPulseTime.at(ielem)        = 0.0;
    fEneg.at(ielem)                       = 0.0;
+   fNumGoodNegAdcHits.at(ielem)          = 0.0;
  }
 
  for (UInt_t ielem = 0; ielem < fEmean.size(); ielem++) {
