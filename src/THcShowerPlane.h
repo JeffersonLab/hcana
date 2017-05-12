@@ -127,7 +127,19 @@ protected:
   Double_t fAdcNegThreshold;		// 
   Double_t fAdcPosThreshold;		// 
 
-    //added by carlos
+  //counting variables
+  Int_t     fTotNumPosAdcHits;
+  Int_t     fTotNumNegAdcHits;
+  Int_t     fTotNumAdcHits;
+   
+  Int_t     fTotNumGoodPosAdcHits;
+  Int_t     fTotNumGoodNegAdcHits;
+  Int_t     fTotNumGoodAdcHits;
+
+   //individual pmt data objects
+  vector<Int_t>    fNumGoodPosAdcHits;
+  vector<Int_t>    fNumGoodNegAdcHits;
+
   vector<Double_t>      fGoodPosAdcPed;
   vector<Double_t>      fGoodPosAdcPulseInt;
   vector<Double_t>      fGoodPosAdcPulseAmp;
@@ -141,17 +153,15 @@ protected:
   vector<Double_t>      fGoodPosAdcPulseIntRaw;
   vector<Double_t>      fGoodNegAdcPulseIntRaw; 
 
-  //Double_t*   fA_Pos;         // [fNelem] ADC amplitudes of blocks
-  //  Double_t*   fA_Neg;         // [fNelem] ADC amplitudes of blocks
-  //Double_t*   fA_Pos_p;	      // [fNelem] pedestal subtracted ADC amplitudes
-  //Double_t*   fA_Neg_p;	      // [fNelem] pedestal subtracted ADC amplitudes
 
-  Double_t* fEpos;     // [fNelem] energy depositions seen by positive PMTs
-  Double_t* fEneg;     // [fNelem] energy depositions seen by negative PMTs
-  Double_t* fEmean;    // [fNelem] mean energy depositions (pos + neg)
-  Double_t  fEplane;   // Energy deposition in the plane
+  vector<Double_t>      fEpos;        // [fNelem] energy depositions seen by positive PMTs
+  vector<Double_t>      fEneg;        // [fNelem] energy depositions seen by negative PMTs
+  vector<Double_t>      fEmean;        // [fNelem] mean energy depositions (pos + neg)
+
+ 
   Double_t  fEplane_pos;   // Energy deposition in the plane from positive PMTs
   Double_t  fEplane_neg;   // Energy deposition in the plane from negative PMTs
+  Double_t  fEplane;
 
   // These lists are not used actively for now.
   TClonesArray* fPosADCHits;    // List of positive ADC hits
