@@ -42,6 +42,7 @@ THcShowerPlane::THcShowerPlane( const char* name,
 
   frPosAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
   frPosAdcPedRaw = new TClonesArray("THcSignalHit", 16);
+  frPosAdcThreshold = new TClonesArray("THcSignalHit", 16);
   frPosAdcPulseIntRaw = new TClonesArray("THcSignalHit", 16);
   frPosAdcPulseAmpRaw = new TClonesArray("THcSignalHit", 16);
   frPosAdcPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
@@ -52,6 +53,7 @@ THcShowerPlane::THcShowerPlane( const char* name,
 
   frNegAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
   frNegAdcPedRaw = new TClonesArray("THcSignalHit", 16);
+  frNegAdcThreshold = new TClonesArray("THcSignalHit", 16);
   frNegAdcPulseIntRaw = new TClonesArray("THcSignalHit", 16);
   frNegAdcPulseAmpRaw = new TClonesArray("THcSignalHit", 16);
   frNegAdcPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
@@ -77,6 +79,7 @@ THcShowerPlane::~THcShowerPlane()
 
   frPosAdcErrorFlag = NULL;
   frPosAdcPedRaw = NULL;
+  frPosAdcThreshold = NULL;
   frPosAdcPulseIntRaw = NULL;
   frPosAdcPulseAmpRaw = NULL;
   frPosAdcPulseTimeRaw = NULL;
@@ -87,6 +90,7 @@ THcShowerPlane::~THcShowerPlane()
 
   frNegAdcErrorFlag = NULL;
   frNegAdcPedRaw = NULL;
+  frNegAdcThreshold = NULL;
   frNegAdcPulseIntRaw = NULL;
   frNegAdcPulseAmpRaw = NULL;
   frNegAdcPulseTimeRaw = NULL;
@@ -327,6 +331,7 @@ void THcShowerPlane::Clear( Option_t* )
 
   frPosAdcErrorFlag->Clear();
   frPosAdcPedRaw->Clear();
+  frPosAdcThreshold->Clear();
   frPosAdcPulseIntRaw->Clear();
   frPosAdcPulseAmpRaw->Clear();
   frPosAdcPulseTimeRaw->Clear();
@@ -337,6 +342,7 @@ void THcShowerPlane::Clear( Option_t* )
 
   frNegAdcErrorFlag->Clear();
   frNegAdcPedRaw->Clear();
+  frNegAdcThreshold->Clear();
   frNegAdcPulseIntRaw->Clear();
   frNegAdcPulseAmpRaw->Clear();
   frNegAdcPulseTimeRaw->Clear();
@@ -435,6 +441,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   frPosAdcErrorFlag->Clear();
   frPosAdcPedRaw->Clear();
+  frPosAdcThreshold->Clear();
   frPosAdcPulseIntRaw->Clear();
   frPosAdcPulseAmpRaw->Clear();
   frPosAdcPulseTimeRaw->Clear();
@@ -445,6 +452,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   frNegAdcErrorFlag->Clear();
   frNegAdcPedRaw->Clear();
+  frNegAdcThreshold->Clear();
   frNegAdcPulseIntRaw->Clear();
   frNegAdcPulseAmpRaw->Clear();
   frNegAdcPulseTimeRaw->Clear();
@@ -490,8 +498,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     THcRawAdcHit& rawPosAdcHit = hit->GetRawAdcHitPos();
     for (UInt_t thit=0; thit<rawPosAdcHit.GetNPulses(); ++thit) {
       ((THcSignalHit*) frPosAdcPedRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPedRaw());
-       fPosThresh[hit->fCounter -1]=rawPosAdcHit.GetPedRaw()*rawPosAdcHit.GetF250_PeakPedestalRatio()+fAdcPosThreshold;
-       
+      ((THcSignalHit*) frPosAdcThreshold->ConstructedAt(nrPosAdcHits))->Set(padnum,rawPosAdcHit.GetPedRaw()*rawPosAdcHit.GetF250_PeakPedestalRatio()+fAdcPosThreshold);
       ((THcSignalHit*) frPosAdcPed->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPed());
 
       ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseIntRaw(thit));
@@ -514,7 +521,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     THcRawAdcHit& rawNegAdcHit = hit->GetRawAdcHitNeg();
     for (UInt_t thit=0; thit<rawNegAdcHit.GetNPulses(); ++thit) {
       ((THcSignalHit*) frNegAdcPedRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPedRaw());
-       fNegThresh[hit->fCounter -1]=rawNegAdcHit.GetPedRaw()*rawNegAdcHit.GetF250_PeakPedestalRatio()+fAdcNegThreshold;
+      ((THcSignalHit*) frNegAdcThreshold->ConstructedAt(nrNegAdcHits))->Set(padnum,rawNegAdcHit.GetPedRaw()*rawNegAdcHit.GetF250_PeakPedestalRatio()+fAdcNegThreshold);
       ((THcSignalHit*) frNegAdcPed->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPed());
 
       ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseIntRaw(thit));
@@ -651,12 +658,13 @@ void THcShowerPlane::FillADC_DynamicPedestal()
     Double_t pulseAmp     = ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(ielem))->GetData(); 
     Double_t pulseIntRaw  = ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
     Double_t pulseTime    = ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
+    Double_t threshold    = ((THcSignalHit*) frNegAdcThreshold->ConstructedAt(ielem))->GetData();
     Bool_t   errorflag    = ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
     Bool_t   pulseTimeCut = (pulseTime > AdcTimeWindowMin) &&  (pulseTime < AdcTimeWindowMax);
     if (!errorflag && pulseTimeCut) {
       fGoodNegAdcPulseIntRaw.at(npad) =pulseIntRaw;
                  
-      if(fGoodNegAdcPulseIntRaw.at(npad) >  fNegThresh[npad]) {
+      if(fGoodNegAdcPulseIntRaw.at(npad) >  threshold && fGoodNegAdcPulseInt.at(npad)==0) {
         fGoodNegAdcPulseInt.at(npad) =pulseInt ;
 	fEneg.at(npad) =  fGoodNegAdcPulseInt.at(npad)*fParent->GetGain(npad,fLayerNum-1,1);
 	fEmean.at(npad) += fEneg.at(npad);
@@ -678,6 +686,7 @@ void THcShowerPlane::FillADC_DynamicPedestal()
   for (Int_t ielem=0;ielem<frPosAdcPulseInt->GetEntries();ielem++) {
     Int_t    npad         = ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
     Double_t pulsePed     = ((THcSignalHit*) frPosAdcPed->ConstructedAt(ielem))->GetData(); 
+    Double_t threshold    = ((THcSignalHit*) frPosAdcThreshold->ConstructedAt(ielem))->GetData();
     Double_t pulseAmp     = ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(ielem))->GetData(); 
     Double_t pulseInt     = ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(ielem))->GetData();
     Double_t pulseIntRaw  = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
@@ -687,7 +696,7 @@ void THcShowerPlane::FillADC_DynamicPedestal()
     if (!errorflag && pulseTimeCut) {
       fGoodPosAdcPulseIntRaw.at(npad) = pulseIntRaw;
      
-      if(fGoodPosAdcPulseIntRaw.at(npad) >  fPosThresh[npad]) {
+      if(fGoodPosAdcPulseIntRaw.at(npad) >  threshold && fGoodPosAdcPulseInt.at(npad)==0) {
        
        	fGoodPosAdcPulseInt.at(npad) =pulseInt ;
 	fEpos.at(npad) = fGoodPosAdcPulseInt.at(npad)*fParent->GetGain(npad,fLayerNum-1,0);

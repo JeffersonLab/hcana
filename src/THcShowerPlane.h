@@ -189,6 +189,7 @@ protected:
 
   TClonesArray* frPosAdcErrorFlag;
   TClonesArray* frPosAdcPedRaw;
+  TClonesArray* frPosAdcThreshold;
   TClonesArray* frPosAdcPulseIntRaw;
   TClonesArray* frPosAdcPulseAmpRaw;
   TClonesArray* frPosAdcPulseTimeRaw;
@@ -199,6 +200,7 @@ protected:
 
   TClonesArray* frNegAdcErrorFlag;
   TClonesArray* frNegAdcPedRaw;
+  TClonesArray* frNegAdcThreshold;
   TClonesArray* frNegAdcPulseIntRaw;
   TClonesArray* frNegAdcPulseAmpRaw;
   TClonesArray* frNegAdcPulseTimeRaw;
