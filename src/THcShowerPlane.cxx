@@ -148,8 +148,12 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
     {"cal_ped_sample_high", &fPedSampHigh, kInt, 0, 1},
     {"cal_data_sample_low", &fDataSampLow, kInt, 0, 1},
     {"cal_data_sample_high", &fDataSampHigh, kInt, 0, 1},
+    {"cal_debug_adc", &fDebugAdc, kInt, 0, 1},
     {0}
   };
+
+    fDebugAdc   = 0; // Set ADC debug parameter to false unless set in parameter file
+
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 
   // Retrieve more parameters we need from parent class
@@ -260,7 +264,17 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
   // Register variables in global list
   vector<RVarDef> vars;
 
-   vars.push_back(RVarDef{"numGoodPosAdcHits",    "Number of Good Positive ADC Hits Per PMT", "fNumGoodPosAdcHits"});    // PreSh occupancy
+  vars.push_back(RVarDef{"posAdcErrorFlag",       "List of positive raw ADC Error Flags",         "frPosAdcErrorFlag.THcSignalHit.GetData()"});
+  vars.push_back(RVarDef{"negAdcErrorFlag",       "List of negative raw ADC Error Flags ",        "frNegAdcErrorFlag.THcSignalHit.GetData()"});
+
+  vars.push_back(RVarDef{"posAdcCounter",      "List of positive ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"}); //PreSh+ raw occupancy
+  vars.push_back(RVarDef{"negAdcCounter",      "List of negative ADC counter numbers.",      "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"}); //PreSh- raw occupancy
+
+  vars.push_back(RVarDef{"totNumPosAdcHits", "Total Number of Positive ADC Hits",   "fTotNumPosAdcHits"}); // PreSh+ raw multiplicity
+  vars.push_back(RVarDef{"totNumNegAdcHits", "Total Number of Negative ADC Hits",   "fTotNumNegAdcHits"}); // PreSh+ raw multiplicity
+  vars.push_back(RVarDef{"totnumAdcHits",   "Total Number of ADC Hits Per PMT",      "fTotNumAdcHits"});    // PreSh raw multiplicity
+  
+  vars.push_back(RVarDef{"numGoodPosAdcHits",    "Number of Good Positive ADC Hits Per PMT", "fNumGoodPosAdcHits"});    // PreSh occupancy
   vars.push_back(RVarDef{"numGoodNegAdcHits",    "Number of Good Negative ADC Hits Per PMT", "fNumGoodNegAdcHits"});    // PreSh occupancy
   vars.push_back(RVarDef{"totNumGoodPosAdcHits", "Total Number of Good Positive ADC Hits",   "fTotNumGoodPosAdcHits"}); // PreSh multiplicity
   vars.push_back(RVarDef{"totNumGoodNegAdcHits", "Total Number of Good Negative ADC Hits",   "fTotNumGoodNegAdcHits"}); // PreSh multiplicity
@@ -286,14 +300,8 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
   vars.push_back(RVarDef{"eplane_pos", "Energy Deposition per plane from pos. PMTs","fEplane_pos"});
   vars.push_back(RVarDef{"eplane_neg", "Energy Deposition per plane from neg. PMTs","fEplane_neg"});
   
-  vars.push_back(RVarDef{"posAdcCounter",      "List of positive ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
-  vars.push_back(RVarDef{"negAdcCounter",      "List of negative ADC counter numbers.",      "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
 
-  vars.push_back(RVarDef{"totNumPosAdcHits", "Total Number of Positive ADC Hits",   "fTotNumPosAdcHits"}); // PreSh+ raw multiplicity
-  vars.push_back(RVarDef{"totNumNegAdcHits", "Total Number of Negative ADC Hits",   "fTotNumNegAdcHits"}); // PreSh+ raw multiplicity
-  vars.push_back(RVarDef{"totnumAdcHits",   "TotalNumber of ADC Hits Per PMT",      "fTotNumAdcHits"});    // PreSh raw multiplicity
-
-  vars.push_back(RVarDef{"posAdcErrorFlag",       "List of positive raw ADC Error Flags",         "frPosAdcErrorFlag.THcSignalHit.GetData()"});
+  if (fDebugAdc) {  
   vars.push_back(RVarDef{"posAdcPedRaw",       "List of positive raw ADC pedestals",         "frPosAdcPedRaw.THcSignalHit.GetData()"});
   vars.push_back(RVarDef{"posAdcPulseIntRaw",  "List of positive raw ADC pulse integrals.",  "frPosAdcPulseIntRaw.THcSignalHit.GetData()"});
   vars.push_back(RVarDef{"posAdcPulseAmpRaw",  "List of positive raw ADC pulse amplitudes.", "frPosAdcPulseAmpRaw.THcSignalHit.GetData()"});
@@ -303,7 +311,6 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
   vars.push_back(RVarDef{"posAdcPulseInt",     "List of positive ADC pulse integrals.",      "frPosAdcPulseInt.THcSignalHit.GetData()"});
   vars.push_back(RVarDef{"posAdcPulseAmp",     "List of positive ADC pulse amplitudes.",     "frPosAdcPulseAmp.THcSignalHit.GetData()"});
   
-  vars.push_back(RVarDef{"negAdcErrorFlag",       "List of negative raw ADC Error Flag ",         "frNegAdcErrorFlag.THcSignalHit.GetData()"});
   vars.push_back(RVarDef{"negAdcPedRaw",       "List of negative raw ADC pedestals",         "frNegAdcPedRaw.THcSignalHit.GetData()"});
   vars.push_back(RVarDef{"negAdcPulseIntRaw",  "List of negative raw ADC pulse integrals.",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"});
   vars.push_back(RVarDef{"negAdcPulseAmpRaw",  "List of negative raw ADC pulse amplitudes.", "frNegAdcPulseAmpRaw.THcSignalHit.GetData()"});
@@ -313,6 +320,8 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
   vars.push_back(RVarDef{"negAdcPulseInt",     "List of negative ADC pulse integrals.",      "frNegAdcPulseInt.THcSignalHit.GetData()"});
   vars.push_back(RVarDef{"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"});
     
+   }
+
   RVarDef end {0};
   vars.push_back(end);
 

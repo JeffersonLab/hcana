@@ -120,7 +120,9 @@ protected:
   static const Int_t kADCDynamicPedestal=1;
   static const Int_t kADCSampleIntegral=2;
   static const Int_t kADCSampIntDynPed=3;
-   Int_t fPedSampLow;		// Sample range for
+  
+  Int_t fDebugAdc;              // fADC debug flag
+  Int_t fPedSampLow;		// Sample range for
   Int_t fPedSampHigh;		// dynamic pedestal
   Int_t fDataSampLow;		// Sample range for
   Int_t fDataSampHigh;		// sample integration
