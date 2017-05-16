@@ -72,11 +72,11 @@ THcShowerArray::~THcShowerArray()
   delete frAdcPulseInt; frAdcPulseInt = NULL;
   delete frAdcPulseAmp; frAdcPulseAmp = NULL;
 
-  delete [] fA;
-  delete [] fP;
-  delete [] fA_p;
+  //  delete [] fA;
+  //delete [] fP;
+  // delete [] fA_p;
 
-  delete [] fE;
+  //delete [] fE;
   delete [] fBlock_ClusterID;
 }
 
@@ -135,8 +135,12 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     {"cal_ped_sample_high", &fPedSampHigh, kInt, 0, 1},
     {"cal_data_sample_low", &fDataSampLow, kInt, 0, 1},
     {"cal_data_sample_high", &fDataSampHigh, kInt, 0, 1},
+    {"cal_debug_adc", &fDebugAdc, kInt, 0, 1},
     {0}
   };
+  
+  fDebugAdc = 0;  // Set ADC debug parameter to false unless set in parameter file
+  
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   fADCMode=kADCDynamicPedestal;
   fAdcTimeWindowMin=0;
@@ -307,14 +311,24 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   InitializePedestals();
 
   // Event by event amplitude and pedestal
-  fA = new Double_t[fNelem];
-  fP = new Double_t[fNelem];
-  fA_p = new Double_t[fNelem];
+  //fA = new Double_t[fNelem];
+  //fP = new Double_t[fNelem];
+  //fA_p = new Double_t[fNelem];
+  
+  fE                       = vector<Double_t> (fNelem, 0.0);
+  fNumGoodAdcHits          = vector<Int_t>    (fNelem, 0.0);
+  fGoodAdcPulseIntRaw      = vector<Double_t> (fNelem, 0.0);
+  fGoodAdcPed              = vector<Double_t> (fNelem, 0.0);
+  fGoodAdcPulseInt         = vector<Double_t> (fNelem, 0.0);
+  fGoodAdcPulseAmp         = vector<Double_t> (fNelem, 0.0);
+  fGoodAdcPulseTime        = vector<Double_t> (fNelem, 0.0); 
+
+
   fBlock_ClusterID = new Int_t[fNelem];
 
   // Energy depositions per block.
 
-  fE = new Double_t[fNelem];
+  //fE = new Double_t[fNelem];
 
 #ifdef HITPIC
   hitpic = new char*[fNRows];
@@ -345,35 +359,49 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
 
   // Register variables in global list
-  RVarDef vars[] = {
-    {"adchits", "List of ADC hits", "fADCHits.THcSignalHit.GetPaddleNumber()"},
-    {"a", "Raw ADC Amplitude", "fA"},
-    {"p", "Dynamic ADC Pedestal", "fP"},
-    {"a_p", "Sparsified, ped-subtracted ADC Amplitudes", "fA_p"},
-    { "nhits", "Number of hits", "fNhits" },
-    { "nghits", "Number of good hits ( pass threshold on raw ADC)", "fNgoodhits" },
-    { "nclust", "Number of clusters", "fNclust" },
-    {"e", "Energy Depositions per block", "fE"},
-    {"block_clusterID", "Cluster ID number", "fBlock_ClusterID"},
-    {"earray", "Energy Deposition in array", "fEarray"},
-    { "ntracks", "Number of shower tracks", "fNtracks" },
+  vector<RVarDef> vars;
 
-    {"adcCounter",      "List of ADC counter numbers.",      "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+    //{"adchits", "List of ADC hits", "fADCHits.THcSignalHit.GetPaddleNumber()"}, // appears an empty histogram in the root file
+    
+    vars.push_back(RVarDef{"adcErrorFlag",       "List of raw ADC pedestals",      "frAdcErrorFlag.THcSignalHit.GetData()"});
+    
+    vars.push_back(RVarDef{"adcCounter",      "List of ADC counter numbers.",      "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});  //raw occupancy
+    vars.push_back(RVarDef{"numGoodAdcHits", "Number of Good ADC Hits per PMT", "fNumGoodAdcHits" });                                   //good occupancy
 
-    {"adcPedRaw",       "List of raw ADC pedestals",         "frAdcPedRaw.THcSignalHit.GetData()"},
-    {"adcErrorFlag",       "List of raw ADC pedestals",      "frAdcErrorFlag.THcSignalHit.GetData()"},
-    {"adcPulseIntRaw",  "List of raw ADC pulse integrals.",  "frAdcPulseIntRaw.THcSignalHit.GetData()"},
-    {"adcPulseAmpRaw",  "List of raw ADC pulse amplitudes.", "frAdcPulseAmpRaw.THcSignalHit.GetData()"},
-    {"adcPulseTimeRaw", "List of raw ADC pulse times.",      "frAdcPulseTimeRaw.THcSignalHit.GetData()"},
+    vars.push_back(RVarDef{"totNumAdcHits", "Total Number of ADC Hits", "fTotNumAdcHits" });                                            // raw multiplicity
+    vars.push_back(RVarDef{"totNumGoodAdcHits", "Total Number of Good ADC Hits", "fTotNumGoodAdcHits" });                               // good multiplicity
 
-    {"adcPed",          "List of ADC pedestals",             "frAdcPed.THcSignalHit.GetData()"},
-    {"adcPulseInt",     "List of ADC pulse integrals.",      "frAdcPulseInt.THcSignalHit.GetData()"},
-    {"adcPulseAmp",     "List of ADC pulse amplitudes.",     "frAdcPulseAmp.THcSignalHit.GetData()"},
 
-    { 0 }
-  };
+    vars.push_back(RVarDef{"goodAdcPulseIntRaw", "Good Raw ADC Pulse Integrals", "fGoodAdcPulseIntRaw"});    //this is defined as pulseIntRaw, NOT ADC Amplitude in FillADC_DynamicPedestal() method
+    vars.push_back(RVarDef{"goodAdcPed", "Good ADC Pedestal", "fGoodAdcPed"});   
+    vars.push_back(RVarDef{"goodAdcPulseInt", "Good ADC Pulse Integrals", "fGoodAdcPulseInt"});     //this is defined as pulseInt, which is the pedestal subtracted pulse integrals, and is defined if threshold is passed
+    vars.push_back(RVarDef{"goodAdcPulseAmp", "Good ADC Pulse Amplitudes", "fGoodAdcPulseAmp"});   
+    vars.push_back(RVarDef{"goodAdcPulseTime", "Good ADC Pulse Times", "fGoodAdcPulseTime"});     //this is defined as pulseInt, which is the pedestal subtracted pulse integrals, and is defined if threshold is passed
 
-  return DefineVarsFromList( vars, mode );
+    
+    vars.push_back(RVarDef{"e", "Energy Depositions per block", "fE"});       //defined as fE = fA_p*fGain = pulseInt * Gain
+    vars.push_back(RVarDef{"earray", "Energy Deposition in Shower Array", "fEarray"});   //defined as a Double_t and represents a sum of the total deposited energy in the shower counter
+
+    vars.push_back(RVarDef{"nclust", "Number of clusters", "fNclust" });       //what is the difference between nclust defined here and that in THcShower.cxx ?
+    vars.push_back(RVarDef{"block_clusterID", "Cluster ID number", "fBlock_ClusterID"}); // im NOT very clear about this. it is histogrammed at wither -1 or 0.
+    vars.push_back(RVarDef{"ntracks", "Number of shower tracks", "fNtracks" }); //number of cluster-to-track associations
+ 
+    if (fDebugAdc) {
+    vars.push_back(RVarDef{"adcPedRaw",       "List of raw ADC pedestals",         "frAdcPedRaw.THcSignalHit.GetData()"});  
+    vars.push_back(RVarDef{"adcPulseIntRaw",  "List of raw ADC pulse integrals.",  "frAdcPulseIntRaw.THcSignalHit.GetData()"});
+    vars.push_back(RVarDef{"adcPulseAmpRaw",  "List of raw ADC pulse amplitudes.", "frAdcPulseAmpRaw.THcSignalHit.GetData()"});
+    vars.push_back(RVarDef{"adcPulseTimeRaw", "List of raw ADC pulse times.",      "frAdcPulseTimeRaw.THcSignalHit.GetData()"});
+
+    vars.push_back(RVarDef{"adcPed",          "List of ADC pedestals",             "frAdcPed.THcSignalHit.GetData()"});
+    vars.push_back(RVarDef{"adcPulseInt",     "List of ADC pulse integrals.",      "frAdcPulseInt.THcSignalHit.GetData()"});
+    vars.push_back(RVarDef{"adcPulseAmp",     "List of ADC pulse amplitudes.",     "frAdcPulseAmp.THcSignalHit.GetData()"});
+
+    }
+
+    RVarDef end {0};
+    vars.push_back(end);
+
+    return DefineVarsFromList(vars.data(), mode );
 }
 
 //_____________________________________________________________________________
@@ -382,8 +410,8 @@ void THcShowerArray::Clear( Option_t* )
   // Clears the hit lists
   fADCHits->Clear();
 
-  fNhits = 0;
-  fNgoodhits = 0;
+  fTotNumAdcHits = 0;
+  fTotNumGoodAdcHits = 0;
   fNclust = 0;
   fClustSize = 0;
   fNtracks = 0;
@@ -407,6 +435,16 @@ void THcShowerArray::Clear( Option_t* )
   frAdcPed->Clear();
   frAdcPulseInt->Clear();
   frAdcPulseAmp->Clear();
+
+  for (UInt_t ielem = 0; ielem < fGoodAdcPed.size(); ielem++) {
+    fGoodAdcPulseIntRaw.at(ielem)      = 0.0;   
+    fGoodAdcPed.at(ielem)              = 0.0;
+    fGoodAdcPulseInt.at(ielem)         = 0.0;
+    fGoodAdcPulseAmp.at(ielem)         = 0.0;   
+    fGoodAdcPulseTime.at(ielem)        = 0.0;
+    fNumGoodAdcHits.at(ielem)          = 0.0;
+    fE.at(ielem)                       = 0.0;
+  }
 
 }
 
@@ -434,7 +472,7 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
   for(UInt_t j=0; j < fNColumns; j++) {
     for (UInt_t i=0; i<fNRows; i++) {
 
-      if (fA_p[k] > 0) {    //hit
+      if (fGoodAdcPulseInt.at(k) > 0) {    //hit
 
 	THcShowerHit* hit =
 	  new THcShowerHit(i, j, fXPos[i][j], fYPos[i][j], fZPos[i][j], fE[k], 0., 0.);
@@ -454,9 +492,9 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
     cout << "Debug output from THcShowerArray::CoarseProcess for " << GetName()
 	 << endl;
 
-    cout << "  List of unclustered hits. Total hits:     " << fNhits << endl;
+    cout << "  List of unclustered hits. Total hits:     " << fTotNumAdcHits << endl;
     THcShowerHitIt it = HitSet.begin();    //<set> version
-    for (Int_t i=0; i!=fNgoodhits; i++) {
+    for (Int_t i=0; i!=fTotNumGoodAdcHits; i++) {
       cout << "  hit " << i << ": ";
       (*(it++))->show();
     }
@@ -718,7 +756,7 @@ Int_t THcShowerArray::CoarseProcessHits()
     Int_t k=0;
     for(UInt_t j=0; j < fNColumns; j++) {
     for (UInt_t i=0; i<fNRows; i++) {
-     if(fA[k] > fThresh[k]) {
+      if(fGoodAdcPulseIntRaw.at(k) > fThresh[k]) {
 	cout << "  counter =  " << k
 	     << "  E = " << fE[k]
 	     << endl;
@@ -763,19 +801,30 @@ void THcShowerArray::FillADC_DynamicPedestal()
 {
   for (Int_t ielem=0;ielem<frAdcPulseInt->GetEntries();ielem++) {
     Int_t npad = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
-    Double_t pulseInt = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetData();
     Double_t pulseIntRaw = ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
+    Double_t pulsePed     = ((THcSignalHit*) frAdcPed->ConstructedAt(ielem))->GetData(); 
+    Double_t pulseInt = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetData();
+    Double_t pulseAmp     = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
     Double_t pulseTime = ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
-    Double_t errorflag = ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(ielem))->GetData();
+    Bool_t errorflag = ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(ielem))->GetData();
     Bool_t pulseTimeCut = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
-    if (errorflag==0 && pulseTimeCut) {
-      fNhits++;
-      fA[npad] =pulseIntRaw;
-      if(fA[npad] >  fThresh[npad]) {
-       fNgoodhits++;
-       fA_p[npad] =pulseInt ;
-       fE[npad] = fA_p[npad]*fGain[npad];
-       fEarray += fE[npad];
+    if (!errorflag && pulseTimeCut) {
+      fTotNumAdcHits++;
+      fGoodAdcPulseIntRaw.at(npad) = pulseIntRaw;
+      
+      if(fGoodAdcPulseIntRaw.at(npad) >  fThresh[npad]) {
+       fTotNumGoodAdcHits++;
+       fGoodAdcPulseInt.at(npad) = pulseInt ;
+       fE.at(npad) = fGoodAdcPulseInt.at(npad)*fGain[npad];
+       fEarray += fE.at(npad);
+     
+       fGoodAdcPed.at(npad) = pulsePed; 
+       fGoodAdcPulseAmp.at(npad) = pulseAmp; 
+       fGoodAdcPulseTime.at(npad) = pulseTime;  
+
+       fNumGoodAdcHits.at(npad) = npad + 1;
+
+
       }
      }        
    }
@@ -804,9 +853,10 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frAdcPulseAmp->Clear();
 
   for(Int_t i=0;i<fNelem;i++) {
-    fA[i] = 0;
-    fA_p[i] = 0;
-    fE[i] = 0;
+    //fA[i] = 0;
+    //fA_p[i] = 0;
+    //fE[i] = 0;
+
     fBlock_ClusterID[i] = -1;
   }
 
@@ -854,7 +904,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   }
 
 #if 0
-  if(fNgoodhits > 0) {
+  if(fTotNumGoodAdcHits > 0) {
     cout << "+";
     for(Int_t column=0;column<fNColumns;column++) {
       cout << "-";
@@ -864,7 +914,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       cout << "|";
       for(Int_t column=0;column<fNColumns;column++) {
 	Int_t counter = column*fNRows + row;
-	if(fA[counter]>threshold) {
+	if(fGoodAdcPulseIntRaw.at(counter) > threshold) {
 	  cout << "X";
 	} else {
 	  cout << " ";
@@ -875,14 +925,14 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   }
 #endif
 #ifdef HITPIC
-  if(fNgoodhits > 0) {
+  if(fTotNumGoodAdcHits > 0) {
     for(Int_t row=0;row<fNRows;row++) {
       if(piccolumn==0) {
 	hitpic[row][0] = '|';
       }
       for(Int_t column=0;column<fNColumns;column++) {
 	Int_t counter = column*fNRows+row;
-	if(fA[counter] > threshold) {
+	if(fGoodAdcPulseIntRaw.at(counter) > threshold) {
 	  hitpic[row][piccolumn*(fNColumns+1)+column+1] = 'X';
 	} else {
 	  hitpic[row][piccolumn*(fNColumns+1)+column+1] = ' ';
@@ -898,7 +948,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	  cout << "-";
 	}
 	cout << "+";
-      }
+0      }
       cout << endl;
       for(Int_t row=0;row<fNRows;row++) {
 	hitpic[row][(piccolumn+1)*(fNColumns+1)+1] = '\0';

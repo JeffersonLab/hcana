@@ -95,11 +95,27 @@ protected:
   char **hitpic;
   Int_t piccolumn;
 #endif
-  Double_t* fA;               // [fNelem] ADC amplitudes of blocks
-  Double_t* fP;               // [fNelem] Event by event (FADC) pedestals
-  Double_t* fA_p;	      // [fNelem] sparsified, pedestal subtracted
-                              // (FASTBUS) ADC amplitudes
 
+
+ 
+
+
+  //counting variables
+  Int_t fTotNumAdcHits;              // Total number of ADC hits
+  Int_t fTotNumGoodAdcHits;          // Total number of good ADC hits (pass threshold)
+
+  vector<Int_t>         fNumGoodAdcHits;          // shower good occupancy
+  vector<Double_t>      fGoodAdcPulseIntRaw;      // [fNelem] Good Raw ADC pulse Integrals of blocks
+  
+  vector<Double_t>      fGoodAdcPed;             // [fNelem] Event by event (FADC) good pulse pedestals
+  vector<Double_t>      fGoodAdcPulseInt;       // [fNelem] good pedestal subtracted pulse integrals
+  vector<Double_t>      fGoodAdcPulseAmp;
+  vector<Double_t>      fGoodAdcPulseTime;
+
+  vector<Double_t>      fE;                    //[fNelem] energy deposition in shower blocks
+
+  Int_t* fBlock_ClusterID;              // [fNelem] Cluster ID of the block -1 then not in a cluster
+  Double_t  fEarray;                          // Total Energy deposition in the array.
   TClonesArray* fADCHits;	// List of ADC hits
 
   // Parameters
@@ -128,7 +144,9 @@ protected:
   Double_t fAdcTimeWindowMin ;
   Double_t fAdcTimeWindowMax ;
   Double_t fAdcThreshold ;
-Int_t fPedSampLow;		// Sample range for
+
+  Int_t fDebugAdc;
+  Int_t fPedSampLow;		// Sample range for
   Int_t fPedSampHigh;		// dynamic pedestal
   Int_t fDataSampLow;		// Sample range for
   Int_t fDataSampHigh;		// sample integration
@@ -152,15 +170,7 @@ Int_t fPedSampLow;		// Sample range for
   Float_t *fThresh;          // [fNelem] ADC thresholds
 
   Double_t* fGain;           // [fNelem] Gain constants from calibration
-
-  //Energy depositions.
-
-  Double_t* fE;              // [fNelem] energy depositions in the blocks.
-  Int_t* fBlock_ClusterID;              // [fNelem] Cluster ID of the block -1 then not in a cluster
-  Double_t  fEarray;         // Total Energy deposition in the array.
-
-  Int_t fNhits;              // Total number of hits
-  Int_t fNgoodhits;              // Total number of good hits (pass threshold)
+  
   Int_t fNclust;             // Number of hit clusters
   Int_t fNtracks;            // Number of shower tracks, i.e. number of
                              // cluster-to-track associations
