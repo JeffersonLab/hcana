@@ -56,11 +56,23 @@ THcShowerArray::THcShowerArray( const char* name,
 THcShowerArray::~THcShowerArray()
 {
   // Destructor
-  delete fXPos;
-  delete fYPos;
-  delete fZPos;
+ 
+  for (UInt_t i=0; i<fNRows; i++) {
+    delete [] fXPos[i];
+    delete [] fYPos[i];
+    delete [] fZPos[i];
+  }
 
-  delete fADCHits;
+  delete [] fPedlimit;
+  delete [] fGain;
+  delete [] fPedSum;
+  delete [] fPedSum2;
+  delete [] fPedCount;
+  delete [] fSig;
+  delete [] fPed;
+  delete [] fThresh;
+
+  delete fADCHits; fADCHits = NULL;
 
   delete frAdcPedRaw; frAdcPedRaw = NULL;
   delete frAdcErrorFlag; frAdcErrorFlag = NULL;
@@ -141,12 +153,12 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   
   fDebugAdc = 0;  // Set ADC debug parameter to false unless set in parameter file
   
-  gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   fADCMode=kADCDynamicPedestal;
   fAdcTimeWindowMin=0;
   fAdcTimeWindowMax=10000;
   fAdcThreshold=0.;
   fNelem = fNRows*fNColumns;
+  gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 
   fXPos = new Double_t* [fNRows];
   fYPos = new Double_t* [fNRows];
@@ -363,7 +375,7 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
 
     //{"adchits", "List of ADC hits", "fADCHits.THcSignalHit.GetPaddleNumber()"}, // appears an empty histogram in the root file
     
-    vars.push_back(RVarDef{"adcErrorFlag",       "List of raw ADC pedestals",      "frAdcErrorFlag.THcSignalHit.GetData()"});
+    vars.push_back(RVarDef{"adcErrorFlag",       "Error Flag When FPGA Fails",      "frAdcErrorFlag.THcSignalHit.GetData()"});
     
     vars.push_back(RVarDef{"adcCounter",      "List of ADC counter numbers.",      "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});  //raw occupancy
     vars.push_back(RVarDef{"numGoodAdcHits", "Number of Good ADC Hits per PMT", "fNumGoodAdcHits" });                                   //good occupancy
@@ -373,7 +385,7 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
 
 
     vars.push_back(RVarDef{"goodAdcPulseIntRaw", "Good Raw ADC Pulse Integrals", "fGoodAdcPulseIntRaw"});    //this is defined as pulseIntRaw, NOT ADC Amplitude in FillADC_DynamicPedestal() method
-    vars.push_back(RVarDef{"goodAdcPed", "Good ADC Pedestal", "fGoodAdcPed"});   
+    vars.push_back(RVarDef{"goodAdcPed", "Good ADC Pedestals", "fGoodAdcPed"});   
     vars.push_back(RVarDef{"goodAdcPulseInt", "Good ADC Pulse Integrals", "fGoodAdcPulseInt"});     //this is defined as pulseInt, which is the pedestal subtracted pulse integrals, and is defined if threshold is passed
     vars.push_back(RVarDef{"goodAdcPulseAmp", "Good ADC Pulse Amplitudes", "fGoodAdcPulseAmp"});   
     vars.push_back(RVarDef{"goodAdcPulseTime", "Good ADC Pulse Times", "fGoodAdcPulseTime"});     //this is defined as pulseInt, which is the pedestal subtracted pulse integrals, and is defined if threshold is passed
@@ -462,7 +474,6 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
 
   // Fill set of unclustered shower array hits.
   // Reuse hit class pertained to the HMS/SOS type calorimeters.
-  // Save Y coordinate of the hit in Z parameter of the class.
   // Save energy deposition in the module as hit mean energy, do not use
   // positive and negative side energies.
 
@@ -498,6 +509,13 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
       cout << "  hit " << i << ": ";
       (*(it++))->show();
     }
+   ////Sanity check.
+    if (HitSet.size() != fTotNumGoodAdcHits) {
+      cout << "***" << endl;
+      cout << "*** THcShowerArray::CoarseProcess: HitSet.size = " << HitSet.size()
+	   << " != fTotNumGoodAdcHits = " << FTotNumGoodAdcHits << endl;
+      cout << "***" << endl;
+
   }
 
   // Cluster hits and fill list of clusters.
@@ -822,7 +840,7 @@ void THcShowerArray::FillADC_DynamicPedestal()
        fGoodAdcPulseAmp.at(npad) = pulseAmp; 
        fGoodAdcPulseTime.at(npad) = pulseTime;  
 
-       fNumGoodAdcHits.at(npad) = npad + 1;
+       fNumGoodAdcHits.at(npad)++;
 
 
       }
