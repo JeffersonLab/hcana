@@ -16,8 +16,10 @@
 #include "TClonesArray.h"
 
 #include <iostream>
-
+#include <vector>
 #include <fstream>
+
+using namespace std;
 
 class THaEvData;
 class THaSignalHit;
@@ -76,19 +78,19 @@ public:
   };
 
   Double_t GetAposP(Int_t i) {
-    return fA_Pos_p[i];
+    return fGoodPosAdcPulseInt[i];
   };
 
   Double_t GetAnegP(Int_t i) {
-    return fA_Neg_p[i];
+    return fGoodNegAdcPulseInt[i];
   };
 
   Double_t GetApos(Int_t i) {
-    return fA_Pos[i];
+    return fGoodPosAdcPulseIntRaw[i];
   };
 
   Double_t GetAneg(Int_t i) {
-    return fA_Neg[i];
+    return fGoodNegAdcPulseIntRaw[i];
   };
 
   Double_t GetPosThr(Int_t i) {
@@ -118,24 +120,50 @@ protected:
   static const Int_t kADCDynamicPedestal=1;
   static const Int_t kADCSampleIntegral=2;
   static const Int_t kADCSampIntDynPed=3;
-   Int_t fPedSampLow;		// Sample range for
+  
+  Int_t fDebugAdc;              // fADC debug flag
+  Int_t fPedSampLow;		// Sample range for
   Int_t fPedSampHigh;		// dynamic pedestal
   Int_t fDataSampLow;		// Sample range for
   Int_t fDataSampHigh;		// sample integration
   Double_t fAdcNegThreshold;		// 
   Double_t fAdcPosThreshold;		// 
 
-  Double_t*   fA_Pos;         // [fNelem] ADC amplitudes of blocks
-  Double_t*   fA_Neg;         // [fNelem] ADC amplitudes of blocks
-  Double_t*   fA_Pos_p;	      // [fNelem] pedestal subtracted ADC amplitudes
-  Double_t*   fA_Neg_p;	      // [fNelem] pedestal subtracted ADC amplitudes
+  //counting variables
+  Int_t     fTotNumPosAdcHits;
+  Int_t     fTotNumNegAdcHits;
+  Int_t     fTotNumAdcHits;
+   
+  Int_t     fTotNumGoodPosAdcHits;
+  Int_t     fTotNumGoodNegAdcHits;
+  Int_t     fTotNumGoodAdcHits;
 
-  Double_t* fEpos;     // [fNelem] energy depositions seen by positive PMTs
-  Double_t* fEneg;     // [fNelem] energy depositions seen by negative PMTs
-  Double_t* fEmean;    // [fNelem] mean energy depositions (pos + neg)
-  Double_t  fEplane;   // Energy deposition in the plane
+   //individual pmt data objects
+  vector<Int_t>    fNumGoodPosAdcHits;
+  vector<Int_t>    fNumGoodNegAdcHits;
+
+  vector<Double_t>      fGoodPosAdcPed;
+  vector<Double_t>      fGoodPosAdcPulseInt;
+  vector<Double_t>      fGoodPosAdcPulseAmp;
+  vector<Double_t>      fGoodPosAdcPulseTime;
+  
+  vector<Double_t>      fGoodNegAdcPed;
+  vector<Double_t>      fGoodNegAdcPulseInt;
+  vector<Double_t>      fGoodNegAdcPulseAmp;
+  vector<Double_t>      fGoodNegAdcPulseTime;
+  
+  vector<Double_t>      fGoodPosAdcPulseIntRaw;
+  vector<Double_t>      fGoodNegAdcPulseIntRaw; 
+
+
+  vector<Double_t>      fEpos;        // [fNelem] energy depositions seen by positive PMTs
+  vector<Double_t>      fEneg;        // [fNelem] energy depositions seen by negative PMTs
+  vector<Double_t>      fEmean;        // [fNelem] mean energy depositions (pos + neg)
+
+ 
   Double_t  fEplane_pos;   // Energy deposition in the plane from positive PMTs
   Double_t  fEplane_neg;   // Energy deposition in the plane from negative PMTs
+  Double_t  fEplane;
 
   // These lists are not used actively for now.
   TClonesArray* fPosADCHits;    // List of positive ADC hits
@@ -163,6 +191,7 @@ protected:
 
   TClonesArray* frPosAdcErrorFlag;
   TClonesArray* frPosAdcPedRaw;
+  TClonesArray* frPosAdcThreshold;
   TClonesArray* frPosAdcPulseIntRaw;
   TClonesArray* frPosAdcPulseAmpRaw;
   TClonesArray* frPosAdcPulseTimeRaw;
@@ -173,6 +202,7 @@ protected:
 
   TClonesArray* frNegAdcErrorFlag;
   TClonesArray* frNegAdcPedRaw;
+  TClonesArray* frNegAdcThreshold;
   TClonesArray* frNegAdcPulseIntRaw;
   TClonesArray* frNegAdcPulseAmpRaw;
   TClonesArray* frNegAdcPulseTimeRaw;
