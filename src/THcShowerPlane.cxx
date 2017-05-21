@@ -74,33 +74,50 @@ THcShowerPlane::THcShowerPlane( const char* name,
 THcShowerPlane::~THcShowerPlane()
 {
   // Destructor
-  delete fPosADCHits;
-  delete fNegADCHits;
+  delete fPosADCHits; fPosADCHits = NULL;
+  delete fNegADCHits; fNegADCHits = NULL;
 
-  frPosAdcErrorFlag = NULL;
-  frPosAdcPedRaw = NULL;
-  frPosAdcThreshold = NULL;
-  frPosAdcPulseIntRaw = NULL;
-  frPosAdcPulseAmpRaw = NULL;
-  frPosAdcPulseTimeRaw = NULL;
+  delete  frPosAdcErrorFlag; frPosAdcErrorFlag = NULL;
+  delete  frPosAdcPedRaw; frPosAdcPedRaw = NULL;
+  delete  frPosAdcThreshold; frPosAdcThreshold = NULL;
+  delete  frPosAdcPulseIntRaw; frPosAdcPulseIntRaw = NULL;
+  delete  frPosAdcPulseAmpRaw; frPosAdcPulseAmpRaw = NULL;
+  delete  frPosAdcPulseTimeRaw; frPosAdcPulseTimeRaw = NULL;
+  
+  delete  frPosAdcPed; frPosAdcPed = NULL;
+  delete  frPosAdcPulseInt; frPosAdcPulseInt = NULL;
+  delete  frPosAdcPulseAmp; frPosAdcPulseAmp = NULL;
+  
+  delete  frNegAdcErrorFlag; frNegAdcErrorFlag = NULL;
+  delete  frNegAdcPedRaw; frNegAdcPedRaw = NULL;
+  delete  frNegAdcThreshold; frNegAdcThreshold = NULL;
+  delete  frNegAdcPulseIntRaw; frNegAdcPulseIntRaw = NULL;
+  delete  frNegAdcPulseAmpRaw; frNegAdcPulseAmpRaw = NULL;
+  delete  frNegAdcPulseTimeRaw; frNegAdcPulseTimeRaw = NULL;
+  
+  delete  frNegAdcPed; frNegAdcPed = NULL;
+  delete  frNegAdcPulseInt; frNegAdcPulseInt = NULL;
+  delete  frNegAdcPulseAmp; frNegAdcPulseAmp = NULL;
 
-  frPosAdcPed = NULL;
-  frPosAdcPulseInt = NULL;
-  frPosAdcPulseAmp = NULL;
+  delete [] fPosPedSum;
+  delete [] fPosPedSum2;
+  delete [] fPosPedLimit;
+  delete [] fPosPedCount;
 
-  frNegAdcErrorFlag = NULL;
-  frNegAdcPedRaw = NULL;
-  frNegAdcThreshold = NULL;
-  frNegAdcPulseIntRaw = NULL;
-  frNegAdcPulseAmpRaw = NULL;
-  frNegAdcPulseTimeRaw = NULL;
+  delete [] fNegPedSum;
+  delete [] fNegPedSum2;
+  delete [] fNegPedLimit;
+  delete [] fNegPedCount;  
+   
+  delete [] fPosPed;
+  delete [] fPosSig;
+  delete [] fPosThresh;
 
-  frNegAdcPed = NULL;
-  frNegAdcPulseInt = NULL;
-  frNegAdcPulseAmp = NULL;
+  delete [] fNegPed;
+  delete [] fNegSig;
+  delete [] fNegThresh;  
 
- 
-  //  delete [] fEpos;
+//  delete [] fEpos;
   // delete [] fEneg;
   // delete [] fEmean;
 }
