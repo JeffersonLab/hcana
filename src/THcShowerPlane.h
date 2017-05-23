@@ -116,24 +116,24 @@ protected:
    //  1 == Use the pulse int - pulse ped
     //  2 == Use the sample integral - known ped
     //  3 == Use the sample integral - sample ped
- static const Int_t kADCStandard=0;
+  static const Int_t kADCStandard=0;
   static const Int_t kADCDynamicPedestal=1;
   static const Int_t kADCSampleIntegral=2;
   static const Int_t kADCSampIntDynPed=3;
-  
+
   Int_t fDebugAdc;              // fADC debug flag
   Int_t fPedSampLow;		// Sample range for
   Int_t fPedSampHigh;		// dynamic pedestal
   Int_t fDataSampLow;		// Sample range for
   Int_t fDataSampHigh;		// sample integration
-  Double_t fAdcNegThreshold;		// 
-  Double_t fAdcPosThreshold;		// 
+  Double_t fAdcNegThreshold;		//
+  Double_t fAdcPosThreshold;		//
 
   //counting variables
   Int_t     fTotNumPosAdcHits;
   Int_t     fTotNumNegAdcHits;
   Int_t     fTotNumAdcHits;
-   
+
   Int_t     fTotNumGoodPosAdcHits;
   Int_t     fTotNumGoodNegAdcHits;
   Int_t     fTotNumGoodAdcHits;
@@ -146,21 +146,21 @@ protected:
   vector<Double_t>      fGoodPosAdcPulseInt;
   vector<Double_t>      fGoodPosAdcPulseAmp;
   vector<Double_t>      fGoodPosAdcPulseTime;
-  
+
   vector<Double_t>      fGoodNegAdcPed;
   vector<Double_t>      fGoodNegAdcPulseInt;
   vector<Double_t>      fGoodNegAdcPulseAmp;
   vector<Double_t>      fGoodNegAdcPulseTime;
-  
+
   vector<Double_t>      fGoodPosAdcPulseIntRaw;
-  vector<Double_t>      fGoodNegAdcPulseIntRaw; 
+  vector<Double_t>      fGoodNegAdcPulseIntRaw;
 
 
   vector<Double_t>      fEpos;        // [fNelem] energy depositions seen by positive PMTs
   vector<Double_t>      fEneg;        // [fNelem] energy depositions seen by negative PMTs
   vector<Double_t>      fEmean;        // [fNelem] mean energy depositions (pos + neg)
 
- 
+
   Double_t  fEplane_pos;   // Energy deposition in the plane from positive PMTs
   Double_t  fEplane_neg;   // Energy deposition in the plane from negative PMTs
   Double_t  fEplane;
