@@ -5,6 +5,8 @@
 
 hhodo_num_planes = 4
 hhodo_plane_names = "1x 1y 2x 2y"
+hhodo_AdcTimeWindowMin = 0., 0., 0., 0.
+hhodo_AdcTimeWindowMax = 3200., 3200., 3200., 3200.
 
 hcal_num_layers = 4
 
@@ -20,6 +22,8 @@ hcal_c_cor = 64.36, 64.36	# for positive and negative sides
 hcal_d_cor =  1.66,  1.66
 
 hcal_layer_names = "1pr 2ta 3ta 4ta"
+
+hcal_ADCMode = 0  # Standard mode (Not a flash ADC)
 
 haero_num_pairs = 8
 
@@ -43,6 +47,9 @@ hdc_fix_propcorr = 0
 # SOS parameters
 shodo_num_planes = 4
 shodo_plane_names = "1x 1y 2x 2y"
+
+shodo_AdcTimeWindowMin = 0., 0., 0., 0.
+shodo_AdcTimeWindowMax = 3200., 3200., 3200., 3200.
 
 scal_num_layers = 4
 
