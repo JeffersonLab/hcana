@@ -63,7 +63,7 @@ THcShowerArray::~THcShowerArray()
     delete [] fZPos[i];
   }
 
-  delete [] fPedlimit;
+  delete [] fPedLimit;
   delete [] fGain;
   delete [] fPedSum;
   delete [] fPedSum2;
@@ -509,14 +509,15 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
       cout << "  hit " << i << ": ";
       (*(it++))->show();
     }
-   ////Sanity check.
-    if (HitSet.size() != fTotNumGoodAdcHits) {
-      cout << "***" << endl;
-      cout << "*** THcShowerArray::CoarseProcess: HitSet.size = " << HitSet.size()
-	   << " != fTotNumGoodAdcHits = " << FTotNumGoodAdcHits << endl;
-      cout << "***" << endl;
+    
+    ////Sanity check.
+    //  if (HitSet.size() != fTotNumGoodAdcHits) {
+    //   cout << "***" << endl;
+    //   cout << "*** THcShowerArray::CoarseProcess: HitSet.size = " << HitSet.size()
+    //   << " != fTotNumGoodAdcHits = " << fTotNumGoodAdcHits << endl;
+    //  cout << "***" << endl;
 
-  }
+    //   }
 
   // Cluster hits and fill list of clusters.
 
