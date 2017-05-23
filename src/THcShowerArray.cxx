@@ -509,15 +509,16 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
       cout << "  hit " << i << ": ";
       (*(it++))->show();
     }
+  }
     
-    ////Sanity check.
-    //  if (HitSet.size() != fTotNumGoodAdcHits) {
-    //   cout << "***" << endl;
-    //   cout << "*** THcShowerArray::CoarseProcess: HitSet.size = " << HitSet.size()
-    //   << " != fTotNumGoodAdcHits = " << fTotNumGoodAdcHits << endl;
-    //  cout << "***" << endl;
-
-    //   }
+  ////Sanity check. (Vardan)
+  
+  if ((int)HitSet.size() != fTotNumGoodAdcHits) {
+	cout << "***" << endl;
+	cout << "*** THcShowerArray::CoarseProcess: HitSet.size = " << HitSet.size()
+	     << " != fTotNumGoodAdcHits = " << fTotNumGoodAdcHits << endl;
+	cout << "***" << endl;
+      }
 
   // Cluster hits and fill list of clusters.
 
