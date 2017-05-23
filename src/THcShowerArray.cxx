@@ -152,13 +152,13 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   };
   
   fDebugAdc = 0;  // Set ADC debug parameter to false unless set in parameter file
-  
+
+  gHcParms->LoadParmValues((DBRequest*)&list, prefix);  
   fADCMode=kADCDynamicPedestal;
   fAdcTimeWindowMin=0;
   fAdcTimeWindowMax=10000;
   fAdcThreshold=0.;
   fNelem = fNRows*fNColumns;
-  gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 
   fXPos = new Double_t* [fNRows];
   fYPos = new Double_t* [fNRows];
@@ -513,12 +513,12 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
     
   ////Sanity check. (Vardan)
   
-  if ((int)HitSet.size() != fTotNumGoodAdcHits) {
-	cout << "***" << endl;
-	cout << "*** THcShowerArray::CoarseProcess: HitSet.size = " << HitSet.size()
-	     << " != fTotNumGoodAdcHits = " << fTotNumGoodAdcHits << endl;
-	cout << "***" << endl;
-      }
+  // if ((int)HitSet.size() != fTotNumGoodAdcHits) {
+  //	cout << "***" << endl;
+  //	cout << "*** THcShowerArray::CoarseProcess: HitSet.size = " << HitSet.size()
+  //	     << " != fTotNumGoodAdcHits = " << fTotNumGoodAdcHits << endl;
+  //	cout << "***" << endl;
+  //    }
 
   // Cluster hits and fill list of clusters.
 
@@ -834,7 +834,7 @@ void THcShowerArray::FillADC_DynamicPedestal()
       
       if(fGoodAdcPulseIntRaw.at(npad) >  fThresh[npad]) {
        fTotNumGoodAdcHits++;
-       fGoodAdcPulseInt.at(npad) = pulseInt ;
+       fGoodAdcPulseInt.at(npad) = pulseInt;
        fE.at(npad) = fGoodAdcPulseInt.at(npad)*fGain[npad];
        fEarray += fE.at(npad);
      
@@ -842,7 +842,7 @@ void THcShowerArray::FillADC_DynamicPedestal()
        fGoodAdcPulseAmp.at(npad) = pulseAmp; 
        fGoodAdcPulseTime.at(npad) = pulseTime;  
 
-       fNumGoodAdcHits.at(npad)++;
+       fNumGoodAdcHits.at(npad) = npad + 1;
 
 
       }
