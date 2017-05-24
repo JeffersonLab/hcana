@@ -36,6 +36,10 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
 {
   // Normal constructor with name and description
   fHodoHits = new TClonesArray("THcHodoHit",16);
+
+  fPosAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
+  fNegAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
+
   frPosTDCHits = new TClonesArray("THcSignalHit",16);
   frNegTDCHits = new TClonesArray("THcSignalHit",16);
   frPosADCHits = new TClonesArray("THcSignalHit",16);
@@ -84,6 +88,9 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
 THcScintillatorPlane::~THcScintillatorPlane()
 {
   // Destructor
+  delete  frPosAdcErrorFlag; frPosAdcErrorFlag = NULL;
+  delete  frNegAdcErrorFlag; frNegAdcErrorFlag = NULL;
+
   delete fHodoHits;
   delete frPosTDCHits;
   delete frNegTDCHits;
@@ -311,6 +318,9 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 
   // Register variables in global list
   RVarDef vars[] = {
+    {"posAdcErrorFlag", "Error Flag for When FPGA Fails", "fPosAdcErrorFlag.THcSignalHit.GetData()"},
+    {"negAdcErrorFlag", "Error Flag for When FPGA Fails", "fNegAdcErrorFlag.THcSignalHit.GetData()"},
+      
     {"posTdcCounter", "List of positive TDC counter numbers.", "frPosTdcTimeRaw.THcSignalHit.GetPaddleNumber()"},
     {"posAdcCounter", "List of positive ADC counter numbers.", "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
     {"negTdcCounter", "List of negative TDC counter numbers.", "frNegTdcTimeRaw.THcSignalHit.GetPaddleNumber()"},
@@ -370,6 +380,9 @@ void THcScintillatorPlane::Clear( Option_t* )
    */
   //cout << " Calling THcScintillatorPlane::Clear " << GetName() << endl;
   // Clears the hit lists
+  fPosAdcErrorFlag->Clear();
+  fNegAdcErrorFlag->Clear();
+
   fHodoHits->Clear();
   frPosTDCHits->Clear();
   frNegTDCHits->Clear();
@@ -542,6 +555,9 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTimeRaw(thit));
 
+      if (rawPosAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 0);
+      if (rawPosAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 1);
+      
       ++nrPosAdcHits;
     }
     THcRawAdcHit& rawNegAdcHit = hit->GetRawAdcHitNeg();
@@ -557,6 +573,9 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTimeRaw(thit));
 
+      if (rawNegAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 0);
+      if (rawNegAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 1);
+      
       ++nrNegAdcHits;
     }
 
