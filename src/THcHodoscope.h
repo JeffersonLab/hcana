@@ -92,6 +92,8 @@ public:
   Double_t GetPlaneSpacing(Int_t ip) { return fPlaneSpacing[ip];}
   Int_t GetTdcOffset(Int_t ip) const { return fTdcOffset[ip];}
 
+  Double_t GetAdcTimeWindowMin(Int_t ip) { return fAdcTimeWindowMin[ip];}
+  Double_t GetAdcTimeWindowMax(Int_t ip) { return fAdcTimeWindowMax[ip];}
 
   Double_t GetBeta() const {return fBeta;}
 
@@ -145,6 +147,9 @@ protected:
   Double_t fScinTdcMin, fScinTdcMax; // min and max TDC values
   char** fPlaneNames;
   UInt_t* fNPaddle;		// Number of paddles per plane
+
+  Double_t *fAdcTimeWindowMin;    
+  Double_t *fAdcTimeWindowMax;
 
   Double_t* fHodoVelLight;
   Double_t* fHodoPosSigma;
