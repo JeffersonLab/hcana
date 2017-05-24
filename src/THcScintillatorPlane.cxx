@@ -88,8 +88,8 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
 THcScintillatorPlane::~THcScintillatorPlane()
 {
   // Destructor
-  delete  frPosAdcErrorFlag; frPosAdcErrorFlag = NULL;
-  delete  frNegAdcErrorFlag; frNegAdcErrorFlag = NULL;
+  delete  fPosAdcErrorFlag; fPosAdcErrorFlag = NULL;
+  delete  fNegAdcErrorFlag; fNegAdcErrorFlag = NULL;
 
   delete fHodoHits;
   delete frPosTDCHits;
