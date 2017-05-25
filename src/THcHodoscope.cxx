@@ -270,6 +270,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
       {Form("scin_%s_nr",fPlaneNames[i]), &fNPaddle[i], kInt},
       {0}
     };
+
+
     gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   }
 
@@ -307,7 +309,11 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fyLoScin = new Int_t [fNHodoscopes];
   fyHiScin = new Int_t [fNHodoscopes];
   fHodoSlop = new Double_t [fNPlanes];
-   fTdcOffset = new Int_t [fNPlanes];
+  fTdcOffset = new Int_t [fNPlanes];
+  fAdcTimeWindowMin = new Double_t [fNPlanes];
+  fAdcTimeWindowMax = new Double_t [fNPlanes];
+
+
   for(Int_t ip=0;ip<fNPlanes;ip++) { // Set a large default window
    fTdcOffset[ip] = 0 ;
   }
@@ -336,6 +342,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"hodo_slop",                        fHodoSlop,               kDouble,  (UInt_t) fNPlanes},
     {"debugprintscinraw",                &fdebugprintscinraw,               kInt,  0,1},
     {"hodo_tdc_offset",                  fTdcOffset,              kInt,     (UInt_t) fNPlanes, 1},
+    {"hodo_AdcTimeWindowMin",            fAdcTimeWindowMin,       kDouble,  (UInt_t) fNPlanes},
+    {"hodo_AdcTimeWindowMax",            fAdcTimeWindowMax,       kDouble,  (UInt_t) fNPlanes},
     {"dumptof",                          &fDumpTOF,               kInt,    0, 1},
     {"dumptof_filename",                 &fTOFDumpFile,           kString, 0, 1},
     {0}
@@ -343,6 +351,11 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   // Defaults if not defined in parameter file
 
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    fAdcTimeWindowMin[ip] = 0.;
+    fAdcTimeWindowMax[ip] = 1000.;
+  }
+  
   fdebugprintscinraw=0;
   fDumpTOF = 0;
   fTOFDumpFile="";
@@ -528,6 +541,8 @@ void THcHodoscope::DeleteArrays()
   delete [] fSumPlaneTime;        fSumPlaneTime = NULL;
   delete [] fNScinHits;           fNScinHits = NULL;
   delete [] fTdcOffset;           fTdcOffset = NULL;
+  delete [] fAdcTimeWindowMin;    fAdcTimeWindowMin = NULL;
+  delete [] fAdcTimeWindowMax;    fAdcTimeWindowMax = NULL;
 
 }
 

@@ -237,6 +237,9 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 
   // Retrieve parameters we need from parent class
   // Common for all planes
+  fAdcTimeWindowMin = ((THcHodoscope*) GetParent())->GetAdcTimeWindowMin(fPlaneNum-1);
+  fAdcTimeWindowMax = ((THcHodoscope*) GetParent())->GetAdcTimeWindowMax(fPlaneNum-1);
+
   fHodoSlop= ((THcHodoscope*) GetParent())->GetHodoSlop(fPlaneNum-1);
   fTdcOffset= ((THcHodoscope*) GetParent())->GetTdcOffset(fPlaneNum-1);
   fScinTdcMin=((THcHodoscope *)GetParent())->GetTdcMin();
@@ -512,8 +515,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   Int_t nrawhits = rawhits->GetLast()+1;
   // cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
   Int_t ihit = nexthit;
-
-  //cout << "THcScintillatorPlane: " << GetName() << " raw hits = " << nrawhits << endl;
+  
+  cout << "THcScintillatorPlane: " << GetName() << " raw hits = " << nrawhits << endl;
 
   // A THcRawHodoHit contains all the information (tdc and adc for both
   // pmts) for a single paddle for a single trigger.  The tdc information
@@ -591,8 +594,20 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Double_t adc_pos;
     Double_t adc_neg;
     if(fADCMode == kADCDynamicPedestal) {
-			adc_pos = hit->GetRawAdcHitPos().GetPulseInt();
-			adc_neg = hit->GetRawAdcHitNeg().GetPulseInt();
+      adc_pos = hit->GetRawAdcHitPos().GetPulseInt();
+      adc_neg = hit->GetRawAdcHitNeg().GetPulseInt();
+      
+
+      //Loop Here over all hits per event
+      for (Int_t ielem=0;ielem<frNegAdcPulseInt->GetEntries();ielem++) {
+	cout << "plane hit: " << GetName() << " : "<< hit->fPlane << endl;
+		cout << "hit: " << ielem << endl;
+		cout << "AdcTimeWindowMin: " << fAdcTimeWindowMin << endl;
+
+      }
+      
+      
+
     } else if (fADCMode == kADCSampleIntegral) {
 			adc_pos = hit->GetRawAdcHitPos().GetSampleIntRaw() - fPosPed[index];
 			adc_neg = hit->GetRawAdcHitNeg().GetSampleIntRaw() - fNegPed[index];
