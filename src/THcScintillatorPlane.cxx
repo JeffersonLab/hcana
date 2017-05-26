@@ -598,9 +598,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Double_t adc_neg=-999;
     
     if(fADCMode == kADCDynamicPedestal) {
-      adc_pos = hit->GetRawAdcHitPos().GetPulseInt();
-      adc_neg = hit->GetRawAdcHitNeg().GetPulseInt();
-
+   
       //Loop Here over all hits per event for neg side of plane
       for (Int_t ielem=0;ielem<frNegAdcPulseInt->GetEntries();ielem++) {
 	//	Int_t    npad         = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
@@ -612,7 +610,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	Bool_t   errorflag    = ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
 	Bool_t   pulseTimeCut = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
 	
-	if (!errorflag && pulseTimeCut) {
+	if (!errorflag && pulseTimeCut && adc_neg == -999) {
 	  adc_neg = hit->GetRawAdcHitNeg().GetPulseInt();
 	  badcraw_neg = kTRUE;
 	}
@@ -629,7 +627,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	Bool_t   errorflag    = ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(ielem))->GetData();
 	Bool_t   pulseTimeCut = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
 	
-	if (!errorflag && pulseTimeCut) {
+	if (!errorflag && pulseTimeCut && adc_pos == -999) {
 	  adc_pos = hit->GetRawAdcHitPos().GetPulseInt();
 	  badcraw_pos = kTRUE;
 	}
