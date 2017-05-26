@@ -37,8 +37,8 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   // Normal constructor with name and description
   fHodoHits = new TClonesArray("THcHodoHit",16);
 
-  fPosAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
-  fNegAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
+  frPosAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
+  frNegAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
 
   frPosTDCHits = new TClonesArray("THcSignalHit",16);
   frNegTDCHits = new TClonesArray("THcSignalHit",16);
@@ -88,8 +88,8 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
 THcScintillatorPlane::~THcScintillatorPlane()
 {
   // Destructor
-  delete  fPosAdcErrorFlag; fPosAdcErrorFlag = NULL;
-  delete  fNegAdcErrorFlag; fNegAdcErrorFlag = NULL;
+  delete  frPosAdcErrorFlag; frPosAdcErrorFlag = NULL;
+  delete  frNegAdcErrorFlag; frNegAdcErrorFlag = NULL;
 
   delete fHodoHits;
   delete frPosTDCHits;
@@ -321,8 +321,8 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 
   // Register variables in global list
   RVarDef vars[] = {
-    {"posAdcErrorFlag", "Error Flag for When FPGA Fails", "fPosAdcErrorFlag.THcSignalHit.GetData()"},
-    {"negAdcErrorFlag", "Error Flag for When FPGA Fails", "fNegAdcErrorFlag.THcSignalHit.GetData()"},
+    {"posAdcErrorFlag", "Error Flag for When FPGA Fails", "frPosAdcErrorFlag.THcSignalHit.GetData()"},
+    {"negAdcErrorFlag", "Error Flag for When FPGA Fails", "frNegAdcErrorFlag.THcSignalHit.GetData()"},
       
     {"posTdcCounter", "List of positive TDC counter numbers.", "frPosTdcTimeRaw.THcSignalHit.GetPaddleNumber()"},
     {"posAdcCounter", "List of positive ADC counter numbers.", "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
@@ -383,8 +383,8 @@ void THcScintillatorPlane::Clear( Option_t* )
    */
   //cout << " Calling THcScintillatorPlane::Clear " << GetName() << endl;
   // Clears the hit lists
-  fPosAdcErrorFlag->Clear();
-  fNegAdcErrorFlag->Clear();
+  frPosAdcErrorFlag->Clear();
+  frNegAdcErrorFlag->Clear();
 
   fHodoHits->Clear();
   frPosTDCHits->Clear();
@@ -558,8 +558,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTimeRaw(thit));
 
-      if (rawPosAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 0);
-      if (rawPosAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 1);
+      if (rawPosAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 0);
+      if (rawPosAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 1);
       
       ++nrPosAdcHits;
     }
@@ -576,8 +576,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTimeRaw(thit));
 
-      if (rawNegAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 0);
-      if (rawNegAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 1);
+      if (rawNegAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 0);
+      if (rawNegAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 1);
       
       ++nrNegAdcHits;
     }
@@ -600,14 +600,20 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       //Loop Here over all hits per event
       for (Int_t ielem=0;ielem<frNegAdcPulseInt->GetEntries();ielem++) {
-	cout << "plane hit: " << GetName() << " : "<< hit->fPlane << endl;
-		cout << "hit: " << ielem << endl;
-		cout << "AdcTimeWindowMin: " << fAdcTimeWindowMin << endl;
-
+	//	cout << "plane hit: " << GetName() << " : "<< hit->fPlane << endl;
+	//	cout << "hit: " << ielem << endl;
+	//	cout << "AdcTimeWindowMin: " << fAdcTimeWindowMin << endl;
+	Int_t    npad         = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+	Double_t pulseTime    = ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
+	Bool_t   errorflag    = ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
+	Bool_t   pulseTimeCut = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
+	if (!errorflag && pulseTimeCut) {
+	  
+	}
       }
       
       
-
+      
     } else if (fADCMode == kADCSampleIntegral) {
 			adc_pos = hit->GetRawAdcHitPos().GetSampleIntRaw() - fPosPed[index];
 			adc_neg = hit->GetRawAdcHitNeg().GetSampleIntRaw() - fNegPed[index];
