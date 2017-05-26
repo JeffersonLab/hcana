@@ -516,7 +516,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   // cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
   Int_t ihit = nexthit;
   
-  cout << "THcScintillatorPlane: " << GetName() << " raw hits = " << nrawhits << endl;
+  //cout << "THcScintillatorPlane: " << GetName() << " raw hits = " << nrawhits << endl;
 
   // A THcRawHodoHit contains all the information (tdc and adc for both
   // pmts) for a single paddle for a single trigger.  The tdc information
@@ -591,29 +591,50 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     // For making raw hists, we don't want the cut
     // We can use a flag to turn on and off these without 50 cut
     // Value of 50 no long valid with different ADC type for FADC
-    Double_t adc_pos;
-    Double_t adc_neg;
+    Bool_t badcraw_pos=kFALSE;
+    Bool_t badcraw_neg=kFALSE;
+    
+    Double_t adc_pos=-999;
+    Double_t adc_neg=-999;
+    
     if(fADCMode == kADCDynamicPedestal) {
       adc_pos = hit->GetRawAdcHitPos().GetPulseInt();
       adc_neg = hit->GetRawAdcHitNeg().GetPulseInt();
-      
 
-      //Loop Here over all hits per event
+      //Loop Here over all hits per event for neg side of plane
       for (Int_t ielem=0;ielem<frNegAdcPulseInt->GetEntries();ielem++) {
-		cout << "plane hit: " << GetName() << " : "<< hit->fPlane << endl;
-		cout << "hit: " << ielem << endl;
-		cout << "AdcTimeWindowMin: " << fAdcTimeWindowMin << endl;
-		cout << "AdcTimeWindowMax: " << fAdcTimeWindowMax << endl;
-	Int_t    npad         = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+	//	Int_t    npad         = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+	//	Double_t pulseInt     = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetData();
+	//	Double_t pulsePed     = ((THcSignalHit*) frNegAdcPed->ConstructedAt(ielem))->GetData();
+	//	Double_t pulseAmp     = ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(ielem))->GetData();
+	//	Double_t pulseIntRaw  = ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
 	Double_t pulseTime    = ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
 	Bool_t   errorflag    = ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
 	Bool_t   pulseTimeCut = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
+	
 	if (!errorflag && pulseTimeCut) {
-	  
+	  adc_neg = hit->GetRawAdcHitNeg().GetPulseInt();
+	  badcraw_neg = kTRUE;
 	}
       }
       
-      
+      //Loop Here over all hits per event for pos side of plane
+      for (Int_t ielem=0;ielem<frPosAdcPulseInt->GetEntries();ielem++) {
+	//	Int_t    npad         = ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+	//	Double_t pulseInt     = ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(ielem))->GetData();
+	//	Double_t pulsePed     = ((THcSignalHit*) frPosAdcPed->ConstructedAt(ielem))->GetData();
+	//	Double_t pulseAmp     = ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(ielem))->GetData();
+	//	Double_t pulseIntRaw  = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
+	Double_t pulseTime    = ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
+	Bool_t   errorflag    = ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(ielem))->GetData();
+	Bool_t   pulseTimeCut = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
+	
+	if (!errorflag && pulseTimeCut) {
+	  adc_pos = hit->GetRawAdcHitPos().GetPulseInt();
+	  badcraw_pos = kTRUE;
+	}
+      }
+    
       
     } else if (fADCMode == kADCSampleIntegral) {
 			adc_pos = hit->GetRawAdcHitPos().GetSampleIntRaw() - fPosPed[index];
@@ -644,9 +665,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Bool_t btdcraw_neg=kFALSE;
     Int_t tdc_pos=-999;
     Int_t tdc_neg=-999;
-   
-    Bool_t badcraw_pos=kFALSE;
-    Bool_t badcraw_neg=kFALSE;
+ 
 
     // Find first in range hit from multihit tdc
     /*
@@ -660,7 +679,6 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
       tdc_pos = hit->GetRawTdcHitPos().GetTime(thit)+fTdcOffset;
       if(tdc_pos >= fScinTdcMin && tdc_pos <= fScinTdcMax) {
-	btdcraw_pos = kTRUE;
 	break;
       }
     }
@@ -672,22 +690,6 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       }
     }
 
-    for(UInt_t ahit=0; ahit<hit->GetRawAdcHitPos().GetNPulses(); ahit++) {
-      if(adc_pos >= fAdcTimeWindowMin && adc_pos <= fAdcTimeWindowMax) {
-	cout << "plane hit: " << GetName() << " : "<< hit->fPlane << endl;
-	cout << "adcpos: " << adc_pos << " :: " << "fAdcTimeMin/Max: " << fAdcTimeWindowMin << " , " << fAdcTimeWindowMax << endl; 
-	badcraw_pos = kTRUE;
-	break;
-      }
-    }
-    for(UInt_t ahit=0; ahit<hit->GetRawAdcHitNeg().GetNPulses(); ahit++) {
-      if(adc_neg >= fAdcTimeWindowMin && adc_neg <= fAdcTimeWindowMax) {
-	cout << "plane hit: " << GetName() << " : "<< hit->fPlane << endl;
-	cout << "adcneg: " << adc_neg << " :: " << "fAdcTimeMin/Max: " << fAdcTimeWindowMin << " , " << fAdcTimeWindowMax << endl; 
-	badcraw_neg = kTRUE;
-	break;
-      }
-    }
 
 
     // Proceed if there is a valid TDC on either end of the bar
