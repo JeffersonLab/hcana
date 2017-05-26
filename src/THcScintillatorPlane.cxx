@@ -600,9 +600,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       //Loop Here over all hits per event
       for (Int_t ielem=0;ielem<frNegAdcPulseInt->GetEntries();ielem++) {
-	//	cout << "plane hit: " << GetName() << " : "<< hit->fPlane << endl;
-	//	cout << "hit: " << ielem << endl;
-	//	cout << "AdcTimeWindowMin: " << fAdcTimeWindowMin << endl;
+		cout << "plane hit: " << GetName() << " : "<< hit->fPlane << endl;
+		cout << "hit: " << ielem << endl;
+		cout << "AdcTimeWindowMin: " << fAdcTimeWindowMin << endl;
+		cout << "AdcTimeWindowMax: " << fAdcTimeWindowMax << endl;
 	Int_t    npad         = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
 	Double_t pulseTime    = ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
 	Bool_t   errorflag    = ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
@@ -643,6 +644,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Bool_t btdcraw_neg=kFALSE;
     Int_t tdc_pos=-999;
     Int_t tdc_neg=-999;
+   
+    Bool_t badcraw_pos=kFALSE;
+    Bool_t badcraw_neg=kFALSE;
+
     // Find first in range hit from multihit tdc
     /*
     for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
@@ -666,9 +671,28 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	break;
       }
     }
+
+    for(UInt_t ahit=0; ahit<hit->GetRawAdcHitPos().GetNPulses(); ahit++) {
+      if(adc_pos >= fAdcTimeWindowMin && adc_pos <= fAdcTimeWindowMax) {
+	cout << "plane hit: " << GetName() << " : "<< hit->fPlane << endl;
+	cout << "adcpos: " << adc_pos << " :: " << "fAdcTimeMin/Max: " << fAdcTimeWindowMin << " , " << fAdcTimeWindowMax << endl; 
+	badcraw_pos = kTRUE;
+	break;
+      }
+    }
+    for(UInt_t ahit=0; ahit<hit->GetRawAdcHitNeg().GetNPulses(); ahit++) {
+      if(adc_neg >= fAdcTimeWindowMin && adc_neg <= fAdcTimeWindowMax) {
+	cout << "plane hit: " << GetName() << " : "<< hit->fPlane << endl;
+	cout << "adcneg: " << adc_neg << " :: " << "fAdcTimeMin/Max: " << fAdcTimeWindowMin << " , " << fAdcTimeWindowMax << endl; 
+	badcraw_neg = kTRUE;
+	break;
+      }
+    }
+
+
     // Proceed if there is a valid TDC on either end of the bar
     //    cout << ihit << " " << hit->fCounter << " " << fNScinHits<< " " << tdc_neg << " " << btdcraw_neg << " " << tdc_pos << " " << btdcraw_pos << " " <<endl;
-    if(btdcraw_pos || btdcraw_neg) {
+    if((btdcraw_pos && badcraw_pos) || (btdcraw_neg && badcraw_neg )) {
 
 
       new( (*fHodoHits)[fNScinHits]) THcHodoHit(tdc_pos, tdc_neg,
