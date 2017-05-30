@@ -700,7 +700,7 @@ void THcShowerPlane::FillADC_DynamicPedestal()
 
       fTotNumGoodAdcHits++;
       fTotNumGoodNegAdcHits++;
-      fNumGoodNegAdcHits.at(npad)++;
+      fNumGoodNegAdcHits.at(npad) = npad + 1;
 
       }
 
@@ -733,7 +733,7 @@ void THcShowerPlane::FillADC_DynamicPedestal()
 
 	fTotNumGoodAdcHits++;
 	fTotNumGoodPosAdcHits++;
-	fNumGoodPosAdcHits.at(npad)++;
+	fNumGoodPosAdcHits.at(npad) = npad + 1;
 
       }
     }
