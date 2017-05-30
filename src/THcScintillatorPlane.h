@@ -45,6 +45,8 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t GetSpacing() {return fSpacing;}; // spacing of paddles
   Double_t GetSize() {return fSize;};    // paddle size
   Double_t GetHodoSlop() {return fHodoSlop;}; // hodo slop
+  Double_t GetAdcTimeWindowMin() { return fAdcTimeWindowMin;}
+  Double_t GetAdcTimeWindowMax() { return fAdcTimeWindowMax;}
   Double_t GetZpos() {return fZpos;};   //return the z position
   Double_t GetDzpos() {return fDzpos;};
   Double_t GetPosLeft() {return fPosLeft;};
@@ -61,6 +63,9 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* GetHits() { return fHodoHits;};
 
  protected:
+
+  TClonesArray* frPosAdcErrorFlag;
+  TClonesArray* frNegAdcErrorFlag;
 
   TClonesArray* frPosTDCHits;
   TClonesArray* frNegTDCHits;
@@ -118,6 +123,8 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t fZpos;               /* z position */
   Double_t fDzpos;
   Double_t fHodoSlop;           /* max allowed slop for this plane */
+  Double_t fAdcTimeWindowMin;    
+  Double_t fAdcTimeWindowMax;
   Double_t fPosLeft;            /* NOTE: "left" = "bottom" for a Y scintillator */
   Double_t fPosRight;           /* NOTE: "right" = "top" for a Y scintillator */
   Double_t fPosOffset;
