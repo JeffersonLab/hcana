@@ -353,20 +353,20 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 
     {"fptime", "Time at focal plane",     "GetFpTime()"},
 
-    {"nhits", "Number of paddle hits (passed TDC Min and Max cuts for either end)",           "GetNScinHits() "},
-    {"GoodPaddle",         "List of Paddle Numbers (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPaddleNumber()"},
-    {"GoodNegTdcChan",         "List of negative TDC values (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetNegTDC()"},
+    {"nhits", "Number of paddle hits (passed TDC && ADC Min and Max cuts for either end)",           "GetNScinHits() "},
+    {"GoodPaddle",         "List of Paddle Numbers (passed TDC && ADC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPaddleNumber()"},
+    {"GoodNegTdcChan",         "List of negative TDC values (passed TDC && ADC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetNegTDC()"},
     {"GoodNegTdcTimeCorr",         "List of negative corrected TDC values (corrected for PMT offset and ADC)",               "fHodoHits.THcHodoHit.GetNegCorrectedTime()"},
     {"GoodNegTdcTimeTOFCorr",         "List of negative corrected TDC values (corrected for TOF)",               "fHodoHits.THcHodoHit.GetNegTOFCorrectedTime()"},
-    {"GoodNegAdcPulseInt",         "List of negative ADC values (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetNegADC()"},
-    {"GoodPosTdcChan",         "List of positive TDC values (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPosTDC()"},
+    {"GoodNegAdcPulseInt",         "List of negative ADC values (passed TDC && ADC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetNegADC()"},
+    {"GoodPosTdcChan",         "List of positive TDC values (passed TDC && ADC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPosTDC()"},
     {"GoodPosTdcTimeCorr",         "List of positive corrected TDC values (corrected for PMT offset and ADC)",               "fHodoHits.THcHodoHit.GetPosCorrectedTime()"},
     {"GoodPosTdcTimeTOFCorr",         "List of positive corrected TDC values (corrected for TOF)",               "fHodoHits.THcHodoHit.GetPosTOFCorrectedTime()"},
-    {"GoodPosAdcPulseInt",         "List of positive ADC values (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPosADC()"},
-    {"GoodPosAdcPulseAmp",         "List of positive ADC peak amp (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPosADCpeak()"},
-    {"GoodNegAdcPulseAmp",         "List of Negative ADC peak amp (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetNegADCpeak()"},
-    {"GoodPosAdcPulseTime",         "List of positive ADC peak amp (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPosADCtime()"},
-    {"GoodNegAdcPulseTime",         "List of Negative ADC peak amp (passed TDC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetNegADCtime()"},
+    {"GoodPosAdcPulseInt",         "List of positive ADC values (passed TDC && ADC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPosADC()"},
+    {"GoodPosAdcPulseAmp",         "List of positive ADC peak amp (passed TDC && ADC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPosADCpeak()"},
+    {"GoodNegAdcPulseAmp",         "List of Negative ADC peak amp (passed TDC && ADC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetNegADCpeak()"},
+    {"GoodPosAdcPulseTime",         "List of positive ADC peak amp (passed TDC && ADC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPosADCtime()"},
+    {"GoodNegAdcPulseTime",         "List of Negative ADC peak amp (passed TDC && ADC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetNegADCtime()"},
     {"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
     { 0 }
   };
@@ -677,6 +677,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
       tdc_pos = hit->GetRawTdcHitPos().GetTime(thit)+fTdcOffset;
       if(tdc_pos >= fScinTdcMin && tdc_pos <= fScinTdcMax) {
+	btdcraw_pos = kTRUE;
 	break;
       }
     }
@@ -690,7 +691,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
 
 
-    // Proceed if there is a valid TDC on either end of the bar
+    // Proceed if there is a valid TDC and ADC on either end of the bar
     //    cout << ihit << " " << hit->fCounter << " " << fNScinHits<< " " << tdc_neg << " " << btdcraw_neg << " " << tdc_pos << " " << btdcraw_pos << " " <<endl;
     if((btdcraw_pos && badcraw_pos) || (btdcraw_neg && badcraw_neg )) {
 
