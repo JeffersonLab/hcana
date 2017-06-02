@@ -75,6 +75,7 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fTotPlanes = planenum;
   fNScinHits = 0;
   
+ 
   fMaxHits=53;
 
   fpTimes = new Double_t [fMaxHits];
@@ -226,7 +227,8 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   };
 
   fTofUsingInvAdc = 1;
-  fADCMode = kADCStandard;
+  //fADCMode = kADCStandard;
+  fADCMode = kADCDynamicPedestal;
   fADCPedScaleFactor = 1.0;
   fADCDiagCut = 50.0;
   fCosmicFlag=0;
@@ -376,7 +378,7 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 
     {"fptime", "Time at focal plane",     "GetFpTime()"},
 
-    //    {"nhits", "Number of paddle hits (passed TDC && ADC Min and Max cuts for either end)",           "GetNScinHits() "},
+    {"nhits", "Number of paddle hits (passed TDC && ADC Min and Max cuts for either end)",           "GetNScinHits() "},
 
     {"totNumPosAdcHits", "Total Number of Positive ADC Hits",   "fTotNumPosAdcHits"}, // Hodo+ raw ADC multiplicity Int_t
     {"totNumNegAdcHits", "Total Number of Negative ADC Hits",   "fTotNumNegAdcHits"}, // Hodo- raw ADC multiplicity  ""
@@ -470,17 +472,17 @@ void THcScintillatorPlane::Clear( Option_t* )
 
   
   //Clear multiplicities  
-   fTotNumPosAdcHits = 0;
-   fTotNumNegAdcHits = 0;
-   fTotNumAdcHits = 0;
+  //  fTotNumPosAdcHits = 0;
+  // fTotNumNegAdcHits = 0;
+  // fTotNumAdcHits = 0;
 
    fTotNumPosTdcHits = 0;
    fTotNumNegTdcHits = 0;
    fTotNumTdcHits = 0;
 
-   fTotNumGoodPosAdcHits = 0;
-   fTotNumGoodNegAdcHits = 0;
-   fTotNumGoodAdcHits = 0;
+   //fTotNumGoodPosAdcHits = 0;
+   //fTotNumGoodNegAdcHits = 0;
+   //fTotNumGoodAdcHits = 0;
 
    fTotNumGoodPosTdcHits = 0;
    fTotNumGoodNegTdcHits = 0;
@@ -622,6 +624,15 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   //stripped
   fNScinHits=0;
+  
+  fTotNumGoodPosAdcHits = 0;
+  fTotNumGoodNegAdcHits = 0;
+  fTotNumGoodAdcHits = 0;
+  
+  fTotNumPosAdcHits = 0;
+  fTotNumNegAdcHits = 0;
+  fTotNumAdcHits = 0;
+
   fHodoHits->Clear();
   Int_t nrawhits = rawhits->GetLast()+1;
   // cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
@@ -717,7 +728,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Double_t adc_neg=-999;
     
     if(fADCMode == kADCDynamicPedestal) {
-   
+    
       //Loop Here over all hits per event for neg side of plane
       for (Int_t ielem=0;ielem<frNegAdcPulseInt->GetEntries();ielem++) {
 	//	Int_t    npad         = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
@@ -919,6 +930,28 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 								     0.0);
       }
       fNScinHits++;		// One or more good time counter
+   
+      //Good Multiplicities (Passed ADC && TDC Time Cuts on either side of a scintillator paddle)
+      /*
+      for (Int_t ielem=0;ielem<frNegAdcPulseInt->GetEntries();ielem++) {
+	fTotNumGoodNegAdcHits++;
+	fTotNumGoodAdcHits++;
+      }    
+
+      for (Int_t ielem=0;ielem<frPosAdcPulseInt->GetEntries();ielem++) {
+      	fTotNumGoodPosAdcHits++;
+	fTotNumGoodAdcHits++;
+      }    
+      */
+       fTotNumGoodPosAdcHits++;
+      fTotNumGoodNegAdcHits++;
+       fTotNumGoodAdcHits++;
+      
+      //fTotNumGoodPosTdcHits++;
+      //fTotNumGoodNegTdcHits++;
+      //fTotNumGoodTdcHits++;
+
+      
     }
     ihit++;			// Raw hit counter
   }
