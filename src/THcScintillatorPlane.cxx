@@ -677,6 +677,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
       tdc_pos = hit->GetRawTdcHitPos().GetTime(thit)+fTdcOffset;
       if(tdc_pos >= fScinTdcMin && tdc_pos <= fScinTdcMax) {
+	btdcraw_pos = kTRUE;
 	break;
       }
     }
