@@ -10,23 +10,40 @@ Import ('pbaseenv')
 
 roothcdict = pbaseenv.subst('$HC_DIR')+'/HallCDict.C'
 roothcobj = pbaseenv.subst('$HC_SRC')+'/HallCDict.so'
-hcheaders = Split("""
-src/THcInterface.h src/THcParmList.h src/THcAnalyzer.h src/THcHallCSpectrometer.h
-src/THcDetectorMap.h src/THcRawHit.h src/THcHitList.h src/THcSignalHit.h src/THcHodoscope.h
-src/THcScintillatorPlane.h src/THcRawHodoHit.h src/THcHodoHit.h
-src/THcDC.h src/THcDriftChamberPlane.h
-src/THcDriftChamber.h src/THcRawDCHit.h src/THcDCHit.h src/THcDCWire.h src/THcSpacePoint.h
-src/THcDCLookupTTDConv.h src/THcDCTimeToDistConv.h src/THcShower.h src/THcShowerPlane.h
-src/THcShowerArray.h src/THcShowerHit.h
-src/THcRawShowerHit.h src/THcAerogel.h src/THcAerogelHit.h src/THcCherenkov.h src/THcCherenkovHit.h
-src/THcGlobals.h src/THcDCTrack.h src/THcFormula.h
-src/THcRaster.h src/THcRasteredBeam.h src/THcRasterRawHit.h src/THcScalerEvtHandler.h
-src/THcConfigEvtHandler.h src/THcHodoEff.h
-src/THcTrigApp.h src/THcTrigDet.h src/THcTrigRawHit.h
-src/THcRawAdcHit.h src/THcRawTdcHit.h
-src/THcDummySpectrometer.h
-src/HallC_LinkDef.h
-""")
+ 
+hcheadersbase = Glob('src/*.h',exclude=['src/THcGlobals.h','src/HallC_LinkDef.h'])
+
+cmd = "echo '#ifdef __CINT__' > src/HallC_LinkDef.h"
+os.system(cmd)
+cmd = "echo ' ' >> src/HallC_LinkDef.h"
+os.system(cmd)
+cmd = "echo '#pragma link off all globals;' >> src/HallC_LinkDef.h"
+os.system(cmd)
+cmd = "echo '#pragma link off all classes;' >> src/HallC_LinkDef.h"
+os.system(cmd)
+cmd = "echo '#pragma link off all functions;' >> src/HallC_LinkDef.h"
+os.system(cmd)
+cmd = "echo ' ' >> src/HallC_LinkDef.h"
+os.system(cmd)
+cmd = "echo '#pragma link C++ global gHcParms;' >> src/HallC_LinkDef.h"
+os.system(cmd)
+cmd = "echo '#pragma link C++ global gHcDetectorMap;' >> src/HallC_LinkDef.h"
+os.system(cmd)
+cmd = "echo ' ' >> src/HallC_LinkDef.h"
+os.system(cmd)
+
+for hcheaderfile in hcheadersbase:
+    filename = '%s' % hcheaderfile
+    basefilename = filename.rsplit('.',1)
+    newbasefilename = basefilename[0].rsplit('/',1)
+    cmd1 = "echo '#pragma link C++ class %s+;' >> src/HallC_LinkDef.h" % newbasefilename[1]
+    os.system(cmd1)
+
+cmd = "echo '#endif' >> src/HallC_LinkDef.h"
+os.system(cmd)
+
+hcheaders = Glob('src/*.h',exclude=['src/HallC_LinkDef.h'])+Glob('src/HallC_LinkDef.h')
+
 pbaseenv.RootCint(roothcdict,hcheaders)
 pbaseenv.SharedObject(target = roothcobj, source = roothcdict)
 
