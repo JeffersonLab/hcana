@@ -139,9 +139,9 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list3,prefix);
-  printf(" using tzero per wire plane = %s  nwires = %d  \n",GetName(),fNWires);
+    printf(" using tzero per wire plane = %s  nwires = %d  \n",GetName(),fNWires);
       for (Int_t iw=0;iw < fNWires;iw++) {
-	printf("%d  %f ",iw+1,fTzeroWire[iw]) ;
+	//	printf("%d  %f ",iw+1,fTzeroWire[iw]) ;
  	if ( iw!=0 && iw%8 == 0) printf("\n") ;
 	}
   } else {
