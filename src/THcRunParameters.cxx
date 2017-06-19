@@ -23,12 +23,11 @@ so that db_run.dat is not needed in hcana.
 using namespace std;
 
 //_____________________________________________________________________________
-THcRunParameters::THcRunParameters()
+THcRunParameters::THcRunParameters() : THaRunParameters()
 {
   // Default constructor
-  THaRunParameters::THaRunParameters();
-
 }
+
 //_____________________________________________________________________________
 THcRunParameters::~THcRunParameters()
 {
