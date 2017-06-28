@@ -1019,6 +1019,17 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,
 								     timec_pos,timec_neg,
 								     0.0);
+	
+	//Define GoodTdcTimeCorr and GoodTdcTimeTOFCorr (a second time, since when only 1pmt fires, we cannot get TOFCorr)
+	fGoodPosTdcTimeCorr.at(padnum-1) = timec_pos;
+	fGoodNegTdcTimeCorr.at(padnum-1) = timec_neg;
+	
+	fGoodPosTdcTimeTOFCorr.at(padnum-1) = timec_pos;
+	fGoodNegTdcTimeTOFCorr.at(padnum-1) = timec_neg;
+	
+	
+
+
       }
       fNScinHits++;		// One or more good time counter
    
