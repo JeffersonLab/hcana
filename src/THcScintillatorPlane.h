@@ -139,11 +139,11 @@ class THcScintillatorPlane : public THaSubDetector {
   vector<Double_t>  fGoodNegAdcPulseTime;
 
   //Hodoscopoe "GOOD" TDC Variables
-  vector<Double_t>  fGoodPosTdcChan;
+  vector<Double_t>  fGoodPosTdcTimeUnCorr;
   vector<Double_t>  fGoodPosTdcTimeCorr;
   vector<Double_t>  fGoodPosTdcTimeTOFCorr;
   
-  vector<Double_t>  fGoodNegTdcChan;
+  vector<Double_t>  fGoodNegTdcTimeUnCorr;
   vector<Double_t>  fGoodNegTdcTimeCorr;
   vector<Double_t>  fGoodNegTdcTimeTOFCorr;
   
