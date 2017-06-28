@@ -323,8 +323,8 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   fGoodPosAdcPulseTime   = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseTime   = vector<Double_t> (fNelem, 0.0);
   
-  fGoodPosTdcChan        = vector<Double_t> (fNelem, 0.0);
-  fGoodNegTdcChan        = vector<Double_t> (fNelem, 0.0);
+  fGoodPosTdcTimeUnCorr        = vector<Double_t> (fNelem, 0.0);
+  fGoodNegTdcTimeUnCorr        = vector<Double_t> (fNelem, 0.0);
   fGoodPosTdcTimeCorr    = vector<Double_t> (fNelem, 0.0);
   fGoodNegTdcTimeCorr    = vector<Double_t> (fNelem, 0.0);
   fGoodPosTdcTimeTOFCorr = vector<Double_t> (fNelem, 0.0);
@@ -409,11 +409,11 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     {"GoodPosAdcPed",  "List of Positive ADC pedestals (passed TDC && ADC Min and Max cuts for either end)",           "fGoodPosAdcPed"}, //vector<Double_t>
     {"GoodNegAdcPed",  "List of Negative ADC pedestals (passed TDC && ADC Min and Max cuts for either end)",           "fGoodNegAdcPed"}, //vector<Double_t>
 
-    {"GoodNegTdcChan",         "List of negative TDC values (passed TDC && ADC Min and Max cuts for either end)",        "fGoodNegTdcChan"},  //Units ns
+    {"GoodNegTdcTimeUnCorr",         "List of negative TDC values (passed TDC && ADC Min and Max cuts for either end)",        "fGoodNegTdcTimeUnCorr"},  //Units ns
     {"GoodNegTdcTimeCorr",         "List of negative corrected TDC values (corrected for PMT offset and ADC)",           "fGoodNegTdcTimeCorr"},
     {"GoodNegTdcTimeTOFCorr",         "List of negative corrected TDC values (corrected for TOF)",                       "fGoodNegTdcTimeTOFCorr"},
     {"GoodNegAdcPulseInt",         "List of negative ADC values (passed TDC && ADC Min and Max cuts for either end)",    "fGoodNegAdcPulseInt"},
-    {"GoodPosTdcChan",         "List of positive TDC values (passed TDC && ADC Min and Max cuts for either end)",        "fGoodPosTdcChan"},
+    {"GoodPosTdcTimeUnCorr",         "List of positive TDC values (passed TDC && ADC Min and Max cuts for either end)",        "fGoodPosTdcTimeUnCorr"},
     {"GoodPosTdcTimeCorr",         "List of positive corrected TDC values (corrected for PMT offset and ADC)",           "fGoodPosTdcTimeCorr"},
     {"GoodPosTdcTimeTOFCorr",         "List of positive corrected TDC values (corrected for TOF)",                       "fGoodPosTdcTimeTOFCorr"},
     {"GoodPosAdcPulseInt",         "List of positive ADC values (passed TDC && ADC Min and Max cuts for either end)",    "fGoodPosAdcPulseInt"},
@@ -496,14 +496,14 @@ void THcScintillatorPlane::Clear( Option_t* )
   }
 
   //Clear Good TDC Variables
-  for (UInt_t ielem = 0; ielem < fGoodPosTdcChan.size(); ielem++) {
-    fGoodPosTdcChan.at(ielem)          = 0.0;
+  for (UInt_t ielem = 0; ielem < fGoodPosTdcTimeUnCorr.size(); ielem++) {
+    fGoodPosTdcTimeUnCorr.at(ielem)          = 0.0;
     fGoodPosTdcTimeCorr.at(ielem)      = 0.0;
     fGoodPosTdcTimeTOFCorr.at(ielem)   = 0.0;
   }
    
-  for (UInt_t ielem = 0; ielem < fGoodNegTdcChan.size(); ielem++) {
-    fGoodNegTdcChan.at(ielem)          = 0.0;
+  for (UInt_t ielem = 0; ielem < fGoodNegTdcTimeUnCorr.size(); ielem++) {
+    fGoodNegTdcTimeUnCorr.at(ielem)          = 0.0;
     fGoodNegTdcTimeCorr.at(ielem)      = 0.0;
     fGoodNegTdcTimeTOFCorr.at(ielem)   = 0.0;
   }
@@ -646,8 +646,6 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Int_t padnum=hit->fCounter;
 
     Int_t index=padnum-1;
-
-    //DEFINE TO BE GOOD VARIABLES HERE!!!
 
 
 
@@ -812,10 +810,17 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       cout <<  " plane = " << hit->fPlane << " Neg paddle = " << hit->fCounter << " " <<  hit->GetRawTdcHitNeg().GetTime(thit) << " hit = " << thit << endl;
     } 
     */   
+
+    //Declare good tdc hits (passed the ScinTdcMin.Max time cut)
+    Double_t good_ielem_postdc = -1;
+    Double_t good_ielem_negtdc = -1;
+
+
     for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
       tdc_pos = hit->GetRawTdcHitPos().GetTime(thit)+fTdcOffset;
       if(tdc_pos >= fScinTdcMin && tdc_pos <= fScinTdcMax) {
 	btdcraw_pos = kTRUE;
+	good_ielem_postdc = thit;
 	break;
       }
     }
@@ -823,6 +828,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       tdc_neg = hit->GetRawTdcHitNeg().GetTime(thit)+fTdcOffset;
       if(tdc_neg >= fScinTdcMin && tdc_neg <= fScinTdcMax) {
 	btdcraw_neg = kTRUE;
+	good_ielem_negtdc = thit;
 	break;
       }
     }
@@ -866,6 +872,28 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	fGoodNegAdcPulseAmp.at(padnum-1)  = ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(good_ielem_negadc))->GetData();
 	fGoodNegAdcPulseTime.at(padnum-1) = ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(good_ielem_negadc))->GetData();
       }
+
+   //DEFINE THE "GOOD +TDC Multiplicities and Occupancies"
+      if (good_ielem_postdc != -1) {
+	
+	//good tdc multiplicity
+	fTotNumGoodPosTdcHits++; 
+	fTotNumGoodTdcHits++; 
+	
+	//good tdc occupancy
+	fNumGoodPosTdcHits.at(padnum-1) = padnum;
+      }
+
+   //DEFINE THE "GOOD -TDC  Multiplicities and Occupancies"
+      if (good_ielem_negtdc != -1) {
+	
+	//good tdc multiplicity
+	fTotNumGoodNegTdcHits++; 
+	fTotNumGoodTdcHits++; 
+	
+	//good tdc occupancy
+	fNumGoodNegTdcHits.at(padnum-1) = padnum;
+      }
          
 
              
@@ -880,8 +908,19 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
         ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCtime(time_peak);
       time_peak=hit->GetRawAdcHitNeg().GetPulseTimeRaw();
         ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCtime(time_peak);
-    // Do corrections if valid TDC on both ends of bar
-      if(btdcraw_pos && btdcraw_neg) {
+    
+	//Define GoodTdcUnCorrTime
+	if(btdcraw_pos) {
+	  fGoodPosTdcTimeUnCorr.at(padnum-1) = tdc_pos*fScinTdcToTime;
+	}
+	if(btdcraw_neg) {
+	  fGoodNegTdcTimeUnCorr.at(padnum-1) = tdc_neg*fScinTdcToTime;
+	}
+
+
+
+	// Do corrections if valid TDC on both ends of bar
+	if(btdcraw_pos && btdcraw_neg) {
 
 	// Do the pulse height correction to the time.  (Position dependent corrections later)
 	Double_t timec_pos, timec_neg;
@@ -938,10 +977,19 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	}
 	//        cout << fNScinHits<< " " << timec_pos << " " << timec_neg << endl;
         ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPaddleCenter(fPosCenter[index]);             
-	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,          //set values for f(Pos/Neg)CorrectedTime and f(Pos/Neg)TOFCorrectedTime  
-								     postime, negtime,             //given that tdc_pos && tdc_neg is within the tdcTimeWindow
+	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,         //See THcHodoHit.h for SeCorrectedTimes() function definition: timec_pos/timec_neg = TDCTimeCorr, postime/negtime = TDCTimeTOFCorr
+								     postime, negtime,           
 								     scin_corrected_time);
-      } else {
+
+	//Define GoodTdcTimeCorr and GoodTdcTimeTOFCorr
+	fGoodPosTdcTimeCorr.at(padnum-1) = timec_pos;
+	fGoodNegTdcTimeCorr.at(padnum-1) = timec_neg;
+	
+	fGoodPosTdcTimeTOFCorr.at(padnum-1) = postime;
+	fGoodNegTdcTimeTOFCorr.at(padnum-1) = negtime;
+	
+
+	} else {
 	Double_t timec_pos,timec_neg;
         timec_pos=tdc_pos;
         timec_neg=tdc_neg;
