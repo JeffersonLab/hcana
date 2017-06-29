@@ -157,15 +157,16 @@ protected:
   Double_t fXclustArrayTrack;             // X pos of cluster that match best track
   Double_t fXTrackArray;             // X pos of best track that match cluster
   Double_t fYclustArrayTrack;             // Y pos of cluster that match best track
-  Double_t fYTrackArray;             // Y pos of best track that match cluster
-  Int_t fNtracks;            // Number of shower tracks, i.e. number of
-                             // cluster-to-track association
-  Double_t fEtot;            // Total energy
-  Double_t fEtotNorm;        // Total energy divided by spec central momentum
-  Double_t fEtrack;          // Cluster energy associated to the best track
-  Double_t fEtrackNorm;      // Normalized to momentum cluster energy associated to the best track
-  Double_t fEPRtrack;        // Cluster's Preshower energy of the best track
-  Double_t fEPRtrackNorm;    // Normalized to momentum cluster's Preshower energy of the best track
+  Double_t fYTrackArray;   // Y pos of best track that match cluster
+  Int_t fNtracks;          // Number of shower tracks, i.e. number of
+                           // cluster-to-track association
+  Double_t fEtot;          // Total energy
+  Double_t fEtotNorm;      // Total energy divided by spec central momentum
+  Double_t fEtrack;        // Cluster energy associated to the best track
+  Double_t fEtrackNorm;    // Cluster energy divided by momentum for the best track
+  Double_t fEPRtrack;      // Preshower part of cluster energy of the best track
+  Double_t fEPRtrackNorm;  // Preshower part of cluster energy divided by momentum for the best track
+  Double_t fETotTrackNorm; // Total energy divided by momentum of the best track
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
 

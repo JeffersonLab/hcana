@@ -518,6 +518,7 @@ Int_t THcShower::DefineVariables( EMode mode )
     { "etracknorm", "Total energy divided by track momentum",    "fEtrackNorm" },
     { "eprtrack", "Track Preshower energy",                      "fEPRtrack" },
     { "eprtracknorm", "Preshower energy divided by track momentum", "fEPRtrackNorm" },
+    { "etottracknorm", "Total energy divided by track momentum", "fETotTrackNorm" },
     { "ntracks", "Number of shower tracks",                      "fNtracks" },
     { 0 }
   };
@@ -601,6 +602,7 @@ void THcShower::Clear(Option_t* opt)
   fEtrackNorm = 0.;
   fEPRtrack = 0.;
   fEPRtrackNorm = 0.;
+  fETotTrackNorm = 0.;
   fSizeClustArray = 0;
   fNblockHighEnergy = 0.;
 
@@ -1142,6 +1144,7 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
       fEtrackNorm=fEtrack/theTrack->GetP();
       fEPRtrack=GetShEnergy(theTrack,1);
       fEPRtrackNorm=fEPRtrack/theTrack->GetP();
+      fETotTrackNorm=fEtot/theTrack->GetP();
       Xtr = -100.;
       Ytr = -100.;               
       fNclustTrack = MatchCluster(theTrack, Xtr, Ytr);
