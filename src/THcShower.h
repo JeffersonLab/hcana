@@ -163,9 +163,10 @@ protected:
   Double_t fEtot;            // Total energy
   Double_t fEtotNorm;        // Total energy divided by spec central momentum
   Double_t fEtrack;          // Cluster energy associated to the best track
-  Double_t fEtrackNorm;      // Normalized to momentum cluster energy associated to the best track
-  Double_t fEPRtrack;        // Cluster's Preshower energy of the best track
-  Double_t fEPRtrackNorm;    // Normalized to momentum cluster's Preshower energy of the best track
+  Double_t fEtrackNorm;      // Cluster energy divided by momentum for the best track
+  Double_t fEPRtrack;        // Preshower part of cluster energy of the best track
+  Double_t fEPRtrackNorm;    // Preshower part of cluster energy divided by momentum for the best track
+  Double_t fETotTrackNorm;   // Total energy divided by momentum of the best track
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
