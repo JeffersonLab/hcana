@@ -149,6 +149,7 @@ class THcScintillatorPlane : public THaSubDetector {
   
 
 
+  Int_t fDebugAdc;
   Int_t fCosmicFlag; //
   Int_t fPlaneNum;		/* Which plane am I 1-4 */
   UInt_t fTotPlanes;            /* so we can read variables that are not indexed by plane id */
