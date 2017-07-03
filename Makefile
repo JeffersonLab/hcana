@@ -7,6 +7,10 @@
 # List only the implementation files (*.cxx). For every implementation file
 # there must be a corresponding header file (*.h).
 
+USEWILDCARD = 1
+ifdef USEWILDCARD
+SRC = $(wildcard src/*.cxx)
+else
 SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcHallCSpectrometer.cxx \
 	src/THcDetectorMap.cxx \
@@ -35,6 +39,7 @@ SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcTrigApp.cxx src/THcTrigDet.cxx src/THcTrigRawHit.cxx \
 	src/THcRawAdcHit.cxx src/THcRawTdcHit.cxx \
 	src/THcDummySpectrometer.cxx
+endif
 
 # Name of your package.
 # The shared library that will be built will get the name lib$(PACKAGE).so
@@ -210,6 +215,11 @@ $(HDR_COMPILEDATA) $(LIBHALLA) $(LIBDC): $(ANALYZER)/Makefile
 $(USERDICT).cxx: $(RCHDR) $(HDR) $(LINKDEF)
 	@echo "Generating dictionary $(USERDICT)..."
 	$(ROOTBIN)/rootcint -f $@ -c $(INCLUDES) $(CCDBFLAGS) $^
+
+$(LINKDEF): $(LINKDEF)_preamble $(LINKDEF)_postamble $(SRC)
+	@cat $(LINKDEF)_preamble > $(LINKDEF)
+	@echo $(SRC) | tr ' ' '\n' | sed -e "s|src/|#pragma link C++ class |" | sed -e "s|.cxx|+;|" >> $(LINKDEF)
+	@cat $(LINKDEF)_postamble >> $(LINKDEF)
 
 install:	all
 	cp -p $(USERLIB) $(HOME)/cue/SRC/ana
