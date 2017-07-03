@@ -10,17 +10,18 @@ using namespace std;
 
 THcShowerHit::THcShowerHit() {         //default constructor
   fCol=fRow=0;
-  fX=fZ=0.;
+  fX=fY=fZ=0.;
   fE=0.;
   fEpos=0.;
   fEneg=0.;
 }
 
-THcShowerHit::THcShowerHit(Int_t hRow, Int_t hCol, Double_t hX, Double_t hZ,
+THcShowerHit::THcShowerHit(Int_t hRow, Int_t hCol, Double_t hX, Double_t hY, Double_t hZ,
 			   Double_t hE, Double_t hEpos, Double_t hEneg) {
   fRow=hRow;
   fCol=hCol;
   fX=hX;
+  fY=hY;
   fZ=hZ;
   fE=hE;
   fEpos=hEpos;
@@ -44,8 +45,8 @@ bool THcShowerHit::isNeighbour(THcShowerHit* hit1) {
 //Print out hit information
 //
 void THcShowerHit::show() {
-  cout << "row=" << fRow << "  column=" << fCol
-       << "  x=" << fX << "  z=" << fZ
+  cout << "row=" << fRow+1 << "  column=" << fCol+1
+       << "  x=" << fX  << "  y=" << fY << "  z=" << fZ
        << "  E=" << fE << "  Epos=" << fEpos << "  Eneg=" << fEneg << endl;
 }
 

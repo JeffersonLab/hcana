@@ -217,6 +217,9 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   }
 
   fResiduals = new Double_t [fNPlanes];
+  fWire_hit_did = new Double_t [fNPlanes];
+  fWire_hit_should = new Double_t [fNPlanes];
+
 
   // Replace with what we need for Hall C
   //  const DataDest tmp[NDEST] = {
@@ -340,7 +343,13 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "y", "Y at focal plane", "fDCTracks.THcDCTrack.GetY()"},
     { "xp", "XP at focal plane", "fDCTracks.THcDCTrack.GetXP()"},
     { "yp", "YP at focal plane", "fDCTracks.THcDCTrack.GetYP()"},
+    { "x_fp", "X at focal plane (best chi2 track)", "fX_fp_best"},
+    { "y_fp", "Y at focal plane( best chi2 track)", "fY_fp_best"},
+    { "xp_fp", "XP at focal plane (best chi2 track)", "fXp_fp_best"},
+    { "yp_fp", "YP at focal plane(best chi2 track) ", "fYp_fp_best"},
     { "residual", "Residuals", "fResiduals"},
+    { "wireHitDid","Wire did have  matched track hit", "fWire_hit_did"},
+    { "wireHitShould", "Wire should have matched track hit", "fWire_hit_should"},
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
@@ -411,6 +420,10 @@ void THcDC::ClearEvent()
   fNhits = 0;
   fNthits = 0;
   fN_True_RawHits=0;
+  fX_fp_best=-10000.;
+  fY_fp_best=-10000.;
+  fXp_fp_best=-10000.;
+  fYp_fp_best=-10000.;
 
   for(UInt_t i=0;i<fNChambers;i++) {
     fChambers[i]->Clear();
@@ -418,6 +431,8 @@ void THcDC::ClearEvent()
 
   for(Int_t i=0;i<fNPlanes;i++) {
     fResiduals[i] = 1000.0;
+    fWire_hit_did[i] = 1000.0;
+    fWire_hit_should[i] = 1000.0;
   }
 
   //  fTrackProj->Clear();
@@ -498,8 +513,8 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
   if (fdebugflagstubs)  PrintStubs();
   // Now link the stubs between chambers
   LinkStubs();
-  if(fNDCTracks > 0) {
-    TrackFit();
+ if(fNDCTracks > 0) {
+     TrackFit();
     // Copy tracks into podd tracks list
     for(UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
       THaTrack* theTrack = NULL;
@@ -518,24 +533,8 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
       // Assign the track number
       theTrack->SetTrkNum(itrack+1);
     }
-  }
+ }
 
-  // Check for internal TrackFit errors
-  // Histogram the focal plane tracks
-  // Histograms made in h_fill_dc_fp_hist
-  //   The following are one hist per track
-  //      x_fp
-  //      y_fp
-  //      xp_fp
-  //      yp_fp
-  //      log chi2
-  //      reduced chi2
-  //      For each plane:
-  //         double residual
-  //         single residual
-  // Will need to make a track class that has all these things.   Need to
-  // move the structure out of THcDC into it's own class which should probably
-  // inherit from a podd track class
 
   ApplyCorrections();
 
@@ -555,6 +554,40 @@ Int_t THcDC::FineTrack( TClonesArray& tracks )
   // reconstructed in THaVDC::FineTrack() are used.
 
   return 0;
+}
+//
+void THcDC::SetFocalPlaneBestTrack(Int_t golden_track_index)
+{
+      THcDCTrack *tr1 = static_cast<THcDCTrack*>( fDCTracks->At(golden_track_index));
+      fX_fp_best=tr1->GetX();
+      fY_fp_best=tr1->GetY();
+      fXp_fp_best=tr1->GetXP();
+      fYp_fp_best=tr1->GetYP();
+         for (UInt_t ihit = 0; ihit < UInt_t (tr1->GetNHits()); ihit++) {
+	THcDCHit *hit = tr1->GetHit(ihit);
+	Int_t plane = hit->GetPlaneNum() - 1;
+        fResiduals[plane] = tr1->GetResidual(plane);
+	 } 
+	 EfficiencyPerWire(golden_track_index);
+}
+//
+void THcDC::EfficiencyPerWire(Int_t golden_track_index)
+{
+      THcDCTrack *tr1 = static_cast<THcDCTrack*>( fDCTracks->At(golden_track_index));
+      Double_t track_pos;
+      for (UInt_t ihit = 0; ihit < UInt_t (tr1->GetNHits()); ihit++) {
+	THcDCHit *hit = tr1->GetHit(ihit);
+	Int_t plane = hit->GetPlaneNum() - 1;
+	track_pos=tr1->GetCoord(plane);
+	Int_t wire_num = hit->GetWireNum();
+	Int_t wire_track_num=round(fPlanes[plane]->CalcWireFromPos(track_pos));
+        if ( (wire_num-wire_track_num) ==0) fWire_hit_did[plane]=wire_num;
+      } 
+      for(Int_t ip=0; ip<fNPlanes;ip++) {
+	track_pos=tr1->GetCoord(ip);
+	Int_t wire_should = round(fPlanes[ip]->CalcWireFromPos(track_pos));
+        fWire_hit_should[ip]=wire_should;
+      }
 }
 //
 void THcDC::PrintSpacePoints()
@@ -990,20 +1023,6 @@ void THcDC::TrackFit()
 	    //  hdc_dbl_res(pln) = hdc_double_residual(1,pln)  for hists
 	  }
 	}
-      }
-    }
-  }
-  if(fNDCTracks>0) {
-    for (UInt_t itrack = 0; itrack < fNDCTracks; itrack++) {
-      //for(Int_t ip=0;ip<fNPlanes;ip++) {
-      THcDCTrack *theDCTrack = static_cast <THcDCTrack*> (fDCTracks->At(itrack));
-      for (UInt_t ihit = 0; ihit < UInt_t (theDCTrack->GetNHits()); ihit++) {
-	//fResiduals[ip] = theDCTrack->GetResidual(ip);
-	THcDCHit *hit = theDCTrack->GetHit(ihit);
-	Int_t plane = hit->GetPlaneNum() - 1;
-	// fResiduals[ip] = theDCTrack->GetResidual(ip);
-	fResiduals[plane] = theDCTrack->GetResidual(plane);
-	// cout << "plane = " << plane << ", fResiduals[plane] = " << fResiduals[plane] << endl;
       }
     }
   }

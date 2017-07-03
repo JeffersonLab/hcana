@@ -33,15 +33,16 @@ baseenv = Environment(ENV = os.environ)
 
 ####### Check SCons version ##################
 print('!!! Building the Hall C analyzer and libraries with SCons requires')
-print('!!! SCons version 2.1.0 or newer.')
-EnsureSConsVersion(2,1,0)
+print('!!! SCons version 2.5.0 or newer.')
+EnsureSConsVersion(2,5,0)
 
 ####### Hall A Build Environment #############
 #
-baseenv.Append(MAIN_DIR= Dir('.').abspath)
-baseenv.Append(HC_DIR= baseenv.subst('$MAIN_DIR'))
+baseenv.Append(HEAD_DIR= Dir('.').abspath)
+baseenv.Append(HC_DIR= baseenv.subst('$HEAD_DIR'))
 baseenv.Append(HC_SRC= baseenv.subst('$HC_DIR')+'/src ')
 baseenv.Append(HA_DIR= baseenv.subst('$HC_DIR')+'/podd ')
+baseenv.Append(MAIN_DIR= baseenv.subst('$HEAD_DIR'))
 baseenv.Append(HA_SRC= baseenv.subst('$HA_DIR')+'/src ')
 baseenv.Append(HA_DC= baseenv.subst('$HA_DIR')+'/hana_decode ')
 baseenv.Append(MAJORVERSION = '1')
@@ -212,8 +213,6 @@ baseenv.Append(LIBPATH=['$HC_DIR','$EVIO_LIB','$HA_DIR','$HC_SRC','$HA_SRC','$HA
 baseenv.Replace(SHLIBSUFFIX = '.so')
 baseenv.Append(CPPDEFINES = '-DHALLC_MODS')
 
-directorylist = ['./','src','podd','podd/src','podd/hana_decode']
-
 baseenv.Append(SHLIBSUFFIX ='.'+baseenv.subst('$VERSION'))
 pbaseenv=baseenv.Clone()
 pbaseenv.Prepend(LIBS=[hallclib,hallalib,dclib,eviolib])
@@ -232,6 +231,20 @@ if pbaseenv['CXX'] == 'g++':
 		if '-std=c++11' not in pbaseenv['CXXFLAGS']:
 			pbaseenv.Append(CXXFLAGS='-std=c++11')
 
+##directorylist = ['./','src','podd','podd/src','podd/hana_decode']
+##SConscript('podd/SConstruct')
+
+if baseenv.GetOption('clean'):
+    subprocess.call(['echo', '!!!!!! Cleaning Podd Directory !!!!!! '])
+    podd_command_scons = "cd %s; scons -c" % baseenv.subst('$HA_DIR')
+else:
+    subprocess.call(['echo', '!!!!!! Building Podd !!!!!! '])
+    podd_command_scons = "cd %s; scons" % baseenv.subst('$HA_DIR')
+
+print "podd_command_scons = %s" % podd_command_scons
+os.system(podd_command_scons)
+
+directorylist = ['./','src']
 SConscript(dirs = directorylist,name='SConscript.py',exports='baseenv')
 
 #######  End of SConstruct #########

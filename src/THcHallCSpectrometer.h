@@ -16,7 +16,7 @@
 #include "THcHitList.h"
 #include "THcRawHodoHit.h"
 #include "THcScintillatorPlane.h"
-#include "THcShower.h"
+#include "THcDC.h"
 
 //#include "THaTrackingDetector.h"
 //#include "THcHitList.h"
@@ -99,8 +99,8 @@ protected:
 
   //  Int_t**   fHodScinHit;                // [4] Array
 
-  THcShower* fShower;
   THcHodoscope* fHodo;
+  THcDC* fDC;
 
   Int_t fNReconTerms;
   struct reconTerm {

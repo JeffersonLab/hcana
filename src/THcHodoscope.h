@@ -92,12 +92,11 @@ public:
   Double_t GetPlaneSpacing(Int_t ip) { return fPlaneSpacing[ip];}
   Int_t GetTdcOffset(Int_t ip) const { return fTdcOffset[ip];}
 
+  Double_t GetAdcTimeWindowMin(Int_t ip) { return fAdcTimeWindowMin[ip];}
+  Double_t GetAdcTimeWindowMax(Int_t ip) { return fAdcTimeWindowMax[ip];}
 
-  //  Double_t GetBeta() const {return fBeta[];}
+  Double_t GetBeta() const {return fBeta;}
 
-  // Not used
-  //Double_t GetBeta(Int_t itrack) const {return fBeta[itrack];} // Ahmed
-  //  Int_t GetEvent(){ return fCheckEvent;}
 
   Double_t GetHodoPosSigma(Int_t iii) const {return fHodoPosSigma[iii];}
   Double_t GetHodoNegSigma(Int_t iii) const {return fHodoNegSigma[iii];}
@@ -132,7 +131,7 @@ protected:
   Double_t fFPTimeAll;
   Int_t fNfptimes;
 
-  Double_t     fBetaP;
+  Double_t     fBeta;
 
   Double_t     fBetaNoTrk;
   Double_t     fBetaNoTrkChiSq;
@@ -148,6 +147,9 @@ protected:
   Double_t fScinTdcMin, fScinTdcMax; // min and max TDC values
   char** fPlaneNames;
   UInt_t* fNPaddle;		// Number of paddles per plane
+
+  Double_t *fAdcTimeWindowMin;    
+  Double_t *fAdcTimeWindowMax;
 
   Double_t* fHodoVelLight;
   Double_t* fHodoPosSigma;
@@ -204,8 +206,6 @@ protected:
   Int_t        fTestSum;
   Int_t        fTrackEffTestNScinPlanes;
   Int_t        fGoodScinHits;
-  Int_t        fScinShould;
-  Int_t        fScinDid;
   Int_t*       fxLoScin;
   Int_t*       fxHiScin;
   Int_t*       fyLoScin;

@@ -45,10 +45,15 @@ public:
   virtual Bool_t   IsPid()      { return kFALSE; }
 
   virtual Int_t ProcessHits(TClonesArray* rawhits, Int_t nexthit);
+  virtual Int_t CoarseProcessHits();
   virtual Int_t AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit);
   virtual void  CalculatePedestals( );
   virtual void  InitializePedestals( );
-
+  virtual void  FillADC_DynamicPedestal( );
+  virtual void  FillADC_SampleIntegral( );
+  virtual void  FillADC_SampIntDynPed( );
+  virtual void  FillADC_Standard( );
+ 
   // Cluster to track association method.
   Int_t MatchCluster(THaTrack*, Double_t&, Double_t&);
 
@@ -56,6 +61,18 @@ public:
   // spectrometer Track.
 
   Float_t GetShEnergy(THaTrack*);
+  Double_t GetClMaxEnergyBlock() {
+    return fMatchClMaxEnergyBlock;
+  };
+  Double_t GetClSize() {
+    return fClustSize;
+  };
+  Double_t GetClX() {
+    return fMatchClX;
+  };
+  Double_t GetClY() {
+    return fMatchClY;
+  };
 
   //  Double_t fSpacing;   not used
 
@@ -70,6 +87,7 @@ public:
   Double_t fvYmax();
   Double_t fvXmax();
   Double_t fvYmin();
+  Double_t clMaxEnergyBlock(THcShowerCluster* cluster);
 
 protected:
 
@@ -77,11 +95,27 @@ protected:
   char **hitpic;
   Int_t piccolumn;
 #endif
-  Double_t* fA;               // [fNelem] ADC amplitudes of blocks
-  Double_t* fP;               // [fNelem] Event by event (FADC) pedestals
-  Double_t* fA_p;	      // [fNelem] sparsified, pedestal subtracted
-                              // (FASTBUS) ADC amplitudes
 
+
+ 
+
+
+  //counting variables
+  Int_t fTotNumAdcHits;              // Total number of ADC hits
+  Int_t fTotNumGoodAdcHits;          // Total number of good ADC hits (pass threshold)
+
+  vector<Int_t>         fNumGoodAdcHits;          // shower good occupancy
+  vector<Double_t>      fGoodAdcPulseIntRaw;      // [fNelem] Good Raw ADC pulse Integrals of blocks
+  
+  vector<Double_t>      fGoodAdcPed;             // [fNelem] Event by event (FADC) good pulse pedestals
+  vector<Double_t>      fGoodAdcPulseInt;       // [fNelem] good pedestal subtracted pulse integrals
+  vector<Double_t>      fGoodAdcPulseAmp;
+  vector<Double_t>      fGoodAdcPulseTime;
+
+  vector<Double_t>      fE;                    //[fNelem] energy deposition in shower blocks
+
+  Int_t* fBlock_ClusterID;              // [fNelem] Cluster ID of the block -1 then not in a cluster
+  Double_t  fEarray;                          // Total Energy deposition in the array.
   TClonesArray* fADCHits;	// List of ADC hits
 
   // Parameters
@@ -96,6 +130,7 @@ protected:
   Double_t fZSize;               // Block size along Z
   Double_t** fXPos;              // block X coordinates
   Double_t** fYPos;              // block Y coordinates
+  Double_t** fZPos;              // block Z coordinates
 
   Int_t fUsingFADC;		// != 0 if using FADC in sample mode
    Int_t fADCMode;		//    
@@ -106,7 +141,12 @@ protected:
   static const Int_t kADCDynamicPedestal=1;
   static const Int_t kADCSampleIntegral=2;
   static const Int_t kADCSampIntDynPed=3;
- Int_t fPedSampLow;		// Sample range for
+  Double_t fAdcTimeWindowMin ;
+  Double_t fAdcTimeWindowMax ;
+  Double_t fAdcThreshold ;
+
+  Int_t fDebugAdc;
+  Int_t fPedSampLow;		// Sample range for
   Int_t fPedSampHigh;		// dynamic pedestal
   Int_t fDataSampLow;		// Sample range for
   Int_t fDataSampHigh;		// sample integration
@@ -130,20 +170,20 @@ protected:
   Float_t *fThresh;          // [fNelem] ADC thresholds
 
   Double_t* fGain;           // [fNelem] Gain constants from calibration
-
-  //Energy depositions.
-
-  Double_t* fE;              // [fNelem] energy depositions in the blocks.
-  Double_t  fEarray;         // Total Energy deposition in the array.
-
-  Int_t fNhits;              // Total number of hits
+  
   Int_t fNclust;             // Number of hit clusters
   Int_t fNtracks;            // Number of shower tracks, i.e. number of
                              // cluster-to-track associations
 
+  Double_t fMatchClX;
+  Double_t fMatchClY;
+  Double_t fMatchClMaxEnergyBlock;
+  Double_t fClustSize;
+
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
   TClonesArray* frAdcPedRaw;
+  TClonesArray* frAdcErrorFlag;
   TClonesArray* frAdcPulseIntRaw;
   TClonesArray* frAdcPulseAmpRaw;
   TClonesArray* frAdcPulseTimeRaw;
@@ -151,6 +191,7 @@ protected:
   TClonesArray* frAdcPed;
   TClonesArray* frAdcPulseInt;
   TClonesArray* frAdcPulseAmp;
+
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );

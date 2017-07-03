@@ -124,8 +124,8 @@ RawCoarseReconstruct !Pedestal_event
 Block: Physics
 HMSScinGood           H.hod.goodscinhit == 1
 
-HMSScinShould         HMSScinGood && H.cal.etotnorm > 0.7 && H.cer.npesum > 2.0
-HMSScinShoulde        HMSScinGood && H.cer.npesum > 2.0
+HMSScinShould         HMSScinGood && H.cal.etotnorm > 0.7 && H.cer.npeSum > 2.0
+HMSScinShoulde        HMSScinGood && H.cer.npeSum > 2.0
 HMSScinShouldh        H.hod.goodscinhit == 1 && g.evtyp == 1
 
 HMSScinDid            HMSScinShould && H.dc.ntrack > 0
@@ -133,8 +133,8 @@ HMSScinDide           HMSScinShoulde && H.dc.ntrack > 0
 HMSScinDidh           HMSScinShouldh && H.dc.ntrack > 0
 
 BHMSScinShould        HMSScinShould && H.hod.betanotrack >= 0.1 && g.evtyp==3
-BHMSScinShoulde       BHMSScinShould && H.cer.npesum > 0.2 && ( H.gold.beta > ( H.hod.betap - 0.5 ) ) && ( H.gold.beta < ( H.hod.betap + 0.5 ) )
-BHMSScinShouldh       BHMSScinShould && H.cer.npesum > 0.2 
+BHMSScinShoulde       BHMSScinShould && H.cer.npeSum > 0.2 && ( H.gold.beta > ( H.hod.beta - 0.5 ) ) && ( H.gold.beta < ( H.hod.beta + 0.5 ) )
+BHMSScinShouldh       BHMSScinShould && H.cer.npeSum > 0.2 
 
 BHMSScinDid           BHMSScinShould && H.dc.ntrack > 0
 BHMSScinDide          BHMSScinShoulde && H.dc.ntrack > 0
