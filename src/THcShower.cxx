@@ -516,6 +516,9 @@ Int_t THcShower::DefineVariables( EMode mode )
     { "etotnorm", "Total energy divided by Central Momentum",    "fEtotNorm" },
     { "etrack", "Track energy",                                  "fEtrack" },
     { "etracknorm", "Total energy divided by track momentum",    "fEtrackNorm" },
+    { "eprtrack", "Track Preshower energy",                      "fEPRtrack" },
+    { "eprtracknorm", "Preshower energy divided by track momentum", "fEPRtrackNorm" },
+    { "etottracknorm", "Total energy divided by track momentum", "fETotTrackNorm" },
     { "ntracks", "Number of shower tracks",                      "fNtracks" },
     { 0 }
   };
@@ -597,6 +600,9 @@ void THcShower::Clear(Option_t* opt)
   fEtotNorm = 0.;
   fEtrack = 0.;
   fEtrackNorm = 0.;
+  fEPRtrack = 0.;
+  fEPRtrackNorm = 0.;
+  fETotTrackNorm = 0.;
   fSizeClustArray = 0;
   fNblockHighEnergy = 0.;
 
@@ -767,13 +773,15 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
   // Do same for Array.
 
   if(fHasArray) fArray->CoarseProcess(tracks);
+
   //  
   Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
   Double_t save_energy=0;
  for (Int_t itrk=0; itrk<Ntracks; itrk++) {
 
     THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
-     save_energy = GetShEnergy(theTrack);
+    //     save_energy = GetShEnergy(theTrack);
+    save_energy = GetShEnergy(theTrack, fNLayers);
       if (fHasArray) save_energy += fArray->GetShEnergy(theTrack);
     theTrack->SetEnergy(save_energy);
   }       //over tracks
@@ -1046,10 +1054,10 @@ Int_t THcShower::MatchCluster(THaTrack* Track,
 }
 
 //_____________________________________________________________________________
-Float_t THcShower::GetShEnergy(THaTrack* Track) {
+Float_t THcShower::GetShEnergy(THaTrack* Track, UInt_t NLayers, UInt_t L0) {
 
-  // Get total energy deposited in the cluster matched to the given
-  // spectrometer Track.
+  // Get part of energy deposited in the cluster matched to the given
+  // spectrometer Track, limited by range of layers from L0 to L0+NLayers-1.
 
   // Track coordinates at front of the calorimeter, initialize out of
   // acceptance.
@@ -1071,7 +1079,8 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
 
     // Correct track energy depositions for the impact coordinate.
 
-    for (UInt_t ip=0; ip<fNLayers; ip++) {
+    //    for (UInt_t ip=0; ip<fNLayers; ip++) {
+    for (UInt_t ip=L0; ip<L0+NLayers; ip++) {
 
       // Coordinate correction factors for positive and negative sides,
       // different for double PMT counters in the 1-st two layes and for
@@ -1110,6 +1119,7 @@ Float_t THcShower::GetShEnergy(THaTrack* Track) {
     else
       cout << ", no matched cluster found." << endl;
 
+    cout << "  Layers from " << L0+1 << " to " << L0+NLayers << ".\n";
     cout << "  Coordinate corrected track energy = " << Etrk << "." << endl;
     cout << "---------------------------------------------------------------\n";
   }
@@ -1132,6 +1142,9 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
     if (theTrack->GetIndex()==0) {
       fEtrack=theTrack->GetEnergy();
       fEtrackNorm=fEtrack/theTrack->GetP();
+      fEPRtrack=GetShEnergy(theTrack,1);
+      fEPRtrackNorm=fEPRtrack/theTrack->GetP();
+      fETotTrackNorm=fEtot/theTrack->GetP();
       Xtr = -100.;
       Ytr = -100.;               
       fNclustTrack = MatchCluster(theTrack, Xtr, Ytr);

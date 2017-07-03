@@ -111,10 +111,10 @@ public:
     return (fCcor[side] + sign*y)/(fCcor[side] + sign*y/fDcor[side]);
   }
 
-  // Get total energy deposited in the cluster matched to the given
-  // spectrometer Track.
+  // Get part of energy deposited in the cluster matched to the given
+  // spectrometer Track, limited by a range of layers.
 
-  Float_t GetShEnergy(THaTrack*);
+  Float_t GetShEnergy(THaTrack*, UInt_t NLayers, UInt_t L0=0);
 
   THcShower();  // for ROOT I/O
 
@@ -157,13 +157,16 @@ protected:
   Double_t fXclustArrayTrack;             // X pos of cluster that match best track
   Double_t fXTrackArray;             // X pos of best track that match cluster
   Double_t fYclustArrayTrack;             // Y pos of cluster that match best track
-  Double_t fYTrackArray;             // Y pos of best track that match cluster
-  Int_t fNtracks;            // Number of shower tracks, i.e. number of
-                             // cluster-to-track association
-  Double_t fEtot;            // Total energy
-  Double_t fEtotNorm;        // Total energy divided by spec central momentum
-  Double_t fEtrack;          // Cluster energy associated to the best track
-  Double_t fEtrackNorm;          // Cluster energy associated to the best track
+  Double_t fYTrackArray;   // Y pos of best track that match cluster
+  Int_t fNtracks;          // Number of shower tracks, i.e. number of
+                           // cluster-to-track association
+  Double_t fEtot;          // Total energy
+  Double_t fEtotNorm;      // Total energy divided by spec central momentum
+  Double_t fEtrack;        // Cluster energy associated to the best track
+  Double_t fEtrackNorm;    // Cluster energy divided by momentum for the best track
+  Double_t fEPRtrack;      // Preshower part of cluster energy of the best track
+  Double_t fEPRtrackNorm;  // Preshower part of cluster energy divided by momentum for the best track
+  Double_t fETotTrackNorm; // Total energy divided by momentum of the best track
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
