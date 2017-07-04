@@ -86,7 +86,10 @@
   // We just set up one, but this could be many.
   char RunFileName[100];
   sprintf(RunFileName,RunFileNamePattern,RunNumber);
+  
   THaRun* run = new THaRun(RunFileName);
+  run->SetRunParamClass("THcRunParameters");
+  // Perhaps we should make a THcRun that does this
 
   // Eventually need to learn to skip over, or properly analyze
   // the pedestal events

@@ -33,8 +33,8 @@ baseenv = Environment(ENV = os.environ)
 
 ####### Check SCons version ##################
 print('!!! Building the Hall C analyzer and libraries with SCons requires')
-print('!!! SCons version 2.1.0 or newer.')
-EnsureSConsVersion(2,1,0)
+print('!!! SCons version 2.5.0 or newer.')
+EnsureSConsVersion(2,5,0)
 
 ####### Hall A Build Environment #############
 #
