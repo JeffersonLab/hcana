@@ -373,9 +373,6 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     vars.push_back(RVarDef{"negAdcPulseInt",     "List of negative ADC pulse integrals.",      "frNegAdcPulseInt.THcSignalHit.GetData()"});
     vars.push_back(RVarDef{"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"});
 
-
-    vars.push_back(RVarDef{"nhits", "Number of paddle hits (passed TDC && ADC Min and Max cuts for either end)",           "GetNScinHits() "});
-
     vars.push_back(RVarDef{"totNumPosAdcHits", "Total Number of Positive ADC Hits",   "fTotNumPosAdcHits"}); // Hodo+ raw ADC multiplicity Int_t
     vars.push_back(RVarDef{"totNumNegAdcHits", "Total Number of Negative ADC Hits",   "fTotNumNegAdcHits"}); // Hodo- raw ADC multiplicity  ""
     vars.push_back(RVarDef{"totNumAdcHits",   "Total Number of PMTs Hit (as measured by ADCs)",      "fTotNumAdcHits"});    // Hodo raw ADC multiplicity  ""
@@ -385,6 +382,8 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     vars.push_back(RVarDef{"totNumTdcHits",   "Total Number of PMTs Hits (as measured by TDCs)",      "fTotNumTdcHits"});    // Hodo raw TDC multiplicity  ""
 
   } //end debug statement
+
+  vars.push_back(RVarDef{"nhits", "Number of paddle hits (passed TDC && ADC Min and Max cuts for either end)",           "GetNScinHits() "});
 
   vars.push_back(RVarDef{"posTdcCounter", "List of positive TDC counter numbers.", "frPosTdcTimeRaw.THcSignalHit.GetPaddleNumber()"});   //Hodo+ raw TDC occupancy
   vars.push_back(RVarDef{"posAdcCounter", "List of positive ADC counter numbers.", "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"}); //Hodo+ raw ADC occupancy
