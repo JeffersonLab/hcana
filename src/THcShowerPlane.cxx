@@ -279,70 +279,71 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
 
   // Register variables in global list
-  vector<RVarDef> vars;
-
-  vars.push_back(RVarDef{"posAdcErrorFlag",       "List of positive raw ADC Error Flags",         "frPosAdcErrorFlag.THcSignalHit.GetData()"});
-  vars.push_back(RVarDef{"negAdcErrorFlag",       "List of negative raw ADC Error Flags ",        "frNegAdcErrorFlag.THcSignalHit.GetData()"});
-
-  vars.push_back(RVarDef{"posAdcCounter",      "List of positive ADC counter numbers.",      "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"}); //PreSh+ raw occupancy
-  vars.push_back(RVarDef{"negAdcCounter",      "List of negative ADC counter numbers.",      "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"}); //PreSh- raw occupancy
-
-  vars.push_back(RVarDef{"totNumPosAdcHits", "Total Number of Positive ADC Hits",   "fTotNumPosAdcHits"}); // PreSh+ raw multiplicity
-  vars.push_back(RVarDef{"totNumNegAdcHits", "Total Number of Negative ADC Hits",   "fTotNumNegAdcHits"}); // PreSh+ raw multiplicity
-  vars.push_back(RVarDef{"totnumAdcHits",   "Total Number of ADC Hits Per PMT",      "fTotNumAdcHits"});    // PreSh raw multiplicity
-
-  vars.push_back(RVarDef{"numGoodPosAdcHits",    "Number of Good Positive ADC Hits Per PMT", "fNumGoodPosAdcHits"});    // PreSh occupancy
-  vars.push_back(RVarDef{"numGoodNegAdcHits",    "Number of Good Negative ADC Hits Per PMT", "fNumGoodNegAdcHits"});    // PreSh occupancy
-  vars.push_back(RVarDef{"totNumGoodPosAdcHits", "Total Number of Good Positive ADC Hits",   "fTotNumGoodPosAdcHits"}); // PreSh multiplicity
-  vars.push_back(RVarDef{"totNumGoodNegAdcHits", "Total Number of Good Negative ADC Hits",   "fTotNumGoodNegAdcHits"}); // PreSh multiplicity
-  vars.push_back(RVarDef{"totnumGoodAdcHits",   "TotalNumber of Good ADC Hits Per PMT",      "fTotNumGoodAdcHits"});    // PreSh multiplicity
-
-  vars.push_back(RVarDef{"goodPosAdcPulseIntRaw",       "Good Positive Raw ADC Pulse Integrals",                   "fGoodPosAdcPulseIntRaw"});
-  vars.push_back(RVarDef{"goodNegAdcPulseIntRaw",       "Good Negative Raw ADC Pulse Integrals",                   "fGoodNegAdcPulseIntRaw"});
-
-  vars.push_back(RVarDef{"goodPosAdcPed",         "Good Positive ADC pedestals",           "fGoodPosAdcPed"});
-  vars.push_back(RVarDef{"goodPosAdcPulseInt",         "Good Positive ADC integrals",           "fGoodPosAdcPulseInt"});
-  vars.push_back(RVarDef{"goodPosAdcPulseAmp",         "Good Positive ADC amplitudes",           "fGoodPosAdcPulseAmp"});
-  vars.push_back(RVarDef{"goodPosAdcPulseTime",         "Good Positive ADC times",           "fGoodPosAdcPulseTime"});
-
-  vars.push_back(RVarDef{"goodNegAdcPed",         "Good Negative ADC pedestals",           "fGoodNegAdcPed"});
-  vars.push_back(RVarDef{"goodNegAdcPulseInt",         "Good Negative ADC integrals",           "fGoodNegAdcPulseInt"});
-  vars.push_back(RVarDef{"goodNegAdcPulseAmp",         "Good Negative ADC amplitudes",           "fGoodNegAdcPulseAmp"});
-  vars.push_back(RVarDef{"goodNegAdcPulseTime",         "Good Negative ADC times",           "fGoodNegAdcPulseTime"});
-
-  vars.push_back(RVarDef{"epos",       "Energy Depositions from Positive Side PMTs",    "fEpos"});
-  vars.push_back(RVarDef{"eneg",       "Energy Depositions from Negative Side PMTs",    "fEneg"});
-  vars.push_back(RVarDef{"emean",      "Mean Energy Depositions",                       "fEmean"});
-  vars.push_back(RVarDef{"eplane",     "Energy Deposition per plane",                   "fEplane"});
-  vars.push_back(RVarDef{"eplane_pos", "Energy Deposition per plane from pos. PMTs","fEplane_pos"});
-  vars.push_back(RVarDef{"eplane_neg", "Energy Deposition per plane from neg. PMTs","fEplane_neg"});
-
 
   if (fDebugAdc) {
-  vars.push_back(RVarDef{"posAdcPedRaw",       "List of positive raw ADC pedestals",         "frPosAdcPedRaw.THcSignalHit.GetData()"});
-  vars.push_back(RVarDef{"posAdcPulseIntRaw",  "List of positive raw ADC pulse integrals.",  "frPosAdcPulseIntRaw.THcSignalHit.GetData()"});
-  vars.push_back(RVarDef{"posAdcPulseAmpRaw",  "List of positive raw ADC pulse amplitudes.", "frPosAdcPulseAmpRaw.THcSignalHit.GetData()"});
-  vars.push_back(RVarDef{"posAdcPulseTimeRaw", "List of positive raw ADC pulse times.",      "frPosAdcPulseTimeRaw.THcSignalHit.GetData()"});
+    RVarDef vars[] = {
+      {"posAdcPedRaw",       "List of positive raw ADC pedestals",         "frPosAdcPedRaw.THcSignalHit.GetData()"},
+      {"posAdcPulseIntRaw",  "List of positive raw ADC pulse integrals.",  "frPosAdcPulseIntRaw.THcSignalHit.GetData()"},
+      {"posAdcPulseAmpRaw",  "List of positive raw ADC pulse amplitudes.", "frPosAdcPulseAmpRaw.THcSignalHit.GetData()"},
+      {"posAdcPulseTimeRaw", "List of positive raw ADC pulse times.",      "frPosAdcPulseTimeRaw.THcSignalHit.GetData()"},
 
-  vars.push_back(RVarDef{"posAdcPed",          "List of positive ADC pedestals",             "frPosAdcPed.THcSignalHit.GetData()"});
-  vars.push_back(RVarDef{"posAdcPulseInt",     "List of positive ADC pulse integrals.",      "frPosAdcPulseInt.THcSignalHit.GetData()"});
-  vars.push_back(RVarDef{"posAdcPulseAmp",     "List of positive ADC pulse amplitudes.",     "frPosAdcPulseAmp.THcSignalHit.GetData()"});
+      {"posAdcPed",          "List of positive ADC pedestals",             "frPosAdcPed.THcSignalHit.GetData()"},
+      {"posAdcPulseInt",     "List of positive ADC pulse integrals.",      "frPosAdcPulseInt.THcSignalHit.GetData()"},
+      {"posAdcPulseAmp",     "List of positive ADC pulse amplitudes.",     "frPosAdcPulseAmp.THcSignalHit.GetData()"},
 
-  vars.push_back(RVarDef{"negAdcPedRaw",       "List of negative raw ADC pedestals",         "frNegAdcPedRaw.THcSignalHit.GetData()"});
-  vars.push_back(RVarDef{"negAdcPulseIntRaw",  "List of negative raw ADC pulse integrals.",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"});
-  vars.push_back(RVarDef{"negAdcPulseAmpRaw",  "List of negative raw ADC pulse amplitudes.", "frNegAdcPulseAmpRaw.THcSignalHit.GetData()"});
-  vars.push_back(RVarDef{"negAdcPulseTimeRaw", "List of negative raw ADC pulse times.",      "frNegAdcPulseTimeRaw.THcSignalHit.GetData()"});
+      {"negAdcPedRaw",       "List of negative raw ADC pedestals",         "frNegAdcPedRaw.THcSignalHit.GetData()"},
+      {"negAdcPulseIntRaw",  "List of negative raw ADC pulse integrals.",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"},
+      {"negAdcPulseAmpRaw",  "List of negative raw ADC pulse amplitudes.", "frNegAdcPulseAmpRaw.THcSignalHit.GetData()"},
+      {"negAdcPulseTimeRaw", "List of negative raw ADC pulse times.",      "frNegAdcPulseTimeRaw.THcSignalHit.GetData()"},
 
-  vars.push_back(RVarDef{"negAdcPed",          "List of negative ADC pedestals",             "frNegAdcPed.THcSignalHit.GetData()"});
-  vars.push_back(RVarDef{"negAdcPulseInt",     "List of negative ADC pulse integrals.",      "frNegAdcPulseInt.THcSignalHit.GetData()"});
-  vars.push_back(RVarDef{"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"});
+      {"negAdcPed",          "List of negative ADC pedestals",             "frNegAdcPed.THcSignalHit.GetData()"},
+      {"negAdcPulseInt",     "List of negative ADC pulse integrals.",      "frNegAdcPulseInt.THcSignalHit.GetData()"},
+      {"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"},
+      { 0 }
+    };
+    DefineVarsFromList( vars, mode);
+  } //end debug statement
 
-   }
+  RVarDef vars[] = {
+    {"posAdcErrorFlag",    "List of positive raw ADC Error Flags",  "frPosAdcErrorFlag.THcSignalHit.GetData()"},
+    {"negAdcErrorFlag",    "List of negative raw ADC Error Flags ", "frNegAdcErrorFlag.THcSignalHit.GetData()"},
 
-  RVarDef end {0};
-  vars.push_back(end);
+    {"posAdcCounter",      "List of positive ADC counter numbers.", "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"}, //PreSh+ raw occupancy
+    {"negAdcCounter",      "List of negative ADC counter numbers.", "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"}, //PreSh- raw occupancy
 
-  return DefineVarsFromList(vars.data(), mode);
+    {"totNumPosAdcHits", "Total Number of Positive ADC Hits",   "fTotNumPosAdcHits"}, // PreSh+ raw multiplicity
+    {"totNumNegAdcHits", "Total Number of Negative ADC Hits",   "fTotNumNegAdcHits"}, // PreSh+ raw multiplicity
+    {"totnumAdcHits",    "Total Number of ADC Hits Per PMT",    "fTotNumAdcHits"},    // PreSh raw multiplicity
+
+    {"numGoodPosAdcHits",  "Number of Good Positive ADC Hits Per PMT", "fNumGoodPosAdcHits"},    // PreSh occupancy
+    {"numGoodNegAdcHits",  "Number of Good Negative ADC Hits Per PMT", "fNumGoodNegAdcHits"},    // PreSh occupancy
+    {"totNumGoodPosAdcHits", "Total Number of Good Positive ADC Hits",   "fTotNumGoodPosAdcHits"}, // PreSh multiplicity
+    {"totNumGoodNegAdcHits", "Total Number of Good Negative ADC Hits",   "fTotNumGoodNegAdcHits"}, // PreSh multiplicity
+    {"totnumGoodAdcHits",  "TotalNumber of Good ADC Hits Per PMT",      "fTotNumGoodAdcHits"},    // PreSh multiplicity
+
+    {"goodPosAdcPulseIntRaw", "Good Positive Raw ADC Pulse Integrals",                   "fGoodPosAdcPulseIntRaw"},
+    {"goodNegAdcPulseIntRaw", "Good Negative Raw ADC Pulse Integrals",                   "fGoodNegAdcPulseIntRaw"},
+
+    {"goodPosAdcPed",      "Good Positive ADC pedestals",           "fGoodPosAdcPed"},
+    {"goodPosAdcPulseInt", "Good Positive ADC integrals",           "fGoodPosAdcPulseInt"},
+    {"goodPosAdcPulseAmp", "Good Positive ADC amplitudes",          "fGoodPosAdcPulseAmp"},
+    {"goodPosAdcPulseTime","Good Positive ADC times",               "fGoodPosAdcPulseTime"},
+
+    {"goodNegAdcPed",      "Good Negative ADC pedestals",           "fGoodNegAdcPed"},
+    {"goodNegAdcPulseInt", "Good Negative ADC integrals",           "fGoodNegAdcPulseInt"},
+    {"goodNegAdcPulseAmp", "Good Negative ADC amplitudes",          "fGoodNegAdcPulseAmp"},
+    {"goodNegAdcPulseTime","Good Negative ADC times",               "fGoodNegAdcPulseTime"},
+
+    {"epos",       "Energy Depositions from Positive Side PMTs",    "fEpos"},
+    {"eneg",       "Energy Depositions from Negative Side PMTs",    "fEneg"},
+    {"emean",      "Mean Energy Depositions",                       "fEmean"},
+    {"eplane",     "Energy Deposition per plane",                   "fEplane"},
+    {"eplane_pos", "Energy Deposition per plane from pos. PMTs",    "fEplane_pos"},
+    {"eplane_neg", "Energy Deposition per plane from neg. PMTs",    "fEplane_neg"},
+    { 0 }
+  };
+
+  return DefineVarsFromList(vars, mode);
 }
 
 //_____________________________________________________________________________

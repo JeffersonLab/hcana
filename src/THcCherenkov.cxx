@@ -237,45 +237,47 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
 
   // Register variables in global list
-  vector<RVarDef> vars;
-
-  vars.push_back(RVarDef{"adcCounter",   "ADC counter numbers",            "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
-  vars.push_back(RVarDef{"adcErrorFlag", "Error Flag for When FPGA Fails", "fAdcErrorFlag.THcSignalHit.GetData()"});
-
-  vars.push_back(RVarDef{"numGoodAdcHits",    "Number of Good ADC Hits Per PMT", "fNumGoodAdcHits"});    // Cherenkov occupancy
-  vars.push_back(RVarDef{"totNumGoodAdcHits", "Total Number of Good ADC Hits",   "fTotNumGoodAdcHits"}); // Cherenkov multiplicity
-
-  vars.push_back(RVarDef{"numTracksMatched",    "Number of Tracks Matched Per Region",       "fNumTracksMatched"});
-  vars.push_back(RVarDef{"numTracksFired",      "Number of Tracks that Fired Per Region",    "fNumTracksFired"});
-  vars.push_back(RVarDef{"totNumTracksMatched", "Total Number of Tracks Matched Per Region", "fTotNumTracksMatched"});
-  vars.push_back(RVarDef{"totNumTracksFired",   "Total Number of Tracks that Fired",         "fTotNumTracksFired"});
-
-  vars.push_back(RVarDef{"npe",          "Number of PEs",                  "fNpe"});
-  vars.push_back(RVarDef{"npeSum",       "Total Number of PEs",            "fNpeSum"});
-
-  vars.push_back(RVarDef{"goodAdcPed",          "Good ADC pedestals",           "fGoodAdcPed"});
-  vars.push_back(RVarDef{"goodAdcPulseInt",     "Good ADC pulse integrals",     "fGoodAdcPulseInt"});
-  vars.push_back(RVarDef{"goodAdcPulseIntRaw",  "Good ADC raw pulse integrals", "fGoodAdcPulseIntRaw"});
-  vars.push_back(RVarDef{"goodAdcPulseAmp",     "Good ADC pulse amplitudes",    "fGoodAdcPulseAmp"});
-  vars.push_back(RVarDef{"goodAdcPulseTime",    "Good ADC pulse times",         "fGoodAdcPulseTime"});
 
   if (fDebugAdc) {
-    vars.push_back(RVarDef{"numAdcHits",      "Number of ADC Hits Per PMT", "fNumAdcHits"});        // Cherenkov occupancy
-    vars.push_back(RVarDef{"totNumAdcHits",   "Total Number of ADC Hits",   "fTotNumAdcHits"});     // Cherenkov multiplicity
-    vars.push_back(RVarDef{"adcPedRaw",       "Raw ADC pedestals",          "frAdcPedRaw.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"adcPulseIntRaw",  "Raw ADC pulse integrals",    "frAdcPulseIntRaw.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"adcPulseAmpRaw",  "Raw ADC pulse amplitudes",   "frAdcPulseAmpRaw.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"adcPulseTimeRaw", "Raw ADC pulse times",        "frAdcPulseTimeRaw.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"adcPed",          "ADC pedestals",              "frAdcPed.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"adcPulseInt",     "ADC pulse integrals",        "frAdcPulseInt.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"adcPulseAmp",     "ADC pulse amplitudes",       "frAdcPulseAmp.THcSignalHit.GetData()"});
-  }
+    RVarDef vars[] = {
+      {"numAdcHits",      "Number of ADC Hits Per PMT", "fNumAdcHits"},        // Cherenkov occupancy
+      {"totNumAdcHits",   "Total Number of ADC Hits",   "fTotNumAdcHits"},     // Cherenkov multiplicity
+      {"adcPedRaw",       "Raw ADC pedestals",          "frAdcPedRaw.THcSignalHit.GetData()"},
+      {"adcPulseIntRaw",  "Raw ADC pulse integrals",    "frAdcPulseIntRaw.THcSignalHit.GetData()"},
+      {"adcPulseAmpRaw",  "Raw ADC pulse amplitudes",   "frAdcPulseAmpRaw.THcSignalHit.GetData()"},
+      {"adcPulseTimeRaw", "Raw ADC pulse times",        "frAdcPulseTimeRaw.THcSignalHit.GetData()"},
+      {"adcPed",          "ADC pedestals",              "frAdcPed.THcSignalHit.GetData()"},
+      {"adcPulseInt",     "ADC pulse integrals",        "frAdcPulseInt.THcSignalHit.GetData()"},
+      {"adcPulseAmp",     "ADC pulse amplitudes",       "frAdcPulseAmp.THcSignalHit.GetData()"},
+      { 0 }
+    };
+    DefineVarsFromList( vars, mode);
+  } //end debug statement
 
-  RVarDef end {};
-  vars.push_back(end);
+  RVarDef vars[] = {
+    {"adcCounter",   "ADC counter numbers",            "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+    {"adcErrorFlag", "Error Flag for When FPGA Fails", "fAdcErrorFlag.THcSignalHit.GetData()"},
 
-  return DefineVarsFromList(vars.data(), mode);
+    {"numGoodAdcHits",    "Number of Good ADC Hits Per PMT", "fNumGoodAdcHits"},    // Cherenkov occupancy
+    {"totNumGoodAdcHits", "Total Number of Good ADC Hits",   "fTotNumGoodAdcHits"}, // Cherenkov multiplicity
 
+    {"numTracksMatched",    "Number of Tracks Matched Per Region",       "fNumTracksMatched"},
+    {"numTracksFired",      "Number of Tracks that Fired Per Region",    "fNumTracksFired"},
+    {"totNumTracksMatched", "Total Number of Tracks Matched Per Region", "fTotNumTracksMatched"},
+    {"totNumTracksFired",   "Total Number of Tracks that Fired",         "fTotNumTracksFired"},
+
+    {"npe",          "Number of PEs",                  "fNpe"},
+    {"npeSum",       "Total Number of PEs",            "fNpeSum"},
+
+    {"goodAdcPed",          "Good ADC pedestals",           "fGoodAdcPed"},
+    {"goodAdcPulseInt",     "Good ADC pulse integrals",     "fGoodAdcPulseInt"},
+    {"goodAdcPulseIntRaw",  "Good ADC raw pulse integrals", "fGoodAdcPulseIntRaw"},
+    {"goodAdcPulseAmp",     "Good ADC pulse amplitudes",    "fGoodAdcPulseAmp"},
+    {"goodAdcPulseTime",    "Good ADC pulse times",         "fGoodAdcPulseTime"},
+    { 0 }
+  };
+
+  return DefineVarsFromList(vars, mode);
 }
 //_____________________________________________________________________________
 inline
