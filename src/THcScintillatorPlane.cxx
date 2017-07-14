@@ -1,8 +1,8 @@
 /** \class THcScintillatorPlane
     \ingroup DetSupport
 
-This class implements a single plane of scintillators.  The THcHodoscope
-class instatiates one object per plane.
+    This class implements a single plane of scintillators.  The THcHodoscope
+    class instatiates one object per plane.
 
 */
 #include "TMath.h"
@@ -29,10 +29,10 @@ ClassImp(THcScintillatorPlane)
 
 //______________________________________________________________________________
 THcScintillatorPlane::THcScintillatorPlane( const char* name,
-              const char* description,
+					    const char* description,
 					    const Int_t planenum,
 					    THaDetectorBase* parent )
-  : THaSubDetector(name,description,parent)
+: THaSubDetector(name,description,parent)
 {
   // Normal constructor with name and description
   fHodoHits = new TClonesArray("THcHodoHit",16);
@@ -74,8 +74,8 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fPlaneNum = planenum;
   fTotPlanes = planenum;
   fNScinHits = 0;
-  
- 
+
+
   fMaxHits=53;
 
   fpTimes = new Double_t [fMaxHits];
@@ -237,9 +237,9 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   if (fCosmicFlag==1) cout << " setup for cosmics in scint plane"<< endl;
   cout << " cosmic flag = " << fCosmicFlag << endl;
- // fetch the parameter from the temporary list
+  // fetch the parameter from the temporary list
 
- // Retrieve parameters we need from parent class
+  // Retrieve parameters we need from parent class
   // Common for all planes
   fAdcTimeWindowMin = ((THcHodoscope*) GetParent())->GetAdcTimeWindowMin(fPlaneNum-1);
   fAdcTimeWindowMax = ((THcHodoscope*) GetParent())->GetAdcTimeWindowMax(fPlaneNum-1);
@@ -310,7 +310,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 
   // Create arrays to hold results here
   InitializePedestals();
-  
+
   fNumGoodPosAdcHits     = vector<Int_t> (fNelem, 0.0);
   fNumGoodNegAdcHits     = vector<Int_t> (fNelem, 0.0);
   fNumGoodPosTdcHits     = vector<Int_t> (fNelem, 0.0);
@@ -324,7 +324,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   fGoodNegAdcPulseInt    = vector<Double_t> (fNelem, 0.0);
   fGoodPosAdcPulseTime   = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseTime   = vector<Double_t> (fNelem, 0.0);
-  
+
   fGoodPosTdcTimeUnCorr        = vector<Double_t> (fNelem, 0.0);
   fGoodNegTdcTimeUnCorr        = vector<Double_t> (fNelem, 0.0);
   fGoodPosTdcTimeCorr    = vector<Double_t> (fNelem, 0.0);
@@ -345,94 +345,95 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
 
   // Register variables in global list
-  vector<RVarDef> vars;
-    
+
   if (fDebugAdc) {
-      vars.push_back(RVarDef{"posAdcErrorFlag", "Error Flag for When FPGA Fails", "frPosAdcErrorFlag.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"negAdcErrorFlag", "Error Flag for When FPGA Fails", "frNegAdcErrorFlag.THcSignalHit.GetData()"});
-      
-      vars.push_back(RVarDef{"posTdcCounter", "List of positive TDC counter numbers.", "frPosTdcTimeRaw.THcSignalHit.GetPaddleNumber()"});   //Hodo+ raw TDC occupancy
-      vars.push_back(RVarDef{"posAdcCounter", "List of positive ADC counter numbers.", "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"}); //Hodo+ raw ADC occupancy
-      vars.push_back(RVarDef{"negTdcCounter", "List of negative TDC counter numbers.", "frNegTdcTimeRaw.THcSignalHit.GetPaddleNumber()"});     //Hodo- raw TDC occupancy
-      vars.push_back(RVarDef{"negAdcCounter", "List of negative ADC counter numbers.", "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});  //Hodo- raw ADC occupancy
-      
-      vars.push_back(RVarDef{"posTdcTimeRaw",      "List of positive raw TDC values.",           "frPosTdcTimeRaw.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"posAdcPedRaw",       "List of positive raw ADC pedestals",         "frPosAdcPedRaw.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"posAdcPulseIntRaw",  "List of positive raw ADC pulse integrals.",  "frPosAdcPulseIntRaw.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"posAdcPulseAmpRaw",  "List of positive raw ADC pulse amplitudes.", "frPosAdcPulseAmpRaw.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"posAdcPulseTimeRaw", "List of positive raw ADC pulse times.",      "frPosAdcPulseTimeRaw.THcSignalHit.GetData()"});
-      
-      vars.push_back(RVarDef{"posTdcTime",         "List of positive TDC values.",               "frPosTdcTime.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"posAdcPed",          "List of positive ADC pedestals",             "frPosAdcPed.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"posAdcPulseInt",     "List of positive ADC pulse integrals.",      "frPosAdcPulseInt.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"posAdcPulseAmp",     "List of positive ADC pulse amplitudes.",     "frPosAdcPulseAmp.THcSignalHit.GetData()"});
-      
-      vars.push_back(RVarDef{"negTdcTimeRaw",      "List of negative raw TDC values.",           "frNegTdcTimeRaw.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"negAdcPedRaw",       "List of negative raw ADC pedestals",         "frNegAdcPedRaw.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"negAdcPulseIntRaw",  "List of negative raw ADC pulse integrals.",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"negAdcPulseAmpRaw",  "List of negative raw ADC pulse amplitudes.", "frNegAdcPulseAmpRaw.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"negAdcPulseTimeRaw", "List of negative raw ADC pulse times.",      "frNegAdcPulseTimeRaw.THcSignalHit.GetData()"});
-      
-      vars.push_back(RVarDef{"negTdcTime",         "List of negative TDC values.",               "frNegTdcTime.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"negAdcPed",          "List of negative ADC pedestals",             "frNegAdcPed.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"negAdcPulseInt",     "List of negative ADC pulse integrals.",      "frNegAdcPulseInt.THcSignalHit.GetData()"});
-      vars.push_back(RVarDef{"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"});
-      
-      
-      vars.push_back(RVarDef{"nhits", "Number of paddle hits (passed TDC && ADC Min and Max cuts for either end)",           "GetNScinHits() "});
-      
-      vars.push_back(RVarDef{"totNumPosAdcHits", "Total Number of Positive ADC Hits",   "fTotNumPosAdcHits"}); // Hodo+ raw ADC multiplicity Int_t
-      vars.push_back(RVarDef{"totNumNegAdcHits", "Total Number of Negative ADC Hits",   "fTotNumNegAdcHits"}); // Hodo- raw ADC multiplicity  ""
-      vars.push_back(RVarDef{"totNumAdcHits",   "Total Number of PMTs Hit (as measured by ADCs)",      "fTotNumAdcHits"});    // Hodo raw ADC multiplicity  ""
-      
-      vars.push_back(RVarDef{"totNumPosTdcHits", "Total Number of Positive TDC Hits",   "fTotNumPosTdcHits"}); // Hodo+ raw TDC multiplicity  ""
-      vars.push_back(RVarDef{"totNumNegTdcHits", "Total Number of Negative TDC Hits",   "fTotNumNegTdcHits"}); // Hodo- raw TDC multiplicity  ""
-      vars.push_back(RVarDef{"totNumTdcHits",   "Total Number of PMTs Hits (as measured by TDCs)",      "fTotNumTdcHits"});    // Hodo raw TDC multiplicity  ""
-      
+    RVarDef vars[] = {
+      {"posAdcErrorFlag", "Error Flag for When FPGA Fails", "frPosAdcErrorFlag.THcSignalHit.GetData()"},
+      {"negAdcErrorFlag", "Error Flag for When FPGA Fails", "frNegAdcErrorFlag.THcSignalHit.GetData()"},
+
+      {"posTdcTimeRaw",      "List of positive raw TDC values.",           "frPosTdcTimeRaw.THcSignalHit.GetData()"},
+      {"posAdcPedRaw",       "List of positive raw ADC pedestals",         "frPosAdcPedRaw.THcSignalHit.GetData()"},
+      {"posAdcPulseIntRaw",  "List of positive raw ADC pulse integrals.",  "frPosAdcPulseIntRaw.THcSignalHit.GetData()"},
+      {"posAdcPulseAmpRaw",  "List of positive raw ADC pulse amplitudes.", "frPosAdcPulseAmpRaw.THcSignalHit.GetData()"},
+      {"posAdcPulseTimeRaw", "List of positive raw ADC pulse times.",      "frPosAdcPulseTimeRaw.THcSignalHit.GetData()"},
+
+      {"posTdcTime",         "List of positive TDC values.",               "frPosTdcTime.THcSignalHit.GetData()"},
+      {"posAdcPed",          "List of positive ADC pedestals",             "frPosAdcPed.THcSignalHit.GetData()"},
+      {"posAdcPulseInt",     "List of positive ADC pulse integrals.",      "frPosAdcPulseInt.THcSignalHit.GetData()"},
+      {"posAdcPulseAmp",     "List of positive ADC pulse amplitudes.",     "frPosAdcPulseAmp.THcSignalHit.GetData()"},
+
+      {"negTdcTimeRaw",      "List of negative raw TDC values.",           "frNegTdcTimeRaw.THcSignalHit.GetData()"},
+      {"negAdcPedRaw",       "List of negative raw ADC pedestals",         "frNegAdcPedRaw.THcSignalHit.GetData()"},
+      {"negAdcPulseIntRaw",  "List of negative raw ADC pulse integrals.",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"},
+      {"negAdcPulseAmpRaw",  "List of negative raw ADC pulse amplitudes.", "frNegAdcPulseAmpRaw.THcSignalHit.GetData()"},
+      {"negAdcPulseTimeRaw", "List of negative raw ADC pulse times.",      "frNegAdcPulseTimeRaw.THcSignalHit.GetData()"},
+
+      {"negTdcTime",         "List of negative TDC values.",               "frNegTdcTime.THcSignalHit.GetData()"},
+      {"negAdcPed",          "List of negative ADC pedestals",             "frNegAdcPed.THcSignalHit.GetData()"},
+      {"negAdcPulseInt",     "List of negative ADC pulse integrals.",      "frNegAdcPulseInt.THcSignalHit.GetData()"},
+      {"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"},
+
+      {"totNumPosAdcHits", "Total Number of Positive ADC Hits",   "fTotNumPosAdcHits"}, // Hodo+ raw ADC multiplicity Int_t
+      {"totNumNegAdcHits", "Total Number of Negative ADC Hits",   "fTotNumNegAdcHits"}, // Hodo- raw ADC multiplicity  ""
+      {"totNumAdcHits",   "Total Number of PMTs Hit (as measured by ADCs)",      "fTotNumAdcHits"},    // Hodo raw ADC multiplicity  ""
+
+      {"totNumPosTdcHits", "Total Number of Positive TDC Hits",   "fTotNumPosTdcHits"}, // Hodo+ raw TDC multiplicity  ""
+      {"totNumNegTdcHits", "Total Number of Negative TDC Hits",   "fTotNumNegTdcHits"}, // Hodo- raw TDC multiplicity  ""
+      {"totNumTdcHits",   "Total Number of PMTs Hits (as measured by TDCs)",      "fTotNumTdcHits"},    // Hodo raw TDC multiplicity  ""
+      { 0 }
+    };
+    DefineVarsFromList( vars, mode);
   } //end debug statement
-    
-    vars.push_back(RVarDef{"fptime", "Time at focal plane",     "GetFpTime()"});
-    
-    vars.push_back(RVarDef{"numGoodPosAdcHits",    "Number of Good Positive ADC Hits Per PMT", "fNumGoodPosAdcHits"});    // Hodo+ good ADC occupancy - vector<Int_t>
-    vars.push_back(RVarDef{"numGoodNegAdcHits",    "Number of Good Negative ADC Hits Per PMT", "fNumGoodNegAdcHits"});   // Hodo- good ADC occupancy - vector <Int_t>
-    
-    vars.push_back(RVarDef{"numGoodPosTdcHits",    "Number of Good Positive TDC Hits Per PMT", "fNumGoodPosTdcHits"});    // Hodo+ good TDC occupancy - vector<Int_t>
-    vars.push_back(RVarDef{"numGoodNegTdcHits",    "Number of Good Negative TDC Hits Per PMT", "fNumGoodNegTdcHits"});   // Hodo- good TDC occupancy - vector <Int_t>
-    
-    
-    vars.push_back(RVarDef{"totNumGoodPosAdcHits", "Total Number of Good Positive ADC Hits",   "fTotNumGoodPosAdcHits"}); // Hodo+ good ADC multiplicity - Int_t
-    vars.push_back(RVarDef{"totNumGoodNegAdcHits", "Total Number of Good Negative ADC Hits",   "fTotNumGoodNegAdcHits"}); // Hodo- good ADC multiplicity - Int_t
-    vars.push_back(RVarDef{"totNumGoodAdcHits",   "TotalNumber of Good ADC Hits Per PMT",      "fTotNumGoodAdcHits"});    // Hodo good ADC multiplicity - Int_t
-    
-    vars.push_back(RVarDef{"totNumGoodPosTdcHits", "Total Number of Good Positive TDC Hits",   "fTotNumGoodPosTdcHits"}); // Hodo+ good TDC multiplicity - Int_t
-    vars.push_back(RVarDef{"totNumGoodNegTdcHits", "Total Number of Good Negative TDC Hits",   "fTotNumGoodNegTdcHits"}); // Hodo- good TDC multiplicity - Int_t
-    vars.push_back(RVarDef{"totNumGoodTdcHits",   "TotalNumber of Good TDC Hits Per PMT",      "fTotNumGoodTdcHits"});    // Hodo good TDC multiplicity - Int_t
-    
-    
-    
-    // vars.push_back(RVarDef{"GoodPaddle",         "List of Paddle Numbers (passed TDC && ADC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPaddleNumber()"});
-    
-    vars.push_back(RVarDef{"GoodPosAdcPed",  "List of Positive ADC pedestals (passed TDC && ADC Min and Max cuts for either end)",           "fGoodPosAdcPed"}); //vector<Double_t>
-    vars.push_back(RVarDef{"GoodNegAdcPed",  "List of Negative ADC pedestals (passed TDC && ADC Min and Max cuts for either end)",           "fGoodNegAdcPed"}); //vector<Double_t>
-    
-    vars.push_back(RVarDef{"GoodNegTdcTimeUnCorr",         "List of negative TDC values (passed TDC && ADC Min and Max cuts for either end)",        "fGoodNegTdcTimeUnCorr"});  //Units ns
-    vars.push_back(RVarDef{"GoodNegTdcTimeCorr",         "List of negative corrected TDC values (corrected for PMT offset and ADC)",           "fGoodNegTdcTimeCorr"});
-    vars.push_back(RVarDef{"GoodNegTdcTimeTOFCorr",         "List of negative corrected TDC values (corrected for TOF)",                       "fGoodNegTdcTimeTOFCorr"});
-    vars.push_back(RVarDef{"GoodNegAdcPulseInt",         "List of negative ADC values (passed TDC && ADC Min and Max cuts for either end)",    "fGoodNegAdcPulseInt"});
-    vars.push_back(RVarDef{"GoodPosTdcTimeUnCorr",         "List of positive TDC values (passed TDC && ADC Min and Max cuts for either end)",        "fGoodPosTdcTimeUnCorr"});
-    vars.push_back(RVarDef{"GoodPosTdcTimeCorr",         "List of positive corrected TDC values (corrected for PMT offset and ADC)",           "fGoodPosTdcTimeCorr"});
-    vars.push_back(RVarDef{"GoodPosTdcTimeTOFCorr",         "List of positive corrected TDC values (corrected for TOF)",                       "fGoodPosTdcTimeTOFCorr"});
-    vars.push_back(RVarDef{"GoodPosAdcPulseInt",         "List of positive ADC values (passed TDC && ADC Min and Max cuts for either end)",    "fGoodPosAdcPulseInt"});
-    vars.push_back(RVarDef{"GoodPosAdcPulseAmp",         "List of positive ADC peak amp (passed TDC && ADC Min and Max cuts for either end)",  "fGoodPosAdcPulseAmp"});
-    vars.push_back(RVarDef{"GoodNegAdcPulseAmp",         "List of Negative ADC peak amp (passed TDC && ADC Min and Max cuts for either end)",  "fGoodNegAdcPulseAmp"});
-    vars.push_back(RVarDef{"GoodPosAdcPulseTime",         "List of positive ADC time (passed TDC && ADC Min and Max cuts for either end)", "fGoodPosAdcPulseTime"});
-    vars.push_back(RVarDef{"GoodNegAdcPulseTime",         "List of Negative ADC time (passed TDC && ADC Min and Max cuts for either end)", "fGoodNegAdcPulseTime"});
-    //{"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "});
-        
-      RVarDef end {0};
-      vars.push_back(end);
-      
-      return DefineVarsFromList(vars.data(), mode);
+
+  RVarDef vars[] = {
+    {"nhits", "Number of paddle hits (passed TDC && ADC Min and Max cuts for either end)",           "GetNScinHits() "},
+
+    {"posTdcCounter", "List of positive TDC counter numbers.", "frPosTdcTimeRaw.THcSignalHit.GetPaddleNumber()"},   //Hodo+ raw TDC occupancy
+    {"posAdcCounter", "List of positive ADC counter numbers.", "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"}, //Hodo+ raw ADC occupancy
+    {"negTdcCounter", "List of negative TDC counter numbers.", "frNegTdcTimeRaw.THcSignalHit.GetPaddleNumber()"},     //Hodo- raw TDC occupancy
+    {"negAdcCounter", "List of negative ADC counter numbers.", "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},  //Hodo- raw ADC occupancy
+
+    {"fptime", "Time at focal plane",     "GetFpTime()"},
+
+    {"numGoodPosAdcHits",    "Number of Good Positive ADC Hits Per PMT", "fNumGoodPosAdcHits"},    // Hodo+ good ADC occupancy - vector<Int_t>
+    {"numGoodNegAdcHits",    "Number of Good Negative ADC Hits Per PMT", "fNumGoodNegAdcHits"},   // Hodo- good ADC occupancy - vector <Int_t>
+
+    {"numGoodPosTdcHits",    "Number of Good Positive TDC Hits Per PMT", "fNumGoodPosTdcHits"},    // Hodo+ good TDC occupancy - vector<Int_t>
+    {"numGoodNegTdcHits",    "Number of Good Negative TDC Hits Per PMT", "fNumGoodNegTdcHits"},   // Hodo- good TDC occupancy - vector <Int_t>
+
+
+    {"totNumGoodPosAdcHits", "Total Number of Good Positive ADC Hits",   "fTotNumGoodPosAdcHits"}, // Hodo+ good ADC multiplicity - Int_t
+    {"totNumGoodNegAdcHits", "Total Number of Good Negative ADC Hits",   "fTotNumGoodNegAdcHits"}, // Hodo- good ADC multiplicity - Int_t
+    {"totNumGoodAdcHits",   "TotalNumber of Good ADC Hits Per PMT",      "fTotNumGoodAdcHits"},    // Hodo good ADC multiplicity - Int_t
+
+    {"totNumGoodPosTdcHits", "Total Number of Good Positive TDC Hits",   "fTotNumGoodPosTdcHits"}, // Hodo+ good TDC multiplicity - Int_t
+    {"totNumGoodNegTdcHits", "Total Number of Good Negative TDC Hits",   "fTotNumGoodNegTdcHits"}, // Hodo- good TDC multiplicity - Int_t
+    {"totNumGoodTdcHits",   "TotalNumber of Good TDC Hits Per PMT",      "fTotNumGoodTdcHits"},    // Hodo good TDC multiplicity - Int_t
+
+
+
+    // {"GoodPaddle",         "List of Paddle Numbers (passed TDC && ADC Min and Max cuts for either end)",               "fHodoHits.THcHodoHit.GetPaddleNumber()"},
+
+    {"GoodPosAdcPed",  "List of Positive ADC pedestals (passed TDC && ADC Min and Max cuts for either end)",           "fGoodPosAdcPed"}, //vector<Double_t>
+    {"GoodNegAdcPed",  "List of Negative ADC pedestals (passed TDC && ADC Min and Max cuts for either end)",           "fGoodNegAdcPed"}, //vector<Double_t>
+
+    {"GoodNegTdcTimeUnCorr",  "List of negative TDC values (passed TDC && ADC Min and Max cuts for either end)",        "fGoodNegTdcTimeUnCorr"},  //Units ns
+    {"GoodNegTdcTimeCorr",    "List of negative corrected TDC values (corrected for PMT offset and ADC)",           "fGoodNegTdcTimeCorr"},
+    {"GoodNegTdcTimeTOFCorr", "List of negative corrected TDC values (corrected for TOF)",                       "fGoodNegTdcTimeTOFCorr"},
+    {"GoodNegAdcPulseInt",    "List of negative ADC values (passed TDC && ADC Min and Max cuts for either end)",    "fGoodNegAdcPulseInt"},
+    {"GoodPosTdcTimeUnCorr",  "List of positive TDC values (passed TDC && ADC Min and Max cuts for either end)",        "fGoodPosTdcTimeUnCorr"},
+    {"GoodPosTdcTimeCorr",    "List of positive corrected TDC values (corrected for PMT offset and ADC)",           "fGoodPosTdcTimeCorr"},
+    {"GoodPosTdcTimeTOFCorr", "List of positive corrected TDC values (corrected for TOF)",                       "fGoodPosTdcTimeTOFCorr"},
+    {"GoodPosAdcPulseInt",    "List of positive ADC values (passed TDC && ADC Min and Max cuts for either end)",    "fGoodPosAdcPulseInt"},
+    {"GoodPosAdcPulseAmp",    "List of positive ADC peak amp (passed TDC && ADC Min and Max cuts for either end)",  "fGoodPosAdcPulseAmp"},
+    {"GoodNegAdcPulseAmp",    "List of Negative ADC peak amp (passed TDC && ADC Min and Max cuts for either end)",  "fGoodNegAdcPulseAmp"},
+    {"GoodPosAdcPulseTime",   "List of positive ADC time (passed TDC && ADC Min and Max cuts for either end)", "fGoodPosAdcPulseTime"},
+    {"GoodNegAdcPulseTime",   "List of Negative ADC time (passed TDC && ADC Min and Max cuts for either end)", "fGoodNegAdcPulseTime"},
+    //{"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
+    { 0 }
+  };
+
+  return DefineVarsFromList(vars, mode);
 
 }
 //_____________________________________________________________________________
@@ -475,14 +476,14 @@ void THcScintillatorPlane::Clear( Option_t* )
   frNegAdcPulseInt->Clear();
   frNegAdcPulseAmp->Clear();
 
-  
+
 
   //Clear occupancies
   for (UInt_t ielem = 0; ielem < fNumGoodPosAdcHits.size(); ielem++)
     fNumGoodPosAdcHits.at(ielem) = 0;
   for (UInt_t ielem = 0; ielem < fNumGoodNegAdcHits.size(); ielem++)
     fNumGoodNegAdcHits.at(ielem) = 0;
-   
+
   for (UInt_t ielem = 0; ielem < fNumGoodPosTdcHits.size(); ielem++)
     fNumGoodPosTdcHits.at(ielem) = 0;
   for (UInt_t ielem = 0; ielem < fNumGoodNegTdcHits.size(); ielem++)
@@ -508,13 +509,13 @@ void THcScintillatorPlane::Clear( Option_t* )
     fGoodPosTdcTimeCorr.at(ielem)      = 0.0;
     fGoodPosTdcTimeTOFCorr.at(ielem)   = 0.0;
   }
-   
+
   for (UInt_t ielem = 0; ielem < fGoodNegTdcTimeUnCorr.size(); ielem++) {
     fGoodNegTdcTimeUnCorr.at(ielem)          = 0.0;
     fGoodNegTdcTimeCorr.at(ielem)      = 0.0;
     fGoodNegTdcTimeTOFCorr.at(ielem)   = 0.0;
   }
-  
+
 
   fpTime = -1.e4;
 }
@@ -539,7 +540,7 @@ Int_t THcScintillatorPlane::CoarseProcess( TClonesArray& tracks )
   cout <<"*******************************\n";
   //  HitCount();
 
- return 0;
+  return 0;
 }
 
 //_____________________________________________________________________________
@@ -569,7 +570,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
    *  + Increments fNScinHits
    * - Returns value of nexthit + number of hits processed
    *
-  */
+   */
   //raw
   Int_t nrPosTDCHits=0;
   Int_t nrNegTDCHits=0;
@@ -613,11 +614,11 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   //stripped
   fNScinHits=0;
-  
+
   fTotNumGoodPosAdcHits = 0;
   fTotNumGoodNegAdcHits = 0;
   fTotNumGoodAdcHits = 0;
-  
+
   fTotNumPosAdcHits = 0;
   fTotNumNegAdcHits = 0;
   fTotNumAdcHits = 0;
@@ -636,7 +637,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   Int_t nrawhits = rawhits->GetLast()+1;
   // cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
   Int_t ihit = nexthit;
-  
+
   //cout << "THcScintillatorPlane: " << GetName() << " raw hits = " << nrawhits << endl;
 
   // A THcRawHodoHit contains all the information (tdc and adc for both
@@ -687,7 +688,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       if (rawPosAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 0);
       if (rawPosAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 1);
-      
+
       ++nrPosAdcHits;
       fTotNumAdcHits++;
       fTotNumPosAdcHits++;
@@ -707,7 +708,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       if (rawNegAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 0);
       if (rawNegAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 1);
-      
+
       ++nrNegAdcHits;
       fTotNumAdcHits++;
       fTotNumNegAdcHits++;
@@ -724,17 +725,17 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     // Value of 50 no long valid with different ADC type for FADC
     Bool_t badcraw_pos=kFALSE;
     Bool_t badcraw_neg=kFALSE;
-    
+
     Double_t adc_pos=-999;
     Double_t adc_neg=-999;
-    
+
     //Declare good adc hits (passed the error flag and pulse time cut)
     Double_t good_ielem_posadc = -1;
     Double_t good_ielem_negadc = -1;
 
 
     if(fADCMode == kADCDynamicPedestal) {
-    
+
       //Loop Here over all hits per event for neg side of plane
       for (Int_t ielem=0;ielem<frNegAdcPulseInt->GetEntries();ielem++) {
 	//	Int_t    npad         = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
@@ -745,7 +746,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	Double_t pulseTime    = ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
 	Bool_t   errorflag    = ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
 	Bool_t   pulseTimeCut = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
-	
+
 	if (!errorflag && pulseTimeCut && adc_neg == -999) {
 	  adc_neg = pulseInt;
 	  badcraw_neg = kTRUE;
@@ -754,7 +755,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
 	}
       }
-      
+
       //Loop Here over all hits per event for pos side of plane
       for (Int_t ielem=0;ielem<frPosAdcPulseInt->GetEntries();ielem++) {
 	//	Int_t    npad         = ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
@@ -765,21 +766,21 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	Double_t pulseTime    = ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
 	Bool_t   errorflag    = ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(ielem))->GetData();
 	Bool_t   pulseTimeCut = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
-	
+
 	if (!errorflag && pulseTimeCut && adc_pos == -999) {
 	  adc_pos = pulseInt;
 	  badcraw_pos = kTRUE;
-	  
+
 	  good_ielem_posadc = ielem;
 
 
 	}
       }
-    
-      
+
+
     } else if (fADCMode == kADCSampleIntegral) {
-			adc_pos = hit->GetRawAdcHitPos().GetSampleIntRaw() - fPosPed[index];
-			adc_neg = hit->GetRawAdcHitNeg().GetSampleIntRaw() - fNegPed[index];
+      adc_pos = hit->GetRawAdcHitPos().GetSampleIntRaw() - fPosPed[index];
+      adc_neg = hit->GetRawAdcHitNeg().GetSampleIntRaw() - fNegPed[index];
     } else if (fADCMode == kADCSampIntDynPed) {
       adc_pos = hit->GetRawAdcHitPos().GetSampleInt();
       adc_neg = hit->GetRawAdcHitNeg().GetSampleInt();
@@ -806,17 +807,17 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Bool_t btdcraw_neg=kFALSE;
     Int_t tdc_pos=-999;
     Int_t tdc_neg=-999;
- 
+
 
     // Find first in range hit from multihit tdc
     /*
-    for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
+      for(UInt_t thit=0; thit<hit->GetRawTdcHitPos().GetNHits(); thit++) {
       cout << " plane = " << hit->fPlane << " pos paddle = " << hit->fCounter << " " <<  hit->GetRawTdcHitPos().GetTime(thit)<< " hit = " << thit << endl;
-    }    
-    for(UInt_t thit=0; thit<hit->GetRawTdcHitNeg().GetNHits(); thit++) {
+      }
+      for(UInt_t thit=0; thit<hit->GetRawTdcHitNeg().GetNHits(); thit++) {
       cout <<  " plane = " << hit->fPlane << " Neg paddle = " << hit->fCounter << " " <<  hit->GetRawTdcHitNeg().GetTime(thit) << " hit = " << thit << endl;
-    } 
-    */   
+      }
+    */
 
     //Declare good tdc hits (passed the ScinTdcMin.Max time cut)
     Double_t good_ielem_postdc = -1;
@@ -851,8 +852,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       if (good_ielem_posadc != -1) {
 
 	//good adc multiplicity
-	fTotNumGoodPosAdcHits++; 
-	fTotNumGoodAdcHits++; 
+	fTotNumGoodPosAdcHits++;
+	fTotNumGoodAdcHits++;
 
 	//good adc occupancy
 	fNumGoodPosAdcHits.at(padnum-1) = padnum;
@@ -863,13 +864,13 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	fGoodPosAdcPulseTime.at(padnum-1) = ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(good_ielem_posadc))->GetData();
       }
 
-      
+
       //DEFINE THE "GOOD -ADC  VARIABLES"
       if (good_ielem_negadc != -1) {
 
 	//good adc multiplicity
-	fTotNumGoodNegAdcHits++; 
-	fTotNumGoodAdcHits++; 
+	fTotNumGoodNegAdcHits++;
+	fTotNumGoodAdcHits++;
 
 	//good adc occupancy
 	fNumGoodNegAdcHits.at(padnum-1) = padnum;
@@ -880,54 +881,54 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	fGoodNegAdcPulseTime.at(padnum-1) = ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(good_ielem_negadc))->GetData();
       }
 
-   //DEFINE THE "GOOD +TDC Multiplicities and Occupancies"
+      //DEFINE THE "GOOD +TDC Multiplicities and Occupancies"
       if (good_ielem_postdc != -1) {
-	
+
 	//good tdc multiplicity
-	fTotNumGoodPosTdcHits++; 
-	fTotNumGoodTdcHits++; 
-	
+	fTotNumGoodPosTdcHits++;
+	fTotNumGoodTdcHits++;
+
 	//good tdc occupancy
 	fNumGoodPosTdcHits.at(padnum-1) = padnum;
       }
 
-   //DEFINE THE "GOOD -TDC  Multiplicities and Occupancies"
+      //DEFINE THE "GOOD -TDC  Multiplicities and Occupancies"
       if (good_ielem_negtdc != -1) {
-	
+
 	//good tdc multiplicity
-	fTotNumGoodNegTdcHits++; 
-	fTotNumGoodTdcHits++; 
-	
+	fTotNumGoodNegTdcHits++;
+	fTotNumGoodTdcHits++;
+
 	//good tdc occupancy
 	fNumGoodNegTdcHits.at(padnum-1) = padnum;
       }
-         
 
-             
+
+
       new( (*fHodoHits)[fNScinHits]) THcHodoHit(tdc_pos, tdc_neg,
 						adc_pos, adc_neg,
 						hit->fCounter, this);
       Double_t adc_peak=hit->GetRawAdcHitPos().GetPulseAmp();
-        ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCpeak(adc_peak);
+      ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCpeak(adc_peak);
       adc_peak=hit->GetRawAdcHitNeg().GetPulseAmp();
-        ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCpeak(adc_peak);
+      ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCpeak(adc_peak);
       Double_t time_peak=hit->GetRawAdcHitPos().GetPulseTimeRaw();
-        ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCtime(time_peak);
+      ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCtime(time_peak);
       time_peak=hit->GetRawAdcHitNeg().GetPulseTimeRaw();
-        ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCtime(time_peak);
-    
-	//Define GoodTdcUnCorrTime
-	if(btdcraw_pos) {
-	  fGoodPosTdcTimeUnCorr.at(padnum-1) = tdc_pos*fScinTdcToTime;
-	}
-	if(btdcraw_neg) {
-	  fGoodNegTdcTimeUnCorr.at(padnum-1) = tdc_neg*fScinTdcToTime;
-	}
+      ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCtime(time_peak);
+
+      //Define GoodTdcUnCorrTime
+      if(btdcraw_pos) {
+	fGoodPosTdcTimeUnCorr.at(padnum-1) = tdc_pos*fScinTdcToTime;
+      }
+      if(btdcraw_neg) {
+	fGoodNegTdcTimeUnCorr.at(padnum-1) = tdc_neg*fScinTdcToTime;
+      }
 
 
 
-	// Do corrections if valid TDC on both ends of bar
-	if(btdcraw_pos && btdcraw_neg) {
+      // Do corrections if valid TDC on both ends of bar
+      if(btdcraw_pos && btdcraw_neg) {
 
 	// Do the pulse height correction to the time.  (Position dependent corrections later)
 	Double_t timec_pos, timec_neg;
@@ -964,39 +965,39 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	    fHodoNegInvAdcLinear[index];
 	  scin_corrected_time = 0.5*(timec_pos+timec_neg);
 	  if (fCosmicFlag) {
-	  postime = timec_pos + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
-	  negtime = timec_neg + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	    postime = timec_pos + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	    negtime = timec_neg + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	  } else {
-	  postime = timec_pos - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
-	  negtime = timec_neg - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	    postime = timec_pos - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	    negtime = timec_neg - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	  }
 	} else {
 	  postime=timec_pos-(fPosLeft-hit_position)/fHodoVelLight[index];
 	  negtime=timec_neg-(hit_position-fPosRight)/fHodoVelLight[index];
 	  scin_corrected_time = 0.5*(postime+negtime);
 	  if (fCosmicFlag) {
-	  postime = timec_pos + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
-	  negtime = timec_neg + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	    postime = timec_pos + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	    negtime = timec_neg + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	  } else {
-	  postime = timec_pos - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
-	  negtime = timec_neg - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	    postime = timec_pos - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	    negtime = timec_neg - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	  }
 	}
 	//        cout << fNScinHits<< " " << timec_pos << " " << timec_neg << endl;
-        ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPaddleCenter(fPosCenter[index]);             
+        ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPaddleCenter(fPosCenter[index]);
 	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,         //See THcHodoHit.h for SeCorrectedTimes() function definition: timec_pos/timec_neg = TDCTimeCorr, postime/negtime = TDCTimeTOFCorr
-								     postime, negtime,           
+								     postime, negtime,
 								     scin_corrected_time);
 
 	//Define GoodTdcTimeCorr and GoodTdcTimeTOFCorr
 	fGoodPosTdcTimeCorr.at(padnum-1) = timec_pos;
 	fGoodNegTdcTimeCorr.at(padnum-1) = timec_neg;
-	
+
 	fGoodPosTdcTimeTOFCorr.at(padnum-1) = postime;
 	fGoodNegTdcTimeTOFCorr.at(padnum-1) = negtime;
-	
 
-	} else {
+
+      } else {
 	Double_t timec_pos,timec_neg;
         timec_pos=tdc_pos;
         timec_neg=tdc_neg;
@@ -1026,44 +1027,44 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,
 								     timec_pos,timec_neg,
 								     0.0);
-	
+
 	//Define GoodTdcTimeCorr and GoodTdcTimeTOFCorr (a second time, since when only 1pmt fires, we cannot get TOFCorr)
 	fGoodPosTdcTimeCorr.at(padnum-1) = timec_pos;
 	fGoodNegTdcTimeCorr.at(padnum-1) = timec_neg;
-	
+
 	fGoodPosTdcTimeTOFCorr.at(padnum-1) = timec_pos;
 	fGoodNegTdcTimeTOFCorr.at(padnum-1) = timec_neg;
-	
-	
+
+
 
 
       }
       fNScinHits++;		// One or more good time counter
-   
- 
-  
-          
-     
+
+
+
+
+
 
       //	fTotNumGoodNegTdcHits++;
       //	fTotNumGoodTdcHits++;
-     
-	//Good TDC- Occupancy
+
+      //Good TDC- Occupancy
       //	fNumGoodNegTdcHits.at(npad) = npad + 1;
 
-   
+
       //   	fTotNumGoodPosTdcHits++;
       //	fTotNumGoodTdcHits++;
-     
-	//Good TDC+ Occupancy
+
+      //Good TDC+ Occupancy
       //	fNumGoodPosTdcHits.at(npad) = npad + 1;
 
-        
 
 
-      
 
-      
+
+
+
     }
     ihit++;			// Raw hit counter
   }
@@ -1120,11 +1121,11 @@ Int_t THcScintillatorPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nex
 //_____________________________________________________________________________
 void THcScintillatorPlane::CalculatePedestals( )
 {
- /*! \brief   Calculate pedestals from arrays made in THcScintillatorPlane::AccumulatePedestals
-  *
-  * - Calculate pedestals from arrays made in THcScintillatorPlane::AccumulatePedestals
-  * - In old fortran ENGINE code, a comparison was made between calculated pedestals and the pedestals read in by the FASTBUS modules for zero supression. This is not implemented.
-  */
+  /*! \brief   Calculate pedestals from arrays made in THcScintillatorPlane::AccumulatePedestals
+   *
+   * - Calculate pedestals from arrays made in THcScintillatorPlane::AccumulatePedestals
+   * - In old fortran ENGINE code, a comparison was made between calculated pedestals and the pedestals read in by the FASTBUS modules for zero supression. This is not implemented.
+   */
   for(UInt_t i=0; i<fNelem;i++) {
 
     // Positive tubes
@@ -1144,11 +1145,11 @@ void THcScintillatorPlane::CalculatePedestals( )
 //_____________________________________________________________________________
 void THcScintillatorPlane::InitializePedestals( )
 {
- /*! \brief   called by THcScintillatorPlane::ReadDatabase
-  *
-  * - Initialize variables used in  THcScintillatorPlane::AccumulatePedestals and THcScintillatorPlane::CalculatePedestals
-  * - Minimum number of pedestal events needed for calculation, fMinPeds, hadrcoded to 500
-  */
+  /*! \brief   called by THcScintillatorPlane::ReadDatabase
+   *
+   * - Initialize variables used in  THcScintillatorPlane::AccumulatePedestals and THcScintillatorPlane::CalculatePedestals
+   * - Minimum number of pedestal events needed for calculation, fMinPeds, hadrcoded to 500
+   */
   fNPedestalEvents = 0;
   fMinPeds = 500; 		// In engine, this is set in parameter file
   fPosPedSum = new Int_t [fNelem];

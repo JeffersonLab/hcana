@@ -350,95 +350,100 @@ Int_t THcAerogel::DefineVariables( EMode mode )
   // Do we need to put the number of pos/neg TDC/ADC hits into the variables?
   // No.  They show up in tree as Ndata.H.aero.postdchits for example
 
-  vector<RVarDef> vars;
-
-  vars.push_back(RVarDef{"posAdcCounter",   "Positive ADC counter numbers",   "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
-  vars.push_back(RVarDef{"negAdcCounter",   "Negative ADC counter numbers",   "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"});
-  vars.push_back(RVarDef{"posAdcErrorFlag", "Error Flag for When FPGA Fails", "fPosAdcErrorFlag.THcSignalHit.GetData()"});
-  vars.push_back(RVarDef{"negAdcErrorFlag", "Error Flag for When FPGA Fails", "fNegAdcErrorFlag.THcSignalHit.GetData()"});
-
-  vars.push_back(RVarDef{"numGoodPosAdcHits",    "Number of Good Positive ADC Hits Per PMT", "fNumGoodPosAdcHits"});    // Aerogel occupancy
-  vars.push_back(RVarDef{"numGoodNegAdcHits",    "Number of Good Negative ADC Hits Per PMT", "fNumGoodNegAdcHits"});    // Aerogel occupancy
-  vars.push_back(RVarDef{"totNumGoodPosAdcHits", "Total Number of Good Positive ADC Hits",   "fTotNumGoodPosAdcHits"}); // Aerogel multiplicity
-  vars.push_back(RVarDef{"totNumGoodNegAdcHits", "Total Number of Good Negative ADC Hits",   "fTotNumGoodNegAdcHits"}); // Aerogel multiplicity
-
-  vars.push_back(RVarDef{"totnumGoodAdcHits",   "TotalNumber of Good ADC Hits Per PMT",      "fTotNumGoodAdcHits"});    // Aerogel multiplicity
-  vars.push_back(RVarDef{"numTracksMatched",    "Number of Tracks Matched Per Region",       "fNumTracksMatched"});
-  vars.push_back(RVarDef{"numTracksFired",      "Number of Tracks that Fired Per Region",    "fNumTracksFired"});
-  vars.push_back(RVarDef{"totNumTracksMatched", "Total Number of Tracks Matched Per Region", "fTotNumTracksMatched"});
-  vars.push_back(RVarDef{"totNumTracksFired",   "Total Number of Tracks that Fired",         "fTotNumTracksFired"});
-
-  vars.push_back(RVarDef{"posNpe",    "Number of Positive PEs",       "fPosNpe"});
-  vars.push_back(RVarDef{"negNpe",    "Number of Negative PEs",       "fNegNpe"});
-  vars.push_back(RVarDef{"posNpeSum", "Total Number of Positive PEs", "fPosNpeSum"});
-  vars.push_back(RVarDef{"negNpeSum", "Total Number of Negative PEs", "fNegNpeSum"});
-  vars.push_back(RVarDef{"npeSum",    "Total Number of PEs",          "fNpeSum"});
-
-  vars.push_back(RVarDef{"goodPosAdcPed",         "Good Negative ADC pedestals",           "fGoodPosAdcPed"});
-  vars.push_back(RVarDef{"goodPosAdcPulseInt",    "Good Negative ADC pulse integrals",     "fGoodPosAdcPulseInt"});
-  vars.push_back(RVarDef{"goodPosAdcPulseIntRaw", "Good Negative ADC raw pulse integrals", "fGoodPosAdcPulseIntRaw"});
-  vars.push_back(RVarDef{"goodPosAdcPulseAmp",    "Good Negative ADC pulse amplitudes",    "fGoodPosAdcPulseAmp"});
-  vars.push_back(RVarDef{"goodPosAdcPulseTime",   "Good Negative ADC pulse times",         "fGoodPosAdcPulseTime"});
-
-  vars.push_back(RVarDef{"goodNegAdcPed",         "Good Negative ADC pedestals",           "fGoodNegAdcPed"});
-  vars.push_back(RVarDef{"goodNegAdcPulseInt",    "Good Negative ADC pulse integrals",     "fGoodNegAdcPulseInt"});
-  vars.push_back(RVarDef{"goodNegAdcPulseIntRaw", "Good Negative ADC raw pulse integrals", "fGoodNegAdcPulseIntRaw"});
-  vars.push_back(RVarDef{"goodNegAdcPulseAmp",    "Good Negative ADC pulse amplitudes",    "fGoodNegAdcPulseAmp"});
-  vars.push_back(RVarDef{"goodNegAdcPulseTime",   "Good Negative ADC pulse times",         "fGoodNegAdcPulseTime"});
-
   if (fDebugAdc) {
-    vars.push_back(RVarDef{"posGain", "Positive PMT gains", "fPosGain"});
-    vars.push_back(RVarDef{"negGain", "Negative PMT gains", "fNegGain"});
+    RVarDef vars[] = {
+      {"posGain", "Positive PMT gains", "fPosGain"},
+      {"negGain", "Negative PMT gains", "fNegGain"},
 
-    vars.push_back(RVarDef{"numPosAdcHits",        "Number of Positive ADC Hits Per PMT",      "fNumPosAdcHits"});        // Aerogel occupancy
-    vars.push_back(RVarDef{"totNumPosAdcHits",     "Total Number of Positive ADC Hits",        "fTotNumPosAdcHits"});     // Aerogel multiplicity
-    vars.push_back(RVarDef{"numNegAdcHits",        "Number of Negative ADC Hits Per PMT",      "fNumNegAdcHits"});        // Aerogel occupancy
-    vars.push_back(RVarDef{"totNumNegAdcHits",     "Total Number of Negative ADC Hits",        "fTotNumNegAdcHits"});     // Aerogel multiplicity
-    vars.push_back(RVarDef{"totnumAdcHits",       "Total Number of ADC Hits Per PMT",          "fTotNumAdcHits"});        // Aerogel multiplicity
+      {"numPosAdcHits",        "Number of Positive ADC Hits Per PMT",      "fNumPosAdcHits"},        // Aerogel occupancy
+      {"totNumPosAdcHits",     "Total Number of Positive ADC Hits",        "fTotNumPosAdcHits"},     // Aerogel multiplicity
+      {"numNegAdcHits",        "Number of Negative ADC Hits Per PMT",      "fNumNegAdcHits"},        // Aerogel occupancy
+      {"totNumNegAdcHits",     "Total Number of Negative ADC Hits",        "fTotNumNegAdcHits"},     // Aerogel multiplicity
+      {"totnumAdcHits",       "Total Number of ADC Hits Per PMT",          "fTotNumAdcHits"},        // Aerogel multiplicity
 
-    vars.push_back(RVarDef{"posAdcPedRaw",       "Positive Raw ADC pedestals",        "frPosAdcPedRaw.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"posAdcPulseIntRaw",  "Positive Raw ADC pulse integrals",  "frPosAdcPulseIntRaw.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"posAdcPulseAmpRaw",  "Positive Raw ADC pulse amplitudes", "frPosAdcPulseAmpRaw.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"posAdcPulseTimeRaw", "Positive Raw ADC pulse times",      "frPosAdcPulseTimeRaw.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"posAdcPed",          "Positive ADC pedestals",            "frPosAdcPed.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"posAdcPulseInt",     "Positive ADC pulse integrals",      "frPosAdcPulseInt.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"posAdcPulseAmp",     "Positive ADC pulse amplitudes",     "frPosAdcPulseAmp.THcSignalHit.GetData()"});
+      {"posAdcPedRaw",       "Positive Raw ADC pedestals",        "frPosAdcPedRaw.THcSignalHit.GetData()"},
+      {"posAdcPulseIntRaw",  "Positive Raw ADC pulse integrals",  "frPosAdcPulseIntRaw.THcSignalHit.GetData()"},
+      {"posAdcPulseAmpRaw",  "Positive Raw ADC pulse amplitudes", "frPosAdcPulseAmpRaw.THcSignalHit.GetData()"},
+      {"posAdcPulseTimeRaw", "Positive Raw ADC pulse times",      "frPosAdcPulseTimeRaw.THcSignalHit.GetData()"},
+      {"posAdcPed",          "Positive ADC pedestals",            "frPosAdcPed.THcSignalHit.GetData()"},
+      {"posAdcPulseInt",     "Positive ADC pulse integrals",      "frPosAdcPulseInt.THcSignalHit.GetData()"},
+      {"posAdcPulseAmp",     "Positive ADC pulse amplitudes",     "frPosAdcPulseAmp.THcSignalHit.GetData()"},
 
-    vars.push_back(RVarDef{"negAdcPedRaw",       "Negative Raw ADC pedestals",        "frNegAdcPedRaw.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"negAdcPulseIntRaw",  "Negative Raw ADC pulse integrals",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"negAdcPulseAmpRaw",  "Negative Raw ADC pulse amplitudes", "frNegAdcPulseAmpRaw.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"negAdcPulseTimeRaw", "Negative Raw ADC pulse times",      "frNegAdcPulseTimeRaw.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"negAdcPed",          "Negative ADC pedestals",            "frNegAdcPed.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"negAdcPulseInt",     "Negative ADC pulse integrals",      "frNegAdcPulseInt.THcSignalHit.GetData()"});
-    vars.push_back(RVarDef{"negAdcPulseAmp",     "Negative ADC pulse amplitudes",     "frNegAdcPulseAmp.THcSignalHit.GetData()"});
-  }
+      {"negAdcPedRaw",       "Negative Raw ADC pedestals",        "frNegAdcPedRaw.THcSignalHit.GetData()"},
+      {"negAdcPulseIntRaw",  "Negative Raw ADC pulse integrals",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"},
+      {"negAdcPulseAmpRaw",  "Negative Raw ADC pulse amplitudes", "frNegAdcPulseAmpRaw.THcSignalHit.GetData()"},
+      {"negAdcPulseTimeRaw", "Negative Raw ADC pulse times",      "frNegAdcPulseTimeRaw.THcSignalHit.GetData()"},
+      {"negAdcPed",          "Negative ADC pedestals",            "frNegAdcPed.THcSignalHit.GetData()"},
+      {"negAdcPulseInt",     "Negative ADC pulse integrals",      "frNegAdcPulseInt.THcSignalHit.GetData()"},
+      {"negAdcPulseAmp",     "Negative ADC pulse amplitudes",     "frNegAdcPulseAmp.THcSignalHit.GetData()"},
+      { 0 }
+    };
+    DefineVarsFromList( vars, mode);
+  } //end debug statement
 
   if (fSixGevData) {
-    vars.push_back(RVarDef{"apos",            "Positive Raw ADC Amplitudes",            "fA_Pos"});
-    vars.push_back(RVarDef{"aneg",            "Negative Raw ADC Amplitudes",            "fA_Neg"});
-    vars.push_back(RVarDef{"apos_p",          "Positive Ped-subtracted ADC Amplitudes", "fA_Pos_p"});
-    vars.push_back(RVarDef{"aneg_p",          "Negative Ped-subtracted ADC Amplitudes", "fA_Neg_p"});
-    vars.push_back(RVarDef{"tpos",            "Positive Raw TDC",                       "fT_Pos"});
-    vars.push_back(RVarDef{"tneg",            "Negative Raw TDC",                       "fT_Neg"});
-    vars.push_back(RVarDef{"ntdc_pos_hits",   "Number of Positive Tube Hits",           "fNTDCPosHits"});
-    vars.push_back(RVarDef{"ntdc_neg_hits",   "Number of Negative Tube Hits",           "fNTDCNegHits"});
-    vars.push_back(RVarDef{"posadchits",      "Positive ADC hits",                      "fPosADCHits.THcSignalHit.GetPaddleNumber()"});
-    vars.push_back(RVarDef{"negadchits",      "Negative ADC hits",                      "fNegADCHits.THcSignalHit.GetPaddleNumber()"});
-    vars.push_back(RVarDef{"postdchits",      "Positive TDC hits",                      "fPosTDCHits.THcSignalHit.GetPaddleNumber()"});
-    vars.push_back(RVarDef{"negtdchits",      "Negative TDC hits",                      "fNegTDCHits.THcSignalHit.GetPaddleNumber()"});
-    vars.push_back(RVarDef{"nGoodHits",       "Total number of good hits",              "fNGoodHits"});
-    vars.push_back(RVarDef{"posNpeSixGev",    "Number of Positive PEs",                 "fPosNpeSixGev"});
-    vars.push_back(RVarDef{"negNpeSixGev",    "Number of Negative PEs",                 "fNegNpeSixGev"});
-    vars.push_back(RVarDef{"posNpeSumSixGev", "Total Number of Positive PEs",           "fPosNpeSumSixGev"});
-    vars.push_back(RVarDef{"negNpeSumSixGev", "Total Number of Negative PEs",           "fNegNpeSumSixGev"});
-    vars.push_back(RVarDef{"npeSumSixGev",    "Total Number of PEs",                    "fNpeSumSixGev"});
-  }
+    RVarDef vars[] = {
+      {"apos",            "Positive Raw ADC Amplitudes",            "fA_Pos"},
+      {"aneg",            "Negative Raw ADC Amplitudes",            "fA_Neg"},
+      {"apos_p",          "Positive Ped-subtracted ADC Amplitudes", "fA_Pos_p"},
+      {"aneg_p",          "Negative Ped-subtracted ADC Amplitudes", "fA_Neg_p"},
+      {"tpos",            "Positive Raw TDC",                       "fT_Pos"},
+      {"tneg",            "Negative Raw TDC",                       "fT_Neg"},
+      {"ntdc_pos_hits",   "Number of Positive Tube Hits",           "fNTDCPosHits"},
+      {"ntdc_neg_hits",   "Number of Negative Tube Hits",           "fNTDCNegHits"},
+      {"posadchits",      "Positive ADC hits",                      "fPosADCHits.THcSignalHit.GetPaddleNumber()"},
+      {"negadchits",      "Negative ADC hits",                      "fNegADCHits.THcSignalHit.GetPaddleNumber()"},
+      {"postdchits",      "Positive TDC hits",                      "fPosTDCHits.THcSignalHit.GetPaddleNumber()"},
+      {"negtdchits",      "Negative TDC hits",                      "fNegTDCHits.THcSignalHit.GetPaddleNumber()"},
+      {"nGoodHits",       "Total number of good hits",              "fNGoodHits"},
+      {"posNpeSixGev",    "Number of Positive PEs",                 "fPosNpeSixGev"},
+      {"negNpeSixGev",    "Number of Negative PEs",                 "fNegNpeSixGev"},
+      {"posNpeSumSixGev", "Total Number of Positive PEs",           "fPosNpeSumSixGev"},
+      {"negNpeSumSixGev", "Total Number of Negative PEs",           "fNegNpeSumSixGev"},
+      {"npeSumSixGev",    "Total Number of PEs",                    "fNpeSumSixGev"},
+      { 0 }
+    };
+    DefineVarsFromList( vars, mode);
+  } //end fSixGevData statement
 
-  RVarDef end {0};
-  vars.push_back(end);
+  RVarDef vars[] = {
+    {"posAdcCounter",   "Positive ADC counter numbers",   "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+    {"negAdcCounter",   "Negative ADC counter numbers",   "frNegAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+    {"posAdcErrorFlag", "Error Flag for When FPGA Fails", "fPosAdcErrorFlag.THcSignalHit.GetData()"},
+    {"negAdcErrorFlag", "Error Flag for When FPGA Fails", "fNegAdcErrorFlag.THcSignalHit.GetData()"},
 
-  return DefineVarsFromList(vars.data(), mode);
+    {"numGoodPosAdcHits",    "Number of Good Positive ADC Hits Per PMT", "fNumGoodPosAdcHits"},    // Aerogel occupancy
+    {"numGoodNegAdcHits",    "Number of Good Negative ADC Hits Per PMT", "fNumGoodNegAdcHits"},    // Aerogel occupancy
+    {"totNumGoodPosAdcHits", "Total Number of Good Positive ADC Hits",   "fTotNumGoodPosAdcHits"}, // Aerogel multiplicity
+    {"totNumGoodNegAdcHits", "Total Number of Good Negative ADC Hits",   "fTotNumGoodNegAdcHits"}, // Aerogel multiplicity
 
+    {"totnumGoodAdcHits",   "TotalNumber of Good ADC Hits Per PMT",      "fTotNumGoodAdcHits"},    // Aerogel multiplicity
+    {"numTracksMatched",    "Number of Tracks Matched Per Region",       "fNumTracksMatched"},
+    {"numTracksFired",      "Number of Tracks that Fired Per Region",    "fNumTracksFired"},
+    {"totNumTracksMatched", "Total Number of Tracks Matched Per Region", "fTotNumTracksMatched"},
+    {"totNumTracksFired",   "Total Number of Tracks that Fired",         "fTotNumTracksFired"},
+
+    {"posNpe",    "Number of Positive PEs",       "fPosNpe"},
+    {"negNpe",    "Number of Negative PEs",       "fNegNpe"},
+    {"posNpeSum", "Total Number of Positive PEs", "fPosNpeSum"},
+    {"negNpeSum", "Total Number of Negative PEs", "fNegNpeSum"},
+    {"npeSum",    "Total Number of PEs",          "fNpeSum"},
+
+    {"goodPosAdcPed",         "Good Negative ADC pedestals",           "fGoodPosAdcPed"},
+    {"goodPosAdcPulseInt",    "Good Negative ADC pulse integrals",     "fGoodPosAdcPulseInt"},
+    {"goodPosAdcPulseIntRaw", "Good Negative ADC raw pulse integrals", "fGoodPosAdcPulseIntRaw"},
+    {"goodPosAdcPulseAmp",    "Good Negative ADC pulse amplitudes",    "fGoodPosAdcPulseAmp"},
+    {"goodPosAdcPulseTime",   "Good Negative ADC pulse times",         "fGoodPosAdcPulseTime"},
+
+    {"goodNegAdcPed",         "Good Negative ADC pedestals",           "fGoodNegAdcPed"},
+    {"goodNegAdcPulseInt",    "Good Negative ADC pulse integrals",     "fGoodNegAdcPulseInt"},
+    {"goodNegAdcPulseIntRaw", "Good Negative ADC raw pulse integrals", "fGoodNegAdcPulseIntRaw"},
+    {"goodNegAdcPulseAmp",    "Good Negative ADC pulse amplitudes",    "fGoodNegAdcPulseAmp"},
+    {"goodNegAdcPulseTime",   "Good Negative ADC pulse times",         "fGoodNegAdcPulseTime"},
+    { 0 }
+  };
+
+  return DefineVarsFromList(vars, mode);
 }
 //_____________________________________________________________________________
 inline
@@ -646,7 +651,7 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
 
     	fPosNpe.at(npmt) = fPosGain[npmt]*fGoodPosAdcPulseInt.at(npmt);
  	fPosNpeSum += fPosNpe.at(npmt);
- 
+
 	fTotNumGoodAdcHits++;
     	fTotNumGoodPosAdcHits++;
     	fNumGoodPosAdcHits.at(npmt) = npmt + 1;
@@ -675,7 +680,7 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
 
     	fNegNpe.at(npmt) = fNegGain[npmt]*fGoodNegAdcPulseInt.at(npmt);
  	fNegNpeSum += fNegNpe.at(npmt);
- 
+
 	fTotNumGoodAdcHits++;
    	fTotNumGoodNegAdcHits++;
     	fNumGoodNegAdcHits.at(npmt) = npmt + 1;
