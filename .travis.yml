@@ -9,7 +9,8 @@ before_install:
   - sudo apt-get autoremove
   - sudo pip install --egg scons
 install:
-  - wget https://root.cern.ch/download/root_v6.10.02.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
+  - wget https://root.cern.ch/download/root_v6.10.02.Linux-ubuntu14-x86_64-gcc4.8.tar.gz -O /tmp/root.tar.gz
+  - pwd
   - tar -xzf /tmp/root.tar.gz
   - source ./root/bin/thisroot.sh
   - source ./setup.sh
