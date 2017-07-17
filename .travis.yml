@@ -18,6 +18,7 @@ script:  scons
 branches:
   only:
     - develop
+    - travis
 notifications:
   email:
     recipients: saw@jlab.org
