@@ -1,6 +1,7 @@
 os: linux
 compiler: gcc
 language: cpp
+dist: trusty
 git:
   depth: 5
 before_install:
@@ -9,7 +10,7 @@ before_install:
   - sudo apt-get autoremove
   - sudo pip install --egg scons
 install:
-  - wget http://root.cern.ch/download/root_v5.34.32.Linux-ubuntu12-x86_64-gcc4.6.tar.gz -O /tmp/root.tar.gz
+  - wget https://root.cern.ch/download/root_v6.10.02.Linux-ubuntu14-x86_64-gcc4.8.tar.gz
   - tar -xzf /tmp/root.tar.gz
   - source ./root/bin/thisroot.sh
   - source ./setup.sh
@@ -17,6 +18,7 @@ script:  scons
 branches:
   only:
     - develop
+    - travis
 notifications:
   email:
     recipients: saw@jlab.org
