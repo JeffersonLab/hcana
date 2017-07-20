@@ -67,7 +67,13 @@
 
   gHaPhysics->Add(new THcHodoEff("hhodeff","HMS Hodoscope Efficiencies","H.hod"));
   gHaPhysics->Add(new THcHodoEff("shodeff","SOS Hodoscope Efficiencies","S.hod"));
-
+  THcPeriodicReport* prep = new THcPeriodicReport("rep","Periodic Report","periodic.template", "periodic.out");
+  // Defaults to every 2 seconds.  To do by event count instead:
+  //  prep->SetEventPeriod(1000);
+  //  prep->SetTimePeriod(0);
+  //gSystem->Exec("rm periodic.out");
+  //gSystem->Exec("./runstats.tcl periodic.out&"); 
+  gHaPhysics->Add(prep);
 
   // Set up the analyzer - we use the standard one,
   // but this could be an experiment-specific one as well.

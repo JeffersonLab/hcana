@@ -1,0 +1,6 @@
+Pedestal events:  {Pedestal_event.npassed}
+Total events:   {Pedestal_event.ncalled}
+HMS events:  {HMS_event.npassed}
+Scaler events:  {scalar_event.npassed}
+hfoundtracks:  {hFoundTrack.npassed}  
+Found/events %: {100*hFoundTrack.npassed/HMS_event.npassed:%.5f}
