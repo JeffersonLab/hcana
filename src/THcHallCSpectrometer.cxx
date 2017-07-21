@@ -1,13 +1,14 @@
 /** \class THcHallCSpectrometer
     \ingroup Base
 
- A standard Hall C spectrometer.
- Contains no standard detectors,
+\brief A standard Hall C spectrometer apparatus
+
+ Uses the standard optics polynomials to trace back to target
+
+ Contains no standard detectors.  All detectors must be added.
 
  The usual name of this object is either "H", "S", "P"
  for HMS, SOS, or suPerHMS respectively
-
-
 
 \author S. A. Wood
 

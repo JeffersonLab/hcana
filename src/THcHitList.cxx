@@ -1,7 +1,8 @@
 /** \class THcHitList
     \ingroup Base
 
- Class to build a Hall C ENGINE style list of raw hits from the raw data.
+\brief Builds a Hall C ENGINE style list of raw hits from raw data
+
  Detectors that use hit lists need to inherit from this class
  as well as THaTrackingDetector or THaNonTrackingDetector
 
@@ -18,7 +19,7 @@ using namespace std;
 
 THcHitList::THcHitList()
 {
-  // Normal constructor.
+  /// Normal constructor.
 
   fRawHitList = NULL;
   fPSE125 = NULL;
@@ -26,14 +27,23 @@ THcHitList::THcHitList()
 }
 
 THcHitList::~THcHitList() {
-  // Destructor
+  /// Destructor
   delete fSignalTypes;
 }
+/**
+
+\brief Save the electronics module to detector mapping and
+initialize a hit array of hits of class hitclass
+
+\param[in] detmap Electronics mapping made by THcDetectorMap::FillMap
+\param[in] hitclass Name of hit class used by this detector
+\param[in] maxhits Maximum number of hits for this detector
+
+*/
 
 void THcHitList::InitHitList(THaDetMap* detmap,
 				  const char *hitclass, Int_t maxhits) {
-  // Save the electronics to detector mapping
-  // Initialize a hit array of hits of class hitclass
+
 
   fRawHitList = new TClonesArray(hitclass, maxhits);
   fRawHitClass = fRawHitList->GetClass();
@@ -112,15 +122,18 @@ void THcHitList::InitHitList(THaDetMap* detmap,
   }
 }
 
-Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
-  // Clear the hit list
-  // Find all populated channels belonging to the detector and add
-  // the data to the hitlist.  A given counter in the detector can have
-  // at most one entry in the hit list.  However, the raw "hit" can contain
-  // multiple signal types (e.g. ADC+, ADC-, TDC+, TDC-), or multiple
-  // hits for multihit tdcs.
-  // The hit list is sorted (by plane, counter) after filling.
+/**
 
+\brief Populate the hitlist from the raw event data.
+
+Clears the hit list then, finds all populated channels belonging to the detector and add
+sort it into the hitlist.  A given counter in the detector can have
+at most one entry in the hit list.  However, the raw "hit" can contain
+multiple signal types (e.g. ADC+, ADC-, TDC+, TDC-), or multiplehits for multihit tdcs.
+The hit list is sorted (by plane, counter) after filling.
+
+*/
+Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 
   // cout << " Clearing TClonesArray " << endl;
   fRawHitList->Clear( );

@@ -1,8 +1,7 @@
 /** \class THcHodoEff
-    \ingroup DetSupport
+    \ingroup PhysMods
 
- Class for accumulating statistics for and calculating hodoscope
- efficiencies.
+\brief Class for accumulating statistics for and calculating hodoscope efficiencies.
 
 */
 #include "THaEvData.h"

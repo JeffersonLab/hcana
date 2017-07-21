@@ -1,7 +1,7 @@
 /** \class THcRunParameters
     \ingroup Base
 
-Get the run parameters from the Hall C style parameter database
+\brief Get the run parameters from the parameter database
 so that db_run.dat is not needed in hcana.
 
 \author S. A. Wood 15-June-2017

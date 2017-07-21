@@ -1,9 +1,10 @@
 /** \class THcInterface
     \ingroup Base
 
- THcInterface is the interactive interface to the Hall C Analyzer.
- It allows interactive access to all analyzer classes as well as
- all of standard ROOT.
+\brief THcInterface is the interactive interface to the Hall C Analyzer.
+
+Basically a rebranded copy of THaInterface with the addition of a global
+for the Hall C style parameter database.
 
 */
 

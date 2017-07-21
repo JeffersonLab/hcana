@@ -1,20 +1,13 @@
 /** \class THcAnalyzer
     \ingroup Base
 
-THcAnalyzer is the base class for a "Hall C analyzer" class.
-An analyzer defines the basic actions to perform during analysis.
-THcAnalyzer is the default analyzer that is used if no user class is
-defined.  It performs a standard analysis consisting of
+\brief Hall C analyzer class.
 
-   1. Decoding/Calibrating
-   2. Track Reconstruction
-   3. Physics variable processing
+Adds the following to the Hall A analyzer base class.
 
-At the end of each step, testing and histogramming are done for
-the appropriate block defined in the global test/histogram lists.
+1.  PrintReport method to make text reports from template files
 
-Hall C ENGINE style reports are implemented with the PrintReport
-method.  This can be used for generating end of run summary sheets.
+2.  Retrieve run number and startind and ending event from parameter DB
 
 \author S. A. Wood,  13-March-2012
 

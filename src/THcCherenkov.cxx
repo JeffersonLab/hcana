@@ -1,7 +1,7 @@
 /** \class THcCherenkov
     \ingroup Detectors
 
-    Class for Cherenkov detectors
+\brief Class for gas Cherenkov detectors
 
 */
 

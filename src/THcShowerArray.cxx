@@ -1,7 +1,7 @@
 /** \class THcShowerArray
     \ingroup DetSupport
 
-Fly's eye array of shower blocks
+\brief Fly's eye array of shower blocks
 
 */
 

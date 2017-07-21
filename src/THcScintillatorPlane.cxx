@@ -1,8 +1,9 @@
 /** \class THcScintillatorPlane
     \ingroup DetSupport
 
-    This class implements a single plane of scintillators.  The THcHodoscope
-    class instatiates one object per plane.
+\brief A single plane of scintillators.
+
+The THcHodoscope class instatiates one of these objects per plane.
 
 */
 #include "TMath.h"

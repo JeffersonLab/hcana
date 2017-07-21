@@ -1,10 +1,9 @@
 /** \class THcDetectorMap
     \ingroup Base
 
+\brief Class to read and hold a Hall C style detector map
 
-
- Class to read and Hall C style detector map
-   FillMap method builds a map for a specific detector
+FillMap method builds a map for a specific detector
 
 \author S. A. Wood
 

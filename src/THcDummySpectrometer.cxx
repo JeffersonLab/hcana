@@ -2,7 +2,7 @@
 \class THcDummySpectrometer
 \ingroup Base
 
-\brief A dummy spectrometer used for testing detectors.
+\brief A dummy spectrometer apparatus for testing detectors.
 
 This class behaves as a spectrometer apparatus in that it holds detector
 classes, but it does no reconstruction. It is intended to provide an elegant

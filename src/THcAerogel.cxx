@@ -1,10 +1,8 @@
 /** \class THcAerogel
     \ingroup Detectors
 
-    Class for an Aerogel detector consisting of pairs of PMT's
+\brief Class for an Aerogel detector consisting of pairs of PMT's
     attached to a diffuser box
-    Will have a fixed number of pairs, but need to later make this
-    configurable.
 */
 
 #include "THcAerogel.h"

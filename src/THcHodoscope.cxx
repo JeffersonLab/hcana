@@ -1,8 +1,9 @@
 /** \class THcHodoscope
     \ingroup Detectors
 
-Class for a generic hodoscope consisting of multiple
+\brief Generic hodoscope consisting of multiple
 planes with multiple paddles with phototubes on both ends.
+
 This differs from Hall A scintillator class in that it is the whole
 hodoscope array, not just one plane.
 
