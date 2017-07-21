@@ -165,6 +165,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     {"pcentral",              &fPcentral,              kDouble               },
     {"theta_lab",             &fTheta_lab,             kDouble               },
     {"partmass",              &fPartMass,              kDouble               },
+    {"phi_lab",               &fPhi_lab,               kDouble,         0,  1},
     {"sel_using_scin",        &fSelUsingScin,          kInt,            0,  1},
     {"sel_using_prune",       &fSelUsingPrune,         kInt,            0,  1},
     {"sel_ndegreesmin",       &fSelNDegreesMin,        kDouble,         0,  1},
@@ -194,7 +195,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   // Default values
   fSelUsingScin = 0;
   fSelUsingPrune = 0;
-
+  fPhi_lab = 0.;
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   EnforcePruneLimits();
@@ -217,8 +218,8 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   fPcentral= fPcentral*(1.+fPCentralOffset/100.);
   // Check that these offsets are in radians
   fTheta_lab=fTheta_lab + fThetaCentralOffset*TMath::RadToDeg();
-  Double_t ph = 0.0+fPhiOffset*TMath::RadToDeg();
-
+  Double_t ph = fPhi_lab+fPhiOffset*TMath::RadToDeg();
+  cout << " Central angles = " << fTheta_lab << endl;
   SetCentralAngles(fTheta_lab, ph, false);
   Double_t off_x = 0.0, off_y = 0.0, off_z = 0.0;
   fPointingOffset.SetXYZ( off_x, off_y, off_z );
@@ -356,8 +357,13 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     track->SetDp(sum[3]*100.0+fDeltaOffset);	// Percent.  (Don't think podd cares if it is % or fraction)
     // There is an hpcentral_offset that needs to be applied somewhere.
     // (happly_offs)
-    track->SetMomentum(fPcentral*(1+track->GetDp()/100.0));
-
+    Double_t ptemp = fPcentral*(1+track->GetDp()/100.0);
+    Double_t mtemp = fPartMass/1000.; // fPartMass in MeV , convert to GeV
+    track->SetMomentum(ptemp);
+    track->SetEnergy(ptemp*ptemp+mtemp*mtemp);
+    TVector3 pvect_temp;
+    TransportToLab(track->GetP(),track->GetTTheta(),track->GetTPhi(),pvect_temp);
+    track->SetPvect(pvect_temp);
   }
 
   if (fHodo==0 || (( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 )) ) {
