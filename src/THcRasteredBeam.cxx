@@ -1,7 +1,7 @@
 /** \class THcRasteredBeam
-    \ingroup Detectors
+    \ingroup Base
 
-  A class to handle the raster processing tasks
+\brief  Apparatus for a rastered beam
 
 \author Buddhini Waidyawansa
 

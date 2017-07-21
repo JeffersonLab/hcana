@@ -1,7 +1,7 @@
 /** \class THcShower
     \ingroup Detectors
 
-Shower counter class, describing a generic segmented shower detector.     //
+\brief Generic segmented shower detector.
 
 */
  

@@ -1,7 +1,7 @@
 /** \class THcFormula
     \ingroup Base
 
-Enhanced THaFormula for use in report files.
+\brief Enhanced THaFormula for use in report files.
 
 In addition to global variables (gHaVars) and cuts (gHaCuts),
 THcFormula expressions have access hcana parameters (gHcParms).

@@ -1,7 +1,7 @@
 /** \class THcScalerEvtHandler
     \ingroup Base
 
- Event handler for Hall C scalers
+\brief Event handler for Hall C scalers
 
 
 This class does the following

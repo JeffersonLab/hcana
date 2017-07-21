@@ -1,6 +1,9 @@
 /** \class THcDC
     \ingroup Detectors
-This class analyzes a package of horizontal drift chambers.  It uses the
+
+\brief Analyze a package of horizontal drift chambers.
+
+Uses the
 first letter of the apparatus name as a prefix to parameter names.  The
 paramters, read in the Setup method, determine the number of chambers and
 the number of parameters per plane.
