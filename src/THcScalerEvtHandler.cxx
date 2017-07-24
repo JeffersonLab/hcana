@@ -273,10 +273,6 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
   return 1;
 }
 
-void THcScalerEvtHandler::AddEventType(Int_t evtype)
-{
-  eventtypes.push_back(evtype);
-}
 
 THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
 {

@@ -34,7 +34,6 @@ public:
    virtual ~THcScalerEvtHandler();
 
    Int_t Analyze(THaEvData *evdata);
-   virtual void AddEventType(Int_t evtype);
    virtual EStatus Init( const TDatime& run_time);
    virtual Int_t End( THaRunBase* r=0 );
    virtual void SetUseFirstEvent(Bool_t b = kFALSE) {fUseFirstEvent = b;}
