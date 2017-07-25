@@ -358,9 +358,7 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     // There is an hpcentral_offset that needs to be applied somewhere.
     // (happly_offs)
     Double_t ptemp = fPcentral*(1+track->GetDp()/100.0);
-    Double_t mtemp = fPartMass/1000.; // fPartMass in MeV , convert to GeV
     track->SetMomentum(ptemp);
-    track->SetEnergy(ptemp*ptemp+mtemp*mtemp);
     TVector3 pvect_temp;
     TransportToLab(track->GetP(),track->GetTTheta(),track->GetTPhi(),pvect_temp);
     track->SetPvect(pvect_temp);
