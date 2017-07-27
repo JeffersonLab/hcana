@@ -61,19 +61,16 @@ using namespace Decoder;
 static const UInt_t ICOUNT    = 1;
 static const UInt_t IRATE     = 2;
 static const UInt_t MAXCHAN   = 32;
-static const UInt_t MAXTEVT   = 5000;
 static const UInt_t defaultDT = 4;
 
 THcScalerEvtHandler::THcScalerEvtHandler(const char *name, const char* description)
   : THaEvtTypeHandler(name,description), evcount(0), ifound(0), fNormIdx(-1),
     dvars(0), dvarsFirst(0), fScalerTree(0), fUseFirstEvent(kFALSE)
 {
-  rdata = new UInt_t[MAXTEVT];
 }
 
 THcScalerEvtHandler::~THcScalerEvtHandler()
 {
-  delete [] rdata;
   if (fScalerTree) {
     delete fScalerTree;
   }
@@ -130,19 +127,11 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 
   // Parse the data, load local data arrays.
 
-  Int_t ndata = evdata->GetEvLength();
-  if (ndata >= static_cast<Int_t>(MAXTEVT)) {
-    cout << "THcScalerEvtHandler:: ERROR: Event length crazy "<<endl;
-    ndata = MAXTEVT-1;
-  }
+  UInt_t *rdata = (UInt_t*) evdata->GetRawDataBuffer();
 
   if (fDebugFile) *fDebugFile<<"\n\nTHcScalerEvtHandler :: Debugging event type "<<dec<<evdata->GetEvType()<<endl<<endl;
 
-  // local copy of data
-  // Why do we need a local copy of the data?
-  for (Int_t i=0; i<ndata; i++) rdata[i] = evdata->GetRawData(i);
-
-  UInt_t *p = rdata;
+  UInt_t *p = (UInt_t*) rdata;
 
   UInt_t *plast = p+*p;		// Index to last word in the bank
 
