@@ -195,6 +195,8 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
     {"_beta_max",         &fBetaMax,          kDouble},
     {"_enorm_min",        &fENormMin,         kDouble},
     {"_enorm_max",        &fENormMax,         kDouble},
+    {"_dp_min",           &fDpMin,            kDouble},
+    {"_dp_max",           &fDpMax,            kDouble},
     {"_mirror_zpos",      &fMirrorZPos,       kDouble},
     {"_npe_thresh",       &fNpeThresh,        kDouble},
     {"_debug_adc",        &fDebugAdc,         kInt, 0, 1},
@@ -429,6 +431,7 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
     Double_t trackBeta    = track->GetBeta();
     Double_t trackEnergy  = track->GetEnergy();
     Double_t trackMom     = track->GetP();
+    Double_t trackDp      = track->GetDp();
     Double_t trackENorm   = trackEnergy/trackMom;
     Double_t trackXfp     = track->GetX();
     Double_t trackYfp     = track->GetY();
@@ -438,8 +441,9 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
     Bool_t trackRedChi2Cut = trackRedChi2 > fRedChi2Min && trackRedChi2 < fRedChi2Max;
     Bool_t trackBetaCut    = trackBeta    > fBetaMin    && trackBeta    < fBetaMax;
     Bool_t trackENormCut   = trackENorm   > fENormMin   && trackENorm   < fENormMax;
+    Bool_t trackDpCut      = trackDp      > fDpMin      && trackDp      < fDpMax;
 
-    if (trackRedChi2Cut && trackBetaCut && trackENormCut) {
+    if (trackRedChi2Cut && trackBetaCut && trackENormCut && trackDpCut) {
 
       // Project the track to the Cherenkov mirror planes
       Double_t xAtCher = trackXfp + trackTheta * fMirrorZPos;
