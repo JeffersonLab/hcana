@@ -65,7 +65,7 @@ THaAnalysisObject::EStatus THcDriftChamberPlane::Init( const TDatime& date )
 {
   // Extra initialization for scintillator plane: set up DataDest map
 
-  cout << "THcDriftChamberPlane::Init called " << GetName() << endl;
+  // cout << "THcDriftChamberPlane::Init called " << GetName() << endl;
 
   if( IsZombie())
     return fStatus = kInitError;
@@ -139,11 +139,11 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list3,prefix);
-    printf(" using tzero per wire plane = %s  nwires = %d  \n",GetName(),fNWires);
-      for (Int_t iw=0;iw < fNWires;iw++) {
-	//	printf("%d  %f ",iw+1,fTzeroWire[iw]) ;
- 	if ( iw!=0 && iw%8 == 0) printf("\n") ;
-	}
+    // printf(" using tzero per wire plane = %s  nwires = %d  \n",GetName(),fNWires);
+    //   for (Int_t iw=0;iw < fNWires;iw++) {
+    // 	//	printf("%d  %f ",iw+1,fTzeroWire[iw]) ;
+    // 	if ( iw!=0 && iw%8 == 0) printf("\n") ;
+    // 	}
   } else {
   fTzeroWire = new Double_t [fNWires];
   for (Int_t iw=0;iw < fNWires;iw++) {

@@ -76,11 +76,11 @@ void THcHodoscope::Setup(const char* name, const char* description)
   //  static const char* const message =
   //    "Must construct %s detector with valid name! Object construction failed.";
 
-  cout << "In THcHodoscope::Setup()" << endl;
+  // cout << "In THcHodoscope::Setup()" << endl;
   // Base class constructor failed?
   if( IsZombie()) return;
 
-  fDebug   = 1;  // Keep this at one while we're working on the code
+  // fDebug = 1;  // Keep this at one while we're working on the code
 
   char prefix[2];
 
@@ -90,7 +90,7 @@ void THcHodoscope::Setup(const char* name, const char* description)
   TString temp(prefix[0]);
   fSHMS=kFALSE;
   if (temp == "p" ) fSHMS=kTRUE;
-  cout << " fSHMS = " << fSHMS << endl;
+  // cout << " fSHMS = " << fSHMS << endl;
   string planenamelist;
   DBRequest listextra[]={
     {"hodo_num_planes", &fNPlanes, kInt},
@@ -145,6 +145,7 @@ void THcHodoscope::Setup(const char* name, const char* description)
   // --------------- To get energy from THcShower ----------------------
 
   // --------------- To get NPEs from THcCherenkov -------------------
+  
   const char* chern_detector_name = "cer";
   THaDetector* detc = app->GetDetector( chern_detector_name );
 
@@ -152,7 +153,7 @@ void THcHodoscope::Setup(const char* name, const char* description)
     fChern = dynamic_cast<THcCherenkov*>(detc);
   }
   else if( !dynamic_cast<THcCherenkov*>(detc) ) {
-    cout << "Warining: Cherenkov detector analysis module "
+    cout << "Warning: Cherenkov detector analysis module "
 	 << chern_detector_name << " not loaded for spectrometer "
 	 << prefix << endl;
 
@@ -170,7 +171,7 @@ void THcHodoscope::Setup(const char* name, const char* description)
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 {
-  cout << "In THcHodoscope::Init()" << endl;
+  // cout << "In THcHodoscope::Init()" << endl;
   Setup(GetName(), GetTitle());
 
   char EngineDID[] = "xSCIN";
@@ -251,7 +252,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   strcpy(parname,prefix);
   strcat(parname,"scin_");
   //  Int_t plen=strlen(parname);
-  cout << " readdatabse hodo fnplanes = " << fNPlanes << endl;
+  // cout << " readdatabse hodo fnplanes = " << fNPlanes << endl;
 
   fBetaNoTrk = 0.;
   fBetaNoTrkChiSq = 0.;
@@ -369,8 +370,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   // to make sure valid range is all positive.
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-  if (fCosmicFlag==1) cout << " setup for cosmics in TOF"<< endl;
-  cout << " cosmic flag = " << fCosmicFlag << endl;
+  if (fCosmicFlag==1) cout << "Setup for cosmics in TOF"<< endl;
+  // cout << " cosmic flag = " << fCosmicFlag << endl;
   if(fDumpTOF) {
       fDumpOut.open(fTOFDumpFile.c_str());
    if(fDumpOut.is_open()) {
@@ -382,22 +383,22 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     }
   }
 
-  cout << " x1 lo = " << fxLoScin[0]
-       << " x2 lo = " << fxLoScin[1]
-       << " x1 hi = " << fxHiScin[0]
-       << " x2 hi = " << fxHiScin[1]
-       << endl;
+  // cout << " x1 lo = " << fxLoScin[0]
+  //      << " x2 lo = " << fxLoScin[1]
+  //      << " x1 hi = " << fxHiScin[0]
+  //      << " x2 hi = " << fxHiScin[1]
+  //      << endl;
 
-  cout << " y1 lo = " << fyLoScin[0]
-       << " y2 lo = " << fyLoScin[1]
-       << " y1 hi = " << fyHiScin[0]
-       << " y2 hi = " << fyHiScin[1]
-       << endl;
+  // cout << " y1 lo = " << fyLoScin[0]
+  //      << " y2 lo = " << fyLoScin[1]
+  //      << " y1 hi = " << fyHiScin[0]
+  //      << " y2 hi = " << fyHiScin[1]
+  //      << endl;
 
-  cout << "Hdososcope planes hits for trigger = " << fTrackEffTestNScinPlanes
-       << " normalized energy min = " << fNormETot
-       << " number of photo electrons = " << fNCerNPE
-       << endl;
+  // cout << "Hdososcope planes hits for trigger = " << fTrackEffTestNScinPlanes
+  //      << " normalized energy min = " << fNormETot
+  //      << " number of photo electrons = " << fNCerNPE
+  //      << endl;
 
   if (fTofUsingInvAdc) {
     DBRequest list2[]={
@@ -466,7 +467,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 Int_t THcHodoscope::DefineVariables( EMode mode )
 {
   // Initialize global variables and lookup table for decoder
-  cout << "THcHodoscope::DefineVariables called " << GetName() << endl;
+  // cout << "THcHodoscope::DefineVariables called " << GetName() << endl;
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
 

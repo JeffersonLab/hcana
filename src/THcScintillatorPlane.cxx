@@ -154,7 +154,7 @@ THaAnalysisObject::EStatus THcScintillatorPlane::Init( const TDatime& date )
 {
   // Extra initialization for scintillator plane: set up DataDest map
 
-  cout << "THcScintillatorPlane::Init called " << GetName() << endl;
+  // cout << "THcScintillatorPlane::Init called " << GetName() << endl;
 
   if( IsZombie())
     return fStatus = kInitError;
@@ -237,7 +237,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   fCosmicFlag=0;
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   if (fCosmicFlag==1) cout << " setup for cosmics in scint plane"<< endl;
-  cout << " cosmic flag = " << fCosmicFlag << endl;
+  // cout << " cosmic flag = " << fCosmicFlag << endl;
   // fetch the parameter from the temporary list
 
   // Retrieve parameters we need from parent class
@@ -289,17 +289,17 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
     fHodoSigma[j] = TMath::Sqrt(possigma*possigma+negsigma*negsigma)/2.0;
   }
 
-  cout <<" plane num = "<<fPlaneNum<<endl;
-  cout <<" nelem     = "<<fNelem<<endl;
-  cout <<" zpos      = "<<fZpos<<endl;
-  cout <<" dzpos     = "<<fDzpos<<endl;
-  cout <<" spacing   = "<<fSpacing<<endl;
-  cout <<" size      = "<<fSize<<endl;
-  cout <<" hodoslop  = "<<fHodoSlop<<endl;
-  cout <<"PosLeft = "<<fPosLeft<<endl;
-  cout <<"PosRight = "<<fPosRight<<endl;
-  cout <<"PosOffset = "<<fPosOffset<<endl;
-  cout <<"PosCenter[0] = "<<fPosCenter[0]<<endl;
+  // cout <<" plane num = "<<fPlaneNum<<endl;
+  // cout <<" nelem     = "<<fNelem<<endl;
+  // cout <<" zpos      = "<<fZpos<<endl;
+  // cout <<" dzpos     = "<<fDzpos<<endl;
+  // cout <<" spacing   = "<<fSpacing<<endl;
+  // cout <<" size      = "<<fSize<<endl;
+  // cout <<" hodoslop  = "<<fHodoSlop<<endl;
+  // cout <<"PosLeft = "<<fPosLeft<<endl;
+  // cout <<"PosRight = "<<fPosRight<<endl;
+  // cout <<"PosOffset = "<<fPosOffset<<endl;
+  // cout <<"PosCenter[0] = "<<fPosCenter[0]<<endl;
 
   // Think we will make special methods to pass most
   // How generic do we want to make this class?
@@ -340,7 +340,7 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 {
   // Initialize global variables and lookup table for decoder
 
-  cout << "THcScintillatorPlane::DefineVariables called " << GetName() << endl;
+  // cout << "THcScintillatorPlane::DefineVariables called " << GetName() << endl;
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );

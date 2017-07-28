@@ -148,8 +148,10 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
 
   char prefix[2];
 
+#ifdef WITH_DEBUG
   cout << " GetName() " << GetName() << endl;
-
+#endif
+  
   prefix[0]=tolower(GetName()[0]);
   prefix[1]='\0';
 
@@ -165,6 +167,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     {"pcentral",              &fPcentral,              kDouble               },
     {"theta_lab",             &fTheta_lab,             kDouble               },
     {"partmass",              &fPartMass,              kDouble               },
+    {"phi_lab",               &fPhi_lab,               kDouble,         0,  1},
     {"sel_using_scin",        &fSelUsingScin,          kInt,            0,  1},
     {"sel_using_prune",       &fSelUsingPrune,         kInt,            0,  1},
     {"sel_ndegreesmin",       &fSelNDegreesMin,        kDouble,         0,  1},
@@ -194,13 +197,14 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   // Default values
   fSelUsingScin = 0;
   fSelUsingPrune = 0;
-
+  fPhi_lab = 0.;
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   EnforcePruneLimits();
 
-  cout <<  "\n\n\nhodo planes = " << fNPlanes << endl;
-  cout <<  "sel using scin = "    << fSelUsingScin << endl;
+#ifdef WITH_DEBUG
+  cout <<  "\n\n\nhodo planes = " <<  fNPlanes << endl;
+  cout <<  "sel using scin = "    <<  fSelUsingScin << endl;
   cout <<  "fPruneXp = "          <<  fPruneXp << endl;
   cout <<  "fPruneYp = "          <<  fPruneYp << endl;
   cout <<  "fPruneYtar = "        <<  fPruneYtar << endl;
@@ -211,14 +215,15 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   cout <<  "fPruneFpTime = "      <<  fPruneFpTime << endl;
   cout <<  "fPruneNPMT = "        <<  fPruneNPMT << endl;
   cout <<  "sel using prune = "   <<  fSelUsingPrune << endl;
+#endif
   cout <<  "fPartMass = "         <<  fPartMass << endl;
   cout <<  "fPcentral = "         <<  fPcentral << " " <<fPCentralOffset << endl;
-  cout <<  "fThate_lab = "        <<  fTheta_lab << " " <<fThetaCentralOffset << endl;
+  cout <<  "fThetalab = "         <<  fTheta_lab << " " <<fThetaCentralOffset << endl;
   fPcentral= fPcentral*(1.+fPCentralOffset/100.);
   // Check that these offsets are in radians
   fTheta_lab=fTheta_lab + fThetaCentralOffset*TMath::RadToDeg();
-  Double_t ph = 0.0+fPhiOffset*TMath::RadToDeg();
-
+  Double_t ph = fPhi_lab+fPhiOffset*TMath::RadToDeg();
+  cout << "Central angles = " << fTheta_lab << endl;
   SetCentralAngles(fTheta_lab, ph, false);
   Double_t off_x = 0.0, off_y = 0.0, off_z = 0.0;
   fPointingOffset.SetXYZ( off_x, off_y, off_z );
@@ -356,8 +361,11 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     track->SetDp(sum[3]*100.0+fDeltaOffset);	// Percent.  (Don't think podd cares if it is % or fraction)
     // There is an hpcentral_offset that needs to be applied somewhere.
     // (happly_offs)
-    track->SetMomentum(fPcentral*(1+track->GetDp()/100.0));
-
+    Double_t ptemp = fPcentral*(1+track->GetDp()/100.0);
+    track->SetMomentum(ptemp);
+    TVector3 pvect_temp;
+    TransportToLab(track->GetP(),track->GetTTheta(),track->GetTPhi(),pvect_temp);
+    track->SetPvect(pvect_temp);
   }
 
   if (fHodo==0 || (( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 )) ) {

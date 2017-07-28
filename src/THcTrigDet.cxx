@@ -174,7 +174,7 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
     return kInitError;
   }
   // Initialize hitlist part of the class.
-  printf(" Init trig det hitlist\n");
+  // printf(" Init trig det hitlist\n");
   InitHitList(fDetMap, "THcTrigRawHit", 100);
 
   fStatus = kOK;
