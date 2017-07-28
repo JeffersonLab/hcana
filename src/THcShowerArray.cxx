@@ -120,7 +120,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   prefix[0]=tolower(GetParent()->GetPrefix()[0]);
   prefix[1]='\0';
 
-  cout << "Parent name: " << GetParent()->GetPrefix() << endl;
+  // cout << "Parent name: " << GetParent()->GetPrefix() << endl;
   fNRows=fNColumns=0;
   fXFront=fYFront=fZFront=0.;
   fXStep=fYStep=fZSize=0.;

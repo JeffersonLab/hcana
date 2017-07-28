@@ -131,7 +131,7 @@ void THcCherenkov::DeleteArrays()
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
 {
-  cout << "THcCherenkov::Init for: " << GetName() << endl;
+  // cout << "THcCherenkov::Init for: " << GetName() << endl;
 
   string EngineDID = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
   std::transform(EngineDID.begin(), EngineDID.end(), EngineDID.begin(), ::toupper);
@@ -158,7 +158,7 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   // This function is called by THaDetectorBase::Init() once at the beginning
   // of the analysis.
 
-  cout << "THcCherenkov::ReadDatabase for: " << GetName() << endl; // Ahmed
+  // cout << "THcCherenkov::ReadDatabase for: " << GetName() << endl; // Ahmed
 
   string prefix = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
   std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
@@ -174,8 +174,8 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
 
   Bool_t optional = true;
 
-  cout << "Number of " << GetApparatus()->GetName() << "."
-       << GetName() << " PMTs defined = " << fNelem << endl;
+  cout << "Created Cherenkov detector " << GetApparatus()->GetName() << "."
+       << GetName() << " with " << fNelem << " PMTs" << endl;
 
   // 6 GeV pedestal paramters
   fPedLimit = new Int_t[fNelem];
@@ -209,17 +209,17 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
 
   gHcParms->LoadParmValues((DBRequest*)&list, prefix.c_str());
 
-  if (fDebugAdc) cout << "Cherenkov ADC Debug Flag Set To TRUE" << endl;
+  // if (fDebugAdc) cout << "Cherenkov ADC Debug Flag Set To TRUE" << endl;
 
   fIsInit = true;
 
-  cout << "Track Matching Parameters for: " << GetName() << endl;
-  for (Int_t iregion = 0; iregion < fNRegions; iregion++) {
-    cout << "Region = " << iregion + 1 << endl;
-    for (Int_t ivalue = 0; ivalue < 8; ivalue++)
-      cout << fRegionValue[GetIndex(iregion, ivalue)] << "  ";
-    cout << endl;
-  }
+  // cout << "Track Matching Parameters for: " << GetName() << endl;
+  // for (Int_t iregion = 0; iregion < fNRegions; iregion++) {
+  //   cout << "Region = " << iregion + 1 << endl;
+  //   for (Int_t ivalue = 0; ivalue < 8; ivalue++)
+  //     cout << fRegionValue[GetIndex(iregion, ivalue)] << "  ";
+  //   cout << endl;
+  // }
 
   // Create arrays to hold pedestal results
   InitializePedestals();
@@ -231,7 +231,7 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
 Int_t THcCherenkov::DefineVariables( EMode mode )
 {
   // Initialize global variables for histogramming and tree
-  cout << "THcCherenkov::DefineVariables called for: " << GetName() << endl;
+  // cout << "THcCherenkov::DefineVariables called for: " << GetName() << endl;
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );

@@ -148,8 +148,10 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
 
   char prefix[2];
 
+#ifdef WITH_DEBUG
   cout << " GetName() " << GetName() << endl;
-
+#endif
+  
   prefix[0]=tolower(GetName()[0]);
   prefix[1]='\0';
 
@@ -200,8 +202,9 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
 
   EnforcePruneLimits();
 
-  cout <<  "\n\n\nhodo planes = " << fNPlanes << endl;
-  cout <<  "sel using scin = "    << fSelUsingScin << endl;
+#ifdef WITH_DEBUG
+  cout <<  "\n\n\nhodo planes = " <<  fNPlanes << endl;
+  cout <<  "sel using scin = "    <<  fSelUsingScin << endl;
   cout <<  "fPruneXp = "          <<  fPruneXp << endl;
   cout <<  "fPruneYp = "          <<  fPruneYp << endl;
   cout <<  "fPruneYtar = "        <<  fPruneYtar << endl;
@@ -212,14 +215,15 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   cout <<  "fPruneFpTime = "      <<  fPruneFpTime << endl;
   cout <<  "fPruneNPMT = "        <<  fPruneNPMT << endl;
   cout <<  "sel using prune = "   <<  fSelUsingPrune << endl;
+#endif
   cout <<  "fPartMass = "         <<  fPartMass << endl;
   cout <<  "fPcentral = "         <<  fPcentral << " " <<fPCentralOffset << endl;
-  cout <<  "fThate_lab = "        <<  fTheta_lab << " " <<fThetaCentralOffset << endl;
+  cout <<  "fThetalab = "         <<  fTheta_lab << " " <<fThetaCentralOffset << endl;
   fPcentral= fPcentral*(1.+fPCentralOffset/100.);
   // Check that these offsets are in radians
   fTheta_lab=fTheta_lab + fThetaCentralOffset*TMath::RadToDeg();
   Double_t ph = fPhi_lab+fPhiOffset*TMath::RadToDeg();
-  cout << " Central angles = " << fTheta_lab << endl;
+  cout << "Central angles = " << fTheta_lab << endl;
   SetCentralAngles(fTheta_lab, ph, false);
   Double_t off_x = 0.0, off_y = 0.0, off_z = 0.0;
   fPointingOffset.SetXYZ( off_x, off_y, off_z );
