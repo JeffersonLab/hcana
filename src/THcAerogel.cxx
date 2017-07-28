@@ -169,7 +169,7 @@ void THcAerogel::DeleteArrays()
 THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
 {
 
-  cout << "THcAerogel::Init for: " << GetName() << endl;
+  // cout << "THcAerogel::Init for: " << GetName() << endl;
 
   char EngineDID[] = "xAERO";
   EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
@@ -196,7 +196,7 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   // This function is called by THaDetectorBase::Init() once at the beginning
   // of the analysis.
 
-  cout << "THcAerogel::ReadDatabase for: " << GetName() << endl;
+  // cout << "THcAerogel::ReadDatabase for: " << GetName() << endl;
 
   char prefix[2];
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
@@ -213,8 +213,8 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
 
   Bool_t optional = true ;
 
-  cout << "Number of " << GetApparatus()->GetName() << "."
-       << GetName() << " PMT pairs defined = " << fNelem << endl;
+  cout << "Created aerogel detector " << GetApparatus()->GetName() << "."
+       << GetName() << " with " << fNelem << " PMT pairs" << endl;
 
   fPosGain = new Double_t[fNelem];
   fNegGain = new Double_t[fNelem];
@@ -321,14 +321,14 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
 
   fIsInit = true;
 
-  cout << "Track Matching Parameters for: " << GetApparatus()->GetName()
-       << "." << GetName() << endl;
-  for (Int_t iregion = 0; iregion < fNRegions; iregion++) {
-    cout << "Region = " << iregion + 1 << endl;
-    for (Int_t ivalue = 0; ivalue < 8; ivalue++)
-      cout << fRegionValue[GetIndex(iregion, ivalue)] << "  ";
-    cout << endl;
-  }
+  // cout << "Track Matching Parameters for: " << GetApparatus()->GetName()
+  //      << "." << GetName() << endl;
+  // for (Int_t iregion = 0; iregion < fNRegions; iregion++) {
+  //   cout << "Region = " << iregion + 1 << endl;
+  //   for (Int_t ivalue = 0; ivalue < 8; ivalue++)
+  //     cout << fRegionValue[GetIndex(iregion, ivalue)] << "  ";
+  //   cout << endl;
+  // }
 
   return kOK;
 }
@@ -338,7 +338,7 @@ Int_t THcAerogel::DefineVariables( EMode mode )
 {
   // Initialize global variables for histogramming and tree
 
-  cout << "THcAerogel::DefineVariables called for: " << GetName() << endl;
+  // cout << "THcAerogel::DefineVariables called for: " << GetName() << endl;
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );

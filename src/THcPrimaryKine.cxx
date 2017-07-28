@@ -193,7 +193,7 @@ Int_t THcPrimaryKine::ReadDatabase( const TDatime& date )
   //
   char prefix[2];
 
-  cout << " GetName() " << GetName() << endl;
+  // cout << " GetName() " << GetName() << endl;
 
   prefix[0]=tolower(GetName()[0]);
   prefix[1]='\0';

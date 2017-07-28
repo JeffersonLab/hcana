@@ -89,7 +89,7 @@ void THcDC::Setup(const char* name, const char* description)
 
   THaApparatus *app = GetApparatus();
   if(app) {
-    cout << app->GetName() << endl;
+    // cout << app->GetName() << endl;
     fPrefix[0]=tolower(app->GetName()[0]);
     fPrefix[1]='\0';
   } else {
@@ -116,7 +116,7 @@ void THcDC::Setup(const char* name, const char* description)
   };
 
   gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
-  cout << planenamelist << endl;
+  cout << "Plane Name List: " << planenamelist << endl;
   cout << "Drift Chambers: " <<  fNPlanes << " planes in " << fNChambers << " chambers" << endl;
 
   vector<string> plane_names = vsplit(planenamelist);
@@ -148,7 +148,7 @@ void THcDC::Setup(const char* name, const char* description)
     }
     fPlanes.push_back(newplane);
     newplane->SetDebug(fDebug);
-    cout << "Created Drift Chamber Plane " << fPlaneNames[i] << ", " << desc << endl;
+    // cout << "Created Drift Chamber Plane " << fPlaneNames[i] << ", " << desc << endl;
 
   }
 
