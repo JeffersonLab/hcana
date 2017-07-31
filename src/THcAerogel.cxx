@@ -220,7 +220,7 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fNegGain = new Double_t[fNelem];
 
   // 6 GeV variables
-  fTdcOffset   = 0; // Offset to make reference time subtracted times positve
+  fTdcOffset   = 0; // Offset to make reference time subtracted times positive
   fPosPedLimit = new Int_t[fNelem];
   fNegPedLimit = new Int_t[fNelem];
   fA_Pos       = new Float_t[fNelem];

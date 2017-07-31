@@ -80,8 +80,8 @@ gbpm_y_off = 0.037+.381+.003 ,-0.040-.211-.033 ,0.028+.219
 ; was determined to be 5.8 degree.
 
 ; positions of FR magnets relative to target
-  gfrx_dist  = 2111   ; cm
-  gfry_dist  = 2071   ; cm
+  gfrx_dist  = 1375   ; cm
+  gfry_dist  = 1337   ; cm
 
 
 

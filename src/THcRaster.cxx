@@ -19,6 +19,10 @@
 #include "THcGlobals.h"
 #include "THaGlobals.h"
 
+#include "THcRawAdcHit.h"
+#include "THcSignalHit.h"
+#include "THaGetApparatus.h"
+
 //#include "THcHitList.h"
 
 #include <cstring>
@@ -38,30 +42,52 @@ THcRaster::THcRaster( const char* name, const char* description,
 
   fAnalyzePedestals = 0;
   fNPedestalEvents = 0;
-  fRawXADC = 0;
-  fRawYADC = 0;
-  fXADC = 0;
-  fYADC = 0;
-  fXpos = 0;
-  fYpos = 0;
-  fFrCalMom = 0;
-  fFrXADCperCM = 0;
-  fFrXADCperCM = 0;
+  
+  fRawXaADC = 0;
+  fRawYaADC = 0;
+  fRawXbADC = 0;
+  fRawYbADC = 0;
+  
+  fXaADC = 0;
+  fYaADC = 0;
+  fXbADC = 0;
+  fYbADC = 0;
 
+  fXapos = 0;
+  fYapos = 0;
+  fXbpos = 0;
+  fYbpos = 0;
+
+  fFrCalMom = 0;
+
+  fFrXaADCperCM = 0;
+  fFrYaADCperCM = 0;
+  fFrXbADCperCM = 0; 
+  fFrYbADCperCM = 0;
+  
   for(Int_t i=0;i<2;i++){
     fPedADC[i] = 0;
     fAvgPedADC[i] = 0;
   }
 }
 
-
 //_____________________________________________________________________________
-THcRaster::~THcRaster()
+THcRaster::THcRaster():
+  THaBeamDet()
 {
+  //Constructor
+  frPosAdcPulseIntRaw = NULL;
 }
 
+//_____________________________________________________________________________
+_____________________________________________________________________________
+THcRaster::~THcRaster()
+{
+  //Destructor
+  delete frPosAdcPulseIntRaw;  frPosAdcPulseIntRaw  = NULL;
 
-
+  DeleteArrays();
+}
 
 //_____________________________________________________________________________
 Int_t THcRaster::ReadDatabase( const TDatime& date )
@@ -78,12 +104,19 @@ Int_t THcRaster::ReadDatabase( const TDatime& date )
   prefix[0]='g';
   prefix[1]='\0';
 
+  frPosAdcPulseIntRaw  = new TClonesArray("THcSignalHit", 4);
 
   // string names;
   DBRequest list[]={
     {"fr_cal_mom",&fFrCalMom, kDouble},
-    {"frx_adcpercm",&fFrXADCperCM, kDouble},
-    {"fry_adcpercm",&fFrYADCperCM, kDouble},
+    {"frxa_adcpercm",&fFrXaADCperCM, kDouble},
+    {"frya_adcpercm",&fFrYaADCperCM, kDouble},
+    {"frxb_adcpercm",&fFrXbADCperCM, kDouble},
+    {"fryb_adcpercm",&fFrYbADCperCM, kDouble},
+    {"frxaADC_zero_offset",&fFrXaADC_zero_offset, kDouble},
+    {"fryaADC_zero_offset",&fFrYaADC_zero_offset, kDouble},
+    {"frxbADC_zero_offset",&fFrXbADC_zero_offset, kDouble},
+    {"frybADC_zero_offset",&fFrYbADC_zero_offset, kDouble},
     {"pbeam",&fgpbeam, kDouble},
     {"frx_dist", &fgfrx_dist, kDouble},
     {"fry_dist", &fgfry_dist, kDouble},
@@ -122,12 +155,20 @@ Int_t THcRaster::DefineVariables( EMode mode )
   // Register variables in global list
 
   RVarDef vars[] = {
-    {"frx_raw_adc",  "Raster X raw ADC",    "fRawXADC"},
-    {"fry_raw_adc",  "Raster Y raw ADC",    "fRawYADC"},
-    {"frx_adc",  "Raster X ADC",    "fXADC"},
-    {"fry_adc",  "Raster Y ADC",    "fYADC"},
-    {"frx",  "Raster X position",    "fXpos"},
-    {"fry",  "Raster Y position",    "fYpos"},
+    {"frxa_raw_adc",  "Raster Xa raw ADC",    "fRawXaADC"},
+    {"frya_raw_adc",  "Raster Ya raw ADC",    "fRawYaADC"},
+    {"frxb_raw_adc",  "Raster Xb raw ADC",    "fRawXbADC"},
+    {"fryb_raw_adc",  "Raster Yb raw ADC",    "fRawYbADC"},
+    {"frxa_adc",  "Raster Xa ADC",    "fXaADC"},
+    {"frya_adc",  "Raster Ya ADC",    "fYaADC"},
+    {"frxb_adc",  "Raster Xb ADC",    "fXbADC"},
+    {"fryb_adc",  "Raster Yb ADC",    "fYbADC"},
+    {"frxa",  "Raster Xa position",    "fXapos"},
+    {"frya",  "Raster Ya position",    "fYapos"},
+    {"frxb",  "Raster Xb position",    "fXbpos"},
+    {"fryb",  "Raster Yb position",    "fYbpos"},
+    {"posAdcCounter",   "Positive ADC counter numbers",   "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+
     { 0 }
   };
 
@@ -140,10 +181,11 @@ THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
   cout << "THcRaster::Init()" << endl;
 
   // Fill detector map with RASTER type channels
-  if( gHcDetectorMap->FillMap(fDetMap, "RASTER") < 0 ) {
+  char EngineDID[] = "xRASTER";
+  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
     static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.",
-  	   "RASTER");
+    Error( Here(here), "Error filling detectormap for %s.", EngineDID);
     return kInitError;
   }
 
@@ -155,6 +197,12 @@ THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
 
   return fStatus = kOK;
 
+}
+
+//_____________________________________________________________________________
+inline 
+void THcRaster::Clear(Option_t* opt)
+{
 }
 
 

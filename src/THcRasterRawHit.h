@@ -10,7 +10,7 @@
 
 #include "THcRawHit.h"
 
-class THcRasterRawHit : public THcRawHit {
+class THcRasterRawHit : public THcRawHodoHit { //changed from THcRawHit
 
  public:
 
@@ -33,6 +33,8 @@ class THcRasterRawHit : public THcRawHit {
   Int_t fADC_ysig;
   Int_t fADC_xsync;
   Int_t fADC_ysync;
+
+  friend class THcRaster; // added
 
  protected:
 
