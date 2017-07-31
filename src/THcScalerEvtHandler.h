@@ -34,7 +34,6 @@ public:
    virtual ~THcScalerEvtHandler();
 
    Int_t Analyze(THaEvData *evdata);
-   virtual void AddEventType(Int_t evtype);
    virtual EStatus Init( const TDatime& run_time);
    virtual Int_t End( THaRunBase* r=0 );
    virtual void SetUseFirstEvent(Bool_t b = kFALSE) {fUseFirstEvent = b;}
@@ -48,7 +47,6 @@ private:
    std::vector<Decoder::GenScaler*> scalers;
    std::vector<HCScalerLoc*> scalerloc;
    Double_t evcount;
-   UInt_t *rdata;
    std::vector<Int_t> index;
    Int_t Nvars, ifound, fNormIdx, nscalers;
    Double_t *dvars;
