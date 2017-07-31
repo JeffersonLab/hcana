@@ -379,7 +379,6 @@ Int_t THcRaster::Process( ){
   fXbADC =  fRawXbADC-fFrXbADC_zero_offset;
   fYbADC =  fRawYbADC-fFrYbADC_zero_offset;
 
-
   //std::cout<<" Raw X ADC = "<<fXADC<<" Raw Y ADC = "<<fYADC<<std::endl;
 
   /*
@@ -389,8 +388,8 @@ Int_t THcRaster::Process( ){
     gfry = (gfry_adc/gfry_adcpercm)*(gfr_cal_mom/ebeam)
   */
 
-  fXpos = (fXADC/fFrXADCperCM)*(fFrCalMom/eBeam);
-  fYpos = (fYADC/fFrYADCperCM)*(fFrCalMom/eBeam);
+  fXapos = (fXaADC/fFrXaADCperCM)*(fFrCalMom/eBeam);
+  fYapos = (fYaADC/fFrYaADCperCM)*(fFrCalMom/eBeam);
 
   // std::cout<<" X = "<<fXpos<<" Y = "<<fYpos<<std::endl;
 
