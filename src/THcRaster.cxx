@@ -64,6 +64,11 @@ THcRaster::THcRaster( const char* name, const char* description,
   fFrYaADCperCM = 0;
   fFrXbADCperCM = 0; 
   fFrYbADCperCM = 0;
+
+  fFrXaADC_zero_offset = 0;
+  fFrYaADC_zero_offset = 0;
+  fFrXbADC_zero_offset = 0;
+  fFrYbADC_zero_offset = 0;
   
   for(Int_t i=0;i<2;i++){
     fPedADC[i] = 0;
@@ -168,7 +173,6 @@ Int_t THcRaster::DefineVariables( EMode mode )
     {"frxb",  "Raster Xb position",    "fXbpos"},
     {"fryb",  "Raster Yb position",    "fYbpos"},
     {"posAdcCounter",   "Positive ADC counter numbers",   "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
-
     { 0 }
   };
 
@@ -203,6 +207,8 @@ THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
 inline 
 void THcRaster::Clear(Option_t* opt)
 {
+  fNhits = 0;
+  frPosAdcPulseIntRaw->Clear();
 }
 
 
@@ -304,11 +310,32 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
   }
 
   Int_t ihit = 0;
+  UInt_t nrPosAdcHits = 0;
 
   while(ihit < fNhits) {
-    THcRasterRawHit* hit = (THcRasterRawHit *) fRawHitList->At(ihit);
+    THcRasterRawHit*  hit          = (THcRasterRawHit *) fRawHitList->At(ihit);
+    THcRawAdcHit&     rawPosAdcHit = hit->GetRawAdcHitPos();
+    Int_t             nsig         = hit->fCounter;
 
-    if(hit->fADC_xsig>0) {
+    for (UInt_t thit=0; thit<rawPosAdcHit.GetNPulses(); ++thit) {
+       ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(nsig,rawPosAdcHit.GetPulseIntRaw(thit));
+       ++nrPosAdcHits;
+    }
+    ihit++;
+  }
+
+    for (Int_t ielem = 0; ielem < frPosAdcPulseIntRaw->GetEntries(); ielem++) {
+       Int_t    nraster           = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+       Double_t pulseIntRaw       = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
+       if (nraster ==0) fRawXaADC = pulseIntRaw;
+       if (nraster ==1) fRawYaADC = pulseIntRaw;
+       if (nraster ==2) fRawXbADC = pulseIntRaw;
+       if (nraster ==3) fRawYbADC = pulseIntRaw;
+   }
+  
+/*
+   
+   if(hit->fADC_xsig>0) {
       fRawXADC = hit->fADC_xsig;
       //std::cout<<" Raw X ADC = "<<fRawXADC<<std::endl;
     }
@@ -319,7 +346,7 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
     }
     ihit++;
   }
-
+*/
   return 0;
 
 }
@@ -347,8 +374,12 @@ Int_t THcRaster::Process( ){
   */
 
   // calculate the raster currents
-  fXADC =  fRawXADC-fAvgPedADC[0];
-  fYADC =  fRawYADC-fAvgPedADC[1];
+  fXaADC =  fRawXaADC-fFrXaADC_zero_offset;
+  fYaADC =  fRawYaADC-fFrYaADC_zero_offset;
+  fXbADC =  fRawXbADC-fFrXbADC_zero_offset;
+  fYbADC =  fRawYbADC-fFrYbADC_zero_offset;
+
+
   //std::cout<<" Raw X ADC = "<<fXADC<<" Raw Y ADC = "<<fYADC<<std::endl;
 
   /*
