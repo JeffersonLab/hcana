@@ -168,10 +168,10 @@ Int_t THcRaster::DefineVariables( EMode mode )
     {"frya_adc",  "Raster Ya ADC",    "fYaADC"},
     {"frxb_adc",  "Raster Xb ADC",    "fXbADC"},
     {"fryb_adc",  "Raster Yb ADC",    "fYbADC"},
-    {"frxa",  "Raster Xa position",    "fXapos"},
-    {"frya",  "Raster Ya position",    "fYapos"},
-    {"frxb",  "Raster Xb position",    "fXbpos"},
-    {"fryb",  "Raster Yb position",    "fYbpos"},
+    {"frxa",  "Raster Xa position",   "fXapos"},
+    {"frya",  "Raster Ya position",   "fYapos"},
+    {"frxb",  "Raster Xb position",   "fXbpos"},
+    {"fryb",  "Raster Yb position",   "fYbpos"},
     {"posAdcCounter",   "Positive ADC counter numbers",   "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
     { 0 }
   };
@@ -358,11 +358,12 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
 //_____________________________________________________________________________
 Int_t THcRaster::Process( ){
 
-	Double_t eBeam = 0.001;
-  DBRequest list[] = {
-    {"gpbeam", &eBeam, kDouble, 0, 1},
+	//Double_t eBeam = 0.001;
+ /* DBRequest list[] = {
+    {"gpbeam", &eBeam, kDouble, 0, 1}, //eliminate?
     {0}
   };
+  */
   gHcParms->LoadParmValues(list);
 
   /*
@@ -388,8 +389,8 @@ Int_t THcRaster::Process( ){
     gfry = (gfry_adc/gfry_adcpercm)*(gfr_cal_mom/ebeam)
   */
 
-  fXapos = (fXaADC/fFrXaADCperCM)*(fFrCalMom/eBeam);
-  fYapos = (fYaADC/fFrYaADCperCM)*(fFrCalMom/eBeam);
+  fXapos = (fXaADC/fFrXaADCperCM)*(fFrCalMom/fgpbeam);
+  fYapos = (fYaADC/fFrYaADCperCM)*(fFrCalMom/fgpbeam);
 
   // std::cout<<" X = "<<fXpos<<" Y = "<<fYpos<<std::endl;
 
@@ -397,9 +398,9 @@ Int_t THcRaster::Process( ){
   Double_t tt;
   Double_t tp;
   if(fgusefr != 0) {
-    fPosition[1].SetXYZ(fXpos+fgbeam_xoff, fYpos+fgbeam_yoff, 0.0);
-    tt = fXpos/fgfrx_dist+fgbeam_xpoff;
-    tp = fYpos/fgfry_dist+fgbeam_ypoff;
+    fPosition[1].SetXYZ(fXapos+fgbeam_xoff, fYapos+fgbeam_yoff, 0.0);
+    tt = faXpos/fgfrx_dist+fgbeam_xpoff;
+    tp = fYapos/fgfry_dist+fgbeam_ypoff;
   } else {			// Just use fixed beam position and angle
     fPosition[0].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
     tt = fgbeam_xpoff;
