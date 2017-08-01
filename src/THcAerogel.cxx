@@ -812,7 +812,7 @@ Int_t THcAerogel::FineProcess( TClonesArray& tracks )
     Bool_t trackENormCut   = trackENorm   > fENormMin   && trackENorm   < fENormMax;
     Bool_t trackDpCut      = trackDp      > fDpMin      && trackDp      < fDpMax;
 
-    if (trackRedChi2Cut && trackBetaCut && trackENormCut) {
+    if (trackRedChi2Cut && trackBetaCut && trackENormCut && trackDpCut) {
 
       // Project the track to the Aerogel diffuser box plane
       Double_t xAtAero = trackXfp + trackTheta * fDiffBoxZPos;
