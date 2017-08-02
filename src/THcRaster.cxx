@@ -71,8 +71,11 @@ THcRaster::THcRaster( const char* name, const char* description,
   fFrYbADC_zero_offset = 0;
   
   for(Int_t i=0;i<2;i++){
-    fPedADC[i] = 0;
-    fAvgPedADC[i] = 0;
+    fPedaADC[i] = 0;
+    //fAvgPedADC[i] = 0;
+  }
+  for (Int_t i=2;i<4;i++){
+    fPedbADC[i] = 0;
   }
 }
 
@@ -237,10 +240,14 @@ void THcRaster::AccumulatePedestals(TClonesArray* rawhits)
   Int_t nrawhits = rawhits->GetLast()+1;
 
   Int_t ihit=0;
+  UInt_t nrPosAdcHits = 0;
 
   while(ihit<nrawhits) {
     THcRasterRawHit* hit = (THcRasterRawHit *) fRawHitList->At(ihit);
-    if(hit->fADC_xsig>0) {
+     THcRawAdcHit&     rawPosAdcHit = hit->GetRawAdcHitPos();
+     Int_t             nsig         = hit->fCounter;
+
+   /* if(hit->fADC_xsig>0) {
       fPedADC[0] += hit->fADC_xsig;
       //std::cout<<" raster x pedestal collect "<<fPedADC[0]<<std::endl;
     }
@@ -251,6 +258,24 @@ void THcRaster::AccumulatePedestals(TClonesArray* rawhits)
 
     ihit++;
   }
+*/
+
+    for (UInt_t thit=0; thit<rawPosAdcHit.GetNPulses(); ++thit) {
+       ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(nsig,rawPosAdcHit.GetPulseIntRaw(thit));
+       ++nrPosAdcHits;
+    }
+    ihit++;
+  }
+
+    for (Int_t ielem = 0; ielem < frPosAdcPulseIntRaw->GetEntries(); ielem++) {
+       Int_t    nraster           = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+       Double_t pulseIntRaw       = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
+       if (nraster ==0) fPedaADC[0] = pulseIntRaw;
+       if (nraster ==1) fPedaADC[1] = pulseIntRaw;
+       if (nraster ==2) fPedbADC[2] = pulseIntRaw;
+       if (nraster ==3) fPedbADC[3] = pulseIntRaw;
+   }
+
 
 }
 
@@ -275,10 +300,15 @@ void THcRaster::CalculatePedestals( )
        endif
      endif
   */
-  for(Int_t i=0;i<2;i++){
+ /* for(Int_t i=0;i<2;i++){
     fAvgPedADC[i] = fPedADC[i]/ fNPedestalEvents;
     // std::cout<<" raster pedestal "<<fAvgPedADC[i]<<std::endl;
   }
+ */
+  fFrXaADC_zero_offset = fPedaADC[0]/fNPedestalEvents;
+  fFrYaADC_zero_offset = fPedaADC[1]/fNPedestalEvents;
+  fFrXbADC_zero_offset = fPedbADC[2]/fNPedestalEvents;
+  fFrYbADC_zero_offset = fPedbADC[3]/fNPedestalEvents;
 
 }
 
@@ -399,7 +429,7 @@ Int_t THcRaster::Process( ){
   Double_t tp;
   if(fgusefr != 0) {
     fPosition[1].SetXYZ(fXapos+fgbeam_xoff, fYapos+fgbeam_yoff, 0.0);
-    tt = faXpos/fgfrx_dist+fgbeam_xpoff;
+    tt = fXapos/fgfrx_dist+fgbeam_xpoff;
     tp = fYapos/fgfry_dist+fgbeam_ypoff;
   } else {			// Just use fixed beam position and angle
     fPosition[0].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);

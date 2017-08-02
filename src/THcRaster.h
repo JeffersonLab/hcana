@@ -63,8 +63,8 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Double_t       fXbpos;     // Xb position
   Double_t       fYbpos;     // Yb position 
   
-  Double_t       fPedADC[2];     // ADC pedestals
-  Double_t       fAvgPedADC[2];     // Average ADC pedestals
+  Double_t       fPedADC[4];     // ADC pedestals
+  //Double_t       fAvgPedADC[2];     // Average ADC pedestals
 
   Double_t       fRawPos[2];     // current in Raster ADCs for position
   TVector3       fPosition[2];   // Beam position at 1st, 2nd BPM or at the target (meters)
