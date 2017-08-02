@@ -70,12 +70,9 @@ THcRaster::THcRaster( const char* name, const char* description,
   fFrXbADC_zero_offset = 0;
   fFrYbADC_zero_offset = 0;
   
-  for(Int_t i=0;i<2;i++){
-    fPedaADC[i] = 0;
+  for(Int_t i=0;i<4;i++){
+    fPedADC[i] = 0;
     //fAvgPedADC[i] = 0;
-  }
-  for (Int_t i=2;i<4;i++){
-    fPedbADC[i] = 0;
   }
 }
 
@@ -270,10 +267,10 @@ void THcRaster::AccumulatePedestals(TClonesArray* rawhits)
     for (Int_t ielem = 0; ielem < frPosAdcPulseIntRaw->GetEntries(); ielem++) {
        Int_t    nraster           = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetPaddleNumber() - 1;
        Double_t pulseIntRaw       = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
-       if (nraster ==0) fPedaADC[0] = pulseIntRaw;
-       if (nraster ==1) fPedaADC[1] = pulseIntRaw;
-       if (nraster ==2) fPedbADC[2] = pulseIntRaw;
-       if (nraster ==3) fPedbADC[3] = pulseIntRaw;
+       if (nraster ==0) fPedADC[0] = pulseIntRaw;
+       if (nraster ==1) fPedADC[1] = pulseIntRaw;
+       if (nraster ==2) fPedADC[2] = pulseIntRaw;
+       if (nraster ==3) fPedADC[3] = pulseIntRaw;
    }
 
 
