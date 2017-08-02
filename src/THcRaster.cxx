@@ -302,10 +302,10 @@ void THcRaster::CalculatePedestals( )
     // std::cout<<" raster pedestal "<<fAvgPedADC[i]<<std::endl;
   }
  */
-  fFrXaADC_zero_offset = fPedaADC[0]/fNPedestalEvents;
-  fFrYaADC_zero_offset = fPedaADC[1]/fNPedestalEvents;
-  fFrXbADC_zero_offset = fPedbADC[2]/fNPedestalEvents;
-  fFrYbADC_zero_offset = fPedbADC[3]/fNPedestalEvents;
+  fFrXaADC_zero_offset = fPedADC[0]/fNPedestalEvents;
+  fFrYaADC_zero_offset = fPedADC[1]/fNPedestalEvents;
+  fFrXbADC_zero_offset = fPedADC[2]/fNPedestalEvents;
+  fFrYbADC_zero_offset = fPedADC[3]/fNPedestalEvents;
 
 }
 
