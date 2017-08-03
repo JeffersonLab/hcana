@@ -378,10 +378,6 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
 
 }
 
-
-
-
-
 //_____________________________________________________________________________
 Int_t THcRaster::Process( ){
 
@@ -404,6 +400,7 @@ Int_t THcRaster::Process( ){
   // calculate the raster currents
   fXaADC =  fRawXaADC-fFrXaADC_zero_offset;
   fYaADC =  fRawYaADC-fFrYaADC_zero_offset;
+
   fXbADC =  fRawXbADC-fFrXbADC_zero_offset;
   fYbADC =  fRawYbADC-fFrYbADC_zero_offset;
 
@@ -418,6 +415,10 @@ Int_t THcRaster::Process( ){
 
   fXapos = (fXaADC/fFrXaADCperCM)*(fFrCalMom/fgpbeam);
   fYapos = (fYaADC/fFrYaADCperCM)*(fFrCalMom/fgpbeam);
+
+  fXbpos = (fXbADC/fFrXbADCperCM)*(fFrCalMom/fgpbeam);
+  fYbpos = (fYbADC/fFrYbADCperCM)*(fFrCalMom/fgpbeam);
+
 
   // std::cout<<" X = "<<fXpos<<" Y = "<<fYpos<<std::endl;
 

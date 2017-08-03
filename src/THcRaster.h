@@ -32,7 +32,7 @@ class THcRaster : public THaBeamDet, public THcHitList {
   TVector3 GetDirection() const { return fDirection; }
 
   Double_t GetCurrentX() { return fRawPos[0]; }
-  Double_t GetCurrentY() { return fRawPos[1]; } // duplicate and index [2] and [3] for b coils?
+  Double_t GetCurrentY() { return fRawPos[1]; }
 
  protected:
 
@@ -67,7 +67,7 @@ class THcRaster : public THaBeamDet, public THcHitList {
   //Double_t       fAvgPedADC[2];     // Average ADC pedestals
 
   Double_t       fRawPos[2];     // current in Raster ADCs for position
-  TVector3       fPosition[2];   // Beam position at 1st, 2nd BPM or at the target (meters)
+  TVector3       fPosition[4];   // Beam position at 1st, 2nd BPM or at the target (meters)
   TVector3       fDirection;
 
   Double_t  fFrXaADC_zero_offset;
