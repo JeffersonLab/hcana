@@ -10,7 +10,7 @@
 
 #include "THcRawHit.h"
 
-class THcRasterRawHit : public THcRawHodoHit { //changed from THcRawHit
+class THcRasterRawHit : public THcRawHodoHit {
 
  public:
 

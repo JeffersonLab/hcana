@@ -49,19 +49,19 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Double_t       fgbeam_ypoff; // Beam offsets
   Int_t          fgusefr;   /* Use Raster for beam position */
 
-  Double_t       fRawXaADC;  // Xa raw ADC
-  Double_t       fRawYaADC;  // Ya raw ADC
-  Double_t       fXaADC;     // Xa ADC
-  Double_t       fYaADC;     // Ya ADC
-  Double_t       fXapos;     // Xa position
-  Double_t       fYapos;     // Ya position
+  Double_t       fRawXAADC;  // Xa raw ADC
+  Double_t       fRawYAADC;  // Ya raw ADC
+  Double_t       fXAADC;     // Xa ADC
+  Double_t       fYAADC;     // Ya ADC
+  Double_t       fXApos;     // Xa position
+  Double_t       fYApos;     // Ya position
 
-  Double_t       fRawXbADC;  // Xb raw ADC
-  Double_t       fRawYbADC;  // Yb raw ADC
-  Double_t       fXbADC;     // Xb ADC
-  Double_t       fYbADC;     // Yb ADC
-  Double_t       fXbpos;     // Xb position
-  Double_t       fYbpos;     // Yb position 
+  Double_t       fRawXBADC;  // Xb raw ADC
+  Double_t       fRawYBADC;  // Yb raw ADC
+  Double_t       fXBADC;     // Xb ADC
+  Double_t       fYBADC;     // Yb ADC
+  Double_t       fXBpos;     // Xb position
+  Double_t       fYBpos;     // Yb position 
   
   Double_t       fPedADC[4];     // ADC pedestals
   //Double_t       fAvgPedADC[2];     // Average ADC pedestals
@@ -70,10 +70,10 @@ class THcRaster : public THaBeamDet, public THcHitList {
   TVector3       fPosition[4];   // Beam position at 1st, 2nd BPM or at the target (meters)
   TVector3       fDirection;
 
-  Double_t  fFrXaADC_zero_offset;
-  Double_t  fFrYaADC_zero_offset;
-  Double_t  fFrXbADC_zero_offset;
-  Double_t  fFrYbADC_zero_offset;
+  Double_t  fFrXAADC_zero_offset;
+  Double_t  fFrYAADC_zero_offset;
+  Double_t  fFrXBADC_zero_offset;
+  Double_t  fFrYBADC_zero_offset;
 
   TClonesArray* frPosAdcPulseIntRaw;
 
@@ -82,11 +82,11 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Int_t     fNPedestalEvents;
   Double_t  fFrCalMom;
 
-  Double_t  fFrXaADCperCM;
-  Double_t  fFrYaADCperCM;
+  Double_t  fFrXAADCperCM;
+  Double_t  fFrYAADCperCM;
 
-  Double_t  fFrXbADCperCM; 
-  Double_t  fFrYbADCperCM;
+  Double_t  fFrXBADCperCM; 
+  Double_t  fFrYBADCperCM;
 
 
   void   CalculatePedestals();

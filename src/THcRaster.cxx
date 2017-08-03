@@ -43,32 +43,32 @@ THcRaster::THcRaster( const char* name, const char* description,
   fAnalyzePedestals = 0;
   fNPedestalEvents = 0;
   
-  fRawXaADC = 0;
-  fRawYaADC = 0;
-  fRawXbADC = 0;
-  fRawYbADC = 0;
+  fRawXAADC = 0;
+  fRawYAADC = 0;
+  fRawXBADC = 0;
+  fRawYBADC = 0;
   
-  fXaADC = 0;
-  fYaADC = 0;
-  fXbADC = 0;
-  fYbADC = 0;
+  fXAADC = 0;
+  fYAADC = 0;
+  fXBADC = 0;
+  fYBADC = 0;
 
-  fXapos = 0;
-  fYapos = 0;
-  fXbpos = 0;
-  fYbpos = 0;
+  fXApos = 0;
+  fYApos = 0;
+  fXBpos = 0;
+  fYBpos = 0;
 
   fFrCalMom = 0;
 
-  fFrXaADCperCM = 0;
-  fFrYaADCperCM = 0;
-  fFrXbADCperCM = 0; 
-  fFrYbADCperCM = 0;
+  fFrXAADCperCM = 0;
+  fFrYAADCperCM = 0;
+  fFrXBADCperCM = 0; 
+  fFrYBADCperCM = 0;
 
-  fFrXaADC_zero_offset = 0;
-  fFrYaADC_zero_offset = 0;
-  fFrXbADC_zero_offset = 0;
-  fFrYbADC_zero_offset = 0;
+  fFrXAADC_zero_offset = 0;
+  fFrYAADC_zero_offset = 0;
+  fFrXBADC_zero_offset = 0;
+  fFrYBADC_zero_offset = 0;
   
   for(Int_t i=0;i<4;i++){
     fPedADC[i] = 0;
@@ -114,14 +114,14 @@ Int_t THcRaster::ReadDatabase( const TDatime& date )
   // string names;
   DBRequest list[]={
     {"fr_cal_mom",&fFrCalMom, kDouble},
-    {"frxa_adcpercm",&fFrXaADCperCM, kDouble},
-    {"frya_adcpercm",&fFrYaADCperCM, kDouble},
-    {"frxb_adcpercm",&fFrXbADCperCM, kDouble},
-    {"fryb_adcpercm",&fFrYbADCperCM, kDouble},
-    {"frxaADC_zero_offset",&fFrXaADC_zero_offset, kDouble},
-    {"fryaADC_zero_offset",&fFrYaADC_zero_offset, kDouble},
-    {"frxbADC_zero_offset",&fFrXbADC_zero_offset, kDouble},
-    {"frybADC_zero_offset",&fFrYbADC_zero_offset, kDouble},
+    {"frxa_adcpercm",&fFrXAADCperCM, kDouble},
+    {"frya_adcpercm",&fFrYAADCperCM, kDouble},
+    {"frxb_adcpercm",&fFrXBADCperCM, kDouble},
+    {"fryb_adcpercm",&fFrYBADCperCM, kDouble},
+    {"frxaADC_zero_offset",&fFrXAADC_zero_offset, kDouble},
+    {"fryaADC_zero_offset",&fFrYAADC_zero_offset, kDouble},
+    {"frxbADC_zero_offset",&fFrXBADC_zero_offset, kDouble},
+    {"frybADC_zero_offset",&fFrYBADC_zero_offset, kDouble},
     {"pbeam",&fgpbeam, kDouble},
     {"frx_dist", &fgfrx_dist, kDouble},
     {"fry_dist", &fgfry_dist, kDouble},
@@ -302,10 +302,10 @@ void THcRaster::CalculatePedestals( )
     // std::cout<<" raster pedestal "<<fAvgPedADC[i]<<std::endl;
   }
  */
-  fFrXaADC_zero_offset = fPedADC[0]/fNPedestalEvents;
-  fFrYaADC_zero_offset = fPedADC[1]/fNPedestalEvents;
-  fFrXbADC_zero_offset = fPedADC[2]/fNPedestalEvents;
-  fFrYbADC_zero_offset = fPedADC[3]/fNPedestalEvents;
+  fFrXAADC_zero_offset = fPedADC[0]/fNPedestalEvents;
+  fFrYAADC_zero_offset = fPedADC[1]/fNPedestalEvents;
+  fFrXBADC_zero_offset = fPedADC[2]/fNPedestalEvents;
+  fFrYBADC_zero_offset = fPedADC[3]/fNPedestalEvents;
 
 }
 
@@ -354,10 +354,10 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
     for (Int_t ielem = 0; ielem < frPosAdcPulseIntRaw->GetEntries(); ielem++) {
        Int_t    nraster           = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetPaddleNumber() - 1;
        Double_t pulseIntRaw       = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
-       if (nraster ==0) fRawXaADC = pulseIntRaw;
-       if (nraster ==1) fRawYaADC = pulseIntRaw;
-       if (nraster ==2) fRawXbADC = pulseIntRaw;
-       if (nraster ==3) fRawYbADC = pulseIntRaw;
+       if (nraster ==0) fRawXAADC = pulseIntRaw;
+       if (nraster ==1) fRawYAADC = pulseIntRaw;
+       if (nraster ==2) fRawXBADC = pulseIntRaw;
+       if (nraster ==3) fRawYBADC = pulseIntRaw;
    }
   
 /*
@@ -398,11 +398,11 @@ Int_t THcRaster::Process( ){
   */
 
   // calculate the raster currents
-  fXaADC =  fRawXaADC-fFrXaADC_zero_offset;
-  fYaADC =  fRawYaADC-fFrYaADC_zero_offset;
+  fXAADC =  fRawXAADC-fFrXAADC_zero_offset;
+  fYAADC =  fRawYAADC-fFrYAADC_zero_offset;
 
-  fXbADC =  fRawXbADC-fFrXbADC_zero_offset;
-  fYbADC =  fRawYbADC-fFrYbADC_zero_offset;
+  fXBADC =  fRawXBADC-fFrXBADC_zero_offset;
+  fYBADC =  fRawYBADC-fFrYBADC_zero_offset;
 
   //std::cout<<" Raw X ADC = "<<fXADC<<" Raw Y ADC = "<<fYADC<<std::endl;
 
@@ -413,11 +413,11 @@ Int_t THcRaster::Process( ){
     gfry = (gfry_adc/gfry_adcpercm)*(gfr_cal_mom/ebeam)
   */
 
-  fXapos = (fXaADC/fFrXaADCperCM)*(fFrCalMom/fgpbeam);
-  fYapos = (fYaADC/fFrYaADCperCM)*(fFrCalMom/fgpbeam);
+  fXApos = (fXAADC/fFrXAADCperCM)*(fFrCalMom/fgpbeam);
+  fYApos = (fYAADC/fFrYAADCperCM)*(fFrCalMom/fgpbeam);
 
-  fXbpos = (fXbADC/fFrXbADCperCM)*(fFrCalMom/fgpbeam);
-  fYbpos = (fYbADC/fFrYbADCperCM)*(fFrCalMom/fgpbeam);
+  fXBpos = (fXBADC/fFrXBADCperCM)*(fFrCalMom/fgpbeam);
+  fYBpos = (fYBADC/fFrYBADCperCM)*(fFrCalMom/fgpbeam);
 
 
   // std::cout<<" X = "<<fXpos<<" Y = "<<fYpos<<std::endl;
@@ -426,9 +426,9 @@ Int_t THcRaster::Process( ){
   Double_t tt;
   Double_t tp;
   if(fgusefr != 0) {
-    fPosition[1].SetXYZ(fXapos+fgbeam_xoff, fYapos+fgbeam_yoff, 0.0);
-    tt = fXapos/fgfrx_dist+fgbeam_xpoff;
-    tp = fYapos/fgfry_dist+fgbeam_ypoff;
+    fPosition[1].SetXYZ(fXApos+fgbeam_xoff, fYApos+fgbeam_yoff, 0.0);
+    tt = fXApos/fgfrx_dist+fgbeam_xpoff;
+    tp = fYApos/fgfry_dist+fgbeam_ypoff;
   } else {			// Just use fixed beam position and angle
     fPosition[0].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
     tt = fgbeam_xpoff;
