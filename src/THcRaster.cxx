@@ -60,19 +60,18 @@ THcRaster::THcRaster( const char* name, const char* description,
 
   fFrCalMom = 0;
 
-  fFrXAADCperCM = 0;
-  fFrYAADCperCM = 0;
-  fFrXBADCperCM = 0; 
-  fFrYBADCperCM = 0;
+  fFrXAADCperCM = 1.0;
+  fFrYAADCperCM = 1.0;
+  fFrXBADCperCM = 1.0; 
+  fFrYBADCperCM = 1.0;
 
-  fFrXAADC_zero_offset = 0;
-  fFrYAADC_zero_offset = 0;
-  fFrXBADC_zero_offset = 0;
-  fFrYBADC_zero_offset = 0;
+  fFrXAADC_zero_offset = 0.0;
+  fFrYAADC_zero_offset = 0.0;
+  fFrXBADC_zero_offset = 0.0;
+  fFrYBADC_zero_offset = 0.0;
   
   for(Int_t i=0;i<4;i++){
     fPedADC[i] = 0;
-    //fAvgPedADC[i] = 0;
   }
 }
 
@@ -244,19 +243,6 @@ void THcRaster::AccumulatePedestals(TClonesArray* rawhits)
      THcRawAdcHit&     rawPosAdcHit = hit->GetRawAdcHitPos();
      Int_t             nsig         = hit->fCounter;
 
-   /* if(hit->fADC_xsig>0) {
-      fPedADC[0] += hit->fADC_xsig;
-      //std::cout<<" raster x pedestal collect "<<fPedADC[0]<<std::endl;
-    }
-    if(hit->fADC_ysig>0) {
-      fPedADC[1] += hit->fADC_ysig;
-      //std::cout<<" raster y pedestal collect "<<fPedADC[1]<<std::endl;
-    }
-
-    ihit++;
-  }
-*/
-
     for (UInt_t thit=0; thit<rawPosAdcHit.GetNPulses(); ++thit) {
        ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(nsig,rawPosAdcHit.GetPulseIntRaw(thit));
        ++nrPosAdcHits;
@@ -359,35 +345,14 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
        if (nraster ==2) fRawXBADC = pulseIntRaw;
        if (nraster ==3) fRawYBADC = pulseIntRaw;
    }
-  
-/*
-   
-   if(hit->fADC_xsig>0) {
-      fRawXADC = hit->fADC_xsig;
-      //std::cout<<" Raw X ADC = "<<fRawXADC<<std::endl;
-    }
-
-    if(hit->fADC_ysig>0) {
-      fRawYADC = hit->fADC_ysig;
-      //std::cout<<" Raw Y ADC = "<<fRawYADC<<std::endl;
-    }
-    ihit++;
-  }
-*/
-  return 0;
+    return 0;
 
 }
 
 //_____________________________________________________________________________
 Int_t THcRaster::Process( ){
 
-	//Double_t eBeam = 0.001;
- /* DBRequest list[] = {
-    {"gpbeam", &eBeam, kDouble, 0, 1}, //eliminate?
-    {0}
-  };
-  */
-  gHcParms->LoadParmValues(list);
+gHcParms->LoadParmValues(list);
 
   /*
     calculate raster position from ADC value.
