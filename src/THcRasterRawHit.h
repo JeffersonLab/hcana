@@ -1,16 +1,15 @@
 #ifndef ROOT_THcRasterRawHit
 #define ROOT_THcRasterRawHit
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // THcRasterRawHit                                                           //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "THcRawHit.h"
+#include "THcRawHodoHit.h"
 
-class THcRasterRawHit : public THcRawHodoHit {
+class THcRasterRawHit : public THcRawHodoHit { 
 
  public:
 
