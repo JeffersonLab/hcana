@@ -73,14 +73,9 @@ gbpm_y_off = 0.037+.381+.003 ,-0.040-.211-.033 ,0.028+.219
       gfrxbADC_zero_offset = 0.0;
       gfrybADC_zero_offset = 0.0;
 
-                            ;if 0 apply phase correction 
-      gfrx_dphase      = 0.0    ; phase shift (never measured for x so far) 
-      gFrx_synccut     = 0.     ; should be zero if applied on centered distr.
       gfrx_adcmax      = 1000   ; ADC amplitude in channels.
       gfrx_maxsize     = 0.1    ; fast raster amplitude in centimeter.
 
-      gfry_dphase      = 5.8    ; phase shift 
-      gFry_synccut     = 0.     ; should be zero if applied on centered distr.
       gfry_adcmax      = 1000   ; ADC amplitude in channels.
       gfry_maxsize     = 0.1    ; fast raster amplitude in centimeter.
 
