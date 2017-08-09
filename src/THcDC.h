@@ -48,6 +48,8 @@ public:
   Int_t GetTdcWinMin(Int_t plane) const { return fTdcWinMin[plane-1];}
   Int_t GetTdcWinMax(Int_t plane) const { return fTdcWinMax[plane-1];}
 
+  Double_t GetXPos(Int_t plane) const { return fXPos[plane-1];}
+  Double_t GetYPos(Int_t plane) const { return fYPos[plane-1];}
   Double_t GetZPos(Int_t plane) const { return fZPos[plane-1];}
   Double_t GetAlphaAngle(Int_t plane) const { return fAlphaAngle[plane-1];}
   Double_t GetBetaAngle(Int_t plane) const { return fBetaAngle[plane-1];}
@@ -141,6 +143,8 @@ protected:
   Int_t* fWireOrder;
   Int_t* fDriftTimeSign;
 
+  Double_t* fXPos;
+  Double_t* fYPos;
   Double_t* fZPos;
   Double_t* fAlphaAngle;
   Double_t* fBetaAngle;

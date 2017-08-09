@@ -60,6 +60,8 @@ THcDC::THcDC(
   fWireOrder = NULL;
   fDriftTimeSign = NULL;
 
+  fXPos = NULL;
+  fYPos = NULL;
   fZPos = NULL;
   fAlphaAngle = NULL;
   fBetaAngle = NULL;
@@ -259,6 +261,8 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
   delete [] fWireOrder;  fWireOrder = new Int_t [fNPlanes]; // Wire readout order
   delete [] fDriftTimeSign;  fDriftTimeSign = new Int_t [fNPlanes];
 
+  delete [] fXPos;  fXPos = new Double_t [fNPlanes];
+  delete [] fYPos;  fYPos = new Double_t [fNPlanes];
   delete [] fZPos;  fZPos = new Double_t [fNPlanes];
   delete [] fAlphaAngle;  fAlphaAngle = new Double_t [fNPlanes];
   delete [] fBetaAngle;  fBetaAngle = new Double_t [fNPlanes];
@@ -287,6 +291,8 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"dc_wire_counting", fWireOrder, kInt, (UInt_t)fNPlanes},
     {"dc_drifttime_sign", fDriftTimeSign, kInt, (UInt_t)fNPlanes},
 
+    {"dc_xpos", fXPos, kDouble, (UInt_t)fNPlanes},
+    {"dc_ypos", fYPos, kDouble, (UInt_t)fNPlanes},
     {"dc_zpos", fZPos, kDouble, (UInt_t)fNPlanes},
     {"dc_alpha_angle", fAlphaAngle, kDouble, (UInt_t)fNPlanes},
     {"dc_beta_angle", fBetaAngle, kDouble, (UInt_t)fNPlanes},
@@ -399,6 +405,8 @@ void THcDC::DeleteArrays()
   delete [] fWireOrder;   fWireOrder = NULL;
   delete [] fDriftTimeSign;   fDriftTimeSign = NULL;
 
+  delete [] fXPos;   fXPos = NULL;
+  delete [] fYPos;   fYPos = NULL;
   delete [] fZPos;   fZPos = NULL;
   delete [] fAlphaAngle;   fAlphaAngle = NULL;
   delete [] fBetaAngle;   fBetaAngle = NULL;
