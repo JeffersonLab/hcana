@@ -94,8 +94,8 @@ protected:
   Int_t fhdebugflagpr;
   Int_t fdebugstubchisq;
   Double_t fZPos;
-  Double_t fXCenter;
-  Double_t fYCenter;
+  Double_t fXPos;//fXCenter
+  Double_t fYPos;//fYCenter
   Double_t fSpacePointCriterion;
   Double_t fMaxDist; 		// Max dist used in EasySpacePoint methods
   Double_t* fSinBeta;

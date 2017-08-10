@@ -71,8 +71,11 @@ public:
   Double_t GetCenter(Int_t plane) const {
     Int_t chamber = GetNChamber(plane)-1;
     return
-      fXCenter[chamber]*sin(fAlphaAngle[plane-1]) +
-      fYCenter[chamber]*cos(fAlphaAngle[plane-1]);
+      //fXCenter[chamber]*sin(fAlphaAngle[plane-1]) +
+      //fYCenter[chamber]*cos(fAlphaAngle[plane-1]);
+
+      fXPos[plane-1]*sin(fAlphaAngle[plane-1]) +
+      fYPos[plane-1]*cos(fAlphaAngle[plane-1]);
   }
   //  friend class THaScCalib;
 

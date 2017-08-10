@@ -317,6 +317,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"debugtrackprint", &fdebugtrackprint , kInt},
     {0}
   };
+
   gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
   if(fNTracksMaxFP <= 0) fNTracksMaxFP = 10;
   // if(fNTracksMaxFP > HNRACKS_MAX) fNTracksMaxFP = NHTRACKS_MAX;
