@@ -228,8 +228,10 @@ if pbaseenv['CXX'] == 'g++':
 		if '-std=c++0x' not in pbaseenv['CXXFLAGS']:
 			pbaseenv.Append(CXXFLAGS='-std=c++0x')
 	else:
-		if '-std=c++11' not in pbaseenv['CXXFLAGS']:
-			pbaseenv.Append(CXXFLAGS='-std=c++11')
+####		if '-std=c++11' not in pbaseenv['CXXFLAGS']:
+####			pbaseenv.Append(CXXFLAGS='-std=c++11')
+		if '-std=c++14' not in pbaseenv['CXXFLAGS']:
+			pbaseenv.Append(CXXFLAGS='-std=c++14')
 
 ##directorylist = ['./','src','podd','podd/src','podd/hana_decode']
 ##SConscript('podd/SConstruct')
