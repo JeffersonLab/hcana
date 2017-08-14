@@ -21,7 +21,7 @@
 
 #include "THcRawAdcHit.h"
 #include "THcSignalHit.h"
-#include "THaGetApparatus.h"
+#include "THaApparatus.h"
 
 //#include "THcHitList.h"
 
