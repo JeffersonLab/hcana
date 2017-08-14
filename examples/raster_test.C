@@ -8,7 +8,6 @@
   Int_t RunNumber=52947;
   char* RunFileNamePattern="/cache/mss/hallc/daq04/raw/daq04_52947.log.0";
 
-
   // Open the database
   //
   gHcParms->Define("gen_run_number", "Run Number", RunNumber);
