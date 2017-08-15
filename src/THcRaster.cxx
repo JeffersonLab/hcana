@@ -18,6 +18,7 @@
 #include "THcParmList.h"
 #include "THcGlobals.h"
 #include "THaGlobals.h"
+#include "TClonesArray.h"
 
 #include "THcRawAdcHit.h"
 #include "THcSignalHit.h"
@@ -69,36 +70,65 @@ THcRaster::THcRaster( const char* name, const char* description,
   fFrYAADC_zero_offset = 0.0;
   fFrXBADC_zero_offset = 0.0;
   fFrYBADC_zero_offset = 0.0;
+
+  frPosAdcPulseIntRaw  = NULL;
   
   for(Int_t i=0;i<4;i++){
     fPedADC[i] = 0;
   }
-}
 
+ InitArrays();
+
+}
 //_____________________________________________________________________________
 THcRaster::THcRaster():
-  THaBeamDet()
+  THaBeamDet("THcRaster")
 {
   //Constructor
   frPosAdcPulseIntRaw = NULL;
+
+   InitArrays();
+
 }
 
 //_____________________________________________________________________________
-_____________________________________________________________________________
 THcRaster::~THcRaster()
 {
   //Destructor
   delete frPosAdcPulseIntRaw;  frPosAdcPulseIntRaw  = NULL;
 
-  DeleteArrays();
-}
+   DeleteArrays();
 
+}
+//_____________________________________________________________________________
+THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
+{
+  cout << "THcRaster::Init()" << endl;
+
+  // Fill detector map with RASTER type channels
+  char EngineDID[] = "xRASTER";
+  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
+    static const char* const here = "Init()";
+    Error( Here(here), "Error filling detectormap for %s.", EngineDID);
+    return kInitError;
+  }
+
+  THcHitList::InitHitList(fDetMap,"THcRasterRawHit",fDetMap->GetTotNumChan()+1);
+
+  EStatus status;
+  if( (status = THaBeamDet::Init( date )) )
+    return fStatus=status;
+
+  return fStatus = kOK;
+
+}
 //_____________________________________________________________________________
 Int_t THcRaster::ReadDatabase( const TDatime& date )
 {
 
   // Read parameters such as calibration factor, of this detector from the database.
-  cout << "THcRaster::ReadDatabase()" << endl;
+  //cout << "THcRaster::ReadDatabase()" << endl;
 
   char prefix[2];
 
@@ -176,30 +206,6 @@ Int_t THcRaster::DefineVariables( EMode mode )
   };
 
   return DefineVarsFromList( vars, mode );
-}
-
-//_____________________________________________________________________________
-THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
-{
-  cout << "THcRaster::Init()" << endl;
-
-  // Fill detector map with RASTER type channels
-  char EngineDID[] = "xRASTER";
-  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
-  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
-    static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.", EngineDID);
-    return kInitError;
-  }
-
-  THcHitList::InitHitList(fDetMap,"THcRasterRawHit",fDetMap->GetTotNumChan()+1);
-
-  EStatus status;
-  if( (status = THaBeamDet::Init( date )) )
-    return fStatus=status;
-
-  return fStatus = kOK;
-
 }
 
 //_____________________________________________________________________________
@@ -351,6 +357,12 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
 
 //_____________________________________________________________________________
 Int_t THcRaster::Process( ){
+
+Double_t fgpBeam = 0.001;
+  DBRequest list[] = {
+    {"gpbeam", &fgpBeam, kDouble, 0, 1},
+    {0}
+  };
 
 gHcParms->LoadParmValues(list);
 

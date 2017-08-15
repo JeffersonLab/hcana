@@ -63,10 +63,10 @@ gbpm_y_off = 0.037+.381+.003 ,-0.040-.211-.033 ,0.028+.219
       gfrx_adcpercm    = 4364.7 ; = FR channels per cm deflection on target
       gfry_adcpercm    = 5471.9 ; from harp scan (H00A), June 19, 2004
        
-      gfrxa_adcpercm   = 1.0
-      gfrya_adcpercm   = 1.0
-      gfrxb_adcpercm   = 1.0
-      gfryb_adcpercm   = 1.0
+      gfrxa_adcpercm   = 1.0;
+      gfrya_adcpercm   = 1.0;
+      gfrxb_adcpercm   = 1.0;
+      gfryb_adcpercm   = 1.0;
 
       gfrxaADC_zero_offset = 0.0;
       gfryaADC_zero_offset = 0.0;

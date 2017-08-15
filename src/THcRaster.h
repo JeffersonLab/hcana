@@ -21,6 +21,7 @@ class THcRaster : public THaBeamDet, public THcHitList {
 
   THcRaster(const char* name, const char* description ="",THaApparatus* a = NULL );
 
+  THcRaster();
   ~THcRaster();
   EStatus    Init( const TDatime& run_time );
 
@@ -33,6 +34,10 @@ class THcRaster : public THaBeamDet, public THcHitList {
 
   Double_t GetCurrentX() { return fRawPos[0]; }
   Double_t GetCurrentY() { return fRawPos[1]; }
+
+  void  InitArrays() { /* do nothing */;}
+  void  DeleteArrays() { /* do nothing */;}
+
 
  protected:
 
@@ -74,6 +79,8 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Double_t  fFrYAADC_zero_offset;
   Double_t  fFrXBADC_zero_offset;
   Double_t  fFrYBADC_zero_offset;
+
+  Double_t fNhits;
 
   TClonesArray* frPosAdcPulseIntRaw;
 
