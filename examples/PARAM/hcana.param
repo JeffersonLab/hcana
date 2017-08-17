@@ -107,6 +107,10 @@ haero_beta_max = 1.2
 haero_enorm_min = 0.0
 haero_enorm_max = 1.5
 
+; Track matching delta p (dp) cut values
+haero_dp_min = -20.0
+haero_dp_max = 25.0
+
 ; ADC time window cut values used to select "good" ADC events
 haero_adcTimeWindowMin = 500.
 haero_adcTimeWindowMax = 2500.
@@ -140,6 +144,10 @@ hcer_red_chi2_max = 25.0
 
 hcer_enorm_min = 0.0
 hcer_enorm_max = 1.5
+
+; Track matching delta p (dp) cut values
+hcer_dp_min = -20.0
+hcer_dp_max = 25.0
 
 hcer_adcTimeWindowMin = 1500.
 hcer_adcTimeWindowMax = 3500.
