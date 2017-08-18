@@ -506,15 +506,15 @@ void THcScintillatorPlane::Clear( Option_t* )
 
   //Clear Good TDC Variables
   for (UInt_t ielem = 0; ielem < fGoodPosTdcTimeUnCorr.size(); ielem++) {
-    fGoodPosTdcTimeUnCorr.at(ielem)          = 0.0;
-    fGoodPosTdcTimeCorr.at(ielem)      = 0.0;
-    fGoodPosTdcTimeTOFCorr.at(ielem)   = 0.0;
+    fGoodPosTdcTimeUnCorr.at(ielem)          = kBig;
+    fGoodPosTdcTimeCorr.at(ielem)      = kBig;
+    fGoodPosTdcTimeTOFCorr.at(ielem)   = kBig;
   }
 
   for (UInt_t ielem = 0; ielem < fGoodNegTdcTimeUnCorr.size(); ielem++) {
-    fGoodNegTdcTimeUnCorr.at(ielem)          = 0.0;
-    fGoodNegTdcTimeCorr.at(ielem)      = 0.0;
-    fGoodNegTdcTimeTOFCorr.at(ielem)   = 0.0;
+    fGoodNegTdcTimeUnCorr.at(ielem)          = kBig;
+    fGoodNegTdcTimeCorr.at(ielem)      = kBig;
+    fGoodNegTdcTimeTOFCorr.at(ielem)   = kBig;
   }
 
 
