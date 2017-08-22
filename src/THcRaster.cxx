@@ -103,7 +103,7 @@ THcRaster::~THcRaster()
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
 {
-  cout << "THcRaster::Init()" << endl;
+ // cout << "THcRaster::Init()" << endl;
 
   // Fill detector map with RASTER type channels
   char EngineDID[] = "xRASTER";
@@ -114,7 +114,7 @@ THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
     return kInitError;
   }
 
-  THcHitList::InitHitList(fDetMap,"THcRasterRawHit",fDetMap->GetTotNumChan()+1);
+  InitHitList(fDetMap,"THcRasterRawHit",fDetMap->GetTotNumChan()+1);
 
   EStatus status;
   if( (status = THaBeamDet::Init( date )) )
@@ -181,7 +181,7 @@ Int_t THcRaster::DefineVariables( EMode mode )
 {
   // Initialize global variables for histogramming and tree
 
-  cout << "THcRaster::DefineVariables called " << GetName() << endl;
+  //cout << "THcRaster::DefineVariables called " << GetName() << endl;
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
@@ -189,18 +189,18 @@ Int_t THcRaster::DefineVariables( EMode mode )
   // Register variables in global list
 
   RVarDef vars[] = {
-    {"frxa_raw_adc",  "Raster Xa raw ADC",    "fRawXaADC"},
-    {"frya_raw_adc",  "Raster Ya raw ADC",    "fRawYaADC"},
-    {"frxb_raw_adc",  "Raster Xb raw ADC",    "fRawXbADC"},
-    {"fryb_raw_adc",  "Raster Yb raw ADC",    "fRawYbADC"},
-    {"frxa_adc",  "Raster Xa ADC",    "fXaADC"},
-    {"frya_adc",  "Raster Ya ADC",    "fYaADC"},
-    {"frxb_adc",  "Raster Xb ADC",    "fXbADC"},
-    {"fryb_adc",  "Raster Yb ADC",    "fYbADC"},
-    {"frxa",  "Raster Xa position",   "fXapos"},
-    {"frya",  "Raster Ya position",   "fYapos"},
-    {"frxb",  "Raster Xb position",   "fXbpos"},
-    {"fryb",  "Raster Yb position",   "fYbpos"},
+    {"frxaRawAdc",  "Raster Xa raw ADC",    "fRawXAADC"},
+    {"fryaRawAdc",  "Raster Ya raw ADC",    "fRawYAADC"},
+    {"frxbRawAdc",  "Raster Xb raw ADC",    "fRawXBADC"},
+    {"frybRawAdc",  "Raster Yb raw ADC",    "fRawYBADC"},
+    {"frxaAdc",  "Raster Xa ADC",    "fXAADC"},
+    {"fryaAdc",  "Raster Ya ADC",    "fYAADC"},
+    {"frxbAdc",  "Raster Xb ADC",    "fXBADC"},
+    {"frybAdc",  "Raster Yb ADC",    "fYBADC"},
+    {"frxa",  "Raster Xa position",   "fXApos"},
+    {"frya",  "Raster Ya position",   "fYApos"},
+    {"frxb",  "Raster Xb position",   "fXBpos"},
+    {"fryb",  "Raster Yb position",   "fYBpos"},
     {"posAdcCounter",   "Positive ADC counter numbers",   "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
     { 0 }
   };
