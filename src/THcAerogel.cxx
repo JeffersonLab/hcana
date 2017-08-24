@@ -1,6 +1,5 @@
 /** \class THcAerogel
     \ingroup Detectors
-
 \brief Class for an Aerogel detector consisting of pairs of PMT's
     attached to a diffuser box
 */
@@ -220,7 +219,7 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fNegGain = new Double_t[fNelem];
 
   // 6 GeV variables
-  fTdcOffset   = 0; // Offset to make reference time subtracted times positive
+  fTdcOffset   = 0; // Offset to make reference time subtracted times positve
   fPosPedLimit = new Int_t[fNelem];
   fNegPedLimit = new Int_t[fNelem];
   fA_Pos       = new Float_t[fNelem];
