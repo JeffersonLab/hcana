@@ -10,6 +10,42 @@
  The usual name of this object is either "H", "S", "P"
  for HMS, SOS, or suPerHMS respectively
 
+ In method ReadDatabase  calls the THaSpectrometer::SetCentralAngles(th_geo,ph_geo,bend_down)
+  bend_down is flag that should equal kFALSE for Hall C spectrometers
+  th_geo and ph_geo in degrees.
+  Define the LAB coordinate system so the +Z points to beam dump, +Y is up, +X is beam left
+  th_geo is rotation about the Y axis in XZ plane to coordinates X',Y=Y',Z'
+  After th_geo rotation, ph_geo rotation is about the X' axis in the  Y'Z' plane.
+  Calls THaAnalysisObject::GeoToSph to calculate the spherical angles. th_sph and ph_sph
+  th_sph is rotation about the Y axis in XZ plane to coordinates X',Y=Y',Z
+  After th_sph rotation, ph_sph rotation is about the original Z axis
+  In Lab coordinate system:
+       X = r*sin(th_geo)*cos(ph_geo)          X = r*sin(th_sph)*cos(ph_sph)
+       Y = r*sin(ph_geo)                      Y = r*sin(th_sph)*sin(ph_sph)
+       Z = r*cos(th_geo)*cos(ph_geo)          Z = r*cos(th_sph)
+
+      cos(th_sph) = cos(th_geo)*cos(ph_geo)
+      cos(ph_sph) = sin(th_geo)*cos(ph_geo)/sqrt(1-cos^2(th_geo)*cos^2(ph_geo))
+
+      GeoToSph is coded so that 
+       1) negative th_geo and ph_geo = 0 returns th_sph=abs(th_geo) and ph_sph =180
+       2) positive th_geo and ph_geo = 0 returns th_sph=th_geo and ph_sph =0
+
+   Using the spherical angles, the TRotation fToLabRot and inverse fToTraRot are calculated
+    fToLabRot is rotation matrix from the spectrometer TRANSPORT system to Lab system
+     TRANSPORT coordinates are +X_tra points vertically down, +Z_tra is along the central ray and +Y_tra = ZxX
+     For ph_sph = 0   X_lab = Y_tra*cos(th_sph) + Z_tra*sin(th_sph)
+                      Y_lab = -X_tra
+                      Z_lab = -Y_tra*sin(th_sph) + Z_tra*cos(th_sph)
+     For ph_sph = 180 X_lab = Y_tra*cos(th_sph) - Z_tra*sin(th_sph)
+                      Y_lab = -X_tra
+                      Z_lab = Y_tra*sin(th_sph) + Z_tra*cos(th_sph)
+
+
+                      
+
+  
+
 \author S. A. Wood
 
 */
@@ -224,7 +260,13 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   fTheta_lab=fTheta_lab + fThetaCentralOffset*TMath::RadToDeg();
   Double_t ph = fPhi_lab+fPhiOffset*TMath::RadToDeg();
   cout << "Central angles = " << fTheta_lab << endl;
-  SetCentralAngles(fTheta_lab, ph, false);
+  // SetCentralAngles method in podd THaSpectrometer
+  // fTheta_lab and ph are geographical angles, converts to spherical coordinates
+  // Need to set fTheta_lab to negative for spectrometer like HMS on beam right
+  //   This gives phi_sph = 180 th_sph=abs(th_geo)
+  // Computes TRotation fToLabRot and fToTraRot
+  Bool_t bend_down = kFALSE;
+  SetCentralAngles(fTheta_lab, ph, bend_down);
   Double_t off_x = 0.0, off_y = 0.0, off_z = 0.0;
   fPointingOffset.SetXYZ( off_x, off_y, off_z );
 
@@ -313,7 +355,40 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 
   for (Int_t it=0;it<tracks.GetLast()+1;it++) {
     THaTrack* track = static_cast<THaTrack*>( tracks[it] );
+    Double_t xptar=kBig,yptar=kBig,ytar=kBig,delta=kBig;
+    Double_t xtar=0;
+    CalculateTargetQuantities(track,xtar,xptar,ytar,yptar,delta); 
+    // Transfer results to track
+    // No beam raster yet
+    //; In transport coordinates phi = hyptar = dy/dz and theta = hxptar = dx/dz
+    //;    but for unknown reasons the yp offset is named  htheta_offset
+    //;    and  the xp offset is named  hphi_offset
 
+    track->SetTarget(0.0, ytar*100.0, xptar+fPhiOffset, yptar+fThetaOffset);
+    track->SetDp(delta*100.0+fDeltaOffset);	// Percent.  (Don't think podd cares if it is % or fraction)
+    // There is an hpcentral_offset that needs to be applied somewhere.
+    // (happly_offs)
+    Double_t ptemp = fPcentral*(1+track->GetDp()/100.0);
+    track->SetMomentum(ptemp);
+    TVector3 pvect_temp;
+    TransportToLab(track->GetP(),track->GetTTheta(),track->GetTPhi(),pvect_temp);
+    track->SetPvect(pvect_temp);
+  }
+
+  if (fHodo==0 || (( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 )) ) {
+    BestTrackSimple();
+  } else if (fHodo!=0 && fSelUsingPrune !=0) {
+    BestTrackUsingPrune();
+  } else if (fHodo!=0){
+    BestTrackUsingScin();
+  }
+
+
+  return 0;
+}
+//
+void THcHallCSpectrometer::CalculateTargetQuantities(THaTrack* track,Double_t gbeam_y,Double_t  xptar,Double_t ytar,Double_t yptar,Double_t delta) 
+{
     Double_t hut[5];
     Double_t hut_rot[5];
 
@@ -321,8 +396,6 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     hut[1] = track->GetTheta() + fAngOffset_x;//radians
     hut[2] = track->GetY()/100.0 + fZTrueFocus*track->GetPhi() + fDetOffset_y;//m
     hut[3] = track->GetPhi() + fAngOffset_y;//radians
-
-    Double_t gbeam_y = 0.0;// This will be the y position from the fast raster
 
     hut[4] = -gbeam_y/100.0;
 
@@ -351,35 +424,12 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 	sum[k] += term*fReconTerms[iterm].Coeff[k];
       }
     }
-    // Transfer results to track
-    // No beam raster yet
-    //; In transport coordinates phi = hyptar = dy/dz and theta = hxptar = dx/dz
-    //;    but for unknown reasons the yp offset is named  htheta_offset
-    //;    and  the xp offset is named  hphi_offset
-
-    track->SetTarget(0.0, sum[1]*100.0, sum[0]+fPhiOffset, sum[2]+fThetaOffset);
-    track->SetDp(sum[3]*100.0+fDeltaOffset);	// Percent.  (Don't think podd cares if it is % or fraction)
-    // There is an hpcentral_offset that needs to be applied somewhere.
-    // (happly_offs)
-    Double_t ptemp = fPcentral*(1+track->GetDp()/100.0);
-    track->SetMomentum(ptemp);
-    TVector3 pvect_temp;
-    TransportToLab(track->GetP(),track->GetTTheta(),track->GetTPhi(),pvect_temp);
-    track->SetPvect(pvect_temp);
-  }
-
-  if (fHodo==0 || (( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 )) ) {
-    BestTrackSimple();
-  } else if (fHodo!=0 && fSelUsingPrune !=0) {
-    BestTrackUsingPrune();
-  } else if (fHodo!=0){
-    BestTrackUsingScin();
-  }
-
-
-  return 0;
+    xptar=sum[0];
+    ytar=sum[1];
+    yptar=sum[2];
+    delta=sum[3];
 }
-
+//
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::TrackCalc()
 {
