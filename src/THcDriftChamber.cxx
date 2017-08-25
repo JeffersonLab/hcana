@@ -909,7 +909,7 @@ void THcDriftChamber::CorrectHitTimes()
 	y*plane->GetReadoutCorr()/fWireVelocity :
 	x*plane->GetReadoutCorr()/fWireVelocity;
 
-      //     if (fhdebugflagpr) cout << "Correcting hit " << hit << " " << plane->GetPlaneNum() << " " << isp << "/" << ihit << "  " << x << "," << y << endl;
+      //cout << fFixPropagationCorrection << "  Correcting hit " << hit << " " << plane->GetPlaneNum() << " " << isp << "/" << ihit << "  " << x << "," << y << " time coor = " << time_corr<< endl;
       // Fortran ENGINE does not do this check, so hits can get "corrected"
       // multiple times if they belong to multiple space points.
       // To reproduce the precise ENGINE behavior, remove this if condition.
@@ -1134,11 +1134,11 @@ void THcDriftChamber::LeftRight()
     // Calculate final coordinate based on plusminusbest
     // Update the hit positions in the space points
     for(Int_t ihit=0; ihit<nhits; ihit++) {
-      // Save left/right status with the hit and in the space point
+      // Save left/right status with the hit and in the spaleftce point
       // In THcDC will decide which to used based on fix_lr flag
       sp->GetHit(ihit)->SetLeftRight(plusminusbest[ihit]);
       sp->SetHitLR(ihit, plusminusbest[ihit]);
-    }
+ }
 
     // Stubs are calculated in rotated coordinate system
     // (I think this rotates in case chambers not perpendicular to central ray)
@@ -1176,10 +1176,9 @@ Double_t THcDriftChamber::FindStub(Int_t nhits, THcSpacePoint *sp,
   Double_t zeros[] = {0.0,0.0,0.0};
   TVectorD TT; TT.Use(3, zeros); // X, X', Y
   Double_t dpos[nhits];
-
   for(Int_t ihit=0;ihit<nhits; ihit++) {
     dpos[ihit] = sp->GetHit(ihit)->GetPos()
-      + plusminus[ihit]*sp->GetHit(ihit)->GetDist()
+      + plusminus[ihit]*sp->GetHitDist(ihit)
       - fPsi0[plane_list[ihit]];
     for(Int_t index=0;index<3;index++) {
       TT[index]+= dpos[ihit]*fStubCoefs[plane_list[ihit]][index]
