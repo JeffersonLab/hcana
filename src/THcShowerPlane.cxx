@@ -17,6 +17,8 @@ One plane of shower blocks with side readout
 #include "math.h"
 #include "THaTrack.h"
 #include "THaTrackProj.h"
+#include "THcCherenkov.h"         //for efficiency calculations
+#include "THcHallCSpectrometer.h"
 
 #include <cstring>
 #include <cstdio>
@@ -158,6 +160,9 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   fDataSampHigh=49;
   fAdcNegThreshold=0.;
   fAdcPosThreshold=0.;
+  fStatCerMin=1.;
+  fStatSlop=2.;
+  fStatMaxChi2=10.;
   DBRequest list[]={
     {"cal_AdcNegThreshold", &fAdcNegThreshold, kDouble, 0, 1},
     {"cal_AdcPosThreshold", &fAdcPosThreshold, kDouble, 0, 1},
@@ -166,6 +171,9 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
     {"cal_data_sample_low", &fDataSampLow, kInt, 0, 1},
     {"cal_data_sample_high", &fDataSampHigh, kInt, 0, 1},
     {"cal_debug_adc", &fDebugAdc, kInt, 0, 1},
+    {"stat_cermin", &fStatCerMin, kDouble, 0, 1},
+    {"stat_slop", &fStatSlop, kDouble, 0, 1},
+    {"stat_maxchisq", &fStatMaxChi2, kDouble, 0, 1},
     {0}
   };
 
@@ -243,6 +251,13 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   // fEneg = new Double_t[fNelem];
   // fEmean= new Double_t[fNelem];
 
+  // Numbers of tracks and hits , for efficiency calculations.
+  
+  fStatNumTrk = vector<Int_t> (fNelem, 0);
+  fStatNumHit = vector<Int_t> (fNelem, 0);
+  fTotStatNumTrk = 0;
+  fTotStatNumHit = 0;
+  
   // Debug output.
 
   if (fParent->fdbg_init_cal) {
@@ -304,6 +319,19 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
     DefineVarsFromList( vars, mode);
   } //end debug statement
 
+  // Register counters for efficiency calculations in gHcParms so that the
+  // variables can be used in end of run reports.
+
+  gHcParms->Define(Form("%sstat_trksum%d", GetParent()->GetPrefix(), fLayerNum),
+	  Form("Number of tracks in calo. layer %d",fLayerNum), fTotStatNumTrk);
+  gHcParms->Define(Form("%sstat_hitsum%d", GetParent()->GetPrefix(), fLayerNum),
+	 Form("Number of hits in calo. layer %d", fLayerNum), fTotStatNumHit);
+
+  cout << "THcShowerPlane::DefineVariables: registered counters "
+       << Form("%sstat_trksum%d",GetParent()->GetPrefix(),fLayerNum) << " and "
+       << Form("%sstat_hitsum%d",GetParent()->GetPrefix(),fLayerNum) << endl;
+  //  getchar();
+    
   RVarDef vars[] = {
     {"posAdcErrorFlag",    "List of positive raw ADC Error Flags",  "frPosAdcErrorFlag.THcSignalHit.GetData()"},
     {"negAdcErrorFlag",    "List of negative raw ADC Error Flags ", "frNegAdcErrorFlag.THcSignalHit.GetData()"},
@@ -890,4 +918,93 @@ void THcShowerPlane::InitializePedestals( )
     fNegPedSum2[i] = 0;
     fNegPedCount[i] = 0;
   }
+}
+
+//_____________________________________________________________________________
+Int_t THcShowerPlane::AccumulateStat(TClonesArray& tracks )
+{
+  // Accumumate statistics for efficiency calculations.
+  //
+  // Choose electron events in gas Cherenkov with good Chisq of the best track.
+  // Project best track to the plane,
+  // calculate row number for the track,
+  // accrue number of tracks for the row,
+  // accrue number of hits for the row, if row is hit.
+  // Accrue total numbers of tracks and hits for plane.
+
+  THaTrack* BestTrack = static_cast<THaTrack*>( tracks[0]);
+  if (BestTrack->GetChi2()/BestTrack->GetNDoF() > fStatMaxChi2) return 0;
+
+  THcHallCSpectrometer *app=dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+
+  THaDetector* detc;
+  if (GetParent()->GetPrefix()[0] == 'P')
+    detc = app->GetDetector("hgcer");
+  else
+    detc = app->GetDetector("cer");
+  
+  THcCherenkov* hgcer = dynamic_cast<THcCherenkov*>(detc);
+  if (!hgcer) {
+    cout << "****** THcShowerPlane::AccumulateStat: HGCer not found! ******"
+	 << endl;
+    return 0;
+  }
+
+  if (hgcer->GetCerNPE() < fStatCerMin) return 0;
+  
+  Double_t XTrk = kBig;
+  Double_t YTrk = kBig;
+  Double_t pathl = kBig;
+
+  // Track interception with plane. The coordinates are in the calorimeter's
+  // local system.
+
+  fOrigin = GetOrigin();
+  THcShower* fParent = (THcShower*) GetParent();
+  fParent->CalcTrackIntercept(BestTrack, pathl, XTrk, YTrk);
+
+  // Transform coordiantes to the spectrometer's coordinate system.
+  XTrk += GetOrigin().X();
+  YTrk += GetOrigin().Y();
+						     
+  for (Int_t i=0; i<fNelem; i++) {
+
+    if (TMath::Abs(XTrk - fParent->GetXPos(fLayerNum-1,i)) < fStatSlop &&
+	YTrk > fParent->GetYPos(fLayerNum-1,1) &&
+	YTrk < fParent->GetYPos(fLayerNum-1,0) ) {
+
+      fStatNumTrk.at(i)++;
+      fTotStatNumTrk++;
+      
+      if (fGoodPosAdcPulseInt.at(i) > 0. || fGoodNegAdcPulseInt.at(i) > 0.) {
+	fStatNumHit.at(i)++;
+	fTotStatNumHit++;
+      }
+      
+    }
+    
+  }
+
+  if ( ((THcShower*) GetParent())->fdbg_tracks_cal ) {
+    cout << "---------------------------------------------------------------\n";
+    cout << "THcShowerPlane::AccumulateStat:" << endl;
+    cout << "   Chi2/NDF = " <<BestTrack->GetChi2()/BestTrack->GetNDoF() << endl;
+    cout << "   HGCER Npe = " << hgcer->GetCerNPE() << endl;
+    cout << "   XTrk, YTrk = " << XTrk << "  " << YTrk << endl;						     
+    for (Int_t i=0; i<fNelem; i++) {
+      if (TMath::Abs(XTrk - fParent->GetXPos(fLayerNum-1,i)) < fStatSlop) {
+
+	cout << "   Module " << i << ", X=" << fParent->GetXPos(fLayerNum-1,i)
+	     << " matches track" << endl;
+
+	if (fGoodPosAdcPulseInt.at(i) > 0. || fGoodNegAdcPulseInt.at(i) > 0.)
+	  cout << "   PulseIntegrals = " << fGoodPosAdcPulseInt.at(i) << "  "
+	       << fGoodNegAdcPulseInt.at(i) << endl;
+      }
+    }
+    cout << "---------------------------------------------------------------\n";
+    //    getchar();
+  }
+  
+  return 1;
 }

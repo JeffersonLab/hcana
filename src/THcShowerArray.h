@@ -89,6 +89,8 @@ public:
   Double_t fvYmin();
   Double_t clMaxEnergyBlock(THcShowerCluster* cluster);
 
+  Int_t AccumulateStat(TClonesArray& tracks);
+    
 protected:
 
 #ifdef HITPIC
@@ -192,6 +194,15 @@ protected:
   TClonesArray* frAdcPulseInt;
   TClonesArray* frAdcPulseAmp;
 
+  //Quatitites for efficiency calculations.
+
+  Double_t fStatCerMin;
+  Double_t fStatSlop;
+  Double_t fStatMaxChi2;
+  vector<Int_t> fStatNumTrk;
+  vector<Int_t> fStatNumHit;
+  Int_t fTotStatNumTrk;
+  Int_t fTotStatNumHit;
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );

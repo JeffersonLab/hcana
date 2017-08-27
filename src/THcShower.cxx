@@ -1169,6 +1169,13 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
     }
   }       //over tracks
 
+  if (Ntracks>0) {
+    for(UInt_t ip=0;ip<fNLayers;ip++) {
+      fPlanes[ip]-> AccumulateStat(tracks);
+    }
+    if(fHasArray) fArray->AccumulateStat(tracks);
+  }
+  
   //Debug output.
 
   if (fdbg_tracks_cal) {
