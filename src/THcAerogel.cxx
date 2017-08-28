@@ -293,6 +293,8 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_beta_max",         &fBetaMax,          kDouble},
     {"aero_enorm_min",        &fENormMin,         kDouble},
     {"aero_enorm_max",        &fENormMax,         kDouble},
+    {"aero_dp_min",           &fDpMin,            kDouble},
+    {"aero_dp_max",           &fDpMax,            kDouble},
     {"aero_diff_box_zpos",    &fDiffBoxZPos,      kDouble},
     {"aero_npe_thresh",       &fNpeThresh,        kDouble},
     {"aero_adcTimeWindowMin", &fAdcTimeWindowMin, kDouble},
@@ -799,6 +801,7 @@ Int_t THcAerogel::FineProcess( TClonesArray& tracks )
     Double_t trackEnergy  = track->GetEnergy();
     Double_t trackMom     = track->GetP();
     Double_t trackENorm   = trackEnergy/trackMom;
+    Double_t trackDp      = track->GetDp();
     Double_t trackXfp     = track->GetX();
     Double_t trackYfp     = track->GetY();
     Double_t trackTheta   = track->GetTheta();
@@ -807,8 +810,9 @@ Int_t THcAerogel::FineProcess( TClonesArray& tracks )
     Bool_t trackRedChi2Cut = trackRedChi2 > fRedChi2Min && trackRedChi2 < fRedChi2Max;
     Bool_t trackBetaCut    = trackBeta    > fBetaMin    && trackBeta    < fBetaMax;
     Bool_t trackENormCut   = trackENorm   > fENormMin   && trackENorm   < fENormMax;
+    Bool_t trackDpCut      = trackDp      > fDpMin      && trackDp      < fDpMax;
 
-    if (trackRedChi2Cut && trackBetaCut && trackENormCut) {
+    if (trackRedChi2Cut && trackBetaCut && trackENormCut && trackDpCut) {
 
       // Project the track to the Aerogel diffuser box plane
       Double_t xAtAero = trackXfp + trackTheta * fDiffBoxZPos;

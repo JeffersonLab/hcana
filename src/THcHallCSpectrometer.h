@@ -41,6 +41,7 @@ public:
 
   virtual Int_t   ReadDatabase( const TDatime& date );
   virtual void    EnforcePruneLimits();
+  virtual void    CalculateTargetQuantities(THaTrack* track,Double_t gbeam_y,Double_t  xptar,Double_t ytar,Double_t yptar,Double_t delta);
   virtual Int_t   FindVertices( TClonesArray& tracks );
   virtual Int_t   TrackCalc();
   virtual Int_t   BestTrackSimple();
