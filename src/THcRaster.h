@@ -21,6 +21,7 @@ class THcRaster : public THaBeamDet, public THcHitList {
 
   THcRaster(const char* name, const char* description ="",THaApparatus* a = NULL );
 
+  THcRaster();
   ~THcRaster();
   EStatus    Init( const TDatime& run_time );
 
@@ -33,6 +34,10 @@ class THcRaster : public THaBeamDet, public THcHitList {
 
   Double_t GetCurrentX() { return fRawPos[0]; }
   Double_t GetCurrentY() { return fRawPos[1]; }
+
+  void  InitArrays() { /* do nothing */;}
+  void  DeleteArrays() { /* do nothing */;}
+
 
  protected:
 
@@ -49,31 +54,50 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Double_t       fgbeam_ypoff; // Beam offsets
   Int_t          fgusefr;   /* Use Raster for beam position */
 
-  Double_t       fRawXADC;  // X raw ADC
-  Double_t       fRawYADC;  // Y raw ADC
-  Double_t       fXADC;     // X ADC
-  Double_t       fYADC;     // Y ADC
-  Double_t       fXpos;     // X position
-  Double_t       fYpos;     // Y position
+  Double_t       fRawXAADC;  // Xa raw ADC
+  Double_t       fRawYAADC;  // Ya raw ADC
+  Double_t       fXAADC;     // Xa ADC
+  Double_t       fYAADC;     // Ya ADC
+  Double_t       fXApos;     // Xa position
+  Double_t       fYApos;     // Ya position
 
-
-  Double_t       fPedADC[2];     // ADC poedestals
-  Double_t       fAvgPedADC[2];     // Avergage ADC poedestals
+  Double_t       fRawXBADC;  // Xb raw ADC
+  Double_t       fRawYBADC;  // Yb raw ADC
+  Double_t       fXBADC;     // Xb ADC
+  Double_t       fYBADC;     // Yb ADC
+  Double_t       fXBpos;     // Xb position
+  Double_t       fYBpos;     // Yb position 
+  
+  Double_t       fPedADC[4];     // ADC pedestals
 
   Double_t       fRawPos[2];     // current in Raster ADCs for position
-  TVector3       fPosition[2];   // Beam position at 1st, 2nd BPM or at the target (meters)
+  TVector3       fPosition[4];   // Beam position at 1st, 2nd BPM or at the target (meters)
   TVector3       fDirection;
+
+  Double_t  fFrXAADC_zero_offset;
+  Double_t  fFrYAADC_zero_offset;
+  Double_t  fFrXBADC_zero_offset;
+  Double_t  fFrYBADC_zero_offset;
+
+  Double_t fNhits;
+
+  TClonesArray* frPosAdcPulseIntRaw;
 
  private:
   Bool_t    fAnalyzePedestals;
   Int_t     fNPedestalEvents;
   Double_t  fFrCalMom;
-  Double_t  fFrXADCperCM;
-  Double_t  fFrYADCperCM;
+
+  Double_t  fFrXAADCperCM;
+  Double_t  fFrYAADCperCM;
+
+  Double_t  fFrXBADCperCM; 
+  Double_t  fFrYBADCperCM;
 
 
   void   CalculatePedestals();
   void   AccumulatePedestals(TClonesArray* rawhits);
+  void   Clear(Option_t* opt="");
 
   ClassDef(THcRaster, 0);	// add THcRaster to ROOT library
 };

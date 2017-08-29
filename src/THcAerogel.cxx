@@ -1,6 +1,5 @@
 /** \class THcAerogel
     \ingroup Detectors
-
 \brief Class for an Aerogel detector consisting of pairs of PMT's
     attached to a diffuser box
 */
@@ -169,7 +168,7 @@ void THcAerogel::DeleteArrays()
 THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
 {
 
-  cout << "THcAerogel::Init for: " << GetName() << endl;
+  // cout << "THcAerogel::Init for: " << GetName() << endl;
 
   char EngineDID[] = "xAERO";
   EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
@@ -196,7 +195,7 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   // This function is called by THaDetectorBase::Init() once at the beginning
   // of the analysis.
 
-  cout << "THcAerogel::ReadDatabase for: " << GetName() << endl;
+  // cout << "THcAerogel::ReadDatabase for: " << GetName() << endl;
 
   char prefix[2];
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
@@ -213,8 +212,8 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
 
   Bool_t optional = true ;
 
-  cout << "Number of " << GetApparatus()->GetName() << "."
-       << GetName() << " PMT pairs defined = " << fNelem << endl;
+  cout << "Created aerogel detector " << GetApparatus()->GetName() << "."
+       << GetName() << " with " << fNelem << " PMT pairs" << endl;
 
   fPosGain = new Double_t[fNelem];
   fNegGain = new Double_t[fNelem];
@@ -293,6 +292,8 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_beta_max",         &fBetaMax,          kDouble},
     {"aero_enorm_min",        &fENormMin,         kDouble},
     {"aero_enorm_max",        &fENormMax,         kDouble},
+    {"aero_dp_min",           &fDpMin,            kDouble},
+    {"aero_dp_max",           &fDpMax,            kDouble},
     {"aero_diff_box_zpos",    &fDiffBoxZPos,      kDouble},
     {"aero_npe_thresh",       &fNpeThresh,        kDouble},
     {"aero_adcTimeWindowMin", &fAdcTimeWindowMin, kDouble},
@@ -321,14 +322,14 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
 
   fIsInit = true;
 
-  cout << "Track Matching Parameters for: " << GetApparatus()->GetName()
-       << "." << GetName() << endl;
-  for (Int_t iregion = 0; iregion < fNRegions; iregion++) {
-    cout << "Region = " << iregion + 1 << endl;
-    for (Int_t ivalue = 0; ivalue < 8; ivalue++)
-      cout << fRegionValue[GetIndex(iregion, ivalue)] << "  ";
-    cout << endl;
-  }
+  // cout << "Track Matching Parameters for: " << GetApparatus()->GetName()
+  //      << "." << GetName() << endl;
+  // for (Int_t iregion = 0; iregion < fNRegions; iregion++) {
+  //   cout << "Region = " << iregion + 1 << endl;
+  //   for (Int_t ivalue = 0; ivalue < 8; ivalue++)
+  //     cout << fRegionValue[GetIndex(iregion, ivalue)] << "  ";
+  //   cout << endl;
+  // }
 
   return kOK;
 }
@@ -338,7 +339,7 @@ Int_t THcAerogel::DefineVariables( EMode mode )
 {
   // Initialize global variables for histogramming and tree
 
-  cout << "THcAerogel::DefineVariables called for: " << GetName() << endl;
+  // cout << "THcAerogel::DefineVariables called for: " << GetName() << endl;
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
@@ -799,6 +800,7 @@ Int_t THcAerogel::FineProcess( TClonesArray& tracks )
     Double_t trackEnergy  = track->GetEnergy();
     Double_t trackMom     = track->GetP();
     Double_t trackENorm   = trackEnergy/trackMom;
+    Double_t trackDp      = track->GetDp();
     Double_t trackXfp     = track->GetX();
     Double_t trackYfp     = track->GetY();
     Double_t trackTheta   = track->GetTheta();
@@ -807,8 +809,9 @@ Int_t THcAerogel::FineProcess( TClonesArray& tracks )
     Bool_t trackRedChi2Cut = trackRedChi2 > fRedChi2Min && trackRedChi2 < fRedChi2Max;
     Bool_t trackBetaCut    = trackBeta    > fBetaMin    && trackBeta    < fBetaMax;
     Bool_t trackENormCut   = trackENorm   > fENormMin   && trackENorm   < fENormMax;
+    Bool_t trackDpCut      = trackDp      > fDpMin      && trackDp      < fDpMax;
 
-    if (trackRedChi2Cut && trackBetaCut && trackENormCut) {
+    if (trackRedChi2Cut && trackBetaCut && trackENormCut && trackDpCut) {
 
       // Project the track to the Aerogel diffuser box plane
       Double_t xAtAero = trackXfp + trackTheta * fDiffBoxZPos;

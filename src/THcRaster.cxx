@@ -5,7 +5,7 @@
   Measures the two magnet currents which are proportional to horizontal and
   vertical beam position
 
-\author Buddhini Waidyawansa
+\author Buddhini Waidyawansa, Melanie Rehfuss and Burcu Duran
 
 */
 #include "TMath.h"
@@ -18,8 +18,11 @@
 #include "THcParmList.h"
 #include "THcGlobals.h"
 #include "THaGlobals.h"
+#include "TClonesArray.h"
 
-//#include "THcHitList.h"
+#include "THcRawAdcHit.h"
+#include "THcSignalHit.h"
+#include "THaApparatus.h"
 
 #include <cstring>
 #include <cstdio>
@@ -38,37 +41,92 @@ THcRaster::THcRaster( const char* name, const char* description,
 
   fAnalyzePedestals = 0;
   fNPedestalEvents = 0;
-  fRawXADC = 0;
-  fRawYADC = 0;
-  fXADC = 0;
-  fYADC = 0;
-  fXpos = 0;
-  fYpos = 0;
+  
+  fRawXAADC = 0;
+  fRawYAADC = 0;
+  fRawXBADC = 0;
+  fRawYBADC = 0;
+  
+  fXAADC = 0;
+  fYAADC = 0;
+  fXBADC = 0;
+  fYBADC = 0;
+
+  fXApos = 0;
+  fYApos = 0;
+  fXBpos = 0;
+  fYBpos = 0;
+
   fFrCalMom = 0;
-  fFrXADCperCM = 0;
-  fFrXADCperCM = 0;
 
-  for(Int_t i=0;i<2;i++){
+  fFrXAADCperCM = 1.0;
+  fFrYAADCperCM = 1.0;
+  fFrXBADCperCM = 1.0; 
+  fFrYBADCperCM = 1.0;
+
+  fFrXAADC_zero_offset = 0.0;
+  fFrYAADC_zero_offset = 0.0;
+  fFrXBADC_zero_offset = 0.0;
+  fFrYBADC_zero_offset = 0.0;
+
+  frPosAdcPulseIntRaw  = NULL;
+  
+  for(Int_t i=0;i<4;i++){
     fPedADC[i] = 0;
-    fAvgPedADC[i] = 0;
   }
-}
 
+ InitArrays();
+
+}
+//_____________________________________________________________________________
+THcRaster::THcRaster():
+  THaBeamDet("THcRaster")
+{
+  //Constructor
+  frPosAdcPulseIntRaw = NULL;
+
+   InitArrays();
+
+}
 
 //_____________________________________________________________________________
 THcRaster::~THcRaster()
 {
+  //Destructor
+  delete frPosAdcPulseIntRaw;  frPosAdcPulseIntRaw  = NULL;
+
+   DeleteArrays();
+
 }
+//_____________________________________________________________________________
+THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
+{
+ // cout << "THcRaster::Init()" << endl;
 
+  // Fill detector map with RASTER type channels
+  char EngineDID[] = "xRASTER";
+  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
+    static const char* const here = "Init()";
+    Error( Here(here), "Error filling detectormap for %s.", EngineDID);
+    return kInitError;
+  }
 
+  InitHitList(fDetMap,"THcRasterRawHit",fDetMap->GetTotNumChan()+1);
 
+  EStatus status;
+  if( (status = THaBeamDet::Init( date )) )
+    return fStatus=status;
 
+  return fStatus = kOK;
+
+}
 //_____________________________________________________________________________
 Int_t THcRaster::ReadDatabase( const TDatime& date )
 {
 
   // Read parameters such as calibration factor, of this detector from the database.
-  cout << "THcRaster::ReadDatabase()" << endl;
+  //cout << "THcRaster::ReadDatabase()" << endl;
 
   char prefix[2];
 
@@ -78,12 +136,19 @@ Int_t THcRaster::ReadDatabase( const TDatime& date )
   prefix[0]='g';
   prefix[1]='\0';
 
+  frPosAdcPulseIntRaw  = new TClonesArray("THcSignalHit", 4);
 
   // string names;
   DBRequest list[]={
     {"fr_cal_mom",&fFrCalMom, kDouble},
-    {"frx_adcpercm",&fFrXADCperCM, kDouble},
-    {"fry_adcpercm",&fFrYADCperCM, kDouble},
+    {"frxa_adcpercm",&fFrXAADCperCM, kDouble},
+    {"frya_adcpercm",&fFrYAADCperCM, kDouble},
+    {"frxb_adcpercm",&fFrXBADCperCM, kDouble},
+    {"fryb_adcpercm",&fFrYBADCperCM, kDouble},
+    {"frxaADC_zero_offset",&fFrXAADC_zero_offset, kDouble},
+    {"fryaADC_zero_offset",&fFrYAADC_zero_offset, kDouble},
+    {"frxbADC_zero_offset",&fFrXBADC_zero_offset, kDouble},
+    {"frybADC_zero_offset",&fFrYBADC_zero_offset, kDouble},
     {"pbeam",&fgpbeam, kDouble},
     {"frx_dist", &fgfrx_dist, kDouble},
     {"fry_dist", &fgfry_dist, kDouble},
@@ -114,7 +179,7 @@ Int_t THcRaster::DefineVariables( EMode mode )
 {
   // Initialize global variables for histogramming and tree
 
-  cout << "THcRaster::DefineVariables called " << GetName() << endl;
+  //cout << "THcRaster::DefineVariables called " << GetName() << endl;
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
@@ -122,12 +187,19 @@ Int_t THcRaster::DefineVariables( EMode mode )
   // Register variables in global list
 
   RVarDef vars[] = {
-    {"frx_raw_adc",  "Raster X raw ADC",    "fRawXADC"},
-    {"fry_raw_adc",  "Raster Y raw ADC",    "fRawYADC"},
-    {"frx_adc",  "Raster X ADC",    "fXADC"},
-    {"fry_adc",  "Raster Y ADC",    "fYADC"},
-    {"frx",  "Raster X position",    "fXpos"},
-    {"fry",  "Raster Y position",    "fYpos"},
+    {"frxaRawAdc",  "Raster Xa raw ADC",    "fRawXAADC"},
+    {"fryaRawAdc",  "Raster Ya raw ADC",    "fRawYAADC"},
+    {"frxbRawAdc",  "Raster Xb raw ADC",    "fRawXBADC"},
+    {"frybRawAdc",  "Raster Yb raw ADC",    "fRawYBADC"},
+    {"frxaAdc",  "Raster Xa ADC",    "fXAADC"},
+    {"fryaAdc",  "Raster Ya ADC",    "fYAADC"},
+    {"frxbAdc",  "Raster Xb ADC",    "fXBADC"},
+    {"frybAdc",  "Raster Yb ADC",    "fYBADC"},
+    {"frxa",  "Raster Xa position",   "fXApos"},
+    {"frya",  "Raster Ya position",   "fYApos"},
+    {"frxb",  "Raster Xb position",   "fXBpos"},
+    {"fryb",  "Raster Yb position",   "fYBpos"},
+    {"posAdcCounter",   "Positive ADC counter numbers",   "frPosAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
     { 0 }
   };
 
@@ -135,26 +207,11 @@ Int_t THcRaster::DefineVariables( EMode mode )
 }
 
 //_____________________________________________________________________________
-THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
+inline 
+void THcRaster::Clear(Option_t* opt)
 {
-  cout << "THcRaster::Init()" << endl;
-
-  // Fill detector map with RASTER type channels
-  if( gHcDetectorMap->FillMap(fDetMap, "RASTER") < 0 ) {
-    static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.",
-  	   "RASTER");
-    return kInitError;
-  }
-
-  THcHitList::InitHitList(fDetMap,"THcRasterRawHit",fDetMap->GetTotNumChan()+1);
-
-  EStatus status;
-  if( (status = THaBeamDet::Init( date )) )
-    return fStatus=status;
-
-  return fStatus = kOK;
-
+  fNhits = 0;
+  frPosAdcPulseIntRaw->Clear();
 }
 
 
@@ -183,20 +240,29 @@ void THcRaster::AccumulatePedestals(TClonesArray* rawhits)
   Int_t nrawhits = rawhits->GetLast()+1;
 
   Int_t ihit=0;
+  UInt_t nrPosAdcHits = 0;
 
   while(ihit<nrawhits) {
     THcRasterRawHit* hit = (THcRasterRawHit *) fRawHitList->At(ihit);
-    if(hit->fADC_xsig>0) {
-      fPedADC[0] += hit->fADC_xsig;
-      //std::cout<<" raster x pedestal collect "<<fPedADC[0]<<std::endl;
-    }
-    if(hit->fADC_ysig>0) {
-      fPedADC[1] += hit->fADC_ysig;
-      //std::cout<<" raster y pedestal collect "<<fPedADC[1]<<std::endl;
-    }
+     THcRawAdcHit&     rawPosAdcHit = hit->GetRawAdcHitPos();
+     Int_t             nsig         = hit->fCounter;
 
+    for (UInt_t thit=0; thit<rawPosAdcHit.GetNPulses(); ++thit) {
+       ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(nsig,rawPosAdcHit.GetPulseIntRaw(thit));
+       ++nrPosAdcHits;
+    }
     ihit++;
   }
+
+    for (Int_t ielem = 0; ielem < frPosAdcPulseIntRaw->GetEntries(); ielem++) {
+       Int_t    nraster           = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+       Double_t pulseIntRaw       = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
+       if (nraster ==0) fPedADC[0] = pulseIntRaw;
+       if (nraster ==1) fPedADC[1] = pulseIntRaw;
+       if (nraster ==2) fPedADC[2] = pulseIntRaw;
+       if (nraster ==3) fPedADC[3] = pulseIntRaw;
+   }
+
 
 }
 
@@ -221,10 +287,15 @@ void THcRaster::CalculatePedestals( )
        endif
      endif
   */
-  for(Int_t i=0;i<2;i++){
+ /* for(Int_t i=0;i<2;i++){
     fAvgPedADC[i] = fPedADC[i]/ fNPedestalEvents;
     // std::cout<<" raster pedestal "<<fAvgPedADC[i]<<std::endl;
   }
+ */
+  fFrXAADC_zero_offset = fPedADC[0]/fNPedestalEvents;
+  fFrYAADC_zero_offset = fPedADC[1]/fNPedestalEvents;
+  fFrXBADC_zero_offset = fPedADC[2]/fNPedestalEvents;
+  fFrYBADC_zero_offset = fPedADC[3]/fNPedestalEvents;
 
 }
 
@@ -256,72 +327,62 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
   }
 
   Int_t ihit = 0;
+  UInt_t nrPosAdcHits = 0;
 
   while(ihit < fNhits) {
-    THcRasterRawHit* hit = (THcRasterRawHit *) fRawHitList->At(ihit);
+    THcRasterRawHit*  hit          = (THcRasterRawHit *) fRawHitList->At(ihit);
+    THcRawAdcHit&     rawPosAdcHit = hit->GetRawAdcHitPos();
+    Int_t             nsig         = hit->fCounter;
 
-    if(hit->fADC_xsig>0) {
-      fRawXADC = hit->fADC_xsig;
-      //std::cout<<" Raw X ADC = "<<fRawXADC<<std::endl;
-    }
-
-    if(hit->fADC_ysig>0) {
-      fRawYADC = hit->fADC_ysig;
-      //std::cout<<" Raw Y ADC = "<<fRawYADC<<std::endl;
+    for (UInt_t thit=0; thit<rawPosAdcHit.GetNPulses(); ++thit) {
+       ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(nsig,rawPosAdcHit.GetPulseIntRaw(thit));
+       ++nrPosAdcHits;
     }
     ihit++;
   }
 
-  return 0;
+    for (Int_t ielem = 0; ielem < frPosAdcPulseIntRaw->GetEntries(); ielem++) {
+       Int_t    nraster           = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+       Double_t pulseIntRaw       = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
+       if (nraster ==0) fRawXAADC = pulseIntRaw;
+       if (nraster ==1) fRawYAADC = pulseIntRaw;
+       if (nraster ==2) fRawXBADC = pulseIntRaw;
+       if (nraster ==3) fRawYBADC = pulseIntRaw;
+   }
+    return 0;
 
 }
-
-
-
-
 
 //_____________________________________________________________________________
 Int_t THcRaster::Process( ){
 
-	Double_t eBeam = 0.001;
+Double_t fgpBeam = 0.001;
   DBRequest list[] = {
-    {"gpbeam", &eBeam, kDouble, 0, 1},
+    {"gpbeam", &fgpBeam, kDouble, 0, 1},
     {0}
   };
-  gHcParms->LoadParmValues(list);
 
-  /*
-    calculate raster position from ADC value.
-    From ENGINE/g_analyze_misc.f -
-
-    gfrx_adc = gfrx_raw_adc - gfrx_adc_ped
-    gfry_adc = gfry_raw_adc - gfry_adc_ped
-  */
+gHcParms->LoadParmValues(list);
 
   // calculate the raster currents
-  fXADC =  fRawXADC-fAvgPedADC[0];
-  fYADC =  fRawYADC-fAvgPedADC[1];
-  //std::cout<<" Raw X ADC = "<<fXADC<<" Raw Y ADC = "<<fYADC<<std::endl;
+  fXAADC =  fRawXAADC-fFrXAADC_zero_offset;
+  fYAADC =  fRawYAADC-fFrYAADC_zero_offset;
 
-  /*
-    calculate the raster positions
+  fXBADC =  fRawXBADC-fFrXBADC_zero_offset;
+  fYBADC =  fRawYBADC-fFrYBADC_zero_offset;
 
-    gfrx = (gfrx_adc/gfrx_adcpercm)*(gfr_cal_mom/ebeam)
-    gfry = (gfry_adc/gfry_adcpercm)*(gfr_cal_mom/ebeam)
-  */
+  fXApos = (fXAADC/fFrXAADCperCM)*(fFrCalMom/fgpbeam);
+  fYApos = (fYAADC/fFrYAADCperCM)*(fFrCalMom/fgpbeam);
 
-  fXpos = (fXADC/fFrXADCperCM)*(fFrCalMom/eBeam);
-  fYpos = (fYADC/fFrYADCperCM)*(fFrCalMom/eBeam);
-
-  // std::cout<<" X = "<<fXpos<<" Y = "<<fYpos<<std::endl;
-
+  fXBpos = (fXBADC/fFrXBADCperCM)*(fFrCalMom/fgpbeam);
+  fYBpos = (fYBADC/fFrYBADCperCM)*(fFrCalMom/fgpbeam);
 
   Double_t tt;
   Double_t tp;
   if(fgusefr != 0) {
-    fPosition[1].SetXYZ(fXpos+fgbeam_xoff, fYpos+fgbeam_yoff, 0.0);
-    tt = fXpos/fgfrx_dist+fgbeam_xpoff;
-    tp = fYpos/fgfry_dist+fgbeam_ypoff;
+    fPosition[1].SetXYZ(fXApos+fgbeam_xoff, fYApos+fgbeam_yoff, 0.0);
+    tt = fXApos/fgfrx_dist+fgbeam_xpoff;
+    tp = fYApos/fgfry_dist+fgbeam_ypoff;
   } else {			// Just use fixed beam position and angle
     fPosition[0].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
     tt = fgbeam_xpoff;

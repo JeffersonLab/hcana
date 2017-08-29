@@ -274,9 +274,8 @@ Int_t THcSecondaryKine::Process( const THaEvData& )
 //_____________________________________________________________________________
 Int_t THcSecondaryKine::ReadDatabase( const TDatime& date )
 {
-   cout << "*************&&&&&&&&&&&&&&************" << endl;
-  cout << "In THcSecondaryKine::ReadDatabase() " << endl;
-  cout << "particleMASS: " << fMX << endl; 
+  // cout << "In THcSecondaryKine::ReadDatabase() " << endl;
+  // cout << "particleMASS: " << fMX << endl; 
 // Query the run database for any parameters of the module that were not
   // set by the constructor. This module has only one parameter,
   // the mass of the detected secondary particle X.

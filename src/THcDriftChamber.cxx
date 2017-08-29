@@ -130,7 +130,7 @@ void THcDriftChamber::AddPlane(THcDriftChamberPlane *plane)
 Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
 {
 
-  cout << "THcDriftChamber::ReadDatabase()" << endl;
+  // cout << "THcDriftChamber::ReadDatabase()" << endl;
   char prefix[2];
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';

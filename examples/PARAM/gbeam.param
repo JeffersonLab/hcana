@@ -62,16 +62,20 @@ gbpm_y_off = 0.037+.381+.003 ,-0.040-.211-.033 ,0.028+.219
       gfr_cal_mom      = 2.038  ; = beam momnetum during calibration run 
       gfrx_adcpercm    = 4364.7 ; = FR channels per cm deflection on target
       gfry_adcpercm    = 5471.9 ; from harp scan (H00A), June 19, 2004
+       
+      gfrxa_adcpercm   = 1.0;
+      gfrya_adcpercm   = 1.0;
+      gfrxb_adcpercm   = 1.0;
+      gfryb_adcpercm   = 1.0;
 
+      gfrxaADC_zero_offset = 0.0;
+      gfryaADC_zero_offset = 0.0;
+      gfrxbADC_zero_offset = 0.0;
+      gfrybADC_zero_offset = 0.0;
 
-                            ;if 0 apply phase correction 
-      gfrx_dphase      = 0.0    ; phase shift (never measured for x so far) 
-      gFrx_synccut     = 0.     ; should be zero if applied on centered distr.
       gfrx_adcmax      = 1000   ; ADC amplitude in channels.
       gfrx_maxsize     = 0.1    ; fast raster amplitude in centimeter.
 
-      gfry_dphase      = 5.8    ; phase shift 
-      gFry_synccut     = 0.     ; should be zero if applied on centered distr.
       gfry_adcmax      = 1000   ; ADC amplitude in channels.
       gfry_maxsize     = 0.1    ; fast raster amplitude in centimeter.
 
@@ -80,8 +84,8 @@ gbpm_y_off = 0.037+.381+.003 ,-0.040-.211-.033 ,0.028+.219
 ; was determined to be 5.8 degree.
 
 ; positions of FR magnets relative to target
-  gfrx_dist  = 2111   ; cm
-  gfry_dist  = 2071   ; cm
+  gfrx_dist  = 1375   ; cm
+  gfry_dist  = 1337   ; cm
 
 
 
