@@ -1,16 +1,8 @@
 // Author : Buddhini Waidyawansa
 // Date : 23-01-2014
-
-
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcRasterRawHit                                                           //
-//                                                                           //
-// Class representing a single raw hit for the raster                        //
-//                                                                           //
-// Contains the X, Y raster voltage signals and sync signals                 //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+//
+// Author : Melanie Rehfuss and Burcu Duran
+// Date : 29-08-2017
 
 #include <cstring>
 #include <cstdio>

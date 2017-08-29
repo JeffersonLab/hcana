@@ -5,7 +5,7 @@
   Measures the two magnet currents which are proportional to horizontal and
   vertical beam position
 
-\author Buddhini Waidyawansa
+\author Buddhini Waidyawansa, Melanie Rehfuss and Burcu Duran
 
 */
 #include "TMath.h"
@@ -23,8 +23,6 @@
 #include "THcRawAdcHit.h"
 #include "THcSignalHit.h"
 #include "THaApparatus.h"
-
-//#include "THcHitList.h"
 
 #include <cstring>
 #include <cstdio>
@@ -366,14 +364,6 @@ Double_t fgpBeam = 0.001;
 
 gHcParms->LoadParmValues(list);
 
-  /*
-    calculate raster position from ADC value.
-    From ENGINE/g_analyze_misc.f -
-
-    gfrx_adc = gfrx_raw_adc - gfrx_adc_ped
-    gfry_adc = gfry_raw_adc - gfry_adc_ped
-  */
-
   // calculate the raster currents
   fXAADC =  fRawXAADC-fFrXAADC_zero_offset;
   fYAADC =  fRawYAADC-fFrYAADC_zero_offset;
@@ -381,24 +371,11 @@ gHcParms->LoadParmValues(list);
   fXBADC =  fRawXBADC-fFrXBADC_zero_offset;
   fYBADC =  fRawYBADC-fFrYBADC_zero_offset;
 
-  //std::cout<<" Raw X ADC = "<<fXADC<<" Raw Y ADC = "<<fYADC<<std::endl;
-
-  /*
-    calculate the raster positions
-
-    gfrx = (gfrx_adc/gfrx_adcpercm)*(gfr_cal_mom/ebeam)
-    gfry = (gfry_adc/gfry_adcpercm)*(gfr_cal_mom/ebeam)
-  */
-
   fXApos = (fXAADC/fFrXAADCperCM)*(fFrCalMom/fgpbeam);
   fYApos = (fYAADC/fFrYAADCperCM)*(fFrCalMom/fgpbeam);
 
   fXBpos = (fXBADC/fFrXBADCperCM)*(fFrCalMom/fgpbeam);
   fYBpos = (fYBADC/fFrYBADCperCM)*(fFrCalMom/fgpbeam);
-
-
-  // std::cout<<" X = "<<fXpos<<" Y = "<<fYpos<<std::endl;
-
 
   Double_t tt;
   Double_t tp;
