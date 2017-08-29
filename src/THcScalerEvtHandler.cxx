@@ -40,6 +40,8 @@ To enable debugging you may try this in the setup script
 #include "Scaler3801.h"
 #include "Scaler1151.h"
 #include "Scaler560.h"
+#include "Scaler9001.h"
+#include "Scaler9250.h"
 #include "THaCodaData.h"
 #include "THaEvData.h"
 #include "TNamed.h"
@@ -386,6 +388,12 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
 	  break;
 	case 3801:
 	  scalers.push_back(new Scaler3801(icrate, islot));
+	  break;
+	case 9001:		// TI Scalers
+	  scalers.push_back(new Scaler9001(icrate, islot));
+	  break;
+	case 9250:		// FADC250 Scalers
+	  scalers.push_back(new Scaler9250(icrate, islot));
 	  break;
 	}
 	if (scalers.size() > 0) {
