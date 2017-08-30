@@ -185,8 +185,6 @@ Int_t THcPrimaryKine::Process( const THaEvData& )
 Int_t THcPrimaryKine::ReadDatabase( const TDatime& date )
 {
 
-  static const char* const here = "THcPrimaryKine::ReadDatabase";
-
 #ifdef WITH_DEBUG
   cout << "In THcPrimaryKine::ReadDatabase()" << endl;
 #endif

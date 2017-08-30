@@ -11,6 +11,7 @@
 
 class THcRunParameters : public THaRunParameters {
 public:
+  using THaRunParameters::operator=;
   THcRunParameters();
   virtual ~THcRunParameters();
 

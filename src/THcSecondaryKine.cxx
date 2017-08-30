@@ -300,6 +300,7 @@ Int_t THcSecondaryKine::ReadDatabase( const TDatime& date )
   return 0;
   */
   //fMX = 0.938;
+  return kOK;
 }
   
 //_____________________________________________________________________________
