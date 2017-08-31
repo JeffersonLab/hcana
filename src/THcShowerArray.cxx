@@ -531,9 +531,9 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
   Int_t ncl=0;
   Int_t block;
     for (THcShowerClusterListIt ppcl = (*fClusterList).begin();
-	 ppcl != (*fClusterList).end(); ppcl++) {
+	 ppcl != (*fClusterList).end(); ++ppcl) {
       for (THcShowerClusterIt pph=(**ppcl).begin(); pph!=(**ppcl).end();
-	   pph++) {
+	   ++pph) {
        block = ((**pph).hitColumn())*fNRows + (**pph).hitRow()+1;
        fBlock_ClusterID[block-1] = ncl;
       }
@@ -548,7 +548,7 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
 
     UInt_t i = 0;
     for (THcShowerClusterListIt ppcl = (*fClusterList).begin();
-	 ppcl != (*fClusterList).end(); ppcl++) {
+	 ppcl != (*fClusterList).end(); ++ppcl) {
 
       cout << "  Cluster #" << i++
 	   <<":  E=" << clE(*ppcl)
@@ -561,7 +561,7 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
 
       Int_t j=0;
       for (THcShowerClusterIt pph=(**ppcl).begin(); pph!=(**ppcl).end();
-	   pph++) {
+	   ++pph) {
 	cout << "  hit " << j++ << ": ";
 	(**pph).show();
       }
@@ -969,7 +969,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	  cout << "-";
 	}
 	cout << "+";
-0      }
+      }
       cout << endl;
       for(Int_t row=0;row<fNRows;row++) {
 	hitpic[row][(piccolumn+1)*(fNColumns+1)+1] = '\0';

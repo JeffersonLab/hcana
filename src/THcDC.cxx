@@ -144,6 +144,8 @@ void THcDC::Setup(const char* name, const char* description)
     if( !newplane or newplane->IsZombie() ) {
       Error( Here(here), "Error creating Drift Chamber plane %s. Call expert.", name);
       MakeZombie();
+      delete [] desc;
+      delete [] desc1;
       return;
     }
     fPlanes.push_back(newplane);

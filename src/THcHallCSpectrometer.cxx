@@ -503,7 +503,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
       Double_t chi2PerDeg;
 
       THaTrack* aTrack = static_cast<THaTrack*>( fTracks->At(itrack) );
-      if (!aTrack) return -1;
+      if (!aTrack) {delete[] x2Hits; delete[] y2Hits; return -1;}
 
       if ( aTrack->GetNDoF() > fSelNDegreesMin ){
 	chi2PerDeg =  aTrack->GetChi2() / aTrack->GetNDoF();
@@ -640,7 +640,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
       keep[ptrack] = kTRUE;
       reject[ptrack] = 0;
       testTracks[ptrack] = static_cast<THaTrack*>( fTracks->At(ptrack) );
-      if (!testTracks[ptrack]) return -1;
+      if (!testTracks[ptrack]) {delete[] keep; delete[] reject; return -1;}
     }
 
     // ! Prune on xptar
