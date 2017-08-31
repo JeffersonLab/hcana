@@ -42,7 +42,7 @@
 ! SAER_ID= 16             ADC
 ! SLUC_ID=17		 ADC
 !BEAM:
-! RASTER_ID= 18          ADC
+! BRASTER_ID= 18          ADC
 ! BPM_ID= 19             ADC
 !
 !   consider subadd equiv. to channel

@@ -167,3 +167,14 @@ hcer_region =    30,  -30,   0,
                  30,   30,  30,
                  .1,   .1,  .1,
                  .1,   .1,  .1
+;
+; New raster code assumes two rasters
+;
+gfrxa_adcpercm = gfrx_adcpercm
+gfrxb_adcpercm = gfrx_adcpercm
+gfrya_adcpercm = gfry_adcpercm
+gfryb_adcpercm = gfry_adcpercm
+gfrxa_adc_zero_offset = 0.0
+gfrxb_adc_zero_offset = 0.0
+gfrya_adc_zero_offset = 0.0
+gfryb_adc_zero_offset = 0.0
