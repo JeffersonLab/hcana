@@ -65,7 +65,8 @@ static const UInt_t defaultDT = 4;
 
 THcScalerEvtHandler::THcScalerEvtHandler(const char *name, const char* description)
   : THaEvtTypeHandler(name,description), evcount(0), ifound(0), fNormIdx(-1),
-    dvars(0), dvarsFirst(0), fScalerTree(0), fUseFirstEvent(kFALSE)
+    dvars(0), dvarsFirst(0), fScalerTree(0), fUseFirstEvent(kFALSE),
+    fDelayedType(-1)
 {
 }
 
@@ -78,10 +79,30 @@ THcScalerEvtHandler::~THcScalerEvtHandler()
 
 Int_t THcScalerEvtHandler::End( THaRunBase* r)
 {
+  // Process any delayed events in order received
+
+  cout << "THcScalerEvtHandler::End Analyzing " << fDelayedEvents.size() << " delayed scaler events" << endl;
+  for(UInt_t* rdata : fDelayedEvents) {
+    AnalyzeBuffer(rdata);
+  }
+  fDelayedEvents.clear();	// Does this free the arrays?
+
   if (fScalerTree) fScalerTree->Write();
   return 0;
 }
 
+void THcScalerEvtHandler::SetDelayedType(int evtype) {
+  /**
+   * \brief Delay analysis of this event type to end.
+   *
+   * Final scaler events generated in readout list end routines may not
+   * come in order in the data stream.  If the event type of a end routine
+   * scaler event is set, then the event contents will be saved and analyzed
+   * at the end of the analysis so that time ordering of scaler events is preserved.
+   */
+  fDelayedType = evtype;
+}
+  
 Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 {
   Int_t lfirst=1;
@@ -124,13 +145,26 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 
   }  // if (lfirst && !fScalerTree)
 
-
-  // Parse the data, load local data arrays.
-
   UInt_t *rdata = (UInt_t*) evdata->GetRawDataBuffer();
 
-  if (fDebugFile) *fDebugFile<<"\n\nTHcScalerEvtHandler :: Debugging event type "<<dec<<evdata->GetEvType()<<endl<<endl;
+  if( evdata->GetEvType() == fDelayedType) { // Save this event for processing later
+    Int_t evlen = evdata->GetEvLength();
+    UInt_t *datacopy = new UInt_t[evlen];
+    fDelayedEvents.push_back(datacopy);
+    for(Int_t i=0;i<evlen;i++) {
+      datacopy[i] = rdata[i];
+    }
+    return 1;
+  } else { 			// A normal event
+    if (fDebugFile) *fDebugFile<<"\n\nTHcScalerEvtHandler :: Debugging event type "<<dec<<evdata->GetEvType()<<endl<<endl;
+    return AnalyzeBuffer(rdata);
+  }
 
+}
+Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
+{
+
+  // Parse the data, load local data arrays.
   UInt_t *p = (UInt_t*) rdata;
 
   UInt_t *plast = p+*p;		// Index to last word in the bank
@@ -270,6 +304,8 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
 
   fStatus = kOK;
   fNormIdx = -1;
+
+  fDelayedEvents.clear();
 
   cout << "Howdy !  We are initializing THcScalerEvtHandler !!   name =   "
         << fName << endl;
