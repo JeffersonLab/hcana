@@ -79,33 +79,40 @@ if evio_libdir is None or evio_incdir is None:
 	evio_local_inc = "%s/evio-%s/%s/include" % (evio_local,evio_version,evio_name)
 	evio_tarfile = "%s/evio-%s.tgz" % (evio_local,evio_version)
 
-	####### Check to see if scons -c has been called #########
-
 	if baseenv.GetOption('clean'):
-    		subprocess.call(['echo', '!!!!!!!!!!!!!! EVIO Cleaning Process !!!!!!!!!!!! '])
-		if not os.path.isdir(evio_local_lib):
-			if not os.path.exists(evio_tarfile):
-				evio_command_scons = "rm libevio*.*; cd %s; wget --no-check-certificate https://coda.jlab.org/drupal/system/files/evio-%s.tgz; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version,evio_version,evio_version)
-			else:
-				evio_command_scons = "rm libevio*.*; cd %s; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version,evio_version)
+		print "!!!!!!!!!!!!!! EVIO Cleaning Process !!!!!!!!!!!! "
+		evio_files = Glob("libevio*.*")
+		for f in evio_files:
+			os.unlink( f )
+
+	if not os.path.isdir(evio_local_lib):
+		if not os.path.exists(evio_tarfile):
+			evio_command_scons = "\
+			mkdir %s;\
+			cd %s;\
+			wget --no-check-certificate https://coda.jlab.org/drupal/system/files/evio-%s.tgz;\
+			" % (evio_local, evio_local, evio_version)
+			print "evio_command_scons = %s" % evio_command_scons
+			os.system(evio_command_scons)
+
+		if os.path.exists(evio_tarfile):
+			evio_command_scons = "\
+			cd %s;\
+			tar xvfz %s;\
+			cd evio-%s/ ;\
+			scons install --prefix=.\
+			" % (evio_local, evio_tarfile, evio_version)
+			print "evio_command_scons = %s" % evio_command_scons
+			os.system(evio_command_scons)
 		else:
-			evio_command_scons = "rm libevio*.*; cd %s; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version)
-		print "evio_command_scons = %s" % evio_command_scons
-		os.system(evio_command_scons)
-	else:
-		if not os.path.isdir(evio_local_lib):
-			if not os.path.exists(evio_tarfile):
-				evio_command_scons = "cd %s; wget --no-check-certificate https://coda.jlab.org/drupal/system/files/evio-%s.tgz; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install --prefix=." % (evio_local,evio_version,evio_version,evio_version)
-			else:
-				evio_command_scons = "cd %s; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install --prefix=." % (evio_local,evio_version,evio_version)
-		else:
-			evio_command_scons = "cd %s; cd evio-%s/ ; scons install --prefix=." % (evio_local,evio_version)
-		print "evio_command_scons = %s" % evio_command_scons
-		os.system(evio_command_scons)
-		evio_local_lib_files = "%s/*.*" % (evio_local_lib)
-		evio_command_libcopy = "cp %s %s" % (evio_local_lib_files,baseenv.subst('$HA_DIR'))
-		print "evio_command_libcopy = %s" % evio_command_libcopy
-		os.system(evio_command_libcopy)
+			print "Can't find the coda tarball: %s" % evio_tarfile
+			Exit(1)
+
+
+	evio_local_lib_files = "%s/*.*" % (evio_local_lib)
+	evio_command_libcopy = "cp %s %s" % (evio_local_lib_files, baseenv.subst('$HA_DIR'))
+	print "evio_command_libcopy = %s" % evio_command_libcopy
+	os.system(evio_command_libcopy)
 
 	baseenv.Append(EVIO_LIB = evio_local_lib)
 	baseenv.Append(EVIO_INC = evio_local_inc)
@@ -114,8 +121,10 @@ else:
 	# os.system(evio_command_scons)
 	baseenv.Append(EVIO_LIB = os.getenv('EVIO_LIBDIR'))
 	baseenv.Append(EVIO_INC = os.getenv('EVIO_INCDIR'))
+
 print "EVIO lib Directory = %s" % baseenv.subst('$EVIO_LIB')
 print "EVIO include Directory = %s" % baseenv.subst('$EVIO_INC')
+
 baseenv.Append(CPPPATH = ['$EVIO_INC'])
 #
 # end evio environment
