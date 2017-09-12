@@ -1,0 +1,12 @@
+;default settings for general option flags.
+  gen_run_starting_event = 1
+  gen_run_stopping_event = 0
+  gen_run_hist_dump_interval = 40000
+
+; hack_enable             run hack_anal if .ne. 0
+  hack_enable = 0
+
+; gen_eloss_enable         (0=disabled) total_eloss.f
+  gen_eloss_enable = 1
+
+

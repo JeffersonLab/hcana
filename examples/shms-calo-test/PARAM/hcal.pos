@@ -1,0 +1,81 @@
+; neglect extra tubes for now.
+hcal_num_neg_columns = 2
+
+; Z position of front of shower counter layers
+; guesses, based on the fact that the back scin plane is supposedly at 322.0
+;  (add 25 to each from original value) - JRA
+      hcal_1pr_zpos = (350.0-11.31)
+      hcal_2ta_zpos = (361.0-11.31)
+      hcal_3ta_zpos = (372.0-11.31)
+      hcal_4ta_zpos = (383.0-11.31)
+; Thickness of shower counter blocks, blocks are 10 * 10 * 70 cm^3
+      hcal_1pr_thick = 10.0
+      hcal_2ta_thick = 10.0
+      hcal_3ta_thick = 10.0
+      hcal_4ta_thick = 10.0
+; Number of shower counter blocks per layer
+      hcal_1pr_nr = 13
+      hcal_2ta_nr = 13
+      hcal_3ta_nr = 13
+      hcal_4ta_nr = 13
+; X,Y positions of shower counter blocks
+      hcal_1pr_left  =  35.0
+      hcal_1pr_right = -35.0
+      hcal_1pr_top   = (-69.0-1.4)
+                       (-59.0-1.4)
+                       (-49.0-1.4)
+                       (-39.0-1.4)
+                       (-29.0-1.4)
+                       (-19.0-1.4)
+                       ( -9.0-1.4)
+                       (  1.0-1.4)
+                       ( 11.0-1.4)
+                       ( 21.0-1.4)
+                       ( 31.0-1.4)
+                       ( 41.0-1.4)
+                       ( 51.0-1.4)
+      hcal_2ta_left  =  35.0
+      hcal_2ta_right = -35.0
+      hcal_2ta_top   = (-69.0-1.4)
+                       (-59.0-1.4)
+                       (-49.0-1.4)
+                       (-39.0-1.4)
+                       (-29.0-1.4)
+                       (-19.0-1.4)
+                       ( -9.0-1.4)
+                       (  1.0-1.4)
+                       ( 11.0-1.4)
+                       ( 21.0-1.4)
+                       ( 31.0-1.4)
+                       ( 41.0-1.4)
+                       ( 51.0-1.4)
+      hcal_3ta_left  =  35.0
+      hcal_3ta_right = -35.0
+      hcal_3ta_top   = (-69.0-1.4)
+                       (-59.0-1.4)
+                       (-49.0-1.4)
+                       (-39.0-1.4)
+                       (-29.0-1.4)
+                       (-19.0-1.4)
+                       ( -9.0-1.4)
+                       (  1.0-1.4)
+                       ( 11.0-1.4)
+                       ( 21.0-1.4)
+                       ( 31.0-1.4)
+                       ( 41.0-1.4)
+                       ( 51.0-1.4)
+      hcal_4ta_left  =  35.0
+      hcal_4ta_right = -35.0
+      hcal_4ta_top   = (-69.0-1.4)
+                       (-59.0-1.4)
+                       (-49.0-1.4)
+                       (-39.0-1.4)
+                       (-29.0-1.4)
+                       (-19.0-1.4)
+                       ( -9.0-1.4)
+                       (  1.0-1.4)
+                       ( 11.0-1.4)
+                       ( 21.0-1.4)
+                       ( 31.0-1.4)
+                       ( 41.0-1.4)
+                       ( 51.0-1.4)

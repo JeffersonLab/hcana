@@ -1,14 +1,13 @@
-//*-- Author: Stephen Wood
+/** \class THcDetectorMap
+    \ingroup Base
 
-//////////////////////////////////////////////////////////////////////////
-//
-// THcDetectorMap
-//
-// Class to read and Hall C style detector map
-//   FillMap method builds a map for a specific detector
-//
-//////////////////////////////////////////////////////////////////////////
+\brief Class to read and hold a Hall C style detector map
 
+FillMap method builds a map for a specific detector
+
+\author S. A. Wood
+
+*/
 #include "THcDetectorMap.h"
 
 #include "TObjArray.h"
@@ -51,9 +50,13 @@ struct Functor
 //_____________________________________________________________________________
 Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
 {
-  // Build a DAQ hardware to detector element map for detector detectorname
-  // Reads through the entire list of mappings, adding one element to
-  // detmap for each electronics channel that maps to detectorname.
+/**
+  \param detmap destination of DAQ hardware to detector element map
+  \param name of the detector
+
+  Called be each detector object to build a DAQ hardware to detector
+  element map for the detector.
+*/
 
   list<ModChanList>::iterator imod;
   list<ChaninMod>::iterator ichan;
@@ -89,6 +92,8 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
       Achan.plane = fTable[ich].plane;
       Achan.counter = fTable[ich].counter;
       Achan.signal = fTable[ich].signal;
+      Achan.refchan = fTable[ich].refchan;
+      Achan.refindex = fTable[ich].refindex;
       for(imod=mlist.begin(); imod!= mlist.end(); ++imod) {
 	if((*imod).roc == roc && (*imod).slot == slot) {
 	  //	  cout << "Pushing chan " << Achan.channel << " to " << roc
@@ -134,27 +139,34 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
     Int_t last_signal = -1;
     Int_t first_counter = -1;
     Int_t last_counter = -1;
+    Int_t last_refchan = -1;
+    Int_t last_refindex = -1;
     for(ichan=clistp->begin(); ichan!=clistp->end(); ++ichan) {
       Int_t this_chan = (*ichan).channel;
       Int_t this_counter = (*ichan).counter;
       Int_t this_signal = (*ichan).signal;
       Int_t this_plane = (*ichan).plane;
-      if(last_chan+1!=this_chan || last_counter+1 != this_counter 
-	 || last_plane != this_plane || last_signal!=this_signal) {
+      Int_t this_refchan = (*ichan).refchan;
+      Int_t this_refindex = (*ichan).refindex;
+      if(last_chan+1!=this_chan || last_counter+1 != this_counter
+	 || last_plane != this_plane || last_signal!=this_signal
+	 || last_refchan != this_refchan || last_refindex != this_refindex) {
 	if(last_chan >= 0) {
 	  if(ichan != clistp->begin()) {
-	    //	    cout << "AddModule " << slot << " " << first_chan << 
+	    //	    cout << "AddModule " << slot << " " << first_chan <<
 	    //  " " << last_chan << " " << first_counter << endl;
 	    detmap->AddModule((UShort_t)roc, (UShort_t)slot,
-			      (UShort_t)first_chan, (UShort_t)last_chan, 
-			      (UInt_t) first_counter, model, (Int_t) 0,
-			      (Int_t) -1, (UInt_t)last_plane, (UInt_t)last_signal);
+			      (UShort_t)first_chan, (UShort_t)last_chan,
+			      (UInt_t) first_counter, model, (Int_t) last_refindex,
+			      (Int_t) last_refchan, (UInt_t)last_plane, (UInt_t)last_signal);
 	  }
 	}
 	first_chan = this_chan;
 	first_counter = this_counter;
       }
       last_chan = this_chan;
+      last_refchan = this_refchan;
+      last_refindex = this_refindex;
       last_counter = this_counter;
       last_plane = this_plane;
       last_signal = this_signal;
@@ -162,42 +174,75 @@ Int_t THcDetectorMap::FillMap(THaDetMap *detmap, const char *detectorname)
       //	(*ichan).plane << " " <<  (*ichan).counter << endl;
     }
     detmap->AddModule((UShort_t)roc, (UShort_t)slot,
-		      (UShort_t)first_chan, (UShort_t)last_chan, 
-		      (UInt_t) first_counter, model, (Int_t) 0,
-		      (Int_t) -1, (UInt_t)last_plane, (UInt_t)last_signal);
+		      (UShort_t)first_chan, (UShort_t)last_chan,
+		      (UInt_t) first_counter, model, (Int_t) last_refindex,
+		      (Int_t) last_refchan, (UInt_t)last_plane, (UInt_t)last_signal);
   }
-  
+
   return(0);
 }
 
 //_____________________________________________________________________________
 void THcDetectorMap::Load(const char *fname)
 {
-// Load a Hall C ENGINE style detector map file.  The map file maps
-// a given roc, slot/module, and channel # into a given detector id#, plane
-// number, counter number and signal type.  The mapping between detector
-// names and ids is found in the comments at the begging of the map file.
-// This method looks for those comments, of the form:
-//   XXX_ID = n
-// to establish that mapping between detector name and detector ID.
-//
-// Lines of the form
-//  DETECTOR = n  
-//  ROC = n
-//  SLOT = n
-// are used to establish the module (roc and slot) and the detector
-// for the mapping lines that follow.
-// The actual mappings are of the form 
-//  subadd, plane, counter [, signal]
-// Each of these lines, combined with the detector, roc, slot values
-// establish the roc, slot, subadess -> detector, plane, counter#, sigtype map
-// Other lines that may be in the map file are
-//  NSUBADD = n
-//  BSUB = n
-//  MASK = hex value
-// These define characteristics of the electronics module (# channels,
-//  The bit number specifying the location of the subaddress in a data word
-//  and hex mask that the data word is anded with to retrieve data)
+  /**
+  \param fname name of file containing ENGINE style detector map
+
+  Load a Hall C ENGINE style detector map file.  The map file maps
+  a given roc, slot/module, and channel # into a given detector id#, plane
+  number, counter number and signal type.  The mapping between detector
+  names and ids is found in the comments at the begging of the map file.
+  This method looks for those comments, of the form:
+  ~~~~
+    ! XXX_ID = n
+  ~~~~
+  to establish that mapping between detector name and detector ID.
+
+  Lines of the form
+  ~~~~
+      DETECTOR = n
+      ROC = n
+      SLOT = n [, subadd]
+ ~~~~
+ are used to establish the module (roc and slot) and the detector
+ for the mapping lines that follow.  If a SLOT line has a second value,
+ that value is the channel of that slot that contains a reference time.
+
+ The actual mappings are of the form
+~~~~
+      subadd, plane, counter [, signal]
+~~~~
+ Each of these lines, combined with the detector, roc, slot values
+ establish the roc, slot, subadess -> detector, plane, counter#, sigtype map
+ Other lines that may be in the map file are
+~~~~
+      NSUBADD = n
+      BSUB = n
+      MASK = hex value
+~~~~
+ These define characteristics of the electronics module (# channels,
+ The bit number specifying the location of the subaddress in a data word
+ and hex mask that the data word is anded with to retrieve data)
+
+ A channel giving a reference time for a given slot can be set by putting
+~~~~
+     REFCHAN = subadd
+~~~~
+ after a SLOT line.  (The above SLOT=n,subadd is deprecated).  The line:
+~~~~
+     REFINDEX = index
+~~~~
+ indicates that all following mapping definition use the index'th reference
+ time.  It must be given after each SLOT command.  A channel for a reference
+ time is given by specifying a plane number of at least 1000 in a mapping line
+~~~~
+     subadd, 1000, 0, index
+~~~~
+ The reference time may be used by any channel of the same detector in the
+ same ROC.  If a reference time is used by several different detectors, this
+ mapping line must be duplicated for each detector.  More than one reference
+ time may be specified per ROC by mulitple values for index.
+*/
 
   static const char* const whtspc = " \t";
 
@@ -213,10 +258,12 @@ void THcDetectorMap::Load(const char *fname)
 
   Int_t roc=0;
   Int_t nsubadd=0;
-  Int_t mask=0;
+  //  Int_t mask=0;
   Int_t bsub=0;
   Int_t detector=0;
   Int_t slot=0;
+  Int_t refchan=-1;
+  Int_t refindex=-1;
   Int_t model=0;
 
   fNchans = 0;
@@ -236,12 +283,19 @@ void THcDetectorMap::Load(const char *fname)
       }
       line.erase(0,1);	// Erase "!"
       if(! ((pos=line.find("_ID=")) == string::npos)) {
+	string::size_type llen = line.length();
 	fIDMap[fNIDs].name = new char [pos+1];
 	strncpy(fIDMap[fNIDs].name,line.c_str(),pos);
 	fIDMap[fNIDs].name[pos] = '\0';
 	start = (pos += 4); // Move to after "="
-	while(isdigit(line.at(pos++)));
-	fIDMap[fNIDs++].id = atoi(line.substr(start,pos).c_str());
+	while(pos < llen) {
+	  if(isdigit(line.at(pos))) {
+	    pos++;
+	  } else {
+	    break;
+	  }
+	}
+	fIDMap[fNIDs++].id = atoi(line.substr(start,pos-start).c_str());
       }
       continue;
     }
@@ -266,24 +320,44 @@ void THcDetectorMap::Load(const char *fname)
   // Decide if line is ROC/NSUBADD/MASK/BSUB/DETECTOR/SLOT = something
   // or chan, plane, counter[, signal]
 
-  
+
     if((pos=line.find_first_of("=")) != string::npos) { // Setting parameter
       strcpy(varname, (line.substr(0,pos)).c_str());
-      Int_t valuestartpos = pos+1;
-      Int_t value = atoi(line.substr(valuestartpos).c_str());
+      size_t valuestartpos = pos+1;
+      size_t commapos = line.find_first_of(",");
+      Int_t value;
+      Int_t value2 = -1;
+      if(commapos != string::npos) {
+	//	cout << line.substr(valuestartpos,commapos-valuestartpos) << "|"
+	//	     << line.substr(commapos+1) << "|" << endl;
+	value = atoi(line.substr(valuestartpos,commapos-valuestartpos).c_str());
+	value2 = atoi(line.substr(commapos+1).c_str());
+      } else {
+	value = atoi(line.substr(valuestartpos).c_str());
+      }
       // Some if statements
       if(strcasecmp(varname,"detector")==0) {
 	detector = value;
+	refindex = -1;		// New detector resets ref time info
+	refchan = -1;
       } else if (strcasecmp(varname,"roc")==0) {
 	roc = value;
+	refindex = -1;		// New roc resets ref time info
+	refchan = -1;
       } else if (strcasecmp(varname,"nsubadd")==0) {
 	nsubadd = value;
-      } else if (strcasecmp(varname,"mask")==0) {
-	mask = value;
+      } else if (strcasecmp(varname,"mask")==0) { // mask not used here
+	//mask = value;
       } else if (strcasecmp(varname,"bsub")==0) {
 	bsub = value;
       } else if (strcasecmp(varname,"slot")==0) {
 	slot = value;
+	refchan = value2;  	// Deprecating this
+	refindex = -1;
+      } else if (strcasecmp(varname,"refchan")==0) {
+	refchan = value;	// Applies to just current slot
+      } else if (strcasecmp(varname,"refindex")==0) {
+	refindex = value;	// Applies to just current slot
       }
       if(nsubadd == 96) {
 	model = 1877;
@@ -319,6 +393,8 @@ void THcDetectorMap::Load(const char *fname)
 
       fTable[fNchans].roc=roc;
       fTable[fNchans].slot=slot;
+      fTable[fNchans].refchan=refchan;
+      fTable[fNchans].refindex=refindex;
       fTable[fNchans].channel=channel;
       fTable[fNchans].did=detector;
       fTable[fNchans].plane=plane;
@@ -329,12 +405,11 @@ void THcDetectorMap::Load(const char *fname)
       fNchans++;
     }
   }
-  cout << endl << "   Detector ID Map" << endl << endl;
+  cout << endl << " Detector ID Map" << endl << endl;
   for(Int_t i=0; i < fNIDs; i++) {
-    cout << i << " ";
+    cout << "   ";
     cout << fIDMap[i].name << " " << fIDMap[i].id << endl;
   }
   cout << endl;
 
 }
-

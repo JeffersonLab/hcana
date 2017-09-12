@@ -1,19 +1,23 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcDC                                                              //
-//                                                                           //
-// Class for a generic hodoscope consisting of multiple                      //
-// planes with multiple paddles with phototubes on both ends.                //
-// This differs from Hall A scintillator class in that it is the whole       //
-// hodoscope array, not just one plane.                                      //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** \class THcDC
+    \ingroup Detectors
+
+\brief Analyze a package of horizontal drift chambers.
+
+Uses the
+first letter of the apparatus name as a prefix to parameter names.  The
+paramters, read in the Setup method, determine the number of chambers and
+the number of parameters per plane.
+
+\author S. A. Wood, based on Fortran ENGINE
+
+*/
 
 #include "THcDC.h"
 #include "THaEvData.h"
 #include "THaDetMap.h"
 #include "THcDetectorMap.h"
 #include "THcGlobals.h"
+#include "THaCutList.h"
 #include "THcParmList.h"
 #include "THcDCTrack.h"
 #include "VarDef.h"
@@ -22,6 +26,7 @@
 #include "TClonesArray.h"
 #include "TMath.h"
 #include "TVectorD.h"
+#include "THaApparatus.h"
 
 #include <cstring>
 #include <cstdio>
@@ -79,12 +84,12 @@ THcDC::THcDC(
 //_____________________________________________________________________________
 void THcDC::Setup(const char* name, const char* description)
 {
-
+  // Create the chamber and plane objects using parameters.
   static const char* const here = "Setup";
 
   THaApparatus *app = GetApparatus();
   if(app) {
-    cout << app->GetName() << endl;
+    // cout << app->GetName() << endl;
     fPrefix[0]=tolower(app->GetName()[0]);
     fPrefix[1]='\0';
   } else {
@@ -111,7 +116,7 @@ void THcDC::Setup(const char* name, const char* description)
   };
 
   gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
-  cout << planenamelist << endl;
+  cout << "Plane Name List: " << planenamelist << endl;
   cout << "Drift Chambers: " <<  fNPlanes << " planes in " << fNChambers << " chambers" << endl;
 
   vector<string> plane_names = vsplit(planenamelist);
@@ -139,16 +144,18 @@ void THcDC::Setup(const char* name, const char* description)
     if( !newplane or newplane->IsZombie() ) {
       Error( Here(here), "Error creating Drift Chamber plane %s. Call expert.", name);
       MakeZombie();
+      delete [] desc;
+      delete [] desc1;
       return;
     }
     fPlanes.push_back(newplane);
     newplane->SetDebug(fDebug);
-    cout << "Created Drift Chamber Plane " << fPlaneNames[i] << ", " << desc << endl;
+    // cout << "Created Drift Chamber Plane " << fPlaneNames[i] << ", " << desc << endl;
 
   }
 
   fChambers.clear();
-  for(Int_t i=0;i<fNChambers;i++) {
+  for(UInt_t i=0;i<fNChambers;i++) {
     sprintf(desc1,"Ch%d",i+1);
 
     // Should construct a better chamber name
@@ -171,12 +178,22 @@ THcDC::THcDC( ) :
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
 {
+  // Register the plane objects with the appropriate chambers.
+  // Trigger ReadDatabase to load the remaining parameters
   Setup(GetName(), GetTitle());	// Create the subdetectors here
   EffInit();
 
+  char EngineDID[] = "xDC";
+  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
+    static const char* const here = "Init()";
+    Error( Here(here), "Error filling detectormap for %s.", EngineDID );
+    return kInitError;
+  }
+
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
-  InitHitList(fDetMap, "THcRawDCHit", 1000);
+  InitHitList(fDetMap, "THcRawDCHit", fDetMap->GetTotNumChan()+1);
 
   EStatus status;
   // This triggers call of ReadDatabase and DefineVariables
@@ -193,7 +210,7 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
     }
   }
   // Initialize chambers
-  for(Int_t ic=0;ic<fNChambers;ic++) {
+  for(UInt_t ic=0;ic<fNChambers;ic++) {
     if((status = fChambers[ic]->Init ( date ))) {
       return fStatus=status;
     }
@@ -205,6 +222,9 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   }
 
   fResiduals = new Double_t [fNPlanes];
+  fWire_hit_did = new Double_t [fNPlanes];
+  fWire_hit_should = new Double_t [fNPlanes];
+
 
   // Replace with what we need for Hall C
   //  const DataDest tmp[NDEST] = {
@@ -213,44 +233,18 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   //  };
   //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
 
-  // Will need to determine which apparatus it belongs to and use the
-  // appropriate detector ID in the FillMap call
-  char EngineDID[4];
-
-  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
-  EngineDID[1] = 'D';
-  EngineDID[2] = 'C';
-  EngineDID[3] = '\0';
-  
-  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
-    static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.", 
-	     EngineDID);
-      return kInitError;
-  }
-
   return fStatus = kOK;
 }
 
 //_____________________________________________________________________________
 Int_t THcDC::ReadDatabase( const TDatime& date )
 {
-  // Read this detector's parameters from the database file 'fi'.
+  // Read this detector's parameters from the ThcParmList
   // This function is called by THaDetectorBase::Init() once at the
   // beginning of the analysis.
   // 'date' contains the date/time of the run being analyzed.
 
   //  static const char* const here = "ReadDatabase()";
-
-  // Read data from database 
-  // Pull values from the THcParmList instead of reading a database
-  // file like Hall A does.
-
-  // We will probably want to add some kind of method to gHcParms to allow
-  // bulk retrieval of parameters of interest.
-
-  // Will need to determine which spectrometer in order to construct
-  // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
 
   delete [] fXCenter;  fXCenter = new Double_t [fNChambers];
   delete [] fYCenter;  fYCenter = new Double_t [fNChambers];
@@ -287,22 +281,22 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"min_combos", fMinCombos, kInt, fNChambers},
     {"space_point_criterion", fSpace_Point_Criterion, kDouble, fNChambers},
 
-    {"dc_tdc_min_win", fTdcWinMin, kInt, fNPlanes},
-    {"dc_tdc_max_win", fTdcWinMax, kInt, fNPlanes},
-    {"dc_central_time", fCentralTime, kDouble, fNPlanes},
-    {"dc_nrwire", fNWires, kInt, fNPlanes},
-    {"dc_chamber_planes", fNChamber, kInt, fNPlanes},
-    {"dc_wire_counting", fWireOrder, kInt, fNPlanes},
-    {"dc_drifttime_sign", fDriftTimeSign, kInt, fNPlanes},
+    {"dc_tdc_min_win", fTdcWinMin, kInt, (UInt_t)fNPlanes},
+    {"dc_tdc_max_win", fTdcWinMax, kInt, (UInt_t)fNPlanes},
+    {"dc_central_time", fCentralTime, kDouble, (UInt_t)fNPlanes},
+    {"dc_nrwire", fNWires, kInt, (UInt_t)fNPlanes},
+    {"dc_chamber_planes", fNChamber, kInt, (UInt_t)fNPlanes},
+    {"dc_wire_counting", fWireOrder, kInt, (UInt_t)fNPlanes},
+    {"dc_drifttime_sign", fDriftTimeSign, kInt, (UInt_t)fNPlanes},
 
-    {"dc_zpos", fZPos, kDouble, fNPlanes},
-    {"dc_alpha_angle", fAlphaAngle, kDouble, fNPlanes},
-    {"dc_beta_angle", fBetaAngle, kDouble, fNPlanes},
-    {"dc_gamma_angle", fGammaAngle, kDouble, fNPlanes},
-    {"dc_pitch", fPitch, kDouble, fNPlanes},
-    {"dc_central_wire", fCentralWire, kDouble, fNPlanes},
-    {"dc_plane_time_zero", fPlaneTimeZero, kDouble, fNPlanes},
-    {"dc_sigma", fSigma, kDouble, fNPlanes},
+    {"dc_zpos", fZPos, kDouble, (UInt_t)fNPlanes},
+    {"dc_alpha_angle", fAlphaAngle, kDouble, (UInt_t)fNPlanes},
+    {"dc_beta_angle", fBetaAngle, kDouble, (UInt_t)fNPlanes},
+    {"dc_gamma_angle", fGammaAngle, kDouble, (UInt_t)fNPlanes},
+    {"dc_pitch", fPitch, kDouble, (UInt_t)fNPlanes},
+    {"dc_central_wire", fCentralWire, kDouble, (UInt_t)fNPlanes},
+    {"dc_plane_time_zero", fPlaneTimeZero, kDouble, (UInt_t)fNPlanes},
+    {"dc_sigma", fSigma, kDouble, (UInt_t)fNPlanes},
     {"single_stub",&fSingleStub, kInt},
     {"ntracks_max_fp", &fNTracksMaxFP, kInt},
     {"xt_track_criterion", &fXtTrCriterion, kDouble},
@@ -336,7 +330,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
 //_____________________________________________________________________________
 Int_t THcDC::DefineVariables( EMode mode )
 {
-  // Initialize global variables and lookup table for decoder
+  // Initialize global variables for histograms and Root tree
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
@@ -344,6 +338,7 @@ Int_t THcDC::DefineVariables( EMode mode )
   // Register variables in global list
 
   RVarDef vars[] = {
+    { "stubtest", "stub test",  "fStubTest" },
     { "nhit", "Number of DC hits",  "fNhits" },
     { "tnhit", "Number of good DC hits",  "fNthits" },
     { "trawhit", "Number of true raw DC hits", "fN_True_RawHits" },
@@ -353,7 +348,13 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "y", "Y at focal plane", "fDCTracks.THcDCTrack.GetY()"},
     { "xp", "XP at focal plane", "fDCTracks.THcDCTrack.GetXP()"},
     { "yp", "YP at focal plane", "fDCTracks.THcDCTrack.GetYP()"},
+    { "x_fp", "X at focal plane (best chi2 track)", "fX_fp_best"},
+    { "y_fp", "Y at focal plane( best chi2 track)", "fY_fp_best"},
+    { "xp_fp", "XP at focal plane (best chi2 track)", "fXp_fp_best"},
+    { "yp_fp", "YP at focal plane(best chi2 track) ", "fYp_fp_best"},
     { "residual", "Residuals", "fResiduals"},
+    { "wireHitDid","Wire did have  matched track hit", "fWire_hit_did"},
+    { "wireHitShould", "Wire should have matched track hit", "fWire_hit_should"},
     { 0 }
   };
   return DefineVarsFromList( vars, mode );
@@ -416,64 +417,74 @@ void THcDC::DeleteArrays()
 }
 
 //_____________________________________________________________________________
-inline 
+inline
 void THcDC::ClearEvent()
 {
   // Reset per-event data.
+  fStubTest = 0;
   fNhits = 0;
   fNthits = 0;
   fN_True_RawHits=0;
+  fX_fp_best=-10000.;
+  fY_fp_best=-10000.;
+  fXp_fp_best=-10000.;
+  fYp_fp_best=-10000.;
 
-  for(Int_t i=0;i<fNChambers;i++) {
+  for(UInt_t i=0;i<fNChambers;i++) {
     fChambers[i]->Clear();
   }
 
   for(Int_t i=0;i<fNPlanes;i++) {
     fResiduals[i] = 1000.0;
+    fWire_hit_did[i] = 1000.0;
+    fWire_hit_should[i] = 1000.0;
   }
-  
+
   //  fTrackProj->Clear();
 }
 
 //_____________________________________________________________________________
 Int_t THcDC::Decode( const THaEvData& evdata )
 {
-
+  // Decode event into hit list.
+  // Pass hit list to the planes.
+  // Load hits from planes into chamber objects
   ClearEvent();
   Int_t num_event = evdata.GetEvNum();
   if (fdebugprintrawdc ||fdebugprintdecodeddc || fdebuglinkstubs || fdebugtrackprint) cout << " event num = " << num_event << endl;
   // Get the Hall C style hitlist (fRawHitList) for this event
   fNhits = DecodeToHitList(evdata);
 
-  // Let each plane get its hits
-  Int_t nexthit = 0;
-  for(Int_t ip=0;ip<fNPlanes;ip++) {
-    nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
-    fN_True_RawHits += fPlanes[ip]->GetNRawhits();
-      
-  }
+  if(!gHaCuts->Result("Pedestal_event")) {
+    // Let each plane get its hits
+    Int_t nexthit = 0;
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
+      nexthit = fPlanes[ip]->ProcessHits(fRawHitList, nexthit);
+      fN_True_RawHits += fPlanes[ip]->GetNRawhits();
 
-  // Let each chamber get its hits
-  for(Int_t ic=0;ic<fNChambers;ic++) {
-    fChambers[ic]->ProcessHits();
-    fNthits += fChambers[ic]->GetNHits();
-  }
-  // fRawHitList is TClones array of THcRawDCHit objects
-  Int_t counter=0;
-  if (fdebugprintrawdc) {
-    cout << " RAW_TOT_HITS = " <<  fNRawHits << endl;
-    cout << " Hit #  " << "Plane  " << " Wire " <<  " Raw TDC " << endl; 
-    for(Int_t ihit = 0; ihit < fNRawHits ; ihit++) {
-    THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
-    for(Int_t imhit = 0; imhit < hit->fNHits; imhit++) {
-      counter++;
-      cout << counter << "      " << hit->fPlane << "     " << hit->fCounter << "     " << hit->fTDC[imhit]	   << endl;
+    }
+
+    // Let each chamber get its hits
+    for(UInt_t ic=0;ic<fNChambers;ic++) {
+      fChambers[ic]->ProcessHits();
+      fNthits += fChambers[ic]->GetNHits();
+    }
+    // fRawHitList is TClones array of THcRawDCHit objects
+    Int_t counter=0;
+    if (fdebugprintrawdc) {
+      cout << " RAW_TOT_HITS = " <<  fNRawHits << endl;
+      cout << " Hit #  " << "Plane  " << " Wire " <<  " Raw TDC " << endl;
+      for(UInt_t ihit = 0; ihit < fNRawHits ; ihit++) {
+	THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
+	for(UInt_t imhit = 0; imhit < hit->GetRawTdcHit().GetNHits(); imhit++) {
+	  counter++;
+	  cout << counter << "      " << hit->fPlane << "     " << hit->fCounter << "     " << hit->GetRawTdcHit().GetTimeRaw(imhit)	   << endl;
+	}
       }
+      cout << endl;
+    }
+    Eff();			// Accumlate statistics
   }
-    cout << endl;
-  }
-  Eff();			// Accumlate statistics
-
   return fNhits;
 }
 
@@ -487,18 +498,18 @@ Int_t THcDC::ApplyCorrections( void )
 Int_t THcDC::CoarseTrack( TClonesArray& tracks )
 {
   // Calculation of coordinates of particle track cross point with scint
-  // plane in the detector coordinate system. For this, parameters of track 
+  // plane in the detector coordinate system. For this, parameters of track
   // reconstructed in THaVDC::CoarseTrack() are used.
   //
   // Apply corrections and reconstruct the complete hits.
   //
   //  static const Double_t sqrt2 = TMath::Sqrt(2.);
   if (fdebugprintdecodeddc) {
-   for(Int_t i=0;i<fNChambers;i++) {
+   for(UInt_t i=0;i<fNChambers;i++) {
     fChambers[i]->PrintDecode();
    }
   }
-  for(Int_t i=0;i<fNChambers;i++) {
+  for(UInt_t i=0;i<fNChambers;i++) {
     fChambers[i]->FindSpacePoints();
     fChambers[i]->CorrectHitTimes();
     fChambers[i]->LeftRight();
@@ -507,10 +518,10 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
   if (fdebugflagstubs)  PrintStubs();
   // Now link the stubs between chambers
   LinkStubs();
-  if(fNDCTracks > 0) {
-    TrackFit();
+ if(fNDCTracks > 0) {
+     TrackFit();
     // Copy tracks into podd tracks list
-    for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
+    for(UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
       THaTrack* theTrack = NULL;
       theTrack = AddTrack(tracks, 0.0, 0.0, 0.0, 0.0); // Leaving off trackID
       // Should we add stubs with AddCluster?  Could we do this
@@ -524,25 +535,11 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
       // CalcFocalPlaneCoords.  Aren't our tracks already in focal plane coords
       // We should have some kind of track ID so that the THaTrack can be
       // associate back with the DC track
+      // Assign the track number
+      theTrack->SetTrkNum(itrack+1);
     }
-  }
+ }
 
-  // Check for internal TrackFit errors
-  // Histogram the focal plane tracks
-  // Histograms made in h_fill_dc_fp_hist
-  //   The following are one hist per track
-  //      x_fp
-  //      y_fp
-  //      xp_fp
-  //      yp_fp
-  //      log chi2
-  //      reduced chi2
-  //      For each plane:
-  //         double residual
-  //         single residual
-  // Will need to make a track class that has all these things.   Need to
-  // move the structure out of THcDC into it's own class which should probably
-  // inherit from a podd track class
 
   ApplyCorrections();
 
@@ -558,15 +555,49 @@ Int_t THcDC::FineTrack( TClonesArray& tracks )
   // Units of measurements are meters.
 
   // Calculation of coordinates of particle track cross point with scint
-  // plane in the detector coordinate system. For this, parameters of track 
+  // plane in the detector coordinate system. For this, parameters of track
   // reconstructed in THaVDC::FineTrack() are used.
 
   return 0;
 }
 //
+void THcDC::SetFocalPlaneBestTrack(Int_t golden_track_index)
+{
+      THcDCTrack *tr1 = static_cast<THcDCTrack*>( fDCTracks->At(golden_track_index));
+      fX_fp_best=tr1->GetX();
+      fY_fp_best=tr1->GetY();
+      fXp_fp_best=tr1->GetXP();
+      fYp_fp_best=tr1->GetYP();
+         for (UInt_t ihit = 0; ihit < UInt_t (tr1->GetNHits()); ihit++) {
+	THcDCHit *hit = tr1->GetHit(ihit);
+	Int_t plane = hit->GetPlaneNum() - 1;
+        fResiduals[plane] = tr1->GetResidual(plane);
+	 } 
+	 EfficiencyPerWire(golden_track_index);
+}
+//
+void THcDC::EfficiencyPerWire(Int_t golden_track_index)
+{
+      THcDCTrack *tr1 = static_cast<THcDCTrack*>( fDCTracks->At(golden_track_index));
+      Double_t track_pos;
+      for (UInt_t ihit = 0; ihit < UInt_t (tr1->GetNHits()); ihit++) {
+	THcDCHit *hit = tr1->GetHit(ihit);
+	Int_t plane = hit->GetPlaneNum() - 1;
+	track_pos=tr1->GetCoord(plane);
+	Int_t wire_num = hit->GetWireNum();
+	Int_t wire_track_num=round(fPlanes[plane]->CalcWireFromPos(track_pos));
+        if ( (wire_num-wire_track_num) ==0) fWire_hit_did[plane]=wire_num;
+      } 
+      for(Int_t ip=0; ip<fNPlanes;ip++) {
+	track_pos=tr1->GetCoord(ip);
+	Int_t wire_should = round(fPlanes[ip]->CalcWireFromPos(track_pos));
+        fWire_hit_should[ip]=wire_should;
+      }
+}
+//
 void THcDC::PrintSpacePoints()
 {
-  for(Int_t ich=0;ich<fNChambers;ich++) {
+  for(UInt_t ich=0;ich<fNChambers;ich++) {
     printf("%s %2d %s %3d %s %3d \n"," chamber = ",fChambers[ich]->GetChamberNum()," number of hits = ",fChambers[ich]->GetNHits()," number of spacepoints = ",fChambers[ich]->GetNSpacePoints());
     printf("%6s %-8s %-8s %6s %6s %10s \n","     "," "," ","Number","Number","Plane Wire");
     printf("%6s %-8s %-8s %6s %6s %10s \n","Point","x","y"," hits ","combos"," for each hit");
@@ -586,7 +617,7 @@ void THcDC::PrintSpacePoints()
 //
 void THcDC::PrintStubs()
 {
-  for(Int_t ich=0;ich<fNChambers;ich++) {
+  for(UInt_t ich=0;ich<fNChambers;ich++) {
     printf("%s %3d \n"," Stub fit results Chamber = ",ich+1);
     printf("%-5s %-18s %-18s %-18s %-18s\n","point","x_t","y_t","xp_t","yp_t");
     printf("%-5s %-18s %-18s %-18s %-18s\n","     ","[cm]","[cm]","[cm]","[cm]");
@@ -610,7 +641,7 @@ void THcDC::LinkStubs()
   //                  4) check if there is a track-criterion match
   //                       either add to existing track
   //                       or if there is another point in same chamber
-  //                          make a copy containing isp2 rather than 
+  //                          make a copy containing isp2 rather than
   //                            other point in same chamber
   //                  5) If hsingle_stub is set, make a track of all single
   //                     stubs.
@@ -620,7 +651,7 @@ void THcDC::LinkStubs()
   fSp.clear();
   fSp.reserve(10);
   // Make a vector of pointers to the SpacePoints
-  for(Int_t ich=0;ich<fNChambers;ich++) {
+  for(UInt_t ich=0;ich<fNChambers;ich++) {
     Int_t nchamber=fChambers[ich]->GetChamberNum();
     TClonesArray* spacepointarray = fChambers[ich]->GetSpacePointsP();
     for(Int_t isp=0;isp<fChambers[ich]->GetNSpacePoints();isp++) {
@@ -643,7 +674,7 @@ void THcDC::LinkStubs()
       // Now make sure this sp is not already used in a sp.
       // Could this be done by having a sp point to the track it is in?
       Int_t tryflag=1;
-      for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
+      for(UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
 	THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
 	for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
 	  // isp is index into list of space points attached to theDCTrack
@@ -674,7 +705,7 @@ void THcDC::LinkStubs()
 	    }
 	    Double_t dposxp = spstub1[2] - spstub2[2];
 	    Double_t dposyp = spstub1[3] - spstub2[3];
-	      
+
 	    // What is the point of saving these stubmin values.  They
 	    // Don't seem to be used anywhere except that they can be
 	    // printed out if hbypass_track_eff_files is zero.
@@ -682,7 +713,7 @@ void THcDC::LinkStubs()
 	    if(TMath::Abs(dposy)<TMath::Abs(stubminy)) stubminy = dposy;
 	    if(TMath::Abs(dposxp)<TMath::Abs(stubminxp)) stubminxp = dposxp;
 	    if(TMath::Abs(dposyp)<TMath::Abs(stubminyp)) stubminyp = dposyp;
-	      
+
 	    // if hbypass_track_eff_files == 0 then
 	    // Print out each stubminX that is less that its criterion
 
@@ -692,6 +723,7 @@ void THcDC::LinkStubs()
 	       && (TMath::Abs(dposyp) < fYptTrCriterion)) {
 	      if(newtrack) {
 		assert(sptracks==0);
+		fStubTest = 1;
 		//stubtest=1;  Used in h_track_tests.f
 		// Make a new track if there are not to many
 		if(fNDCTracks < MAXTRACKS) {
@@ -782,10 +814,10 @@ void THcDC::LinkStubs()
     }
   }
   ///
-  if (fdebuglinkstubs) { 
+  if (fdebuglinkstubs) {
      cout << " Number of tracks from link stubs = " << fNDCTracks << endl;
      printf("%s %s \n","Track","Plane Wire ");
-     for (Int_t itrack=0;itrack<fNDCTracks;itrack++) {
+     for (UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
        THcDCTrack *tempTrack = (THcDCTrack*)( fDCTracks->At(itrack));
        printf("%-5d  ",itrack+1);
         for (Int_t ihit=0;ihit<tempTrack->GetNHits();ihit++) {
@@ -821,10 +853,10 @@ void THcDC::TrackFit()
   //    single_resolution[ip][itrack] = 1000.0;
   //  }
   // }
-  
+
   Double_t dummychi2 = 1.0E4;
 
-  for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
+  for(UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
     //    Double_t chi2 = dummychi2;
     //    Int_t htrack_fit_num = itrack;
     THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
@@ -879,7 +911,7 @@ void THcDC::TrackFit()
 	  }
 	}
       }
-      
+
       // Solve 4x4 equations
       TVectorD dray(NUM_FPRAY);
       // Should check that it is invertable
@@ -897,6 +929,7 @@ void THcDC::TrackFit()
 	Double_t coord=0.0;
 	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
 	  coord += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
+	  // cout << "ir = " << ir << ", dray[ir] = " << dray[ir] << endl;
 	}
 	theDCTrack->SetCoord(iplane,coord);
       }
@@ -904,7 +937,12 @@ void THcDC::TrackFit()
       chi2 = 0.0;
       for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
 	Double_t residual = coords[ihit] - theDCTrack->GetCoord(planes[ihit]);
+	// cout << "ihit = " << ihit << ", planes[ihit] = " << planes[ihit]
+	//      << ", coords[ihit] = " << coords[ihit]
+	//      << ", theDCTrack->GetCoord(planes[ihit]) = "
+	//      << theDCTrack->GetCoord(planes[ihit]) << endl;
 	theDCTrack->SetResidual(planes[ihit], residual);
+	// cout << "Getting residual = " << theDCTrack->GetResidual(planes[ihit]) << endl;
 	chi2 += pow(residual/fSigma[planes[ihit]],2);
       }
       theDCTrack->SetVector(dray[0], dray[1], 0.0, dray[2], dray[3]);
@@ -920,13 +958,13 @@ void THcDC::TrackFit()
     if(fNDCTracks == 2) {
       THcDCTrack *theDCTrack1 = static_cast<THcDCTrack*>( fDCTracks->At(0));
       THcDCTrack *theDCTrack2 = static_cast<THcDCTrack*>( fDCTracks->At(1));
-      Int_t itrack=0;
+      //      Int_t itrack=0;
       Int_t ihit=0;
       THcDCHit* hit=theDCTrack1->GetHit(ihit);
       Int_t plane=hit->GetPlaneNum()-1;
       Int_t chamber=fNChamber[plane];
       if(chamber==1) {
-	itrack=1;
+	//	itrack=1;
 	hit=theDCTrack2->GetHit(ihit);
 	plane=hit->GetPlaneNum()-1;
 	chamber=fNChamber[plane];
@@ -935,7 +973,7 @@ void THcDC::TrackFit()
 	  Double_t ray2[4];
 	  theDCTrack1->GetRay(ray1);
 	  theDCTrack2->GetRay(ray2);
-	  itrack = 1;
+	  //	  itrack = 1;
 	  // Loop over hits in second chamber
 	  for(Int_t ihit=0;ihit < theDCTrack2->GetNHits();ihit++) {
 	    // Calculate residual in second chamber from first chamber track
@@ -962,7 +1000,7 @@ void THcDC::TrackFit()
 	    theDCTrack1->SetDoubleResidual(plane,coord - pos);
 	    //  hdc_dbl_res(pln) = hdc_double_residual(1,pln)  for hists
 	  }
-	  itrack=0;
+	  //	  itrack=0;
 	  // Loop over hits in first chamber
 	  for(Int_t ihit=0;ihit < theDCTrack1->GetNHits();ihit++) {
 	    // Calculate residual in first chamber from second chamber track
@@ -993,21 +1031,15 @@ void THcDC::TrackFit()
       }
     }
   }
-  if(fNDCTracks>0) {
-    for(Int_t ip=0;ip<fNPlanes;ip++) {
-      THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(0));
-      fResiduals[ip] = theDCTrack->GetResidual(ip);
-    }
-  }
   //
       if (fdebugtrackprint) {
         printf("%5s %-14s %-14s %-14s %-14s  %-10s %-10s \n","Track","x_t","y_t","xp_t","yp_t","chi2","DOF");
         printf("%5s %-14s %-14s %-14s %-14s  %-10s %-10s \n","     ","[cm]","[cm]","[rad]","[rad]"," "," ");
-	for(Int_t itr=0;itr < fNDCTracks;itr++) {
+	for(UInt_t itr=0;itr < fNDCTracks;itr++) {
         THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itr));
 	printf("%-5d %14.6e %14.6e %14.6e %14.6e %10.3e %3d \n", itr+1,theDCTrack->GetX(),theDCTrack->GetY(),theDCTrack->GetXP(),theDCTrack->GetYP(),theDCTrack->GetChisq(),theDCTrack->GetNFree());
         }
-	for(Int_t itr=0;itr < fNDCTracks;itr++) {
+	for(UInt_t itr=0;itr < fNDCTracks;itr++) {
 	  printf("%s %5d \n","Hit info for track number = ",itr+1);
           printf("%5s %-15s %-15s %-15s \n","Plane","WIRE_COORD","Fit postiion","Residual");
          THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itr));
@@ -1060,7 +1092,7 @@ Double_t THcDC::DpsiFun(Double_t ray[4], Int_t plane)
 
   Double_t infinity = 1.0E+20;
   Double_t cinfinity = 1/infinity;
-  Double_t DpsiFun = 
+  Double_t DpsiFun =
     ray[2]*ray[1]*fPlaneCoeffs[plane][0] +
     ray[3]*ray[0]*fPlaneCoeffs[plane][1] +
     ray[2]*fPlaneCoeffs[plane][2] +
@@ -1072,11 +1104,11 @@ Double_t THcDC::DpsiFun(Double_t ray[4], Int_t plane)
     + fPlaneCoeffs[plane][8];
   if(TMath::Abs(denom) < cinfinity) {
     DpsiFun = infinity;
-  } else { 
+  } else {
     DpsiFun = DpsiFun/denom;
   }
   return(DpsiFun);
-}	    
+}
 
 //_____________________________________________________________________________
 Int_t THcDC::End(THaRunBase* run)
@@ -1094,9 +1126,9 @@ void THcDC::EffInit()
 
   delete [] fNChamHits; fNChamHits = new Int_t [fNChambers];
   delete [] fPlaneEvents; fPlaneEvents = new Int_t [fNPlanes];
-  
+
   fTotEvents = 0;
-  for(Int_t i=0;i<fNChambers;i++) {
+  for(UInt_t i=0;i<fNChambers;i++) {
     fNChamHits[i] = 0;
   }
   for(Int_t i=0;i<fNPlanes;i++) {
@@ -1113,7 +1145,7 @@ void THcDC::Eff()
   // Accumulate statistics for efficiency calculations
 
   fTotEvents++;
-  for(Int_t i=0;i<fNChambers;i++) {
+  for(UInt_t i=0;i<fNChambers;i++) {
     if(fChambers[i]->GetNHits()>0) fNChamHits[i]++;
   }
   for(Int_t i=0;i<fNPlanes;i++) {

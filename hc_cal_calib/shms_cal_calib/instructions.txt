@@ -1,0 +1,31 @@
+Instructions for calibration of the SHMS calorimeter.
+
+
+1. Currently the code works on the Monte Carlo simulated data. The
+simulated data are in plain text file, while the calibration code
+needs a root file as input. To prepare a root file from a text file,
+run make_root.C script in the mc_results directory.  The script takes
+2 input parameters: prefix of the input file and SHMS momentum
+setting. For example, the command
+
+root [0] .x make_root.C+("5",5.)
+
+will produce a root file named 5.root from the input text file 5.r.
+
+
+2. Make Root_files directory, if not present. Copy (or link) the root
+file in the mc_results directory into the Root_files under the name
+Pcal_calib_<run_number>.root name. This file will serve as an input to
+the calibration code.
+
+
+3. Run pcal_calib.cpp Root script to calibrate a run. For instance,
+the Root command
+
+root [1] .x pcal_calib.cpp+(5)
+
+will produce pcal.param.5 text file containing the calibration
+constants, along with other text files for debug purposes. The
+graphics output will show distributions of the normalized energy
+depositions before and after the calibration, and deviation of
+momentum versus the normalized energy deposition on a scattered plot.

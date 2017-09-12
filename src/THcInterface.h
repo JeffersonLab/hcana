@@ -4,10 +4,11 @@
 //////////////////////////////////////////////////////////////////////////
 //
 // THcInterface
-// 
+//
 //////////////////////////////////////////////////////////////////////////
 
 #include "TRint.h"
+#include "Decoder.h"
 
 class TClass;
 
@@ -15,7 +16,7 @@ class THcInterface : public TRint {
 
 public:
   THcInterface( const char* appClassName, int* argc, char** argv,
-		void* options = NULL, int numOptions = 0, 
+		void* options = NULL, int numOptions = 0,
 		Bool_t noLogo = kFALSE );
   virtual ~THcInterface();
 
@@ -26,6 +27,8 @@ public:
 #endif
   static TClass* GetDecoder();
   static TClass* SetDecoder( TClass* c );
+
+  virtual const char* SetPrompt(const char *newPrompt);
 
 protected:
   static THcInterface*  fgAint;  //Pointer indicating that interface already exists

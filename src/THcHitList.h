@@ -6,6 +6,7 @@
 #include "THaEvData.h"
 #include "TClonesArray.h"
 #include "TObject.h"
+#include "Decoder.h"
 
 
 using namespace std;
@@ -17,6 +18,7 @@ using namespace std;
 //////////////////////////////////////////////////////////////////////////
 
 //class THaDetMap;
+class THcConfigEvtHandler;
 
 class THcHitList {
 
@@ -32,7 +34,7 @@ public:
 
   TClonesArray* GetHitList() const {return fRawHitList; }
 
-  Int_t         fNRawHits;
+  UInt_t         fNRawHits;
   Int_t         fNMaxRawHits;
   TClonesArray* fRawHitList; // List of raw hits
   TClass* fRawHitClass;		  // Class of raw hit object to use
@@ -40,6 +42,24 @@ public:
   THaDetMap*    fdMap;
 
 protected:
+
+  struct RefIndexMap { // Mapping for one reference channel
+    Bool_t defined;
+    Bool_t hashit;
+    Int_t crate;
+    Int_t slot;
+    Int_t channel;
+    Int_t reftime;
+  };
+  std::vector<RefIndexMap> fRefIndexMaps;
+  // Should this be a sparse list instead in case user
+  // picks ridiculously large refindexes?
+
+  Int_t fNRefIndex;
+  UInt_t fNSignals;
+  THcRawHit::ESignalType *fSignalTypes;
+
+  THcConfigEvtHandler* fPSE125;
 
   ClassDef(THcHitList,0);  // List of raw hits sorted by plane, counter
 };

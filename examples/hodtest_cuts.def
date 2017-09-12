@@ -2,68 +2,187 @@
 #
 
 Block: RawDecode
-RawDecode_master  1
+
 Pedestal_event    g.evtyp==4
+scalar_event      g.evtyp==0
+HMS_event         g.evtyp==1
+SOS_event         g.evtyp==2
+coin_event        g.evtyp==3
+misc_event        g.evtyp>=5
+hmscoin_event     g.evtyp==1||g.evtyp==3
+soscoin_event     g.evtyp==2||g.evtyp==3
+all_event         g.evtyp==1||g.evtyp==2||g.evtyp==3
+RawDecode_master  1
 
 Block: Decode
-Decode_master     !Pedestal_event
+Decode_master     all_event
 
 Block: CoarseTracking
+CoarseTracking_master !Pedestal_event
+all_trigs             g.evtyp==1 || g.evtyp==2 || g.evtyp==3
+hms_sos_trig          g.evtyp==1 || g.evtyp==2
+hms_coin_trig         g.evtyp==1 || g.evtyp==3
 
-hfoundtrack	H.dc.ntrack != 0
-hfound1track	H.dc.ntrack == 1
-hfound2track	H.dc.ntrack == 2
-hfound3track	H.dc.ntrack == 3
-hfound4track	H.dc.ntrack == 4
+hms1HitsLt            H.dc.Ch1.nhit <= H.dc.Ch1.maxhits && g.evtyp==1
+hms2HitsLt            H.dc.Ch2.nhit <= H.dc.Ch2.maxhits && g.evtyp==1
+hmsHitsLt             H.dc.Ch1.nhit <= H.dc.Ch1.maxhits && H.dc.Ch2.nhit <= H.dc.Ch2.maxhits && g.evtyp==1
 
-goodhdc1x1	(H.dc.1x1.nhit > 0) && (H.dc.1x1.nhit < 3)
-goodhdc1y1	(H.dc.1y1.nhit > 0) && (H.dc.1y1.nhit < 3)
-goodhdc1u1	(H.dc.1u1.nhit > 0) && (H.dc.1u1.nhit < 3)
-goodhdc1v1	(H.dc.1v1.nhit > 0) && (H.dc.1v1.nhit < 3)
-goodhdc1y2	(H.dc.1y2.nhit > 0) && (H.dc.1y2.nhit < 3)
-goodhdc1x2	(H.dc.1x2.nhit > 0) && (H.dc.1x2.nhit < 3)
+h1hit1                H.dc.1x1.nhit >= 1
+h1hit2                H.dc.1y1.nhit >= 1
+h1hit3                H.dc.1u1.nhit >= 1
+h1hit4                H.dc.1v1.nhit >= 1
+h1hit5                H.dc.1y2.nhit >= 1
+h1hit6                H.dc.1x2.nhit >= 1
 
-goodhdc2x1	(H.dc.2x1.nhit > 0) && (H.dc.2x1.nhit < 3)
-goodhdc2y1	(H.dc.2y1.nhit > 0) && (H.dc.2y1.nhit < 3)
-goodhdc2u1	(H.dc.2u1.nhit > 0) && (H.dc.2u1.nhit < 3)
-goodhdc2v1	(H.dc.2v1.nhit > 0) && (H.dc.2v1.nhit < 3)
-goodhdc2y2	(H.dc.2y2.nhit > 0) && (H.dc.2y2.nhit < 3)
-goodhdc2x2	(H.dc.2x2.nhit > 0) && (H.dc.2x2.nhit < 3)
+h2hit1                H.dc.2x1.nhit >= 1
+h2hit2                H.dc.2y1.nhit >= 1
+h2hit3                H.dc.2u1.nhit >= 1
+h2hit4                H.dc.2v1.nhit >= 1
+h2hit5                H.dc.2y2.nhit >= 1
+h2hit6                H.dc.2x2.nhit >= 1
 
-goodhdc1	goodhdc1x1 && goodhdc1y1 && goodhdc1u1 && goodhdc1v1 && goodhdc1y2 && goodhdc1x2
-goodhdc2	goodhdc2x1 && goodhdc2y1 && goodhdc2u1 && goodhdc2v1 && goodhdc2y2 && goodhdc2x2
-bothgoodhdc	goodhdc1 && goodhdc2
+hmsDC1PlanesGT        (h1hit1 + h1hit2 + h1hit3 + h1hit4 + h1hit5 + h1hit6 )>=5
+hmsDC2PlanesGT        (h2hit1 + h2hit2 + h2hit3 + h2hit4 + h2hit5 + h2hit6 )>=5
 
-realhdc1x1	goodhdc1x1 && (H.dc.nsp != 0)
-realhdc1y1	goodhdc1y1 && (H.dc.nsp != 0)
-realhdc1u1	goodhdc1u1 && (H.dc.nsp != 0)
-realhdc1v1	goodhdc1v1 && (H.dc.nsp != 0)
-realhdc1y2	goodhdc1y2 && (H.dc.nsp != 0)
-realhdc1x2	goodhdc1x2 && (H.dc.nsp != 0)
-realhdc2x1	goodhdc2x1 && (H.dc.nsp != 0)
-realhdc2y1	goodhdc2y1 && (H.dc.nsp != 0)
-realhdc2u1	goodhdc2u1 && (H.dc.nsp != 0)
-realhdc2v1	goodhdc2v1 && (H.dc.nsp != 0)
-realhdc2y2	goodhdc2y2 && (H.dc.nsp != 0)
-realhdc2x2	goodhdc2x2 && (H.dc.nsp != 0)
+hmsPlanseGT           hmsDC1PlanesGT && hmsDC2PlanesGT
+hmsHitsPlanes         H.dc.Ch1.nhit <= H.dc.Ch1.maxhits && H.dc.Ch2.nhit <= H.dc.Ch2.maxhits && hmsPlanseGT
+hSpacePoints          H.dc.Ch1.spacepoints >= 1 && H.dc.Ch2.spacepoints >=1
+hSpacePointsStub      H.dc.stubtest==1 && H.dc.Ch1.spacepoints >=1 && H.dc.Ch2.spacepoints >=1
+hFoundTrack           H.dc.ntrack>0 && hmscoin_event
+hStubLT               H.dc.stubtest==1
+#hms1HitsLt            H.dc.Ch1.nhit <= H.dc.Ch1.maxhits && g.evtyp==1
+#hms2HitsLt            H.dc.Ch2.nhit <= H.dc.Ch2.maxhits && g.evtyp==1
+#hmsDC1PlanesGT        (h1hit1 + h1hit2 + h1hit3 + h1hit4 + h1hit5 + h1hit6 )>=5
+#hmsDC2PlanesGT        (h2hit1 + h2hit2 + h2hit3 + h2hit4 + h2hit5 + h2hit6 )>=5
+#hmsPlanseGT           hmsDC1PlanesGT && hmsDC2PlanesGT
+f1HSpacePoints        hms1HitsLt && hmsDC1PlanesGT && H.dc.Ch1.spacepoints==0 && g.evtyp==1
+f2HSpacePoints        hms2HitsLt && hmsDC2PlanesGT && H.dc.Ch2.spacepoints==0 && g.evtyp==1
+hTest1                hmsHitsPlanes && (!hSpacePoints)
+hTest2                hSpacePoints && (!hStubLT)
 
-#hlowchi2	(hschi2perdeg<10) && hcleantrack
+#
+# Coinccidence events
+#
 
-hlowchi2	1
+bh1hit1               H.dc.1x1.nhit >= 1 && g.evtyp==3
+bh1hit2               H.dc.1y1.nhit >= 1 && g.evtyp==3
+bh1hit3               H.dc.1u1.nhit >= 1 && g.evtyp==3
+bh1hit4               H.dc.1v1.nhit >= 1 && g.evtyp==3
+bh1hit5               H.dc.1y2.nhit >= 1 && g.evtyp==3
+bh1hit6               H.dc.1x2.nhit >= 1 && g.evtyp==3
 
-hdcres_1	(H.dc.residual[0] < 1000) && hlowchi2
-hdcres_2	(H.dc.residual[1] < 1000) && hlowchi2
-hdcres_3	(H.dc.residual[2] < 1000) && hlowchi2
-hdcres_4	(H.dc.residual[3] < 1000) && hlowchi2
-hdcres_5	(H.dc.residual[4] < 1000) && hlowchi2
-hdcres_6	(H.dc.residual[5] < 1000) && hlowchi2
-hdcres_7	(H.dc.residual[6] < 1000) && hlowchi2
-hdcres_8	(H.dc.residual[7] < 1000) && hlowchi2
-hdcres_9	(H.dc.residual[8] < 1000) && hlowchi2
-hdcres_10	(H.dc.residual[9] < 1000) && hlowchi2
-hdcres_11	(H.dc.residual[10] < 1000) && hlowchi2
-hdcres_12	(H.dc.residual[11] < 1000) && hlowchi2
+bh2hit1               H.dc.2x1.nhit >= 1 && g.evtyp==3
+bh2hit2               H.dc.2y1.nhit >= 1 && g.evtyp==3
+bh2hit3               H.dc.2u1.nhit >= 1 && g.evtyp==3
+bh2hit4               H.dc.2v1.nhit >= 1 && g.evtyp==3
+bh2hit5               H.dc.2y2.nhit >= 1 && g.evtyp==3
+bh2hit6               H.dc.2x2.nhit >= 1 && g.evtyp==3
+
+bhdc1gt1               bh1hit1 && bh1hit2 && bh1hit3 && bh1hit4 && bh1hit5
+bhdc1gt2               bh1hit1 && bh1hit2 && bh1hit3 && bh1hit4 && bh1hit6
+bhdc1gt3               bh1hit1 && bh1hit2 && bh1hit3 && bh1hit5 && bh1hit6
+bhdc1gt4               bh1hit1 && bh1hit2 && bh1hit4 && bh1hit5 && bh1hit6
+bhdc1gt5               bh1hit2 && bh1hit3 && bh1hit4 && bh1hit5 && bh1hit6
+
+bhdc2gt1               bh2hit1 && bh2hit2 && bh2hit3 && bh2hit4 && bh2hit5
+bhdc2gt2               bh2hit1 && bh2hit2 && bh2hit3 && bh2hit4 && bh2hit6
+bhdc2gt3               bh2hit1 && bh2hit2 && bh2hit3 && bh2hit5 && bh2hit6
+bhdc2gt4               bh2hit1 && bh2hit2 && bh2hit4 && bh2hit5 && bh2hit6
+bhdc2gt5               bh2hit2 && bh2hit3 && bh2hit4 && bh2hit5 && bh2hit6
+
+
+bhmsDC1PlanesGT       ( bhdc1gt1 || bhdc1gt2 || bhdc1gt3 || bhdc1gt4 || bhdc1gt5 ) && g.evtyp==3
+bhmsDC2PlanesGT       ( bhdc2gt1 || bhdc2gt2 || bhdc2gt3 || bhdc2gt4 || bhdc2gt5 ) && g.evtyp==3
+
+
+bhms1HitsLt               H.dc.Ch1.nhit <= H.dc.Ch1.maxhits && g.evtyp==3
+bhms2HitsLt               H.dc.Ch2.nhit <= H.dc.Ch2.maxhits && g.evtyp==3
+bhmsHitsLt                bhms1HitsLt && bhms2HitsLt
+bhmsPlanesGt              bhmsDC1PlanesGT && bhmsDC2PlanesGT
+bhmsSpacePoints           hSpacePoints && g.evtyp==3
+bhmsStubLt                hStubLT && g.evtyp==3
+bhmsHitsPlanes            bhmsHitsLt && bhmsPlanesGt
+bhmsHitsPlanesSps         bhmsHitsPlanes && bhmsSpacePoints && g.evtyp==3
+bhmsHitsPlanesSpsStubs    bhmsHitsPlanesSps && bhmsStubLt &&  g.evtyp==3
+f1bhmsSpacepoints         bhms1HitsLt && bhmsDC1PlanesGT && (H.dc.Ch1.spacepoints == 0) && g.evtyp==3
+f2bhmsSpacepoints         bhms2HitsLt && bhmsDC2PlanesGT && (H.dc.Ch2.spacepoints == 0) && g.evtyp==3
+fbhmsSpacePoints          f1bhmsSpacepoints || f2bhmsSpacepoints && g.evtyp==3
+bhmsTest1                 bhmsHitsPlanes && !bhmsSpacePoints && g.evtyp==3
+bhmsTest2                 bhmsSpacePoints && !bhmsStubLt && g.evtyp==3
+bhmsFoundTrack            (H.dc.ntrack > 0) && g.evtyp==3
+bhmsGoodBeta              (H.hod.betanotrack > 0.7) &&  g.evtyp==3
+
+Block: FineProcess
+
+
+Block: DefineVariables
+
 
 Block: CoarseReconstruct
-CourseReconstruct 1
+RawCoarseReconstruct !Pedestal_event
 
+Block: Physics
+HMSScinGood           H.hod.goodscinhit == 1
+
+HMSScinShould         HMSScinGood && H.cal.etotnorm > 0.7 && H.cer.npeSum > 2.0
+HMSScinShoulde        HMSScinGood && H.cer.npeSum > 2.0
+HMSScinShouldh        H.hod.goodscinhit == 1 && g.evtyp == 1
+
+HMSScinDid            HMSScinShould && H.dc.ntrack > 0
+HMSScinDide           HMSScinShoulde && H.dc.ntrack > 0
+HMSScinDidh           HMSScinShouldh && H.dc.ntrack > 0
+
+BHMSScinShould        HMSScinShould && H.hod.betanotrack >= 0.1 && g.evtyp==3
+BHMSScinShoulde       BHMSScinShould && H.cer.npeSum > 0.2 && ( H.gold.beta > ( H.hod.beta - 0.5 ) ) && ( H.gold.beta < ( H.hod.beta + 0.5 ) )
+BHMSScinShouldh       BHMSScinShould && H.cer.npeSum > 0.2 
+
+BHMSScinDid           BHMSScinShould && H.dc.ntrack > 0
+BHMSScinDide          BHMSScinShoulde && H.dc.ntrack > 0
+BHMSScinDidh          BHMSScinShouldh && H.dc.ntrack > 0
+
+hmsCham1Hits          (h1hit1 + h1hit2 + h1hit3 + h1hit4 + h1hit5 + h1hit6 )>0
+hmsCham2Hits          (h2hit1 + h2hit2 + h2hit3 + h2hit4 + h2hit5 + h2hit6 )>0
+
+goodHDC1x1            H.dc.1x1.nhit > 0 && H.dc.1x1.nhit < 3
+goodHDC1y1            H.dc.1y1.nhit > 0 && H.dc.1y1.nhit < 3
+goodHDC1u1            H.dc.1u1.nhit > 0 && H.dc.1u1.nhit < 3
+goodHDC1v1            H.dc.1v1.nhit > 0 && H.dc.1v1.nhit < 3
+goodHDC1y2            H.dc.1y2.nhit > 0 && H.dc.1y2.nhit < 3
+goodHDC1x2            H.dc.1x2.nhit > 0 && H.dc.1x2.nhit < 3
+
+goodHDC2x1            H.dc.2x1.nhit > 0 && H.dc.2x1.nhit < 3
+goodHDC2y1            H.dc.2y1.nhit > 0 && H.dc.2y1.nhit < 3
+goodHDC2u1            H.dc.2u1.nhit > 0 && H.dc.2u1.nhit < 3
+goodHDC2v1            H.dc.2v1.nhit > 0 && H.dc.2v1.nhit < 3
+goodHDC2y2            H.dc.2y2.nhit > 0 && H.dc.2y2.nhit < 3
+goodHDC2x2            H.dc.2x2.nhit > 0 && H.dc.2x2.nhit < 3
+
+goodHDC1              goodHDC1x1  && goodHDC1y1 && goodHDC1u1 && goodHDC1v1 && goodHDC1y2 && goodHDC1x2 
+goodHDC2              goodHDC2x1  && goodHDC2y1 && goodHDC2u1 && goodHDC2v1 && goodHDC2y2 && goodHDC2x2 
+bothGood              goodHDC1 && goodHDC2
+
+hFound1Track          H.dc.ntrack == 1
+hFound2Track          H.dc.ntrack == 2
+hFound3Track          H.dc.ntrack == 3
+hFound4Track          H.dc.ntrack == 4
+
+hCleanTrack           H.gold.index > -1
+1hCleanTrack          H.gold.index == 0
+2hCleanTrack          H.gold.index == 1
+3hCleanTrack          H.gold.index == 2
+4hCleanTrack          H.gold.index == 4
+
+anyhs1x               H.hod.1x.nhits > 0
+anyhs1y               H.hod.1y.nhits > 0
+anyhs2x               H.hod.2x.nhits > 0
+anyhs2y               H.hod.2y.nhits > 0
+
+goodhs1x              H.hod.1x.nhits > 0 && H.hod.1x.nhits < 3
+goodhs1y              H.hod.1y.nhits > 0 && H.hod.1y.nhits < 3
+goodhs1               goodhs1x && goodhs1y
+goodhs2x              H.hod.2x.nhits > 0 && H.hod.2x.nhits < 3
+goodhs2y              H.hod.2y.nhits > 0 && H.hod.2y.nhits < 3
+goodhs2               goodhs2x && goodhs2y
+goodhs1s2             goodhs1 && goodhs2
+
+HstatNumevents        H.tr.chi2/H.tr.ndof < 10

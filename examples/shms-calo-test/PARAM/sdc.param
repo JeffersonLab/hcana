@@ -1,0 +1,55 @@
+;---------------------------------------------------------------------
+; SOS_TRACKING
+; CTP parameter file containing all tracking parameters for the SOS
+;----------------------------------------------------------------------
+; Names of each wire plane
+;      sdc_plane_names = 'sos1u1'
+;                        'sos1u2'
+;                        'sos1x1'
+;                        'sos1x2'
+;                        'sos1v1'
+;                        'sos1v2'
+;                        'sos2u1'
+;                        'sos2u2'
+;                        'sos2x1'
+;                        'sos2x2'
+;                        'sos2v1'
+;                        'sos2v2'
+; sigma of wire chamber resolution for each plane
+      sdc_sigma = 0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+                  0.020
+; sos dc tdc minimum tdc value array allowed for a good hit
+    sdc_tdc_min_win = 2600, 2600, 2600, 2600, 2600, 2600
+                      2600, 2600, 2600, 2600, 2600, 2600
+; sos dc tdc maximum tdc value array allowed for a good hit
+    sdc_tdc_max_win = 3180, 3180, 3180, 3180, 3180, 3180
+                      3180, 3180, 3180, 3180, 3180, 3180
+; sos drift chamber tdc's time per channel
+        sdc_tdc_time_per_channel = 0.5
+; sos zero time for drift chambers	!DECREASING this number moves the sdtime plots to LOWER time.
+       sdc_plane_time_zero = (1440-10+26+86+30+2)
+                             (1440-9.5+22+90+30+4)
+                             (1440-9.25+22+94+30+4)
+                             (1440-12+28+84+30+4)
+                             (1440-11+24+86+30+2)
+                             (1440-11+26+86+30+4)
+                             (1440-11.5+24+86+30+6)
+                             (1440-14+22+90+30+4)
+                             (1440-13.5+22+84+30+4)
+                             (1440-13.5+24+74+30+4)
+                             (1440-11.5+22+82+30+4)
+                             (1440-13.25+24+80+30+4)
+; Dave Abbott's wire velocity correction
+sdc_wire_velocity = 13.0
+sdc_central_time = 2.8,2.8,1.5,1.5,2.8,2.8
+                   2.8,2.8,1.5,1.5,2.8,2.8

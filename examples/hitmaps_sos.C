@@ -1,7 +1,7 @@
 {
   TFile* f = new TFile("hodtest.root");
- 
-  TCanvas *c1 = new TCanvas("c1", "SOS Scintillator Hit Maps", 800, 800); 
+
+  TCanvas *c1 = new TCanvas("c1", "SOS Scintillator Hit Maps", 800, 800);
   c1->Divide(2, 4);
 
   TH1F* h[16];
@@ -23,9 +23,9 @@
   h[11] = snegadc3;
   h[14] = sposadc4;
   h[15] = snegadc4;
-  
+
   for(Int_t ipad=1;ipad<=8;ipad++) {
-    TPad *pt = c1->cd(ipad);
+    c1->cd(ipad);
     Int_t ihp = 2*(ipad-1);
     Int_t ihn = ihp+1;
     h[ihp]->SetFillColor(kGreen);

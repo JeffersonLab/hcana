@@ -181,7 +181,7 @@ hhodo_neg_ped_limit = 1000,1000,1000,1000,1000,1000,1000,1000
 
 ; use htofusinginvadc=1 if want invadc_offset
 ;  invadc_linear, and invadc_adc to be used
-htofusinginvadc=1
+htofusinginvadc=0
 
 hhodo_pos_invadc_offset =    0.00,    0.00,   -7.49,    0.00
                              0.00,   -3.93,   -1.33,    6.35

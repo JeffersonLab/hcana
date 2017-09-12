@@ -1,0 +1,28 @@
+#real raddeg
+raddeg=3.14159265/180
+
+;  This file contains the sos and hms parameters needed for all the analysis
+; 
+begin parm kinematics
+#include "PARAM/daq07/general.param"
+#include "PARAM/daq07/gscalers.param"
+#include "PARAM/daq07/gbeam.param"
+end parm kinematics
+
+begin parm hms_parameters
+#include "PARAM/daq07/hdeadwires.param"
+#include "PARAM/daq07/hdc.param"
+#include "PARAM/daq07/hdriftmap.param"
+#include "PARAM/daq07/hhodo.param"
+#include "PARAM/daq07/hcal.param"
+#include "PARAM/daq07/hcer.param"
+#include "PARAM/daq07/haero.param"
+end parm hms_parameters
+
+begin parm sos_parameters
+#include "PARAM/daq07/sdc.param"
+#include "PARAM/daq07/sdriftmap.param"
+#include "PARAM/daq07/shodo.param"
+#include "PARAM/daq07/scal.param"
+#include "PARAM/daq07/scer.param"
+end parm sos_parameters

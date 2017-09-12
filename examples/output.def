@@ -4,143 +4,144 @@ block H.dc.*
 block H.hod.*
 block H.cal.*
 block H.aero.*
-block H.cher.*
+block H.cer.*
 block H.tr.*
 block S.dc.*
 block S.hod.*
 block S.cal.*
 block g.evtyp
+block RB.*
 
 # TDC hits per paddle
-TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.postdchits 16 0.5 16.5
-TH1F hnegtdc1 'HMS s1x- TDC hits' H.hod.1x.negtdchits 16 0.5 16.5
-TH1F hpostdc2 'HMS s1y+ TDC hits' H.hod.1y.postdchits 10 0.5 10.5
-TH1F hnegtdc2 'HMS s1y- TDC hits' H.hod.1y.negtdchits 10 0.5 10.5
-TH1F hpostdc3 'HMS s2x+ TDC hits' H.hod.2x.postdchits 16 0.5 16.5
-TH1F hnegtdc3 'HMS s2x- TDC hits' H.hod.2x.negtdchits 16 0.5 16.5
-TH1F hpostdc4 'HMS s2y+ TDC hits' H.hod.2y.postdchits 10 0.5 10.5
-TH1F hnegtdc4 'HMS s2y- TDC hits' H.hod.2y.negtdchits 10 0.5 10.5
+TH1F hpostdc1 'HMS s1x+ TDC hits' H.hod.1x.posTdcCounter 16 0.5 16.5
+TH1F hnegtdc1 'HMS s1x- TDC hits' H.hod.1x.negTdcCounter 16 0.5 16.5
+TH1F hpostdc2 'HMS s1y+ TDC hits' H.hod.1y.posTdcCounter 10 0.5 10.5
+TH1F hnegtdc2 'HMS s1y- TDC hits' H.hod.1y.negTdcCounter 10 0.5 10.5
+TH1F hpostdc3 'HMS s2x+ TDC hits' H.hod.2x.posTdcCounter 16 0.5 16.5
+TH1F hnegtdc3 'HMS s2x- TDC hits' H.hod.2x.negTdcCounter 16 0.5 16.5
+TH1F hpostdc4 'HMS s2y+ TDC hits' H.hod.2y.posTdcCounter 10 0.5 10.5
+TH1F hnegtdc4 'HMS s2y- TDC hits' H.hod.2y.negTdcCounter 10 0.5 10.5
 
 # ADC hits per paddle
-TH1F hposadc1 'HMS s1x+ ADC hits' H.hod.1x.posadchits 16 0.5 16.5
-TH1F hnegadc1 'HMS s1x- ADC hits' H.hod.1x.negadchits 16 0.5 16.5
-TH1F hposadc2 'HMS s1y+ ADC hits' H.hod.1y.posadchits 10 0.5 10.5
-TH1F hnegadc2 'HMS s1y- ADC hits' H.hod.1y.negadchits 10 0.5 10.5
-TH1F hposadc3 'HMS s2x+ ADC hits' H.hod.2x.posadchits 16 0.5 16.5
-TH1F hnegadc3 'HMS s2x- ADC hits' H.hod.2x.negadchits 16 0.5 16.5
-TH1F hposadc4 'HMS s2y+ ADC hits' H.hod.2y.posadchits 10 0.5 10.5
-TH1F hnegadc4 'HMS s2y- ADC hits' H.hod.2y.negadchits 10 0.5 10.5
+TH1F hposadc1 'HMS s1x+ ADC hits' H.hod.1x.posAdcCounter 16 0.5 16.5
+TH1F hnegadc1 'HMS s1x- ADC hits' H.hod.1x.negAdcCounter 16 0.5 16.5
+TH1F hposadc2 'HMS s1y+ ADC hits' H.hod.1y.posAdcCounter 10 0.5 10.5
+TH1F hnegadc2 'HMS s1y- ADC hits' H.hod.1y.negAdcCounter 10 0.5 10.5
+TH1F hposadc3 'HMS s2x+ ADC hits' H.hod.2x.posAdcCounter 16 0.5 16.5
+TH1F hnegadc3 'HMS s2x- ADC hits' H.hod.2x.negAdcCounter 16 0.5 16.5
+TH1F hposadc4 'HMS s2y+ ADC hits' H.hod.2y.posAdcCounter 10 0.5 10.5
+TH1F hnegadc4 'HMS s2y- ADC hits' H.hod.2y.negAdcCounter 10 0.5 10.5
 
 # ADC hits per Calorimeter layer
-TH1F chposadc1 'HMS Cal A+ ADC hits' H.cal.1pr.posadchits 13 0.5 13.5
-TH1F chnegadc1 'HMS Cal A- ADC hits' H.cal.1pr.negadchits 13 0.5 13.5
-TH1F chposadc2 'HMS Cal B+ ADC hits' H.cal.2ta.posadchits 13 0.5 13.5
-TH1F chnegadc2 'HMS Cal B- ADC hits' H.cal.2ta.negadchits 13 0.5 13.5
-TH1F chposadc3 'HMS Cal C+ ADC hits' H.cal.3ta.posadchits 13 0.5 13.5
-TH1F chposadc4 'HMS Cal D+ ADC hits' H.cal.4ta.posadchits 13 0.5 13.5
+TH1F chposadc1 'HMS Cal A+ ADC hits' H.cal.1pr.posAdcCounter 13 0.5 13.5
+TH1F chnegadc1 'HMS Cal A- ADC hits' H.cal.1pr.negAdcCounter 13 0.5 13.5
+TH1F chposadc2 'HMS Cal B+ ADC hits' H.cal.2ta.posAdcCounter 13 0.5 13.5
+TH1F chnegadc2 'HMS Cal B- ADC hits' H.cal.2ta.negAdcCounter 13 0.5 13.5
+TH1F chposadc3 'HMS Cal C+ ADC hits' H.cal.3ta.posAdcCounter 13 0.5 13.5
+TH1F chposadc4 'HMS Cal D+ ADC hits' H.cal.4ta.posAdcCounter 13 0.5 13.5
 
 #Calorimeter ADC channels
-TH1F hcaladc_A1p 'HMS Cal ADC A1p - PED' H.cal.1pr.apos_p[0] 150 50 500
-TH1F hcaladc_A2p 'HMS Cal ADC A2p - PED' H.cal.1pr.apos_p[1] 150 50 500
-TH1F hcaladc_A3p 'HMS Cal ADC A3p - PED' H.cal.1pr.apos_p[2] 150 50 500
-TH1F hcaladc_A4p 'HMS Cal ADC A4p - PED' H.cal.1pr.apos_p[3] 150 50 500
-TH1F hcaladc_A5p 'HMS Cal ADC A5p - PED' H.cal.1pr.apos_p[4] 150 50 500
-TH1F hcaladc_A6p 'HMS Cal ADC A6p - PED' H.cal.1pr.apos_p[5] 150 50 500
-TH1F hcaladc_A7p 'HMS Cal ADC A7p - PED' H.cal.1pr.apos_p[6] 150 50 500
-TH1F hcaladc_A8p 'HMS Cal ADC A8p - PED' H.cal.1pr.apos_p[7] 150 50 500
-TH1F hcaladc_A9p 'HMS Cal ADC A9p - PED' H.cal.1pr.apos_p[8] 150 50 500
-TH1F hcaladc_A10p 'HMS Cal ADC A10p - PED' H.cal.1pr.apos_p[9] 150 50 500
-TH1F hcaladc_A11p 'HMS Cal ADC A11p - PED' H.cal.1pr.apos_p[10] 150 50 500
-TH1F hcaladc_A12p 'HMS Cal ADC A12p - PED' H.cal.1pr.apos_p[11] 150 50 500
-TH1F hcaladc_A13p 'HMS Cal ADC A13p - PED' H.cal.1pr.apos_p[12] 150 50 500
+TH1F hcaladc_A1p 'HMS Cal ADC A1p - PED' H.cal.1pr.goodPosAdcPulseInt[0] 150 50 500
+TH1F hcaladc_A2p 'HMS Cal ADC A2p - PED' H.cal.1pr.goodPosAdcPulseInt[1] 150 50 500
+TH1F hcaladc_A3p 'HMS Cal ADC A3p - PED' H.cal.1pr.goodPosAdcPulseInt[2] 150 50 500
+TH1F hcaladc_A4p 'HMS Cal ADC A4p - PED' H.cal.1pr.goodPosAdcPulseInt[3] 150 50 500
+TH1F hcaladc_A5p 'HMS Cal ADC A5p - PED' H.cal.1pr.goodPosAdcPulseInt[4] 150 50 500
+TH1F hcaladc_A6p 'HMS Cal ADC A6p - PED' H.cal.1pr.goodPosAdcPulseInt[5] 150 50 500
+TH1F hcaladc_A7p 'HMS Cal ADC A7p - PED' H.cal.1pr.goodPosAdcPulseInt[6] 150 50 500
+TH1F hcaladc_A8p 'HMS Cal ADC A8p - PED' H.cal.1pr.goodPosAdcPulseInt[7] 150 50 500
+TH1F hcaladc_A9p 'HMS Cal ADC A9p - PED' H.cal.1pr.goodPosAdcPulseInt[8] 150 50 500
+TH1F hcaladc_A10p 'HMS Cal ADC A10p - PED' H.cal.1pr.goodPosAdcPulseInt[9] 150 50 500
+TH1F hcaladc_A11p 'HMS Cal ADC A11p - PED' H.cal.1pr.goodPosAdcPulseInt[10] 150 50 500
+TH1F hcaladc_A12p 'HMS Cal ADC A12p - PED' H.cal.1pr.goodPosAdcPulseInt[11] 150 50 500
+TH1F hcaladc_A13p 'HMS Cal ADC A13p - PED' H.cal.1pr.goodPosAdcPulseInt[12] 150 50 500
 
-TH1F hcaladc_B1p 'HMS Cal ADC B1p - PED' H.cal.2ta.apos_p[0] 150 50 500
-TH1F hcaladc_B2p 'HMS Cal ADC B2p - PED' H.cal.2ta.apos_p[1] 150 50 500
-TH1F hcaladc_B3p 'HMS Cal ADC B3p - PED' H.cal.2ta.apos_p[2] 150 50 500
-TH1F hcaladc_B4p 'HMS Cal ADC B4p - PED' H.cal.2ta.apos_p[3] 150 50 500
-TH1F hcaladc_B5p 'HMS Cal ADC B5p - PED' H.cal.2ta.apos_p[4] 150 50 500
-TH1F hcaladc_B6p 'HMS Cal ADC B6p - PED' H.cal.2ta.apos_p[5] 150 50 500
-TH1F hcaladc_B7p 'HMS Cal ADC B7p - PED' H.cal.2ta.apos_p[6] 150 50 500
-TH1F hcaladc_B8p 'HMS Cal ADC B8p - PED' H.cal.2ta.apos_p[7] 150 50 500
-TH1F hcaladc_B9p 'HMS Cal ADC B9p - PED' H.cal.2ta.apos_p[8] 150 50 500
-TH1F hcaladc_B10p 'HMS Cal ADC B10p - PED' H.cal.2ta.apos_p[9] 150 50 500
-TH1F hcaladc_B11p 'HMS Cal ADC B11p - PED' H.cal.2ta.apos_p[10] 150 50 500
-TH1F hcaladc_B12p 'HMS Cal ADC B12p - PED' H.cal.2ta.apos_p[11] 150 50 500
-TH1F hcaladc_B13p 'HMS Cal ADC B13p - PED' H.cal.2ta.apos_p[12] 150 50 500
+TH1F hcaladc_B1p 'HMS Cal ADC B1p - PED' H.cal.2ta.goodPosAdcPulseInt[0] 150 50 500
+TH1F hcaladc_B2p 'HMS Cal ADC B2p - PED' H.cal.2ta.goodPosAdcPulseInt[1] 150 50 500
+TH1F hcaladc_B3p 'HMS Cal ADC B3p - PED' H.cal.2ta.goodPosAdcPulseInt[2] 150 50 500
+TH1F hcaladc_B4p 'HMS Cal ADC B4p - PED' H.cal.2ta.goodPosAdcPulseInt[3] 150 50 500
+TH1F hcaladc_B5p 'HMS Cal ADC B5p - PED' H.cal.2ta.goodPosAdcPulseInt[4] 150 50 500
+TH1F hcaladc_B6p 'HMS Cal ADC B6p - PED' H.cal.2ta.goodPosAdcPulseInt[5] 150 50 500
+TH1F hcaladc_B7p 'HMS Cal ADC B7p - PED' H.cal.2ta.goodPosAdcPulseInt[6] 150 50 500
+TH1F hcaladc_B8p 'HMS Cal ADC B8p - PED' H.cal.2ta.goodPosAdcPulseInt[7] 150 50 500
+TH1F hcaladc_B9p 'HMS Cal ADC B9p - PED' H.cal.2ta.goodPosAdcPulseInt[8] 150 50 500
+TH1F hcaladc_B10p 'HMS Cal ADC B10p - PED' H.cal.2ta.goodPosAdcPulseInt[9] 150 50 500
+TH1F hcaladc_B11p 'HMS Cal ADC B11p - PED' H.cal.2ta.goodPosAdcPulseInt[10] 150 50 500
+TH1F hcaladc_B12p 'HMS Cal ADC B12p - PED' H.cal.2ta.goodPosAdcPulseInt[11] 150 50 500
+TH1F hcaladc_B13p 'HMS Cal ADC B13p - PED' H.cal.2ta.goodPosAdcPulseInt[12] 150 50 500
 
-TH1F hcaladc_C1p 'HMS Cal ADC C1p - PED' H.cal.3ta.apos_p[0] 150 50 500
-TH1F hcaladc_C2p 'HMS Cal ADC C2p - PED' H.cal.3ta.apos_p[1] 150 50 500
-TH1F hcaladc_C3p 'HMS Cal ADC C3p - PED' H.cal.3ta.apos_p[2] 150 50 500
-TH1F hcaladc_C4p 'HMS Cal ADC C4p - PED' H.cal.3ta.apos_p[3] 150 50 500
-TH1F hcaladc_C5p 'HMS Cal ADC C5p - PED' H.cal.3ta.apos_p[4] 150 50 500
-TH1F hcaladc_C6p 'HMS Cal ADC C6p - PED' H.cal.3ta.apos_p[5] 150 50 500
-TH1F hcaladc_C7p 'HMS Cal ADC C7p - PED' H.cal.3ta.apos_p[6] 150 50 500
-TH1F hcaladc_C8p 'HMS Cal ADC C8p - PED' H.cal.3ta.apos_p[7] 150 50 500
-TH1F hcaladc_C9p 'HMS Cal ADC C9p - PED' H.cal.3ta.apos_p[8] 150 50 500
-TH1F hcaladc_C10p 'HMS Cal ADC C10p - PED' H.cal.3ta.apos_p[9] 150 50 500
-TH1F hcaladc_C11p 'HMS Cal ADC C11p - PED' H.cal.3ta.apos_p[10] 150 50 500
-TH1F hcaladc_C12p 'HMS Cal ADC C12p - PED' H.cal.3ta.apos_p[11] 150 50 500
-TH1F hcaladc_C13p 'HMS Cal ADC C13p - PED' H.cal.3ta.apos_p[12] 150 50 500
+TH1F hcaladc_C1p 'HMS Cal ADC C1p - PED' H.cal.3ta.goodPosAdcPulseInt[0] 150 50 500
+TH1F hcaladc_C2p 'HMS Cal ADC C2p - PED' H.cal.3ta.goodPosAdcPulseInt[1] 150 50 500
+TH1F hcaladc_C3p 'HMS Cal ADC C3p - PED' H.cal.3ta.goodPosAdcPulseInt[2] 150 50 500
+TH1F hcaladc_C4p 'HMS Cal ADC C4p - PED' H.cal.3ta.goodPosAdcPulseInt[3] 150 50 500
+TH1F hcaladc_C5p 'HMS Cal ADC C5p - PED' H.cal.3ta.goodPosAdcPulseInt[4] 150 50 500
+TH1F hcaladc_C6p 'HMS Cal ADC C6p - PED' H.cal.3ta.goodPosAdcPulseInt[5] 150 50 500
+TH1F hcaladc_C7p 'HMS Cal ADC C7p - PED' H.cal.3ta.goodPosAdcPulseInt[6] 150 50 500
+TH1F hcaladc_C8p 'HMS Cal ADC C8p - PED' H.cal.3ta.goodPosAdcPulseInt[7] 150 50 500
+TH1F hcaladc_C9p 'HMS Cal ADC C9p - PED' H.cal.3ta.goodPosAdcPulseInt[8] 150 50 500
+TH1F hcaladc_C10p 'HMS Cal ADC C10p - PED' H.cal.3ta.goodPosAdcPulseInt[9] 150 50 500
+TH1F hcaladc_C11p 'HMS Cal ADC C11p - PED' H.cal.3ta.goodPosAdcPulseInt[10] 150 50 500
+TH1F hcaladc_C12p 'HMS Cal ADC C12p - PED' H.cal.3ta.goodPosAdcPulseInt[11] 150 50 500
+TH1F hcaladc_C13p 'HMS Cal ADC C13p - PED' H.cal.3ta.goodPosAdcPulseInt[12] 150 50 500
 
-TH1F hcaladc_D1p 'HMS Cal ADC D1p - PED' H.cal.4ta.apos_p[0] 150 50 500
-TH1F hcaladc_D2p 'HMS Cal ADC D2p - PED' H.cal.4ta.apos_p[1] 150 50 500
-TH1F hcaladc_D3p 'HMS Cal ADC D3p - PED' H.cal.4ta.apos_p[2] 150 50 500
-TH1F hcaladc_D4p 'HMS Cal ADC D4p - PED' H.cal.4ta.apos_p[3] 150 50 500
-TH1F hcaladc_D5p 'HMS Cal ADC D5p - PED' H.cal.4ta.apos_p[4] 150 50 500
-TH1F hcaladc_D6p 'HMS Cal ADC D6p - PED' H.cal.4ta.apos_p[5] 150 50 500
-TH1F hcaladc_D7p 'HMS Cal ADC D7p - PED' H.cal.4ta.apos_p[6] 150 50 500
-TH1F hcaladc_D8p 'HMS Cal ADC D8p - PED' H.cal.4ta.apos_p[7] 150 50 500
-TH1F hcaladc_D9p 'HMS Cal ADC D9p - PED' H.cal.4ta.apos_p[8] 150 50 500
-TH1F hcaladc_D10p 'HMS Cal ADC D10p - PED' H.cal.4ta.apos_p[9] 150 50 500
-TH1F hcaladc_D11p 'HMS Cal ADC D11p - PED' H.cal.4ta.apos_p[10] 150 50 500
-TH1F hcaladc_D12p 'HMS Cal ADC D12p - PED' H.cal.4ta.apos_p[11] 150 50 500
-TH1F hcaladc_D13p 'HMS Cal ADC D13p - PED' H.cal.4ta.apos_p[12] 150 50 500
+TH1F hcaladc_D1p 'HMS Cal ADC D1p - PED' H.cal.4ta.goodPosAdcPulseInt[0] 150 50 500
+TH1F hcaladc_D2p 'HMS Cal ADC D2p - PED' H.cal.4ta.goodPosAdcPulseInt[1] 150 50 500
+TH1F hcaladc_D3p 'HMS Cal ADC D3p - PED' H.cal.4ta.goodPosAdcPulseInt[2] 150 50 500
+TH1F hcaladc_D4p 'HMS Cal ADC D4p - PED' H.cal.4ta.goodPosAdcPulseInt[3] 150 50 500
+TH1F hcaladc_D5p 'HMS Cal ADC D5p - PED' H.cal.4ta.goodPosAdcPulseInt[4] 150 50 500
+TH1F hcaladc_D6p 'HMS Cal ADC D6p - PED' H.cal.4ta.goodPosAdcPulseInt[5] 150 50 500
+TH1F hcaladc_D7p 'HMS Cal ADC D7p - PED' H.cal.4ta.goodPosAdcPulseInt[6] 150 50 500
+TH1F hcaladc_D8p 'HMS Cal ADC D8p - PED' H.cal.4ta.goodPosAdcPulseInt[7] 150 50 500
+TH1F hcaladc_D9p 'HMS Cal ADC D9p - PED' H.cal.4ta.goodPosAdcPulseInt[8] 150 50 500
+TH1F hcaladc_D10p 'HMS Cal ADC D10p - PED' H.cal.4ta.goodPosAdcPulseInt[9] 150 50 500
+TH1F hcaladc_D11p 'HMS Cal ADC D11p - PED' H.cal.4ta.goodPosAdcPulseInt[10] 150 50 500
+TH1F hcaladc_D12p 'HMS Cal ADC D12p - PED' H.cal.4ta.goodPosAdcPulseInt[11] 150 50 500
+TH1F hcaladc_D13p 'HMS Cal ADC D13p - PED' H.cal.4ta.goodPosAdcPulseInt[12] 150 50 500
 
-TH1F hcaladc_A1n 'HMS Cal ADC A1n - PED' H.cal.1pr.aneg_p[0] 150 50 500
-TH1F hcaladc_A2n 'HMS Cal ADC A2n - PED' H.cal.1pr.aneg_p[1] 150 50 500
-TH1F hcaladc_A3n 'HMS Cal ADC A3n - PED' H.cal.1pr.aneg_p[2] 150 50 500
-TH1F hcaladc_A4n 'HMS Cal ADC A4n - PED' H.cal.1pr.aneg_p[3] 150 50 500
-TH1F hcaladc_A5n 'HMS Cal ADC A5n - PED' H.cal.1pr.aneg_p[4] 150 50 500
-TH1F hcaladc_A6n 'HMS Cal ADC A6n - PED' H.cal.1pr.aneg_p[5] 150 50 500
-TH1F hcaladc_A7n 'HMS Cal ADC A7n - PED' H.cal.1pr.aneg_p[6] 150 50 500
-TH1F hcaladc_A8n 'HMS Cal ADC A8n - PED' H.cal.1pr.aneg_p[7] 150 50 500
-TH1F hcaladc_A9n 'HMS Cal ADC A9n - PED' H.cal.1pr.aneg_p[8] 150 50 500
-TH1F hcaladc_A10n 'HMS Cal ADC A10n - PED' H.cal.1pr.aneg_p[9] 150 50 500
-TH1F hcaladc_A11n 'HMS Cal ADC A11n - PED' H.cal.1pr.aneg_p[10] 150 50 500
-TH1F hcaladc_A12n 'HMS Cal ADC A12n - PED' H.cal.1pr.aneg_p[11] 150 50 500
-TH1F hcaladc_A13n 'HMS Cal ADC A13n - PED' H.cal.1pr.aneg_p[12] 150 50 500
+TH1F hcaladc_A1n 'HMS Cal ADC A1n - PED' H.cal.1pr.goodNegAdcPulseInt[0] 150 50 500
+TH1F hcaladc_A2n 'HMS Cal ADC A2n - PED' H.cal.1pr.goodNegAdcPulseInt[1] 150 50 500
+TH1F hcaladc_A3n 'HMS Cal ADC A3n - PED' H.cal.1pr.goodNegAdcPulseInt[2] 150 50 500
+TH1F hcaladc_A4n 'HMS Cal ADC A4n - PED' H.cal.1pr.goodNegAdcPulseInt[3] 150 50 500
+TH1F hcaladc_A5n 'HMS Cal ADC A5n - PED' H.cal.1pr.goodNegAdcPulseInt[4] 150 50 500
+TH1F hcaladc_A6n 'HMS Cal ADC A6n - PED' H.cal.1pr.goodNegAdcPulseInt[5] 150 50 500
+TH1F hcaladc_A7n 'HMS Cal ADC A7n - PED' H.cal.1pr.goodNegAdcPulseInt[6] 150 50 500
+TH1F hcaladc_A8n 'HMS Cal ADC A8n - PED' H.cal.1pr.goodNegAdcPulseInt[7] 150 50 500
+TH1F hcaladc_A9n 'HMS Cal ADC A9n - PED' H.cal.1pr.goodNegAdcPulseInt[8] 150 50 500
+TH1F hcaladc_A10n 'HMS Cal ADC A10n - PED' H.cal.1pr.goodNegAdcPulseInt[9] 150 50 500
+TH1F hcaladc_A11n 'HMS Cal ADC A11n - PED' H.cal.1pr.goodNegAdcPulseInt[10] 150 50 500
+TH1F hcaladc_A12n 'HMS Cal ADC A12n - PED' H.cal.1pr.goodNegAdcPulseInt[11] 150 50 500
+TH1F hcaladc_A13n 'HMS Cal ADC A13n - PED' H.cal.1pr.goodNegAdcPulseInt[12] 150 50 500
 
-TH1F hcaladc_B1n 'HMS Cal ADC B1n - PED' H.cal.2ta.aneg_p[0] 150 50 500
-TH1F hcaladc_B2n 'HMS Cal ADC B2n - PED' H.cal.2ta.aneg_p[1] 150 50 500
-TH1F hcaladc_B3n 'HMS Cal ADC B3n - PED' H.cal.2ta.aneg_p[2] 150 50 500
-TH1F hcaladc_B4n 'HMS Cal ADC B4n - PED' H.cal.2ta.aneg_p[3] 150 50 500
-TH1F hcaladc_B5n 'HMS Cal ADC B5n - PED' H.cal.2ta.aneg_p[4] 150 50 500
-TH1F hcaladc_B6n 'HMS Cal ADC B6n - PED' H.cal.2ta.aneg_p[5] 150 50 500
-TH1F hcaladc_B7n 'HMS Cal ADC B7n - PED' H.cal.2ta.aneg_p[6] 150 50 500
-TH1F hcaladc_B8n 'HMS Cal ADC B8n - PED' H.cal.2ta.aneg_p[7] 150 50 500
-TH1F hcaladc_B9n 'HMS Cal ADC B9n - PED' H.cal.2ta.aneg_p[8] 150 50 500
-TH1F hcaladc_B10n 'HMS Cal ADC B10n - PED' H.cal.2ta.aneg_p[9] 150 50 500
-TH1F hcaladc_B11n 'HMS Cal ADC B11n - PED' H.cal.2ta.aneg_p[10] 150 50 500
-TH1F hcaladc_B12n 'HMS Cal ADC B12n - PED' H.cal.2ta.aneg_p[11] 150 50 500
-TH1F hcaladc_B13n 'HMS Cal ADC B13n - PED' H.cal.2ta.aneg_p[12] 150 50 500
+TH1F hcaladc_B1n 'HMS Cal ADC B1n - PED' H.cal.2ta.goodNegAdcPulseInt[0] 150 50 500
+TH1F hcaladc_B2n 'HMS Cal ADC B2n - PED' H.cal.2ta.goodNegAdcPulseInt[1] 150 50 500
+TH1F hcaladc_B3n 'HMS Cal ADC B3n - PED' H.cal.2ta.goodNegAdcPulseInt[2] 150 50 500
+TH1F hcaladc_B4n 'HMS Cal ADC B4n - PED' H.cal.2ta.goodNegAdcPulseInt[3] 150 50 500
+TH1F hcaladc_B5n 'HMS Cal ADC B5n - PED' H.cal.2ta.goodNegAdcPulseInt[4] 150 50 500
+TH1F hcaladc_B6n 'HMS Cal ADC B6n - PED' H.cal.2ta.goodNegAdcPulseInt[5] 150 50 500
+TH1F hcaladc_B7n 'HMS Cal ADC B7n - PED' H.cal.2ta.goodNegAdcPulseInt[6] 150 50 500
+TH1F hcaladc_B8n 'HMS Cal ADC B8n - PED' H.cal.2ta.goodNegAdcPulseInt[7] 150 50 500
+TH1F hcaladc_B9n 'HMS Cal ADC B9n - PED' H.cal.2ta.goodNegAdcPulseInt[8] 150 50 500
+TH1F hcaladc_B10n 'HMS Cal ADC B10n - PED' H.cal.2ta.goodNegAdcPulseInt[9] 150 50 500
+TH1F hcaladc_B11n 'HMS Cal ADC B11n - PED' H.cal.2ta.goodNegAdcPulseInt[10] 150 50 500
+TH1F hcaladc_B12n 'HMS Cal ADC B12n - PED' H.cal.2ta.goodNegAdcPulseInt[11] 150 50 500
+TH1F hcaladc_B13n 'HMS Cal ADC B13n - PED' H.cal.2ta.goodNegAdcPulseInt[12] 150 50 500
 
 #TH1F hdcrawtdc
 #TH1F hdccuttdc
 
 # Can we use variables for the constants.  In CTP we used hdc_nwire(i)
 #
-TH1F hdc1x1_wm 'HDC 1X1 Wiremap' H.dc.1x1.tdchits 113 0.5 113.5
-TH1F hdc1y1_wm 'HDC 1Y1 Wiremap' H.dc.1y1.tdchits 52 0.5 52.5
-TH1F hdc1u1_wm 'HDC 1U1 Wiremap' H.dc.1u1.tdchits 107 0.5 107.5
-TH1F hdc1v1_wm 'HDC 1V1 Wiremap' H.dc.1v1.tdchits 107 0.5 107.5
-TH1F hdc1y2_wm 'HDC 1Y2 Wiremap' H.dc.1y2.tdchits 52 0.5 52.5
-TH1F hdc1x2_wm 'HDC 1X2 Wiremap' H.dc.1x2.tdchits 113 0.5 113.5
-TH1F hdc2x1_wm 'HDC 2X1 Wiremap' H.dc.2x1.tdchits 113 0.5 113.5
-TH1F hdc2y1_wm 'HDC 2Y1 Wiremap' H.dc.2y1.tdchits 52 0.5 52.5
-TH1F hdc2u1_wm 'HDC 2U1 Wiremap' H.dc.2u1.tdchits 107 0.5 107.5
-TH1F hdc2v1_wm 'HDC 2V1 Wiremap' H.dc.2v1.tdchits 107 0.5 107.5
-TH1F hdc2y2_wm 'HDC 2Y2 Wiremap' H.dc.2y2.tdchits 52 0.5 52.5
-TH1F hdc2x2_wm 'HDC 2X2 Wiremap' H.dc.2x2.tdchits 113 0.5 113.5
+TH1F hdc1x1_wm 'HDC 1X1 Wiremap' H.dc.1x1.wirenum 113 0.5 113.5
+TH1F hdc1y1_wm 'HDC 1Y1 Wiremap' H.dc.1y1.wirenum 52 0.5 52.5
+TH1F hdc1u1_wm 'HDC 1U1 Wiremap' H.dc.1u1.wirenum 107 0.5 107.5
+TH1F hdc1v1_wm 'HDC 1V1 Wiremap' H.dc.1v1.wirenum 107 0.5 107.5
+TH1F hdc1y2_wm 'HDC 1Y2 Wiremap' H.dc.1y2.wirenum 52 0.5 52.5
+TH1F hdc1x2_wm 'HDC 1X2 Wiremap' H.dc.1x2.wirenum 113 0.5 113.5
+TH1F hdc2x1_wm 'HDC 2X1 Wiremap' H.dc.2x1.wirenum 113 0.5 113.5
+TH1F hdc2y1_wm 'HDC 2Y1 Wiremap' H.dc.2y1.wirenum 52 0.5 52.5
+TH1F hdc2u1_wm 'HDC 2U1 Wiremap' H.dc.2u1.wirenum 107 0.5 107.5
+TH1F hdc2v1_wm 'HDC 2V1 Wiremap' H.dc.2v1.wirenum 107 0.5 107.5
+TH1F hdc2y2_wm 'HDC 2Y2 Wiremap' H.dc.2y2.wirenum 52 0.5 52.5
+TH1F hdc2x2_wm 'HDC 2X2 Wiremap' H.dc.2x2.wirenum 113 0.5 113.5
 
 # Drift Time and Drift Distance Spectra
 TH1F hdc1x1_dt 'HDC 1X1 Drift Time' H.dc.1x1.time 200 -100 300
@@ -169,12 +170,12 @@ TH1F hdc2v1_dd 'HDC 2V1 Drift Distance' H.dc.2v1.dist 300 -0.1 0.6
 TH1F hdc2y2_dd 'HDC 2Y2 Drift Distance' H.dc.2y2.dist 300 -0.1 0.6
 TH1F hdc2x2_dd 'HDC 2X2 Drift Distance' H.dc.2x2.dist 300 -0.1 0.6
 
-formula Hhodtdif1 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[1]
-formula Hhodtdif2 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[2]
-formula Hhodtdif3 H.hod.fpHitsTime[0]-H.hod.fpHitsTime[3]
-formula Hhodtdif4 H.hod.fpHitsTime[1]-H.hod.fpHitsTime[2]
-formula Hhodtdif5 H.hod.fpHitsTime[1]-H.hod.fpHitsTime[3]
-formula Hhodtdif6 H.hod.fpHitsTime[2]-H.hod.fpHitsTime[3]
+formula Hhodtdif1 H.hod.1x.fptime-H.hod.1y.fptime
+formula Hhodtdif2 H.hod.1x.fptime-H.hod.2x.fptime
+formula Hhodtdif3 H.hod.1x.fptime-H.hod.2y.fptime
+formula Hhodtdif4 H.hod.1y.fptime-H.hod.2x.fptime
+formula Hhodtdif5 H.hod.1y.fptime-H.hod.2y.fptime
+formula Hhodtdif6 H.hod.2x.fptime-H.hod.2y.fptime
 
 # Focal Plane times
 TH1F htimedif1 ' Time dif of plane 1 and 2' Hhodtdif1 80 -40. 40.
@@ -184,45 +185,45 @@ TH1F htimedif4 ' Time dif of plane 2 and 3' Hhodtdif4 80 -40. 40.
 TH1F htimedif5 ' Time dif of plane 2 and 4' Hhodtdif5 80 -40. 40.
 TH1F htimedif6 ' Time dif of plane 3 and 4' Hhodtdif6 80 -40. 40.
 
-TH1F hs1xfptime 'HODO s1x fptime' H.hod.1x.fptime 80 0 80 H.hod.hgoodstarttime
-TH1F hs1yfptime 'HODO s1y fptime' H.hod.1y.fptime 80 0 80 H.hod.hgoodstarttime
-TH1F hs2xfptime 'HODO s2x fptime' H.hod.2x.fptime 80 0 80 H.hod.hgoodstarttime
-TH1F hs2yfptime 'HODO s2y fptime' H.hod.2y.fptime 80 0 80 H.hod.hgoodstarttime
-TH1F starttime  'HODO start time' H.hod.starttime 80 0 80 H.hod.hgoodstarttime
+TH1F hs1xfptime 'HODO s1x fptime' H.hod.1x.fptime 80 0 80 H.hod.goodstarttime
+TH1F hs1yfptime 'HODO s1y fptime' H.hod.1y.fptime 80 0 80 H.hod.goodstarttime
+TH1F hs2xfptime 'HODO s2x fptime' H.hod.2x.fptime 80 0 80 H.hod.goodstarttime
+TH1F hs2yfptime 'HODO s2y fptime' H.hod.2y.fptime 80 0 80 H.hod.goodstarttime
+TH1F starttime  'HODO start time' H.hod.starttime 80 0 80 H.hod.goodstarttime
 
 #SOS
 # TDC hits per paddle
-TH1F spostdc1 'SOS s1x+ TDC hits' S.hod.1x.postdchits 9 0.5 9.5
-TH1F snegtdc1 'SOS s1x- TDC hits' S.hod.1x.negtdchits 9 0.5 9.5
-TH1F spostdc2 'SOS s1y+ TDC hits' S.hod.1y.postdchits 9 0.5 9.5
-TH1F snegtdc2 'SOS s1y- TDC hits' S.hod.1y.negtdchits 9 0.5 9.5
-TH1F spostdc3 'SOS s2x+ TDC hits' S.hod.2x.postdchits 16 0.5 16.5
-TH1F snegtdc3 'SOS s2x- TDC hits' S.hod.2x.negtdchits 16 0.5 16.5
-TH1F spostdc4 'SOS s2y+ TDC hits' S.hod.2y.postdchits 9 0.5 9.5
-TH1F snegtdc4 'SOS s2y- TDC hits' S.hod.2y.negtdchits 9 0.5 9.5
+TH1F spostdc1 'SOS s1x+ TDC hits' S.hod.1x.posTdcCounter 9 0.5 9.5
+TH1F snegtdc1 'SOS s1x- TDC hits' S.hod.1x.negTdcCounter 9 0.5 9.5
+TH1F spostdc2 'SOS s1y+ TDC hits' S.hod.1y.posTdcCounter 9 0.5 9.5
+TH1F snegtdc2 'SOS s1y- TDC hits' S.hod.1y.negTdcCounter 9 0.5 9.5
+TH1F spostdc3 'SOS s2x+ TDC hits' S.hod.2x.posTdcCounter 16 0.5 16.5
+TH1F snegtdc3 'SOS s2x- TDC hits' S.hod.2x.negTdcCounter 16 0.5 16.5
+TH1F spostdc4 'SOS s2y+ TDC hits' S.hod.2y.posTdcCounter 9 0.5 9.5
+TH1F snegtdc4 'SOS s2y- TDC hits' S.hod.2y.negTdcCounter 9 0.5 9.5
 
 # ADC hits per paddle
-TH1F sposadc1 'SOS s1x+ ADC hits' S.hod.1x.posadchits 9 0.5 9.5
-TH1F snegadc1 'SOS s1x- ADC hits' S.hod.1x.negadchits 9 0.5 9.5
-TH1F sposadc2 'SOS s1y+ ADC hits' S.hod.1y.posadchits 9 0.5 9.5
-TH1F snegadc2 'SOS s1y- ADC hits' S.hod.1y.negadchits 9 0.5 9.5
-TH1F sposadc3 'SOS s2x+ ADC hits' S.hod.2x.posadchits 16 0.5 16.5
-TH1F snegadc3 'SOS s2x- ADC hits' S.hod.2x.negadchits 16 0.5 16.5
-TH1F sposadc4 'SOS s2y+ ADC hits' S.hod.2y.posadchits 9 0.5 9.5
-TH1F snegadc4 'SOS s2y- ADC hits' S.hod.2y.negadchits 9 0.5 9.5
+TH1F sposadc1 'SOS s1x+ ADC hits' S.hod.1x.posAdcCounter 9 0.5 9.5
+TH1F snegadc1 'SOS s1x- ADC hits' S.hod.1x.negAdcCounter 9 0.5 9.5
+TH1F sposadc2 'SOS s1y+ ADC hits' S.hod.1y.posAdcCounter 9 0.5 9.5
+TH1F snegadc2 'SOS s1y- ADC hits' S.hod.1y.negAdcCounter 9 0.5 9.5
+TH1F sposadc3 'SOS s2x+ ADC hits' S.hod.2x.posAdcCounter 16 0.5 16.5
+TH1F snegadc3 'SOS s2x- ADC hits' S.hod.2x.negAdcCounter 16 0.5 16.5
+TH1F sposadc4 'SOS s2y+ ADC hits' S.hod.2y.posAdcCounter 9 0.5 9.5
+TH1F snegadc4 'SOS s2y- ADC hits' S.hod.2y.negAdcCounter 9 0.5 9.5
 
-TH1F sdc1u1_wm 'SDC 1U1 Wiremap' S.dc.1u1.tdchits 48 0.5 48.5
-TH1F sdc1u2_wm 'SDC 1U2 Wiremap' S.dc.1u2.tdchits 48 0.5 48.5
-TH1F sdc1x1_wm 'SDC 1X1 Wiremap' S.dc.1x1.tdchits 64 0.5 64.5
-TH1F sdc1x2_wm 'SDC 1X2 Wiremap' S.dc.1x2.tdchits 64 0.5 64.5
-TH1F sdc1v1_wm 'SDC 1V1 Wiremap' S.dc.1v1.tdchits 48 0.5 48.5
-TH1F sdc1v2_wm 'SDC 1V2 Wiremap' S.dc.1v2.tdchits 48 0.5 48.5
-TH1F sdc2u1_wm 'SDC 2U1 Wiremap' S.dc.2u1.tdchits 48 0.5 48.5
-TH1F sdc2u2_wm 'SDC 2U2 Wiremap' S.dc.2u2.tdchits 48 0.5 48.5
-TH1F sdc2x1_wm 'SDC 2X1 Wiremap' S.dc.2x1.tdchits 64 0.5 64.5
-TH1F sdc2x2_wm 'SDC 2X2 Wiremap' S.dc.2x2.tdchits 64 0.5 64.5
-TH1F sdc2v1_wm 'SDC 2V1 Wiremap' S.dc.2v1.tdchits 48 0.5 48.5
-TH1F sdc2v2_wm 'SDC 2V2 Wiremap' S.dc.2v2.tdchits 48 0.5 48.5
+TH1F sdc1u1_wm 'SDC 1U1 Wiremap' S.dc.1u1.wirenum 48 0.5 48.5
+TH1F sdc1u2_wm 'SDC 1U2 Wiremap' S.dc.1u2.wirenum 48 0.5 48.5
+TH1F sdc1x1_wm 'SDC 1X1 Wiremap' S.dc.1x1.wirenum 64 0.5 64.5
+TH1F sdc1x2_wm 'SDC 1X2 Wiremap' S.dc.1x2.wirenum 64 0.5 64.5
+TH1F sdc1v1_wm 'SDC 1V1 Wiremap' S.dc.1v1.wirenum 48 0.5 48.5
+TH1F sdc1v2_wm 'SDC 1V2 Wiremap' S.dc.1v2.wirenum 48 0.5 48.5
+TH1F sdc2u1_wm 'SDC 2U1 Wiremap' S.dc.2u1.wirenum 48 0.5 48.5
+TH1F sdc2u2_wm 'SDC 2U2 Wiremap' S.dc.2u2.wirenum 48 0.5 48.5
+TH1F sdc2x1_wm 'SDC 2X1 Wiremap' S.dc.2x1.wirenum 64 0.5 64.5
+TH1F sdc2x2_wm 'SDC 2X2 Wiremap' S.dc.2x2.wirenum 64 0.5 64.5
+TH1F sdc2v1_wm 'SDC 2V1 Wiremap' S.dc.2v1.wirenum 48 0.5 48.5
+TH1F sdc2v2_wm 'SDC 2V2 Wiremap' S.dc.2v2.wirenum 48 0.5 48.5
 
 TH1F sdc1u1_dd 'SDC 1U1 Drift Distance' S.dc.1u1.dist 300 -0.1 0.6
 TH1F sdc1u2_dd 'SDC 1U2 Drift Distance' S.dc.1u2.dist 300 -0.1 0.6
@@ -236,3 +237,161 @@ TH1F sdc2x1_dd 'SDC 2X1 Drift Distance' S.dc.2x1.dist 300 -0.1 0.6
 TH1F sdc2x2_dd 'SDC 2X2 Drift Distance' S.dc.2x2.dist 300 -0.1 0.6
 TH1F sdc2v1_dd 'SDC 2V1 Drift Distance' S.dc.2v1.dist 300 -0.1 0.6
 TH1F sdc2v2_dd 'SDC 2V2 Drift Distance' S.dc.2v2.dist 300 -0.1 0.6
+
+# Scaler variables
+variable HSS1
+variable HSS1r
+variable HShPRE50
+variable HShPRE50r
+variable HSS2X
+variable HSS2Xr
+variable HShPRE150
+variable HShPRE150r
+variable HSS1X
+variable HSS1Xr
+variable HSS2Y
+variable HSS2Yr
+variable HShPRE100
+variable HShPRE100r
+variable HSS1Y
+variable HSS1Yr
+variable HSS2
+variable HSS2r
+variable HShCERHI
+variable HShCERHIr
+variable HShSTOF
+variable HShSTOFr
+variable HShSCIN
+variable HShSCINr
+variable HShELREAL
+variable HShELREALr
+variable HShPIPRE
+variable HShPIPREr
+variable HShELCLEAN
+variable HShELCLEANr
+variable HShPRETRG
+variable HShPRETRGr
+variable HShPION
+variable HShPIONr
+variable HShCER
+variable HShCERr
+variable HShPIONHI
+variable HShPIONHIr
+variable HShPRE200
+variable HShPRE200r
+variable HShUNSER
+variable HShUNSERr
+variable HShBCM1
+variable HShBCM1r
+variable HShBCM2
+variable HShBCM2r
+variable HShELHI
+variable HShELHIr
+variable HShELLO
+variable HShELLOr
+variable HShPRHI
+variable HShPRHIr
+variable HShPRLO
+variable HShPRLOr
+variable HShSHLO
+variable HShSHLOr
+variable HShCLOCK
+variable HShCLOCKr
+variable HShBEAMGATES
+variable HShBEAMGATESr
+variable HShADCGATES
+variable HShADCGATESr
+variable HShS1X
+variable HShS1Xr
+variable HShS1Y
+variable HShS1Yr
+variable HShS2X
+variable HShS2Xr
+variable HShS2Y
+variable HShS2Yr
+variable HShS1
+variable HShS1r
+variable HShS2
+variable HShS2r
+variable HSHMSPRE
+variable HSHMSPREr
+variable HSCOINPRE
+variable HSCOINPREr
+variable HSPEDPRE
+variable HSPEDPREr
+variable HSHMSTRG
+variable HSHMSTRGr
+variable HSCOINTRG
+variable HSCOINTRGr
+variable HSPEDTRG
+variable HSPEDTRGr
+variable HSsPRE50
+variable HSsPRE50r
+variable HSsPRE150
+variable HSsPRE150r
+variable HSsPRE100
+variable HSsPRE100r
+variable HSsPRE200
+variable HSsPRE200r
+variable HSsSTOF
+variable HSsSTOFr
+variable HSsSCIN
+variable HSsSCINr
+variable HSsELREAL
+variable HSsELREALr
+variable HSsPIPRE
+variable HSsPIPREr
+variable HSsELCLEAN
+variable HSsELCLEANr
+variable HSsPRETRG
+variable HSsPRETRGr
+variable HSsBCM1
+variable HSsBCM1r
+variable HSsBCM2
+variable HSsBCM2r
+variable HSsCLOCK
+variable HSsCLOCKr
+variable HSsPION
+variable HSsPIONr
+variable HSsCER
+variable HSsCERr
+variable HSsELHI
+variable HSsELHIr
+variable HSsELLO
+variable HSsELLOr
+variable HSsPRHI
+variable HSsPRHIr
+variable HSsPRLO
+variable HSsPRLOr
+variable HSsSHLO
+variable HSsSHLOr
+variable HSsADCGATES
+variable HSsADCGATESr
+variable HSsS1X
+variable HSsS1Xr
+variable HSsS1Y
+variable HSsS1Yr
+variable HSsS2X
+variable HSsS2Xr
+variable HSsS2Y
+variable HSsS2Yr
+variable HSsS1
+variable HSsS1r
+variable HSsS2
+variable HSsS2r
+variable HSSOSPRE
+variable HSSOSPREr
+variable HSSOSTRG
+variable HSSOSTRGr
+variable HShUNUSED4
+variable HShUNUSED4r
+variable HShUNUSED5
+variable HShUNUSED5r
+variable HSSHODO9
+variable HSSHODO9r
+variable HSSHODO11
+variable HSSHODO11r
+variable HSSHODO13
+variable HSSHODO13r
+variable HSSHODO15
+variable HSSHODO15r

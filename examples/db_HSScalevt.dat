@@ -1,0 +1,781 @@
+# scaler.map file for Hall C Scalers Event type 0
+# comments start with #
+
+# map syntax
+# scaler, type, crate, slot, header, mask, norm slot#
+# after the norm slot#:  clock chan# and clock frequency
+
+#scaler #0 ... HMS S1 X+
+map 1151 1 1 100000 ffff000 19 
+#scaler #1 ... HMS S1 X-
+map 1151 1 2 200000 ffff000 19 
+#scaler #2 ... HMS S1 Y+
+map 1151 1 3 300000 ffff000 19
+#scaler #3 ... HMS S1 Y-
+map 1151 1 4 400000 ffff000 19
+#scaler #4 ... HMS S2 X+
+map 1151 1 5 500000 ffff000 19
+#scaler #5 ... HMS S2 X-
+map 1151 1 6 600000 ffff000 19
+#scaler #6 ... HMS S2 Y+
+map 1151 1 7 700000 ffff000 19
+#scaler #7 ... HMS S2 Y-
+map 1151 1 8 800000 ffff000 19
+#scaler #8 ... HMS TRIG 1
+map 1151 1 9 900000 ffff000 19
+#scaler #9 ... HMS TRIG 2
+map 1151 1 10 a00000 ffff000 19
+#scaler #10 ... HMS HODO
+map 1151 1 11 b00000 ffff000 19
+#scaler #11 ... HMS CAL
+map 1151 1 12 c00000 ffff000 19
+#scaler #12 ... SOS S1X
+map 1151 1 13 d00000 ffff000 19
+#scaler #13 ... SOS S1Y
+map 1151 1 14 e00000 ffff000 19 
+#scaler #14 ... SOS S2X+
+map 1151 1 15 f00000 ffff000 19
+#scaler #15 ... SOS S2X-
+map 1151 1 16 1000000 ffff000 19
+#scaler #16 ... SOS S2Y
+map 1151 1 17 1100000 ffff000 19
+#scaler #17 ... SOS HODO Spare
+map 1151 1 18 1200000 ffff000 19
+#scaler #18 ... SOS TRIG 1
+map 1151 1 19 1300000 ffff000 19
+#scaler #19 ... SOS TRIG 2 ... clock scaler is in channel 4 (first channel is zero) and is 1MHz
+map 1151 1 20 1400000 ffff000 19 4 1000000
+#scaler #20 ... SOS HODO
+map 1151 1 21 1500000 ffff000 19
+
+# variable syntax
+# scaler#, chan#, (1=cnt, 2=rate), var name, description string
+# var name gets "fName" prefix, e.g.
+# for L-HRS scalers with fname="Left", var name = "LeftTSbcmu3"
+
+#variable 0 0 1  TS1  TS chan 1 counts
+#variable 0 0 2  TS1r TS chan 1 rate
+#variable 0 1 1  TS2  TS chan 2 counts
+#variable 0 1 2  TS2r TS chan 2 rate
+#variable 0 2 1  TS3  TS chan 3 counts
+#variable 0 2 2  TS3r TS chan 3 rate
+#variable 0 3 1  TS4  TS chan 4 counts
+#variable 0 3 2  TS4r TS chan 4 rate
+#variable 0 4 1  TS5  TS chan 5 counts
+#variable 0 4 2  TS5r TS chan 5 rate
+#variable 0 5 1  TS6  TS chan 6 counts
+#variable 0 5 2  TS6r TS chan 6 rate
+#variable 0 6 1  TS7  TS chan 7 counts
+#variable 0 6 2  TS7r TS chan 7 rate
+#variable 0 7 1  TS8  TS chan 8 counts
+#variable 0 7 2  TS8r TS chan 8 rate
+#variable 0 8 1  TS9  TS chan 9 counts
+#variable 0 8 2  TS9r TS chan 9 rate
+#variable 0 9 1  TS10  TS chan 10 counts
+#variable 0 9 2  TS10r TS chan 10 rate
+#variable 0 10 1  TS11  TS chan 11 counts
+#variable 0 10 2  TS11r TS chan 11 rate
+#variable 0 11 1  TS12  TS chan 12 counts
+#variable 0 11 2  TS12r TS chan 12 rate
+#variable 0 12 1  TS13  TS chan 13 counts
+#variable 0 12 2  TS13r TS chan 13 rate
+#variable 0 13 1  TS14  TS chan 14 counts
+#variable 0 13 2  TS14r TS chan 14 rate
+#variable 0 14 1  TS15  TS chan 15 counts
+#variable 0 14 2  TS15r TS chan 15 rate
+#variable 0 15 1  TS16  TS chan 16 counts
+#variable 0 15 2  TS16r TS chan 16 rate
+# 
+# gscaler(17-32)
+variable 0 0 1  HS1XP1  HS1X+ chan 1 counts
+variable 0 0 2  HS1XP1r HS1X+ chan 1 rate
+variable 0 1 1  HS1XP2  HS1X+ chan 2 counts
+variable 0 1 2  HS1XP2r HS1X+ chan 2 rate
+variable 0 2 1  HS1XP3  HS1X+ chan 3 counts
+variable 0 2 2  HS1XP3r HS1X+ chan 3 rate
+variable 0 3 1  HS1XP4  HS1X+ chan 4 counts
+variable 0 3 2  HS1XP4r HS1X+ chan 4 rate
+variable 0 4 1  HS1XP5  HS1X+ chan 5 counts
+variable 0 4 2  HS1XP5r HS1X+ chan 5 rate
+variable 0 5 1  HS1XP6  HS1X+ chan 6 counts
+variable 0 5 2  HS1XP6r HS1X+ chan 6 rate
+variable 0 6 1  HS1XP7  HS1X+ chan 7 counts
+variable 0 6 2  HS1XP7r HS1X+ chan 7 rate
+variable 0 7 1  HS1XP8  HS8X+ chan 8 counts
+variable 0 7 2  HS1XP8r HS1X+ chan 8 rate
+variable 0 8 1  HS1XP9  HS1X+ chan 9 counts
+variable 0 8 2  HS1XP9r HS1X+ chan 9 rate
+variable 0 9 1  HS1XP10  HS1X+ chan 10 counts
+variable 0 9 2  HS1XP10r HS1X+ chan 10 rate
+variable 0 10 1  HS1XP11  HS1X+ chan 11 counts
+variable 0 10 2  HS1XP11r HS1X+ chan 11 rate
+variable 0 11 1  HS1XP12  HS1X+ chan 12 counts
+variable 0 11 2  HS1XP12r HS1X+ chan 12 rate
+variable 0 12 1  HS1XP13  HS1X+ chan 13 counts
+variable 0 12 2  HS1XP13r HS1X+ chan 13 rate
+variable 0 13 1  HS1XP14  HS1X+ chan 14 counts
+variable 0 13 2  HS1XP14r HS1X+ chan 14 rate
+variable 0 14 1  HS1XP15  HS1X+ chan 15 counts
+variable 0 14 2  HS1XP15r HS1X+ chan 15 rate
+variable 0 15 1  HS1XP16  HS1X+ chan 16 counts
+variable 0 15 2  HS1XP16r HS1X+ chan 16 rate
+# gscaler(33-48)
+variable 1 0 1  HS1XM1  HS1X- chan 1 counts
+variable 1 0 2  HS1XM1r HS1X- chan 1 rate
+variable 1 1 1  HS1XM2  HS1X- chan 2 counts
+variable 1 1 2  HS1XM2r HS1X- chan 2 rate
+variable 1 2 1  HS1XM3  HS1X- chan 3 counts
+variable 1 2 2  HS1XM3r HS1X- chan 3 rate
+variable 1 3 1  HS1XM4  HS1X- chan 4 counts
+variable 1 3 2  HS1XM4r HS1X- chan 4 rate
+variable 1 4 1  HS1XM5  HS1X- chan 5 counts
+variable 1 4 2  HS1XM5r HS1X- chan 5 rate
+variable 1 5 1  HS1XM6  HS1X- chan 6 counts
+variable 1 5 2  HS1XM6r HS1X- chan 6 rate
+variable 1 6 1  HS1XM7  HS1X- chan 7 counts
+variable 1 6 2  HS1XM7r HS1X- chan 7 rate
+variable 1 7 1  HS1XM8  HS8X- chan 8 counts
+variable 1 7 2  HS1XM8r HS1X- chan 8 rate
+variable 1 8 1  HS1XM9  HS1X- chan 9 counts
+variable 1 8 2  HS1XM9r HS1X- chan 9 rate
+variable 1 9 1  HS1XM10  HS1X- chan 10 counts
+variable 1 9 2  HS1XM10r HS1X- chan 10 rate
+variable 1 10 1  HS1XM11  HS1X- chan 11 counts
+variable 1 10 2  HS1XM11r HS1X- chan 11 rate
+variable 1 11 1  HS1XM12  HS1X- chan 12 counts
+variable 1 11 2  HS1XM12r HS1X- chan 12 rate
+variable 1 12 1  HS1XM13  HS1X- chan 13 counts
+variable 1 12 2  HS1XM13r HS1X- chan 13 rate
+variable 1 13 1  HS1XM14  HS1X- chan 14 counts
+variable 1 13 2  HS1XM14r HS1X- chan 14 rate
+variable 1 14 1  HS1XM15  HS1X- chan 15 counts
+variable 1 14 2  HS1XM15r HS1X- chan 15 rate
+variable 1 15 1  HS1XM16  HS1X- chan 16 counts
+variable 1 15 2  HS1XM16r HS1X- chan 16 rate
+# gscaler(49-64)
+variable 2 0 1  HS1YP1  HS1Y+ chan 1 counts
+variable 2 0 2  HS1YP1r HS1Y+ chan 1 rate
+variable 2 1 1  HS1YP2  HS1Y+ chan 2 counts
+variable 2 1 2  HS1YP2r HS1Y+ chan 2 rate
+variable 2 2 1  HS1YP3  HS1Y+ chan 3 counts
+variable 2 2 2  HS1YP3r HS1Y+ chan 3 rate
+variable 2 3 1  HS1YP4  HS1Y+ chan 4 counts
+variable 2 3 2  HS1YP4r HS1Y+ chan 4 rate
+variable 2 4 1  HS1YP5  HS1Y+ chan 5 counts
+variable 2 4 2  HS1YP5r HS1Y+ chan 5 rate
+variable 2 5 1  HS1YP6  HS1Y+ chan 6 counts
+variable 2 5 2  HS1YP6r HS1Y+ chan 6 rate
+variable 2 6 1  HS1YP7  HS1Y+ chan 7 counts
+variable 2 6 2  HS1YP7r HS1Y+ chan 7 rate
+variable 2 7 1  HS1YP8  HS8Y+ chan 8 counts
+variable 2 7 2  HS1YP8r HS1Y+ chan 8 rate
+variable 2 8 1  HS1YP9  HS1Y+ chan 9 counts
+variable 2 8 2  HS1YP9r HS1Y+ chan 9 rate
+variable 2 9 1  HS1YP10  HS1Y+ chan 10 counts
+variable 2 9 2  HS1YP10r HS1Y+ chan 10 rate
+variable 2 10 1  HS1YP11  HS1Y+ chan 11 counts
+variable 2 10 2  HS1YP11r HS1Y+ chan 11 rate
+variable 2 11 1  HS1YP12  HS1Y+ chan 12 counts
+variable 2 11 2  HS1YP12r HS1Y+ chan 12 rate
+variable 2 12 1  HS1YP13  HS1Y+ chan 13 counts
+variable 2 12 2  HS1YP13r HS1Y+ chan 13 rate
+variable 2 13 1  HS1YP14  HS1Y+ chan 14 counts
+variable 2 13 2  HS1YP14r HS1Y+ chan 14 rate
+variable 2 14 1  HS1YP15  HS1Y+ chan 15 counts
+variable 2 14 2  HS1YP15r HS1Y+ chan 15 rate
+variable 2 15 1  HS1YP16  HS1Y+ chan 16 counts
+variable 2 15 2  HS1YP16r HS1Y+ chan 16 rate
+# gscaler(65-80)
+variable 3 0 1  HS1YM1  HS1Y- chan 1 counts
+variable 3 0 2  HS1YM1r HS1Y- chan 1 rate
+variable 3 1 1  HS1YM2  HS1Y- chan 2 counts
+variable 3 1 2  HS1YM2r HS1Y- chan 2 rate
+variable 3 2 1  HS1YM3  HS1Y- chan 3 counts
+variable 3 2 2  HS1YM3r HS1Y- chan 3 rate
+variable 3 3 1  HS1YM4  HS1Y- chan 4 counts
+variable 3 3 2  HS1YM4r HS1Y- chan 4 rate
+variable 3 4 1  HS1YM5  HS1Y- chan 5 counts
+variable 3 4 2  HS1YM5r HS1Y- chan 5 rate
+variable 3 5 1  HS1YM6  HS1Y- chan 6 counts
+variable 3 5 2  HS1YM6r HS1Y- chan 6 rate
+variable 3 6 1  HS1YM7  HS1Y- chan 7 counts
+variable 3 6 2  HS1YM7r HS1Y- chan 7 rate
+variable 3 7 1  HS1YM8  HS8Y- chan 8 counts
+variable 3 7 2  HS1YM8r HS1Y- chan 8 rate
+variable 3 8 1  HS1YM9  HS1Y- chan 9 counts
+variable 3 8 2  HS1YM9r HS1Y- chan 9 rate
+variable 3 9 1  HS1YM10  HS1Y- chan 10 counts
+variable 3 9 2  HS1YM10r HS1Y- chan 10 rate
+variable 3 10 1  HS1YM11  HS1Y- chan 11 counts
+variable 3 10 2  HS1YM11r HS1Y- chan 11 rate
+variable 3 11 1  HS1YM12  HS1Y- chan 12 counts
+variable 3 11 2  HS1YM12r HS1Y- chan 12 rate
+variable 3 12 1  HS1YM13  HS1Y- chan 13 counts
+variable 3 12 2  HS1YM13r HS1Y- chan 13 rate
+variable 3 13 1  HS1YM14  HS1Y- chan 14 counts
+variable 3 13 2  HS1YM14r HS1Y- chan 14 rate
+variable 3 14 1  HS1YM15  HS1Y- chan 15 counts
+variable 3 14 2  HS1YM15r HS1Y- chan 15 rate
+variable 3 15 1  HS1YM16  HS1Y- chan 16 counts
+variable 3 15 2  HS1YM16r HS1Y- chan 16 rate
+# gscaler(81-96)
+variable 4 0 1  HS2XP1  HS2X+ chan 1 counts
+variable 4 0 2  HS2XP1r HS2X+ chan 1 rate
+variable 4 1 1  HS2XP2  HS2X+ chan 2 counts
+variable 4 1 2  HS2XP2r HS2X+ chan 2 rate
+variable 4 2 1  HS2XP3  HS2X+ chan 3 counts
+variable 4 2 2  HS2XP3r HS2X+ chan 3 rate
+variable 4 3 1  HS2XP4  HS2X+ chan 4 counts
+variable 4 3 2  HS2XP4r HS2X+ chan 4 rate
+variable 4 4 1  HS2XP5  HS2X+ chan 5 counts
+variable 4 4 2  HS2XP5r HS2X+ chan 5 rate
+variable 4 5 1  HS2XP6  HS2X+ chan 6 counts
+variable 4 5 2  HS2XP6r HS2X+ chan 6 rate
+variable 4 6 1  HS2XP7  HS2X+ chan 7 counts
+variable 4 6 2  HS2XP7r HS2X+ chan 7 rate
+variable 4 7 1  HS2XP8  HS2X+ chan 8 counts
+variable 4 7 2  HS2XP8r HS2X+ chan 8 rate
+variable 4 8 1  HS2XP9  HS2X+ chan 9 counts
+variable 4 8 2  HS2XP9r HS2X+ chan 9 rate
+variable 4 9 1  HS2XP10  HS2X+ chan 10 counts
+variable 4 9 2  HS2XP10r HS2X+ chan 10 rate
+variable 4 10 1  HS2XP11  HS2X+ chan 11 counts
+variable 4 10 2  HS2XP11r HS2X+ chan 11 rate
+variable 4 11 1  HS2XP12  HS2X+ chan 12 counts
+variable 4 11 2  HS2XP12r HS2X+ chan 12 rate
+variable 4 12 1  HS2XP13  HS2X+ chan 13 counts
+variable 4 12 2  HS2XP13r HS2X+ chan 13 rate
+variable 4 13 1  HS2XP14  HS2X+ chan 14 counts
+variable 4 13 2  HS2XP14r HS2X+ chan 14 rate
+variable 4 14 1  HS2XP15  HS2X+ chan 15 counts
+variable 4 14 2  HS2XP15r HS2X+ chan 15 rate
+variable 4 15 1  HS2XP16  HS2X+ chan 16 counts
+variable 4 15 2  HS2XP16r HS2X+ chan 16 rate
+# gscaler(97-112)
+variable 5 0 1  HS2XM1  HS2X- chan 1 counts
+variable 5 0 2  HS2XM1r HS2X- chan 1 rate
+variable 5 1 1  HS2XM2  HS2X- chan 2 counts
+variable 5 1 2  HS2XM2r HS2X- chan 2 rate
+variable 5 2 1  HS2XM3  HS2X- chan 3 counts
+variable 5 2 2  HS2XM3r HS2X- chan 3 rate
+variable 5 3 1  HS2XM4  HS2X- chan 4 counts
+variable 5 3 2  HS2XM4r HS2X- chan 4 rate
+variable 5 4 1  HS2XM5  HS2X- chan 5 counts
+variable 5 4 2  HS2XM5r HS2X- chan 5 rate
+variable 5 5 1  HS2XM6  HS2X- chan 6 counts
+variable 5 5 2  HS2XM6r HS2X- chan 6 rate
+variable 5 6 1  HS2XM7  HS2X- chan 7 counts
+variable 5 6 2  HS2XM7r HS2X- chan 7 rate
+variable 5 7 1  HS2XM8  HS2X- chan 8 counts
+variable 5 7 2  HS2XM8r HS2X- chan 8 rate
+variable 5 8 1  HS2XM9  HS2X- chan 9 counts
+variable 5 8 2  HS2XM9r HS2X- chan 9 rate
+variable 5 9 1  HS2XM10  HS2X- chan 10 counts
+variable 5 9 2  HS2XM10r HS2X- chan 10 rate
+variable 5 10 1  HS2XM11  HS2X- chan 11 counts
+variable 5 10 2  HS2XM11r HS2X- chan 11 rate
+variable 5 11 1  HS2XM12  HS2X- chan 12 counts
+variable 5 11 2  HS2XM12r HS2X- chan 12 rate
+variable 5 12 1  HS2XM13  HS2X- chan 13 counts
+variable 5 12 2  HS2XM13r HS2X- chan 13 rate
+variable 5 13 1  HS2XM14  HS2X- chan 14 counts
+variable 5 13 2  HS2XM14r HS2X- chan 14 rate
+variable 5 14 1  HS2XM15  HS2X- chan 15 counts
+variable 5 14 2  HS2XM15r HS2X- chan 15 rate
+variable 5 15 1  HS2XM16  HS2X- chan 16 counts
+variable 5 15 2  HS2XM16r HS2X- chan 16 rate
+# gscaler(113-128)
+variable 6 0 1  HS2YP1  HS2Y+ chan 1 counts
+variable 6 0 2  HS2YP1r HS2Y+ chan 1 rate
+variable 6 1 1  HS2YP2  HS2Y+ chan 2 counts
+variable 6 1 2  HS2YP2r HS2Y+ chan 2 rate
+variable 6 2 1  HS2YP3  HS2Y+ chan 3 counts
+variable 6 2 2  HS2YP3r HS2Y+ chan 3 rate
+variable 6 3 1  HS2YP4  HS2Y+ chan 4 counts
+variable 6 3 2  HS2YP4r HS2Y+ chan 4 rate
+variable 6 4 1  HS2YP5  HS2Y+ chan 5 counts
+variable 6 4 2  HS2YP5r HS2Y+ chan 5 rate
+variable 6 5 1  HS2YP6  HS2Y+ chan 6 counts
+variable 6 5 2  HS2YP6r HS2Y+ chan 6 rate
+variable 6 6 1  HS2YP7  HS2Y+ chan 7 counts
+variable 6 6 2  HS2YP7r HS2Y+ chan 7 rate
+variable 6 7 1  HS2YP8  HS2Y+ chan 8 counts
+variable 6 7 2  HS2YP8r HS2Y+ chan 8 rate
+variable 6 8 1  HS2YP9  HS2Y+ chan 9 counts
+variable 6 8 2  HS2YP9r HS2Y+ chan 9 rate
+variable 6 9 1  HS2YP10  HS2Y+ chan 10 counts
+variable 6 9 2  HS2YP10r HS2Y+ chan 10 rate
+variable 6 10 1  HS2YP11  HS2Y+ chan 11 counts
+variable 6 10 2  HS2YP11r HS2Y+ chan 11 rate
+variable 6 11 1  HS2YP12  HS2Y+ chan 12 counts
+variable 6 11 2  HS2YP12r HS2Y+ chan 12 rate
+variable 6 12 1  HS2YP13  HS2Y+ chan 13 counts
+variable 6 12 2  HS2YP13r HS2Y+ chan 13 rate
+variable 6 13 1  HS2YP14  HS2Y+ chan 14 counts
+variable 6 13 2  HS2YP14r HS2Y+ chan 14 rate
+variable 6 14 1  HS2YP15  HS2Y+ chan 15 counts
+variable 6 14 2  HS2YP15r HS2Y+ chan 15 rate
+variable 6 15 1  HS2YP16  HS2Y+ chan 16 counts
+variable 6 15 2  HS2YP16r HS2Y+ chan 16 rate
+# gscaler(129-144)
+variable 7 0 1  HS2YM1  HS2Y- chan 1 counts
+variable 7 0 2  HS2YM1r HS2Y- chan 1 rate
+variable 7 1 1  HS2YM2  HS2Y- chan 2 counts
+variable 7 1 2  HS2YM2r HS2Y- chan 2 rate
+variable 7 2 1  HS2YM3  HS2Y- chan 3 counts
+variable 7 2 2  HS2YM3r HS2Y- chan 3 rate
+variable 7 3 1  HS2YM4  HS2Y- chan 4 counts
+variable 7 3 2  HS2YM4r HS2Y- chan 4 rate
+variable 7 4 1  HS2YM5  HS2Y- chan 5 counts
+variable 7 4 2  HS2YM5r HS2Y- chan 5 rate
+variable 7 5 1  HS2YM6  HS2Y- chan 6 counts
+variable 7 5 2  HS2YM6r HS2Y- chan 6 rate
+variable 7 6 1  HS2YM7  HS2Y- chan 7 counts
+variable 7 6 2  HS2YM7r HS2Y- chan 7 rate
+variable 7 7 1  HS2YM8  HS2Y- chan 8 counts
+variable 7 7 2  HS2YM8r HS2Y- chan 8 rate
+variable 7 8 1  HS2YM9  HS2Y- chan 9 counts
+variable 7 8 2  HS2YM9r HS2Y- chan 9 rate
+variable 7 9 1  HS2YM10  HS2Y- chan 10 counts
+variable 7 9 2  HS2YM10r HS2Y- chan 10 rate
+variable 7 10 1  HS2YM11  HS2Y- chan 11 counts
+variable 7 10 2  HS2YM11r HS2Y- chan 11 rate
+variable 7 11 1  HS2YM12  HS2Y- chan 12 counts
+variable 7 11 2  HS2YM12r HS2Y- chan 12 rate
+variable 7 12 1  HS2YM13  HS2Y- chan 13 counts
+variable 7 12 2  HS2YM13r HS2Y- chan 13 rate
+variable 7 13 1  HS2YM14  HS2Y- chan 14 counts
+variable 7 13 2  HS2YM14r HS2Y- chan 14 rate
+variable 7 14 1  HS2YM15  HS2Y- chan 15 counts
+variable 7 14 2  HS2YM15r HS2Y- chan 15 rate
+variable 7 15 1  HS2YM16  HS2Y- chan 16 counts
+variable 7 15 2  HS2YM16r HS2Y- chan 16 rate
+# gscaler(145-160)
+variable 8 0 1  S1   S1 counts
+variable 8 0 2  S1r  S1 rate
+variable 8 1 1  hPRE50   hPRE50 counts
+variable 8 1 2  hPRE50r  hPRE50 rate
+variable 8 2 1  S2X   S2X counts
+variable 8 2 2  S2Xr  S2X rate
+variable 8 3 1  hPRE150   hPRE150 counts
+variable 8 3 2  hPRE150r  hPRE150 rate
+variable 8 4 1  S1X   S1X counts
+variable 8 4 2  S1Xr  S1X rate
+variable 8 5 1  S2Y   S2Y counts
+variable 8 5 2  S2Yr  S2Y rate
+variable 8 6 1  hPRE100   hPRE100 counts
+variable 8 6 2  hPRE100r  hPRE100 rate
+variable 8 7 1  S1Y   S1Y counts
+variable 8 7 2  S1Yr  S1Y rate
+variable 8 8 1  S2   S2 counts
+variable 8 8 2  S2r  S2 rate
+variable 8 9 1  hCERHI   hCERHI counts
+variable 8 9 2  hCERHIr  hCERHI rate
+variable 8 10 1  hSTOF   hSTOF counts
+variable 8 10 2  hSTOFr  hSTOF rate
+variable 8 11 1  hSCIN   hSCIN counts
+variable 8 11 2  hSCINr  hSCIN rate
+variable 8 12 1  hELREAL   hELREAL counts
+variable 8 12 2  hELREALr  hELREAL rate
+variable 8 13 1  hPIPRE   hPIPRE counts
+variable 8 13 2  hPIPREr  hPIPRE rate
+variable 8 14 1  hELCLEAN  hELCLEAN counts
+variable 8 14 2  hELCLEANr hELCLEAN rate
+variable 8 15 1  hPRETRG   hPRETRG counts
+variable 8 15 2  hPRETRGr  hPRETRG rate
+# gscaler(161-176)
+variable 9 0 1  hPION   hPION counts
+variable 9 0 2  hPIONr  hPION rate
+variable 9 1 1  hCER   hCER counts
+variable 9 1 2  hCERr  hCER rate
+variable 9 2 1  hPIONHI   hPIONHI counts
+variable 9 2 2  hPIONHIr  hPIONHI rate
+variable 9 3 1  hPRE200   hPRE200 counts
+variable 9 3 2  hPRE200r  hPRE200 rate
+variable 9 4 1  hUNUSED1  hUNUSED1 counts
+variable 9 4 2  hUNUSED1r  hUNUSED1 rate
+variable 9 5 1  hUNSER   hUNSER counts
+variable 9 5 2  hUNSERr  hUNSER rate
+variable 9 6 1  hBCM1   hBCM1 counts
+variable 9 6 2  hBCM1r  hBCM1 rate
+variable 9 7 1  hBCM2   hBCM2 counts
+variable 9 7 2  hBCM2r  hBCM2 rate
+variable 9 8 1  hELHI   hELHI counts
+variable 9 8 2  hELHIr  hELHI rate
+variable 9 9 1  hELLO   hELLO counts
+variable 9 9 2  hELLOr  hELLO rate
+variable 9 10 1  hPRHI   hPRHI counts
+variable 9 10 2  hPRHIr  hPRHI rate
+variable 9 11 1  hPRLO   hPRLO counts
+variable 9 11 2  hPRLOr  hPRLO rate
+variable 9 12 1  hSHLO   hSHLO counts
+variable 9 12 2  hSHLOr  hSHLO rate
+variable 9 13 1  hCLOCK   hCLOCK counts
+variable 9 13 2  hCLOCKr  hCLOCK rate
+variable 9 14 1  hBEAMGATES   hBEAMGATES counts
+variable 9 14 2  hBEAMGATESr  hBEAMGATES rate
+variable 9 15 1  hADCGATES   hADCGATES counts
+variable 9 15 2  hADCGATESr  hADCGATES rate
+# gscaler(177-192)
+variable 10 0 1  hS1X   hS1X counts
+variable 10 0 2  hS1Xr  hS1X rate
+variable 10 1 1  hS1Y   hS1Y counts
+variable 10 1 2  hS1Yr  hS1Y rate
+variable 10 2 1  hS2X   hS2X counts
+variable 10 2 2  hS2Xr  hS2X rate
+variable 10 3 1  hS2Y   hS2Y counts
+variable 10 3 2  hS2Yr  hS2Y rate
+variable 10 4 1  hS1   hS1 counts
+variable 10 4 2  hS1r  hS1 rate
+variable 10 5 1  hS2   hS2 counts
+variable 10 5 2  hS2r  hS2 rate
+variable 10 6 1  hUNUSED2   hUNUSED2 counts 
+variable 10 6 2  hUNUSED2r  hUNUSED2 rate
+variable 10 7 1  hUNUSED3   hUNUSED3 counts
+variable 10 7 2  hUNUSED3r  hUNUSED3 rate
+variable 10 8 1  HMSPRE   HMSPRE counts
+variable 10 8 2  HMSPREr  HMSPRE rate
+variable 10 9 1  hUNUSED4   hUNUSED4 counts
+variable 10 9 2  hUNUSED4r  hUNUSED4 rate
+variable 10 10 1  COINPRE   COINPRE counts
+variable 10 10 2  COINPREr  COINPRE rate
+variable 10 11 1  PEDPRE   PEDPRE counts
+variable 10 11 2  PEDPREr  PEDPRE rate
+variable 10 12 1  HMSTRG   HMSTRG counts
+variable 10 12 2  HMSTRGr  HMSTRG rate
+variable 10 13 1  hUNUSED5   hUNUSED5 counts
+variable 10 13 2  hUNUSED5r  hUNUSED5 rate
+variable 10 14 1  COINTRG   COINTRG counts
+variable 10 14 2  COINTRGr  COINTRG rate
+variable 10 15 1  PEDTRG   PEDTRG counts
+variable 10 15 2  PEDTRGr  PEDTRG rate
+# gscaler(193-208)
+variable 11 0 1  HCAL1   HCAL chan 1 counts
+variable 11 0 2  HCAL1r  HCAL chan 1 rate
+variable 11 1 1  HCAL2   HCAL chan 2 counts
+variable 11 1 2  HCAL2r  HCAL chan 2 rate
+variable 11 2 1  HCAL3   HCAL chan 3 counts
+variable 11 2 2  HCAL3r  HCAL chan 3 rate
+variable 11 3 1  HCAL4   HCAL chan 4 counts
+variable 11 3 2  HCAL4r  HCAL chan 4 rate
+variable 11 4 1  HCAL5   HCAL chan 5 counts
+variable 11 4 2  HCAL5r  HCAL chan 5 rate
+variable 11 5 1  HCAL6   HCAL chan 6 counts
+variable 11 5 2  HCAL6r  HCAL chan 6 rate
+variable 11 6 1  HCAL7   HCAL chan 7 counts
+variable 11 6 2  HCAL7r  HCAL chan 7 rate
+variable 11 7 1  HCAL8   HCAL chan 8 counts
+variable 11 7 2  HCAL8r  HCAL chan 8 rate
+variable 11 8 1  HCAL9   HCAL chan 9 counts
+variable 11 8 2  HCAL9r  HCAL chan 9 rate
+variable 11 9 1  HCAL10   HCAL chan 10 counts
+variable 11 9 2  HCAL10r  HCAL chan 10 rate
+variable 11 10 1  HCAL11   HCAL chan 11 counts
+variable 11 10 2  HCAL11r  HCAL chan 11 rate
+variable 11 11 1  HCAL12   HCAL chan 12 counts
+variable 11 11 2  HCAL12r  HCAL chan 12 rate
+variable 11 12 1  HCAL13   HCAL chan 13 counts
+variable 11 12 2  HCAL13r  HCAL chan 13 rate
+variable 11 13 1  HCAL14   HCAL chan 14 counts
+variable 11 13 2  HCAL14r  HCAL chan 14 rate
+variable 11 14 1  HCAL15   HCAL chan 15 counts
+variable 11 14 2  HCAL15r  HCAL chan 15 rate
+variable 11 15 1  HCAL16   HCAL chan 16 counts
+variable 11 15 2  HCAL16r  HCAL chan 16 rate
+# gscaler(209-224)
+variable 12 0 1  SS1X1  SS1X  chan 1 counts
+variable 12 0 2  SS1X1r SS1X  chan 1 rate
+variable 12 1 1  SS1X2  SS1X  chan 2 counts
+variable 12 1 2  SS1X2r SS1X  chan 2 rate
+variable 12 2 1  SS1X3  SS1X  chan 3 counts
+variable 12 2 2  SS1X3r SS1X  chan 3 rate
+variable 12 3 1  SS1X4  SS1X  chan 4 counts
+variable 12 3 2  SS1X4r SS1X  chan 4 rate
+variable 12 4 1  SS1X5  SS1X  chan 5 counts
+variable 12 4 2  SS1X5r SS1X  chan 5 rate
+variable 12 5 1  SS1X6  SS1X  chan 6 counts
+variable 12 5 2  SS1X6r SS1X  chan 6 rate
+variable 12 6 1  SS1X7  SS1X  chan 7 counts
+variable 12 6 2  SS1X7r SS1X  chan 7 rate
+variable 12 7 1  SS1X8  SS1X  chan 8 counts
+variable 12 7 2  SS1X8r SS1X  chan 8 rate
+variable 12 8 1  SS1X9  SS1X  chan 9 counts
+variable 12 8 2  SS1X9r SS1X  chan 9 rate
+variable 12 9 1  SS1X10 SS1X  chan 10 counts
+variable 12 9 2  SS1X10r SS1X  chan 10 rate
+variable 12 10 1  SS1X11 SS1X  chan 11 counts
+variable 12 10 2  SS1X11r SS1X  chan 11 rate
+variable 12 11 1  SS1X12  SS1X  chan 12 counts
+variable 12 11 2  SS1X12r SS1X  chan 12 rate
+variable 12 12 1  SS1X13  SS1X  chan 13 counts
+variable 12 12 2  SS1X13r SS1X  chan 13 rate
+variable 12 13 1  SS1X14  SS1X  chan 14 counts
+variable 12 13 2  SS1X14r SS1X  chan 14 rate
+variable 12 14 1  SS1X15  SS1X  chan 15 counts
+variable 12 14 2  SS1X15r SS1X  chan 15 rate
+variable 12 15 1  SS1X16  SS1X  chan 16 counts
+variable 12 15 2  SS1X16r SS1X  chan 16 rate
+# gscaler(225-240)
+variable 13 0 1  SS1Y1  SS1Y  chan 1 counts
+variable 13 0 2  SS1Y1r SS1Y  chan 1 rate
+variable 13 1 1  SS1Y2  SS1Y  chan 2 counts
+variable 13 1 2  SS1Y2r SS1Y  chan 2 rate
+variable 13 2 1  SS1Y3  SS1Y  chan 3 counts
+variable 13 2 2  SS1Y3r SS1Y  chan 3 rate
+variable 13 3 1  SS1Y4  SS1Y  chan 4 counts
+variable 13 3 2  SS1Y4r SS1Y  chan 4 rate
+variable 13 4 1  SS1Y5  SS1Y  chan 5 counts
+variable 13 4 2  SS1Y5r SS1Y  chan 5 rate
+variable 13 5 1  SS1Y6  SS1Y  chan 6 counts
+variable 13 5 2  SS1Y6r SS1Y  chan 6 rate
+variable 13 6 1  SS1Y7  SS1Y  chan 7 counts
+variable 13 6 2  SS1Y7r SS1Y  chan 7 rate
+variable 13 7 1  SS1Y8  SS1Y  chan 8 counts
+variable 13 7 2  SS1Y8r SS1Y  chan 8 rate
+variable 13 8 1  SS1Y9  SS1Y  chan 9 counts
+variable 13 8 2  SS1Y9r SS1Y  chan 9 rate
+variable 13 9 1  SS1Y10 SS1Y  chan 10 counts
+variable 13 9 2  SS1Y10r SS1Y  chan 10 rate
+variable 13 10 1  SS1Y11 SS1Y  chan 11 counts
+variable 13 10 2  SS1Y11r SS1Y  chan 11 rate
+variable 13 11 1  SS1Y12  SS1Y  chan 12 counts
+variable 13 11 2  SS1Y12r SS1Y  chan 12 rate
+variable 13 12 1  SS1Y13  SS1Y  chan 13 counts
+variable 13 12 2  SS1Y13r SS1Y  chan 13 rate
+variable 13 13 1  SS1Y14  SS1Y  chan 14 counts
+variable 13 13 2  SS1Y14r SS1Y  chan 14 rate
+variable 13 14 1  SS1Y15  SS1Y  chan 15 counts
+variable 13 14 2  SS1Y15r SS1Y  chan 15 rate
+variable 13 15 1  SS1Y16  SS1Y  chan 16 counts
+variable 13 15 2  SS1Y16r SS1Y  chan 16 rate
+# gscaler(241-256)
+variable 14 0 1  SS2XP1  SS2X+ chan 1 counts
+variable 14 0 2  SS2XP1r SS2X+ chan 1 rate
+variable 14 1 1  SS2XP2  SS2X+ chan 2 counts
+variable 14 1 2  SS2XP2r SS2X+ chan 2 rate
+variable 14 2 1  SS2XP3  SS2X+ chan 3 counts
+variable 14 2 2  SS2XP3r SS2X+ chan 3 rate
+variable 14 3 1  SS2XP4  SS2X+ chan 4 counts
+variable 14 3 2  SS2XP4r SS2X+ chan 4 rate
+variable 14 4 1  SS2XP5  SS2X+ chan 5 counts
+variable 14 4 2  SS2XP5r SS2X+ chan 5 rate
+variable 14 5 1  SS2XP6  SS2X+ chan 6 counts
+variable 14 5 2  SS2XP6r SS2X+ chan 6 rate
+variable 14 6 1  SS2XP7  SS2X+ chan 7 counts
+variable 14 6 2  SS2XP7r SS2X+ chan 7 rate
+variable 14 7 1  SS2XP8  SS2X+ chan 8 counts
+variable 14 7 2  SS2XP8r SS2X+ chan 8 rate
+variable 14 8 1  SS2XP9  SS2X+ chan 9 counts
+variable 14 8 2  SS2XP9r SS2X+ chan 9 rate
+variable 14 9 1  SS2XP10  SS2X+ chan 10 counts
+variable 14 9 2  SS2XP10r SS2X+ chan 10 rate
+variable 14 10 1  SS2XP11  SS2X+ chan 11 counts
+variable 14 10 2  SS2XP11r SS2X+ chan 11 rate
+variable 14 11 1  SS2XP12  SS2X+ chan 12 counts
+variable 14 11 2  SS2XP12r SS2X+ chan 12 rate
+variable 14 12 1  SS2XP13  SS2X+ chan 13 counts
+variable 14 12 2  SS2XP13r SS2X+ chan 13 rate
+variable 14 13 1  SS2XP14  SS2X+ chan 14 counts
+variable 14 13 2  SS2XP14r SS2X+ chan 14 rate
+variable 14 14 1  SS2XP15  SS2X+ chan 15 counts
+variable 14 14 2  SS2XP15r SS2X+ chan 15 rate
+variable 14 15 1  SS2XP16  SS2X+ chan 16 counts
+variable 14 15 2  SS2XP16r SS2X+ chan 16 rate
+# gscaler(257-272)
+variable 15 0 1  SS2XM1  SS2X- chan 1 counts
+variable 15 0 2  SS2XM1r SS2X- chan 1 rate
+variable 15 1 1  SS2XM2  SS2X- chan 2 counts
+variable 15 1 2  SS2XM2r SS2X- chan 2 rate
+variable 15 2 1  SS2XM3  SS2X- chan 3 counts
+variable 15 2 2  SS2XM3r SS2X- chan 3 rate
+variable 15 3 1  SS2XM4  SS2X- chan 4 counts
+variable 15 3 2  SS2XM4r SS2X- chan 4 rate
+variable 15 4 1  SS2XM5  SS2X- chan 5 counts
+variable 15 4 2  SS2XM5r SS2X- chan 5 rate
+variable 15 5 1  SS2XM6  SS2X- chan 6 counts
+variable 15 5 2  SS2XM6r SS2X- chan 6 rate
+variable 15 6 1  SS2XM7  SS2X- chan 7 counts
+variable 15 6 2  SS2XM7r SS2X- chan 7 rate
+variable 15 7 1  SS2XM8  SS2X- chan 8 counts
+variable 15 7 2  SS2XM8r SS2X- chan 8 rate
+variable 15 8 1  SS2XM9  SS2X- chan 9 counts
+variable 15 8 2  SS2XM9r SS2X- chan 9 rate
+variable 15 9 1  SS2XM10  SS2X- chan 10 counts
+variable 15 9 2  SS2XM10r SS2X- chan 10 rate
+variable 15 10 1  SS2XM11  SS2X- chan 11 counts
+variable 15 10 2  SS2XM11r SS2X- chan 11 rate
+variable 15 11 1  SS2XM12  SS2X- chan 12 counts
+variable 15 11 2  SS2XM12r SS2X- chan 12 rate
+variable 15 12 1  SS2XM13  SS2X- chan 13 counts
+variable 15 12 2  SS2XM13r SS2X- chan 13 rate
+variable 15 13 1  SS2XM14  SS2X- chan 14 counts
+variable 15 13 2  SS2XM14r SS2X- chan 14 rate
+variable 15 14 1  SS2XM15  SS2X- chan 15 counts
+variable 15 14 2  SS2XM15r SS2X- chan 15 rate
+variable 15 15 1  SS2XM16  SS2X- chan 16 counts
+variable 15 15 2  SS2XM16r SS2X- chan 16 rate
+# gscaler(273-288)
+variable 16 0 1  SS2Y1  SS2Y  chan 1 counts
+variable 16 0 2  SS2Y1r SS2Y  chan 1 rate
+variable 16 1 1  SS2Y2  SS2Y  chan 2 counts
+variable 16 1 2  SS2Y2r SS2Y  chan 2 rate
+variable 16 2 1  SS2Y3  SS2Y  chan 3 counts
+variable 16 2 2  SS2Y3r SS2Y  chan 3 rate
+variable 16 3 1  SS2Y4  SS2Y  chan 4 counts
+variable 16 3 2  SS2Y4r SS2Y  chan 4 rate
+variable 16 4 1  SS2Y5  SS2Y  chan 5 counts
+variable 16 4 2  SS2Y5r SS2Y  chan 5 rate
+variable 16 5 1  SS2Y6  SS2Y  chan 6 counts
+variable 16 5 2  SS2Y6r SS2Y  chan 6 rate
+variable 16 6 1  SS2Y7  SS2Y  chan 7 counts
+variable 16 6 2  SS2Y7r SS2Y  chan 7 rate
+variable 16 7 1  SS2Y8  SS2Y  chan 8 counts
+variable 16 7 2  SS2Y8r SS2Y  chan 8 rate
+variable 16 8 1  SS2Y9  SS2Y  chan 9 counts
+variable 16 8 2  SS2Y9r SS2Y  chan 9 rate
+variable 16 9 1  SS2Y10 SS2Y  chan 10 counts
+variable 16 9 2  SS2Y10r SS2Y  chan 10 rate
+variable 16 10 1  SS2Y11 SS2Y  chan 11 counts
+variable 16 10 2  SS2Y11r SS2Y  chan 11 rate
+variable 16 11 1  SS2Y12  SS2Y  chan 12 counts
+variable 16 11 2  SS2Y12r SS2Y  chan 12 rate
+variable 16 12 1  SS2Y13  SS2Y  chan 13 counts
+variable 16 12 2  SS2Y13r SS2Y  chan 13 rate
+variable 16 13 1  SS2Y14  SS2Y  chan 14 counts
+variable 16 13 2  SS2Y14r SS2Y  chan 14 rate
+variable 16 14 1  SS2Y15  SS2Y  chan 15 counts
+variable 16 14 2  SS2Y15r SS2Y  chan 15 rate
+variable 16 15 1  SS2Y16  SS2Y  chan 16 counts
+variable 16 15 2  SS2Y16r SS2Y  chan 16 rate
+# gscaler(289-304)
+variable 17 0 1  SPHODO1   SPHODO chan 1 counts
+variable 17 0 2  SPHODO1r  SPHODO chan 1 rate
+variable 17 1 1  SPHODO2   SPHODO chan 2 counts
+variable 17 1 2  SPHODO2r  SPHODO chan 2 rate
+variable 17 2 1  SPHODO3   SPHODO chan 3 counts
+variable 17 2 2  SPHODO3r  SPHODO chan 3 rate
+variable 17 3 1  SPHODO4   SPHODO chan 4 counts
+variable 17 3 2  SPHODO4r  SPHODO chan 4 rate
+variable 17 4 1  SPHODO5   SPHODO chan 5 counts
+variable 17 4 2  SPHODO5r  SPHODO chan 5 rate
+variable 17 5 1  SPHODO6   SPHODO chan 6 counts
+variable 17 5 2  SPHODO6r  SPHODO chan 6 rate
+variable 17 6 1  SPHODO7   SPHODO chan 7 counts
+variable 17 6 2  SPHODO7r  SPHODO chan 7 rate
+variable 17 7 1  SPHODO8   SPHODO chan 8 counts
+variable 17 7 2  SPHODO8r  SPHODO chan 8 rate
+variable 17 8 1  SPHODO9   SPHODO chan 9 counts
+variable 17 8 2  SPHODO9r  SPHODO chan 9 rate
+variable 17 9 1  SPHODO10  SPHODO chan 10 counts
+variable 17 9 2  SPHODO10r SPHODO chan 10 rate
+variable 17 10 1  SPHODO11   SPHODO chan 11 counts
+variable 17 10 2  SPHODO11r  SPHODO chan 11 rate
+variable 17 11 1  SPHODO12   SPHODO chan 12 counts
+variable 17 11 2  SPHODO12r  SPHODO chan 12 rate
+variable 17 12 1  SPHODO13   SPHODO chan 13 counts
+variable 17 12 2  SPHODO13r  SPHODO chan 13 rate
+variable 17 13 1  SPHODO14   SPHODO chan 14 counts
+variable 17 13 2  SPHODO14r  SPHODO chan 14 rate
+variable 17 14 1  SPHODO15   SPHODO chan 15 counts
+variable 17 14 2  SPHODO15r  SPHODO chan 15 rate
+variable 17 15 1  SPHODO16   SPHODO chan 16 counts
+variable 17 15 2  SPHODO16r  SPHODO chan 16 rate
+# gscaler(305-320)
+variable 18 0 1  sUNUSED1   sUNUSED1 counts
+variable 18 0 2  sUNUSED1r  sUNUSED1 rate
+variable 18 1 1  sPRE50   sPRE50 counts
+variable 18 1 2  sPRE50r  sPRE50 rate
+variable 18 2 1  sUNUSED2   sUNUSED2 counts
+variable 18 2 2  sUNUSED2r  sUNUSED2 rate
+variable 18 3 1  sPRE150   sPRE150 counts
+variable 18 3 2  sPRE150r  sPRE150 rate
+variable 18 4 1  sUNUSED3   sUNUSED3 counts
+variable 18 4 2  sUNUSED3r  sUNUSED3 rate
+variable 18 5 1  sUNUSED4   sUNUSED4 counts
+variable 18 5 2  sUNUSED4r  sUNUSED4 rate
+variable 18 6 1  sPRE100   sPRE100 counts
+variable 18 6 2  sPRE100r  sPRE100 rate
+variable 18 7 1  sUNUSED5   sUNUSED5 counts
+variable 18 7 2  sUNUSED5r  sUNUSED5 rate
+variable 18 8 1  sUNUSED6   sUNUSED6 counts
+variable 18 8 2  sUNUSED6r  sUNUSED6 rate
+variable 18 9 1  sPRE200   sPRE200 counts
+variable 18 9 2  sPRE200r  sPRE200 rate
+variable 18 10 1  sSTOF   sSTOF counts
+variable 18 10 2  sSTOFr  sSTOF rate
+variable 18 11 1  sSCIN   sSCIN counts
+variable 18 11 2  sSCINr  sSCIN rate
+variable 18 12 1  sELREAL   sELREAL counts
+variable 18 12 2  sELREALr  sELREAL rate
+variable 18 13 1  sPIPRE   sPIPRE counts
+variable 18 13 2  sPIPREr  sPIPRE rate
+variable 18 14 1  sELCLEAN   sELCLEAN counts
+variable 18 14 2  sELCLEANr  sELCLEAN rate
+variable 18 15 1  sPRETRG   sPRETRG counts
+variable 18 15 2  sPRETRGr  sPRETRG rate
+# gscaler(321-336)
+variable 19 0 1  sBCM1   sBCM1 counts
+variable 19 0 2  sBCM1r  sBCM1 rate
+variable 19 1 1  sBCM2   sBCM2 counts
+variable 19 1 2  sBCM2r  sBCM2 rate
+variable 19 2 1  sUNUSED7   sUNUSED7 counts
+variable 19 2 2  sUNUSED7r  sUNUSED7 rate
+variable 19 3 1  sUNUSED8   sUNUSED8 counts
+variable 19 3 2  sUNUSED8r  sUNUSED8 rate
+variable 19 4 1  sCLOCK   sCLOCK counts
+variable 19 4 2  sCLOCKr  sCLOCK rate
+variable 19 5 1  sUNUSED9   sUNUSED9 counts
+variable 19 5 2  sUNUSED9r  sUNUSED9 rate
+variable 19 6 1  sUNUSED10   sUNUSED10 counts
+variable 19 6 2  sUNUSED10r  sUNUSED10 rate
+variable 19 7 1  sUNUSED11   sUNUSED11 counts
+variable 19 7 2  sUNUSED11r  sUNUSED11 rate
+variable 19 8 1  sPION   sPION counts
+variable 19 8 2  sPIONr  sPION rate
+variable 19 9 1  sCER   sCER counts
+variable 19 9 2  sCERr  sCER rate
+variable 19 10 1  sELHI   sELHI counts
+variable 19 10 2  sELHIr  sELHI rate
+variable 19 11 1  sELLO   sELLO counts
+variable 19 11 2  sELLOr  sELLO rate
+variable 19 12 1  sPRHI   sPRHI counts
+variable 19 12 2  sPRHIr  sPRHI rate
+variable 19 13 1  sPRLO   sPRLO counts
+variable 19 13 2  sPRLOr  sPRLO rate
+variable 19 14 1  sSHLO   sSHLO counts
+variable 19 14 2  sSHLOr  sSHLO rate
+variable 19 15 1  sADCGATES   sADCGATES counts
+variable 19 15 2  sADCGATESr  sADCGATES rate
+# gscaler(337-352)
+variable 20 0 1  sS1X   sS1X counts
+variable 20 0 2  sS1Xr  sS1X rate
+variable 20 1 1  sS1Y   sS1Y counts
+variable 20 1 2  sS1Yr  sS1Y rate
+variable 20 2 1  sS2X   sS2X counts
+variable 20 2 2  sS2Xr  sS2X rate
+variable 20 3 1  sS2Y   sS2Y counts
+variable 20 3 2  sS2Yr  sS2Y rate
+variable 20 4 1  sS1   sS1 counts
+variable 20 4 2  sS1r  sS1 rate
+variable 20 5 1  sS2   sS2 counts
+variable 20 5 2  sS2r  sS2 rate
+variable 20 6 1  SHODO7   SHODO chan 7 counts
+variable 20 6 2  SHODO7r  SHODO chan 7 rate
+variable 20 7 1  SHODO8   SHODO chan 8 counts
+variable 20 7 2  SHODO8r  SHODO chan 8 rate
+variable 20 8 1  SHODO9   SHODO chan 9 counts
+variable 20 8 2  SHODO9r  SHODO chan 9 rate
+variable 20 9 1  SOSPRE  SOSPRE counts
+variable 20 9 2  SOSPREr SOSPRE rate
+variable 20 10 1  SHODO11   SHODO chan 11 counts
+variable 20 10 2  SHODO11r  SHODO chan 11 rate
+variable 20 11 1  SHODO12   SHODO chan 12 counts
+variable 20 11 2  SHODO12r  SHODO chan 12 rate
+variable 20 12 1  SHODO13   SHODO chan 13 counts
+variable 20 12 2  SHODO13r  SHODO chan 13 rate
+variable 20 13 1  SOSTRG   SOSTRG counts
+variable 20 13 2  SOSTRGr  SOSTRG rate
+variable 20 14 1  SHODO15   SHODO chan 15 counts
+variable 20 14 2  SHODO15r  SHODO chan 15 rate
+variable 20 15 1  SHODO16   SHODO chan 16 counts
+variable 20 15 2  SHODO16r  SHODO chan 16 rate

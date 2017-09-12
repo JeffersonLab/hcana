@@ -1,11 +1,9 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcDCHit                                                                 //
-//                                                                           //
-// Class representing a single hit for the VDC                               //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+/** \class THcDCHit
+    \ingroup DetSupport
 
+Drift chamber wire hit info
+
+*/
 #include "THcDCHit.h"
 #include "THcDCTimeToDistConv.h"
 
@@ -39,23 +37,23 @@ Double_t THcDCHit::ConvertTimeToDist()
 {
   // Converts TDC time to drift distance
   // Takes the (estimated) slope of the track as an argument
-  
+
   THcDCTimeToDistConv* ttdConv = (fWire) ? fWire->GetTTDConv() : NULL;
-  
+
   if (ttdConv) {
-    // If a time to distance algorithm exists, use it to convert the TDC time 
+    // If a time to distance algorithm exists, use it to convert the TDC time
     // to the drift distance
     fDist = ttdConv->ConvertTimeToDist(fTime);
     return fDist;
   }
-  
+
   Error("ConvertTimeToDist()", "No Time to dist algorithm available");
   return 0.0;
 
 }
 
 //_____________________________________________________________________________
-Int_t THcDCHit::Compare( const TObject* obj ) const 
+Int_t THcDCHit::Compare( const TObject* obj ) const
 {
   // Used to sort hits
   // A hit is "less than" another hit if it occurred on a lower wire number.
@@ -69,7 +67,7 @@ Int_t THcDCHit::Compare( const TObject* obj ) const
     return -1;
 
   const THcDCHit* hit = static_cast<const THcDCHit*>( obj );
- 
+
   Int_t myWireNum = fWire->GetNum();
   Int_t hitWireNum = hit->GetWire()->GetNum();
   Int_t myPlaneNum = GetPlaneNum();

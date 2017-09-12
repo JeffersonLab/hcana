@@ -1,0 +1,6 @@
+# 
+# Load this file to have analyzer dump Time of Flight calibration
+# data for the HMS
+#
+hdumptof = 1
+hdumptof_filename = "htofcal.dump"

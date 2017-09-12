@@ -1,9 +1,9 @@
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcDCTrack                                                                //
-//                                                                           //
-// Class representing a track found from linking DC Space points             //
-///////////////////////////////////////////////////////////////////////////////
+/** \class THcDCTrack
+    \ingroup DetSupport
+
+ Class representing a track found from linking DC Space points
+
+*/
 
 #include "THcDCHit.h"
 #include "THcDCTrack.h"
@@ -14,7 +14,7 @@ THcDCTrack::THcDCTrack(Int_t nplanes) : fnSP(0), fNHits(0)
   fCoords.resize(nplanes);
   fResiduals.resize(nplanes);
   fDoubleResiduals.resize(nplanes);
-}  
+}
 
 void THcDCTrack::AddHit(THcDCHit * hit, Double_t dist, Int_t lr)
 {

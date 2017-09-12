@@ -1,11 +1,11 @@
-//*-- Author :
+/** \class THcDriftChamberPlane
+    \ingroup DetSupport
 
-//////////////////////////////////////////////////////////////////////////
-//
-// THcDriftChamberPlane
-//
-//////////////////////////////////////////////////////////////////////////
+Class for a a single Hall C horizontal drift chamber plane
 
+*/
+
+#include "THcDC.h"
 #include "THcDriftChamberPlane.h"
 #include "THcDCWire.h"
 #include "THcDCHit.h"
@@ -14,9 +14,10 @@
 #include "THcGlobals.h"
 #include "THcParmList.h"
 #include "THcHitList.h"
-#include "THcDC.h"
+#include "THaApparatus.h"
 #include "THcHodoscope.h"
 #include "TClass.h"
+
 
 #include <cstring>
 #include <cstdio>
@@ -28,7 +29,7 @@ using namespace std;
 ClassImp(THcDriftChamberPlane)
 
 //______________________________________________________________________________
-THcDriftChamberPlane::THcDriftChamberPlane( const char* name, 
+THcDriftChamberPlane::THcDriftChamberPlane( const char* name,
 					    const char* description,
 					    const Int_t planenum,
 					    THaDetectorBase* parent )
@@ -64,7 +65,7 @@ THaAnalysisObject::EStatus THcDriftChamberPlane::Init( const TDatime& date )
 {
   // Extra initialization for scintillator plane: set up DataDest map
 
-  cout << "THcDriftChamberPlane::Init called " << GetName() << endl;
+  // cout << "THcDriftChamberPlane::Init called " << GetName() << endl;
 
   if( IsZombie())
     return fStatus = kInitError;
@@ -86,23 +87,30 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
 {
 
   // See what file it looks for
-  
+
   char prefix[2];
-  Int_t NumDriftMapBins;
+  UInt_t NumDriftMapBins;
   Double_t DriftMapFirstBin;
   Double_t DriftMapBinSize;
-  Double_t DriftMap[1000];
-  
+  fUsingTzeroPerWire=0;
   prefix[0]=tolower(GetParent()->GetPrefix()[0]);
   prefix[1]='\0';
   DBRequest list[]={
     {"driftbins", &NumDriftMapBins, kInt},
     {"drift1stbin", &DriftMapFirstBin, kDouble},
     {"driftbinsz", &DriftMapBinSize, kDouble},
-    {Form("wc%sfract",GetName()),DriftMap,kDouble,1000},
+    {"_using_tzero_per_wire", &fUsingTzeroPerWire, kInt,0,1},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+
+  Double_t *DriftMap = new Double_t[NumDriftMapBins];
+  DBRequest list2[]={
+    {Form("wc%sfract",GetName()),DriftMap,kDouble,NumDriftMapBins},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list2,prefix);
+
 
   // Retrieve parameters we need from parent class
   THcDC* fParent;
@@ -123,6 +131,25 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   fDriftTimeSign = fParent->GetDriftTimeSign(fPlaneNum);
 
   fNSperChan = fParent->GetNSperChan();
+
+  if (fUsingTzeroPerWire==1) {
+  fTzeroWire = new Double_t [fNWires];
+  DBRequest list3[]={
+    {Form("tzero%s",GetName()),fTzeroWire,kDouble,(UInt_t) fNWires},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list3,prefix);
+    // printf(" using tzero per wire plane = %s  nwires = %d  \n",GetName(),fNWires);
+    //   for (Int_t iw=0;iw < fNWires;iw++) {
+    // 	//	printf("%d  %f ",iw+1,fTzeroWire[iw]) ;
+    // 	if ( iw!=0 && iw%8 == 0) printf("\n") ;
+    // 	}
+  } else {
+  fTzeroWire = new Double_t [fNWires];
+  for (Int_t iw=0;iw < fNWires;iw++) {
+    fTzeroWire[iw]=0.0;
+    } 
+  }
 
   // Calculate Geometry Constants
   // Do we want to move all this to the Chamber of DC Package leve
@@ -170,7 +197,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
 			       + pow(hxpsi*fPsi0+hxchi*hchi0,2)
 			       + pow(hypsi*fPsi0+hychi*hchi0,2) );
   if(z0 < 0.0) hphi0 = -hphi0;
-  
+
   Double_t denom2 = stubxpsi*stubychi - stubxchi*stubypsi;
 
   // Why are there 4, but only 3 used?
@@ -194,16 +221,17 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   fPlaneCoef[7]=-hzchi*hxpsi + hxchi*hzpsi; // 0.
   fPlaneCoef[8]= hychi*hxpsi - hxchi*hypsi; // 1.
 
-  cout << fPlaneNum << " " << fNWires << " " << fWireOrder << endl;
+  //  cout << fPlaneNum << " " << fNWires << " " << fWireOrder << endl;
 
   fTTDConv = new THcDCLookupTTDConv(DriftMapFirstBin,fPitch/2,DriftMapBinSize,
 				    NumDriftMapBins,DriftMap);
+  delete [] DriftMap;
 
   Int_t nWires = fParent->GetNWires(fPlaneNum);
   // For HMS, wire numbers start with one, but arrays start with zero.
   // So wire number is index+1
   for (int i=0; i<nWires; i++) {
-    Double_t pos = fPitch*( (fWireOrder==0?(i+1):fNWires-i) 
+    Double_t pos = fPitch*( (fWireOrder==0?(i+1):fNWires-i)
 			    - fCentralWire) - fCenter;
     new((*fWires)[i]) THcDCWire( i+1, pos , 0.0, fTTDConv);
     //if( something < 0 ) wire->SetFlag(1);
@@ -211,7 +239,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
 
   THaApparatus* app = GetApparatus();
   const char* nm = "hod";
-  if(  !app || 
+  if(  !app ||
       !(fglHod = dynamic_cast<THcHodoscope*>(app->GetDetector(nm))) ) {
     static const char* const here = "ReadDatabase()";
     Warning(Here(here),"Hodoscope \"%s\" not found. "
@@ -232,9 +260,9 @@ Int_t THcDriftChamberPlane::DefineVariables( EMode mode )
 
   // Register variables in global list
   RVarDef vars[] = {
-    {"tdchits", "List of TDC hits", 
+    {"wirenum", "List of TDC wire number",
      "fHits.THcDCHit.GetWireNum()"},
-    {"rawtdc", "Raw TDC Values", 
+    {"rawtdc", "Raw TDC Values",
      "fHits.THcDCHit.GetRawTime()"},
     {"time","Drift times",
      "fHits.THcDCHit.GetTime()"},
@@ -266,12 +294,18 @@ Int_t THcDriftChamberPlane::Decode( const THaEvData& evdata )
 //_____________________________________________________________________________
 Int_t THcDriftChamberPlane::CoarseProcess( TClonesArray& tracks )
 {
- 
+
   //  HitCount();
 
  return 0;
 }
-
+//
+Double_t THcDriftChamberPlane::CalcWireFromPos(Double_t pos) {
+  Double_t wire_num_calc=-1000;
+  if (fWireOrder==0) wire_num_calc = (pos+fCenter)/(fPitch)+fCentralWire;
+  if (fWireOrder==1) wire_num_calc = 1-((pos+fCenter)/(fPitch)+fCentralWire-fNWires);
+  return(wire_num_calc);
+}
 //_____________________________________________________________________________
 Int_t THcDriftChamberPlane::FineProcess( TClonesArray& tracks )
 {
@@ -304,37 +338,28 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
     Int_t wireNum = hit->fCounter;
     THcDCWire* wire = GetWire(wireNum);
-    Int_t wire_last = -1;
-    for(Int_t mhit=0; mhit<hit->fNHits; mhit++) {
+    // Int_t reftime = hit->GetReference(0);
+    for(UInt_t mhit=0; mhit<hit->GetRawTdcHit().GetNHits(); mhit++) {
       fNRawhits++;
       /* Sort into early, late and ontime */
-      Int_t rawtdc = hit->fTDC[mhit];
+      Int_t rawtdc = hit->GetRawTdcHit().GetTime(mhit); // Get the ref time subtracted time
       if(rawtdc < fTdcWinMin) {
 	// Increment early counter  (Actually late because TDC is backward)
       } else if (rawtdc > fTdcWinMax) {
-	// Increment late count 
+	// Increment late count
       } else {
-	// A good hit
-	if(wire_last == wireNum) {
-	  // Increment extra hit counter 
-	  // Are we choosing the correct hit in the case of multiple hits?
-	  // Are we choose the same hit that ENGINE chooses?
-	  // cout << "Extra hit " << fPlaneNum << " " << wireNum << " " << rawtdc << endl;
-	} else {
-	  Double_t time = -StartTime   // (comes from h_trans_scin
-	    - rawtdc*fNSperChan + fPlaneTimeZero;
-	  // How do we get this start time from the hodoscope to here
-	  // (or at least have it ready by coarse process)
-	  new( (*fHits)[nextHit++] ) THcDCHit(wire, rawtdc, time, this);
-	}
-	wire_last = wireNum;
+	Double_t time = -StartTime   // (comes from h_trans_scin
+	  - rawtdc*fNSperChan + fPlaneTimeZero - fTzeroWire[wireNum-1]; // fNSperChan > 0 for 1877
+	// (cout << " Plane = " << GetName() << " wire = " << wireNum << " " <<  fPlaneTimeZero << " "  << fTzeroWire[wireNum-1] << endl;
+	// < 0 for Caen1190.
+	//	  - (rawtdc-reftime)*fNSperChan + fPlaneTimeZero;
+	// How do we get this start time from the hodoscope to here
+	// (or at least have it ready by coarse process)
+	new( (*fHits)[nextHit++] ) THcDCHit(wire, rawtdc, time, this);
+	break;			// Take just the first hit in the time window
       }
     }
     ihit++;
   }
   return(ihit);
 }
-
-    
-  
-  

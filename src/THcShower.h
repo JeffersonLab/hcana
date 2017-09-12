@@ -11,10 +11,9 @@
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
 #include "THcShowerPlane.h"
-#include "THcShowerCluster.h"
+#include "THcShowerArray.h"
+#include "THcShowerHit.h"
 #include "TMath.h"
-
-class THaScCalib;
 
 class THcShower : public THaNonTrackingDetector, public THcHitList {
 
@@ -27,19 +26,15 @@ public:
   virtual EStatus    Init( const TDatime& run_time );
   virtual Int_t      CoarseProcess( TClonesArray& tracks );
   virtual Int_t      FineProcess( TClonesArray& tracks );
-  
-  virtual Int_t      ApplyCorrections( void );
+
+  Double_t GetNormETot();
 
   Int_t GetNHits() const { return fNhits; }
-  
-  // These are not used in the calorimeter code.
-  //  Int_t GetNTracks() const { return fTrackProj->GetLast()+1; }
-  //  const TClonesArray* GetTrackHits() const { return fTrackProj; }
 
   Int_t GetNBlocks(Int_t NLayer) const { return fNBlocks[NLayer];}
 
-  Double_t GetXPos(Int_t NLayer, Int_t NRaw) const {
-    return XPos[NLayer][NRaw];
+  Double_t GetXPos(Int_t NLayer, Int_t NRow) const {
+    return fXPos[NLayer][NRow];
   }
 
   Double_t GetYPos(Int_t NLayer, Int_t Side) const {
@@ -47,14 +42,12 @@ public:
     //Side = 0 for postive (right) side
     //Side = 1 for negative (left) side
 
-    return YPos[2*NLayer+(1-Side)];
+    return fYPos[2*NLayer+(1-Side)];
   }
 
-  Double_t GetZPos(Int_t NLayer) const {return fNLayerZPos[NLayer];}
+  Double_t GetZPos(Int_t NLayer) const {return fLayerZPos[NLayer];}
 
   Double_t GetBlockThick(Int_t NLayer) {return BlockThick[NLayer];}
-
-  //  friend class THaScCalib; not needed for now.
 
   Int_t GetPedLimit(Int_t NBlock, Int_t NLayer, Int_t Side) {
     if (Side!=0&&Side!=1) {
@@ -78,16 +71,24 @@ public:
     return ( Side == 0 ? fPosGain[nelem] : fNegGain[nelem]);
   }
 
+  Int_t GetADCMode() {
+    return fADCMode;
+  }
+  Double_t GetAdcTimeWindowMin() {
+    return fAdcTimeWindowMin;
+  }
+  Double_t GetAdcTimeWindowMax() {
+    return fAdcTimeWindowMax;
+  }
   Int_t GetMinPeds() {
     return fShMinPeds;
   }
 
-  Int_t GetMult() {
-    return fMult;
-  }
-
   Int_t GetNLayers() {
     return fNLayers;
+  }
+  Int_t GetNBlocks(Int_t layer) {
+    return fNBlocks[layer];
   }
 
   //Coordinate correction for single PMT modules.
@@ -106,71 +107,85 @@ public:
       return 0.;
     }
     Int_t sign = 1 - 2*side;
-    return (fCcor + sign*y)/(fCcor + sign*y/fDcor);
+    //    return (fCcor + sign*y)/(fCcor + sign*y/fDcor);
+    return (fCcor[side] + sign*y)/(fCcor[side] + sign*y/fDcor[side]);
   }
 
-  // Get total energy deposited in the cluster matched to the given
-  // spectrometer Track.
+  // Get part of energy deposited in the cluster matched to the given
+  // spectrometer Track, limited by a range of layers.
 
-  Float_t GetShEnergy(THaTrack*);
+  Float_t GetShEnergy(THaTrack*, UInt_t NLayers, UInt_t L0=0);
 
   THcShower();  // for ROOT I/O
 
 protected:
 
   Int_t fEvent;
+  Int_t fADCMode;		//   != 0 if using FADC 
+   //  1 == Use the pulse int - pulse ped
+    //  2 == Use the sample integral - known ped
+    //  3 == Use the sample integral - sample ped
+  static const Int_t kADCStandard=0;
+  static const Int_t kADCDynamicPedestal=1;
+  static const Int_t kADCSampleIntegral=2;
+  static const Int_t kADCSampIntDynPed=3;
+  Double_t fAdcTimeWindowMin;
+  Double_t fAdcTimeWindowMax;
 
   Int_t fAnalyzePedestals;   // Flag for pedestal analysis.
 
-  Int_t* fShPosPedLimit;     // [fNtotBlocks] ADC limits for pedestal calc.-s.
+  Int_t* fShPosPedLimit;     // [fNTotBlocks] ADC limits for pedestal calc.-s.
   Int_t* fShNegPedLimit;
 
   Int_t fShMinPeds;          // Min.number of events to analyze pedestals.
 
-  Double_t* fPosGain;        // [fNtotBlocks] Gain constants from calibration
+  Double_t* fPosGain;        // [fNTotBlocks] Gain constants from calibration
   Double_t* fNegGain;
 
   // Per-event data
 
   Int_t fNhits;              // Total number of hits
   Int_t fNclust;             // Number of clusters
-  Int_t fNtracks;            // Number of shower tracks, i.e. tracks with
-                             // associated clusters
-  Double_t fE;               // Energy of the largest cluster
-  Double_t fEpr;             // Preshower Energy of the largest cluster
-  Double_t fX;               // x-position (cm) of the largest cluster
-  Double_t fZ;               // z-position (cm) of the largest cluster
-  Int_t fMult;               // # of hits in the largest cluster
-  //  Int_t fNblk;           // Number of blocks in main cluster
-  //  Double_t* fEblk;       // Energies of blocks in main cluster
+  Int_t fNclustTrack;             // NUmber of cluster that match best track
+  Int_t fNclustArrayTrack;             // NUmber of cluster that match best track
+  Int_t fSizeClustArray;             // NUmber of blocks in cluster which matches the best track
+  Int_t fNblockHighEnergy;             // NUmber of array block (1-224) that has the highest energy in cluster
+  Double_t fXclustTrack;             // X pos of cluster that match best track
+  Double_t fXTrack;             // X pos of best track that match cluster
+  Double_t fYclustTrack;             // Y pos of cluster that match best track
+  Double_t fYTrack;             // Y pos of best track that match cluster
+  Double_t fXclustArrayTrack;             // X pos of cluster that match best track
+  Double_t fXTrackArray;             // X pos of best track that match cluster
+  Double_t fYclustArrayTrack;             // Y pos of cluster that match best track
+  Double_t fYTrackArray;             // Y pos of best track that match cluster
+  Int_t fNtracks;            // Number of shower tracks, i.e. number of
+                             // cluster-to-track association
+  Double_t fEtot;            // Total energy
+  Double_t fEtotNorm;        // Total energy divided by spec central momentum
+  Double_t fEtrack;          // Cluster energy associated to the best track
+  Double_t fEtrackNorm;      // Cluster energy divided by momentum for the best track
+  Double_t fEPRtrack;        // Preshower part of cluster energy of the best track
+  Double_t fEPRtrackNorm;    // Preshower part of cluster energy divided by momentum for the best track
+  Double_t fETotTrackNorm;   // Total energy divided by momentum of the best track
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
-  // Track quantities, are here for test purposes. Better to move
-  // to the track class(es) later on.
 
-  Double_t fTRX;             // track x-position in det plane (1st track)
-  Double_t fTRY;             // track y-position in det plane (1st track)
-  Double_t fTRE;             // Energy of a cluster associated to the track
-  Double_t fTREpr;           // Preshower Energy of the track's cluster
-  Double_t fTRE_cor;         // Y-corrected track total energy
-  Double_t fTREpr_cor;       // Y-corrected track Preshower energy
-  Double_t* fTREpl_cor;      // [fNLayers] Y-corrected track energy per plane
-  Double_t* fTREpl_pos_cor;  // [fNLayers] Y-corrected track positive energy per plane
-  Double_t* fTREpl_neg_cor;  // [fNLayers] Y-corrected track negative energy per plane
-
-  // Potential Hall C parameters.  Mostly here for demonstration
+  // Geometrical parameters.
 
   char** fLayerNames;
-  Int_t fNLayers;               // Number of layers in the calorimeter
-  Double_t* fNLayerZPos;	// Z positions of fronts of layers
+  UInt_t fNLayers;	        // Number of layers in the calorimeter
+  UInt_t fNTotLayers;	        // Number of layers including array
+  UInt_t fHasArray;		// If !=0 fly's eye array behind preshower
+  Double_t* fLayerZPos;	        // Z positions of fronts of layers
+  // Following apply to just sideways readout layers
   Double_t* BlockThick;		// Thickness of blocks
-  Int_t* fNBlocks;              // [fNLayers] number of blocks per layer
-  Int_t fNtotBlocks;            // Total number of shower counter blocks
-  Double_t** XPos;		// [fNLayers] X,Y,Z positions of blocks
-  Double_t* YPos;
-  Double_t* ZPos;
-  Int_t fNegCols;               // # of columns with neg. side PMTs only.
+  UInt_t* fNBlocks;              // [fNLayers] number of blocks per layer
+  UInt_t fNTotBlocks;            // Total number of shower counter blocks
+  Double_t** fXPos;		// [fNLayers] X,Y,Z positions of blocks
+  Double_t* fYPos;
+  Double_t* fZPos;
+  UInt_t fNegCols;               // # of columns with neg. side PMTs only.
   Double_t fSlop;               // Track to cluster vertical slop distance.
   Int_t fvTest;                 // fiducial volume test flag for tracking
   Double_t fvDelta;             // Exclusion band width for fiducial volume
@@ -180,18 +195,21 @@ protected:
   Double_t fvYmin;
   Double_t fvYmax;
 
-
-  Int_t fdbg_decoded_cal;      // Shower debug flags
+  Int_t fdbg_raw_cal;          // Shower debug flags
+  Int_t fdbg_decoded_cal;
   Int_t fdbg_sparsified_cal;
   Int_t fdbg_clusters_cal;
   Int_t fdbg_tracks_cal;
+  Int_t fdbg_init_cal;         // No counterpart in engine, added to debug
+                               // calorimeter initialization
 
   Double_t fAcor;               // Coordinate correction constants
   Double_t fBcor;
-  Double_t fCcor;
-  Double_t fDcor;
+  Double_t fCcor[2];            // for positive ad negative side PMTs
+  Double_t fDcor[2];
 
   THcShowerPlane** fPlanes;     // [fNLayers] Shower Plane objects
+  THcShowerArray* fArray;
 
   TClonesArray*  fTrackProj;    // projection of track onto plane
 
@@ -202,15 +220,34 @@ protected:
 
   void Setup(const char* name, const char* description);
 
-  // cluster to track association method.
-
+  // Cluster to track association method.
   Int_t MatchCluster(THaTrack*, Double_t&, Double_t&);
 
+  void ClusterHits(THcShowerHitSet& HitSet, THcShowerClusterList* ClusterList);
+
   friend class THcShowerPlane;   //to access debug flags.
+  friend class THcShowerArray;   //to access debug flags.
 
   ClassDef(THcShower,0)          // Shower counter detector
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+
+// Various helper functions to accumulate hit related quantities.
+
+Double_t addE(Double_t x, THcShowerHit* h);
+Double_t addX(Double_t x, THcShowerHit* h);
+Double_t addY(Double_t x, THcShowerHit* h);
+Double_t addZ(Double_t x, THcShowerHit* h);
+Double_t addEpr(Double_t x, THcShowerHit* h);
+
+// Methods to calculate coordinates and energy depositions for a given cluster.
+
+Double_t clX(THcShowerCluster* cluster);
+Double_t clY(THcShowerCluster* cluster);
+Double_t clZ(THcShowerCluster* cluster);
+Double_t clE(THcShowerCluster* cluster);
+Double_t clEpr(THcShowerCluster* cluster);
+Double_t clEplane(THcShowerCluster* cluster, Int_t iplane, Int_t side);
 
 #endif

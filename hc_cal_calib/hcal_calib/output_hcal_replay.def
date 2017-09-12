@@ -1,0 +1,19 @@
+#
+# Output definition for the HMS calorimeter calibration.
+#
+
+block H.cal.*
+variable H.cer.npesum
+variable H.tr.beta
+#variable H.hod.fpBeta
+variable H.tr.p
+variable H.tr.tg_dp
+variable H.tr.y 	#Y FP
+variable H.tr.x 	#X FP
+variable H.tr.ph	#tan(phi), wrt Y axis
+variable H.tr.th	#tan(theta), wrt X axis
+variable H.tr.n		#number of tracks
+#formula Hcal_trx H.tr.x+338.69*H.tr.th
+#formula Hcal_try H.tr.y+338.69*H.tr.ph
+#variable Hcal_trx
+#variable Hcal_try

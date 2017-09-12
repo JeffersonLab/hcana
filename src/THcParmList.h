@@ -27,7 +27,7 @@ using namespace std;
 class THcParmList : public THaVarList {
 
 public:
- 
+
   THcParmList();
   virtual ~THcParmList() { Clear(); delete TextList; }
 
@@ -55,13 +55,13 @@ public:
   Int_t OpenCCDB(Int_t runnum);
   Int_t OpenCCDB(Int_t runnum, const char* connection_string);
   Int_t CloseCCDB();
-  Int_t LoadCCDBDirectory(const char* directory, 
+  Int_t LoadCCDBDirectory(const char* directory,
 			  const char* prefix);
 #endif
 
 private:
 
-  THaTextvars* TextList;
+  THaTextvars* TextList;  //! Dictionary of string parameters
 
 #ifdef WITH_CCDB
   SQLiteCalibration* CCDB_obj;

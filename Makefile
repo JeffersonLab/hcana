@@ -7,13 +7,17 @@
 # List only the implementation files (*.cxx). For every implementation file
 # there must be a corresponding header file (*.h).
 
+USEWILDCARD = 1
+ifdef USEWILDCARD
+SRC = $(wildcard src/*.cxx)
+else
 SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcHallCSpectrometer.cxx \
 	src/THcDetectorMap.cxx \
 	src/THcRawHit.cxx src/THcHitList.cxx \
 	src/THcSignalHit.cxx \
 	src/THcHodoscope.cxx src/THcScintillatorPlane.cxx \
-	src/THcHodoscopeHit.cxx \
+	src/THcRawHodoHit.cxx src/THcHodoHit.cxx \
 	src/THcDC.cxx src/THcDriftChamberPlane.cxx \
 	src/THcDriftChamber.cxx \
 	src/THcRawDCHit.cxx src/THcDCHit.cxx \
@@ -21,15 +25,23 @@ SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcDCLookupTTDConv.cxx src/THcDCTimeToDistConv.cxx \
 	src/THcSpacePoint.cxx src/THcDCTrack.cxx \
 	src/THcShower.cxx src/THcShowerPlane.cxx \
+	src/THcShowerArray.cxx \
+	src/THcShowerHit.cxx \
 	src/THcRawShowerHit.cxx \
 	src/THcAerogel.cxx src/THcAerogelHit.cxx \
 	src/THcCherenkov.cxx src/THcCherenkovHit.cxx \
 	src/THcFormula.cxx\
 	src/THcRaster.cxx\
 	src/THcRasteredBeam.cxx\
-	src/THcRasterRawHit.cxx
+	src/THcRasterRawHit.cxx \
+	src/THcScalerEvtHandler.cxx src/THcConfigEvtHandler.cxx \
+	src/THcHodoEff.cxx \
+	src/THcTrigApp.cxx src/THcTrigDet.cxx src/THcTrigRawHit.cxx \
+	src/THcRawAdcHit.cxx src/THcRawTdcHit.cxx \
+	src/THcDummySpectrometer.cxx
+endif
 
-# Name of your package. 
+# Name of your package.
 # The shared library that will be built will get the name lib$(PACKAGE).so
 PACKAGE = HallC
 
@@ -62,16 +74,20 @@ ifndef ANALYZER
   $(error $$ANALYZER environment variable not defined)
 endif
 
-INCDIRS  = $(wildcard $(addprefix $(ANALYZER)/, include src hana_decode hana_scaler)), $(shell pwd)/src
+INCDIRS  = $(wildcard $(addprefix $(ANALYZER)/, include src hana_decode)) $(shell pwd)/src
 
 #------------------------------------------------------------------------------
 # Check that root version is new enough (>= 5.32) by requiring
+# root-config --version to be version 6 or
 # root-config --svn-revision to be >= 43166
 
-GOODROOTVERSION := $(shell expr `root-config --svn-revision` \>= 43166)
+GOODROOTVERSION6 := $(shell expr `root-config --version` \>= 6.06)
 
-ifneq ($(GOODROOTVERSION),1)
-  $(error ROOT version 5.32 or later required)
+ifneq ($(GOODROOTVERSION6),1)
+  GOODROOTVERSION := $(shell expr `root-config --svn-revision` \>= 43166)
+  ifneq ($(GOODROOTVERSION),1)
+    $(error ROOT version 5.32 or later required)
+  endif
 endif
 
 #------------------------------------------------------------------------------
@@ -92,8 +108,8 @@ INCLUDES      = $(ROOTCFLAGS) $(addprefix -I, $(INCDIRS) )
 USERLIB       = lib$(PACKAGE).so
 USERDICT      = $(PACKAGE)Dict
 
-LIBS          = 
-GLIBS         = 
+LIBS          =
+GLIBS         =
 
 ifeq ($(ARCH),solarisCC5)
 # Solaris CC 5.0
@@ -139,8 +155,8 @@ ifdef WITH_DEBUG
 CXXFLAGS     += -DWITH_DEBUG
 endif
 
-CCDBLIBS = 
-CCDBFLAGS = 
+CCDBLIBS =
+CCDBFLAGS =
 ifdef CCDB_HOME
 CCDBLIBS     += -L$(CCDB_HOME)/lib -lccdb
 CCDBFLAGS  += -I$(CCDB_HOME)/include -DWITH_CCDB
@@ -162,7 +178,7 @@ DISTFILE      = $(PKG).tar.gz
 #------------------------------------------------------------------------------
 OBJ           = $(SRC:.cxx=.o)
 RCHDR	      = $(SRC:.cxx=.h) src/THcGlobals.h
-HDR           = $(SRC:.cxx=.h) 
+HDR           = $(SRC:.cxx=.h)
 DEP           = $(SRC:.cxx=.d) src/main.d
 OBJS          = $(OBJ) $(USERDICT).o
 HDR_COMPILEDATA = $(ANALYZER)/src/ha_compiledata.h
@@ -172,26 +188,38 @@ all:		$(USERLIB) hcana
 LIBDIR:=$(ANALYZER)
 LIBHALLA     := $(LIBDIR)/libHallA.so
 LIBDC        := $(LIBDIR)/libdc.so
-LIBSCALER    := $(LIBDIR)/libscaler.so
-HALLALIBS    := -L$(LIBDIR) -lHallA -ldc -lscaler
+HALLALIBS    := -L$(LIBDIR) -lHallA -ldc
+
+# If EVIO environment not defined, expect to find it in PODD directory
+
+ifdef EVIO_LIBDIR
+  EVIOLIB    := -L$(EVIO_LIBDIR) -levio
+else
+  EVIOLIB    := -levio
+endif
 
 src/THcInterface.d:  $(HDR_COMPILEDATA)
 
-hcana:		src/main.o $(LIBDC) $(LIBSCALER) $(LIBHALLA) $(USERLIB)
-		$(LD) $(LDFLAGS) $< $(HALLALIBS) -L. -lHallC $(CCDBLIBS) \
+hcana:		src/main.o $(LIBDC) $(LIBHALLA) $(USERLIB)
+		$(LD) $(LDFLAGS) $< -lHallC $(HALLALIBS) $(EVIOLIB) -L. $(CCDBLIBS) \
 		$(GLIBS) -o $@
 
 $(USERLIB):	$(HDR) $(OBJS)
 		$(LD) $(LDFLAGS) $(SOFLAGS) -o $@ $(OBJS)
 		@echo "$@ done"
 
-$(HDR_COMPILEDATA) $(LIBHALLA) $(LIBDC) $(LIBSCALER): $(ANALYZER)/Makefile
-		@echo "Building Podd"		
+$(HDR_COMPILEDATA) $(LIBHALLA) $(LIBDC): $(ANALYZER)/Makefile
+		@echo "Building Podd"
 		@cd $(ANALYZER) ; export PODD_EXTRA_DEFINES=-DHALLC_MODS ; make
 
 $(USERDICT).cxx: $(RCHDR) $(HDR) $(LINKDEF)
 	@echo "Generating dictionary $(USERDICT)..."
 	$(ROOTBIN)/rootcint -f $@ -c $(INCLUDES) $(CCDBFLAGS) $^
+
+$(LINKDEF): $(LINKDEF)_preamble $(LINKDEF)_postamble $(SRC)
+	@cat $(LINKDEF)_preamble > $(LINKDEF)
+	@echo $(SRC) | tr ' ' '\n' | sed -e "s|src/|#pragma link C++ class |" | sed -e "s|.cxx|+;|" >> $(LINKDEF)
+	@cat $(LINKDEF)_postamble >> $(LINKDEF)
 
 install:	all
 	cp -p $(USERLIB) $(HOME)/cue/SRC/ana

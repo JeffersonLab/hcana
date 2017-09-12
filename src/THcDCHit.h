@@ -17,19 +17,19 @@ class THcDCHit : public TObject {
 
 public:
   THcDCHit( THcDCWire* wire=NULL, Int_t rawtime=0, Double_t time=0.0,
-	    THcDriftChamberPlane* wp=0) : 
+    THcDriftChamberPlane* wp=0) :
     fWire(wire), fRawTime(rawtime), fTime(time), fWirePlane(wp),
     fDist(0.0), ftrDist(kBig) {
-    ConvertTimeToDist();
-    fCorrected = 0;
-  }
+      if (wire) ConvertTimeToDist();
+      fCorrected = 0;
+    }
   virtual ~THcDCHit() {}
 
   virtual Double_t ConvertTimeToDist();
   Int_t  Compare ( const TObject* obj ) const;
   Bool_t IsSortable () const { return kTRUE; }
   virtual void Print( Option_t* opt="" ) const;
-  
+
   // Get and Set Functions
   THcDCWire* GetWire() const { return fWire; }
   Int_t    GetWireNum() const { return fWire->GetNum(); }
@@ -42,9 +42,9 @@ public:
   Int_t    GetCorrectedStatus() const { return fCorrected; }
 
   THcDriftChamberPlane* GetWirePlane() const { return fWirePlane; }
-  
 
-  void     SetWire(THcDCWire * wire) { fWire = wire; }
+
+  void     SetWire(THcDCWire * wire) { fWire = wire; ConvertTimeToDist(); }
   void     SetRawTime(Int_t time)     { fRawTime = time; }
   void     SetTime(Double_t time)     { fTime = time; }
   void     SetDist(Double_t dist)     { fDist = dist; }
@@ -56,10 +56,10 @@ public:
   Int_t    GetPlaneIndex() const { return fWirePlane->GetPlaneIndex(); }
   Int_t    GetChamberNum() const { return fWirePlane->GetChamberNum(); }
   void     SetCorrectedStatus(Int_t c) { fCorrected = c; }
-  
+
 protected:
   static const Double_t kBig;  //!
-  
+
   THcDCWire*  fWire;     // Wire on which the hit occurred
   Int_t       fRawTime;  // TDC value (channels)
   Double_t    fTime;     // Time corrected for time offset of wire (s)
@@ -73,11 +73,11 @@ protected:
 
   THcDriftChamber* fChamber; //! Pointer to parent wire plane
 
-  
+
 private:
   THcDCHit( const THcDCHit& );
   THcDCHit& operator=( const THcDCHit& );
-  
+
   ClassDef(THcDCHit,2)             // Drift Chamber Hit
 };
 

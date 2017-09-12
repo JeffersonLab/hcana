@@ -1,0 +1,25 @@
+os: linux
+compiler: gcc
+language: cpp
+dist: trusty
+git:
+  depth: 5
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get autoremove
+  - sudo pip install --egg scons
+install:
+  - wget https://root.cern.ch/download/root_v6.10.02.Linux-ubuntu14-x86_64-gcc4.8.tar.gz -O /tmp/root.tar.gz
+  - pwd
+  - tar -xzf /tmp/root.tar.gz
+  - source ./root/bin/thisroot.sh
+  - source ./setup.sh
+script:  scons
+branches:
+  only:
+    - develop
+notifications:
+  email:
+    recipients: saw@jlab.org
+    on_success: always
+    on_failure: always

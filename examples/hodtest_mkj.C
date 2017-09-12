@@ -1,9 +1,10 @@
-void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000) {
+void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000,
+		 Int_t StartEvent=1) {
 
   //
   //  Steering script to test hodoscope decoding
   //
-  
+
   if (RunNumber == 50017) {
     char* RunFileNamePattern="daq04_%d.log.0";
   } else {
@@ -12,7 +13,7 @@ void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000) {
   }
   gHcParms->Define("gen_run_number", "Run Number", RunNumber);
   gHcParms->AddString("g_ctp_database_filename", "DBASE/test.database");
-  
+
   gHcParms->Load(gHcParms->GetString("g_ctp_database_filename"), RunNumber);
 
   // g_ctp_parm_filename and g_decode_map_filename should now be defined
@@ -45,19 +46,22 @@ void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000) {
   THcAerogel* aerogel = new THcAerogel("aero", "Aerogel Cerenkov" );
   HMS->AddDetector( aerogel );
 
+  // Add Golden Track
+  gHaPhysics->Add( new THaGoldenTrack( "H.gold", "HMS Golden Track", "H" ));
+
   // Set up the analyzer - we use the standard one,
   // but this could be an experiment-specific one as well.
   // The Analyzer controls the reading of the data, executes
   // tests/cuts, loops over Acpparatus's and PhysicsModules,
   // and executes the output routines.
   THaAnalyzer* analyzer = new THcAnalyzer;
-  
+
 
   // A simple event class to be output to the resulting tree.
   // Creating your own descendant of THaEvent is one way of
   // defining and controlling the output.
   THaEvent* event = new THaEvent;
-  
+
   // Define the run(s) that we want to analyze.
   // We just set up one, but this could be many.
   char RunFileName[100];
@@ -66,8 +70,8 @@ void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000) {
 
   // Eventually need to learn to skip over, or properly analyze
   // the pedestal events
-  run->SetEventRange(1,MaxEventToReplay);//  Physics Event number, does not
-                                // include scaler or control events
+  run->SetEventRange(StartEvent,MaxEventToReplay);//  Physics Event number,
+                                //  does not include scaler or control events
 
   // Define the analysis parameters
   analyzer->SetCountMode( 0 );   //Mark's modification
@@ -75,9 +79,9 @@ void hodtest_mkj(Int_t RunNumber=50017, Int_t MaxEventToReplay=5000) {
   analyzer->SetOutFile(Form("hodtest_%05d.root",RunNumber));
   analyzer->SetOdefFile(Form("output_%d.def",RunNumber));
   analyzer->SetCutFile("hodtest_cuts_mkj.def");        // optional
-  
+
   // File to record cuts accounting information
   //  analyzer->SetSummaryFile("summary_example.log"); // optional
-  
+
   analyzer->Process(run);     // start the actual analysis
 }

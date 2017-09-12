@@ -1,4 +1,4 @@
 [submodule "podd"]
 	path = podd
-	url = git://github.com/JeffersonLab/analyzer.git
-	branch = Release-150
+	url = https://github.com/JeffersonLab/analyzer.git
+	branch = master

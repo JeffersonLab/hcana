@@ -1,13 +1,11 @@
-// Author : Buddhini Waidyawansa
-// Date : 01-08-2014
+/** \class THcRasteredBeam
+    \ingroup Base
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// THcRasteredBeam                                                           //
-//                                                                           //
-//  A class to handle the raster processing tasks                            //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+\brief  Apparatus for a rastered beam
+
+\author Buddhini Waidyawansa
+
+*/
 
 #include "THcRasteredBeam.h"
 #include "THcRaster.h"
@@ -19,7 +17,7 @@
 
 //_____________________________________________________________________________
 THcRasteredBeam::THcRasteredBeam( const char* name, const char* description ) :
-    THaBeam( name, description ) 
+    THaBeam( name, description )
 {
   AddDetector( new THcRaster("raster","raster",this) );
 }
@@ -29,19 +27,19 @@ THcRasteredBeam::THcRasteredBeam( const char* name, const char* description ) :
 Int_t THcRasteredBeam::Reconstruct()
 {
 
-  TIter nextDet( fDetectors ); 
+  TIter nextDet( fDetectors );
 
   nextDet.Reset();
 
-  // This apparatus assumes that there is only one detector 
-  // in the list. If someone adds detectors by hand, the first 
+  // This apparatus assumes that there is only one detector
+  // in the list. If someone adds detectors by hand, the first
   // detector in the list will be used to get the beam position
   // the others will be processed
-  // -- Iam not sure why the code is written like this. But for now, I am 
+  // -- Iam not sure why the code is written like this. But for now, I am
   // going to work with this code as it is since all I need for is to
   // decode the raster - Buddhini
 
-  
+
   if (THaBeamDet* theBeamDet=
       static_cast<THaBeamDet*>( nextDet() )) {
     theBeamDet->Process();
@@ -49,7 +47,7 @@ Int_t THcRasteredBeam::Reconstruct()
     fDirection = theBeamDet->GetDirection();
   }
   else {
-    Error( Here("THcRasteredBeam::Reconstruct"), 
+    Error( Here("THcRasteredBeam::Reconstruct"),
 	   "Beamline Detectors Missing in Detector List" );
   }
 

@@ -1,14 +1,12 @@
-//*-- Author :    Ole Hansen   12/05/2000
+/** \class THcInterface
+    \ingroup Base
 
-//////////////////////////////////////////////////////////////////////////
-//
-// THcInterface
-//
-// THcInterface is the interactive interface to the Hall A Analyzer.
-// It allows interactive access to all analyzer classes as well as
-// all of standard ROOT.
-//
-//////////////////////////////////////////////////////////////////////////
+\brief THcInterface is the interactive interface to the Hall C Analyzer.
+
+Basically a rebranded copy of THaInterface with the addition of a global
+for the Hall C style parameter database.
+
+*/
 
 #include "TROOT.h"
 #include "TClass.h"
@@ -22,7 +20,7 @@
 #include "THcParmList.h"
 #include "THcDetectorMap.h"
 #include "THaCutList.h"
-#include "THaCodaDecoder.h"
+#include "CodaDecoder.h"
 #include "THaGlobals.h"
 #include "THcGlobals.h"
 #include "THaAnalyzer.h"
@@ -32,7 +30,7 @@
 
 #include "TTree.h"
 
-
+#include <iostream>
 //#include "TGXW.h"
  //#include "TVirtualX.h"
 
@@ -56,13 +54,18 @@ THcInterface* THcInterface::fgAint = NULL;  // Pointer to this interface
 static TString fgTZ;
 
 //_____________________________________________________________________________
-THcInterface::THcInterface( const char* appClassName, int* argc, char** argv, 
+THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
 			    void* options, int numOptions, Bool_t noLogo ) :
   TRint( appClassName, argc, argv, options, numOptions, kTRUE )
 {
-  // Create the Hall A analyzer application environment. The THcInterface 
-  // environment provides an interface to the the interactive ROOT system 
-  // via inheritance of TRint as well as access to the Hall A analyzer classes.
+  /**
+Create the Hall A/C analyzer application environment. The THcInterface
+environment provides an interface to the the interactive ROOT system
+via inheritance of TRint as well as access to the Hall A/C analyzer classes.
+
+This class is copy of THaInterface with the addition of of the global
+`gHcParms` to hold parameters.  It does not inherit from THaInterface.
+  */
 
   if( fgAint ) {
     Error("THcInterface", "only one instance of THcInterface allowed");
@@ -73,31 +76,33 @@ THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
   if( !noLogo )
     PrintLogo();
 
-  SetPrompt("analyzerThcInterface [%d] ");
+  SetPrompt("hcana [%d] ");
   gHaVars    = new THaVarList;
   gHcParms    = new THcParmList;
   gHaCuts    = new THaCutList( gHaVars );
   gHaApps    = new TList;
-  gHaScalers = new TList;
   gHaPhysics = new TList;
+  gHaEvtHandlers = new TList;
   // Use the standard CODA file decoder by default
-  gHaDecoder = THaCodaDecoder::Class();
+  gHaDecoder = Decoder::CodaDecoder::Class();
   // File-based database by default
   //  gHaDB      = new THaFileDB();
   gHaTextvars = new THaTextvars;
 
-  cout << "In THcInterface ... " << endl;
-  cout << "Decoder => " << gHaDecoder << endl;
+  //  cout << "In THcInterface ... " << endl;
+  //  cout << "Decoder => " << gHaDecoder << endl;
 
   // Set the maximum size for a file written by Podd contained by the TTree
   //  putting it to 1.5 GB, down from the default 1.9 GB since something odd
   //  happens for larger files
   //FIXME: investigate
-  TTree::SetMaxTreeSize(1500000000);
+  //TTree::SetMaxTreeSize(1500000000);
+  // Jure update: 100 GB
+  TTree::SetMaxTreeSize(100000000000LL);
 
-  // Make the Podd header directory(s) available so scripts don't have to 
+  // Make the Podd header directory(s) available so scripts don't have to
   // specify an explicit path.
-  // If $ANALYZER defined, we take our includes from there, otherwise we fall 
+  // If $ANALYZER defined, we take our includes from there, otherwise we fall
   // back to the compile-time directories (which may have moved!)
   TString s = gSystem->Getenv("ANALYZER");
   if( s.IsNull() ) {
@@ -109,8 +114,8 @@ THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
     if( dp ) {
       gSystem->FreeDirectory(dp);
       s = p;
-    } else 
-      s = s+"/src " + s+"/hana_decode " + s+"/hana_scaler";
+    } else
+      s = s+"/src " + s+"/hana_decode ";
   }
   // Directories names separated by blanks.
   // FIXME: allow blanks
@@ -126,14 +131,14 @@ THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
     s.Remove(0,s.Index(re)+ss.Length());
     ss = s(re);
   }
-  
+
   // Because of lack of foresight, the analyzer uses TDatime objects,
   // which are kept in localtime() and hence are not portable, and also
   // uses localtime() directly in several places. As a result, database
-  // lookups depend on the timezone of the machine that the replay is done on! 
-  // If this timezone is different from the one in which the data were taken, 
+  // lookups depend on the timezone of the machine that the replay is done on!
+  // If this timezone is different from the one in which the data were taken,
   // mismatches may occur. This is bad.
-  // FIXME: Use TTimeStamp to keep time in UTC internally. 
+  // FIXME: Use TTimeStamp to keep time in UTC internally.
   // To be done in version 1.5
   //
   // As a temporary workaround, we assume that all data were taken in
@@ -142,7 +147,7 @@ THcInterface::THcInterface( const char* appClassName, int* argc, char** argv,
   fgTZ = gSystem->Getenv("TZ");
   gSystem->Setenv("TZ","US/Eastern");
 
-  
+
   fgAint = this;
 }
 
@@ -160,7 +165,7 @@ THcInterface::~THcInterface()
     delete gHaTextvars; gHaTextvars=0;
     //    delete gHaDB;           gHaDB = 0;
     delete gHaPhysics;   gHaPhysics=0;
-    delete gHaScalers;   gHaScalers=0;
+    delete gHaEvtHandlers; gHaEvtHandlers=0;
     delete gHaApps;         gHaApps=0;
     delete gHaVars;         gHaVars=0;
     delete gHaCuts;         gHaCuts=0;
@@ -179,7 +184,7 @@ void THcInterface::PrintLogo()
 void THcInterface::PrintLogo( Bool_t lite )
 #endif
 {
-   // Print the Hall A analyzer logo on standard output.
+  /// Print the Hall C analyzer logo on standard output.
 
    Int_t iday,imonth,iyear,mille;
    static const char* months[] = {"Jan","Feb","Mar","Apr","May",
@@ -190,7 +195,7 @@ void THcInterface::PrintLogo( Bool_t lite )
    iday   = idatqq%100;
    imonth = (idatqq/100)%100;
    iyear  = (idatqq/10000);
-   if ( iyear < 90 ) 
+   if ( iyear < 90 )
      mille = 2000 + iyear;
    else if ( iyear < 1900 )
      mille = 1900 + iyear;
@@ -209,12 +214,13 @@ void THcInterface::PrintLogo( Bool_t lite )
      Printf("  *            W E L C O M E  to  the            *");
      Printf("  *          H A L L C ++  A N A L Y Z E R       *");
      Printf("  *                                              *");
-     Printf("  *        Release %10s %18s *",halla_version,__DATE__);
+     Printf("  *            Based on                          *");
+     Printf("  *  PODD Release %10s %18s *",halla_version,__DATE__);
      Printf("  *  Based on ROOT %8s %20s *",root_version,root_date);
      //   Printf("  *             Development version              *");
      Printf("  *                                              *");
      Printf("  *            For information visit             *");
-     Printf("  *        http://hallaweb.jlab.org/root/        *");
+     Printf("  *      http://hallcweb.jlab.org/hcana/docs/    *");
      Printf("  *                                              *");
      Printf("  ************************************************");
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,18,0)
@@ -233,7 +239,7 @@ void THcInterface::PrintLogo( Bool_t lite )
 //_____________________________________________________________________________
 TClass* THcInterface::GetDecoder()
 {
-  // Get class of the current decoder
+  /// Get class of the current decoder
   cout << "In THcInterface::GetDecoder ... " << gHaDecoder << endl;
   return gHaDecoder;
 }
@@ -241,16 +247,16 @@ TClass* THcInterface::GetDecoder()
 //_____________________________________________________________________________
 TClass* THcInterface::SetDecoder( TClass* c )
 {
-  // Set the type of decoder to be used. Make sure the specified class
-  // actually inherits from the standard THaEvData decoder.
-  // Returns the decoder class (i.e. its argument) or NULL if error.
+  /// Set the type of decoder to be used. Make sure the specified class
+  /// actually inherits from the standard THaEvData decoder.
+  /// Returns the decoder class (i.e. its argument) or NULL if error.
 
   if( !c ) {
     ::Error("THcInterface::SetDecoder", "argument is NULL");
     return NULL;
   }
   if( !c->InheritsFrom("THaEvData")) {
-    ::Error("THcInterface::SetDecoder", 
+    ::Error("THcInterface::SetDecoder",
 	    "decoder class must inherit from THaEvData");
     return NULL;
   }
@@ -259,6 +265,27 @@ TClass* THcInterface::SetDecoder( TClass* c )
 
   gHaDecoder = c;
   return gHaDecoder;
+}
+
+//_____________________________________________________________________________
+//_____________________________________________________________________________
+const char* THcInterface::SetPrompt( const char* newPrompt )
+{
+  /// Make sure the prompt is and stays "hcana [%d]". ROOT 6 resets the
+  /// interpreter prompt for every line without respect to any user-set
+  /// default prompt.
+
+#if ROOT_VERSION_CODE < ROOT_VERSION(6,0,0)
+  return TRint::SetPrompt(newPrompt);
+#else
+  TString s;
+  if( newPrompt ) {
+    s = newPrompt;
+    if( s.Index("root") == 0 )
+      s.Replace(0,4,"hcana");
+  }
+  return TRint::SetPrompt(s.Data());
+#endif
 }
 
 //_____________________________________________________________________________

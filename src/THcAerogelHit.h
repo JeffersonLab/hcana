@@ -1,13 +1,13 @@
 #ifndef ROOT_THcAerogelHit
 #define ROOT_THcAerogelHit
 
-#include "THcHodoscopeHit.h"
+#include "THcRawHodoHit.h"
 
-class THcAerogelHit : public THcHodoscopeHit {
+class THcAerogelHit : public THcRawHodoHit {
 
  public:
   friend class THcAerogel;
- 
+
  protected:
 
  private:

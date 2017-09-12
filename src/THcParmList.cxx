@@ -1,10 +1,24 @@
-//*-- Author : Stephen A. Wood 10.02.2012
+/** \class THcParmList
+    \ingroup Base
 
-// THcParmList
-//
-// A THaVarList that holds parameters read from
-// the legacy ENGINE parameter file format
-//
+\brief A list parameters and their values
+
+Parameters may be integers, real numbers or strings.
+Integers and floating point numbers can be one dimensional arrays.
+(Strings can not be arrays.)  In addition to values, each parameter
+may have a title/description.  (No titles are saved for string parameters.)
+
+The Hall C analyzer make one instance of this class available via the
+global `gHcParms`.  The detector classes look for their
+configuration parameters in that list.
+
+This class is built on THaVarList, adding a method to load the list of
+parameters from Hall C ENGINE style CTP parameter files and a method
+to retrieve a set of parameters from the list.
+
+An instance of THaTextvars is created to hold the string parameters.
+
+*/
 
 #define INCLUDESTR "#include"
 
@@ -23,12 +37,14 @@
 #include <fstream>
 #include <cassert>
 #include <cstdlib>
+#include <stdexcept>
 
 using namespace std;
-Int_t  fDebug   = 1;  // Keep this at one while we're working on the code    
+Int_t  fDebug   = 1;  // Keep this at one while we're working on the code
 
 ClassImp(THcParmList)
 
+/// Create empty numerical and string parameter lists
 THcParmList::THcParmList() : THaVarList()
 {
   TextList = new THaTextvars;
@@ -42,17 +58,44 @@ inline static bool IsComment( const string& s, string::size_type pos )
 
 void THcParmList::Load( const char* fname, Int_t RunNumber )
 {
-  // Read a CTP style parameter file.
-  //
-  // Parameter values and arrays of values are cached in a THaVarList
-  // and are available for use elsewhere in the analyzer.
-  // Text strings are saved in a THaTextvars list.
-  // Parameter files can contain "include" statements of the form
-  //   #include "filename"
-  //
-  // If a run number is given, ignore input until a line with a matching
-  // run number or run number range is found.  All parameters following
-  // the are read until a non matching run number or range is encountered.
+  /**
+\brief Load the parameter cache by reading a CTP style parameter file.  Most
+parameter files used in the ENGINE should work.
+
+A line in the file of the form
+~~~
+   varname = value1[, value2, value3, value4]  [; Comment]
+~~~
+adds the variable `varname` to the parameter cache and the value after
+the equal sign is stored.  If a list of values is given, then the
+values are saved as an array.  Lists of values may be continued on
+additional lines.  Lines without a `=` are interpreted as such continuation
+lines.  Text after a ";" is treated as a comment.  If this comment is
+on a line defining a parameter, then it is saved as the
+title/description for the parameter.
+
+Values may be expressions composed of numbers and previously defined
+parameters.  These expressions are evaluated with THaFormula.
+
+Lines of the form
+~~~
+   varname = "A string"
+~~~
+or
+~~~
+   varname = 'A string'
+~~~
+create string parameters.
+
+A parameter file can load other files with the include statement
+~~~
+   #include "filename"
+~~~
+
+The ENGINE CTP support parameter "blocks" which were marked with
+`begin` and `end` statements.  These statements are ignored.
+
+  */
 
   static const char* const whtspc = " \t";
 
@@ -61,7 +104,7 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
   Int_t nfiles=0;
   ifiles[nfiles].open(fname);
   if(ifiles[nfiles].is_open()) {
-    cout << nfiles << ": " << "Opened \"" << fname << "\"" << endl;
+    cout << "Opening parameter file: [" << nfiles << "] " << fname << endl;
     nfiles++;
   }
 
@@ -70,7 +113,7 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
     Error (here, "error opening parameter file %s",fname);
     return;			// Need a success argument returned
   }
-  
+
   string line;
   char varname[100];
   Int_t InRunRange;
@@ -94,7 +137,7 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
     if(!getline(ifiles[nfiles-1],line)) {
       ifiles[nfiles-1].close();
       nfiles--;
-      cout << nfiles << ": " << "Closed" << endl;
+      //      cout << nfiles << ": " << "Closed" << endl;
       continue;
     }
     // Look for include statement
@@ -112,10 +155,10 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
       } else {
 	line.erase(line.find_first_of(whtspc));
       }
-      cout << line << endl;
+      //      cout << line << endl;
       ifiles[nfiles].open(line.c_str());
       if(ifiles[nfiles].is_open()) {
-	cout << nfiles << ": " << "Opened \"" << line << "\"" << endl;
+	cout << "Opening parameter file: [" << nfiles << "] " << line << endl;
 	nfiles++;
       }
       continue;
@@ -129,7 +172,7 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 
     // Get rid of trailing comments and leading and trailing whitespace
     // Need to save the comment and put it in the thVar
-    
+
     while( (pos = line.find_first_of("#;/", pos+1)) != string::npos ) {
       if( IsComment(line, pos) ) {
 	current_comment.assign(line,pos+1,line.length());
@@ -161,7 +204,7 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
     }
 
     // Get rid of all white space not in quotes
-    // Step through one char at a time 
+    // Step through one char at a time
     pos = 0;
     int inquote=0;
     char quotechar=' ';
@@ -203,7 +246,7 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 	  } else {
 	    InRunRange = 0;
 	  }
-	} else {		// A single number.  Run 
+	} else {		// A single number.  Run
 	  if(atoi(line.c_str()) == RunNumber) {
 	    InRunRange = 1;
 	  } else {
@@ -249,13 +292,13 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
       }
       continue;
     }
-      
+
     TString values((line.substr(valuestartpos)).c_str());
     TObjArray *vararr = values.Tokenize(",");
     Int_t nvals = vararr->GetLast()+1;
-    
-    Int_t* ip;
-    Double_t* fp;
+
+    Int_t* ip=0;
+    Double_t* fp=0;
     // or expressions
     for(Int_t i=0;(ttype==0&&i<nvals);i++) {
       TString valstr = ((TObjString *)vararr->At(i))->GetString();
@@ -287,7 +330,7 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
     // else (variable doesn't exist)
     //      make array of newlength
     //      create varname
-    //  
+    //
     // There is some code duplication here.  Refactor later
 
     Int_t newlength = currentindex + nvals;
@@ -339,8 +382,8 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 	    if(valstr.IsFloat()) {
 	      fp[currentindex+i] = valstr.Atof();
 	    } else {
-	      THaFormula* formula = new THaFormula("temp",valstr.Data()
-						   ,this, 0);
+	      THaFormula* formula = new THaFormula
+		("temp",valstr.Data(), (Bool_t) 0, this, 0);
 	      fp[currentindex+i] = formula->Eval();
 	      delete formula;
 	    }
@@ -377,15 +420,15 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 	    if(valstr.IsFloat()) {
 	      existingp[currentindex+i] = valstr.Atof();
 	    } else {
-	      THaFormula* formula = new THaFormula("temp",valstr.Data()
-						   ,this, 0);
+	      THaFormula* formula = new THaFormula
+		("temp",valstr.Data(), (Bool_t) 0, this, 0);
 	      existingp[currentindex+i] = formula->Eval();
 	      delete formula;
 	    }
 	  }
 	}
 	currentindex += nvals;
-      }	
+      }
     } else {
       if(currentindex !=0) {
 	cout << "currentindex=" << currentindex << " shouldn't be!" << endl;
@@ -403,15 +446,15 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 	  if(valstr.IsFloat()) {
 	    fp[i] = valstr.Atof();
 	  } else {
-	    THaFormula* formula = new THaFormula("temp",valstr.Data()
-						 ,this, 0);
+	    THaFormula* formula = new THaFormula
+	      ("temp",valstr.Data(), (Bool_t) 0, this, 0);
 	    fp[i] = formula->Eval();
 	    delete formula;
 	  }
 	}
       }
       currentindex = nvals;
-      
+
       char *arrayname=new char [strlen(varname)+20];
       sprintf(arrayname,"%s[%d]",varname,nvals);
       if(ttype==0) {
@@ -434,14 +477,33 @@ void THcParmList::Load( const char* fname, Int_t RunNumber )
 //_____________________________________________________________________________
 Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
 {
-  // Load a number of entries from the database.
-  // For array entries, the number of elements to be read in
-  // must be given, and the memory already allocated
-  // NOTE: initial code taken wholesale from THaDBFile. 
-  // GN 2012
-  // If prefix is specified, prepend each requested parameter name with
-  // the prefix.
-  
+  /**
+
+\brief Retrieve parameter values from the parameter cache.
+
+The following example loads several parameters held in the `gHcParms`
+parameter cache into scalar variables or arrays.
+~~~
+  DBRequest list[]={
+    {"nplanes", &fNPlanes, kInt},
+    {"name", &fName, kString},
+    {"array", fArray, kDouble, fArraySize},
+    {"optional", &FOptionalvar, kDouble, 0, 1},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list,"h");
+~~~
+If a string is passed as the second parameter of LoadParmValues, then
+that string is prepended to the parameter names given in the DBRequest
+list.  In the above example, the values for the parameters `hnplanes`,
+`hname`, `harray`, and `hoptional` are loaded.
+
+If a requested parameter is not found in the parameter cache, an error
+is printed.  If the 5th element of a DBRequest structure is true (non
+zero), then there will be no error if the parameter is missing.
+
+  */
+
   const DBRequest *ti = list;
   Int_t cnt=0;
   Int_t this_cnt=0;
@@ -451,7 +513,7 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
   while ( ti && ti->name ) {
     string keystr(prefix); keystr.append(ti->name);
     const char* key = keystr.c_str();
-    ///    cout <<"Now at "<<ti->name<<endl;
+    //    cout <<"Now at "<<ti->name<<endl;
     this_cnt = 0;
     if(this->Find(key)) {
       VarType ty = this->Find(key)->GetType();
@@ -473,7 +535,7 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
 	switch (ti->type) {
 	case (kDouble) :
 	  if(ty == kInt) {
-	    *static_cast<Double_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();	    
+	    *static_cast<Double_t*>(ti->var)=*(Int_t *)this->Find(key)->GetValuePointer();
 	  } else if (ty == kDouble) {
 	    *static_cast<Double_t*>(ti->var)=*(Double_t *)this->Find(key)->GetValuePointer();
 	  } else {
@@ -513,7 +575,8 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
     }
     if (this_cnt<=0) {
       if ( !ti->optional ) {
-	Fatal("THcParmList","Could not find %s in database!",key);
+        string msg = string("Could not find `") + key + "` in database!";
+        throw std::runtime_error("<THcParmList::LoadParmValues>: " + msg);
       }
     }
     cnt += this_cnt;
@@ -526,15 +589,19 @@ Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
 //_____________________________________________________________________________
 Int_t THcParmList::GetArray(const char* attr, Int_t* array, Int_t size)
 {
-  // Read in a set of Int_t's in to a C-style array.
-  
+  /**
+  \brief  Read in a set of Int_t's in to a C-style array.
+  */
+
   return ReadArray(attr,array,size);
 }
 //_____________________________________________________________________________
 Int_t THcParmList::GetArray(const char* attr, Double_t* array, Int_t size)
 {
-  // Read in a set of Double_t's in to a vector.
-  
+  /**
+  \brief Read in a set of Double_t's in to a vector.
+  */
+
   return ReadArray(attr,array,size);
 }
 
@@ -542,8 +609,10 @@ Int_t THcParmList::GetArray(const char* attr, Double_t* array, Int_t size)
 template<class T>
 Int_t THcParmList::ReadArray(const char* attrC, T* array, Int_t size)
 {
-  // Copy values from parameter store to array
-  // No resizing is done, so only 'size' elements may be stored.
+  /**
+  \brief Copy values from parameter store to array.
+  No resizing is done, so only 'size' elements may be stored.
+  */
 
   Int_t cnt=0;
 
@@ -582,8 +651,8 @@ Int_t THcParmList::ReadArray(const char* attrC, T* array, Int_t size)
 //_____________________________________________________________________________
 void THcParmList::PrintFull( Option_t* option ) const
 {
-  // Print all the numeric parameter desciptions and values.
-  // Print all the text parameters
+  /** \brief Print all the numeric parameter desciptions and value and text parameters.
+  */
   THaVarList::PrintFull(option);
   TextList->Print();
 }
@@ -613,7 +682,7 @@ Int_t THcParmList::CloseCCDB()
   delete CCDB_obj;
   return(0);
 }
-Int_t THcParmList::LoadCCDBDirectory(const char* directory, 
+Int_t THcParmList::LoadCCDBDirectory(const char* directory,
 				     const char* prefix)
 {
   // Load all parameters in directory
@@ -695,10 +764,9 @@ Int_t THcParmList::LoadCCDBDirectory(const char* directory,
       } else {
 	cout << namepaths[iname] << ": Multicolumn CCDB variables not supported" << endl;
       }
-    }	
+    }
   }
   return 0;
 }
 
 #endif
-  

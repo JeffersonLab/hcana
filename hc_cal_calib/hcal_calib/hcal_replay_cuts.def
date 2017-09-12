@@ -1,0 +1,49 @@
+# Cuts for the HMS calorimeter calibration.
+#
+
+Block: RawDecode
+
+Pedestal_event    g.evtyp==4
+scalar_event         g.evtyp==0
+HMS_event         g.evtyp==1
+SOS_event         g.evtyp==2
+coin_event         g.evtyp==3
+misc_event         g.evtyp>=5
+hms_and_coin	HMS_event||coin_event
+RawDecode_master  1
+
+Block: Decode
+Decode_master     hms_and_coin
+
+Block: CoarseTracking
+CoarseTracking_master !Pedestal_event
+
+Block: CoarseReconstruct
+RawCoarseReconstruct !Pedestal_event
+
+Block: Reconstruct
+
+one_track H.tr.n==1
+one_clust H.cal.nclust==1
+one_sh_track H.cal.ntracks==1
+in_delta  H.tr.tg_dp>-10.&&H.tr.tg_dp<10.
+good_cer H.cer.npesum>3.
+
+#good_beta H.hod.fpBeta>0.740&&H.hod.fpBeta<0.935   # 3sigma cut for run 52949
+good_beta H.tr.beta>0.740&&H.tr.beta<0.935
+
+# 338.69 = 350.0-11.31, distance from FP to the face of calorimeter
+
+#in_calx   H.tr.x+H.tr.th*338.69>-65.4&&H.tr.x+H.tr.th*338.69<54.6    #top+5cm, bottom-5cm (see hcal.pos)
+#in_caly   H.tr.y+H.tr.ph*338.69>-30.&&H.tr.y+H.tr.ph*338.69<30.      #left+5cm, right-5cm.(see hcal.pos)
+#in_cal    in_calx&&in_caly
+
+Reconstruct_master one_track && in_delta && good_cer && one_clust && good_beta
+
+# This version is for calibration from scratch (no calibration constants exist,
+# first time calibration).
+##Reconstruct_master one_track && one_clust && in_delta && good_cer && good_beta
+
+# This version can be used for iterative calibration (improve existing
+# constants).
+#Reconstruct_master one_track && one_sh_track && in_delta && good_cer && good_beta

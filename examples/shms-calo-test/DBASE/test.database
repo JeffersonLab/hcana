@@ -1,0 +1,26 @@
+# ENGINE style parameter vs. run number database
+50017
+g_ctp_parm_filename="PARAM/general.param"
+g_decode_map_filename="MAPS/jun04.map"
+# Values taken from Logbook.  Not necessarily official.
+gpbeam    = 4.015
+hpcentral = 2.074
+htheta_lab = 10.99
+spcentral = 1.73
+stheta_lab = -32.32
+hpartmass = 0.13957
+spartmass = 0.00051099
+52949
+g_ctp_parm_filename="PARAM/52949/general.param"
+g_decode_map_filename="MAPS/july04.map"
+# From DBASE/online04.kinematics_online.
+gpbeam    = 1.2048
+hpcentral = 0.811
+htheta_lab = 55.
+hpartmass = 0.00051099
+spcentral = 0.5
+stheta_lab = 45.00
+spartmass = 0.00051099
+47000-48000
+g_ctp_parm_filename="PARAM/general.param"
+g_decode_map_filename="MAPS/jan03.map"

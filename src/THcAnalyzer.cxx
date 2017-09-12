@@ -1,26 +1,17 @@
-//*-- Author :    Stephen Wood  13-March-2012
+/** \class THcAnalyzer
+    \ingroup Base
 
-//////////////////////////////////////////////////////////////////////////
-//
-// THcAnalyzer
-//
-// THcAnalyzer is the base class for a "Hall C analyzer" class.
-// An analyzer defines the basic actions to perform during analysis.
-// THcAnalyzer is the default analyzer that is used if no user class is
-// defined.  It performs a standard analysis consisting of
-//
-//   1. Decoding/Calibrating
-//   2. Track Reconstruction
-//   3. Physics variable processing
-//
-// At the end of each step, testing and histogramming are done for
-// the appropriate block defined in the global test/histogram lists.
-//
-// Hall C has their own analyzer class because some things are bound to
-// be different.
-//
-//////////////////////////////////////////////////////////////////////////
+\brief Hall C analyzer class.
 
+Adds the following to the Hall A analyzer base class.
+
+1.  PrintReport method to make text reports from template files
+
+2.  Retrieve run number and startind and ending event from parameter DB
+
+\author S. A. Wood,  13-March-2012
+
+*/
 #include "THcAnalyzer.h"
 #include "THaRunBase.h"
 #include "THaBenchmark.h"
@@ -42,7 +33,7 @@ using namespace std;
 // Pointer to single instance of this object
 //THcAnalyzer* THcAnalyzer::fgAnalyzer = 0;
 
-//FIXME: 
+//FIXME:
 // do we need to "close" scalers/EPICS analysis if we reach the event limit?
 
 //_____________________________________________________________________________
@@ -54,17 +45,17 @@ THcAnalyzer::THcAnalyzer()
 //_____________________________________________________________________________
 THcAnalyzer::~THcAnalyzer()
 {
-  // Destructor. 
+  // Destructor.
 
 }
 
 //_____________________________________________________________________________
 void THcAnalyzer::PrintReport(const char* templatefile, const char* ofile)
 {
-  // Generate "reports" such as end of run scaler/efficiency sheets
-  // Reads a template file, copying that file to the output, replacing
-  // variables and expressions inside of braces ({}) with evaluated values.
-  // Similar but not identical to ENGINE/CTP report templates.
+  /// Generate "reports" such as end of run scaler/efficiency sheets
+  /// Reads a template file, copying that file to the output, replacing
+  /// variables and expressions inside of braces ({}) with evaluated values.
+  /// Similar but not identical to ENGINE/CTP report templates.
   ifstream ifile;
   ifile.open(templatefile);
 
@@ -110,7 +101,7 @@ void THcAnalyzer::PrintReport(const char* templatefile, const char* ofile)
 	if(format.empty()) format = "%s";
 	replacement=Form(format.c_str(),textstring);
       } else {
-	THcFormula* formula = new THcFormula("temp",expression.c_str(),gHcParms, gHaCuts);
+	THcFormula* formula = new THcFormula("temp",expression.c_str(),gHcParms,gHaVars,gHaCuts);
 	Double_t value=formula->Eval();
 	// If the value is close to integer and no format is defined
 	// use "%.0f" to print out integer
@@ -141,12 +132,12 @@ void THcAnalyzer::PrintReport(const char* templatefile, const char* ofile)
 //_____________________________________________________________________________
 void THcAnalyzer::LoadInfo()
 {
-  // Create several THcParms variables in gHcParms containing 
-  // run information such as
+  /// Create several THcParms variables in gHcParms containing
+  /// run information such as
   // run number, first event analyzed, number of events, etc.
-  //    gen_run_number - Current run
-  //    gen_run_starting_event - Id of first event analyzed
-  //    gen_event_id_number - Id of last event analyzed
+  ///    `gen_run_number` - Current run
+  ///    `gen_run_starting_event` - Id of first event analyzed
+  ///    `gen_event_id_number` - Id of last event analyzed
   Int_t* runnum;
   Int_t* firstevent;
   Int_t* lastevent;
@@ -160,7 +151,7 @@ void THcAnalyzer::LoadInfo()
     gHcParms->Define("gen_run_number","Run Number", *runnum);
   }
   *runnum = fRun->GetNumber();
-  
+
   varptr = gHcParms->Find("gen_run_starting_event");
   if(varptr) {
     firstevent = (Int_t*) varptr->GetValuePointer(); // Assume correct type
@@ -170,7 +161,7 @@ void THcAnalyzer::LoadInfo()
   }
   // May not agree with engine event definintions
   *firstevent = fRun->GetFirstEvent();
-  
+
   varptr = gHcParms->Find("gen_event_id_number");
   if(varptr) {
     lastevent = (Int_t*)varptr->GetValuePointer(); // Assume correct type
@@ -180,7 +171,7 @@ void THcAnalyzer::LoadInfo()
   }
   // Not accurate
   *lastevent = fRun->GetFirstEvent()+fRun->GetNumAnalyzed();
-}  
+}
 
 //_____________________________________________________________________________
 

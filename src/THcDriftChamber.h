@@ -15,7 +15,7 @@
 #include <map>
 #include <vector>
 
-#define MAX_SPACE_POINTS 50
+#define MAX_SPACE_POINTS 100
 #define MAX_HITS_PER_POINT 20
 
 //#include "TMath.h"
@@ -33,7 +33,7 @@ public:
 
   virtual Int_t Decode( const THaEvData& );
   virtual EStatus    Init( const TDatime& run_time );
-  
+
   virtual void       AddPlane(THcDriftChamberPlane *plane);
   virtual Int_t      ApplyCorrections( void );
   virtual void       ProcessHits( void );
@@ -81,7 +81,7 @@ protected:
   Int_t XPlaneNum;		// Absolute plane number of Xplane
   Int_t XPlanePNum;		// Absolute plane number of Xplanep
 
-  // Parameters 
+  // Parameters
   Int_t fMinHits; 		// Minimum hits required to do something
   Int_t fMaxHits; 		// Maximum required to do something
   Int_t fMinCombos;             // Minimum # pairs in a space point
@@ -133,7 +133,7 @@ protected:
   Int_t fNSpacePoints;
   Int_t fEasySpacePoint;	/* This event is an easy space point */
 
-  Double_t* stubcoef[4]; 
+  Double_t* stubcoef[4];
   std::map<int,TMatrixD*> fAA3Inv;
 
   ClassDef(THcDriftChamber,0)   // A single drift chamber

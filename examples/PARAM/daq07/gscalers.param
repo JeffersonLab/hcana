@@ -1,0 +1,98 @@
+; Add ability to write out the scaler rate at each scaler read
+;  for up to 10 scalers 
+; When g_writeout_scaler_filename is commented out then file
+;  is not written and other info not used.
+; To get scaler indices look in TEMPLATE/hreport.template
+;   and sreport.template .
+; In output file for each scaler read is the number of the scaler read and the
+;   time between scaler reads and then the rates for each scaler.
+ g_writeout_scaler_filename = outfiles/%d.scal
+ INDEX_WRITEOUT_SCALERS = 146,165,148,164,160,174
+ NUM_WRITEOUT_SCALERS = 6
+; Old charge calibrations from Run 16707; BCM1 in gain pos 1, BCM2 in
+; gain position 2
+
+;point to scaler indices for BCM's fro SOS scalers
+;  gbcm1_index = 321
+;  gbcm2_index = 322
+;  gbcm3_index = 323
+;  gunser_index = 324
+;point to scaler indices for BCM's for HMS scalers
+  gbcm1_index = 167
+  gbcm2_index = 168
+  gbcm3_index = 323
+  gunser_index = 166
+
+;gain factors for three cavity monitors
+; numbers from I. Albayrak - 5/11/07
+gbcm1_gain = 0.000334137            ; microA/Hz
+gbcm2_gain = 0.000373754                   ; microA/Hz
+gbcm3_gain = 0.00043343               ; microA/Hz
+gunser_gain = 0.00024980              ; microA/Hz
+; note, gbcm3_gain from: 
+; JRA - adjust calibration factors by hand
+; to get semi-sensible values (apr03)
+
+; numbers from  I. Albayrak - 5/11/07
+gbcm1_offset =  251226.              ; Hz
+gbcm2_offset =  250816.              ; Hz
+gbcm3_offset =  245437.              ; Hz
+gunser_offset = 250000.              ; TEST
+; gbcm3_offset and gunser_offset from: 
+; VALUES FROM BEAM OFF (starting point for jan99)
+
+;define the threshold current at which beam is "on". (in microamps)
+ g_beam_on_thresh_cur = 5.,5.
+ bcm_for_threshold_cut = 1
+
+
+;point to hardware clock (1MHz scaler, scaler channel 174 in HMS scalers)
+; for SOS scalers 325
+;  gclock_index = 174
+  gclock_index = 325
+  gclock_rate = 1.e+6
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; everything below this line is old js 6.22.4
+
+;gain factors for three cavity monitors
+; gbcm1_gain =  .0009435               ; microA/Hz
+; gbcm2_gain =  .0002849               ; microA/Hz
+; gbcm3_gain =  .0002537               ; microA/Hz
+; gunser_gain =  .00025000              ; microA/Hz
+;
+; From Feb99 BCM cal:
+; gbcm1_gain =  .00004811               ; microA/Hz
+; gbcm2_gain =  .00026421               ; microA/Hz
+; gbcm3_gain =  .00043343               ; microA/Hz
+; gunser_gain =  .00025000              ; microA/Hz
+
+; JRA - adjust calibration factors by hand to get semi-sensible values (apr03)
+; gbcm1_gain =  .00008685               ; microA/Hz
+; gbcm2_gain =  .00029148               ; microA/Hz
+;  gbcm3_gain =  .00043343               ; microA/Hz
+; gunser_gain =  .0002501              ; microA/Hz
+
+; BCM1 and BCM2 values updated to match what Gaskell put into the
+; ratemon code [based on hclog 70221, Dec 8, 2003]
+;gbcm1_gain =  0.001101
+;gbcm2_gain =  0.0012963
+
+;zero offsets for BCM s
+; VALUES FROM REAL FIT:
+; gbcm1_offset =  250632.              ; Hz
+; gbcm2_offset =  251195.              ; Hz
+; gbcm3_offset =  249543.              ; Hz
+;
+; VALUES FROM BEAM OFF (starting point for jan99)
+; gbcm1_offset =  244795.              ; Hz
+; gbcm2_offset =  253647.              ; Hz
+; gbcm3_offset =  245437.              ; Hz
+; gunser_offset = 250000.              ; TEST
+; gunser_offset = 545693.              ; Hz
+
+; BCM1 and BCM2 values updated to match what Gaskell put into the
+; ratemon code [based on hclog 70221, Dec 8, 2003]
+;gbcm1_offset =  250513
+;gbcm2_offset =  250463
+

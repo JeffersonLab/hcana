@@ -31,13 +31,14 @@ public:
   virtual EStatus    Init( const TDatime& run_time );
   virtual Int_t      CoarseTrack( TClonesArray& tracks );
   virtual Int_t      FineTrack( TClonesArray& tracks );
-  
+
   virtual Int_t      ApplyCorrections( void );
 
   //  Int_t GetNHits() const { return fNhit; }
-  
+
   //  Int_t GetNTracks() const { return fNDCTracks; }
   //  const TClonesArray* GetTrackHits() const { return fTrackProj; }
+  void SetFocalPlaneBestTrack(Int_t golden_track_index); // Called in THcHallCSpectrometer:
 
   Int_t GetNWires(Int_t plane) const { return fNWires[plane-1];}
   Int_t GetNChamber(Int_t plane) const { return fNChamber[plane-1];}
@@ -83,7 +84,7 @@ protected:
   Int_t fdebugprintdecodeddc;
   Int_t fHMSStyleChambers;
 
-  Int_t fNDCTracks;
+  UInt_t fNDCTracks;
   TClonesArray* fDCTracks;     // Tracks found from stubs (THcDCTrack obj)
   // Calibration
 
@@ -91,7 +92,7 @@ protected:
   char fPrefix[2];
   Int_t fNPlanes;              // Total number of DC planes
   char** fPlaneNames;
-  Int_t fNChambers;
+  UInt_t fNChambers;
   Int_t fFixLR;			// If 1, allow a given hit to have different LR
                                 // for different space points
   Int_t fFixPropagationCorrection; // If 1, don't reapply (and accumulate) the
@@ -103,11 +104,14 @@ protected:
                                 // Was used for SOS in ENGINE.
 
   // Per-event data
+  Int_t fStubTest;
   Int_t fNhits;
   Int_t fNthits;
   Int_t fN_True_RawHits;
   Int_t fNSp;                   // Number of space points
   Double_t* fResiduals;         //[fNPlanes] Array of residuals
+  Double_t* fWire_hit_did;      //[fNPlanes]
+  Double_t* fWire_hit_should;   //[fNPlanes]
 
   Double_t fNSperChan;		/* TDC bin size */
   Double_t fWireVelocity;
@@ -128,7 +132,7 @@ protected:
 
   // Each of these will be dimensioned with the number of planes
   // A THcDCPlane class object will need to access the value for
-  // its plane number.  Should we have a Get method for each or 
+  // its plane number.  Should we have a Get method for each or
   Int_t* fTdcWinMin;
   Int_t* fTdcWinMax;
   Double_t* fCentralTime;
@@ -146,16 +150,20 @@ protected:
   Double_t* fPlaneTimeZero;
   Double_t* fSigma;
   Double_t** fPlaneCoeffs;
-
-  // For accumulating statitics for efficiencies
+  //
+  Double_t fX_fp_best;
+  Double_t fY_fp_best;
+  Double_t fXp_fp_best;
+  Double_t fYp_fp_best;
+ // For accumulating statitics for efficiencies
   Int_t fTotEvents;
   Int_t* fNChamHits;
   Int_t* fPlaneEvents;
 
   // Useful derived quantities
   // double tan_angle, sin_angle, cos_angle;
-  
-  // Intermediate structure for building 
+
+  // Intermediate structure for building
   static const char MAXTRACKS = 10;
 
   std::vector<THcDriftChamberPlane*> fPlanes; // List of plane objects
@@ -177,7 +185,7 @@ protected:
   void Setup(const char* name, const char* description);
   void PrintSpacePoints();
   void PrintStubs();
-
+  void EfficiencyPerWire(Int_t golden_track_index);
   ClassDef(THcDC,0)   // Set of Drift Chambers detector
 };
 

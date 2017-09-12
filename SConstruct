@@ -7,6 +7,7 @@ import sys
 import platform
 import commands
 import SCons
+import subprocess
 
 def rootcint(target,source,env):
 	"""Executes the ROOT dictionary generator over a list of headers."""
@@ -32,21 +33,21 @@ baseenv = Environment(ENV = os.environ)
 
 ####### Check SCons version ##################
 print('!!! Building the Hall C analyzer and libraries with SCons requires')
-print('!!! SCons version 2.1.0 or newer.')
-EnsureSConsVersion(2,1,0)
+print('!!! SCons version 2.5.0 or newer.')
+EnsureSConsVersion(2,5,0)
 
 ####### Hall A Build Environment #############
 #
-baseenv.Append(MAIN_DIR= Dir('.').abspath)
-baseenv.Append(HC_DIR= baseenv.subst('$MAIN_DIR'))
-baseenv.Append(HC_SRC= baseenv.subst('$HC_DIR')+'/src ') 
+baseenv.Append(HEAD_DIR= Dir('.').abspath)
+baseenv.Append(HC_DIR= baseenv.subst('$HEAD_DIR'))
+baseenv.Append(HC_SRC= baseenv.subst('$HC_DIR')+'/src ')
 baseenv.Append(HA_DIR= baseenv.subst('$HC_DIR')+'/podd ')
-baseenv.Append(HA_SRC= baseenv.subst('$HA_DIR')+'/src ') 
-baseenv.Append(HA_DC= baseenv.subst('$HA_DIR')+'/hana_decode ') 
-baseenv.Append(HA_SCALER= baseenv.subst('$HA_DIR')+'/hana_scaler ') 
+baseenv.Append(MAIN_DIR= baseenv.subst('$HEAD_DIR'))
+baseenv.Append(HA_SRC= baseenv.subst('$HA_DIR')+'/src ')
+baseenv.Append(HA_DC= baseenv.subst('$HA_DIR')+'/hana_decode ')
 baseenv.Append(MAJORVERSION = '1')
-baseenv.Append(MINORVERSION = '5')
-baseenv.Append(PATCH = '25')
+baseenv.Append(MINORVERSION = '6')
+baseenv.Append(PATCH = '0')
 baseenv.Append(SOVERSION = baseenv.subst('$MAJORVERSION')+'.'+baseenv.subst('$MINORVERSION'))
 baseenv.Append(VERSION = baseenv.subst('$SOVERSION')+'.'+baseenv.subst('$PATCH'))
 baseenv.Append(EXTVERS = '')
@@ -57,7 +58,69 @@ print "Hall A Main Directory = %s" % baseenv.subst('$HA_DIR')
 print "Software Version = %s" % baseenv.subst('$VERSION')
 ivercode = 65536*int(float(baseenv.subst('$SOVERSION')))+ 256*int(10*(float(baseenv.subst('$SOVERSION'))-int(float(baseenv.subst('$SOVERSION')))))+ int(float(baseenv.subst('$PATCH')))
 baseenv.Append(VERCODE = ivercode)
-baseenv.Append(CPPPATH = ['$HC_SRC','$HA_SRC','$HA_DC','$HA_SCALER'])
+#
+# evio environment
+#
+evio_libdir = os.getenv('EVIO_LIBDIR')
+evio_incdir = os.getenv('EVIO_INCDIR')
+if evio_libdir is None or evio_incdir is None:
+	print "No external EVIO environment configured !!!"
+	print "EVIO_LIBDIR = %s" % evio_libdir
+	print "EVIO_INCDIR = %s" % evio_incdir
+	print "Using local installation ... "
+	evio_local = baseenv.subst('$HA_DIR')+'/evio'
+	evio_version = '4.4.6'
+	uname = os.uname();
+	platform = uname[0];
+	machine = uname[4];
+	evio_name = platform + '-' + machine
+	print "evio_name = %s" % evio_name
+	evio_local_lib = "%s/evio-%s/%s/lib" % (evio_local,evio_version,evio_name)
+	evio_local_inc = "%s/evio-%s/%s/include" % (evio_local,evio_version,evio_name)
+	evio_tarfile = "%s/evio-%s.tgz" % (evio_local,evio_version)
+
+	####### Check to see if scons -c has been called #########
+
+	if baseenv.GetOption('clean'):
+    		subprocess.call(['echo', '!!!!!!!!!!!!!! EVIO Cleaning Process !!!!!!!!!!!! '])
+		if not os.path.isdir(evio_local_lib):
+			if not os.path.exists(evio_tarfile):
+				evio_command_scons = "rm libevio*.*; cd %s; wget --no-check-certificate https://coda.jlab.org/drupal/system/files/evio-%s.tgz; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version,evio_version,evio_version)
+			else:
+				evio_command_scons = "rm libevio*.*; cd %s; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version,evio_version)
+		else:
+			evio_command_scons = "rm libevio*.*; cd %s; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version)
+		print "evio_command_scons = %s" % evio_command_scons
+		os.system(evio_command_scons)
+	else:
+		if not os.path.isdir(evio_local_lib):
+			if not os.path.exists(evio_tarfile):
+				evio_command_scons = "cd %s; wget --no-check-certificate https://coda.jlab.org/drupal/system/files/evio-%s.tgz; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install --prefix=." % (evio_local,evio_version,evio_version,evio_version)
+			else:
+				evio_command_scons = "cd %s; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install --prefix=." % (evio_local,evio_version,evio_version)
+		else:
+			evio_command_scons = "cd %s; cd evio-%s/ ; scons install --prefix=." % (evio_local,evio_version)
+		print "evio_command_scons = %s" % evio_command_scons
+		os.system(evio_command_scons)
+		evio_local_lib_files = "%s/*.*" % (evio_local_lib)
+		evio_command_libcopy = "cp %s %s" % (evio_local_lib_files,baseenv.subst('$HA_DIR'))
+		print "evio_command_libcopy = %s" % evio_command_libcopy
+		os.system(evio_command_libcopy)
+
+	baseenv.Append(EVIO_LIB = evio_local_lib)
+	baseenv.Append(EVIO_INC = evio_local_inc)
+else:
+	# evio_command_scons = "cd %s; scons install --prefix=." % evio_instdir
+	# os.system(evio_command_scons)
+	baseenv.Append(EVIO_LIB = os.getenv('EVIO_LIBDIR'))
+	baseenv.Append(EVIO_INC = os.getenv('EVIO_INCDIR'))
+print "EVIO lib Directory = %s" % baseenv.subst('$EVIO_LIB')
+print "EVIO include Directory = %s" % baseenv.subst('$EVIO_INC')
+baseenv.Append(CPPPATH = ['$EVIO_INC'])
+#
+# end evio environment
+#
+baseenv.Append(CPPPATH = ['$HC_SRC','$HA_SRC','$HA_DC'])
 
 proceed = "1" or "y" or "yes" or "Yes" or "Y"
 ######## Configure Section #######
@@ -115,7 +178,7 @@ def which(program):
 	import os
 	def is_exe(fpath):
 		return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-	
+
 	fpath, fname = os.path.split(program)
 	if fpath:
 		if is_exe(program):
@@ -144,20 +207,44 @@ if baseenv.subst('$CPPCHECK')==proceed:
 hallclib = 'HallC'
 hallalib = 'HallA'
 dclib = 'dc'
-scalerlib = 'scaler'
+eviolib = 'evio'
 
-baseenv.Append(LIBPATH=['$HC_DIR','$HA_DIR','$HC_SRC','$HA_SRC','$HA_DC','$HA_SCALER'])
+baseenv.Append(LIBPATH=['$HC_DIR','$EVIO_LIB','$HA_DIR','$HC_SRC','$HA_SRC','$HA_DC'])
 baseenv.Replace(SHLIBSUFFIX = '.so')
 baseenv.Append(CPPDEFINES = '-DHALLC_MODS')
 
-directorylist = ['./','src','podd','podd/src','podd/hana_decode','podd/hana_scaler']
-
 baseenv.Append(SHLIBSUFFIX ='.'+baseenv.subst('$VERSION'))
 pbaseenv=baseenv.Clone()
-pbaseenv.Append(LIBS=[hallclib,hallalib,dclib,scalerlib])
-baseenv.Append(LIBS=[hallalib,dclib,scalerlib])
+pbaseenv.Prepend(LIBS=[hallclib,hallalib,dclib,eviolib])
+baseenv.Prepend(LIBS=[hallalib,dclib,eviolib])
 Export('pbaseenv')
 
+if pbaseenv['CXX'] == 'g++':
+	gxxVersion = [int(i) for i in pbaseenv['CXXVERSION'].split('.')]
+	if (gxxVersion[0] < 4) or (gxxVersion[0] == 4 and gxxVersion[1] < 4):
+		print('Error: g++ version too old! Need at least g++ 4.4!')
+		Exit(1)
+	elif gxxVersion[0] == 4 and 4 <= gxxVersion[1] < 7:
+		if '-std=c++0x' not in pbaseenv['CXXFLAGS']:
+			pbaseenv.Append(CXXFLAGS='-std=c++0x')
+	else:
+		if '-std=c++11' not in pbaseenv['CXXFLAGS']:
+			pbaseenv.Append(CXXFLAGS='-std=c++11')
+
+##directorylist = ['./','src','podd','podd/src','podd/hana_decode']
+##SConscript('podd/SConstruct')
+
+if baseenv.GetOption('clean'):
+    subprocess.call(['echo', '!!!!!! Cleaning Podd Directory !!!!!! '])
+    podd_command_scons = "cd %s; scons -c" % baseenv.subst('$HA_DIR')
+else:
+    subprocess.call(['echo', '!!!!!! Building Podd !!!!!! '])
+    podd_command_scons = "cd %s; scons" % baseenv.subst('$HA_DIR')
+
+print "podd_command_scons = %s" % podd_command_scons
+os.system(podd_command_scons)
+
+directorylist = ['./','src']
 SConscript(dirs = directorylist,name='SConscript.py',exports='baseenv')
 
 #######  End of SConstruct #########

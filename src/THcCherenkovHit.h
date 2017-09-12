@@ -1,13 +1,13 @@
 #ifndef ROOT_THcCherenkovHit
 #define ROOT_THcCherenkovHit
 
-#include "THcHodoscopeHit.h"
+#include "THcRawHodoHit.h"
 
-class THcCherenkovHit : public THcHodoscopeHit {
+class THcCherenkovHit : public THcRawHodoHit {
 
  public:
   friend class THcCherenkov;
- 
+
  protected:
 
  private:

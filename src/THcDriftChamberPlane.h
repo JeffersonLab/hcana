@@ -2,14 +2,14 @@
 #define ROOT_THcDriftChamberPlane
 
 //////////////////////////////////////////////////////////////////////////////
-//                         
+//
 // THcDriftChamberPlane
 //
 // A Hall C scintillator plane
 //
 // May want to later inherit from a THcPlane class if there are similarities
 // in what a plane is shared with other detector types (shower, etc.)
-// 
+//
 //////////////////////////////////////////////////////////////////////////////
 
 #include "THaSubDetector.h"
@@ -25,7 +25,7 @@ class THcHodoscope;
 /*class THaSignalHit;*/
 
 class THcDriftChamberPlane : public THaSubDetector {
-  
+
 public:
   THcDriftChamberPlane( const char* name, const char* description,
 			Int_t planenum, THaDetectorBase* parent = NULL);
@@ -67,8 +67,8 @@ public:
   Double_t     GetPsi0() { return fPsi0; }
   Double_t*    GetStubCoef() { return fStubCoef; }
   Double_t*    GetPlaneCoef() { return fPlaneCoef; }
-
   THcDriftChamberPlane(); // for ROOT I/O
+  Double_t     CalcWireFromPos(Double_t pos);
 protected:
 
   TClonesArray* fParentHitList;
@@ -76,12 +76,13 @@ protected:
   TClonesArray* fHits;
   TClonesArray* fWires;
 
+  Int_t fWireOrder;
   Int_t fPlaneNum;
   Int_t fPlaneIndex;		/* Index of this plane within it's chamber */
   Int_t fChamberNum;
+  Int_t fUsingTzeroPerWire;
   Int_t fNRawhits;
   Int_t fNWires;
-  Int_t fWireOrder;
   Int_t fTdcWinMin;
   Int_t fTdcWinMax;
   Double_t fPitch;
@@ -103,6 +104,8 @@ protected:
   Double_t fCenter;
 
   Double_t fNSperChan;		/* TDC bin size */
+
+  Double_t* fTzeroWire;
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
