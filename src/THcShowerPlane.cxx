@@ -322,10 +322,12 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
   // Register counters for efficiency calculations in gHcParms so that the
   // variables can be used in end of run reports.
 
-  gHcParms->Define(Form("%sstat_trksum%d", GetParent()->GetPrefix(), fLayerNum),
-		   "Number of tracks in layer", fTotStatNumTrk);
-  gHcParms->Define(Form("%sstat_hitsum%d", GetParent()->GetPrefix(), fLayerNum),
-		   "Number of hits in layer", fTotStatNumHit);
+  gHcParms->Define(
+	  Form("%sstat_trksum_cal_plane%d", GetParent()->GetPrefix(),fLayerNum),
+	  Form("Number of tracks in calo. layer %d",fLayerNum), fTotStatNumTrk);
+  gHcParms->Define(
+	 Form("%sstat_hitsum_cal_plane%d", GetParent()->GetPrefix(), fLayerNum),
+	 Form("Number of hits in calo. layer %d", fLayerNum), fTotStatNumHit);
 
   cout << "THcShowerPlane::DefineVariables: registered counters "
        << Form("%sstat_trksum%d", GetParent()->GetPrefix(), fLayerNum) << " and "
