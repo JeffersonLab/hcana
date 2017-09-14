@@ -39,6 +39,7 @@ public:
    virtual Int_t End( THaRunBase* r=0 );
    virtual void SetUseFirstEvent(Bool_t b = kFALSE) {fUseFirstEvent = b;}
    virtual void SetDelayedType(int evtype);
+   virtual void SetOnlyBanks(Bool_t b = kFALSE) {fOnlyBanks = b;fRocSet.clear();}
 
 private:
 
@@ -55,7 +56,10 @@ private:
    TTree *fScalerTree;
    Bool_t fUseFirstEvent;
    Int_t fDelayedType;
+   Bool_t fOnlyBanks;
    std::vector<UInt_t*> fDelayedEvents;
+   std::set<UInt_t> fRocSet;
+   std::set<UInt_t> fModuleSet;
 
    THcScalerEvtHandler(const THcScalerEvtHandler& fh);
    THcScalerEvtHandler& operator=(const THcScalerEvtHandler& fh);
