@@ -132,7 +132,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   fDataSampLow=23;
   fDataSampHigh=49;
   fStatCerMin=1.;
-  fStatSlop=2.;
+  fStatSlop=3.;
   fStatMaxChi2=10.;
   DBRequest list[]={
     {"cal_arr_nrows", &fNRows, kInt},
@@ -153,9 +153,9 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     {"cal_data_sample_low", &fDataSampLow, kInt, 0, 1},
     {"cal_data_sample_high", &fDataSampHigh, kInt, 0, 1},
     {"cal_debug_adc", &fDebugAdc, kInt, 0, 1},
-    {"stat_cal_cermin", &fStatCerMin, kDouble, 0, 1},
-    {"stat_cal_arr_slop", &fStatSlop, kDouble, 0, 1},
-    {"stat_cal_maxchisq", &fStatMaxChi2, kDouble, 0, 1},
+    {"stat_cermin", &fStatCerMin, kDouble, 0, 1},
+    {"stat_slop_array", &fStatSlop, kDouble, 0, 1},
+    {"stat_maxchisq", &fStatMaxChi2, kDouble, 0, 1},
     {0}
   };
 
@@ -388,9 +388,9 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
   // Register counters for efficiency calculations in gHcParms so that the
   // variables can be used in end of run reports.
 
-  gHcParms->Define(Form("%sstat_trksum_cal_array", GetParent()->GetPrefix()),
+  gHcParms->Define(Form("%sstat_trksum_array", GetParent()->GetPrefix()),
 		   "Number of tracks in calo. array", fTotStatNumTrk);
-  gHcParms->Define(Form("%sstat_hitsum_cal_array", GetParent()->GetPrefix()),
+  gHcParms->Define(Form("%sstat_hitsum_array", GetParent()->GetPrefix()),
 		   "Number of hits in calo. array", fTotStatNumHit);
 
   // Register variables in global list
@@ -1236,8 +1236,11 @@ Int_t THcShowerArray::AccumulateStat(TClonesArray& tracks )
 						     
   for (Int_t i=0; i<fNelem; i++) {
 
-    if (TMath::Abs(XTrk - fXPos[i/fNRows][i%fNRows]) < fStatSlop &&
-	TMath::Abs(YTrk - fYPos[i/fNRows][i%fNRows]) < fStatSlop) {
+    Int_t row = i%fNRows;
+    Int_t col =i/fNRows;
+
+    if (TMath::Abs(XTrk - fXPos[row][col]) < fStatSlop &&
+	TMath::Abs(YTrk - fYPos[row][col]) < fStatSlop) {
 
       fStatNumTrk.at(i)++;
       fTotStatNumTrk++;
@@ -1259,8 +1262,11 @@ Int_t THcShowerArray::AccumulateStat(TClonesArray& tracks )
     cout << "   XTrk, YTrk = " << XTrk << "  " << YTrk << endl;						     
     for (Int_t i=0; i<fNelem; i++) {
       
-      if (TMath::Abs(XTrk - fXPos[i/fNRows][i%fNRows]) < fStatSlop &&
-	  TMath::Abs(YTrk - fYPos[i/fNRows][i%fNRows]) < fStatSlop) {
+      Int_t row = i%fNRows;
+      Int_t col =i/fNRows;
+
+      if (TMath::Abs(XTrk - fXPos[row][col]) < fStatSlop &&
+	  TMath::Abs(YTrk - fYPos[row][col]) < fStatSlop) {
 
 	cout << "   Module " << i << ", X=" << fXPos[i/fNRows][i%fNRows]
 	     << ", Y=" << fYPos[i/fNRows][i%fNRows] << " matches track" << endl;

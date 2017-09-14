@@ -171,9 +171,9 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
     {"cal_data_sample_low", &fDataSampLow, kInt, 0, 1},
     {"cal_data_sample_high", &fDataSampHigh, kInt, 0, 1},
     {"cal_debug_adc", &fDebugAdc, kInt, 0, 1},
-    {"stat_cal_cermin", &fStatCerMin, kDouble, 0, 1},
-    {"stat_cal_slop", &fStatSlop, kDouble, 0, 1},
-    {"stat_cal_maxchisq", &fStatMaxChi2, kDouble, 0, 1},
+    {"stat_cermin", &fStatCerMin, kDouble, 0, 1},
+    {"stat_slop", &fStatSlop, kDouble, 0, 1},
+    {"stat_maxchisq", &fStatMaxChi2, kDouble, 0, 1},
     {0}
   };
 
@@ -322,16 +322,14 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
   // Register counters for efficiency calculations in gHcParms so that the
   // variables can be used in end of run reports.
 
-  gHcParms->Define(
-	  Form("%sstat_trksum_cal_plane%d", GetParent()->GetPrefix(),fLayerNum),
+  gHcParms->Define(Form("%sstat_trksum%d", GetParent()->GetPrefix(), fLayerNum),
 	  Form("Number of tracks in calo. layer %d",fLayerNum), fTotStatNumTrk);
-  gHcParms->Define(
-	 Form("%sstat_hitsum_cal_plane%d", GetParent()->GetPrefix(), fLayerNum),
+  gHcParms->Define(Form("%sstat_hitsum%d", GetParent()->GetPrefix(), fLayerNum),
 	 Form("Number of hits in calo. layer %d", fLayerNum), fTotStatNumHit);
 
   cout << "THcShowerPlane::DefineVariables: registered counters "
-       << Form("%sstat_trksum%d", GetParent()->GetPrefix(), fLayerNum) << " and "
-       << Form("%sstat_hitsum%d", GetParent()->GetPrefix(), fLayerNum) << endl;
+       << Form("%sstat_trksum%d",GetParent()->GetPrefix(),fLayerNum) << " and "
+       << Form("%sstat_hitsum%d",GetParent()->GetPrefix(),fLayerNum) << endl;
   //  getchar();
     
   RVarDef vars[] = {
