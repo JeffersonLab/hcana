@@ -353,7 +353,8 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
   vector<string> dbline;
 
   while( fgets(cbuf, LEN, fi) != NULL) {
-    std::string sinput(cbuf);
+    std::string sin(cbuf);
+    std::string sinput(sin.substr(0,sin.find_first_of("#")));
     if (fDebugFile) *fDebugFile << "string input "<<sinput<<endl;
     dbline = vsplit(sinput);
     if (dbline.size() > 0) {
