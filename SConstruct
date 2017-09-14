@@ -224,12 +224,6 @@ if pbaseenv['CXX'] == 'g++':
 	if (gxxVersion[0] < 4) or (gxxVersion[0] == 4 and gxxVersion[1] < 4):
 		print('Error: g++ version too old! Need at least g++ 4.4!')
 		Exit(1)
-	elif gxxVersion[0] == 4 and 4 <= gxxVersion[1] < 7:
-		if '-std=c++0x' not in pbaseenv['CXXFLAGS']:
-			pbaseenv.Append(CXXFLAGS='-std=c++0x')
-	else:
-		if '-std=c++11' not in pbaseenv['CXXFLAGS']:
-			pbaseenv.Append(CXXFLAGS='-std=c++11')
 
 ##directorylist = ['./','src','podd','podd/src','podd/hana_decode']
 ##SConscript('podd/SConstruct')
