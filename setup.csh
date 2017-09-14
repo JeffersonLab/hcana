@@ -1,14 +1,21 @@
-#!/bin/csh
+#!/bin/tcsh
 
-set called=($_)
-if ("$called" != "") then
-  set scriptdir=$called[2]
-  set MYDIR=`dirname $scriptdir`
-  set MYDIR=`c\d $MYDIR && pwd`    # ensure absolute path
+if ( $?loginsh ) then
+  set MYDIR=`pwd`
+  echo "--> Setting HCANALYZER to $MYDIR"
 else
-  set scriptdir=$1
-  set MYDIR=$scriptdir
+  if ( "$1" == "" ) then
+    echo "ERROR:  'setup.csh' must have a path to the hcana location as its argument"
+    echo "   Often this is also the location of the setup.csh script itself:"
+    echo "     source /my/path/to/setup.csh /my/path/to/setup.csh"
+    echo "   Or, if you have already cd'd into the hcana directory, then you can call:"
+    echo '     source setup.csh `pwd`'
+    exit 1
+  else
+    set MYDIR=$1
+  endif
 endif
+
 setenv ANALYZER $MYDIR/podd
 setenv HCANALYZER $MYDIR
 # Check if LD_LIBRARY_PATH is defined
