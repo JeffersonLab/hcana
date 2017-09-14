@@ -1,11 +1,13 @@
-#!/bin/tcsh
+#!/bin/csh
 
-if ( $?loginsh ) then
+if ( -r "./setup.csh" ) then
   set MYDIR=`pwd`
-  echo "--> Setting HCANALYZER to $MYDIR"
+  if ($?prompt) then
+    echo "--> Setting HCANALYZER to '$MYDIR'"
+  endif
 else
   if ( "$1" == "" ) then
-    echo "ERROR:  'setup.csh' must have a path to the hcana location as its argument"
+    echo "ERROR:  'setup.csh' should have a path to the hcana location as its argument."
     echo "   Often this is also the location of the setup.csh script itself:"
     echo "     source /my/path/to/setup.csh /my/path/to/setup.csh"
     echo "   Or, if you have already cd'd into the hcana directory, then you can call:"
