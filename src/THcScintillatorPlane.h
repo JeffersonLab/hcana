@@ -227,10 +227,6 @@ class THcScintillatorPlane : public THaSubDetector {
   //
   Int_t fNScinGoodHits; // number of hits for which both ends of the paddle fired in time!
   Double_t fpTime; // the original code only has one fpTime per plane!
-  Double_t *fpTimes; // ... but also allows for more than one hit per plane
-  Double_t *fScinTime; // array of scintillator times (only filled for goodhits)
-  Double_t *fScinSigma; // errors for the above
-  Double_t *fScinZpos; // zpositions for the above
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
