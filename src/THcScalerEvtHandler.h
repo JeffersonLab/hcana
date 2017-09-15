@@ -14,6 +14,7 @@
 #include "Decoder.h"
 #include <string>
 #include <vector>
+#include <set>
 #include "TTree.h"
 #include "TString.h"
 

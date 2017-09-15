@@ -86,7 +86,9 @@ Int_t THcScalerEvtHandler::End( THaRunBase* r)
   // Process any delayed events in order received
 
   cout << "THcScalerEvtHandler::End Analyzing " << fDelayedEvents.size() << " delayed scaler events" << endl;
-  for(UInt_t* rdata : fDelayedEvents) {
+  for(std::vector<UInt_t*>::iterator it = fDelayedEvents.begin();
+      it != fDelayedEvents.end(); ++it) {
+    UInt_t* rdata = *it;
     AnalyzeBuffer(rdata);
   }
   fDelayedEvents.clear();	// Does this free the arrays?
