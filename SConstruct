@@ -234,8 +234,15 @@ if baseenv.GetOption('clean'):
 else:
     subprocess.call(['echo', '!!!!!! Building Podd !!!!!! '])
     podd_command_scons = "cd %s; scons" % baseenv.subst('$HA_DIR')
+    if baseenv.GetOption('num_jobs'):
+	podd_command_scons += " -j%s" % (GetOption('num_jobs')) 
+    if baseenv.GetOption('silent'):
+	podd_command_scons += " -s"
+    for key,value in ARGLIST:
+	podd_command_scons += " %s=%s" % (key,value)
 
 print "podd_command_scons = %s" % podd_command_scons
+
 os.system(podd_command_scons)
 
 directorylist = ['./','src']
