@@ -20,7 +20,11 @@ for hcheaderfile in hcheadersbase:
     filename = '%s' % hcheaderfile
     basefilename = filename.rsplit('.',1)
     newbasefilename = basefilename[0].rsplit('/',1)
-    cmd1 = "echo '#pragma link C++ class %s+;' >> src/HallC_LinkDef.h" % newbasefilename[1]
+    # Assume filenames beginning with Scaler are decoder classes
+    if newbasefilename[1][:6] == 'Scaler':
+        cmd1 = "echo '#pragma link C++ class Decoder::%s+;' >> src/HallC_LinkDef.h" % newbasefilename[1]
+    else:
+        cmd1 = "echo '#pragma link C++ class %s+;' >> src/HallC_LinkDef.h" % newbasefilename[1]
     os.system(cmd1)
 
 cmd = "cat src/HallC_LinkDef.h_postamble >> src/HallC_LinkDef.h"

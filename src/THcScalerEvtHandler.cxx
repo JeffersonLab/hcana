@@ -40,6 +40,8 @@ To enable debugging you may try this in the setup script
 #include "Scaler3801.h"
 #include "Scaler1151.h"
 #include "Scaler560.h"
+#include "Scaler9001.h"
+#include "Scaler9250.h"
 #include "THaCodaData.h"
 #include "THaEvData.h"
 #include "TNamed.h"
@@ -65,8 +67,11 @@ static const UInt_t defaultDT = 4;
 
 THcScalerEvtHandler::THcScalerEvtHandler(const char *name, const char* description)
   : THaEvtTypeHandler(name,description), evcount(0), ifound(0), fNormIdx(-1),
-    dvars(0), dvarsFirst(0), fScalerTree(0), fUseFirstEvent(kFALSE)
+    dvars(0), dvarsFirst(0), fScalerTree(0), fUseFirstEvent(kFALSE),
+    fDelayedType(-1), fOnlyBanks(kFALSE)
 {
+  fRocSet.clear();
+  fModuleSet.clear();
 }
 
 THcScalerEvtHandler::~THcScalerEvtHandler()
@@ -78,10 +83,32 @@ THcScalerEvtHandler::~THcScalerEvtHandler()
 
 Int_t THcScalerEvtHandler::End( THaRunBase* r)
 {
+  // Process any delayed events in order received
+
+  cout << "THcScalerEvtHandler::End Analyzing " << fDelayedEvents.size() << " delayed scaler events" << endl;
+  for(std::vector<UInt_t*>::iterator it = fDelayedEvents.begin();
+      it != fDelayedEvents.end(); ++it) {
+    UInt_t* rdata = *it;
+    AnalyzeBuffer(rdata);
+  }
+  fDelayedEvents.clear();	// Does this free the arrays?
+
   if (fScalerTree) fScalerTree->Write();
   return 0;
 }
 
+void THcScalerEvtHandler::SetDelayedType(int evtype) {
+  /**
+   * \brief Delay analysis of this event type to end.
+   *
+   * Final scaler events generated in readout list end routines may not
+   * come in order in the data stream.  If the event type of a end routine
+   * scaler event is set, then the event contents will be saved and analyzed
+   * at the end of the analysis so that time ordering of scaler events is preserved.
+   */
+  fDelayedType = evtype;
+}
+  
 Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 {
   Int_t lfirst=1;
@@ -124,13 +151,26 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 
   }  // if (lfirst && !fScalerTree)
 
-
-  // Parse the data, load local data arrays.
-
   UInt_t *rdata = (UInt_t*) evdata->GetRawDataBuffer();
 
-  if (fDebugFile) *fDebugFile<<"\n\nTHcScalerEvtHandler :: Debugging event type "<<dec<<evdata->GetEvType()<<endl<<endl;
+  if( evdata->GetEvType() == fDelayedType) { // Save this event for processing later
+    Int_t evlen = evdata->GetEvLength();
+    UInt_t *datacopy = new UInt_t[evlen];
+    fDelayedEvents.push_back(datacopy);
+    for(Int_t i=0;i<evlen;i++) {
+      datacopy[i] = rdata[i];
+    }
+    return 1;
+  } else { 			// A normal event
+    if (fDebugFile) *fDebugFile<<"\n\nTHcScalerEvtHandler :: Debugging event type "<<dec<<evdata->GetEvType()<<endl<<endl;
+    return AnalyzeBuffer(rdata);
+  }
 
+}
+Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
+{
+
+  // Parse the data, load local data arrays.
   UInt_t *p = (UInt_t*) rdata;
 
   UInt_t *plast = p+*p;		// Index to last word in the bank
@@ -144,12 +184,24 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     if((*p & 0xff00) == 0x1000) {	// Bank Containing banks
       p++;				// Now pointing to a bank in the bank
     } else if (((*p & 0xff00) == 0x100) && (*p != 0xC0000100)) {
-      // Bank containing integers.  Look for scaler data
+      // Bank containing integers.  Look for scalers
+      // This is either ROC bank containing integers or
+      // a bank within a ROC containing data from modules of a single type
+      // Look for scaler data
       // Assume that very first word is a scaler header
       // At any point in the bank where the word is not a matching
       // header, we stop.
+      UInt_t tag = (*p>>16) & 0xffff;
       UInt_t *pnext = p+*(p-1);	// Next bank
       p++;			// First data word
+
+      // Skip over banks that can't contain scalers
+      // If SetOnlyBanks(kTRUE) called, fRocSet will be empty
+      // so only bank tags matching module types will be considered.
+      if(fRocSet.find(tag)==fRocSet.end()
+	 && fModuleSet.find(tag)==fModuleSet.end()) {
+	p = pnext;		// Fall through to end of this else if
+      }
 
       // Look for normalization scaler module first.
       if(fNormIdx >= 0) {
@@ -271,6 +323,8 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
   fStatus = kOK;
   fNormIdx = -1;
 
+  fDelayedEvents.clear();
+
   cout << "Howdy !  We are initializing THcScalerEvtHandler !!   name =   "
         << fName << endl;
 
@@ -301,7 +355,8 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
   vector<string> dbline;
 
   while( fgets(cbuf, LEN, fi) != NULL) {
-    std::string sinput(cbuf);
+    std::string sin(cbuf);
+    std::string sinput(sin.substr(0,sin.find_first_of("#")));
     if (fDebugFile) *fDebugFile << "string input "<<sinput<<endl;
     dbline = vsplit(sinput);
     if (dbline.size() > 0) {
@@ -341,15 +396,33 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
 	switch (imodel) {
 	case 560:
 	  scalers.push_back(new Scaler560(icrate, islot));
+	  if(!fOnlyBanks) fRocSet.insert(icrate);
+	  fModuleSet.insert(imodel);
 	  break;
 	case 1151:
 	  scalers.push_back(new Scaler1151(icrate, islot));
+	  if(!fOnlyBanks) fRocSet.insert(icrate);
+	  fModuleSet.insert(imodel);
 	  break;
 	case 3800:
 	  scalers.push_back(new Scaler3800(icrate, islot));
+	  if(!fOnlyBanks) fRocSet.insert(icrate);
+	  fModuleSet.insert(imodel);
 	  break;
 	case 3801:
 	  scalers.push_back(new Scaler3801(icrate, islot));
+	  if(!fOnlyBanks) fRocSet.insert(icrate);
+	  fModuleSet.insert(imodel);
+	  break;
+	case 9001:		// TI Scalers
+	  scalers.push_back(new Scaler9001(icrate, islot));
+	  if(!fOnlyBanks) fRocSet.insert(icrate);
+	  fModuleSet.insert(imodel);
+	  break;
+	case 9250:		// FADC250 Scalers
+	  scalers.push_back(new Scaler9250(icrate, islot));
+	  if(!fOnlyBanks) fRocSet.insert(icrate);
+	  fModuleSet.insert(imodel);
 	  break;
 	}
 	if (scalers.size() > 0) {
