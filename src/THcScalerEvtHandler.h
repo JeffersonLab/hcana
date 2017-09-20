@@ -50,7 +50,8 @@ private:
 
    std::vector<Decoder::GenScaler*> scalers;
    std::vector<HCScalerLoc*> scalerloc;
-   Double_t evcount;
+   UInt_t evcount;
+   Double_t evcountR;
    Int_t Nvars, ifound, fNormIdx, nscalers;
    Double_t *dvars;
    Double_t *dvarsFirst;
