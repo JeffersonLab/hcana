@@ -77,7 +77,7 @@ if evio_libdir is None or evio_incdir is None:
 	print "evio_name = %s" % evio_name
 	evio_local_lib = "%s/evio-%s/%s/lib" % (evio_local,evio_version,evio_name)
 	evio_local_inc = "%s/evio-%s/%s/include" % (evio_local,evio_version,evio_name)
-	evio_tarfile = "%s/evio-%s.tgz" % (evio_local,evio_version)
+	evio_tarfile = "%s/evio-%s.tar.gz" % (evio_local,evio_version)
 
 	####### Check to see if scons -c has been called #########
 
@@ -85,9 +85,9 @@ if evio_libdir is None or evio_incdir is None:
     		subprocess.call(['echo', '!!!!!!!!!!!!!! EVIO Cleaning Process !!!!!!!!!!!! '])
 		if not os.path.isdir(evio_local_lib):
 			if not os.path.exists(evio_tarfile):
-				evio_command_scons = "rm libevio*.*; cd %s; wget --no-check-certificate https://coda.jlab.org/drupal/system/files/evio-%s.tgz; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version,evio_version,evio_version)
+				evio_command_scons = "rm libevio*.*; cd %s; wget https://github.com/JeffersonLab/hallac_evio/archive/evio-%s.tar.gz; tar xvfz evio-%s.tar.gz; mv hallac_evio-evio-%s evio-%s; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version,evio_version,evio_version,evio_version,evio_version)
 			else:
-				evio_command_scons = "rm libevio*.*; cd %s; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version,evio_version)
+				evio_command_scons = "rm libevio*.*; cd %s; tar xvfz evio-%s.tar.gz; mv hallac_evio-evio-%s evio-%s; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version,evio_version,evio_version,evio_version)
 		else:
 			evio_command_scons = "rm libevio*.*; cd %s; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version)
 		print "evio_command_scons = %s" % evio_command_scons
