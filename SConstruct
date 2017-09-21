@@ -228,19 +228,12 @@ if pbaseenv['CXX'] == 'g++':
 ##directorylist = ['./','src','podd','podd/src','podd/hana_decode']
 ##SConscript('podd/SConstruct')
 
-for key,value in ARGLIST:
-	print "keyword = %s" % key
-	print "value = %s" % value
-
 if baseenv.GetOption('clean'):
     subprocess.call(['echo', '!!!!!! Cleaning Podd Directory !!!!!! '])
     podd_command_scons = "cd %s; scons -c" % baseenv.subst('$HA_DIR')
 else:
     subprocess.call(['echo', '!!!!!! Building Podd !!!!!! '])
     podd_command_scons = "cd %s; scons" % baseenv.subst('$HA_DIR')
-    #num_cpu = int(os.environ.get('NUM_CPU', 1))
-    #SetOption('num_jobs', num_cpu)
-    #print "running with -j", GetOption('num_jobs')
     if baseenv.GetOption('num_jobs'):
 	podd_command_scons += " -j%s" % (GetOption('num_jobs')) 
     if baseenv.GetOption('silent'):
