@@ -44,6 +44,9 @@ To enable debugging you may try this in the setup script
 #include "Scaler9250.h"
 #include "THaCodaData.h"
 #include "THaEvData.h"
+#include "THcParmList.h"
+#include "THcGlobals.h"
+#include "THaGlobals.h"
 #include "TNamed.h"
 #include "TMath.h"
 #include "TString.h"
@@ -97,6 +100,40 @@ Int_t THcScalerEvtHandler::End( THaRunBase* r)
   return 0;
 }
 
+
+Int_t THcScalerEvtHandler::ReadDatabase(const TDatime& date )
+{
+  char prefix[2];
+  prefix[0]='g';
+  prefix[1]='\0';
+  DBRequest list[]={
+    {"NumBCMs",&fNumBCMs, kInt},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list, prefix);
+  cout << " NUmber of BCMs = " << fNumBCMs << endl;
+  //
+  fBCM_Gain = new Double_t[fNumBCMs];
+  fBCM_Offset = new Double_t[fNumBCMs];
+  string bcm_namelist;
+  DBRequest list2[]={
+    {"BCM_Gain",      fBCM_Gain,         kDouble, (UInt_t) fNumBCMs},
+    {"BCM_Offset",     fBCM_Offset,       kDouble,(UInt_t) fNumBCMs},
+    {"BCM_Names",     &bcm_namelist,       kString},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list2, prefix);
+  vector<string> bcm_names = vsplit(bcm_namelist);
+  fBCM_Name = new char* [fNumBCMs];
+  for(Int_t i=0;i<fNumBCMs;i++) {
+    fBCM_Name[i] = new char[bcm_names[i].length()+1];
+    strcpy(fBCM_Name[i], bcm_names[i].c_str());
+    cout << fBCM_Gain[i] << " " << fBCM_Offset[i] << " " << fBCM_Name[i] << endl;
+  }
+  //
+  //
+  return kOK;
+}
 void THcScalerEvtHandler::SetDelayedType(int evtype) {
   /**
    * \brief Delay analysis of this event type to end.
@@ -122,6 +159,7 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
   }
 
   if (lfirst && !fScalerTree) {
+
 
     lfirst = 0; // Can't do this in Init for some reason
 
@@ -318,6 +356,8 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
 
 THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
 {
+  //
+  ReadDatabase(date);
   const int LEN = 200;
   char cbuf[LEN];
 

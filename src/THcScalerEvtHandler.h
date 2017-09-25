@@ -37,6 +37,7 @@ public:
    Int_t Analyze(THaEvData *evdata);
    Int_t AnalyzeBuffer(UInt_t *rdata);
    virtual EStatus Init( const TDatime& run_time);
+   virtual Int_t   ReadDatabase(const TDatime& date );
    virtual Int_t End( THaRunBase* r=0 );
    virtual void SetUseFirstEvent(Bool_t b = kFALSE) {fUseFirstEvent = b;}
    virtual void SetDelayedType(int evtype);
@@ -50,6 +51,10 @@ private:
 
    std::vector<Decoder::GenScaler*> scalers;
    std::vector<HCScalerLoc*> scalerloc;
+   Int_t fNumBCMs;
+   Double_t *fBCM_Gain;
+   Double_t *fBCM_Offset;
+   char** fBCM_Name;
    UInt_t evcount;
    Double_t evcountR;
    Int_t Nvars, ifound, fNormIdx, nscalers;
