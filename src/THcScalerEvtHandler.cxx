@@ -66,7 +66,7 @@ static const UInt_t MAXCHAN   = 32;
 static const UInt_t defaultDT = 4;
 
 THcScalerEvtHandler::THcScalerEvtHandler(const char *name, const char* description)
-  : THaEvtTypeHandler(name,description), evcount(0), ifound(0), fNormIdx(-1),
+  : THaEvtTypeHandler(name,description), evcount(0), evcountR(0.0), ifound(0), fNormIdx(-1),
     dvars(0), dvarsFirst(0), fScalerTree(0), fUseFirstEvent(kFALSE),
     fDelayedType(-1), fOnlyBanks(kFALSE)
 {
@@ -141,7 +141,7 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 
     name = "evcount";
     tinfo = name + "/D";
-    fScalerTree->Branch(name.Data(), &evcount, tinfo.Data(), 4000);
+    fScalerTree->Branch(name.Data(), &evcountR, tinfo.Data(), 4000);
 
     for (size_t i = 0; i < scalerloc.size(); i++) {
       name = scalerloc[i]->name;
@@ -303,7 +303,8 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
     }
   }
 
-  evcount = evcount + 1.0;
+  evcount = evcount + 1;
+  evcountR = evcount;
 
   for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
 
