@@ -13,6 +13,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "THaSubDetector.h"
+#include "THcCherenkov.h"
 #include "TClonesArray.h"
 
 #include <iostream>
@@ -112,6 +113,9 @@ public:
   Int_t AccumulateStat(TClonesArray& tracks);
 
 protected:
+
+  THaDetectorBase* fParent;
+  THcCherenkov* fCherenkov;
 
   // Flash ADC parameters
   Int_t fUsingFADC;		// != 0 if using FADC in sample mode
