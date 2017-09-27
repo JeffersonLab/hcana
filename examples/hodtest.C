@@ -58,7 +58,7 @@
   SOS->AddDetector( new THcShower("cal", "Shower" ));
   SOS->AddDetector( new THcDC("dc", "Drift Chambers" ));
 
-  THaApparatus* BEAM = new THcRasteredBeam("RB","Rastered Beamline");
+  THaApparatus* BEAM = new THcRasteredBeam("B","Rastered Beamline");
   gHaApps->Add( BEAM );
 
   // setup physics

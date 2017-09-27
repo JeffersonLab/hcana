@@ -358,7 +358,7 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     Double_t xptar=kBig,yptar=kBig,ytar=kBig,delta=kBig;
     Double_t xtar=0;
     CalculateTargetQuantities(track,xtar,xptar,ytar,yptar,delta); 
-    // Transfer results to track
+      // Transfer results to track
     // No beam raster yet
     //; In transport coordinates phi = hyptar = dy/dz and theta = hxptar = dx/dz
     //;    but for unknown reasons the yp offset is named  htheta_offset
@@ -369,7 +369,7 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     // There is an hpcentral_offset that needs to be applied somewhere.
     // (happly_offs)
     Double_t ptemp = fPcentral*(1+track->GetDp()/100.0);
-    track->SetMomentum(ptemp);
+      track->SetMomentum(ptemp);
     TVector3 pvect_temp;
     TransportToLab(track->GetP(),track->GetTTheta(),track->GetTPhi(),pvect_temp);
     track->SetPvect(pvect_temp);
@@ -387,7 +387,7 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
   return 0;
 }
 //
-void THcHallCSpectrometer::CalculateTargetQuantities(THaTrack* track,Double_t gbeam_y,Double_t  xptar,Double_t ytar,Double_t yptar,Double_t delta) 
+void THcHallCSpectrometer::CalculateTargetQuantities(THaTrack* track,Double_t& gbeam_y,Double_t&  xptar,Double_t& ytar,Double_t& yptar,Double_t& delta) 
 {
     Double_t hut[5];
     Double_t hut_rot[5];
@@ -503,7 +503,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
       Double_t chi2PerDeg;
 
       THaTrack* aTrack = static_cast<THaTrack*>( fTracks->At(itrack) );
-      if (!aTrack) return -1;
+      if (!aTrack) {delete[] x2Hits; delete[] y2Hits; return -1;}
 
       if ( aTrack->GetNDoF() > fSelNDegreesMin ){
 	chi2PerDeg =  aTrack->GetChi2() / aTrack->GetNDoF();
@@ -640,7 +640,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
       keep[ptrack] = kTRUE;
       reject[ptrack] = 0;
       testTracks[ptrack] = static_cast<THaTrack*>( fTracks->At(ptrack) );
-      if (!testTracks[ptrack]) return -1;
+      if (!testTracks[ptrack]) {delete[] keep; delete[] reject; return -1;}
     }
 
     // ! Prune on xptar

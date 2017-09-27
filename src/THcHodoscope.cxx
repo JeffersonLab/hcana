@@ -125,43 +125,8 @@ void THcHodoscope::Setup(const char* name, const char* description)
     cout << "Created Scintillator Plane " << fPlaneNames[i] << ", " << desc << endl;
   }
 
-  // --------------- To get energy from THcShower ----------------------
-  const char* shower_detector_name = "cal";
-  //  THaApparatus* app;
-  THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
-  THaDetector* det = app->GetDetector( shower_detector_name );
-
-  if( dynamic_cast<THcShower*>(det) ) {
-    fShower = dynamic_cast<THcShower*>(det);
-  }
-  else if( !dynamic_cast<THcShower*>(det) ) {
-    cout << "Warining: calorimeter analysis module "
-	 << shower_detector_name << " not loaded for spectrometer "
-	 << prefix << endl;
-
-    fShower = NULL;
-  }
-
-  // --------------- To get energy from THcShower ----------------------
-
-  // --------------- To get NPEs from THcCherenkov -------------------
-  
-  const char* chern_detector_name = "cer";
-  THaDetector* detc = app->GetDetector( chern_detector_name );
-
-  if( dynamic_cast<THcCherenkov*>(detc) ) {
-    fChern = dynamic_cast<THcCherenkov*>(detc);
-  }
-  else if( !dynamic_cast<THcCherenkov*>(detc) ) {
-    cout << "Warning: Cherenkov detector analysis module "
-	 << chern_detector_name << " not loaded for spectrometer "
-	 << prefix << endl;
-
-    fChern = NULL;
-  }
-
-
   // Save the nominal particle mass
+  THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
   fPartMass = app->GetParticleMass();
   fBetaNominal = app->GetBetaAtPcentral();
 

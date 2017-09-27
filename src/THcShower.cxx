@@ -748,7 +748,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
     UInt_t i = 0;
     for (THcShowerClusterListIt ppcl = (*fClusterList).begin();
-	 ppcl != (*fClusterList).end(); ppcl++) {
+	 ppcl != (*fClusterList).end(); ++ppcl) {
 
       cout << "  Cluster #" << i++
 	   <<":  E=" << clE(*ppcl)
@@ -760,7 +760,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
       Int_t j=0;
       for (THcShowerClusterIt pph=(**ppcl).begin(); pph!=(**ppcl).end();
-	   pph++) {
+	   ++pph) {
 	cout << "  hit " << j++ << ": ";
 	(**pph).show();
       }
@@ -815,7 +815,7 @@ void THcShower::ClusterHits(THcShowerHitSet& HitSet,
       for (THcShowerHitIt i=HitSet.begin(); i!=HitSet.end(); ++i) {
 
 	for (THcShowerClusterIt k=(*cluster).begin(); k!=(*cluster).end();
-	     k++) {
+	     ++k) {
 
 	  if ((**i).isNeighbour(*k)) {
 	    (*cluster).insert(*i);      //If the hit #i is neighbouring a hit
@@ -1169,6 +1169,13 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
     }
   }       //over tracks
 
+  if (Ntracks>0) {
+    for(UInt_t ip=0;ip<fNLayers;ip++) {
+      fPlanes[ip]-> AccumulateStat(tracks);
+    }
+    if(fHasArray) fArray->AccumulateStat(tracks);
+  }
+  
   //Debug output.
 
   if (fdbg_tracks_cal) {

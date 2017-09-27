@@ -17,6 +17,8 @@
 #include "math.h"
 #include "THaTrack.h"
 #include "THaTrackProj.h"
+#include "THcCherenkov.h"         //for efficiency calculations
+#include "THcHallCSpectrometer.h"
 
 #include <cstring>
 #include <cstdio>
@@ -129,6 +131,9 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   fPedSampHigh=9;
   fDataSampLow=23;
   fDataSampHigh=49;
+  fStatCerMin=1.;
+  fStatSlop=3.;
+  fStatMaxChi2=10.;
   DBRequest list[]={
     {"cal_arr_nrows", &fNRows, kInt},
     {"cal_arr_ncolumns", &fNColumns, kInt},
@@ -148,6 +153,9 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     {"cal_data_sample_low", &fDataSampLow, kInt, 0, 1},
     {"cal_data_sample_high", &fDataSampHigh, kInt, 0, 1},
     {"cal_debug_adc", &fDebugAdc, kInt, 0, 1},
+    {"stat_cermin", &fStatCerMin, kDouble, 0, 1},
+    {"stat_slop_array", &fStatSlop, kDouble, 0, 1},
+    {"stat_maxchisq", &fStatMaxChi2, kDouble, 0, 1},
     {0}
   };
 
@@ -342,6 +350,13 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 
   //fE = new Double_t[fNelem];
 
+  // Numbers of tracks and hits , for efficiency calculations.
+  
+  fStatNumTrk = vector<Int_t> (fNelem, 0);
+  fStatNumHit = vector<Int_t> (fNelem, 0);
+  fTotStatNumTrk = 0;
+  fTotStatNumHit = 0;
+
 #ifdef HITPIC
   hitpic = new char*[fNRows];
   for(Int_t row=0;row<fNRows;row++) {
@@ -369,6 +384,14 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
 
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
+
+  // Register counters for efficiency calculations in gHcParms so that the
+  // variables can be used in end of run reports.
+
+  gHcParms->Define(Form("%sstat_trksum_array", GetParent()->GetPrefix()),
+		   "Number of tracks in calo. array", fTotStatNumTrk);
+  gHcParms->Define(Form("%sstat_hitsum_array", GetParent()->GetPrefix()),
+		   "Number of hits in calo. array", fTotStatNumHit);
 
   // Register variables in global list
   if (fDebugAdc) {
@@ -531,9 +554,9 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
   Int_t ncl=0;
   Int_t block;
     for (THcShowerClusterListIt ppcl = (*fClusterList).begin();
-	 ppcl != (*fClusterList).end(); ppcl++) {
+	 ppcl != (*fClusterList).end(); ++ppcl) {
       for (THcShowerClusterIt pph=(**ppcl).begin(); pph!=(**ppcl).end();
-	   pph++) {
+	   ++pph) {
        block = ((**pph).hitColumn())*fNRows + (**pph).hitRow()+1;
        fBlock_ClusterID[block-1] = ncl;
       }
@@ -548,7 +571,7 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
 
     UInt_t i = 0;
     for (THcShowerClusterListIt ppcl = (*fClusterList).begin();
-	 ppcl != (*fClusterList).end(); ppcl++) {
+	 ppcl != (*fClusterList).end(); ++ppcl) {
 
       cout << "  Cluster #" << i++
 	   <<":  E=" << clE(*ppcl)
@@ -561,7 +584,7 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
 
       Int_t j=0;
       for (THcShowerClusterIt pph=(**ppcl).begin(); pph!=(**ppcl).end();
-	   pph++) {
+	   ++pph) {
 	cout << "  hit " << j++ << ": ";
 	(**pph).show();
       }
@@ -969,7 +992,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	  cout << "-";
 	}
 	cout << "+";
-0      }
+      }
       cout << endl;
       for(Int_t row=0;row<fNRows;row++) {
 	hitpic[row][(piccolumn+1)*(fNColumns+1)+1] = '\0';
@@ -1162,4 +1185,100 @@ Double_t THcShowerArray::clMaxEnergyBlock(THcShowerCluster* cluster) {
     }
   }
   return max_block;
+}
+
+//_____________________________________________________________________________
+Int_t THcShowerArray::AccumulateStat(TClonesArray& tracks )
+{
+  // Accumumate statistics for efficiency calculations.
+  //
+  // Choose electron events in gas Cherenkov with good Chisq of the best track.
+  // Project best track to Array,
+  // calculate module number for the track,
+  // accrue number of tracks for the module,
+  // accrue number of hits for the module, if it is hit.
+  // Accrue total numbers of tracks and hits for Array.
+
+  THaTrack* BestTrack = static_cast<THaTrack*>( tracks[0]);
+  if (BestTrack->GetChi2()/BestTrack->GetNDoF() > fStatMaxChi2) return 0;
+
+  THcHallCSpectrometer *app=dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+
+  THaDetector* detc;
+  if (GetParent()->GetPrefix()[0] == 'P')
+    detc = app->GetDetector("hgcer");
+  else
+    detc = app->GetDetector("cer");
+  
+  THcCherenkov* hgcer = dynamic_cast<THcCherenkov*>(detc);
+  if (!hgcer) {
+    cout << "****** THcShowerArray::AccumulateStat: HGCer not found! ******"
+	 << endl;
+    return 0;
+  }
+
+  if (hgcer->GetCerNPE() < fStatCerMin) return 0;
+  
+  Double_t XTrk = kBig;
+  Double_t YTrk = kBig;
+  Double_t pathl = kBig;
+
+  // Track interception with Array. The coordinates are in the calorimeter's
+  // local system.
+
+  fOrigin = GetOrigin();
+  THcShower* fParent = (THcShower*) GetParent();
+  fParent->CalcTrackIntercept(BestTrack, pathl, XTrk, YTrk);
+
+  // Transform coordiantes to the spectrometer's coordinate system.
+  XTrk += GetOrigin().X();
+  YTrk += GetOrigin().Y();
+						     
+  for (Int_t i=0; i<fNelem; i++) {
+
+    Int_t row = i%fNRows;
+    Int_t col =i/fNRows;
+
+    if (TMath::Abs(XTrk - fXPos[row][col]) < fStatSlop &&
+	TMath::Abs(YTrk - fYPos[row][col]) < fStatSlop) {
+
+      fStatNumTrk.at(i)++;
+      fTotStatNumTrk++;
+      
+      if (fGoodAdcPulseInt.at(i) > 0.) {
+	fStatNumHit.at(i)++;
+	fTotStatNumHit++;
+      }
+      
+    }
+    
+  }
+
+  if ( ((THcShower*) GetParent())->fdbg_tracks_cal ) {
+    cout << "---------------------------------------------------------------\n";
+    cout << "THcShowerArray::AccumulateStat:" << endl;
+    cout << "   Chi2/NDF = " <<BestTrack->GetChi2()/BestTrack->GetNDoF() <<endl;
+    cout << "   HGCER Npe = " << hgcer->GetCerNPE() << endl;
+    cout << "   XTrk, YTrk = " << XTrk << "  " << YTrk << endl;						     
+    for (Int_t i=0; i<fNelem; i++) {
+      
+      Int_t row = i%fNRows;
+      Int_t col =i/fNRows;
+
+      if (TMath::Abs(XTrk - fXPos[row][col]) < fStatSlop &&
+	  TMath::Abs(YTrk - fYPos[row][col]) < fStatSlop) {
+
+	cout << "   Module " << i << ", X=" << fXPos[i/fNRows][i%fNRows]
+	     << ", Y=" << fYPos[i/fNRows][i%fNRows] << " matches track" << endl;
+
+	if (fGoodAdcPulseInt.at(i) > 0.)
+	  cout << "   PulseIntegral = " << fGoodAdcPulseInt.at(i) << endl;
+      }
+    }
+      
+    cout << "---------------------------------------------------------------\n";
+    //    getchar();
+  }
+  
+  return 1;
 }

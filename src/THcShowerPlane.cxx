@@ -17,6 +17,7 @@ One plane of shower blocks with side readout
 #include "math.h"
 #include "THaTrack.h"
 #include "THaTrackProj.h"
+#include "THcHallCSpectrometer.h"
 
 #include <cstring>
 #include <cstdio>
@@ -133,6 +134,19 @@ THaAnalysisObject::EStatus THcShowerPlane::Init( const TDatime& date )
   // How to get information for parent
   //  if( GetParent() )
   //    fOrigin = GetParent()->GetOrigin();
+  fParent = GetParent();
+
+  // Get pointer to Cherenkov object.  "hgcer" if SHMS, "cer" if other
+  THcHallCSpectrometer *app=dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+  if (fParent->GetPrefix()[0] == 'P') {
+    fCherenkov = dynamic_cast<THcCherenkov*>(app->GetDetector("hgcer"));
+  } else {
+    fCherenkov = dynamic_cast<THcCherenkov*>(app->GetDetector("cer"));
+  }
+  if (!fCherenkov) {
+    cout << "****** THcShowerPlane::Init  Cherenkov not found! ******" << endl;
+    cout << "****** THcShowerPlane::Accumulate will be skipped ******" << endl;
+  }
 
   EStatus status;
   if( (status=THaSubDetector::Init( date )) )
@@ -150,7 +164,7 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   // pedestal and integration range for preshower and shower, but for now
   // use same parameters
   char prefix[2];
-  prefix[0]=tolower(GetParent()->GetPrefix()[0]);
+  prefix[0]=tolower(fParent->GetPrefix()[0]);
   prefix[1]='\0';
   fPedSampLow=0;
   fPedSampHigh=9;
@@ -158,6 +172,9 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   fDataSampHigh=49;
   fAdcNegThreshold=0.;
   fAdcPosThreshold=0.;
+  fStatCerMin=1.;
+  fStatSlop=2.;
+  fStatMaxChi2=10.;
   DBRequest list[]={
     {"cal_AdcNegThreshold", &fAdcNegThreshold, kDouble, 0, 1},
     {"cal_AdcPosThreshold", &fAdcPosThreshold, kDouble, 0, 1},
@@ -166,6 +183,9 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
     {"cal_data_sample_low", &fDataSampLow, kInt, 0, 1},
     {"cal_data_sample_high", &fDataSampHigh, kInt, 0, 1},
     {"cal_debug_adc", &fDebugAdc, kInt, 0, 1},
+    {"stat_cermin", &fStatCerMin, kDouble, 0, 1},
+    {"stat_slop", &fStatSlop, kDouble, 0, 1},
+    {"stat_maxchisq", &fStatMaxChi2, kDouble, 0, 1},
     {0}
   };
 
@@ -175,11 +195,10 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   // Retrieve more parameters we need from parent class
   //
+  THcShower* parent = static_cast<THcShower*>(fParent);
 
-  THcShower* fParent;
-  fParent = (THcShower*) GetParent();
   //  Find the number of elements
-  fNelem = fParent->GetNBlocks(fLayerNum-1);
+  fNelem = parent->GetNBlocks(fLayerNum-1);
 
   // Origin of the plane:
   //
@@ -188,16 +207,16 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   // Y is average of left and right edges;
   // Z is _front_ position of the plane along the beam.
 
-  Double_t BlockThick = fParent->GetBlockThick(fLayerNum-1);
+  Double_t BlockThick = parent->GetBlockThick(fLayerNum-1);
 
-  Double_t xOrig = (fParent->GetXPos(fLayerNum-1,0) +
-		    fParent->GetXPos(fLayerNum-1,fNelem-1))/2 +
+  Double_t xOrig = (parent->GetXPos(fLayerNum-1,0) +
+		    parent->GetXPos(fLayerNum-1,fNelem-1))/2 +
     BlockThick/2;
 
-  Double_t yOrig = (fParent->GetYPos(fLayerNum-1,0) +
-		    fParent->GetYPos(fLayerNum-1,1))/2;
+  Double_t yOrig = (parent->GetYPos(fLayerNum-1,0) +
+		    parent->GetYPos(fLayerNum-1,1))/2;
 
-  Double_t zOrig = fParent->GetZPos(fLayerNum-1);
+  Double_t zOrig = parent->GetZPos(fLayerNum-1);
 
   fOrigin.SetXYZ(xOrig, yOrig, zOrig);
 
@@ -210,11 +229,11 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   fNegPedLimit = new Int_t [fNelem];
 
   for(Int_t i=0;i<fNelem;i++) {
-    fPosPedLimit[i] = fParent->GetPedLimit(i,fLayerNum-1,0);
-    fNegPedLimit[i] = fParent->GetPedLimit(i,fLayerNum-1,1);
+    fPosPedLimit[i] = parent->GetPedLimit(i,fLayerNum-1,0);
+    fNegPedLimit[i] = parent->GetPedLimit(i,fLayerNum-1,1);
   }
 
-  fMinPeds = fParent->GetMinPeds();
+  fMinPeds = parent->GetMinPeds();
 
   InitializePedestals();
 
@@ -243,12 +262,19 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   // fEneg = new Double_t[fNelem];
   // fEmean= new Double_t[fNelem];
 
+  // Numbers of tracks and hits , for efficiency calculations.
+  
+  fStatNumTrk = vector<Int_t> (fNelem, 0);
+  fStatNumHit = vector<Int_t> (fNelem, 0);
+  fTotStatNumTrk = 0;
+  fTotStatNumHit = 0;
+  
   // Debug output.
 
-  if (fParent->fdbg_init_cal) {
+  if (parent->fdbg_init_cal) {
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerPlane::ReadDatabase for "
-    	 << GetParent()->GetPrefix() << ":" << endl;
+    	 << fParent->GetPrefix() << ":" << endl;
 
     cout << "  Layer #" << fLayerNum << ", number of elements " << dec << fNelem
 	 << endl;
@@ -304,6 +330,19 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
     DefineVarsFromList( vars, mode);
   } //end debug statement
 
+  // Register counters for efficiency calculations in gHcParms so that the
+  // variables can be used in end of run reports.
+
+  gHcParms->Define(Form("%sstat_trksum%d", fParent->GetPrefix(), fLayerNum),
+	  Form("Number of tracks in calo. layer %d",fLayerNum), fTotStatNumTrk);
+  gHcParms->Define(Form("%sstat_hitsum%d", fParent->GetPrefix(), fLayerNum),
+	 Form("Number of hits in calo. layer %d", fLayerNum), fTotStatNumHit);
+
+  cout << "THcShowerPlane::DefineVariables: registered counters "
+       << Form("%sstat_trksum%d",fParent->GetPrefix(),fLayerNum) << " and "
+       << Form("%sstat_hitsum%d",fParent->GetPrefix(),fLayerNum) << endl;
+  //  getchar();
+    
   RVarDef vars[] = {
     {"posAdcErrorFlag",    "List of positive raw ADC Error Flags",  "frPosAdcErrorFlag.THcSignalHit.GetData()"},
     {"negAdcErrorFlag",    "List of negative raw ADC Error Flags ", "frNegAdcErrorFlag.THcSignalHit.GetData()"},
@@ -410,10 +449,10 @@ void THcShowerPlane::Clear( Option_t* )
 
 
  // Debug output.
-  if ( ((THcShower*) GetParent())->fdbg_decoded_cal ) {
+  if ( static_cast<THcShower*>(GetParent())->fdbg_decoded_cal ) {
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerPlane::Clear for "
-    	 << GetParent()->GetPrefix() << ":" << endl;
+    	 << fParent->GetPrefix() << ":" << endl;
 
     cout << " Cleared ADC hits for plane " << GetName() << endl;
     cout << "---------------------------------------------------------------\n";
@@ -426,10 +465,10 @@ Int_t THcShowerPlane::Decode( const THaEvData& evdata )
   // Doesn't actually get called.  Use Fill method instead
 
   //Debug output.
-  if ( ((THcShower*) GetParent())->fdbg_decoded_cal ) {
+  if ( static_cast<THcShower*>(fParent)->fdbg_decoded_cal ) {
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerPlane::Decode for "
-      	 << GetParent()->GetPrefix() << ":" << endl;
+      	 << fParent->GetPrefix() << ":" << endl;
 
     cout << " Called for plane " << GetName() << endl;
     cout << "---------------------------------------------------------------\n";
@@ -574,9 +613,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 //_____________________________________________________________________________
 Int_t THcShowerPlane::CoarseProcessHits()
 {
-  THcShower* fParent;
-  fParent = (THcShower*) GetParent();
-    Int_t ADCMode=fParent->GetADCMode();
+    Int_t ADCMode=static_cast<THcShower*>(fParent)->GetADCMode();
     if(ADCMode == kADCDynamicPedestal) {
       FillADC_DynamicPedestal();
     } else if (ADCMode == kADCSampleIntegral) {
@@ -587,7 +624,7 @@ Int_t THcShowerPlane::CoarseProcessHits()
       FillADC_Standard();
     }
     //
-  if (fParent->fdbg_decoded_cal) {
+  if (static_cast<THcShower*>(fParent)->fdbg_decoded_cal) {
 
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerPlane::ProcessHits for "
@@ -643,15 +680,13 @@ void THcShowerPlane::FillADC_SampleIntegral()
 //_____________________________________________________________________________
 void THcShowerPlane::FillADC_Standard()
 {
-  THcShower* fParent;
-  fParent = (THcShower*) GetParent();
   for (Int_t ielem=0;ielem<frNegAdcPulseIntRaw->GetEntries();ielem++) {
     Int_t npad = ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(ielem))->GetPaddleNumber() - 1;
     Double_t pulseIntRaw = ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
     fGoodNegAdcPulseIntRaw.at(npad) = pulseIntRaw;
       if(fGoodNegAdcPulseIntRaw.at(npad) >  fNegThresh[npad]) {
 	fGoodNegAdcPulseInt.at(npad) = pulseIntRaw-fNegPed[npad];
-	fEneg.at(npad) = fGoodNegAdcPulseInt.at(npad)*fParent->GetGain(npad,fLayerNum-1,1);
+	fEneg.at(npad) = fGoodNegAdcPulseInt.at(npad)*static_cast<THcShower*>(fParent)->GetGain(npad,fLayerNum-1,1);
 	fEmean.at(npad) += fEneg.at(npad);
 	fEplane_neg += fEneg.at(npad);
       }
@@ -662,7 +697,7 @@ void THcShowerPlane::FillADC_Standard()
     fGoodPosAdcPulseIntRaw.at(npad) =pulseIntRaw;
     if(fGoodPosAdcPulseIntRaw.at(npad) > fPosThresh[npad]) {
       fGoodPosAdcPulseInt.at(npad) =pulseIntRaw-fPosPed[npad] ;
-      fEpos.at(npad) =fGoodPosAdcPulseInt.at(npad)*fParent->GetGain(npad,fLayerNum-1,0);
+      fEpos.at(npad) =fGoodPosAdcPulseInt.at(npad)*static_cast<THcShower*>(fParent)->GetGain(npad,fLayerNum-1,0);
       fEmean.at(npad) += fEpos.at(npad);
       fEplane_pos += fEpos.at(npad);
     }
@@ -672,10 +707,8 @@ void THcShowerPlane::FillADC_Standard()
 //_____________________________________________________________________________
 void THcShowerPlane::FillADC_DynamicPedestal()
 {
-  THcShower* fParent;
-  fParent = (THcShower*) GetParent();
-  Double_t AdcTimeWindowMin=fParent->GetAdcTimeWindowMin();
-  Double_t AdcTimeWindowMax=fParent->GetAdcTimeWindowMax();
+  Double_t AdcTimeWindowMin=static_cast<THcShower*>(fParent)->GetAdcTimeWindowMin();
+  Double_t AdcTimeWindowMax=static_cast<THcShower*>(fParent)->GetAdcTimeWindowMax();
   for (Int_t ielem=0;ielem<frNegAdcPulseInt->GetEntries();ielem++) {
     Int_t    npad         = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
     Double_t pulseInt     = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetData();
@@ -691,7 +724,7 @@ void THcShowerPlane::FillADC_DynamicPedestal()
 
       if(fGoodNegAdcPulseIntRaw.at(npad) >  threshold && fGoodNegAdcPulseInt.at(npad)==0) {
         fGoodNegAdcPulseInt.at(npad) =pulseInt ;
-	fEneg.at(npad) =  fGoodNegAdcPulseInt.at(npad)*fParent->GetGain(npad,fLayerNum-1,1);
+	fEneg.at(npad) =  fGoodNegAdcPulseInt.at(npad)*static_cast<THcShower*>(fParent)->GetGain(npad,fLayerNum-1,1);
 	fEmean.at(npad) += fEneg.at(npad);
 	fEplane_neg += fEneg.at(npad);
 
@@ -724,7 +757,7 @@ void THcShowerPlane::FillADC_DynamicPedestal()
       if(fGoodPosAdcPulseIntRaw.at(npad) >  threshold && fGoodPosAdcPulseInt.at(npad)==0) {
 
        	fGoodPosAdcPulseInt.at(npad) =pulseInt ;
-	fEpos.at(npad) = fGoodPosAdcPulseInt.at(npad)*fParent->GetGain(npad,fLayerNum-1,0);
+	fEpos.at(npad) = fGoodPosAdcPulseInt.at(npad)*static_cast<THcShower*>(fParent)->GetGain(npad,fLayerNum-1,0);
 	fEmean.at(npad) += fEpos[npad];
 	fEplane_pos += fEpos.at(npad);
 
@@ -787,11 +820,11 @@ Int_t THcShowerPlane::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 
   // Debug output.
 
-  if ( ((THcShower*) GetParent())->fdbg_raw_cal ) {
+  if ( static_cast<THcShower*>(fParent)->fdbg_raw_cal ) {
 
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerPlane::AcculatePedestals for "
-    	 << GetParent()->GetPrefix() << ":" << endl;
+    	 << fParent->GetPrefix() << ":" << endl;
 
     cout << "Processed hit list for plane " << GetName() << ":\n";
 
@@ -843,11 +876,11 @@ void THcShowerPlane::CalculatePedestals( )
 
   // Debug output.
 
-  if ( ((THcShower*) GetParent())->fdbg_raw_cal ) {
+  if ( static_cast<THcShower*>(fParent)->fdbg_raw_cal ) {
 
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerPlane::CalculatePedestals for "
-    	 << GetParent()->GetPrefix() << ":" << endl;
+    	 << fParent->GetPrefix() << ":" << endl;
 
     cout << "  ADC pedestals and thresholds for calorimeter plane "
 	 << GetName() << endl;
@@ -890,4 +923,79 @@ void THcShowerPlane::InitializePedestals( )
     fNegPedSum2[i] = 0;
     fNegPedCount[i] = 0;
   }
+}
+
+//_____________________________________________________________________________
+Int_t THcShowerPlane::AccumulateStat(TClonesArray& tracks )
+{
+  // Accumumate statistics for efficiency calculations.
+  //
+  // Choose electron events in gas Cherenkov with good Chisq of the best track.
+  // Project best track to the plane,
+  // calculate row number for the track,
+  // accrue number of tracks for the row,
+  // accrue number of hits for the row, if row is hit.
+  // Accrue total numbers of tracks and hits for plane.
+
+  if(!fCherenkov) return 0;
+
+  THaTrack* BestTrack = static_cast<THaTrack*>( tracks[0]);
+  if (BestTrack->GetChi2()/BestTrack->GetNDoF() > fStatMaxChi2) return 0;
+
+  if (fCherenkov->GetCerNPE() < fStatCerMin) return 0;
+  
+  Double_t XTrk = kBig;
+  Double_t YTrk = kBig;
+  Double_t pathl = kBig;
+
+  // Track interception with plane. The coordinates are in the calorimeter's
+  // local system.
+
+  fOrigin = GetOrigin();
+  static_cast<THcShower*>(fParent)->CalcTrackIntercept(BestTrack, pathl, XTrk, YTrk);
+
+  // Transform coordiantes to the spectrometer's coordinate system.
+  XTrk += GetOrigin().X();
+  YTrk += GetOrigin().Y();
+						     
+  for (Int_t i=0; i<fNelem; i++) {
+
+    if (TMath::Abs(XTrk - static_cast<THcShower*>(fParent)->GetXPos(fLayerNum-1,i)) < fStatSlop &&
+	YTrk > static_cast<THcShower*>(fParent)->GetYPos(fLayerNum-1,1) &&
+	YTrk < static_cast<THcShower*>(fParent)->GetYPos(fLayerNum-1,0) ) {
+
+      fStatNumTrk.at(i)++;
+      fTotStatNumTrk++;
+      
+      if (fGoodPosAdcPulseInt.at(i) > 0. || fGoodNegAdcPulseInt.at(i) > 0.) {
+	fStatNumHit.at(i)++;
+	fTotStatNumHit++;
+      }
+      
+    }
+    
+  }
+
+  if ( static_cast<THcShower*>(fParent)->fdbg_tracks_cal ) {
+    cout << "---------------------------------------------------------------\n";
+    cout << "THcShowerPlane::AccumulateStat:" << endl;
+    cout << "   Chi2/NDF = " <<BestTrack->GetChi2()/BestTrack->GetNDoF() << endl;
+    cout << "   HGCER Npe = " << fCherenkov->GetCerNPE() << endl;
+    cout << "   XTrk, YTrk = " << XTrk << "  " << YTrk << endl;						     
+    for (Int_t i=0; i<fNelem; i++) {
+      if (TMath::Abs(XTrk - static_cast<THcShower*>(fParent)->GetXPos(fLayerNum-1,i)) < fStatSlop) {
+
+	cout << "   Module " << i << ", X=" << static_cast<THcShower*>(fParent)->GetXPos(fLayerNum-1,i)
+	     << " matches track" << endl;
+
+	if (fGoodPosAdcPulseInt.at(i) > 0. || fGoodNegAdcPulseInt.at(i) > 0.)
+	  cout << "   PulseIntegrals = " << fGoodPosAdcPulseInt.at(i) << "  "
+	       << fGoodNegAdcPulseInt.at(i) << endl;
+      }
+    }
+    cout << "---------------------------------------------------------------\n";
+    //    getchar();
+  }
+  
+  return 1;
 }
