@@ -885,6 +885,7 @@ void THcDriftChamber::SelectSpacePoints()
 
 void THcDriftChamber::CorrectHitTimes()
 {
+	//cout<<"next event"<<endl;
   // Use the rough hit positions in the chambers to correct the drift time
   // for hits in the space points.
 
@@ -895,48 +896,123 @@ void THcDriftChamber::CorrectHitTimes()
   // time offset per card will cancel much of the error caused by this.  The
   // alternative is to check by card, rather than by plane and this is harder.
   //if (fhdebugflagpr) cout << "In correcthittimes fNSpacePoints = " << fNSpacePoints << endl;
+
   for(Int_t isp=0;isp<fNSpacePoints;isp++) {
-    THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
-    Double_t x = sp->GetX();
-    Double_t y = sp->GetY();
-    for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
-      THcDCHit* hit = sp->GetHit(ihit);
-      THcDriftChamberPlane* plane=hit->GetWirePlane();
+	  THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
+	  Double_t x = sp->GetX();
+	  Double_t y = sp->GetY();
+	  for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
+		  THcDCHit* hit = sp->GetHit(ihit);
+		  THcDriftChamberPlane* plane=hit->GetWirePlane();
 
-      // How do we know this correction only gets applied once?  Is
-      // it determined that a given hit can only belong to one space point?
-      Double_t time_corr = plane->GetReadoutX() ?
-	y*plane->GetReadoutCorr()/fWireVelocity :
-	x*plane->GetReadoutCorr()/fWireVelocity;
+		  // How do we know this correction only gets applied once?  Is
+		  // it determined that a given hit can only belong to one space point?
+		  Double_t time_corr = plane->GetReadoutX() ?
+				 y*plane->GetReadoutCorr()/fWireVelocity :
+				 x*plane->GetReadoutCorr()/fWireVelocity;
 
-      //     if (fhdebugflagpr) cout << "Correcting hit " << hit << " " << plane->GetPlaneNum() << " " << isp << "/" << ihit << "  " << x << "," << y << endl;
-      // Fortran ENGINE does not do this check, so hits can get "corrected"
-      // multiple times if they belong to multiple space points.
-      // To reproduce the precise ENGINE behavior, remove this if condition.
-      if(fFixPropagationCorrection==0) { // ENGINE behavior
-	hit->SetTime(hit->GetTime() - plane->GetCentralTime()
-		     + plane->GetDriftTimeSign()*time_corr);
-	hit->ConvertTimeToDist();
-	//      hit->SetCorrectedStatus(1);
-      } else {
-	// New behavior: Save corrected distance with the hit in the space point
-	// so that the same hit can have a different correction depending on
-	// which space point it is in.
-	//
-	// This is a hack now because the converttimetodist method is connected to the hit
-	// so I compute the corrected time and distance, and then restore the original
-	// time and distance.  Can probably add a method to hit that does a conversion on a time
-	// but does not modify the hit data.
-	Double_t time=hit->GetTime();
-	Double_t dist=hit->GetDist();
-	hit->SetTime(time - plane->GetCentralTime()
-		     + plane->GetDriftTimeSign()*time_corr);
-	hit->ConvertTimeToDist();
-	sp->SetHitDist(ihit, hit->GetDist());
-	hit->SetTime(time);	// Restore time
-	hit->SetDist(dist);	// Restore distance
-      }
-    }
+		  // This applies the wire velocity correction for new SHMS chambers --hszumila, SEP17
+		  if (abs(plane->GetReadoutLR())==1){
+			  Int_t pln = hit->GetPlaneNum();
+			  Int_t readoutSide = hit->GetReadoutSide();
+
+			  THcDC* fParent;
+			  fParent = (THcDC*) GetParent();
+			  Double_t posn = hit->GetPos();
+			  //The following values are determined from param file as permutations on planes 5 and 10
+			  Int_t readhoriz = plane->GetReadoutLR();
+			  Int_t readvert = plane->GetReadoutTB();
+
+			  //+x is up and +y is beam right!
+			  double alpha = fParent->GetAlphaAngle(pln);
+			  double xc = posn*TMath::Sin(alpha);
+			  double yc = posn*TMath::Cos(alpha);
+
+			  Double_t wireDistance = plane->GetReadoutX() ?
+				  (abs(y-yc))*abs(plane->GetReadoutCorr()) :
+				  (abs(x-xc))*abs(plane->GetReadoutCorr());
+
+			  //Readout side is based off wiring diagrams
+			  switch (readoutSide){
+			  case 1: //readout from top of chamber
+				  if (x>xc){wireDistance = -readvert*wireDistance;}
+				  else{wireDistance = readvert*wireDistance;}
+
+				  break;
+			  case 2://readout from right of chamber
+				  if (y>yc){wireDistance = -readhoriz*wireDistance;}
+				  else{wireDistance = readhoriz*wireDistance;}
+
+				  break;
+			  case 3: //readout from bottom of chamber
+				  if (xc>x){wireDistance= -readvert*wireDistance;}
+				  else{wireDistance = readvert*wireDistance;}
+
+				  break;
+			  case 4: //readout from left of chamber
+				  if(yc>y){wireDistance = -readhoriz*wireDistance;}
+				  else{wireDistance = readhoriz*wireDistance;}
+
+				  break;
+			  default:
+				  wireDistance = 0.0;
+			  }
+
+			  Double_t timeCorrection = wireDistance/fWireVelocity;
+
+			  if(fFixPropagationCorrection==0) { // ENGINE behavior
+				  Double_t time=hit->GetTime();
+				  hit->SetTime(time - timeCorrection);
+		          hit->ConvertTimeToDist();
+			  }
+			  else{
+				  Double_t time=hit->GetTime();
+				  Double_t dist=hit->GetDist();
+
+				  hit->SetTime(time - timeCorrection);
+				  //double usingOldTime = time-time_corr;
+				  //hit->SetTime(time- time_corr);
+
+				  hit->ConvertTimeToDist();
+				  sp->SetHitDist(ihit, hit->GetDist());
+
+				  hit->SetTime(time);	// Restore time
+				  hit->SetDist(dist);	// Restore distance
+			  }
+
+		  }
+		  /////////////////////////////////////////////////////////////
+
+		  //     if (fhdebugflagpr) cout << "Correcting hit " << hit << " " << plane->GetPlaneNum() << " " << isp << "/" << ihit << "  " << x << "," << y << endl;
+		  // Fortran ENGINE does not do this check, so hits can get "corrected"
+		  // multiple times if they belong to multiple space points.
+		  // To reproduce the precise ENGINE behavior, remove this if condition.
+		  else{
+			  if(fFixPropagationCorrection==0) { // ENGINE behavior
+				  hit->SetTime(hit->GetTime() - plane->GetCentralTime()
+					  + plane->GetDriftTimeSign()*time_corr);
+				  hit->ConvertTimeToDist();
+			  //      hit->SetCorrectedStatus(1);
+			  } else {
+			  // New behavior: Save corrected distance with the hit in the space point
+			  // so that the same hit can have a different correction depending on
+			  // which space point it is in.
+			  //
+			  // This is a hack now because the converttimetodist method is connected to the hit
+			  // so I compute the corrected time and distance, and then restore the original
+			  // time and distance.  Can probably add a method to hit that does a conversion on a time
+			  // but does not modify the hit data.
+			  Double_t time=hit->GetTime();
+			  Double_t dist=hit->GetDist();
+			  hit->SetTime(time - plane->GetCentralTime()
+					  + plane->GetDriftTimeSign()*time_corr);
+			  hit->ConvertTimeToDist();
+			  sp->SetHitDist(ihit, hit->GetDist());
+			  hit->SetTime(time);	// Restore time
+			  hit->SetDist(dist);	// Restore distance
+			  }
+		  }
+	  }
   }
 }
 UInt_t THcDriftChamber::Count1Bits(UInt_t x)
@@ -994,6 +1070,7 @@ void THcDriftChamber::LeftRight()
     if(fHMSStyleChambers) {
       Int_t smallAngOK = (hasy1>=0) && (hasy2>=0);
       if(fSmallAngleApprox !=0 && smallAngOK) { // to small Angle L/R for Y,Y' planes
+
 	if(sp->GetHit(hasy2)->GetPos() <=
 	   sp->GetHit(hasy1)->GetPos()) {
 	  plusminusknown[hasy1] = -1;
@@ -1031,8 +1108,8 @@ void THcDriftChamber::LeftRight()
 	  }
 	}
 	nplusminus = 1 << (nhits-npaired);
-      }
-    }
+      }//end if fSmallAngleApprox!=0
+    }//end else SOS style
     if(nhits < 2) {
       if (fdebugstubchisq) cout << "THcDriftChamber::LeftRight: numhits-2 < 0" << endl;
     } else if (nhits == 2) {
@@ -1098,6 +1175,7 @@ void THcDriftChamber::LeftRight()
             sp->SetStub(stub);
 	  }
 	}
+	///////////////
       } else if (nplaneshit >= fNPlanes-2 && fHMSStyleChambers) { // Two planes missing
 	Double_t chi2 = FindStub(nhits, sp,
 				     plane_list, bitpat, plusminus, stub);
@@ -1117,7 +1195,8 @@ void THcDriftChamber::LeftRight()
 	  }
           sp->SetStub(stub);
 	}
-      } else {
+      }//////////
+      else {
 	if (fhdebugflagpr) cout << "Insufficient planes hit in THcDriftChamber::LeftRight()" << bitpat <<endl;
       }
     } // End loop of pm combinations
@@ -1227,6 +1306,7 @@ THcDriftChamber::~THcDriftChamber()
     delete fTrackProj; fTrackProj = 0;
   }
 }
+
 
 //_____________________________________________________________________________
 void THcDriftChamber::DeleteArrays()

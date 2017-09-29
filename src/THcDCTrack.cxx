@@ -26,6 +26,7 @@ void THcDCTrack::AddHit(THcDCHit * hit, Double_t dist, Int_t lr)
   fHits.push_back(newhit);
   fNHits++;
 }
+
 void THcDCTrack::AddSpacePoint( THcSpacePoint* sp )
 {
   // Add to list of space points in this track
