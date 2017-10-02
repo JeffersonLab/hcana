@@ -331,7 +331,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
   //Set the default plane x,y positions to those of the chamber
    for(Int_t ip=0; ip<fNPlanes;ip++) {
     fXPos[ip] = fXCenter;
-    fYPos[ip] = fXCenter;
+    fYPos[ip] = fYCenter;
    }
 
    //Load the x,y positions of the planes if they exist (overwrites defaults)
