@@ -108,7 +108,7 @@ void THcDC::Setup(const char* name, const char* description)
   } else {
     fHMSStyleChambers = 0;
   }
-  cout<<"HMS Style??\t"<<fHMSStyleChambers<<endl;
+  //cout<<"HMS Style??\t"<<fHMSStyleChambers<<endl;
   string planenamelist;
   DBRequest list[]={
     {"dc_num_planes",&fNPlanes, kInt},
@@ -301,8 +301,6 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"dc_readoutLR", fReadoutLR, kInt, (UInt_t)fNPlanes, optional},
     {"dc_readoutTB", fReadoutTB, kInt, (UInt_t)fNPlanes, optional},
 
-    {"dc_xpos", fXPos, kDouble, (UInt_t)fNPlanes},
-    {"dc_ypos", fYPos, kDouble, (UInt_t)fNPlanes},
     {"dc_zpos", fZPos, kDouble, (UInt_t)fNPlanes},
     {"dc_alpha_angle", fAlphaAngle, kDouble, (UInt_t)fNPlanes},
     {"dc_beta_angle", fBetaAngle, kDouble, (UInt_t)fNPlanes},
@@ -329,6 +327,21 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
   };
 
   gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
+
+  //Set the default plane x,y positions to those of the chamber
+   for(Int_t ip=0; ip<fNPlanes;ip++) {
+    fXPos[ip] = fXCenter;
+    fYPos[ip] = fXCenter;
+   }
+
+   //Load the x,y positions of the planes if they exist (overwrites defaults)
+   DBRequest listOpt[]={
+     {"dc_xpos", fXPos, kDouble, (UInt_t)fNPlanes, optional},
+     {"dc_ypos", fYPos, kDouble, (UInt_t)fNPlanes, optional},
+     {0}
+   };
+   gHcParms->LoadParmValues((DBRequest*)&listOpt,fPrefix);
+
   if(fNTracksMaxFP <= 0) fNTracksMaxFP = 10;
   // if(fNTracksMaxFP > HNRACKS_MAX) fNTracksMaxFP = NHTRACKS_MAX;
   cout << "Plane counts:";
