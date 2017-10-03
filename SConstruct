@@ -9,20 +9,10 @@ import commands
 import SCons
 import subprocess
 
-def rootcint(target,source,env):
-	"""Executes the ROOT dictionary generator over a list of headers."""
-	dictname = target[0]
-	headers = ""
-	cpppath = env.subst('$_CCCOMCOM')
-	ccflags = env.subst('$CCFLAGS')
-	rootcint = env.subst('$ROOTCINT')
-	print ("Doing rootcint call now ...")
-	for f in source:
-		headers += str(f) + " "
-	command = rootcint + " -f %s -c -pthread -fPIC %s %s" % (dictname,cpppath,headers)
-	print ('RootCint Command = %s\n' % command)
-	ok = os.system(command)
-	return ok
+####### Check SCons version ##################
+print('!!! Building the Hall C analyzer and libraries with SCons requires')
+print('!!! SCons version 2.5.0 or newer.')
+EnsureSConsVersion(2,5,0)
 
 baseenv = Environment(ENV = os.environ)
 #dict = baseenv.Dictionary()
@@ -30,11 +20,6 @@ baseenv = Environment(ENV = os.environ)
 #keys.sort()
 #for key in keys:
 #	print "Construction variable = '%s', value = '%s'" % (key, dict[key])
-
-####### Check SCons version ##################
-print('!!! Building the Hall C analyzer and libraries with SCons requires')
-print('!!! SCons version 2.5.0 or newer.')
-EnsureSConsVersion(2,5,0)
 
 ####### Hall A Build Environment #############
 #
@@ -58,6 +43,52 @@ print ("Hall A Main Directory = %s" % baseenv.subst('$HA_DIR'))
 print ("Software Version = %s" % baseenv.subst('$VERSION'))
 ivercode = 65536*int(float(baseenv.subst('$SOVERSION')))+ 256*int(10*(float(baseenv.subst('$SOVERSION'))-int(float(baseenv.subst('$SOVERSION')))))+ int(float(baseenv.subst('$PATCH')))
 baseenv.Append(VERCODE = ivercode)
+
+######## ROOT Dictionaries #########
+def rootcint(target,source,env):
+	"""Executes the ROOT dictionary generator over a list of headers."""
+	dictname = target[0]
+	headers = ""
+	cpppath = env.subst('$_CCCOMCOM')
+	ccflags = env.subst('$CCFLAGS')
+	rootcint = env.subst('$ROOTCINT')
+#	 print ("Doing rootcint call now ...")
+	for f in source:
+		headers += str(f) + " "
+	command = "rootcint -f %s -c -pthread -fPIC %s %s" % (dictname,cpppath,headers)
+#	print ('RootCint Command = %s\n' % command)
+	ok = os.system(command)
+	return ok
+
+baseenv.Append(ROOTCONFIG = 'root-config')
+try:
+        baseenv.PrependENVPath('PATH',baseenv['ENV']['ROOTSYS'] + '/bin')
+except KeyError:
+        pass    # ROOTSYS not defined
+
+try:
+        baseenv.ParseConfig('$ROOTCONFIG --cflags --glibs')
+        if sys.version_info >= (2, 7):
+                cmd = baseenv['ROOTCONFIG'] + " --cxx"
+                baseenv.Replace(CXX = subprocess.check_output(cmd, shell=True).rstrip())
+                cmd = baseenv['ROOTCONFIG'] + " --version"
+                baseenv.Replace(ROOTVERS = subprocess.check_output(cmd, shell=True).rstrip())
+        else:
+                baseenv.Replace(CXX = subprocess.Popen([baseenv['ROOTCONFIG'], '--cxx'],\
+                                        stdout=subprocess.PIPE).communicate()[0].rstrip())
+                baseenv.Replace(ROOTVERS = subprocess.Popen([baseenv['ROOTCONFIG'],\
+                        '--version'],stdout=subprocess.PIPE).communicate()[0].rstrip())
+        if platform.system() == 'Darwin':
+                try:
+                        baseenv.Replace(LINKFLAGS = baseenv['LINKFLAGS'].remove('-pthread'))
+                except:
+                        pass #  '-pthread' was not present in LINKFLAGS
+except OSError:
+        print('!!! Cannot find ROOT.  Check if root-config is in your PATH.')
+        Exit(1)
+
+bld = Builder(action=rootcint)
+baseenv.Append(BUILDERS = {'RootCint': bld})
 #
 # evio environment
 #
@@ -149,28 +180,6 @@ if baseenv.subst('$CHECKHEADERS')==proceed:
 			Exit(0)
 
 baseenv = conf.Finish()
-
-######## ROOT Dictionaries #########
-baseenv.Append(ROOTCONFIG = 'root-config')
-baseenv.Append(ROOTCINT = 'rootcint')
-
-try:
-        baseenv.ParseConfig('$ROOTCONFIG --cflags')
-        baseenv.ParseConfig('$ROOTCONFIG --libs')
-        baseenv.MergeFlags('-fPIC')
-except OSError:
-        try:
-		baseenv.Replace(ROOTCONFIG = baseenv['ENV']['ROOTSYS'] + '/bin/root-config')
-		baseenv.Replace(ROOTCINT = baseenv['ENV']['ROOTSYS'] + '/bin/rootcint')
-		baseenv.ParseConfig('$ROOTCONFIG --cflags')
-		baseenv.ParseConfig('$ROOTCONFIG --libs')
-		baseenv.MergeFlags('-fPIC')
-	except KeyError:
-                print('!!! Cannot find ROOT.  Check if root-config is in your PATH.')
-                Exit(1)
-
-bld = Builder(action=rootcint)
-baseenv.Append(BUILDERS = {'RootCint': bld})
 
 ######## cppcheck ###########################
 
