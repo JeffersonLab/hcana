@@ -65,6 +65,7 @@ using namespace Decoder;
 
 static const UInt_t ICOUNT    = 1;
 static const UInt_t IRATE     = 2;
+static const UInt_t ICURRENT = 3;
 static const UInt_t MAXCHAN   = 32;
 static const UInt_t defaultDT = 4;
 
@@ -317,11 +318,16 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
                                 dvars[ivar] = scalers[isca]->GetRate(ichan);
                                 dvarsFirst[ivar] = dvars[ivar];
                         }
+			//	if(scalerloc[ivar]->ikind == ICURRENT){
+			// dvars[ivar] = scalers[isca]->GetCurrent(ichan);
+			//dvarsFirst[ivar] = dvars[ivar];
+			//}
           		if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
 
                     } else {
       			if (scalerloc[ivar]->ikind == ICOUNT) dvarsFirst[ivar] = scalers[isca]->GetData(ichan);
       			if (scalerloc[ivar]->ikind == IRATE)  dvarsFirst[ivar] = scalers[isca]->GetRate(ichan);
+			//if (scalerloc[ivar]->ikind == ICURRENT) dvarsFirst[ivar] = scalers[isca]->GetCurrent(ichan);
       			if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
                     }
         } else {
@@ -334,7 +340,8 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
 		(ichan < MAXCHAN)) {
       			if (scalerloc[ivar]->ikind == ICOUNT) dvars[ivar] = scalers[isca]->GetData(ichan)-dvarsFirst[ivar];
       			if (scalerloc[ivar]->ikind == IRATE)  dvars[ivar] = scalers[isca]->GetRate(ichan);
-      			if (fDebugFile) *fDebugFile << "   dvars  "<<scalerloc[ivar]->ikind<<"  "<<dvars[ivar]<<endl;
+      			//if (scalerloc[ivar]->ikind == ICURRENT) dvars[ivar] = scalers[isca]->GetCurrent(ichan);
+			if (fDebugFile) *fDebugFile << "   dvars  "<<scalerloc[ivar]->ikind<<"  "<<dvars[ivar]<<endl;
     	} else {
       			cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
     	}
