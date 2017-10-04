@@ -33,6 +33,7 @@ os.system(cmd)
 hcheaders = Glob('src/*.h',exclude=['src/HallC_LinkDef.h'])+Glob('src/HallC_LinkDef.h')
 
 pbaseenv.RootCint(roothcdict,hcheaders)
+pbaseenv.Clean(roothcdict,re.sub(r'\.C\Z','_rdict.pcm',roothcdict))
 pbaseenv.SharedObject(target = roothcobj, source = roothcdict)
 
 #######  Start of main SConscript ###########
@@ -42,3 +43,4 @@ print ('LIBS = %s\n' % pbaseenv.subst('$LIBS'))
 analyzer = pbaseenv.Program(target = 'hcana', source = 'src/main.o')
 pbaseenv.Install('./bin',analyzer)
 pbaseenv.Alias('install',['./bin'])
+#pbaseenv.Clean(analyzer,)
