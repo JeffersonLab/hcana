@@ -329,18 +329,21 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
   gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
 
   //Set the default plane x,y positions to those of the chamber
+  //This assumes each chamber has 6 tracking planes!
    for(Int_t ip=0; ip<fNPlanes;ip++) {
-    fXPos[ip] = fXCenter;
-    fYPos[ip] = fYCenter;
+	   int ncham = 0;
+	   if (ip>5) {ncham=1;}
+       fXPos[ip] = fXCenter[ncham];
+       fYPos[ip] = fYCenter[ncham];
    }
 
    //Load the x,y positions of the planes if they exist (overwrites defaults)
-   DBRequest listOpt[]={
+  DBRequest listOpt[]={
      {"dc_xpos", fXPos, kDouble, (UInt_t)fNPlanes, optional},
      {"dc_ypos", fYPos, kDouble, (UInt_t)fNPlanes, optional},
      {0}
    };
-   gHcParms->LoadParmValues((DBRequest*)&listOpt,fPrefix);
+  gHcParms->LoadParmValues((DBRequest*)&listOpt,fPrefix);
 
   if(fNTracksMaxFP <= 0) fNTracksMaxFP = 10;
   // if(fNTracksMaxFP > HNRACKS_MAX) fNTracksMaxFP = NHTRACKS_MAX;
