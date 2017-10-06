@@ -43,7 +43,6 @@ baseenv.Append(VERCODE = ivercode)
 baseenv.Append(CPPPATH = ['$HC_SRC','$HA_SRC','$HA_DC'])
 
 configure.FindROOT(baseenv)
-configure.FindEVIO(baseenv)
 
 bld = Builder(action=rootcint)
 baseenv.Append(BUILDERS = {'RootCint': bld})
