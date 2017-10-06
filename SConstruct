@@ -45,6 +45,9 @@ import configure
 from rootcint import rootcint
 
 configure.FindROOT(baseenv)
+# If EVIO is set up, use it. Otherwise the Podd submodule will build it
+# and we will pick it up from there
+configure.FindEVIO(baseenv, build_it = False, fail_if_missing = False)
 
 bld = Builder(action=rootcint)
 baseenv.Append(BUILDERS = {'RootCint': bld})
