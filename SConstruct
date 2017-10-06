@@ -3,12 +3,10 @@
 ###### Author:	Edward Brash (brash@jlab.org) June 2013
 
 import os
-#import sys
+import sys
 #import platform
 #import commands
 import SCons
-import configure
-from rootcint import rootcint
 import subprocess
 
 ####### Check SCons version ##################
@@ -16,17 +14,17 @@ print('!!! Building the Hall C analyzer and libraries with SCons requires')
 print('!!! SCons version 2.5.0 or newer.')
 EnsureSConsVersion(2,5,0)
 
-baseenv = Environment(ENV = os.environ,tools=["default"],toolpath=['site_scons'])
+baseenv = Environment(ENV = os.environ,tools=["default"],toolpath=['podd/site_scons'])
 
 ####### Hall A Build Environment #############
 #
 baseenv.Append(HEAD_DIR= Dir('.').abspath)
 baseenv.Append(HC_DIR= baseenv.subst('$HEAD_DIR'))
-baseenv.Append(HC_SRC= baseenv.subst('$HC_DIR')+'/src ')
-baseenv.Append(HA_DIR= baseenv.subst('$HC_DIR')+'/podd ')
+baseenv.Append(HC_SRC= baseenv.subst('$HC_DIR')+'/src')
+baseenv.Append(HA_DIR= baseenv.subst('$HC_DIR')+'/podd')
 baseenv.Append(MAIN_DIR= baseenv.subst('$HEAD_DIR'))
-baseenv.Append(HA_SRC= baseenv.subst('$HA_DIR')+'/src ')
-baseenv.Append(HA_DC= baseenv.subst('$HA_DIR')+'/hana_decode ')
+baseenv.Append(HA_SRC= baseenv.subst('$HA_DIR')+'/src')
+baseenv.Append(HA_DC= baseenv.subst('$HA_DIR')+'/hana_decode')
 baseenv.Append(MAJORVERSION = '1')
 baseenv.Append(MINORVERSION = '6')
 baseenv.Append(PATCH = '0')
@@ -41,6 +39,10 @@ print ("Software Version = %s" % baseenv.subst('$VERSION'))
 ivercode = 65536*int(float(baseenv.subst('$SOVERSION')))+ 256*int(10*(float(baseenv.subst('$SOVERSION'))-int(float(baseenv.subst('$SOVERSION')))))+ int(float(baseenv.subst('$PATCH')))
 baseenv.Append(VERCODE = ivercode)
 baseenv.Append(CPPPATH = ['$HC_SRC','$HA_SRC','$HA_DC'])
+
+sys.path.insert(1,baseenv.subst('$HA_DIR'+'/site_scons'))
+import configure
+from rootcint import rootcint
 
 configure.FindROOT(baseenv)
 
@@ -95,7 +97,7 @@ eviolib = 'evio'
 baseenv.Append(LIBPATH=['$HC_DIR','$EVIO_LIB','$HA_DIR','$HC_SRC','$HA_SRC','$HA_DC'])
 baseenv.Replace(SHLIBSUFFIX = '.so')
 # Do we need anymore?
-baseenv.Append(CPPDEFINES = '-DHALLC_MODS')
+baseenv.Append(CPPDEFINES = 'HALLC_MODS')
 baseenv.Replace(SOSUFFIX = baseenv.subst('$SHLIBSUFFIX'))
 #baseenv.Replace(SHLIBSUFFIX = '.so')
 baseenv.Append(SHLIBSUFFIX = '.'+baseenv.subst('$VERSION'))
