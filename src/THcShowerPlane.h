@@ -13,6 +13,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include "THaSubDetector.h"
+#include "THcCherenkov.h"
 #include "TClonesArray.h"
 
 #include <iostream>
@@ -109,7 +110,12 @@ public:
     return fNegPed[i];
   };
 
+  Int_t AccumulateStat(TClonesArray& tracks);
+
 protected:
+
+  THaDetectorBase* fParent;
+  THcCherenkov* fCherenkov;
 
   // Flash ADC parameters
   Int_t fUsingFADC;		// != 0 if using FADC in sample mode
@@ -218,6 +224,17 @@ protected:
   virtual void  FillADC_SampleIntegral( );
   virtual void  FillADC_SampIntDynPed( );
   virtual void  FillADC_Standard( );
+
+  //Quatitites for efficiency calculations.
+
+  Double_t fStatCerMin;
+  Double_t fStatSlop;
+  Double_t fStatMaxChi2;
+  vector<Int_t> fStatNumTrk;
+  vector<Int_t> fStatNumHit;
+  Int_t fTotStatNumTrk;
+  Int_t fTotStatNumHit;
+  
   ClassDef(THcShowerPlane,0); // Calorimeter bars in a plane
 };
 #endif

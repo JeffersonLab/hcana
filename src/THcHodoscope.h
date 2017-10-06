@@ -15,8 +15,6 @@
 #include "THcHodoHit.h"
 #include "THcRawHodoHit.h"
 #include "THcScintillatorPlane.h"
-#include "THcShower.h"
-#include "THcCherenkov.h"
 
 #include "THaTrackingDetector.h"
 #include "THcHitList.h"
@@ -180,9 +178,6 @@ protected:
                               // and estimated match to TOF paddle
 
   //--------------------------   Ahmed   -----------------------------
-
-  THcShower* fShower;
-  THcCherenkov* fChern;
 
 
   Int_t        fCheckEvent;

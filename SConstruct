@@ -9,20 +9,10 @@ import commands
 import SCons
 import subprocess
 
-def rootcint(target,source,env):
-	"""Executes the ROOT dictionary generator over a list of headers."""
-	dictname = target[0]
-	headers = ""
-	cpppath = env.subst('$_CCCOMCOM')
-	ccflags = env.subst('$CCFLAGS')
-	rootcint = env.subst('$ROOTCINT')
-	print "Doing rootcint call now ..."
-	for f in source:
-		headers += str(f) + " "
-	command = rootcint + " -f %s -c -pthread -fPIC %s %s" % (dictname,cpppath,headers)
-	print ('RootCint Command = %s\n' % command)
-	ok = os.system(command)
-	return ok
+####### Check SCons version ##################
+print('!!! Building the Hall C analyzer and libraries with SCons requires')
+print('!!! SCons version 2.5.0 or newer.')
+EnsureSConsVersion(2,5,0)
 
 baseenv = Environment(ENV = os.environ)
 #dict = baseenv.Dictionary()
@@ -30,11 +20,6 @@ baseenv = Environment(ENV = os.environ)
 #keys.sort()
 #for key in keys:
 #	print "Construction variable = '%s', value = '%s'" % (key, dict[key])
-
-####### Check SCons version ##################
-print('!!! Building the Hall C analyzer and libraries with SCons requires')
-print('!!! SCons version 2.5.0 or newer.')
-EnsureSConsVersion(2,5,0)
 
 ####### Hall A Build Environment #############
 #
@@ -52,32 +37,78 @@ baseenv.Append(SOVERSION = baseenv.subst('$MAJORVERSION')+'.'+baseenv.subst('$MI
 baseenv.Append(VERSION = baseenv.subst('$SOVERSION')+'.'+baseenv.subst('$PATCH'))
 baseenv.Append(EXTVERS = '')
 baseenv.Append(HA_VERSION = baseenv.subst('$VERSION')+baseenv.subst('$EXTVERS'))
-print "Hall C Main Directory = %s" % baseenv.subst('$HC_DIR')
-print "Hall C Source Directory = %s" % baseenv.subst('$HC_SRC')
-print "Hall A Main Directory = %s" % baseenv.subst('$HA_DIR')
-print "Software Version = %s" % baseenv.subst('$VERSION')
+print ("Hall C Main Directory = %s" % baseenv.subst('$HC_DIR'))
+print ("Hall C Source Directory = %s" % baseenv.subst('$HC_SRC'))
+print ("Hall A Main Directory = %s" % baseenv.subst('$HA_DIR'))
+print ("Software Version = %s" % baseenv.subst('$VERSION'))
 ivercode = 65536*int(float(baseenv.subst('$SOVERSION')))+ 256*int(10*(float(baseenv.subst('$SOVERSION'))-int(float(baseenv.subst('$SOVERSION')))))+ int(float(baseenv.subst('$PATCH')))
 baseenv.Append(VERCODE = ivercode)
+
+######## ROOT Dictionaries #########
+def rootcint(target,source,env):
+	"""Executes the ROOT dictionary generator over a list of headers."""
+	dictname = target[0]
+	headers = ""
+	cpppath = env.subst('$_CCCOMCOM')
+	ccflags = env.subst('$CCFLAGS')
+	rootcint = env.subst('$ROOTCINT')
+#	 print ("Doing rootcint call now ...")
+	for f in source:
+		headers += str(f) + " "
+	command = "rootcint -f %s -c -pthread -fPIC %s %s" % (dictname,cpppath,headers)
+#	print ('RootCint Command = %s\n' % command)
+	ok = os.system(command)
+	return ok
+
+baseenv.Append(ROOTCONFIG = 'root-config')
+try:
+        baseenv.PrependENVPath('PATH',baseenv['ENV']['ROOTSYS'] + '/bin')
+except KeyError:
+        pass    # ROOTSYS not defined
+
+try:
+        baseenv.ParseConfig('$ROOTCONFIG --cflags --glibs')
+        if sys.version_info >= (2, 7):
+                cmd = baseenv['ROOTCONFIG'] + " --cxx"
+                baseenv.Replace(CXX = subprocess.check_output(cmd, shell=True).rstrip())
+                cmd = baseenv['ROOTCONFIG'] + " --version"
+                baseenv.Replace(ROOTVERS = subprocess.check_output(cmd, shell=True).rstrip())
+        else:
+                baseenv.Replace(CXX = subprocess.Popen([baseenv['ROOTCONFIG'], '--cxx'],\
+                                        stdout=subprocess.PIPE).communicate()[0].rstrip())
+                baseenv.Replace(ROOTVERS = subprocess.Popen([baseenv['ROOTCONFIG'],\
+                        '--version'],stdout=subprocess.PIPE).communicate()[0].rstrip())
+        if platform.system() == 'Darwin':
+                try:
+                        baseenv.Replace(LINKFLAGS = baseenv['LINKFLAGS'].remove('-pthread'))
+                except:
+                        pass #  '-pthread' was not present in LINKFLAGS
+except OSError:
+        print('!!! Cannot find ROOT.  Check if root-config is in your PATH.')
+        Exit(1)
+
+bld = Builder(action=rootcint)
+baseenv.Append(BUILDERS = {'RootCint': bld})
 #
 # evio environment
 #
 evio_libdir = os.getenv('EVIO_LIBDIR')
 evio_incdir = os.getenv('EVIO_INCDIR')
 if evio_libdir is None or evio_incdir is None:
-	print "No external EVIO environment configured !!!"
-	print "EVIO_LIBDIR = %s" % evio_libdir
-	print "EVIO_INCDIR = %s" % evio_incdir
-	print "Using local installation ... "
+	print ("No external EVIO environment configured !!!")
+	print ("EVIO_LIBDIR = %s" % evio_libdir)
+	print ("EVIO_INCDIR = %s" % evio_incdir)
+	print ("Using local installation ... ")
 	evio_local = baseenv.subst('$HA_DIR')+'/evio'
 	evio_version = '4.4.6'
 	uname = os.uname();
 	platform = uname[0];
 	machine = uname[4];
 	evio_name = platform + '-' + machine
-	print "evio_name = %s" % evio_name
+	print ("evio_name = %s" % evio_name)
 	evio_local_lib = "%s/evio-%s/%s/lib" % (evio_local,evio_version,evio_name)
 	evio_local_inc = "%s/evio-%s/%s/include" % (evio_local,evio_version,evio_name)
-	evio_tarfile = "%s/evio-%s.tgz" % (evio_local,evio_version)
+	evio_tarfile = "%s/evio-%s.tar.gz" % (evio_local,evio_version)
 
 	####### Check to see if scons -c has been called #########
 
@@ -85,12 +116,12 @@ if evio_libdir is None or evio_incdir is None:
     		subprocess.call(['echo', '!!!!!!!!!!!!!! EVIO Cleaning Process !!!!!!!!!!!! '])
 		if not os.path.isdir(evio_local_lib):
 			if not os.path.exists(evio_tarfile):
-				evio_command_scons = "rm libevio*.*; cd %s; wget --no-check-certificate https://coda.jlab.org/drupal/system/files/evio-%s.tgz; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version,evio_version,evio_version)
+				evio_command_scons = "rm libevio*.*; cd %s; wget https://github.com/JeffersonLab/hallac_evio/archive/evio-%s.tar.gz; tar xvfz evio-%s.tar.gz; mv hallac_evio-evio-%s evio-%s; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version,evio_version,evio_version,evio_version,evio_version)
 			else:
-				evio_command_scons = "rm libevio*.*; cd %s; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version,evio_version)
+				evio_command_scons = "rm libevio*.*; cd %s; tar xvfz evio-%s.tar.gz; mv hallac_evio-evio-%s evio-%s; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version,evio_version,evio_version,evio_version)
 		else:
 			evio_command_scons = "rm libevio*.*; cd %s; cd evio-%s/ ; scons install -c --prefix=." % (evio_local,evio_version)
-		print "evio_command_scons = %s" % evio_command_scons
+		print ("evio_command_scons = %s" % evio_command_scons)
 		os.system(evio_command_scons)
 	else:
 		if not os.path.isdir(evio_local_lib):
@@ -100,11 +131,11 @@ if evio_libdir is None or evio_incdir is None:
 				evio_command_scons = "cd %s; tar xvfz evio-%s.tgz; cd evio-%s/ ; scons install --prefix=." % (evio_local,evio_version,evio_version)
 		else:
 			evio_command_scons = "cd %s; cd evio-%s/ ; scons install --prefix=." % (evio_local,evio_version)
-		print "evio_command_scons = %s" % evio_command_scons
+		print ("evio_command_scons = %s" % evio_command_scons)
 		os.system(evio_command_scons)
 		evio_local_lib_files = "%s/*.*" % (evio_local_lib)
 		evio_command_libcopy = "cp %s %s" % (evio_local_lib_files,baseenv.subst('$HA_DIR'))
-		print "evio_command_libcopy = %s" % evio_command_libcopy
+		print ("evio_command_libcopy = %s" % evio_command_libcopy)
 		os.system(evio_command_libcopy)
 
 	baseenv.Append(EVIO_LIB = evio_local_lib)
@@ -114,8 +145,8 @@ else:
 	# os.system(evio_command_scons)
 	baseenv.Append(EVIO_LIB = os.getenv('EVIO_LIBDIR'))
 	baseenv.Append(EVIO_INC = os.getenv('EVIO_INCDIR'))
-print "EVIO lib Directory = %s" % baseenv.subst('$EVIO_LIB')
-print "EVIO include Directory = %s" % baseenv.subst('$EVIO_INC')
+print ("EVIO lib Directory = %s" % baseenv.subst('$EVIO_LIB'))
+print ("EVIO include Directory = %s" % baseenv.subst('$EVIO_INC'))
 baseenv.Append(CPPPATH = ['$EVIO_INC'])
 #
 # end evio environment
@@ -150,28 +181,6 @@ if baseenv.subst('$CHECKHEADERS')==proceed:
 
 baseenv = conf.Finish()
 
-######## ROOT Dictionaries #########
-baseenv.Append(ROOTCONFIG = 'root-config')
-baseenv.Append(ROOTCINT = 'rootcint')
-
-try:
-        baseenv.ParseConfig('$ROOTCONFIG --cflags')
-        baseenv.ParseConfig('$ROOTCONFIG --libs')
-        baseenv.MergeFlags('-fPIC')
-except OSError:
-        try:
-		baseenv.Replace(ROOTCONFIG = baseenv['ENV']['ROOTSYS'] + '/bin/root-config')
-		baseenv.Replace(ROOTCINT = baseenv['ENV']['ROOTSYS'] + '/bin/rootcint')
-		baseenv.ParseConfig('$ROOTCONFIG --cflags')
-		baseenv.ParseConfig('$ROOTCONFIG --libs')
-		baseenv.MergeFlags('-fPIC')
-	except KeyError:
-                print('!!! Cannot find ROOT.  Check if root-config is in your PATH.')
-                Exit(1)
-
-bld = Builder(action=rootcint)
-baseenv.Append(BUILDERS = {'RootCint': bld})
-
 ######## cppcheck ###########################
 
 def which(program):
@@ -193,7 +202,7 @@ def which(program):
 
 if baseenv.subst('$CPPCHECK')==proceed:
 	is_cppcheck = which('cppcheck')
-	print "Path to cppcheck is %s\n" % is_cppcheck
+	print ("Path to cppcheck is %s\n" % is_cppcheck)
 
 	if(is_cppcheck == None):
 		print('!!! cppcheck not found on this system.  Check if cppcheck is installed and in your PATH.')
@@ -224,12 +233,6 @@ if pbaseenv['CXX'] == 'g++':
 	if (gxxVersion[0] < 4) or (gxxVersion[0] == 4 and gxxVersion[1] < 4):
 		print('Error: g++ version too old! Need at least g++ 4.4!')
 		Exit(1)
-	elif gxxVersion[0] == 4 and 4 <= gxxVersion[1] < 7:
-		if '-std=c++0x' not in pbaseenv['CXXFLAGS']:
-			pbaseenv.Append(CXXFLAGS='-std=c++0x')
-	else:
-		if '-std=c++11' not in pbaseenv['CXXFLAGS']:
-			pbaseenv.Append(CXXFLAGS='-std=c++11')
 
 ##directorylist = ['./','src','podd','podd/src','podd/hana_decode']
 ##SConscript('podd/SConstruct')
@@ -240,8 +243,15 @@ if baseenv.GetOption('clean'):
 else:
     subprocess.call(['echo', '!!!!!! Building Podd !!!!!! '])
     podd_command_scons = "cd %s; scons" % baseenv.subst('$HA_DIR')
+    if baseenv.GetOption('num_jobs'):
+	podd_command_scons += " -j%s" % (GetOption('num_jobs')) 
+    if baseenv.GetOption('silent'):
+	podd_command_scons += " -s"
+    for key,value in ARGLIST:
+	podd_command_scons += " %s=%s" % (key,value)
 
-print "podd_command_scons = %s" % podd_command_scons
+print ("podd_command_scons = %s" % podd_command_scons)
+
 os.system(podd_command_scons)
 
 directorylist = ['./','src']

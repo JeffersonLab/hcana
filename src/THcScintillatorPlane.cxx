@@ -76,13 +76,6 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fTotPlanes = planenum;
   fNScinHits = 0;
 
-
-  fMaxHits=53;
-
-  fpTimes = new Double_t [fMaxHits];
-  fScinTime = new Double_t [fMaxHits];
-  fScinSigma = new Double_t [fMaxHits];
-  fScinZpos = new Double_t [fMaxHits];
   fPosCenter = NULL;
 }
 
@@ -125,10 +118,6 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete frNegAdcPulseInt;
   delete frNegAdcPulseAmp;
 
-  delete fpTimes;
-  delete [] fScinTime;
-  delete [] fScinSigma;
-  delete [] fScinZpos;
   delete [] fPosCenter;
 
   delete [] fHodoPosMinPh; fHodoPosMinPh = NULL;
