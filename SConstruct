@@ -99,8 +99,6 @@ eviolib = 'evio'
 
 baseenv.Append(LIBPATH=['$HC_DIR','$EVIO_LIB','$HA_DIR','$HC_SRC','$HA_SRC','$HA_DC'])
 baseenv.Replace(SHLIBSUFFIX = '.so')
-# Do we need anymore?
-baseenv.Append(CPPDEFINES = 'HALLC_MODS')
 baseenv.Replace(SOSUFFIX = baseenv.subst('$SHLIBSUFFIX'))
 #baseenv.Replace(SHLIBSUFFIX = '.so')
 baseenv.Append(SHLIBSUFFIX = '.'+baseenv.subst('$VERSION'))
