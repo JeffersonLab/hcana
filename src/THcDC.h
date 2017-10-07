@@ -48,6 +48,8 @@ public:
   Int_t GetTdcWinMin(Int_t plane) const { return fTdcWinMin[plane-1];}
   Int_t GetTdcWinMax(Int_t plane) const { return fTdcWinMax[plane-1];}
 
+  Double_t GetXPos(Int_t plane) const { return fXPos[plane-1];}
+  Double_t GetYPos(Int_t plane) const { return fYPos[plane-1];}
   Double_t GetZPos(Int_t plane) const { return fZPos[plane-1];}
   Double_t GetAlphaAngle(Int_t plane) const { return fAlphaAngle[plane-1];}
   Double_t GetBetaAngle(Int_t plane) const { return fBetaAngle[plane-1];}
@@ -59,6 +61,9 @@ public:
   Double_t GetSpacePointCriterion(Int_t chamber) const { return fSpace_Point_Criterion[chamber-1];}
   Double_t GetCentralTime(Int_t plane) const { return fCentralTime[plane-1];}
   Int_t GetDriftTimeSign(Int_t plane) const { return fDriftTimeSign[plane-1];}
+  Int_t GetReadoutLR(Int_t plane) const { return fReadoutLR[plane-1];}
+  Int_t GetReadoutTB(Int_t plane) const { return fReadoutTB[plane-1];}
+
 
   Double_t GetPlaneTimeZero(Int_t plane) const { return fPlaneTimeZero[plane-1];}
   Double_t GetSigma(Int_t plane) const { return fSigma[plane-1];}
@@ -67,10 +72,12 @@ public:
   Double_t GetNSperChan() const { return fNSperChan;}
 
   Double_t GetCenter(Int_t plane) const {
-    Int_t chamber = GetNChamber(plane)-1;
     return
-      fXCenter[chamber]*sin(fAlphaAngle[plane-1]) +
-      fYCenter[chamber]*cos(fAlphaAngle[plane-1]);
+      //fXCenter[chamber]*sin(fAlphaAngle[plane-1]) +
+      //fYCenter[chamber]*cos(fAlphaAngle[plane-1]);
+
+      fXPos[plane-1]*sin(fAlphaAngle[plane-1]) +
+      fYPos[plane-1]*cos(fAlphaAngle[plane-1]);
   }
   //  friend class THaScCalib;
 
@@ -140,7 +147,12 @@ protected:
   Int_t* fNChamber;
   Int_t* fWireOrder;
   Int_t* fDriftTimeSign;
+  Int_t* fReadoutTB;
+  Int_t* fReadoutLR;
 
+
+  Double_t* fXPos;
+  Double_t* fYPos;
   Double_t* fZPos;
   Double_t* fAlphaAngle;
   Double_t* fBetaAngle;
