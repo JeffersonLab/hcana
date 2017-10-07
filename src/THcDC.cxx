@@ -59,7 +59,11 @@ THcDC::THcDC(
   fNChamber = NULL;
   fWireOrder = NULL;
   fDriftTimeSign = NULL;
+  fReadoutTB = NULL;
+  fReadoutLR = NULL;
 
+  fXPos = NULL;
+  fYPos = NULL;
   fZPos = NULL;
   fAlphaAngle = NULL;
   fBetaAngle = NULL;
@@ -104,7 +108,7 @@ void THcDC::Setup(const char* name, const char* description)
   } else {
     fHMSStyleChambers = 0;
   }
-
+  //cout<<"HMS Style??\t"<<fHMSStyleChambers<<endl;
   string planenamelist;
   DBRequest list[]={
     {"dc_num_planes",&fNPlanes, kInt},
@@ -260,7 +264,11 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
   delete [] fNChamber;  fNChamber = new Int_t [fNPlanes]; // Which chamber is this plane
   delete [] fWireOrder;  fWireOrder = new Int_t [fNPlanes]; // Wire readout order
   delete [] fDriftTimeSign;  fDriftTimeSign = new Int_t [fNPlanes];
+  delete [] fReadoutLR;  fReadoutLR = new Int_t [fNPlanes];
+  delete [] fReadoutTB;  fReadoutTB = new Int_t [fNPlanes];
 
+  delete [] fXPos;  fXPos = new Double_t [fNPlanes];
+  delete [] fYPos;  fYPos = new Double_t [fNPlanes];
   delete [] fZPos;  fZPos = new Double_t [fNPlanes];
   delete [] fAlphaAngle;  fAlphaAngle = new Double_t [fNPlanes];
   delete [] fBetaAngle;  fBetaAngle = new Double_t [fNPlanes];
@@ -269,6 +277,11 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
   delete [] fCentralWire;  fCentralWire = new Double_t [fNPlanes];
   delete [] fPlaneTimeZero;  fPlaneTimeZero = new Double_t [fNPlanes];
   delete [] fSigma;  fSigma = new Double_t [fNPlanes];
+
+  Bool_t optional = true;
+  fReadoutLR = new Int_t[fNPlanes];
+  fReadoutTB = new Int_t[fNPlanes];
+
 
   DBRequest list[]={
     {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
@@ -288,6 +301,8 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"dc_chamber_planes", fNChamber, kInt, (UInt_t)fNPlanes},
     {"dc_wire_counting", fWireOrder, kInt, (UInt_t)fNPlanes},
     {"dc_drifttime_sign", fDriftTimeSign, kInt, (UInt_t)fNPlanes},
+    {"dc_readoutLR", fReadoutLR, kInt, (UInt_t)fNPlanes, optional},
+    {"dc_readoutTB", fReadoutTB, kInt, (UInt_t)fNPlanes, optional},
 
     {"dc_zpos", fZPos, kDouble, (UInt_t)fNPlanes},
     {"dc_alpha_angle", fAlphaAngle, kDouble, (UInt_t)fNPlanes},
@@ -313,7 +328,26 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"debugtrackprint", &fdebugtrackprint , kInt},
     {0}
   };
+   for(Int_t ip=0; ip<fNPlanes;ip++) {
+    fReadoutLR[ip] = 0.0;
+    fReadoutTB[ip] = 0.0;
+   }
+
   gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
+
+  //Set the default plane x,y positions to those of the chamber
+   for(Int_t ip=0; ip<fNPlanes;ip++) {
+    fXPos[ip] = fXCenter[GetNChamber(ip+1)-1];
+    fYPos[ip] = fYCenter[GetNChamber(ip+1)-1];
+   }
+
+   //Load the x,y positions of the planes if they exist (overwrites defaults)
+   DBRequest listOpt[]={
+     {"dc_xpos", fXPos, kDouble, (UInt_t)fNPlanes, optional},
+     {"dc_ypos", fYPos, kDouble, (UInt_t)fNPlanes, optional},
+     {0}
+   };
+   gHcParms->LoadParmValues((DBRequest*)&listOpt,fPrefix);
   if(fNTracksMaxFP <= 0) fNTracksMaxFP = 10;
   // if(fNTracksMaxFP > HNRACKS_MAX) fNTracksMaxFP = NHTRACKS_MAX;
   cout << "Plane counts:";
@@ -400,7 +434,11 @@ void THcDC::DeleteArrays()
   delete [] fNChamber;   fNChamber = NULL;
   delete [] fWireOrder;   fWireOrder = NULL;
   delete [] fDriftTimeSign;   fDriftTimeSign = NULL;
+  delete [] fReadoutLR;   fReadoutLR = NULL;
+  delete [] fReadoutTB;   fReadoutTB = NULL;
 
+  delete [] fXPos;   fXPos = NULL;
+  delete [] fYPos;   fYPos = NULL;
   delete [] fZPos;   fZPos = NULL;
   delete [] fAlphaAngle;   fAlphaAngle = NULL;
   delete [] fBetaAngle;   fBetaAngle = NULL;
@@ -855,7 +893,6 @@ void THcDC::TrackFit()
   // }
 
   Double_t dummychi2 = 1.0E4;
-
   for(UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
     //    Double_t chi2 = dummychi2;
     //    Int_t htrack_fit_num = itrack;
@@ -867,20 +904,21 @@ void THcDC::TrackFit()
       THcDCHit* hit=theDCTrack->GetHit(ihit);
       planes[ihit]=hit->GetPlaneNum()-1;
       if(fFixLR) {
-	if(fFixPropagationCorrection) {
-	  coords[ihit] = hit->GetPos()
-	    + theDCTrack->GetHitLR(ihit)*theDCTrack->GetHitDist(ihit);
-	} else {
-	  coords[ihit] = hit->GetPos()
-	    + theDCTrack->GetHitLR(ihit)*hit->GetDist();
-	}
+    	  if(fFixPropagationCorrection) {
+    		  coords[ihit] = hit->GetPos()
+	    		+ theDCTrack->GetHitLR(ihit)*theDCTrack->GetHitDist(ihit);
+    	  } else {
+    		  coords[ihit] = hit->GetPos()
+	    		+ theDCTrack->GetHitLR(ihit)*hit->GetDist();
+    	  }
+
       } else {
-	if(fFixPropagationCorrection) {
-	  coords[ihit] = hit->GetPos()
-	    + hit->GetLR()*theDCTrack->GetHitDist(ihit);
-	} else {
-	  coords[ihit] = hit->GetCoord();
-	}
+    	  if(fFixPropagationCorrection) {
+    		  coords[ihit] = hit->GetPos()
+	    		+ hit->GetLR()*theDCTrack->GetHitDist(ihit);
+    	  } else {
+    		  coords[ihit] = hit->GetCoord();
+    	  }
       }
     }
 
@@ -890,26 +928,26 @@ void THcDC::TrackFit()
       TVectorD TT(NUM_FPRAY);
       TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
-	TT[irayp] = 0.0;
-	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-	  TT[irayp] += (coords[ihit]*
-			fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])
-	    /pow(fSigma[planes[ihit]],2);
-	}
+    	  TT[irayp] = 0.0;
+    	  for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+    		  TT[irayp] += (coords[ihit]*
+    				  fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])
+					  /pow(fSigma[planes[ihit]],2);
+    	  }
       }
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
-	for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
-	  AA[irayp][jrayp] = 0.0;
-	  if(jrayp<irayp) { // Symmetric
-	    AA[irayp][jrayp] = AA[jrayp][irayp];
-	  } else {
-	    for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-	      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
-		fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
-		pow(fSigma[planes[ihit]],2);
-	    }
-	  }
-	}
+    	  for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
+    		  AA[irayp][jrayp] = 0.0;
+    		  if(jrayp<irayp) { // Symmetric
+    			  AA[irayp][jrayp] = AA[jrayp][irayp];
+    		  } else {
+    			  for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+    				  AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
+    						  fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
+							  pow(fSigma[planes[ihit]],2);
+    			  }
+    		  }
+    	  }
       }
 
       // Solve 4x4 equations
@@ -926,25 +964,24 @@ void THcDC::TrackFit()
 
       // Make sure fCoords, fResiduals, and fDoubleResiduals are clear
       for(Int_t iplane=0;iplane < fNPlanes; iplane++) {
-	Double_t coord=0.0;
-	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
-	  coord += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
-	  // cout << "ir = " << ir << ", dray[ir] = " << dray[ir] << endl;
-	}
-	theDCTrack->SetCoord(iplane,coord);
+    	  Double_t coord=0.0;
+    	  for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
+    		  coord += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
+    		  // cout << "ir = " << ir << ", dray[ir] = " << dray[ir] << endl;
+    	  }
+    	  theDCTrack->SetCoord(iplane,coord);
       }
       // Compute Chi2 and residuals
       chi2 = 0.0;
       for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-	Double_t residual = coords[ihit] - theDCTrack->GetCoord(planes[ihit]);
-	// cout << "ihit = " << ihit << ", planes[ihit] = " << planes[ihit]
-	//      << ", coords[ihit] = " << coords[ihit]
-	//      << ", theDCTrack->GetCoord(planes[ihit]) = "
-	//      << theDCTrack->GetCoord(planes[ihit]) << endl;
-	theDCTrack->SetResidual(planes[ihit], residual);
-	// cout << "Getting residual = " << theDCTrack->GetResidual(planes[ihit]) << endl;
-	chi2 += pow(residual/fSigma[planes[ihit]],2);
+    	  Double_t residual = coords[ihit] - theDCTrack->GetCoord(planes[ihit]);
+    	  theDCTrack->SetResidual(planes[ihit], residual);
+
+  //  	  double track_coord = theDCTrack->GetCoord(planes[ihit]);
+//cout<<planes[ihit]<<"\t"<<track_coord<<"\t"<<coords[ihit]<<"\t"<<residual<<endl;
+    	  chi2 += pow(residual/fSigma[planes[ihit]],2);
       }
+
       theDCTrack->SetVector(dray[0], dray[1], 0.0, dray[2], dray[3]);
     }
     theDCTrack->SetChisq(chi2);
