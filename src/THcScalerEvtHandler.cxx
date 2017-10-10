@@ -300,59 +300,104 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
   // The correspondance between dvars and the scaler and the channel
   // will be driven by a scaler.map file  -- later
 
-  for (size_t i = 0; i < scalerloc.size(); i++) {
+  for (size_t i = 0; i < scalerloc.size(); i++)  {
     size_t ivar = scalerloc[i]->ivar;
     size_t isca = scalerloc[i]->iscaler;
     size_t ichan = scalerloc[i]->ichan;
     if (evcount==0) {
-    	if (fDebugFile) *fDebugFile << "Debug dvarsFirst "<<i<<"   "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
-    	if ((ivar < scalerloc.size()) &&
-		(isca < scalers.size()) &&
-		(ichan < MAXCHAN)) {
-                    if(fUseFirstEvent) {
-                        if (scalerloc[ivar]->ikind == ICOUNT) {
-                                dvars[ivar] = scalers[isca]->GetData(ichan);
-                                dvarsFirst[ivar] = 0;
-                        }
-          	        if (scalerloc[ivar]->ikind == IRATE) {
-                                dvars[ivar] = scalers[isca]->GetRate(ichan);
-                                dvarsFirst[ivar] = dvars[ivar];
-                        }
-			//	if(scalerloc[ivar]->ikind == ICURRENT){
-			// dvars[ivar] = scalers[isca]->GetCurrent(ichan);
-			//dvarsFirst[ivar] = dvars[ivar];
-			//}
-          		if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
-
-                    } else {
-      			if (scalerloc[ivar]->ikind == ICOUNT) dvarsFirst[ivar] = scalers[isca]->GetData(ichan);
-      			if (scalerloc[ivar]->ikind == IRATE)  dvarsFirst[ivar] = scalers[isca]->GetRate(ichan);
-			//if (scalerloc[ivar]->ikind == ICURRENT) dvarsFirst[ivar] = scalers[isca]->GetCurrent(ichan);
-      			if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
-                    }
-        } else {
-      			cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
-        }
-    }else{
-    	if (fDebugFile) *fDebugFile << "Debug dvars "<<i<<"   "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
-    	if ((ivar < scalerloc.size()) &&
-		(isca < scalers.size()) &&
-		(ichan < MAXCHAN)) {
-      			if (scalerloc[ivar]->ikind == ICOUNT) dvars[ivar] = scalers[isca]->GetData(ichan)-dvarsFirst[ivar];
-      			if (scalerloc[ivar]->ikind == IRATE)  dvars[ivar] = scalers[isca]->GetRate(ichan);
-      			//if (scalerloc[ivar]->ikind == ICURRENT) dvars[ivar] = scalers[isca]->GetCurrent(ichan);
-			if (fDebugFile) *fDebugFile << "   dvars  "<<scalerloc[ivar]->ikind<<"  "<<dvars[ivar]<<endl;
-    	} else {
-      			cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
-    	}
+      if (fDebugFile) *fDebugFile << "Debug dvarsFirst "<<i<<"   "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
+      if ((ivar < scalerloc.size()) &&
+	  (isca < scalers.size()) &&
+	  (ichan < MAXCHAN)){
+	if(fUseFirstEvent){
+	  if (scalerloc[ivar]->ikind == ICOUNT){
+	    dvars[ivar] = scalers[isca]->GetData(ichan);
+	    dvarsFirst[ivar] = 0;
+	  }
+	  if (scalerloc[ivar]->ikind == IRATE) {
+	    dvars[ivar] = scalers[isca]->GetRate(ichan);
+	    dvarsFirst[ivar] = dvars[ivar];
+	    //printf("%s %f\n",scalerloc[ivar]->name.Data(),scalers[isca]->GetRate(ichan)); //checks
+	  }
+	  if(scalerloc[ivar]->ikind == ICURRENT){
+	    Int_t bcm_ind=0;
+	    for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
+	      {		
+		size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
+		if (match!=string::npos)
+		  {
+		    bcm_ind=itemp;
+		  }
+	      }
+	    dvarsFirst[ivar]=(scalers[isca]->GetRate(ichan)-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+	    printf("event %i index %i fBCMname %s scalerloc %s offset %f gain %f getrate %f computed%f\n",evcount, bcm_ind, fBCM_Name[bcm_ind],scalerloc[ivar]->name.Data(),fBCM_Offset[bcm_ind],fBCM_Gain[bcm_ind],scalers[isca]->GetRate(ichan),dvarsFirst[ivar]);
+	  }
+	  
+	  if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
+	  
+	} else { //ifnotusefirstevent-guessing it doesn't need changing since irate is the same as when you use fusefirstevent
+	  if (scalerloc[ivar]->ikind == ICOUNT) dvarsFirst[ivar] = scalers[isca]->GetData(ichan);
+	  if (scalerloc[ivar]->ikind == IRATE)  {
+	    dvarsFirst[ivar] = scalers[isca]->GetRate(ichan);
+ 	    //printf("%s %f\n",scalerloc[ivar]->name.Data(),scalers[isca]->GetRate(ichan)); //checks
+	  }
+	  if(scalerloc[ivar]->ikind == ICURRENT)
+	    {
+	      Int_t bcm_ind=0;
+	      for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
+		{		
+		  size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
+		  if (match!=string::npos)
+		    {
+		      bcm_ind=itemp;
+		    }
+		}
+	      dvarsFirst[ivar]=(scalers[isca]->GetRate(ichan)-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+	      printf("event %i index %i fBCM name %s scalerloc %s offset %f gain %f getrate%f\n", evcount, bcm_ind, fBCM_Name[bcm_ind],scalerloc[ivar]->name.Data(),fBCM_Offset[bcm_ind],fBCM_Gain[bcm_ind],scalers[isca]->GetRate(ichan));
+	    }
+	  if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
+	}
+      } 
+      else {
+	cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
+      }
+    }else{ //evcount=/=0
+      if (fDebugFile) *fDebugFile << "Debug dvars "<<i<<"   "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
+      if ((ivar < scalerloc.size()) &&
+	  (isca < scalers.size()) &&
+	  (ichan < MAXCHAN)) {
+	if (scalerloc[ivar]->ikind == ICOUNT) dvars[ivar] = scalers[isca]->GetData(ichan)-dvarsFirst[ivar];
+	if (scalerloc[ivar]->ikind == IRATE) {
+	  dvars[ivar] = scalers[isca]->GetRate(ichan);
+	  // printf("%s %f\n",scalerloc[ivar]->name.Data(),scalers[isca]->GetRate(ichan));//checks
+	}
+	if(scalerloc[ivar]->ikind == ICURRENT)
+	  {
+	    Int_t bcm_ind=0;
+	    for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
+	      {		
+		size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
+		if (match!=string::npos)
+		  {
+		    bcm_ind=itemp;
+		  }
+	      }
+	    dvarsFirst[ivar]=(scalers[isca]->GetRate(ichan)-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+	    printf("event %i index %i fBCMname %s scalerloc %s offset %f gain %f getrate %f computed%f\n",evcount, bcm_ind, fBCM_Name[bcm_ind],scalerloc[ivar]->name.Data(),fBCM_Offset[bcm_ind],fBCM_Gain[bcm_ind],scalers[isca]->GetRate(ichan),dvarsFirst[ivar]);
+	  }  
+	if (fDebugFile) *fDebugFile << "   dvars  "<<scalerloc[ivar]->ikind<<"  "<<dvars[ivar]<<endl;
+      } else {
+	cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<isca<<"  "<<ichan<<endl;
+      }
     }
+    
   }
-
+  
   evcount = evcount + 1;
   evcountR = evcount;
-
+  
   for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
-
+  
   if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
 
   if (fScalerTree) fScalerTree->Fill();
