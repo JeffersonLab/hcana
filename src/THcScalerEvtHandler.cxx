@@ -110,41 +110,44 @@ Int_t THcScalerEvtHandler::ReadDatabase(const TDatime& date )
   char prefix[2];
   prefix[0]='g';
   prefix[1]='\0';
+  fNumBCMs = 0;
   DBRequest list[]={
-    {"NumBCMs",&fNumBCMs, kInt},
+    {"NumBCMs",&fNumBCMs, kInt, 0, 1},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   //cout << " NUmber of BCMs = " << fNumBCMs << endl;
   //
-  fBCM_Gain = new Double_t[fNumBCMs];
-  fBCM_Offset = new Double_t[fNumBCMs];
- fBCM_delta_charge= new Double_t[fNumBCMs];
- string bcm_namelist;
-  DBRequest list2[]={
-    {"BCM_Gain",      fBCM_Gain,         kDouble, (UInt_t) fNumBCMs},
-    {"BCM_Offset",     fBCM_Offset,       kDouble,(UInt_t) fNumBCMs},
-    {"BCM_Names",     &bcm_namelist,       kString},
-    {"BCM_Current_threshold",     &fbcm_Current_Threshold,       kDouble,0, 1},
-    {"BCM_Current_threshold_index",     &fbcm_Current_Threshold_Index,       kInt,0,1},
-    {0}
-  };
-  fbcm_Current_Threshold = 0.0;
-  fbcm_Current_Threshold_Index = 0;
-  gHcParms->LoadParmValues((DBRequest*)&list2, prefix);
-  vector<string> bcm_names = vsplit(bcm_namelist);
-  fBCM_Name = new char* [fNumBCMs];
-  for(Int_t i=0;i<fNumBCMs;i++) {
-    fBCM_Name[i] = new char[bcm_names[i].length()+1];
-    strcpy(fBCM_Name[i], bcm_names[i].c_str());
-    //    cout << fBCM_Gain[i] << " " << fBCM_Offset[i] << " " << fBCM_Name[i] << endl;
+  if(fNumBCMs > 0) {
+    fBCM_Gain = new Double_t[fNumBCMs];
+    fBCM_Offset = new Double_t[fNumBCMs];
+    fBCM_delta_charge= new Double_t[fNumBCMs];
+    string bcm_namelist;
+    DBRequest list2[]={
+      {"BCM_Gain",      fBCM_Gain,         kDouble, (UInt_t) fNumBCMs},
+      {"BCM_Offset",     fBCM_Offset,       kDouble,(UInt_t) fNumBCMs},
+      {"BCM_Names",     &bcm_namelist,       kString},
+      {"BCM_Current_threshold",     &fbcm_Current_Threshold,       kDouble,0, 1},
+      {"BCM_Current_threshold_index",     &fbcm_Current_Threshold_Index,       kInt,0,1},
+      {0}
+    };
+    fbcm_Current_Threshold = 0.0;
+    fbcm_Current_Threshold_Index = 0;
+    gHcParms->LoadParmValues((DBRequest*)&list2, prefix);
+    vector<string> bcm_names = vsplit(bcm_namelist);
+    fBCM_Name = new char* [fNumBCMs];
+    for(Int_t i=0;i<fNumBCMs;i++) {
+      fBCM_Name[i] = new char[bcm_names[i].length()+1];
+      strcpy(fBCM_Name[i], bcm_names[i].c_str());
+      //    cout << fBCM_Gain[i] << " " << fBCM_Offset[i] << " " << fBCM_Name[i] << endl;
+    }
+    for(Int_t i=0;i<fNumBCMs;i++) {
+      fBCM_delta_charge[i]=0.;
+    }
   }
   fTotalTime=0.;
   fPrevTotalTime=0.;
   fDeltaTime=-1.;
-  for(Int_t i=0;i<fNumBCMs;i++) {
-    fBCM_delta_charge[i]=0.;
-  }
   //
   //
   return kOK;
