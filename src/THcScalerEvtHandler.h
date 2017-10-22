@@ -20,7 +20,7 @@
 
 class HCScalerLoc { // Utility class used by THaScalerEvtHandler
  public:
- HCScalerLoc(TString nm, TString desc, Int_t isc, Int_t ich, Int_t iki) :
+ HCScalerLoc(TString nm, TString desc, UInt_t isc, UInt_t ich, UInt_t iki) :
    name(nm), description(desc), iscaler(isc), ichan(ich), ikind(iki) { };
   ~HCScalerLoc();
   TString name, description;
@@ -37,6 +37,7 @@ public:
    Int_t Analyze(THaEvData *evdata);
    Int_t AnalyzeBuffer(UInt_t *rdata);
    virtual EStatus Init( const TDatime& run_time);
+   virtual Int_t   ReadDatabase(const TDatime& date );
    virtual Int_t End( THaRunBase* r=0 );
    virtual void SetUseFirstEvent(Bool_t b = kFALSE) {fUseFirstEvent = b;}
    virtual void SetDelayedType(int evtype);
@@ -44,16 +45,31 @@ public:
 
 private:
 
-   void AddVars(TString name, TString desc, Int_t iscal, Int_t ichan, Int_t ikind);
+   void AddVars(TString name, TString desc, UInt_t iscal, UInt_t ichan, UInt_t ikind);
    void DefVars();
    static size_t FindNoCase(const std::string& sdata, const std::string& skey);
 
    std::vector<Decoder::GenScaler*> scalers;
    std::vector<HCScalerLoc*> scalerloc;
+   Int_t fNumBCMs;
+   Double_t *fBCM_Gain;
+   Double_t *fBCM_Offset;
+   Double_t *fBCM_delta_charge;
+   Double_t fTotalTime;
+   Double_t fDeltaTime;
+   Double_t fPrevTotalTime;
+   Double_t fbcm_Current_Threshold;
+   size_t fClockChan;
+   Double_t fClockFreq;
+   Int_t fbcm_Current_Threshold_Index;
+   char** fBCM_Name;
    UInt_t evcount;
    Double_t evcountR;
    Int_t Nvars, ifound, fNormIdx, nscalers;
    Double_t *dvars;
+   Double_t *dvars_prev_read;
+   std::vector<Int_t> scal_prev_read;
+   std::vector<Int_t> scal_present_read;
    Double_t *dvarsFirst;
    TTree *fScalerTree;
    Bool_t fUseFirstEvent;

@@ -43,7 +43,6 @@ public:
 
   THcDriftChamberPlane* GetWirePlane() const { return fWirePlane; }
 
-
   void     SetWire(THcDCWire * wire) { fWire = wire; ConvertTimeToDist(); }
   void     SetRawTime(Int_t time)     { fRawTime = time; }
   void     SetTime(Double_t time)     { fTime = time; }
@@ -56,6 +55,66 @@ public:
   Int_t    GetPlaneIndex() const { return fWirePlane->GetPlaneIndex(); }
   Int_t    GetChamberNum() const { return fWirePlane->GetChamberNum(); }
   void     SetCorrectedStatus(Int_t c) { fCorrected = c; }
+
+  //Set this correctly
+  Int_t GetReadoutSide() {
+	  Int_t pln = fWirePlane->GetPlaneNum();
+	  Int_t tb = fWirePlane->GetReadoutTB();
+	  Int_t wn = fWire->GetNum();
+
+	  //check if x board
+	  if ((pln>=3 && pln<=4) || (pln>=9 && pln<=10)){
+		  if (tb>0){
+			  if (wn < 49){
+				  fReadoutSide = 4;
+			  }
+			  else {
+				  fReadoutSide = 2;
+			  }
+		  }
+		  else {
+			  if (wn < 33){
+				  fReadoutSide = 2;
+			  }
+			  else {
+				  fReadoutSide = 4;
+			  }
+		  }
+	  }
+	  //else is u board
+	  else{
+		  if (tb>0){
+		  	if (wn < 41){
+		  		fReadoutSide = 4;
+		  	}
+		  	else if (wn >= 41 && wn <= 63){
+		  		fReadoutSide = 3;
+		  	}
+		  	else if (wn >=64 && wn <=69){
+		  		fReadoutSide = 1;
+		  	}
+		  	else {
+		  		fReadoutSide = 2;
+		  	}
+		  }
+		  else {
+			  if (wn < 39){
+				  fReadoutSide = 2;
+			  }
+			  else if (wn >=39 && wn<=44){
+				  fReadoutSide = 1;
+			  }
+			  else if (wn>=45 && wn<=67){
+				  fReadoutSide = 3;
+			  }
+			  else {
+				  fReadoutSide = 4;
+			  }
+		  }
+	  }
+	  return fReadoutSide;
+  }
+
 
 protected:
   static const Double_t kBig;  //!
@@ -70,6 +129,7 @@ protected:
   Double_t    fdDist;    // uncertainty in fDist (for chi2 calc)
   Double_t    ftrDist;   // (Perpendicular) distance from the track
   Int_t       fCorrected; // Has this hit been corrected?
+  Int_t       fReadoutSide; // Side where wire is read out. 1-4 is T/R/B/L from beam view for new chambers.
 
   THcDriftChamber* fChamber; //! Pointer to parent wire plane
 
