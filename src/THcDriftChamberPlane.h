@@ -69,6 +69,9 @@ public:
   Double_t*    GetPlaneCoef() { return fPlaneCoef; }
   THcDriftChamberPlane(); // for ROOT I/O
   Double_t     CalcWireFromPos(Double_t pos);
+  Int_t        GetReadoutLR() const { return fReadoutLR;}
+  Int_t        GetReadoutTB() const { return fReadoutTB;}
+
 protected:
 
   TClonesArray* fParentHitList;
@@ -100,6 +103,8 @@ protected:
   Double_t fReadoutCorr;
   Double_t fCentralTime;
   Int_t fDriftTimeSign;
+  Int_t fReadoutLR;
+  Int_t fReadoutTB;
 
   Double_t fCenter;
 

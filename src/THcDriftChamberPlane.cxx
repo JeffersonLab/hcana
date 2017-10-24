@@ -129,6 +129,8 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   fCenter = fParent->GetCenter(fPlaneNum);
   fCentralTime = fParent->GetCentralTime(fPlaneNum);
   fDriftTimeSign = fParent->GetDriftTimeSign(fPlaneNum);
+  fReadoutLR = fParent->GetReadoutLR(fPlaneNum);
+  fReadoutTB = fParent->GetReadoutTB(fPlaneNum);
 
   fNSperChan = fParent->GetNSperChan();
 
