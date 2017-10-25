@@ -80,6 +80,7 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
   cinfo->FADC250.nmodules=0;
   cinfo->FADC250.present=0;
   cinfo->CAEN1190.present=0;
+  cinfo->TI.present=0;  
   CrateInfoMap.insert(std::make_pair(roc, cinfo));
   ip++;
   // Three possible blocks of config data
@@ -135,6 +136,34 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
       cinfo->CAEN1190.timewindow_offset = evdata->GetRawData(ip+3);
       cinfo->CAEN1190.timewindow_width = evdata->GetRawData(ip+4);
       ip += 6;
+    } else if (thisword == 0xd0000000) { // TI setup data
+      cinfo->TI.present = 1;
+      ip += 1;
+      UInt_t versionword = evdata->GetRawData(ip++);
+      if((versionword & 0xffff0000) != 0xabcd0000) {
+	cout << "Unexpected TI info word " << hex << thisword << dec << endl;
+	cout << "  Expected 0xabcdNNNN" << endl;
+	ip += 1;
+      } else {
+	Int_t version = versionword & 0xffff;
+	cinfo->TI.num_prescales = 6;
+	cinfo->TI.nped = evdata->GetRawData(ip++);
+	if(version >= 2) {
+	  cinfo->TI.scaler_period = evdata->GetRawData(ip++);
+	  cinfo->TI.sync_count = evdata->GetRawData(ip++);
+	} else {
+	  cinfo->TI.scaler_period = 2;
+	  cinfo->TI.sync_count = -1;
+	}
+	for(Int_t i = 0; i<cinfo->TI.num_prescales; i++) {
+	  cinfo->TI.prescales[i] = evdata->GetRawData(ip++);
+	}
+	UInt_t lastword = evdata->GetRawData(ip++);
+	if(lastword != 0xd000000f) {
+	  cout << "Unexpected last word of TI information block "
+	       << hex << lastword << dec << endl;
+	}
+      }
     } else {
       cout << "Expected header missing" << endl;
       cout << ip << " " << hex << thisword << dec << endl;
@@ -154,13 +183,14 @@ void THcConfigEvtHandler::PrintConfig()
   while(it != CrateInfoMap.end()) {
     Int_t roc = it->first;
     cout << "================= Configuration Data ROC " << roc << "==================" << endl;
-   CrateInfo_t *cinfo = it->second;
-   if(cinfo->CAEN1190.present) {
+    CrateInfo_t *cinfo = it->second;
+    if(cinfo->CAEN1190.present) {
       cout << "    CAEN 1190 Configuration" << endl;
       cout << "        Resolution: " << cinfo->CAEN1190.resolution << " ps" << endl;
       cout << "        T Offset:   " << cinfo->CAEN1190.timewindow_offset << endl;
       cout << "        T Width:    " << cinfo->CAEN1190.timewindow_width << endl;
-    } else if (cinfo->FADC250.present) {
+    }
+    if (cinfo->FADC250.present) {
       cout << "    FADC250 Configuration" << endl;
       cout << "       Mode:   " << cinfo->FADC250.mode << endl;
       cout << "       Latency: " << cinfo->FADC250.window_lat << "  Width: "<< cinfo->FADC250.window_width << endl;
@@ -187,6 +217,17 @@ void THcConfigEvtHandler::PrintConfig()
         }
         cout << endl;
       }
+    }
+    if(cinfo->TI.present) {
+      cout << "    TI Configuration" << endl;
+      cout << "        N Pedestals:   " << cinfo->TI.nped << " events" << endl;
+      cout << "        Scaler Period: " << cinfo->TI.scaler_period << " seconds" << endl;
+      cout << "        Sync interval: " << cinfo->TI.sync_count << " events" << endl;
+      cout << "        Prescales:    ";
+      for(Int_t i=0;i<cinfo->TI.num_prescales;i++) {
+	cout << " " << cinfo->TI.prescales[i];
+      }
+      cout << endl;
     }
     it++;
   }

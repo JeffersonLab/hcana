@@ -63,6 +63,14 @@ private:
       Int_t timewindow_offset;
       Int_t timewindow_width;
    } CAEN1190;
+    struct TI {
+      Int_t present;
+      Int_t nped;
+      Int_t scaler_period;
+      Int_t sync_count;
+      Int_t num_prescales;
+      Int_t prescales[6];
+    } TI;
    //CrateInfo : FADC250.nmodules(0),CAEN1190.present(0) {}
   } CrateInfo_t;
 
