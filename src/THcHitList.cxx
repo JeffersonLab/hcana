@@ -102,17 +102,19 @@ void THcHitList::InitHitList(THaDetMap* detmap,
   for (Int_t i=0; i < fdMap->GetSize(); i++) {
     THaDetMap::Module* d = fdMap->GetModule(i);
     Int_t refindex = d->refindex;
-    if(d->plane < 1000 && refindex >= 0) {
-      if(!fRefIndexMaps[refindex].defined) {
-	cout << "Refindex " << refindex << " not defined for " <<
+    if(d->plane < 1000) {
+      if(d->signal >= fNSignals) {
+	cout << "Invalid signal " << d->signal << " for " <<
 	  " (" << d->crate << ", " << d->slot <<
 	  ", " << d->lo << ")" << endl;
       }
-    }
-    if(d->signal >= fNSignals) {
-      cout << "Invalid signal " << d->signal << " for " <<
+      if(refindex >= 0) {
+	if(!fRefIndexMaps[refindex].defined) {
+	  cout << "Refindex " << refindex << " not defined for " <<
 	    " (" << d->crate << ", " << d->slot <<
 	    ", " << d->lo << ")" << endl;
+	}
+      }
     }
   }
 
