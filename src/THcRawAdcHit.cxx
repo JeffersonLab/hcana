@@ -445,17 +445,16 @@ void THcRawAdcHit::SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED) {
 }
 
 // FADC conversion factors
-// TO-DO: Obtain the FADC dynamic range from THcConfigEvtHandler
 // Convert pedestal and amplitude to mV
 Double_t THcRawAdcHit::GetAdcTomV() const {
   // 1000 mV / 4096 ADC channels
-  return (fAdcRange / fNAdcChan);
+  return (fAdcRange*1000. / fNAdcChan);
 }
 
 // Convert integral to pC
 Double_t THcRawAdcHit::GetAdcTopC() const {
-  // (1000 mV / 4096 adc channels) * (4000 ps time sample / (50 ohms input resistance * nsamples in integration window))  
-  return (fAdcRange / fNAdcChan) * (fAdcTimeSample / (fAdcInput * fNPeakSamples));
+  // (1 V / 4096 adc channels) * (4 ns time sample / 50 ohms input resistance) = 0.020 pc/channel 
+  return (fAdcRange / fNAdcChan) * (fAdcTimeSample / fAdcImpedence);
 }
 
 // Convert time sub samples to ns
