@@ -453,7 +453,7 @@ Double_t THcRawAdcHit::GetAdcTomV() const {
 
 // Convert integral to pC
 Double_t THcRawAdcHit::GetAdcTopC() const {
-  // (1 V / 4096 adc channels) * (4 ns time sample / 50 ohms input resistance) = 0.020 pc/channel 
+  // (1 V / 4096 adc channels) * (4000 ps time sample / 50 ohms input resistance) = 0.020 pc/channel 
   return (fAdcRange / fNAdcChan) * (fAdcTimeSample / fAdcImpedence);
 }
 
