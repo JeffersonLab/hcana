@@ -179,11 +179,8 @@ Returns 0 if no signal pedestal is set.
 
 
 #include "THcRawAdcHit.h"
-
 #include <stdexcept>
-
 #include "TString.h"
-
 
 THcRawAdcHit::THcRawAdcHit() :
   TObject(),
@@ -194,31 +191,28 @@ THcRawAdcHit::THcRawAdcHit() :
   fHasMulti(kFALSE), fNPulses(0), fNSamples(0)
 {}
 
-
 THcRawAdcHit& THcRawAdcHit::operator=(const THcRawAdcHit& right) {
   TObject::operator=(right);
 
   if (this != &right) {
     fPed = right.fPed;
     for (UInt_t i=0; i<fMaxNPulses; ++i) {
-      fPulseInt[i] = right.fPulseInt[i];
-      fPulseAmp[i] = right.fPulseAmp[i];
+      fPulseInt[i]  = right.fPulseInt[i];
+      fPulseAmp[i]  = right.fPulseAmp[i];
       fPulseTime[i] = right.fPulseTime[i];
     }
     for (UInt_t i=0; i<fMaxNSamples; ++i) {
       fSample[i] = right.fSample[i];
     }
     fHasMulti = right.fHasMulti;
-    fNPulses = right.fNPulses;
+    fNPulses  = right.fNPulses;
     fNSamples = right.fNSamples;
   }
 
   return *this;
 }
 
-
 THcRawAdcHit::~THcRawAdcHit() {}
-
 
 void THcRawAdcHit::Clear(Option_t* opt) {
   TObject::Clear(opt);
@@ -237,7 +231,6 @@ void THcRawAdcHit::Clear(Option_t* opt) {
   fNSamples = 0;
 }
 
-
 void THcRawAdcHit::SetData(Int_t data) {
   if (fNPulses >= fMaxNPulses) {
     throw std::out_of_range(
@@ -248,7 +241,6 @@ void THcRawAdcHit::SetData(Int_t data) {
   ++fNPulses;
 }
 
-
 void THcRawAdcHit::SetSample(Int_t data) {
   if (fNSamples >= fMaxNSamples) {
     throw std::out_of_range(
@@ -258,7 +250,6 @@ void THcRawAdcHit::SetSample(Int_t data) {
   fSample[fNSamples] = data;
   ++fNSamples;
 }
-
 
 void THcRawAdcHit::SetDataTimePedestalPeak(
   Int_t data, Int_t time, Int_t pedestal, Int_t peak
@@ -276,7 +267,6 @@ void THcRawAdcHit::SetDataTimePedestalPeak(
   ++fNPulses;
 }
 
-
 Int_t THcRawAdcHit::GetRawData(UInt_t iPulse) const {
   if (iPulse >= fNPulses && iPulse != 0) {
     TString msg = TString::Format(
@@ -292,7 +282,6 @@ Int_t THcRawAdcHit::GetRawData(UInt_t iPulse) const {
     return fPulseInt[iPulse];
   }
 }
-
 
 Double_t THcRawAdcHit::GetAverage(UInt_t iSampleLow, UInt_t iSampleHigh) const {
   if (iSampleHigh >= fNSamples || iSampleLow >= fNSamples) {
@@ -327,7 +316,6 @@ Int_t THcRawAdcHit::GetIntegral(UInt_t iSampleLow, UInt_t iSampleHigh) const {
   }
 }
 
-
 Double_t THcRawAdcHit::GetData(
   UInt_t iPedLow, UInt_t iPedHigh, UInt_t iIntLow, UInt_t iIntHigh
 ) const {
@@ -336,26 +324,21 @@ Double_t THcRawAdcHit::GetData(
     - GetAverage(iPedHigh, iPedLow) * (iIntHigh - iIntLow + 1);
 }
 
-
 UInt_t THcRawAdcHit::GetNPulses() const {
   return fNPulses;
 }
-
 
 UInt_t THcRawAdcHit::GetNSamples() const {
   return fNSamples;
 }
 
-
 Bool_t THcRawAdcHit::HasMulti() const {
   return fHasMulti;
 }
 
-
 Int_t THcRawAdcHit::GetPedRaw() const {
   return fPed;
 }
-
 
 Int_t THcRawAdcHit::GetPulseIntRaw(UInt_t iPulse) const {
   if (iPulse < fNPulses) {
@@ -373,7 +356,6 @@ Int_t THcRawAdcHit::GetPulseIntRaw(UInt_t iPulse) const {
   }
 }
 
-
 Int_t THcRawAdcHit::GetPulseAmpRaw(UInt_t iPulse) const {
   if (iPulse < fNPulses) {
     return fPulseAmp[iPulse];
@@ -389,7 +371,6 @@ Int_t THcRawAdcHit::GetPulseAmpRaw(UInt_t iPulse) const {
     throw std::out_of_range(msg.Data());
   }
 }
-
 
 Int_t THcRawAdcHit::GetPulseTimeRaw(UInt_t iPulse) const {
   if (iPulse < fNPulses) {
@@ -407,7 +388,6 @@ Int_t THcRawAdcHit::GetPulseTimeRaw(UInt_t iPulse) const {
   }
 }
 
-
 Int_t THcRawAdcHit::GetSampleRaw(UInt_t iSample) const {
   if (iSample < fNSamples) {
     return fSample[iSample];
@@ -421,26 +401,21 @@ Int_t THcRawAdcHit::GetSampleRaw(UInt_t iSample) const {
   }
 }
 
-
 Double_t THcRawAdcHit::GetPed() const {
-  return static_cast<Double_t>(fPed)/static_cast<Double_t>(fNPedestalSamples);
+  return (static_cast<Double_t>(fPed)/static_cast<Double_t>(fNPedestalSamples))*GetAdcTomV();
 }
-
 
 Double_t THcRawAdcHit::GetPulseInt(UInt_t iPulse) const {
-  return static_cast<Double_t>(fPulseInt[iPulse]) - static_cast<Double_t>(fPed)*fPeakPedestalRatio;
+  return (static_cast<Double_t>(fPulseInt[iPulse]) - static_cast<Double_t>(fPed)*fPeakPedestalRatio)*GetAdcTopC();
 }
-
 
 Double_t THcRawAdcHit::GetPulseAmp(UInt_t iPulse) const {
-  return static_cast<Double_t>(fPulseAmp[iPulse]) - static_cast<Double_t>(fPed)/static_cast<Double_t>(fNPedestalSamples);
+  return (static_cast<Double_t>(fPulseAmp[iPulse]) - static_cast<Double_t>(fPed)/static_cast<Double_t>(fNPedestalSamples))*GetAdcTomV();
 }
 
-
-//Int_t THcRawAdcHit::GetPulseTime(UInt_t iPulse) const {
-//  return static_cast<Double_t>(fAdcTime[iPulse]);
-//}
-
+Double_t THcRawAdcHit::GetPulseTime(UInt_t iPulse) const {
+  return (static_cast<Double_t>(fPulseTime[iPulse])*GetAdcTons());
+}
 
 Int_t THcRawAdcHit::GetSampleIntRaw() const {
   Int_t integral = 0;
@@ -452,11 +427,9 @@ Int_t THcRawAdcHit::GetSampleIntRaw() const {
   return integral;
 }
 
-
 Double_t THcRawAdcHit::GetSampleInt() const {
   return static_cast<Double_t>(GetSampleIntRaw()) - GetPed()*static_cast<Double_t>(fNSamples);
 }
-
 
 void THcRawAdcHit::SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED) {
   if (NSA < 0 || NSB < 0 || NPED < 0) {
@@ -476,12 +449,18 @@ void THcRawAdcHit::SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED) {
 // Convert pedestal and amplitude to mV
 Double_t THcRawAdcHit::GetAdcTomV() const {
   // 1000 mV / 4096 ADC channels
-  return 1000./4096.;
+  return (fAdcRange / fNAdcChan);
 }
+
 // Convert integral to pC
 Double_t THcRawAdcHit::GetAdcTopC() const {
-  // (1000 mV * 4000 ps sample * nsample integration window) / (50 ohms * 4096 adc channels)  
-  return (1000. / 4096.) * (4000. / (50. * fNPeakSamples));
+  // (1000 mV / 4096 adc channels) * (4000 ps time sample / (50 ohms input resistance * nsamples in integration window))  
+  return (fAdcRange / fNAdcChan) * (fAdcTimeSample / (fAdcInput * fNPeakSamples));
+}
+
+// Convert time sub samples to ns
+Double_t THcRawAdcHit::GetAdcTons() const {
+  return fAdcTimeRes;
 }
 
 ClassImp(THcRawAdcHit)
