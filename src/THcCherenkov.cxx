@@ -345,11 +345,16 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
 
   while(ihit < fNhits) {
 
-    THcCherenkovHit* hit       = (THcCherenkovHit*) fRawHitList->At(ihit);
-    Int_t            npmt      = hit->fCounter;
-    THcRawAdcHit&    rawAdcHit = hit->GetRawAdcHitPos();
+    THcCherenkovHit* hit         = (THcCherenkovHit*) fRawHitList->At(ihit);
+    Int_t            npmt        = hit->fCounter;
+    THcRawAdcHit&    rawAdcHit   = hit->GetRawAdcHitPos();
+    Double_t         adcTomV     = rawAdcHit.GetAdcTomV();
+    Double_t         adcTopC     = rawAdcHit.GetAdcTopC();
 
     for (UInt_t thit = 0; thit < rawAdcHit.GetNPulses(); thit++) {
+
+      cout << "adcTomV = " << adcTomV << endl;
+      cout << "adcTopC = " << adcTopC << endl;
 
       ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPedRaw());
       ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPed());

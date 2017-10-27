@@ -471,5 +471,17 @@ void THcRawAdcHit::SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED) {
   fPeakPedestalRatio = 1.0*fNPeakSamples/fNPedestalSamples;
 }
 
+// FADC conversion factors
+// TO-DO: Obtain the FADC dynamic range from THcConfigEvtHandler
+// Convert pedestal and amplitude to mV
+Double_t THcRawAdcHit::GetAdcTomV() const {
+  // 1000 mV / 4096 ADC channels
+  return 1000./4096.;
+}
+// Convert integral to pC
+Double_t THcRawAdcHit::GetAdcTopC() const {
+  // (1000 mV * 4000 ps sample * nsample integration window) / (50 ohms * 4096 adc channels)  
+  return (1000. / 4096.) * (4000. / (50. * fNPeakSamples));
+}
 
 ClassImp(THcRawAdcHit)

@@ -44,8 +44,10 @@ class THcRawAdcHit : public TObject {
     //Int_t GetPulseTime(UInt_t iPulse=0) const;
     //Int_t GetSample(UInt_t iSample=0) const;
 
-    Int_t GetSampleIntRaw() const;
+    Int_t    GetSampleIntRaw() const;
     Double_t GetSampleInt() const;
+    Double_t GetAdcTomV() const;
+    Double_t GetAdcTopC() const;
 
     void SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED);
 
