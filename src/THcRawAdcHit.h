@@ -60,7 +60,7 @@ class THcRawAdcHit : public TObject {
     const Double_t fNAdcChan      = 4096.0; // Number of FADC channels in units of ADC channels
     const Double_t fAdcRange      = 1.0;    // Dynamic range of FADCs in units of V, // TO-DO: Get fAdcRange from pre-start event
     const Double_t fAdcImpedence  = 50.0;   // FADC input impedence in units of Ohms
-    const Double_t fAdcTimeSample = 4.0;    // Length of FADC time sample in units of ns
+    const Double_t fAdcTimeSample = 4000.0;    // Length of FADC time sample in units of ps
     const Double_t fAdcTimeRes    = 0.0625; // FADC time resolution in units of ns
 
     Int_t fNPedestalSamples;  // TODO: Get this from prestart event...
