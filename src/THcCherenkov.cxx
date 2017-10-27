@@ -52,6 +52,7 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
   frAdcPed          = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
   frAdcPulseInt     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
   frAdcPulseAmp     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcPulseTime    = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
   fAdcErrorFlag     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
 
   fNumAdcHits         = vector<Int_t>    (MaxNumCerPmt, 0.0);
@@ -80,6 +81,7 @@ THcCherenkov::THcCherenkov( ) :
   frAdcPed          = NULL;
   frAdcPulseInt     = NULL;
   frAdcPulseAmp     = NULL;
+  frAdcPulseTime    = NULL;
   fAdcErrorFlag     = NULL;
 
   InitArrays();
@@ -96,6 +98,7 @@ THcCherenkov::~THcCherenkov()
   delete frAdcPed;          frAdcPed          = NULL;
   delete frAdcPulseInt;     frAdcPulseInt     = NULL;
   delete frAdcPulseAmp;     frAdcPulseAmp     = NULL;
+  delete frAdcPulseTime;    frAdcPulseTime    = NULL;
   delete fAdcErrorFlag;     fAdcErrorFlag     = NULL;
 
   DeleteArrays();
@@ -251,6 +254,7 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
       {"adcPed",          "ADC pedestals",              "frAdcPed.THcSignalHit.GetData()"},
       {"adcPulseInt",     "ADC pulse integrals",        "frAdcPulseInt.THcSignalHit.GetData()"},
       {"adcPulseAmp",     "ADC pulse amplitudes",       "frAdcPulseAmp.THcSignalHit.GetData()"},
+      {"adcPulseTime",    "ADC pulse times",            "frAdcPulseTime.THcSignalHit.GetData()"},
       { 0 }
     };
     DefineVarsFromList( vars, mode);
@@ -302,6 +306,7 @@ void THcCherenkov::Clear(Option_t* opt)
   frAdcPed->Clear();
   frAdcPulseInt->Clear();
   frAdcPulseAmp->Clear();
+  frAdcPulseTime->Clear();
   fAdcErrorFlag->Clear();
 
   for (UInt_t ielem = 0; ielem < fNumAdcHits.size(); ielem++)
@@ -348,13 +353,8 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
     THcCherenkovHit* hit         = (THcCherenkovHit*) fRawHitList->At(ihit);
     Int_t            npmt        = hit->fCounter;
     THcRawAdcHit&    rawAdcHit   = hit->GetRawAdcHitPos();
-    Double_t         adcTomV     = rawAdcHit.GetAdcTomV();
-    Double_t         adcTopC     = rawAdcHit.GetAdcTopC();
 
     for (UInt_t thit = 0; thit < rawAdcHit.GetNPulses(); thit++) {
-
-      cout << "adcTomV = " << adcTomV << endl;
-      cout << "adcTopC = " << adcTopC << endl;
 
       ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPedRaw());
       ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPed());
@@ -366,6 +366,7 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
       ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPulseAmp(thit));
 
       ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPulseTimeRaw(thit));
+      ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPulseTime(thit));
 
       if (rawAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 0);
       if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 1);
