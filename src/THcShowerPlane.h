@@ -205,6 +205,7 @@ protected:
   TClonesArray* frPosAdcPed;
   TClonesArray* frPosAdcPulseInt;
   TClonesArray* frPosAdcPulseAmp;
+  TClonesArray* frPosAdcPulseTime;
 
   TClonesArray* frNegAdcErrorFlag;
   TClonesArray* frNegAdcPedRaw;
@@ -216,6 +217,7 @@ protected:
   TClonesArray* frNegAdcPed;
   TClonesArray* frNegAdcPulseInt;
   TClonesArray* frNegAdcPulseAmp;
+  TClonesArray* frNegAdcPulseTime;
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
