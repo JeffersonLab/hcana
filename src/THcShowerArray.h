@@ -193,6 +193,7 @@ protected:
   TClonesArray* frAdcPed;
   TClonesArray* frAdcPulseInt;
   TClonesArray* frAdcPulseAmp;
+  TClonesArray* frAdcPulseTime;
 
   //Quatitites for efficiency calculations.
 

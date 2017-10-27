@@ -41,15 +41,16 @@ THcShowerArray::THcShowerArray( const char* name,
   fADCHits = new TClonesArray("THcSignalHit",100);
   fLayerNum = layernum;
 
-  frAdcPedRaw = new TClonesArray("THcSignalHit", 16);
-  frAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
-  frAdcPulseIntRaw = new TClonesArray("THcSignalHit", 16);
-  frAdcPulseAmpRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcPedRaw       = new TClonesArray("THcSignalHit", 16);
+  frAdcErrorFlag    = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseIntRaw  = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseAmpRaw  = new TClonesArray("THcSignalHit", 16);
   frAdcPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
 
-  frAdcPed = new TClonesArray("THcSignalHit", 16);
-  frAdcPulseInt = new TClonesArray("THcSignalHit", 16);
-  frAdcPulseAmp = new TClonesArray("THcSignalHit", 16);
+  frAdcPed       = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseInt  = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseAmp  = new TClonesArray("THcSignalHit", 16);
+  frAdcPulseTime = new TClonesArray("THcSignalHit", 16);
 
   fClusterList = new THcShowerClusterList;         // List of hit clusters
 }
@@ -85,6 +86,7 @@ THcShowerArray::~THcShowerArray()
   delete frAdcPed; frAdcPed = NULL;
   delete frAdcPulseInt; frAdcPulseInt = NULL;
   delete frAdcPulseAmp; frAdcPulseAmp = NULL;
+  delete frAdcPulseTime; frAdcPulseTime = NULL;
 
   //  delete [] fA;
   //delete [] fP;
@@ -404,6 +406,7 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
       {"adcPed",          "List of ADC pedestals",             "frAdcPed.THcSignalHit.GetData()"},
       {"adcPulseInt",     "List of ADC pulse integrals.",      "frAdcPulseInt.THcSignalHit.GetData()"},
       {"adcPulseAmp",     "List of ADC pulse amplitudes.",     "frAdcPulseAmp.THcSignalHit.GetData()"},
+      {"adcPulseTime",    "List of ADC pulse times.",          "frAdcPulseTime.THcSignalHit.GetData()"},
       { 0 }
     };
     DefineVarsFromList( vars, mode);
@@ -471,6 +474,7 @@ void THcShowerArray::Clear( Option_t* )
   frAdcPed->Clear();
   frAdcPulseInt->Clear();
   frAdcPulseAmp->Clear();
+  frAdcPulseTime->Clear();
 
   for (UInt_t ielem = 0; ielem < fGoodAdcPed.size(); ielem++) {
     fGoodAdcPulseIntRaw.at(ielem)      = 0.0;
@@ -895,6 +899,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frAdcPed->Clear();
   frAdcPulseInt->Clear();
   frAdcPulseAmp->Clear();
+  frAdcPulseTime->Clear();
 
   for(Int_t i=0;i<fNelem;i++) {
     //fA[i] = 0;
@@ -937,6 +942,8 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp(thit));
 
       ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTimeRaw(thit));
+      ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTime(thit));
+
       if (rawAdcHit.GetPulseAmp(thit)>0&&rawAdcHit.GetPulseIntRaw(thit)>0) {
 	((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum,0);
       } else {
