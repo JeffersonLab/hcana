@@ -181,6 +181,11 @@ Returns 0 if no signal pedestal is set.
 #include "THcRawAdcHit.h"
 #include <stdexcept>
 #include "TString.h"
+    const Double_t THcRawAdcHit::fNAdcChan      = 4096.0; // Number of FADC channels in units of ADC channels
+    const Double_t THcRawAdcHit::fAdcRange      = 1.0;    // Dynamic range of FADCs in units of V, // TO-DO: Get fAdcRange from pre-start event
+    const Double_t THcRawAdcHit::fAdcImpedence  = 50.0;   // FADC input impedence in units of Ohms
+    const Double_t THcRawAdcHit::fAdcTimeSample = 4000.0;    // Length of FADC time sample in units of ps
+    const Double_t THcRawAdcHit::fAdcTimeRes    = 0.0625; // FADC time resolution in units of ns
 
 THcRawAdcHit::THcRawAdcHit() :
   TObject(),
