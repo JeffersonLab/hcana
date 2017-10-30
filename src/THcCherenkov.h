@@ -101,6 +101,7 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   TClonesArray* frAdcPed;
   TClonesArray* frAdcPulseInt;
   TClonesArray* frAdcPulseAmp;
+  TClonesArray* frAdcPulseTime;
   TClonesArray* fAdcErrorFlag;
 
   void Setup(const char* name, const char* description);

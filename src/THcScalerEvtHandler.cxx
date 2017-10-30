@@ -75,7 +75,7 @@ static const UInt_t defaultDT = 4;
 THcScalerEvtHandler::THcScalerEvtHandler(const char *name, const char* description)
   : THaEvtTypeHandler(name,description), evcount(0), evcountR(0.0), ifound(0), fNormIdx(-1),
     dvars(0),dvars_prev_read(0), dvarsFirst(0), fScalerTree(0), fUseFirstEvent(kTRUE),
-    fDelayedType(-1), fOnlyBanks(kFALSE)
+    fOnlySyncEvents(kFALSE), fOnlyBanks(kFALSE), fDelayedType(-1)
 {
   fRocSet.clear();
   fModuleSet.clear();
@@ -96,8 +96,12 @@ Int_t THcScalerEvtHandler::End( THaRunBase* r)
   for(std::vector<UInt_t*>::iterator it = fDelayedEvents.begin();
       it != fDelayedEvents.end(); ++it) {
     UInt_t* rdata = *it;
-    AnalyzeBuffer(rdata);
+    AnalyzeBuffer(rdata,kFALSE);
   }
+  if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
+
+  if (fScalerTree) fScalerTree->Fill();
+
   fDelayedEvents.clear();	// Does this free the arrays?
 
   if (fScalerTree) fScalerTree->Write();
@@ -220,11 +224,17 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     return 1;
   } else { 			// A normal event
     if (fDebugFile) *fDebugFile<<"\n\nTHcScalerEvtHandler :: Debugging event type "<<dec<<evdata->GetEvType()<<endl<<endl;
-    return AnalyzeBuffer(rdata);
+    Int_t ret;
+    if((ret=AnalyzeBuffer(rdata,fOnlySyncEvents))) {
+      if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
+      if (fScalerTree) fScalerTree->Fill();
+    }
+    return ret;
+
   }
 
 }
-Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
+Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 {
 
   // Parse the data, load local data arrays.
@@ -249,15 +259,20 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
       // At any point in the bank where the word is not a matching
       // header, we stop.
       UInt_t tag = (*p>>16) & 0xffff;
+      UInt_t num = (*p) & 0xff;
       UInt_t *pnext = p+*(p-1);	// Next bank
       p++;			// First data word
 
       // Skip over banks that can't contain scalers
       // If SetOnlyBanks(kTRUE) called, fRocSet will be empty
       // so only bank tags matching module types will be considered.
-      if(fRocSet.find(tag)==fRocSet.end()
-	 && fModuleSet.find(tag)==fModuleSet.end()) {
-	p = pnext;		// Fall through to end of this else if
+      if(fModuleSet.find(tag)!=fModuleSet.end()) {
+	if(onlysync && num==0) {
+	  ifound = 0;
+	  return 0;
+	}
+      } else if (fRocSet.find(tag)==fRocSet.end()) {
+	p = pnext;		// Fall through to end of the above else if
       }
 
       // Look for normalization scaler module first.
@@ -496,10 +511,6 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
   //  
   for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
   
-  if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
-
-  if (fScalerTree) fScalerTree->Fill();
-
   return 1;
 }
 
