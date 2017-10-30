@@ -37,6 +37,10 @@ config.log
 *.os
 *.pcm
 \#*\#
+*.swp
+
+# ROOT cruft
+.root_hist
 
 # Doxygen generated documentation directory
 docs/ROOT.tag
