@@ -848,15 +848,18 @@ void THcShowerArray::FillADC_Standard()
 void THcShowerArray::FillADC_DynamicPedestal()
 {
   for (Int_t ielem=0;ielem<frAdcPulseInt->GetEntries();ielem++) {
-    Int_t npad = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+    
+    Int_t npad           = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
     Double_t pulseIntRaw = ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
-    Double_t pulsePed     = ((THcSignalHit*) frAdcPed->ConstructedAt(ielem))->GetData();
-    Double_t pulseInt = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetData();
-    Double_t pulseAmp     = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
-    Double_t pulseTime = ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(ielem))->GetData();
-    Bool_t errorflag = ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(ielem))->GetData();
-    Bool_t pulseTimeCut = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
+    Double_t pulsePed    = ((THcSignalHit*) frAdcPed->ConstructedAt(ielem))->GetData();
+    Double_t pulseInt    = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetData();
+    Double_t pulseAmp    = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
+    Double_t pulseTime   = ((THcSignalHit*) frAdcPulseTime->ConstructedAt(ielem))->GetData();
+    Bool_t errorflag     = ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(ielem))->GetData();
+    Bool_t pulseTimeCut  = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
+
     if (!errorflag && pulseTimeCut) {
+      
       fTotNumAdcHits++;
       fGoodAdcPulseIntRaw.at(npad) = pulseIntRaw;
 
@@ -871,8 +874,6 @@ void THcShowerArray::FillADC_DynamicPedestal()
        fGoodAdcPulseTime.at(npad) = pulseTime;
 
        fNumGoodAdcHits.at(npad) = npad + 1;
-
-
       }
      }
    }
