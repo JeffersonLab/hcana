@@ -41,23 +41,33 @@ class THcRawAdcHit : public TObject {
     Double_t GetPed() const;
     Double_t GetPulseInt(UInt_t iPulse=0) const;
     Double_t GetPulseAmp(UInt_t iPulse=0) const;
-    //Int_t GetPulseTime(UInt_t iPulse=0) const;
+    Double_t GetPulseTime(UInt_t iPulse=0) const;
     //Int_t GetSample(UInt_t iSample=0) const;
 
-    Int_t GetSampleIntRaw() const;
+    Int_t    GetSampleIntRaw() const;
     Double_t GetSampleInt() const;
+    Double_t GetAdcTomV() const;
+    Double_t GetAdcTopC() const;
+    Double_t GetAdcTons() const;
 
     void SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED);
 
   protected:
-    static const UInt_t fMaxNPulses = 4;
+    static const UInt_t fMaxNPulses  = 4;
     static const UInt_t fMaxNSamples = 511;
+    
+    // FADC conversion factors
+    static const Double_t fNAdcChan; // Number of FADC channels in units of ADC channels
+    static const Double_t fAdcRange;    // Dynamic range of FADCs in units of V, // TO-DO: Get fAdcRange from pre-start event
+    static const Double_t fAdcImpedence;   // FADC input impedence in units of Ohms
+    static const Double_t fAdcTimeSample;    // Length of FADC time sample in units of ps
+    static const Double_t fAdcTimeRes; // FADC time resolution in units of ns
 
     Int_t fNPedestalSamples;  // TODO: Get this from prestart event...
     Int_t fNPeakSamples;
     Double_t fPeakPedestalRatio;
     Double_t fSubsampleToTimeFactor;
-
+    
     Int_t fPed;
     Int_t fPulseInt[fMaxNPulses];
     Int_t fPulseAmp[fMaxNPulses];

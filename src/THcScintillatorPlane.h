@@ -89,6 +89,7 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* frPosAdcPed;
   TClonesArray* frPosAdcPulseInt;
   TClonesArray* frPosAdcPulseAmp;
+  TClonesArray* frPosAdcPulseTime;
 
   TClonesArray* frNegTdcTimeRaw;
   TClonesArray* frNegAdcPedRaw;
@@ -100,6 +101,7 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* frNegAdcPed;
   TClonesArray* frNegAdcPulseInt;
   TClonesArray* frNegAdcPulseAmp;
+  TClonesArray* frNegAdcPulseTime;
 
   //Hodoscopes Multiplicities
   Int_t fTotNumPosAdcHits;

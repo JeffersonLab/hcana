@@ -35,13 +35,14 @@ public:
    virtual ~THcScalerEvtHandler();
 
    Int_t Analyze(THaEvData *evdata);
-   Int_t AnalyzeBuffer(UInt_t *rdata);
+   Int_t AnalyzeBuffer(UInt_t *rdata, Bool_t onlysync);
    virtual EStatus Init( const TDatime& run_time);
    virtual Int_t   ReadDatabase(const TDatime& date );
    virtual Int_t End( THaRunBase* r=0 );
    virtual void SetUseFirstEvent(Bool_t b = kFALSE) {fUseFirstEvent = b;}
    virtual void SetDelayedType(int evtype);
    virtual void SetOnlyBanks(Bool_t b = kFALSE) {fOnlyBanks = b;fRocSet.clear();}
+   virtual void SetOnlyUseSyncEvents(Bool_t b=kFALSE) {fOnlySyncEvents = b;}
 
 private:
 
@@ -73,8 +74,9 @@ private:
    Double_t *dvarsFirst;
    TTree *fScalerTree;
    Bool_t fUseFirstEvent;
-   Int_t fDelayedType;
+   Bool_t fOnlySyncEvents;
    Bool_t fOnlyBanks;
+   Int_t fDelayedType;
    std::vector<UInt_t*> fDelayedEvents;
    std::set<UInt_t> fRocSet;
    std::set<UInt_t> fModuleSet;

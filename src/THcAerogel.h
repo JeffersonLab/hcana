@@ -84,6 +84,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   TClonesArray* frPosAdcPed;
   TClonesArray* frPosAdcPulseInt;
   TClonesArray* frPosAdcPulseAmp;
+  TClonesArray* frPosAdcPulseTime;
   TClonesArray* frNegAdcPedRaw;
   TClonesArray* frNegAdcPulseIntRaw;
   TClonesArray* frNegAdcPulseAmpRaw;
@@ -91,6 +92,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   TClonesArray* frNegAdcPed;
   TClonesArray* frNegAdcPulseInt;
   TClonesArray* frNegAdcPulseAmp;
+  TClonesArray* frNegAdcPulseTime;
   TClonesArray* fPosAdcErrorFlag;
   TClonesArray* fNegAdcErrorFlag;
   // Individual PMT data objects

@@ -75,7 +75,7 @@ static const UInt_t defaultDT = 4;
 THcScalerEvtHandler::THcScalerEvtHandler(const char *name, const char* description)
   : THaEvtTypeHandler(name,description), evcount(0), evcountR(0.0), ifound(0), fNormIdx(-1),
     dvars(0),dvars_prev_read(0), dvarsFirst(0), fScalerTree(0), fUseFirstEvent(kTRUE),
-    fDelayedType(-1), fOnlyBanks(kFALSE)
+    fOnlySyncEvents(kFALSE), fOnlyBanks(kFALSE), fDelayedType(-1)
 {
   fRocSet.clear();
   fModuleSet.clear();
@@ -96,8 +96,12 @@ Int_t THcScalerEvtHandler::End( THaRunBase* r)
   for(std::vector<UInt_t*>::iterator it = fDelayedEvents.begin();
       it != fDelayedEvents.end(); ++it) {
     UInt_t* rdata = *it;
-    AnalyzeBuffer(rdata);
+    AnalyzeBuffer(rdata,kFALSE);
   }
+  if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
+
+  if (fScalerTree) fScalerTree->Fill();
+
   fDelayedEvents.clear();	// Does this free the arrays?
 
   if (fScalerTree) fScalerTree->Write();
@@ -139,6 +143,7 @@ Int_t THcScalerEvtHandler::ReadDatabase(const TDatime& date )
     for(Int_t i=0;i<fNumBCMs;i++) {
       fBCM_Name[i] = new char[bcm_names[i].length()+1];
       strcpy(fBCM_Name[i], bcm_names[i].c_str());
+      strcat(fBCM_Name[i],".scal");
       //    cout << fBCM_Gain[i] << " " << fBCM_Offset[i] << " " << fBCM_Name[i] << endl;
     }
     for(Int_t i=0;i<fNumBCMs;i++) {
@@ -219,11 +224,17 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     return 1;
   } else { 			// A normal event
     if (fDebugFile) *fDebugFile<<"\n\nTHcScalerEvtHandler :: Debugging event type "<<dec<<evdata->GetEvType()<<endl<<endl;
-    return AnalyzeBuffer(rdata);
+    Int_t ret;
+    if((ret=AnalyzeBuffer(rdata,fOnlySyncEvents))) {
+      if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
+      if (fScalerTree) fScalerTree->Fill();
+    }
+    return ret;
+
   }
 
 }
-Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
+Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 {
 
   // Parse the data, load local data arrays.
@@ -248,15 +259,20 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
       // At any point in the bank where the word is not a matching
       // header, we stop.
       UInt_t tag = (*p>>16) & 0xffff;
+      UInt_t num = (*p) & 0xff;
       UInt_t *pnext = p+*(p-1);	// Next bank
       p++;			// First data word
 
       // Skip over banks that can't contain scalers
       // If SetOnlyBanks(kTRUE) called, fRocSet will be empty
       // so only bank tags matching module types will be considered.
-      if(fRocSet.find(tag)==fRocSet.end()
-	 && fModuleSet.find(tag)==fModuleSet.end()) {
-	p = pnext;		// Fall through to end of this else if
+      if(fModuleSet.find(tag)!=fModuleSet.end()) {
+	if(onlysync && num==0) {
+	  ifound = 0;
+	  return 0;
+	}
+      } else if (fRocSet.find(tag)==fRocSet.end()) {
+	p = pnext;		// Fall through to end of the above else if
       }
 
       // Look for normalization scaler module first.
@@ -347,7 +363,7 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
 	    //printf("%s %f\n",scalerloc[ivar]->name.Data(),scalers[isca]->GetRate(ichan)); //checks
 	  }
 	  if(scalerloc[ivar]->ikind == ICURRENT || scalerloc[ivar]->ikind == ICHARGE){
-	    Int_t bcm_ind=0;
+	    Int_t bcm_ind=-1;
 	    for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
 	      {		
 		size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
@@ -357,12 +373,13 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
 		  }
 	      }
 	    if (scalerloc[ivar]->ikind == ICURRENT) {
-	      dvars[ivar]=((scalers[isca]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+              dvars[ivar]=0.;
+		if (bcm_ind != -1) dvars[ivar]=((scalers[isca]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
          	if (bcm_ind == fbcm_Current_Threshold_Index) scal_current= dvars[ivar];
 	    }
 	    if (scalerloc[ivar]->ikind == ICHARGE) {
-	       fBCM_delta_charge[bcm_ind]=fDeltaTime*((scalers[isca]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
-	      dvars[ivar]+=fBCM_delta_charge[bcm_ind];
+	      if (bcm_ind != -1) fBCM_delta_charge[bcm_ind]=fDeltaTime*((scalers[isca]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+	      if (bcm_ind != -1) dvars[ivar]+=fBCM_delta_charge[bcm_ind];
 	    }
 	    //	    printf("1st event %i index %i fBCMname %s scalerloc %s offset %f gain %f computed %f\n",evcount, bcm_ind, fBCM_Name[bcm_ind],scalerloc[ivar]->name.Data(),fBCM_Offset[bcm_ind],fBCM_Gain[bcm_ind],dvars[ivar]);
 	  }
@@ -384,7 +401,7 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
 	  }
 	  if(scalerloc[ivar]->ikind == ICURRENT || scalerloc[ivar]->ikind == ICHARGE)
 	    {
-	      Int_t bcm_ind=0;
+	      Int_t bcm_ind=-1;
 	      for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
 		{		
 		  size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
@@ -394,14 +411,14 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
 		    }
 		}
 	    if (scalerloc[ivar]->ikind == ICURRENT) {
-                dvarsFirst[ivar]=((scalers[isca]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
-         	if (bcm_ind == fbcm_Current_Threshold_Index) scal_current= dvars[ivar];
+	        dvarsFirst[ivar]=0.0;
+                if (bcm_ind != -1) dvarsFirst[ivar]=((scalers[isca]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+         	if (bcm_ind == fbcm_Current_Threshold_Index) scal_current= dvarsFirst[ivar];
 	    }
 	    if (scalerloc[ivar]->ikind == ICHARGE) {
-	       fBCM_delta_charge[bcm_ind]=fDeltaTime*((scalers[isca]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
-               dvarsFirst[ivar]+=fBCM_delta_charge[bcm_ind];
+	       if (bcm_ind != -1) fBCM_delta_charge[bcm_ind]=fDeltaTime*((scalers[isca]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+               if (bcm_ind != -1) dvarsFirst[ivar]+=fBCM_delta_charge[bcm_ind];
 	    }
-	      printf("1st event %i index %i fBCM name %s scalerloc %s offset %f gain %f getrate%f\n", evcount, bcm_ind, fBCM_Name[bcm_ind],scalerloc[ivar]->name.Data(),fBCM_Offset[bcm_ind],fBCM_Gain[bcm_ind],dvarsFirst[ivar]);
 	    }
 	  if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
 	}
@@ -428,7 +445,7 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
 	}
 	if(scalerloc[ivar]->ikind == ICURRENT || scalerloc[ivar]->ikind == ICHARGE)
 	  {
-	    Int_t bcm_ind=0;
+	    Int_t bcm_ind=-1;
 	    for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
 	      {		
 		size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
@@ -438,12 +455,13 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
 		  }
 	      }
 	    if (scalerloc[ivar]->ikind == ICURRENT) {
-                dvars[ivar]=((scalers[isca]->GetData(ichan)-scal_prev_read[nscal-1])/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+              dvars[ivar]=0;
+	      if (bcm_ind != -1) dvars[ivar]=((scalers[isca]->GetData(ichan)-scal_prev_read[nscal-1])/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
          	if (bcm_ind == fbcm_Current_Threshold_Index) scal_current= dvars[ivar];
 	    }
 	    if (scalerloc[ivar]->ikind == ICHARGE) {
-	       fBCM_delta_charge[bcm_ind]=fDeltaTime*((scalers[isca]->GetData(ichan)-scal_prev_read[nscal-1])/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
-               dvars[ivar]+=fBCM_delta_charge[bcm_ind];
+	       if (bcm_ind != -1) fBCM_delta_charge[bcm_ind]=fDeltaTime*((scalers[isca]->GetData(ichan)-scal_prev_read[nscal-1])/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+               if (bcm_ind != -1) dvars[ivar]+=fBCM_delta_charge[bcm_ind];
 	    }
 	    //	    printf("event %i index %i fBCMname %s scalerloc %s offset %f gain %f computed %f\n",evcount, bcm_ind, fBCM_Name[bcm_ind],scalerloc[ivar]->name.Data(),fBCM_Offset[bcm_ind],fBCM_Gain[bcm_ind],dvars[ivar]);
 	  }
@@ -466,7 +484,7 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
       dvars_prev_read[ivar] = scalers[isca]->GetData(ichan);
     }
     if (scalerloc[ivar]->ikind == ICUT+ICHARGE){
-	    Int_t bcm_ind=0;
+	    Int_t bcm_ind=-1;
 	    for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
 	      {		
 		size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
@@ -475,9 +493,9 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
 		    bcm_ind=itemp;
 		  }
 	      }
-      if ( scal_current > fbcm_Current_Threshold) {
+      if ( scal_current > fbcm_Current_Threshold && bcm_ind != -1) {
 	dvars[ivar] += fBCM_delta_charge[bcm_ind];
-      } 
+     } 
     }
     if (scalerloc[ivar]->ikind == ICUT+ITIME){
       if ( scal_current > fbcm_Current_Threshold) {
@@ -493,10 +511,6 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata)
   //  
   for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
   
-  if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
-
-  if (fScalerTree) fScalerTree->Fill();
-
   return 1;
 }
 
