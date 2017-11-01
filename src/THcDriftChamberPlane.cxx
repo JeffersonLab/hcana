@@ -102,6 +102,9 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
     {"_using_tzero_per_wire", &fUsingTzeroPerWire, kInt,0,1},
     {0}
   };
+
+
+
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   Double_t *DriftMap = new Double_t[NumDriftMapBins];
@@ -131,6 +134,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   fDriftTimeSign = fParent->GetDriftTimeSign(fPlaneNum);
   fReadoutLR = fParent->GetReadoutLR(fPlaneNum);
   fReadoutTB = fParent->GetReadoutTB(fPlaneNum);
+  fVersion = fParent->GetVersion();
 
   fNSperChan = fParent->GetNSperChan();
 

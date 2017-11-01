@@ -83,11 +83,17 @@ THcDC::THcDC(
 
   fNChamHits = 0;
   fPlaneEvents = 0;
+
+  //The version defaults to 0 (old HMS style). 1 is new HMS style and 2 is SHMS style.
+  fVersion = 0;
 }
 
 //_____________________________________________________________________________
 void THcDC::Setup(const char* name, const char* description)
 {
+
+	Bool_t optional = true;
+
   // Create the chamber and plane objects using parameters.
   static const char* const here = "Setup";
 
@@ -116,6 +122,7 @@ void THcDC::Setup(const char* name, const char* description)
     {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
     {"dc_wire_velocity",&fWireVelocity,kDouble},
     {"dc_plane_names",&planenamelist, kString},
+	{"dc_version", &fVersion, kInt, 0, optional},
     {0}
   };
 

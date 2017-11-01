@@ -56,59 +56,107 @@ public:
   Int_t    GetChamberNum() const { return fWirePlane->GetChamberNum(); }
   void     SetCorrectedStatus(Int_t c) { fCorrected = c; }
 
-  //Set this correctly
   Int_t GetReadoutSide() {
 	  Int_t pln = fWirePlane->GetPlaneNum();
 	  Int_t tb = fWirePlane->GetReadoutTB();
 	  Int_t wn = fWire->GetNum();
+	  Int_t version = fWirePlane->GetVersion();
 
-	  //check if x board
-	  if ((pln>=3 && pln<=4) || (pln>=9 && pln<=10)){
-		  if (tb>0){
-			  if (wn < 49){
-				  fReadoutSide = 4;
+	  //if new HMS
+	  if (version == 1){
+		  if ((pln>=3 && pln<=4) || (pln>=9 && pln<=10)){
+			  if (tb>0){
+				  if (wn < 60){
+					  fReadoutSide = 2;
+				  }
+				  else {
+					  fReadoutSide = 4;
+				  }
 			  }
 			  else {
-				  fReadoutSide = 2;
+				  if (wn < 44){
+					  fReadoutSide = 4;
+				  }
+				  else {
+					  fReadoutSide = 2;
+				  }
 			  }
 		  }
-		  else {
-			  if (wn < 33){
-				  fReadoutSide = 2;
+		  else{
+			  if (tb>0){
+				  if (wn < 51){
+					  fReadoutSide = 2;
+				  }
+				  else if (wn >= 51 && wn <= 64){
+					  fReadoutSide = 1;
+				  }
+				  else {
+					  fReadoutSide =4;
+				  }
 			  }
 			  else {
-				  fReadoutSide = 4;
+				  if (wn < 33){
+					  fReadoutSide = 4;
+				  }
+				  else if (wn >=33 && wn<=46){
+					  fReadoutSide = 1;
+				  }
+				  else {
+					  fReadoutSide = 2;
+				  }
 			  }
 		  }
 	  }
-	  //else is u board
-	  else{
-		  if (tb>0){
-		  	if (wn < 41){
-		  		fReadoutSide = 4;
-		  	}
-		  	else if (wn >= 41 && wn <= 63){
-		  		fReadoutSide = 3;
-		  	}
-		  	else if (wn >=64 && wn <=69){
-		  		fReadoutSide = 1;
-		  	}
-		  	else {
-		  		fReadoutSide = 2;
-		  	}
-		  }
-		  else {
-			  if (wn < 39){
-				  fReadoutSide = 2;
-			  }
-			  else if (wn >=39 && wn<=44){
-				  fReadoutSide = 1;
-			  }
-			  else if (wn>=45 && wn<=67){
-				  fReadoutSide = 3;
+
+	  else{//appplies SHMS DC configuration
+		  //check if x board
+		  if ((pln>=3 && pln<=4) || (pln>=9 && pln<=10)){
+			  if (tb>0){
+				  if (wn < 49){
+					  fReadoutSide = 4;
+				  }
+				  else {
+					  fReadoutSide = 2;
+				  }
 			  }
 			  else {
-				  fReadoutSide = 4;
+				  if (wn < 33){
+					  fReadoutSide = 2;
+				  }
+				  else {
+					  fReadoutSide = 4;
+				  }
+			  }
+		  }
+		  //else is u board
+		  else{
+			  if (tb>0){
+				  if (wn < 41){
+					  fReadoutSide = 4;
+				  }
+				  else if (wn >= 41 && wn <= 63){
+					  fReadoutSide = 3;
+				  }
+				  else if (wn >=64 && wn <=69){
+					  fReadoutSide = 1;
+				  }
+				  else {
+					  fReadoutSide = 2;
+				  }
+			  }
+			  else {
+				  if (wn < 39){
+					  fReadoutSide = 2;
+				  }
+				  else if (wn >=39 && wn<=44){
+					  fReadoutSide = 1;
+				  }
+				  else if (wn>=45 && wn<=67){
+					  fReadoutSide = 3;
+				  }
+				  else {
+					  fReadoutSide = 4;
+				  }
 			  }
 		  }
 	  }
