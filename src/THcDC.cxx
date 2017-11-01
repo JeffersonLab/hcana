@@ -84,6 +84,7 @@ THcDC::THcDC(
   fNChamHits = 0;
   fPlaneEvents = 0;
 
+  //The version defaults to 0 (old HMS style). 1 is new HMS style and 2 is SHMS style.
   fVersion = 0;
 }
 
