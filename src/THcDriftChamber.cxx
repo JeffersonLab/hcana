@@ -144,6 +144,7 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
     {Form("dc_%d_zpos",fChamberNum), &fZPos, kDouble},
     {0}
   };
+
   fRemove_Sppt_If_One_YPlane = 0; // Default
   fStubMaxXPDiff = 0.05;	  // The HMS default.  Not used for SOS.
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
@@ -912,12 +913,13 @@ void THcDriftChamber::CorrectHitTimes()
 				 x*plane->GetReadoutCorr()/fWireVelocity;
 
 		  // This applies the wire velocity correction for new SHMS chambers --hszumila, SEP17
-		  if (abs(plane->GetReadoutLR())==1){
+		  THcDC* fParent;
+		  fParent = (THcDC*) GetParent();
+		  Int_t version = fParent->GetVersion();
+		  if (version!= 0){
 			  Int_t pln = hit->GetPlaneNum();
 			  Int_t readoutSide = hit->GetReadoutSide();
 
-			  THcDC* fParent;
-			  fParent = (THcDC*) GetParent();
 			  Double_t posn = hit->GetPos();
 			  //The following values are determined from param file as permutations on planes 5 and 10
 			  Int_t readhoriz = plane->GetReadoutLR();

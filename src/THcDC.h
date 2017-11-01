@@ -63,6 +63,7 @@ public:
   Int_t GetDriftTimeSign(Int_t plane) const { return fDriftTimeSign[plane-1];}
   Int_t GetReadoutLR(Int_t plane) const { return fReadoutLR[plane-1];}
   Int_t GetReadoutTB(Int_t plane) const { return fReadoutTB[plane-1];}
+  Int_t GetVersion() const {return fVersion;}
 
 
   Double_t GetPlaneTimeZero(Int_t plane) const { return fPlaneTimeZero[plane-1];}
@@ -128,6 +129,7 @@ protected:
   Double_t fYtTrCriterion;
   Double_t fXptTrCriterion;
   Double_t fYptTrCriterion;
+  Int_t fVersion;
 
   // Each of these will be dimensioned with the number of chambers
   Double_t* fXCenter;

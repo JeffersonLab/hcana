@@ -71,6 +71,7 @@ public:
   Double_t     CalcWireFromPos(Double_t pos);
   Int_t        GetReadoutLR() const { return fReadoutLR;}
   Int_t        GetReadoutTB() const { return fReadoutTB;}
+  Int_t        GetVersion() const {return fVersion;}
 
 protected:
 
@@ -79,6 +80,7 @@ protected:
   TClonesArray* fHits;
   TClonesArray* fWires;
 
+  Int_t fVersion;
   Int_t fWireOrder;
   Int_t fPlaneNum;
   Int_t fPlaneIndex;		/* Index of this plane within it's chamber */
