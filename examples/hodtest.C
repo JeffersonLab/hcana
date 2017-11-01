@@ -93,7 +93,7 @@
   char RunFileName[100];
   sprintf(RunFileName,RunFileNamePattern,RunNumber);
   
-  THaRun* run = new THaRun(RunFileName);
+  THcRun* run = new THcRun(RunFileName);
   run->SetRunParamClass("THcRunParameters");
   // Perhaps we should make a THcRun that does this
 
