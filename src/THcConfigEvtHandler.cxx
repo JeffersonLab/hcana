@@ -3,37 +3,24 @@
 
   Event handler for Hall C prestart config event.  Type 125
 
-  Example of an Event Type Handler for event type 125,
-  the hall C prestart event.
-
-  It was tested on some hms data.  However, note that I don't know what
-  these data mean yet and I presume the data structure is under development;
-  someone will need to modify this class (and the comments).
-
   To use as a plugin with your own modifications, you can do this in
   your analysis script
 
   gHaEvtHandlers->Add (new THcConfigEvtHandler("hallcpre","for evtype 125"));
 
-  Global variables are defined in Init.  You can see them in Podd, as
-    analyzer [2] gHaVars->Print()
+  As config data is found, Hall C parameters will be created to hold the configuration
+  data.
 
-     OBJ: THaVar	HCvar1	Hall C event type 125 variable 1
-     OBJ: THaVar	HCvar2	Hall C event type 125 variable 2
-     OBJ: THaVar	HCvar3	Hall C event type 125 variable 3
-     OBJ: THaVar	HCvar4	Hall C event type 125 variable 4
+  All the configuation data can also be printed out with the PrintConfig method
 
-  The data can be added to the ROOT Tree "T" using the output
-  definition file.  Then you can see them, for example as follows
-
-     T->Scan("HCvar1:HCvar2:HCvar3:HCvar4")
-
-\author Robert Michaels (rom@jlab.org), updated by Stephen Wood (saw@jlab.org)
+\author Stephen Wood (saw@jlab.org)
 */
 
 #include "THcConfigEvtHandler.h"
 #include "THaEvData.h"
-#include "THaVarList.h"
+#include "THaGlobals.h"
+#include "THcGlobals.h"
+#include "THcParmList.h"
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
@@ -117,7 +104,7 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
       cout << "ADC information: Block level " << (thisword&0xff) << endl;
       cinfo->FADC250.present = 1;
       cinfo->FADC250.blocklevel = thisword&0xff;
-      cinfo->FADC250.daq_level = evdata->GetRawData(ip+2);
+      cinfo->FADC250.dac_level = evdata->GetRawData(ip+2);
       cinfo->FADC250.threshold = evdata->GetRawData(ip+3);
       cinfo->FADC250.mode = evdata->GetRawData(ip+4);
       cinfo->FADC250.window_lat = evdata->GetRawData(ip+5);
@@ -171,9 +158,86 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
     }
   }
 
+  cout << "Making Parms for ROC " << roc << "  Event type " << evdata->GetEvType() << endl;
+  MakeParms(roc);
+
   return 1;
 }
 
+void THcConfigEvtHandler::MakeParms(Int_t roc)
+{
+  /**
+     Add parameters to gHcParms for this roc
+  */
+  std::map<Int_t, CrateInfo_t *>::iterator it = CrateInfoMap.begin();
+  while(it != CrateInfoMap.end()) {
+    Int_t thisroc = it->first;
+    if(thisroc != roc) {
+      it++;
+      continue;
+    }
+    CrateInfo_t *cinfo = it->second;
+
+    // CAEN 1190 TDC information
+    if (cinfo->CAEN1190.present) {
+      Int_t resolution = cinfo->CAEN1190.resolution;
+      gHcParms->Define(Form("g%s_tdc_resolution_%d",fName.Data(),roc),"TDC resolution",resolution);
+      Int_t offset = cinfo->CAEN1190.timewindow_offset;
+      gHcParms->Define(Form("g%s_tdc_offset_%d",fName.Data(),roc),"TDC Time Window Offset",offset);
+      Int_t width = cinfo->CAEN1190.timewindow_width;
+      gHcParms->Define(Form("g%s_tdc_width_%d",fName.Data(),roc),"TDC Time Window Width",width);
+    }
+    // FADC Thresholds
+    if (cinfo->FADC250.present) {
+      // Loop over FADC slots
+      std::map<Int_t, Int_t *>::iterator itt = cinfo->FADC250.thresholds.begin();
+      while(itt != cinfo->FADC250.thresholds.end()) {
+        Int_t slot = itt->first;
+
+	Int_t *threshp = itt->second;
+	Int_t *thresholds = new Int_t[16];
+	for(Int_t ichan=0;ichan<16;ichan++) {
+	  thresholds[ichan] = threshp[ichan];
+	}
+	gHcParms->Define(Form("g%s_adc_thresholds_%d_%d",fName.Data(),roc,slot),"ADC Thresholds",*thresholds);
+
+	Int_t mode = cinfo->FADC250.mode;
+	gHcParms->Define(Form("g%s_adc_mode_%d_%d",fName.Data(),roc,slot),"ADC Mode",mode);
+	Int_t latency = cinfo->FADC250.window_lat;
+	gHcParms->Define(Form("g%s_adc_latency_%d_%d",fName.Data(),roc,slot),"Window Latency",latency);
+
+	Int_t width = cinfo->FADC250.window_width;
+	gHcParms->Define(Form("g%s_adc_width_%d_%d",fName.Data(),roc,slot),"Window Width",width);
+
+	Int_t daclevel = cinfo->FADC250.dac_level;
+	gHcParms->Define(Form("g%s_adc_daclevely_%d_%d",fName.Data(),roc,slot),"DAC Level",daclevel);
+	Int_t nped = cinfo->FADC250.nped;
+	gHcParms->Define(Form("g%s_adc_nped_%d_%d",fName.Data(),roc,slot),"NPED",nped);
+	Int_t nsa = cinfo->FADC250.nsa;
+	gHcParms->Define(Form("g%s_adc_nsa_%d_%d",fName.Data(),roc,slot),"NSA",nsa);
+	Int_t maxped = cinfo->FADC250.maxped;
+	gHcParms->Define(Form("g%s_adc_maxped_%d_%d",fName.Data(),roc,slot),"MAXPED",maxped);
+	Int_t np = cinfo->FADC250.np;
+	gHcParms->Define(Form("g%s_adc_np_%d_%d",fName.Data(),roc,slot),"NP",np);
+
+        itt++;
+      }
+      // TI Configuration
+      // We assume that this information is only provided by the master TI crate.
+      // If that is not true we will get "Variable XXX already exists." warnings
+      if(cinfo->TI.present) {
+	Int_t nped = cinfo->TI.nped;
+	gHcParms->Define(Form("g%s_ti_nped",fName.Data()),"Numbre of Pedestal events",nped);
+	Int_t scaler_period = cinfo->TI.scaler_period;
+	gHcParms->Define(Form("g%s_ti_scaler_period",fName.Data()),"Numbre of Pedestal events",scaler_period);
+	Int_t sync_count = cinfo->TI.sync_count;
+	gHcParms->Define(Form("g%s_ti_sync_count",fName.Data()),"Numbre of Pedestal events",sync_count);
+      }
+    }
+    it++;
+  }
+}    
+    
 void THcConfigEvtHandler::PrintConfig()
 {
 /**
@@ -194,7 +258,7 @@ void THcConfigEvtHandler::PrintConfig()
       cout << "    FADC250 Configuration" << endl;
       cout << "       Mode:   " << cinfo->FADC250.mode << endl;
       cout << "       Latency: " << cinfo->FADC250.window_lat << "  Width: "<< cinfo->FADC250.window_width << endl;
-      cout << "       DAQ Level: " << cinfo->FADC250.daq_level << "  Threshold: " << cinfo->FADC250.threshold << endl;
+      cout << "       DAC Level: " << cinfo->FADC250.dac_level << "  Threshold: " << cinfo->FADC250.threshold << endl;
       cout << "       NPED: " << cinfo->FADC250.nped << "  NSA: " << cinfo->FADC250.nsa << "  NSB: " << cinfo->FADC250.nsb << endl;
       cout << "       MAXPED: " << cinfo->FADC250.maxped << "  NP: " << cinfo->FADC250.np << "  NSAT: " << cinfo->FADC250.nsat << endl;
 
@@ -274,30 +338,6 @@ THaAnalysisObject::EStatus THcConfigEvtHandler::Init(const TDatime& date)
   if(eventtypes.size()==0) {
     eventtypes.push_back(125);  // what events to look for
   }
-
-// dvars is a member of this class.
-// The index of the dvars array track the array of global variables created.
-// This is just a fake example with 4 variables.
-// Please change these comments when you modify this class.
-
-  NVars = 4;
-  dvars = new Double_t[NVars];
-  memset(dvars, 0, NVars*sizeof(Double_t));
-  if (gHaVars) {
-      cout << "EvtHandler:: Have gHaVars.  Good thing. "<<gHaVars<<endl;
-  } else {
-      cout << "EvtHandler:: No gHaVars ?!  Well, that is a problem !!"<<endl;
-      return kInitError;
-  }
-  const Int_t* count = 0;
-  char cname[80];
-  char cdescription[80];
-  for (UInt_t i = 0; i < NVars; i++) {
-    sprintf(cname,"HCvar%d",i+1);
-    sprintf(cdescription,"Hall C event type 125 variable %d",i+1);
-    gHaVars->DefineByType(cname, cdescription, &dvars[i], kDouble, count);
-  }
-
 
   fStatus = kOK;
   return kOK;

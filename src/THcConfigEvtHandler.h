@@ -31,18 +31,14 @@ public:
   virtual Int_t GetNPED(Int_t crate);
   virtual EStatus Init( const TDatime& run_time);
  //  Float_t GetData(const std::string& tag);
+  virtual void MakeParms(Int_t roc);
 
 private:
-
-//  std::map<std::string, Float_t> theDataMap;
-  std::vector<std::string> dataKeys;
-  UInt_t NVars;
-  Double_t *dvars;
 
   typedef struct {
     struct FADC250 {
       Int_t present;
-      Int_t daq_level;
+      Int_t dac_level;
       Int_t threshold;
       Int_t mode;
       Int_t window_lat;
