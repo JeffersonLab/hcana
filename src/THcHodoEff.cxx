@@ -82,7 +82,34 @@ Int_t THcHodoEff::Begin( THaRunBase* )
 Int_t THcHodoEff::End( THaRunBase* )
 {
   // End of analysis
-
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
+        fHodoAndEffi[ip]=0;
+        for(Int_t ic=0;ic<fNCounters[ip];ic++) {
+          fStatTrkSum[ip]+=fStatTrk[fHod->GetScinIndex(ip,ic)];
+          fStatAndSum[ip]+=fHodoAndEffi[fHod->GetScinIndex(ip,ic)];
+        }
+	if (fStatTrkSum[ip] !=0) fStatAndEff[ip]=float(fStatAndSum[ip])/float(fStatTrkSum[ip]);
+     }
+  //
+  Double_t     p1;
+  Double_t     p2;
+  Double_t     p3;
+  Double_t     p4;
+      p1=fStatAndEff[0];
+      p2=fStatAndEff[1];
+      p3=fStatAndEff[2];
+      p4=fStatAndEff[3];
+// probability that ONLY the listed planes had triggers
+ Double_t     p1234= p1*p2*p3*p4;
+ Double_t     p123 = p1*p2*p3*(1.-p4);
+ Double_t     p124 = p1*p2*(1.-p3)*p4;
+ Double_t    p134 = p1*(1.-p2)*p3*p4;
+ Double_t    p234 = (1.-p1)*p2*p3*p4;
+ fHodoEff_s1 = 1. - ((1.-p1)*(1.-p2));
+ fHodoEff_s2 = 1. - ((1.-p3)*(1.-p4));
+ fHodoEff_tof=fHodoEff_s1 * fHodoEff_s2;
+ fHodoEff_3_of_4=p1234+p123+p124+p134+p234;
+ fHodoEff_4_of_4=p1234;
   return 0;
 }
 
@@ -126,9 +153,15 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
   fCenterFirst = new Double_t[fNPlanes];
   fNCounters = new Int_t[fNPlanes];
   fHodoSlop = new Double_t[fNPlanes];
+  fStatTrkSum = new Int_t[fNPlanes];
+  fStatAndSum = new Int_t[fNPlanes];
+  fStatAndEff = new Double_t[fNPlanes];
 
   Int_t maxcountersperplane=0;
   for(Int_t ip=0;ip<fNPlanes;ip++) {
+    fStatTrkSum[ip]=0.;
+    fStatAndSum[ip]=0.;
+    fStatAndEff[ip]=0.;
     fPlanes[ip] = fHod->GetPlane(ip);
     fPosZ[ip] = fPlanes[ip]->GetZpos() + 0.5*fPlanes[ip]->GetDzpos();
     fSpacing[ip] = fPlanes[ip]->GetSpacing();
@@ -204,7 +237,12 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
   gHcParms->Define(Form("%shodo_neg_eff[%d]",  prefix,totalpaddles), "Hodo negative effi",*fHodoNegEffi);
   gHcParms->Define(Form("%shodo_or_eff[%d]",   prefix,totalpaddles), "Hodo or effi",      *fHodoOrEffi);
   gHcParms->Define(Form("%shodo_and_eff[%d]",  prefix,totalpaddles), "Hodo and effi",     *fHodoAndEffi);
-  gHcParms->Define(Form("%shodo_gold_hits[%d]",prefix,totalpaddles), "Hodo golden hits",  *fStatTrk);
+  gHcParms->Define(Form("%shodo_plane_AND_eff[%d]",prefix,fNPlanes), "Hodo plane AND eff",  *fStatAndEff);
+  gHcParms->Define(Form("%shodo_s1XY_eff",prefix), "Efficiency for S1XY",fHodoEff_s1);
+  gHcParms->Define(Form("%shodo_s2XY_eff",prefix), "Efficiency for S2XY",fHodoEff_s2);
+  gHcParms->Define(Form("%shodo_stof_eff",prefix), "Efficiency for STOF",fHodoEff_tof);
+  gHcParms->Define(Form("%shodo_3_of_4_eff",prefix), "Efficiency for 3 of 4",fHodoEff_3_of_4);
+  gHcParms->Define(Form("%shodo_4_of_4_eff",prefix), "Efficiency for 4 of 4",fHodoEff_4_of_4);
 
   return kOK;
 }
