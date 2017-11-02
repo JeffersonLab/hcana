@@ -44,6 +44,9 @@ class THcScintillatorPlane : public THaSubDetector {
   Int_t GetNelem() {return fNelem;}; // return number of paddles in this plane
   Int_t GetNScinHits() {return fNScinHits;}; // Get # hits in plane (that pass min/max TDC cuts)
   Int_t GetNGoodHits() {return fNGoodHits;}; // Get # hits in plane (used in determining focal plane time)
+  Double_t GetHitDistance() {return fHitDistance;}; // Distance between track and hit paddle
+  Double_t GetTrackXPosition() {return fTrackXPosition;}; // Distance track X position at plane
+  Double_t GetTrackYPosition() {return fTrackYPosition;}; // Distance track Y position at plane
   Double_t GetSpacing() {return fSpacing;}; // spacing of paddles
   Double_t GetSize() {return fSize;};    // paddle size
   Double_t GetHodoSlop() {return fHodoSlop;}; // hodo slop
@@ -59,6 +62,9 @@ class THcScintillatorPlane : public THaSubDetector {
 
   void SetFpTime(Double_t f) {fFptime=f;};
   void SetNGoodHits(Int_t ng) {fNGoodHits=ng;};
+  void SetHitDistance(Double_t f) {fHitDistance=f;}; // Distance between track and hit paddle
+  void SetTrackXPosition(Double_t f) {fTrackXPosition=f;}; // Distance track X position at plane
+  void SetTrackYPosition(Double_t f) {fTrackYPosition=f;}; // Distance track Y position at plane
 
   TClonesArray* fParentHitList;
 
@@ -152,6 +158,9 @@ class THcScintillatorPlane : public THaSubDetector {
 
 
   Int_t fDebugAdc;
+  Double_t fHitDistance;
+  Double_t fTrackXPosition;
+  Double_t fTrackYPosition;
   Int_t fCosmicFlag; //
   Int_t fPlaneNum;		/* Which plane am I 1-4 */
   UInt_t fTotPlanes;            /* so we can read variables that are not indexed by plane id */
@@ -204,7 +213,6 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t *fHodoPosInvAdcAdc;
   Double_t *fHodoNegInvAdcAdc;
   Double_t *fHodoSigma;
-
   Double_t fTolerance; /* need this for Focal Plane Time estimation */
   Double_t fFptime;
   /* Pedestal Quantities */

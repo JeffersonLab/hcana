@@ -425,6 +425,9 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     {"GoodNegAdcPulseAmp",    "List of Negative ADC peak amp (passed TDC && ADC Min and Max cuts for either end)",  "fGoodNegAdcPulseAmp"},
     {"GoodPosAdcPulseTime",   "List of positive ADC time (passed TDC && ADC Min and Max cuts for either end)", "fGoodPosAdcPulseTime"},
     {"GoodNegAdcPulseTime",   "List of Negative ADC time (passed TDC && ADC Min and Max cuts for either end)", "fGoodNegAdcPulseTime"},
+    {"DiffDisTrack",   "Difference between track and scintillator position (cm)", "fHitDistance"},
+    {"TrackXPos",   "Track X position at plane (cm)", "fTrackXPosition"},
+    {"TrackYPos",   "Track Y position at plane (cm)", "fTrackYPosition"},
     //{"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
     { 0 }
   };
@@ -514,6 +517,9 @@ void THcScintillatorPlane::Clear( Option_t* )
 
 
   fpTime = -1.e4;
+  fHitDistance = kBig;
+  fTrackXPosition = kBig;
+  fTrackYPosition = kBig;
 }
 
 //_____________________________________________________________________________
@@ -861,7 +867,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	fGoodPosAdcPed.at(padnum-1)       = ((THcSignalHit*) frPosAdcPed->ConstructedAt(good_ielem_posadc))->GetData();
 	fGoodPosAdcPulseInt.at(padnum-1)  = ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(good_ielem_posadc))->GetData();
 	fGoodPosAdcPulseAmp.at(padnum-1)  = ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(good_ielem_posadc))->GetData();
-	fGoodPosAdcPulseTime.at(padnum-1) = ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(good_ielem_posadc))->GetData();
+	fGoodPosAdcPulseTime.at(padnum-1) = ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(good_ielem_posadc))->GetData();
       }
 
 
@@ -878,7 +884,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	fGoodNegAdcPed.at(padnum-1)       = ((THcSignalHit*) frNegAdcPed->ConstructedAt(good_ielem_negadc))->GetData();
 	fGoodNegAdcPulseInt.at(padnum-1)  = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(good_ielem_negadc))->GetData();
 	fGoodNegAdcPulseAmp.at(padnum-1)  = ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(good_ielem_negadc))->GetData();
-	fGoodNegAdcPulseTime.at(padnum-1) = ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(good_ielem_negadc))->GetData();
+	fGoodNegAdcPulseTime.at(padnum-1) = ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(good_ielem_negadc))->GetData();
       }
 
       //DEFINE THE "GOOD +TDC Multiplicities and Occupancies"
@@ -912,9 +918,9 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCpeak(adc_peak);
       adc_peak=hit->GetRawAdcHitNeg().GetPulseAmp();
       ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCpeak(adc_peak);
-      Double_t time_peak=hit->GetRawAdcHitPos().GetPulseTimeRaw();
+      Double_t time_peak=hit->GetRawAdcHitPos().GetPulseTime();
       ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCtime(time_peak);
-      time_peak=hit->GetRawAdcHitNeg().GetPulseTimeRaw();
+      time_peak=hit->GetRawAdcHitNeg().GetPulseTime();
       ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCtime(time_peak);
 
       //Define GoodTdcUnCorrTime
@@ -935,10 +941,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	if(fTofUsingInvAdc) {
 	  timec_pos = tdc_pos*fScinTdcToTime
 	    - fHodoPosInvAdcOffset[index]
-	    - fHodoPosInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0,adc_pos));
+	    - fHodoPosInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0*.020,adc_pos));
 	  timec_neg = tdc_neg*fScinTdcToTime
 	    - fHodoNegInvAdcOffset[index]
-	    - fHodoNegInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0,adc_neg));
+	    - fHodoNegInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0*.020,adc_neg));
 	} else {		// Old style
 	  timec_pos = tdc_pos*fScinTdcToTime - fHodoPosPhcCoeff[index]*
 	    TMath::Sqrt(TMath::Max(0.0,adc_pos/fHodoPosMinPh[index]-1.0))
@@ -1005,7 +1011,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	  if(fTofUsingInvAdc) {
 	    timec_pos = tdc_pos*fScinTdcToTime
 	      - fHodoPosInvAdcOffset[index]
-	      - fHodoPosInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0,adc_pos));
+	      - fHodoPosInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0*.020,adc_pos));
 	  } else {		// Old style
 	    timec_pos = tdc_pos*fScinTdcToTime - fHodoPosPhcCoeff[index]*
 	      TMath::Sqrt(TMath::Max(0.0,adc_pos/fHodoPosMinPh[index]-1.0))
@@ -1016,7 +1022,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	  if(fTofUsingInvAdc) {
 	    timec_neg = tdc_neg*fScinTdcToTime
 	      - fHodoNegInvAdcOffset[index]
-	      - fHodoNegInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0,adc_neg));
+	      - fHodoNegInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0*.020,adc_neg));
 	  } else {		// Old style
 	    timec_neg = tdc_neg*fScinTdcToTime - fHodoNegPhcCoeff[index]*
 	      TMath::Sqrt(TMath::Max(0.0,adc_neg/fHodoNegMinPh[index]-1.0))

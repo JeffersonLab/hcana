@@ -173,7 +173,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
 
   fNScinHits     = new Int_t [fNPlanes];
-  fGoodPlaneTime = new Bool_t [fNPlanes];
+   fGoodPlaneTime = new Bool_t [fNPlanes];
   fNPlaneTime    = new Int_t [fNPlanes];
   fSumPlaneTime  = new Double_t [fNPlanes];
 
@@ -681,9 +681,7 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
 
   Bool_t goodplanetime[fNPlanes];
   Bool_t twogoodtimes[nscinhits];
-  Int_t temp_planes=fNPlanes;
-  if (fSHMS) temp_planes=3;
-  for(Int_t ip=0;ip<temp_planes;ip++) {
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
     goodplanetime[ip] = kFALSE;
     Int_t nphits=fPlanes[ip]->GetNScinHits();
     TClonesArray* hodoHits = fPlanes[ip]->GetHits();
@@ -747,9 +745,7 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
     Double_t sumTZ = 0.;
     Int_t ihhit = 0;
 
-    temp_planes=fNPlanes;
-  if (fSHMS) temp_planes=3;
-    for(Int_t ip=0;ip<temp_planes;ip++) {
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
       Int_t nphits=fPlanes[ip]->GetNScinHits();
       TClonesArray* hodoHits = fPlanes[ip]->GetHits();
 
@@ -785,7 +781,7 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
       fBetaNoTrkChiSq = 0.;
       ihhit = 0;
 
-      for (Int_t ip = 0; ip < temp_planes; ip++ ){                           // Loop over planes
+      for (Int_t ip = 0; ip < fNPlanes; ip++ ){                           // Loop over planes
 	Int_t nphits=fPlanes[ip]->GetNScinHits();
 	TClonesArray* hodoHits = fPlanes[ip]->GetHits();
 
@@ -845,8 +841,6 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
   // -------------------------------------------------
 
   //  fDumpOut << " ntrack =  " << ntracks  << endl;
-  Int_t temp_planes=fNPlanes;
-  if (fSHMS) temp_planes=3;
 
   if (tracks.GetLast()+1 > 0 ) {
 
@@ -860,7 +854,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
       THaTrack* theTrack = dynamic_cast<THaTrack*>( tracks.At(itrack) );
       if (!theTrack) return -1;
 
-      for (Int_t ip = 0; ip < temp_planes; ip++ ){
+      for (Int_t ip = 0; ip < fNPlanes; ip++ ){
 	fGoodPlaneTime[ip] = kFALSE;
 	fNScinHits[ip] = 0;
 	fNPlaneTime[ip] = 0;
@@ -899,7 +893,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
       fTOFPInfo.clear();  // SAW - combine these two?
       Int_t ihhit = 0;		// Hit # overall
 
-     for(Int_t ip = 0; ip < temp_planes; ip++ ) {
+     for(Int_t ip = 0; ip < fNPlanes; ip++ ) {
 
 	std::vector<GoodFlags> goodflagstmp2;
 	fGoodFlags[itrack].push_back(goodflagstmp2);
@@ -980,7 +974,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 		timep -= fHodoPosInvAdcOffset[fPIndex]
 		  + pathp/fHodoPosInvAdcLinear[fPIndex]
 		  + fHodoPosInvAdcAdc[fPIndex]
-		  /TMath::Sqrt(TMath::Max(20.0,adc_pos));
+		  /TMath::Sqrt(TMath::Max(20.0*.020,adc_pos));
 	      } else {
 		timep -= fHodoPosPhcCoeff[fPIndex]*
 		  TMath::Sqrt(TMath::Max(0.0,adc_pos/fHodoPosMinPh[fPIndex]-1.0))
@@ -1008,7 +1002,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 		timen -= fHodoNegInvAdcOffset[fPIndex]
 		  + pathn/fHodoNegInvAdcLinear[fPIndex]
 		  + fHodoNegInvAdcAdc[fPIndex]
-		  /TMath::Sqrt(TMath::Max(20.0,adc_neg));
+		  /TMath::Sqrt(TMath::Max(20.0*.020,adc_neg));
 	      } else {
 		timen -= fHodoNegPhcCoeff[fPIndex]*
 		  TMath::Sqrt(TMath::Max(0.0,adc_neg/fHodoNegMinPh[fPIndex]-1.0))
@@ -1094,6 +1088,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	Int_t fPIndex = GetScinIndex(ip,paddle);
 
 	if (fTOFPInfo[ih].onTrack) {
+	    fGoodFlags[itrack][ip][iphit].onTrack = kTRUE;
 	  if ( fTOFPInfo[ih].keep_pos ) { // 301
 	    fTOFCalc[ih].good_tdc_pos = kTRUE;
 	    fGoodFlags[itrack][ip][iphit].goodTdcPos = kTRUE;
@@ -1197,7 +1192,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 
       } // Second loop over hits of a scintillator plane ends here
        theTrack->SetGoodPlane3( fGoodPlaneTime[2] ? 1 : 0 );
-      theTrack->SetGoodPlane4( fGoodPlaneTime[3] ? 1 : 0 );
+       if (fNPlanes==4) theTrack->SetGoodPlane4( fGoodPlaneTime[3] ? 1 : 0 );
      //
        //------------------------------------------------------------------------------
       //------------------------------------------------------------------------------
@@ -1287,7 +1282,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 
       Double_t FPTimeSum=0.0;
       Int_t nFPTimeSum=0;
-      for (Int_t ip = 0; ip < temp_planes; ip++ ){
+      for (Int_t ip = 0; ip < fNPlanes; ip++ ){
 	if ( fNPlaneTime[ip] != 0 ){
 	  fFPTime[ip] = ( fSumPlaneTime[ip] / fNPlaneTime[ip] );
 	  FPTimeSum += fSumPlaneTime[ip];
@@ -1332,7 +1327,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
   //  *second, we move the scintillators.  here we use scintillator cuts to see
   //  *if a track should have been found.
 
-  for(Int_t ip = 0; ip < temp_planes; ip++ ) {
+  for(Int_t ip = 0; ip < fNPlanes; ip++ ) {
     if (!fPlanes[ip])
       return -1;
 
@@ -1353,7 +1348,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
   //  *Wwe count the number of three adjacent scintillators too.  (A signle track
   //  *shouldn't fire three adjacent scintillators.
 
-  for(Int_t ip = 0; ip < temp_planes; ip++ ) {
+  for(Int_t ip = 0; ip < fNPlanes; ip++ ) {
     // Planes ip = 0 = 1X
     // Planes ip = 2 = 2X
     if (!fPlanes[ip]) return -1;
@@ -1398,7 +1393,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
   // *look for clusters in y planes... (10 scins)  !this assume both y planes have same
   // *number of scintillators.
 
-  for (Int_t ip = 1; ip < temp_planes; ip +=2 ) {
+  for (Int_t ip = 1; ip < fNPlanes; ip +=2 ) {
     // Planes ip = 1 = 1Y
     // Planes ip = 3 = 2Y
     if (!fPlanes[ip]) return -1;
@@ -1539,13 +1534,42 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 Int_t THcHodoscope::FineProcess( TClonesArray&  tracks  )
 {
   Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
+  Double_t hitPos;
+  Double_t hitDistance;
   for (Int_t itrk=0; itrk<Ntracks; itrk++) {
     THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
     if (theTrack->GetIndex()==0) {
     fBeta=theTrack->GetBeta();
+    for (Int_t ip = 0; ip < fNPlanes; ip++ ){
+        Double_t pl_xypos=0;
+        Double_t pl_zpos=0;
+        Int_t   num_good_pad=0;
+	TClonesArray* hodoHits = fPlanes[ip]->GetHits();
+	for (Int_t iphit = 0; iphit < fPlanes[ip]->GetNScinHits(); iphit++ ){
+	  if (fGoodFlags[itrk][ip][iphit].goodScinTime) {
+          Int_t padind = ((THcHodoHit*)hodoHits->At(iphit))->GetPaddleNumber()-1;
+            pl_xypos+=fPlanes[ip]->GetPosCenter(padind)+ fPlanes[ip]->GetPosOffset();
+            pl_zpos+=fPlanes[ip]->GetZpos()+ (padind%2)*fPlanes[ip]->GetDzpos();
+            num_good_pad++; 
+	  }   
+	  //	  cout << ip << " " << iphit << " " <<  fGoodFlags[itrk][ip][iphit].goodScinTime << " " <<   fGoodFlags[itrk][ip][iphit].goodTdcPos << " " << fGoodFlags[itrk][ip][iphit].goodTdcNeg << endl;
+	}
+	hitDistance=kBig;
+	if (num_good_pad !=0 ) {
+           pl_xypos=pl_xypos/num_good_pad;
+	    pl_zpos=pl_zpos/num_good_pad;
+           hitPos = theTrack->GetY() + theTrack->GetPhi()*pl_zpos ;
+           if (ip%2 == 0)  hitPos = theTrack->GetX() + theTrack->GetTheta()*pl_zpos ;
+           hitDistance =  hitPos - pl_xypos;
+	   fPlanes[ip]->SetTrackXPosition(theTrack->GetX() + theTrack->GetTheta()*pl_zpos );
+	   fPlanes[ip]->SetTrackYPosition(theTrack->GetY() + theTrack->GetPhi()*pl_zpos );
+	  }
+	//      cout << " ip " << ip << " " << hitPos << " " << pl_xypos << " " << pl_zpos << " " <<  hitDistance << endl;
+      fPlanes[ip]->SetHitDistance(hitDistance);
     }
-  }       //over tracks
-
+    }
+  }     //over tracks
+  //
   return 0;
 }
 //_____________________________________________________________________________
