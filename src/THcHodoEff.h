@@ -67,9 +67,13 @@ protected:
   Int_t* fHodoOrEffi;
   Int_t* fHodoAndEffi;
   Int_t* fStatTrk;
+  Int_t* fStatTrkSum;
+  Int_t* fStatAndSum;
+  Double_t* fStatAndEff;
   Double_t fStatSlop;
   Double_t fMaxChisq;
   Double_t* fHodoSlop;
+  Double_t fHodoEff_s1,fHodoEff_s2,fHodoEff_tof,fHodoEff_3_of_4,fHodoEff_4_of_4;
 
   // Arrays for accumulating statistics
   vector<vector<vector<Int_t> > > fHitShould;
