@@ -238,6 +238,7 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
   gHcParms->Define(Form("%shodo_or_eff[%d]",   prefix,totalpaddles), "Hodo or effi",      *fHodoOrEffi);
   gHcParms->Define(Form("%shodo_and_eff[%d]",  prefix,totalpaddles), "Hodo and effi",     *fHodoAndEffi);
   gHcParms->Define(Form("%shodo_plane_AND_eff[%d]",prefix,fNPlanes), "Hodo plane AND eff",  *fStatAndEff);
+  gHcParms->Define(Form("%shodo_gold_hits[%d]",prefix,totalpaddles), "Hodo golden hits",  *fStatTrk);
   gHcParms->Define(Form("%shodo_s1XY_eff",prefix), "Efficiency for S1XY",fHodoEff_s1);
   gHcParms->Define(Form("%shodo_s2XY_eff",prefix), "Efficiency for S2XY",fHodoEff_s2);
   gHcParms->Define(Form("%shodo_stof_eff",prefix), "Efficiency for STOF",fHodoEff_tof);
