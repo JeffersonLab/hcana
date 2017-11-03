@@ -109,11 +109,6 @@ void THcDC::Setup(const char* name, const char* description)
 
   // For now, decide chamber style from the spectrometer name.
   // Should override with a paramter
-  if(fPrefix[0]=='h') {
-    fHMSStyleChambers = 1;
-  } else {
-    fHMSStyleChambers = 0;
-  }
   //cout<<"HMS Style??\t"<<fHMSStyleChambers<<endl;
   string planenamelist;
   DBRequest list[]={
@@ -127,6 +122,14 @@ void THcDC::Setup(const char* name, const char* description)
   };
 
   gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
+
+  if(fVersion==0) {
+    fHMSStyleChambers = 1;
+  } else {
+    fHMSStyleChambers = 0;
+  }
+
+
   cout << "Plane Name List: " << planenamelist << endl;
   cout << "Drift Chambers: " <<  fNPlanes << " planes in " << fNChambers << " chambers" << endl;
 
