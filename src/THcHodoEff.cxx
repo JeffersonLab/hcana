@@ -83,7 +83,7 @@ Int_t THcHodoEff::End( THaRunBase* )
 {
   // End of analysis
     for(Int_t ip=0;ip<fNPlanes;ip++) {
-        fHodoAndEffi[ip]=0;
+        fStatAndEff[ip]=0;
         for(Int_t ic=0;ic<fNCounters[ip];ic++) {
           fStatTrkSum[ip]+=fStatTrk[fHod->GetScinIndex(ip,ic)];
           fStatAndSum[ip]+=fHodoAndEffi[fHod->GetScinIndex(ip,ic)];
