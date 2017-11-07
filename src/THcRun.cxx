@@ -23,7 +23,7 @@ THcRun::THcRun( const char* fname, const char* description ) :
 
 //_____________________________________________________________________________
 THcRun::THcRun( const THcRun& rhs ) :
-  THcRun(rhs)
+  THaRun(rhs)
 {
   // Copy ctor
 
