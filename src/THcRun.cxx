@@ -22,6 +22,36 @@ THcRun::THcRun( const char* fname, const char* description ) :
 }
 
 //_____________________________________________________________________________
+THcRun::THcRun( const THcRun& rhs ) :
+  THcRun(rhs)
+{
+  // Copy ctor
+
+  fHcParms = gHcParms;
+}
+
+//_____________________________________________________________________________
+THcRun::THcRun( const vector<TString>& pathList, const char* filename,
+		const char* description )
+  : THaRun(pathList, filename, description)
+{
+  
+  fHcParms = gHcParms;
+}
+
+//_____________________________________________________________________________
+THcRun& THcRun::operator=(const THaRun& rhs)
+{
+  // Assignment operator.  Not really sure what I (saw) am doing here.
+
+  if (this != &rhs) {
+     THaRun::operator=(rhs);
+     fHcParms = gHcParms;
+  }
+  return *this;
+}
+
+//_____________________________________________________________________________
 THcRun::~THcRun()
 {
   // Destructor.
