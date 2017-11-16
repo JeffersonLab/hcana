@@ -14,6 +14,7 @@ class THcRawAdcHit : public TObject {
 
     void SetData(Int_t data);
     void SetSample(Int_t data);
+    void SetRefTime(Int_t refTime);
     void SetDataTimePedestalPeak(
       Int_t data, Int_t time, Int_t pedestal, Int_t peak
     );
@@ -31,12 +32,14 @@ class THcRawAdcHit : public TObject {
     UInt_t GetNSamples() const;
 
     Bool_t HasMulti() const;
+    Bool_t HasRefTime() const;
 
     Int_t GetPedRaw() const;
     Int_t GetPulseIntRaw(UInt_t iPulse=0) const;
     Int_t GetPulseAmpRaw(UInt_t iPulse=0) const;
     Int_t GetPulseTimeRaw(UInt_t iPulse=0) const;
     Int_t GetSampleRaw(UInt_t iSample=0) const;
+    Int_t GetRefTime() const;
 
     Double_t GetPed() const;
     Double_t GetPulseInt(UInt_t iPulse=0) const;
@@ -73,8 +76,10 @@ class THcRawAdcHit : public TObject {
     Int_t fPulseAmp[fMaxNPulses];
     Int_t fPulseTime[fMaxNPulses];
     Int_t fSample[fMaxNSamples];
+    Int_t fRefTime;
 
     Bool_t fHasMulti;
+    Bool_t fHasRefTime;
     UInt_t fNPulses;
     UInt_t fNSamples;
 
