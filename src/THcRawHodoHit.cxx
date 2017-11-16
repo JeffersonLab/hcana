@@ -94,10 +94,11 @@ void THcRawHodoHit::SetDataTimePedestalPeak(
 
 
 void THcRawHodoHit::SetReference(Int_t signal, Int_t reference) {
-  if (fNAdcSignals <= signal && signal < fNAdcSignals+fNTdcSignals) {
+  if (signal < fNAdcSignals) {
+    fAdcHits[signal].SetRefTime(reference);
+  } else if (signal < fNAdcSignals+fNTdcSignals) {
     fTdcHits[signal-fNAdcSignals].SetRefTime(reference);
-  }
-  else {
+  } else {
     throw std::out_of_range(
       "`THcRawHodoHit::SetReference`: only signals `2` and `3` available!"
     );

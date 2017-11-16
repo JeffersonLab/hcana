@@ -57,6 +57,12 @@ Should be used for flash 250 modules.
 */
 
 /**
+\fn void THcRawAdcHit::SetRefTime(Int_t refTime)
+\brief Sets reference time. In channels.
+\param[in] refTime Reference time. In channels.
+*/
+
+/**
 \fn Int_t THcRawAdcHit::GetRawData(UInt_t iPulse=0) const
 \brief Gets raw pulse integral. In channels.
 \param[in] iPulse Sequential number of requested pulse.
@@ -193,7 +199,7 @@ THcRawAdcHit::THcRawAdcHit() :
   fPeakPedestalRatio(1.0*fNPeakSamples/fNPedestalSamples),
   fSubsampleToTimeFactor(0.0625),
   fPed(0), fPulseInt(), fPulseAmp(), fPulseTime(), fSample(),
-  fHasMulti(kFALSE), fNPulses(0), fNSamples(0)
+  fRefTime(0), fHasMulti(kFALSE), fHasRefTime(kFALSE), fNPulses(0), fNSamples(0)
 {}
 
 THcRawAdcHit& THcRawAdcHit::operator=(const THcRawAdcHit& right) {
@@ -212,6 +218,8 @@ THcRawAdcHit& THcRawAdcHit::operator=(const THcRawAdcHit& right) {
     fHasMulti = right.fHasMulti;
     fNPulses  = right.fNPulses;
     fNSamples = right.fNSamples;
+    fRefTime = right.fRefTime;
+    fHasRefTime = right.fHasRefTime;
   }
 
   return *this;
@@ -234,6 +242,8 @@ void THcRawAdcHit::Clear(Option_t* opt) {
   fHasMulti = kFALSE;
   fNPulses = 0;
   fNSamples = 0;
+  fRefTime = 0;
+  fHasRefTime = kFALSE;
 }
 
 void THcRawAdcHit::SetData(Int_t data) {
@@ -244,6 +254,11 @@ void THcRawAdcHit::SetData(Int_t data) {
   }
   fPulseInt[fNPulses] = data;
   ++fNPulses;
+}
+
+void THcRawAdcHit::SetRefTime(Int_t refTime) {
+  fRefTime = refTime;
+  fHasRefTime = kTRUE;
 }
 
 void THcRawAdcHit::SetSample(Int_t data) {
@@ -419,7 +434,11 @@ Double_t THcRawAdcHit::GetPulseAmp(UInt_t iPulse) const {
 }
 
 Double_t THcRawAdcHit::GetPulseTime(UInt_t iPulse) const {
-  return (static_cast<Double_t>(fPulseTime[iPulse])*GetAdcTons());
+  Int_t rawtime = fPulseTime[iPulse];
+  if (fHasRefTime) {
+    rawtime -= fRefTime;
+  }
+  return (static_cast<Double_t>(rawtime)*GetAdcTons());
 }
 
 Int_t THcRawAdcHit::GetSampleIntRaw() const {
@@ -465,6 +484,23 @@ Double_t THcRawAdcHit::GetAdcTopC() const {
 // Convert time sub samples to ns
 Double_t THcRawAdcHit::GetAdcTons() const {
   return fAdcTimeRes;
+}
+
+Int_t THcRawAdcHit::GetRefTime() const {
+  if (fHasRefTime) {
+    return fRefTime;
+  }
+  else {
+    TString msg = TString::Format(
+      "`THcRawAdcHit::GetRefTime`: Reference time not available!"
+    );
+    throw std::runtime_error(msg.Data());
+  }
+}
+
+
+Bool_t THcRawAdcHit::HasRefTime() const {
+  return fHasRefTime;
 }
 
 ClassImp(THcRawAdcHit)

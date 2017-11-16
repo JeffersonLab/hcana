@@ -144,16 +144,33 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
   // Get the indexed reference times for this event
   for(Int_t i=0;i<fNRefIndex;i++) {
     if(fRefIndexMaps[i].defined) {
-      if(evdata.GetNumHits(fRefIndexMaps[i].crate,
-			   fRefIndexMaps[i].slot,
-			   fRefIndexMaps[i].channel) > 0) {
-	// Only take first hit in this reference channel
-	fRefIndexMaps[i].reftime =
-	  evdata.GetData(fRefIndexMaps[i].crate,fRefIndexMaps[i].slot,
-			 fRefIndexMaps[i].channel,0);
-	fRefIndexMaps[i].hashit = kTRUE;
+      if(evdata.IsMultifunction(fRefIndexMaps[i].crate,
+				fRefIndexMaps[i].slot)) { // Multifunction module (e.g. FADC)
+	// Make sure at least one pulse
+	if(evdata.GetNumEvents(Decoder::kPulseTime, fRefIndexMaps[i].crate,
+			       fRefIndexMaps[i].slot,
+			       fRefIndexMaps[i].channel) > 0) {
+	  fRefIndexMaps[i].reftime =
+	    evdata.GetData(Decoder::kPulseTime,fRefIndexMaps[i].crate,fRefIndexMaps[i].slot,
+			   fRefIndexMaps[i].channel,0);
+	  fRefIndexMaps[i].hashit = kTRUE;
+	} else {
+	  fRefIndexMaps[i].hashit = kFALSE;
+	}
       } else {
-	fRefIndexMaps[i].hashit = kFALSE;
+	if(evdata.GetNumHits(fRefIndexMaps[i].crate,
+			     fRefIndexMaps[i].slot,
+			     fRefIndexMaps[i].channel) > 0) {
+	  // Only take first hit in this reference channel
+	  // Here we need to check if it is a multifunction type and get the time
+	  // if it is.
+	  fRefIndexMaps[i].reftime =
+	    evdata.GetData(fRefIndexMaps[i].crate,fRefIndexMaps[i].slot,
+			   fRefIndexMaps[i].channel,0);
+	  fRefIndexMaps[i].hashit = kTRUE;
+	} else {
+	  fRefIndexMaps[i].hashit = kFALSE;
+	}
       }
     }
   }
@@ -264,6 +281,30 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 					  evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, chan, ipulse),
 					  evdata.GetData(Decoder::kPulsePedestal, d->crate, d->slot, chan, ipulse),
 					  evdata.GetData(Decoder::kPulsePeak, d->crate, d->slot, chan, ipulse));
+	}
+	// Get the reference time for the FADC pulse time
+	if(d->refchan >= 0) {	// Reference time for the slot
+	  if(evdata.GetNumEvents(Decoder::kPulseIntegral, d->crate, d->slot, d->refchan) > 0) {
+	    Int_t reftime = evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, d->refchan, 0);
+	    rawhit->SetReference(signal, reftime);
+	  } else {
+	    cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
+	      " missing for (" << d->crate << ", " << d->slot <<
+	      ", " << chan << ")" << endl;
+	  }
+	} else {
+	  if(d->refindex >=0 && d->refindex < fNRefIndex) {
+	    if(fRefIndexMaps[d->refindex].hashit) {
+	      rawhit->SetReference(signal, fRefIndexMaps[d->refindex].reftime);
+	    } else {
+	      cout << "HitList(event=" << evdata.GetEvNum() << "): refindex " << d->refindex <<
+          " (" << fRefIndexMaps[d->refindex].crate <<
+          ", " << fRefIndexMaps[d->refindex].slot <<
+          ", " << fRefIndexMaps[d->refindex].channel << ")" <<
+		" missing for (" << d->crate << ", " << d->slot <<
+		", " << chan << ")" << endl;
+	    }
+	  }
 	}
       }
     }
