@@ -199,7 +199,7 @@ void THcConfigEvtHandler::MakeParms(Int_t roc)
 	for(Int_t ichan=0;ichan<16;ichan++) {
 	  thresholds[ichan] = threshp[ichan];
 	}
-	gHcParms->Define(Form("g%s_adc_thresholds_%d_%d",fName.Data(),roc,slot),"ADC Thresholds",*thresholds);
+	gHcParms->Define(Form("g%s_adc_thresholds_%d_%d[16]",fName.Data(),roc,slot),"ADC Thresholds",*thresholds);
 
 	Int_t mode = cinfo->FADC250.mode;
 	gHcParms->Define(Form("g%s_adc_mode_%d_%d",fName.Data(),roc,slot),"ADC Mode",mode);
@@ -227,11 +227,17 @@ void THcConfigEvtHandler::MakeParms(Int_t roc)
       // If that is not true we will get "Variable XXX already exists." warnings
       if(cinfo->TI.present) {
 	Int_t nped = cinfo->TI.nped;
-	gHcParms->Define(Form("g%s_ti_nped",fName.Data()),"Numbre of Pedestal events",nped);
+	gHcParms->Define(Form("g%s_ti_nped",fName.Data()),"Number of Pedestal events",nped);
 	Int_t scaler_period = cinfo->TI.scaler_period;
-	gHcParms->Define(Form("g%s_ti_scaler_period",fName.Data()),"Numbre of Pedestal events",scaler_period);
+	gHcParms->Define(Form("g%s_ti_scaler_period",fName.Data()),"Number of Pedestal events",scaler_period);
 	Int_t sync_count = cinfo->TI.sync_count;
-	gHcParms->Define(Form("g%s_ti_sync_count",fName.Data()),"Numbre of Pedestal events",sync_count);
+	gHcParms->Define(Form("g%s_ti_sync_count",fName.Data()),"Number of Pedestal events",sync_count);
+
+	Int_t *prescales = new Int_t[cinfo->TI.num_prescales];
+	for(Int_t i=0;i<cinfo->TI.num_prescales;i++) {
+	  prescales[i] = cinfo->TI.prescales[i];
+	}
+	gHcParms->Define(Form("g%s_ti_ps[%d]",fName.Data(),cinfo->TI.num_prescales),"TI Event Prescaler settings",*prescales);
       }
     }
     it++;
