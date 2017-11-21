@@ -272,6 +272,9 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
     {"totNumTracksMatched", "Total Number of Tracks Matched Per Region", "fTotNumTracksMatched"},
     {"totNumTracksFired",   "Total Number of Tracks that Fired",         "fTotNumTracksFired"},
 
+    {"xAtCer",       "Track X at Cherenkov mirror",    "fXAtCer"},
+    {"yAtCer",       "Track Y at Cherenkov mirror",    "fYAtCer"},
+
     {"npe",          "Number of PEs",                  "fNpe"},
     {"npeSum",       "Total Number of PEs",            "fNpeSum"},
 
@@ -295,6 +298,9 @@ void THcCherenkov::Clear(Option_t* opt)
   fTotNumGoodAdcHits   = 0;
   fTotNumTracksMatched = 0;
   fTotNumTracksFired   = 0;
+
+  fXAtCer = 0.0;
+  fYAtCer = 0.0;
 
   fNpeSum = 0.0;
 
@@ -451,36 +457,36 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
 
     if (trackRedChi2Cut && trackBetaCut && trackENormCut && trackDpCut) {
 
-      // Project the track to the Cherenkov mirror planes
-      Double_t xAtCher = trackXfp + trackTheta * fMirrorZPos;
-      Double_t yAtCher = trackYfp + trackPhi   * fMirrorZPos;
+        // Project the track to the Cherenkov mirror planes
+        fXAtCer = trackXfp + trackTheta * fMirrorZPos;
+        fYAtCer = trackYfp + trackPhi   * fMirrorZPos;
 
-      // cout << "Cherenkov Detector: " << GetName() << " has fNRegions = " << fNRegions << endl;
-      // cout << "nTracks = " << nTracks << "\t" << "trackChi2 = " << trackChi2
-      // 	   << "\t" << "trackNDof = " << trackNDoF << "\t" << "trackRedChi2 = " << trackRedChi2 << endl;
-      // cout << "trackBeta = " << trackBeta << "\t" << "trackEnergy = " << trackEnergy << "\t"
-      // 	   << "trackMom = " << trackMom << "\t" << "trackENorm = " << trackENorm << endl;
-      // cout << "trackXfp = " << trackXfp << "\t" << "trackYfp = " << trackYfp << "\t"
-      // 	   << "trackTheta = " << trackTheta << "\t" << "trackPhi = " << trackPhi << endl;
-      // cout << "fMirrorZPos = " << fMirrorZPos << "\t" << "xAtCher = " << xAtCher << "\t" << "yAtCher = " << yAtCher << endl;
-      // cout << "=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:" << endl;
+        // cout << "Cherenkov Detector: " << GetName() << " has fNRegions = " << fNRegions << endl;
+        // cout << "nTracks = " << nTracks << "\t" << "trackChi2 = " << trackChi2
+        // 	   << "\t" << "trackNDof = " << trackNDoF << "\t" << "trackRedChi2 = " << trackRedChi2 << endl;
+        // cout << "trackBeta = " << trackBeta << "\t" << "trackEnergy = " << trackEnergy << "\t"
+        // 	   << "trackMom = " << trackMom << "\t" << "trackENorm = " << trackENorm << endl;
+        // cout << "trackXfp = " << trackXfp << "\t" << "trackYfp = " << trackYfp << "\t"
+        // 	   << "trackTheta = " << trackTheta << "\t" << "trackPhi = " << trackPhi << endl;
+        // cout << "fMirrorZPos = " << fMirrorZPos << "\t" << "fXAtCer = " << fXAtCer << "\t" << "fYAtCer = " << fYAtCer << endl;
+        // cout << "=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:" << endl;
 
-      for (Int_t iregion = 0; iregion < fNRegions; iregion++) {
+        for (Int_t iregion = 0; iregion < fNRegions; iregion++) {
 
-	if ((TMath::Abs(fRegionValue[GetIndex(iregion, 0)] - xAtCher)    < fRegionValue[GetIndex(iregion, 4)]) &&
-	    (TMath::Abs(fRegionValue[GetIndex(iregion, 1)] - yAtCher)    < fRegionValue[GetIndex(iregion, 5)]) &&
-	    (TMath::Abs(fRegionValue[GetIndex(iregion, 2)] - trackTheta) < fRegionValue[GetIndex(iregion, 6)]) &&
-	    (TMath::Abs(fRegionValue[GetIndex(iregion, 3)] - trackPhi)   < fRegionValue[GetIndex(iregion, 7)])) {
+            if ((TMath::Abs(fRegionValue[GetIndex(iregion, 0)] - fXAtCer)   < fRegionValue[GetIndex(iregion, 4)]) &&
+                (TMath::Abs(fRegionValue[GetIndex(iregion, 1)] - fYAtCer)   < fRegionValue[GetIndex(iregion, 5)]) &&
+                (TMath::Abs(fRegionValue[GetIndex(iregion, 2)] - trackTheta) < fRegionValue[GetIndex(iregion, 6)]) &&
+                (TMath::Abs(fRegionValue[GetIndex(iregion, 3)] - trackPhi)   < fRegionValue[GetIndex(iregion, 7)])) {
 
-	  fTotNumTracksMatched++;
-	  fNumTracksMatched.at(iregion) = iregion + 1;
+                fTotNumTracksMatched++;
+                fNumTracksMatched.at(iregion) = iregion + 1;
 
-	  if (fNpeSum > fNpeThresh) {
-	    fTotNumTracksFired++;
-	    fNumTracksFired.at(iregion) = iregion + 1;
-	  }  // NPE threshold cut
-	}  // Regional cuts
-      }  // Loop over regions
+                if (fNpeSum > fNpeThresh) {
+                    fTotNumTracksFired++;
+                    fNumTracksFired.at(iregion) = iregion + 1;
+                }  // NPE threshold cut
+            }  // Regional cuts
+        }  // Loop over regions
     }  // Tracking cuts
   }  // Track loop
 
