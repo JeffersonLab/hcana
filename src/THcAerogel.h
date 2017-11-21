@@ -57,6 +57,8 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   Double_t  fDpMin;
   Double_t  fDpMax;
   Double_t  fDiffBoxZPos;
+  Double_t  fXAtAero;
+  Double_t  fYAtAero;
   Double_t  fNpeThresh;
   Double_t  fAdcTimeWindowMin;
   Double_t  fAdcTimeWindowMax;
