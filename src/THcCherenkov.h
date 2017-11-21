@@ -77,6 +77,8 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Double_t  fDpMin;
   Double_t  fDpMax;
   Double_t  fMirrorZPos;
+  Double_t  fXAtCer;
+  Double_t  fYAtCer;
   Double_t  fNpeThresh;
   Double_t  fAdcTimeWindowMin;
   Double_t  fAdcTimeWindowMax;
