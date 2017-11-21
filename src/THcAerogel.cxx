@@ -431,6 +431,9 @@ Int_t THcAerogel::DefineVariables( EMode mode )
     {"totNumTracksMatched", "Total Number of Tracks Matched Per Region", "fTotNumTracksMatched"},
     {"totNumTracksFired",   "Total Number of Tracks that Fired",         "fTotNumTracksFired"},
 
+    {"xAtAero",       "Track X at Aero diffusion box",    "fXAtAero"},
+    {"yAtAero",       "Track Y at Aero diffusion box",    "fYAtAero"},
+
     {"posNpe",    "Number of Positive PEs",       "fPosNpe"},
     {"negNpe",    "Number of Negative PEs",       "fNegNpe"},
     {"posNpeSum", "Total Number of Positive PEs", "fPosNpeSum"},
@@ -467,6 +470,9 @@ void THcAerogel::Clear(Option_t* opt)
   fTotNumGoodNegAdcHits = 0;
   fTotNumTracksMatched  = 0;
   fTotNumTracksFired    = 0;
+
+  fXAtAero   = 0.0;
+  fYAtAero   = 0.0;
 
   fNpeSum    = 0.0;
   fPosNpeSum = 0.0;
@@ -826,37 +832,37 @@ Int_t THcAerogel::FineProcess( TClonesArray& tracks )
 
     if (trackRedChi2Cut && trackBetaCut && trackENormCut && trackDpCut) {
 
-      // Project the track to the Aerogel diffuser box plane
-      Double_t xAtAero = trackXfp + trackTheta * fDiffBoxZPos;
-      Double_t yAtAero = trackYfp + trackPhi   * fDiffBoxZPos;
+        // Project the track to the Aerogel diffuser box plane
+        fXAtAero = trackXfp + trackTheta * fDiffBoxZPos;
+        fYAtAero = trackYfp + trackPhi   * fDiffBoxZPos;
 
-      // cout << "Aerogel Detector: " << GetName() << endl;
-      // cout << "nTracks = " << nTracks << "\t" << "trackChi2 = " << trackChi2
-      // 	   << "\t" << "trackNDof = " << trackNDoF << "\t" << "trackRedChi2 = " << trackRedChi2 << endl;
-      // cout << "trackBeta = " << trackBeta << "\t" << "trackEnergy = " << trackEnergy << "\t"
-      // 	   << "trackMom = " << trackMom << "\t" << "trackENorm = " << trackENorm << endl;
-      // cout << "trackXfp = " << trackXfp << "\t" << "trackYfp = " << trackYfp << "\t"
-      // 	   << "trackTheta = " << trackTheta << "\t" << "trackPhi = " << trackPhi << endl;
-      // cout << "fDiffBoxZPos = " << fDiffBoxZPos << "\t" << "xAtAero = " << xAtAero << "\t" << "yAtAero = " << yAtAero << endl;
-      // cout << "=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:" << endl;
+        // cout << "Aerogel Detector: " << GetName() << endl;
+        // cout << "nTracks = " << nTracks << "\t" << "trackChi2 = " << trackChi2
+        // 	   << "\t" << "trackNDof = " << trackNDoF << "\t" << "trackRedChi2 = " << trackRedChi2 << endl;
+        // cout << "trackBeta = " << trackBeta << "\t" << "trackEnergy = " << trackEnergy << "\t"
+        // 	   << "trackMom = " << trackMom << "\t" << "trackENorm = " << trackENorm << endl;
+        // cout << "trackXfp = " << trackXfp << "\t" << "trackYfp = " << trackYfp << "\t"
+        // 	   << "trackTheta = " << trackTheta << "\t" << "trackPhi = " << trackPhi << endl;
+        // cout << "fDiffBoxZPos = " << fDiffBoxZPos << "\t" << "fXAtAero = " << fXAtAero << "\t" << "fYAtAero = " << fYAtAero << endl;
+        // cout << "=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:=:" << endl;
 
 
-      for (Int_t iregion = 0; iregion < fNRegions; iregion++) {
+        for (Int_t iregion = 0; iregion < fNRegions; iregion++) {
 
-      	if ((TMath::Abs(fRegionValue[GetIndex(iregion, 0)] - xAtAero)    < fRegionValue[GetIndex(iregion, 4)]) &&
-      	    (TMath::Abs(fRegionValue[GetIndex(iregion, 1)] - yAtAero)    < fRegionValue[GetIndex(iregion, 5)]) &&
-      	    (TMath::Abs(fRegionValue[GetIndex(iregion, 2)] - trackTheta) < fRegionValue[GetIndex(iregion, 6)]) &&
-      	    (TMath::Abs(fRegionValue[GetIndex(iregion, 3)] - trackPhi)   < fRegionValue[GetIndex(iregion, 7)])) {
+            if ((TMath::Abs(fRegionValue[GetIndex(iregion, 0)] - fXAtAero)   < fRegionValue[GetIndex(iregion, 4)]) &&
+                (TMath::Abs(fRegionValue[GetIndex(iregion, 1)] - fYAtAero)   < fRegionValue[GetIndex(iregion, 5)]) &&
+                (TMath::Abs(fRegionValue[GetIndex(iregion, 2)] - trackTheta) < fRegionValue[GetIndex(iregion, 6)]) &&
+                (TMath::Abs(fRegionValue[GetIndex(iregion, 3)] - trackPhi)   < fRegionValue[GetIndex(iregion, 7)])) {
 
-	  fTotNumTracksMatched++;
-      	  fNumTracksMatched.at(iregion) = iregion + 1;
+                fTotNumTracksMatched++;
+                fNumTracksMatched.at(iregion) = iregion + 1;
 
-      	  if (fNpeSum > fNpeThresh) {
-      	    fTotNumTracksFired++;
-      	    fNumTracksFired.at(iregion) = iregion + 1;
-      	  }  // NPE threshold cut
-      	}  // Regional cuts
-      }  // Loop over regions
+                if (fNpeSum > fNpeThresh) {
+                    fTotNumTracksFired++;
+                    fNumTracksFired.at(iregion) = iregion + 1;
+                }  // NPE threshold cut
+            }  // Regional cuts
+        }  // Loop over regions
     }  // Tracking cuts
   }  // Track loop
 
