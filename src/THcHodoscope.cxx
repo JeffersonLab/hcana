@@ -277,12 +277,14 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fyHiScin = new Int_t [fNHodoscopes];
   fHodoSlop = new Double_t [fNPlanes];
   fTdcOffset = new Int_t [fNPlanes];
+  fAdcTdcOffset = new Int_t [fNPlanes];
   fAdcTimeWindowMin = new Double_t [fNPlanes];
   fAdcTimeWindowMax = new Double_t [fNPlanes];
 
 
   for(Int_t ip=0;ip<fNPlanes;ip++) { // Set a large default window
    fTdcOffset[ip] = 0 ;
+   fAdcTdcOffset[ip] = 0 ;
   }
 
   DBRequest list[]={
@@ -310,6 +312,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"hodo_slop",                        fHodoSlop,               kDouble,  (UInt_t) fNPlanes},
     {"debugprintscinraw",                &fdebugprintscinraw,               kInt,  0,1},
     {"hodo_tdc_offset",                  fTdcOffset,              kInt,     (UInt_t) fNPlanes, 1},
+    {"hodo_adc_tdc_offset",              fAdcTdcOffset,           kInt,     (UInt_t) fNPlanes, 1},
     {"hodo_AdcTimeWindowMin",            fAdcTimeWindowMin,       kDouble,  (UInt_t) fNPlanes},
     {"hodo_AdcTimeWindowMax",            fAdcTimeWindowMax,       kDouble,  (UInt_t) fNPlanes},
     {"dumptof",                          &fDumpTOF,               kInt,    0, 1},

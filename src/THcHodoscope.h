@@ -89,6 +89,7 @@ public:
   Double_t GetPlaneCenter(Int_t ip) { return fPlaneCenter[ip];}
   Double_t GetPlaneSpacing(Int_t ip) { return fPlaneSpacing[ip];}
   Int_t GetTdcOffset(Int_t ip) const { return fTdcOffset[ip];}
+  Int_t GetAdcTdcOffset(Int_t ip) const { return fAdcTdcOffset[ip];}
 
   Double_t GetAdcTimeWindowMin(Int_t ip) { return fAdcTimeWindowMin[ip];}
   Double_t GetAdcTimeWindowMax(Int_t ip) { return fAdcTimeWindowMax[ip];}
@@ -198,6 +199,7 @@ protected:
   Double_t     fNCerNPE;
   Double_t*    fHodoSlop;
   Int_t        *fTdcOffset;
+  Int_t        *fAdcTdcOffset;
   Int_t        fdebugprintscinraw;
   Int_t        fTestSum;
   Int_t        fTrackEffTestNScinPlanes;

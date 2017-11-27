@@ -240,6 +240,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 
   fHodoSlop= ((THcHodoscope*) GetParent())->GetHodoSlop(fPlaneNum-1);
   fTdcOffset= ((THcHodoscope*) GetParent())->GetTdcOffset(fPlaneNum-1);
+  fAdcTdcOffset= ((THcHodoscope*) GetParent())->GetAdcTdcOffset(fPlaneNum-1);
   fScinTdcMin=((THcHodoscope *)GetParent())->GetTdcMin();
   fScinTdcMax=((THcHodoscope *)GetParent())->GetTdcMax();
   fScinTdcToTime=((THcHodoscope *)GetParent())->GetTdcToTime();
@@ -562,7 +563,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
    * - Loops through "rawhits" array  starting at index of "nexthit"
    * - Assumes that the hit list is sorted by plane and looping ends when plane number of hit doesn't match fPlaneNum
    * - Fills THcSignalHit objects frPosTDCHits and frNegTDCHits when TDC > 0
-   * - Fills THcSignalHit objects frPosADCHits and frNegaDCHit with pedestal subtracted ADC when value larger than 50
+   * - Fills THcSignalHit objects frPosADCHits and frNegADCHit with pedestal subtracted ADC when value larger than 50
    * - For hits that have TDC value for either positive or negative PMT within  fScinTdcMin and fScinTdcMax
    *  + Creates new  fHodoHits[fNScinHits] =  THcHodoHit
    *  + Calculates pulse height correction to the positive and negative PMT times
@@ -689,7 +690,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseAmp(thit));
 
       ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTimeRaw(thit));
-      ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTime(thit));
+      ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
 
       if (rawPosAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 0);
       if (rawPosAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 1);
@@ -709,7 +710,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       ((THcSignalHit*) frNegAdcPulseAmpRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseAmpRaw(thit));
       ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseAmp(thit));
       ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTimeRaw(thit));
-      ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTime(thit));
+      ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
 
       if (rawNegAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 0);
       if (rawNegAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 1);
@@ -724,6 +725,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->GetRawTdcHitPos().GetTime()+fTdcOffset);
     if (hit->GetRawTdcHitNeg().GetNHits() > 0)
       ((THcSignalHit*) frNegTDCHits->ConstructedAt(nrNegTDCHits++))->Set(padnum, hit->GetRawTdcHitNeg().GetTime()+fTdcOffset);
+    // Should we make lists of offset corrected ADC Pulse times here too?  For now
+    // the frNegAdcPulseTime frPosAdcPulseTime have that offset correction.
     //
     Bool_t badcraw_pos=kFALSE;
     Bool_t badcraw_neg=kFALSE;
@@ -746,7 +749,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
        	Int_t pulsePed     = rawNegAdcHit.GetPed();
        	Double_t pulseInt     = rawNegAdcHit.GetPulseInt(ielem);
        	Double_t pulseAmp     = rawNegAdcHit.GetPulseAmp(ielem);
-	Double_t pulseTime    = rawNegAdcHit.GetPulseTime(ielem);
+	Double_t pulseTime    = rawNegAdcHit.GetPulseTime(ielem)+fAdcTdcOffset;
 	Bool_t   errorflag = 0   ;
         if (rawNegAdcHit.GetPulseAmpRaw(ielem) <= 0) errorflag=1;
 	Bool_t   pulseTimeCut = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
@@ -765,7 +768,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
        	Int_t pulsePed     = rawPosAdcHit.GetPed();
        	Double_t pulseInt     = rawPosAdcHit.GetPulseInt(ielem);
        	Double_t pulseAmp     = rawPosAdcHit.GetPulseAmp(ielem);
-	Double_t pulseTime    = rawPosAdcHit.GetPulseTime(ielem);
+	Double_t pulseTime    = rawPosAdcHit.GetPulseTime(ielem)+fAdcTdcOffset;
 	Bool_t   errorflag = 0   ;
         if (rawPosAdcHit.GetPulseAmpRaw(ielem) <= 0) errorflag=1;
 	Bool_t   pulseTimeCut = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
