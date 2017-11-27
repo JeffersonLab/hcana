@@ -80,6 +80,9 @@ public:
   Double_t GetAdcTimeWindowMax() {
     return fAdcTimeWindowMax;
   }
+  Double_t GetAdcTdcOffset() {
+    return fAdcTdcOffset;
+  }
   Int_t GetMinPeds() {
     return fShMinPeds;
   }
@@ -131,6 +134,7 @@ protected:
   static const Int_t kADCSampIntDynPed=3;
   Double_t fAdcTimeWindowMin;
   Double_t fAdcTimeWindowMax;
+  Double_t fAdcTdcOffset;
 
   Int_t fAnalyzePedestals;   // Flag for pedestal analysis.
 

@@ -215,6 +215,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
       {"cal_ADCMode", &fADCMode, kInt, 0, 1},
       {"cal_AdcTimeWindowMin", &fAdcTimeWindowMin, kDouble, 0, 1},
       {"cal_AdcTimeWindowMax", &fAdcTimeWindowMax, kDouble, 0, 1},
+      {"cal_adc_tdc_offset", &fAdcTdcOffset, kDouble, 0, 1},
       {"dbg_raw_cal", &fdbg_raw_cal, kInt, 0, 1},
       {"dbg_decoded_cal", &fdbg_decoded_cal, kInt, 0, 1},
       {"dbg_sparsified_cal", &fdbg_sparsified_cal, kInt, 0, 1},
@@ -232,6 +233,7 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     fdbg_init_cal = 0;
     fAdcTimeWindowMin=0;
     fAdcTimeWindowMax=10000;
+    fAdcTdcOffset=0.0;
     fADCMode=kADCDynamicPedestal;
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   }

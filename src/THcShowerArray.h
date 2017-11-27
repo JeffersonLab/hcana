@@ -146,6 +146,7 @@ protected:
   Double_t fAdcTimeWindowMin ;
   Double_t fAdcTimeWindowMax ;
   Double_t fAdcThreshold ;
+  Double_t fAdcTdcOffset;
 
   Int_t fDebugAdc;
   Int_t fPedSampLow;		// Sample range for

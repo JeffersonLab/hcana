@@ -134,6 +134,7 @@ protected:
   Int_t fDataSampHigh;		// sample integration
   Double_t fAdcNegThreshold;		//
   Double_t fAdcPosThreshold;		//
+  Double_t fAdcTdcOffset;
 
   //counting variables
   Int_t     fTotNumPosAdcHits;
