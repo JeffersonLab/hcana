@@ -149,6 +149,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     {"cal_arr_ADCMode", &fADCMode, kInt, 0, 1},
     {"cal_arr_AdcTimeWindowMin", &fAdcTimeWindowMin, kDouble, 0, 1},
     {"cal_arr_AdcTimeWindowMax", &fAdcTimeWindowMax, kDouble, 0, 1},
+    {"cal_arr_adc_tdc_offset", &fAdcTdcOffset, kDouble, 0, 1},
     {"cal_arr_AdcThreshold", &fAdcThreshold, kDouble, 0, 1},
     {"cal_ped_sample_low", &fPedSampLow, kInt, 0, 1},
     {"cal_ped_sample_high", &fPedSampHigh, kInt, 0, 1},
@@ -167,6 +168,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   fADCMode=kADCDynamicPedestal;
   fAdcTimeWindowMin=0;
   fAdcTimeWindowMax=10000;
+  fAdcTdcOffset=0.0;
   fAdcThreshold=0.;
   fNelem = fNRows*fNColumns;
 

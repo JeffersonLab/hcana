@@ -224,6 +224,8 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
 
   fOrigin.SetXYZ(xOrig, yOrig, zOrig);
 
+  fAdcTdcOffset=parent->GetAdcTdcOffset();
+
   // Create arrays to hold results here
   //
 
@@ -584,7 +586,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseAmp(thit));
 
       ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTimeRaw(thit));
-      ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTime(thit));
+      ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
 
       if (rawPosAdcHit.GetPulseAmp(thit)>0&&rawPosAdcHit.GetPulseIntRaw(thit)>0) {
 	((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum,0);
@@ -609,7 +611,7 @@ Int_t THcShowerPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseAmp(thit));
 
       ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTimeRaw(thit));
-      ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTime(thit));
+      ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
 
       if (rawNegAdcHit.GetPulseAmp(thit)>0&&rawNegAdcHit.GetPulseIntRaw(thit)>0) {
 	((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum,0);
