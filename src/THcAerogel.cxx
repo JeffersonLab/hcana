@@ -305,6 +305,7 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_npe_thresh",       &fNpeThresh,        kDouble},
     {"aero_adcTimeWindowMin", &fAdcTimeWindowMin, kDouble},
     {"aero_adcTimeWindowMax", &fAdcTimeWindowMax, kDouble},
+    {"aero_adc_tdc_offset",   &fAdcTdcOffset,     kDouble, 0, 1},
     {"aero_debug_adc",        &fDebugAdc,         kInt,    0, 1},
     {"aero_six_gev_data",     &fSixGevData,       kInt,    0, 1},
     {"aero_pos_gain",         fPosGain,           kDouble, (UInt_t) fNelem},
@@ -322,6 +323,7 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
 
   fSixGevData = 0; // Set 6 GeV data parameter to false unless set in parameter file
   fDebugAdc   = 0; // Set ADC debug parameter to false unless set in parameter file
+  fAdcTdcOffset = 0.0;
 
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 
@@ -600,7 +602,7 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
       ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(nrPosAdcHits))->Set(npmt, rawPosAdcHit.GetPulseAmp(thit));
 
       ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(nrPosAdcHits))->Set(npmt, rawPosAdcHit.GetPulseTimeRaw(thit));
-      ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(nrPosAdcHits))->Set(npmt, rawPosAdcHit.GetPulseTime(thit));
+      ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(nrPosAdcHits))->Set(npmt, rawPosAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
 
       if (rawPosAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(npmt, 0);
       if (rawPosAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(npmt, 1);

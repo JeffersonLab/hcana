@@ -205,12 +205,14 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
     {"_debug_adc",        &fDebugAdc,         kInt, 0, 1},
     {"_adcTimeWindowMin", &fAdcTimeWindowMin, kDouble},
     {"_adcTimeWindowMax", &fAdcTimeWindowMax, kDouble},
+    {"_adc_tdc_offset",   &fAdcTdcOffset,     kDouble, 0, 1},
     {"_num_regions",      &fNRegions,         kInt},
     {"_region",           &fRegionValue[0],   kDouble,  (UInt_t) fRegionsValueMax},
     {0}
   };
 
   fDebugAdc = 0; // Set ADC debug parameter to false unless set in parameter file
+  fAdcTdcOffset = 0.0;
 
   gHcParms->LoadParmValues((DBRequest*)&list, prefix.c_str());
 
@@ -372,7 +374,7 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
       ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPulseAmp(thit));
 
       ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPulseTimeRaw(thit));
-      ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPulseTime(thit));
+      ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
 
       if (rawAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 0);
       if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 1);

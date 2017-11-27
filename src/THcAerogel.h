@@ -62,6 +62,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   Double_t  fNpeThresh;
   Double_t  fAdcTimeWindowMin;
   Double_t  fAdcTimeWindowMax;
+  Double_t  fAdcTdcOffset;
   Double_t  *fRegionValue;
   // Counting variables
   Int_t     fTotNumAdcHits;
