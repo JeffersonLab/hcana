@@ -179,7 +179,7 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t fADCPedScaleFactor;	// Multiply dynamic pedestal by this before subtracting
   Int_t fADCDiagCut;		// Cut for ADC in hit maps.  Defaults to 50
   Int_t fTdcOffset;		/* Overall offset to raw tdc */
-  Int_t fAdcTdcOffset;		/* Overall offset to raw adc times */
+  Double_t fAdcTdcOffset;	/* Overall offset to raw adc times */
   Int_t fMaxHits;               /* maximum number of hits to be considered - useful for dimensioning arrays */
   Double_t fSpacing;            /* paddle spacing */
   Double_t fSize;               /* paddle size */
