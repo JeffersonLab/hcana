@@ -141,6 +141,7 @@ protected:
   Double_t fStartTimeCenter, fStartTimeSlop, fScinTdcToTime;
   Double_t fTofTolerance;
   Int_t fCosmicFlag; //
+  Int_t fNumPlanesBetaCalc; // Number of planes to use in beta calculation
   Double_t fPathLengthCentral;
   Double_t fScinTdcMin, fScinTdcMax; // min and max TDC values
   char** fPlaneNames;
@@ -207,6 +208,8 @@ protected:
   Int_t*       fyHiScin;
   Int_t        fNHodoscopes;
 
+  Double_t fTOFCalib_shtrk_lo;
+  Double_t fTOFCalib_shtrk_hi;
   Int_t        fDumpTOF;
   ofstream    fDumpOut;
   string       fTOFDumpFile;
