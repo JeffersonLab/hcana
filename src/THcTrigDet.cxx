@@ -127,7 +127,7 @@ THcTrigDet::THcTrigDet(
   fNumAdc(0), fNumTdc(0), fAdcNames(), fTdcNames(),
   fTdcTimeRaw(), fTdcTime(),
   fAdcPedRaw(), fAdcPulseIntRaw(), fAdcPulseAmpRaw(), fAdcPulseTimeRaw(),
-  fAdcPed(), fAdcPulseInt(), fAdcPulseAmp(),
+  fAdcPed(), fAdcPulseInt(), fAdcPulseAmp(), fAdcPulseTime(),
   fTdcMultiplicity(), fAdcMultiplicity()
 {}
 
@@ -145,6 +145,7 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
     fAdcPulseIntRaw[i] = 0;
     fAdcPulseAmpRaw[i] = 0;
     fAdcPulseTimeRaw[i] = 0;
+    fAdcPulseTime[i] = kBig;
     fAdcPed[i] = 0.0;
     fAdcPulseInt[i] = 0.0;
     fAdcPulseAmp[i] = 0.0;
@@ -191,6 +192,7 @@ void THcTrigDet::Clear(Option_t* opt) {
     fAdcPulseIntRaw[i] = 0;
     fAdcPulseAmpRaw[i] = 0;
     fAdcPulseTimeRaw[i] = 0;
+    fAdcPulseTime[i] = kBig;
     fAdcPed[i] = 0.0;
     fAdcPulseInt[i] = 0.0;
     fAdcPulseAmp[i] = 0.0;
@@ -221,6 +223,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
       fAdcPulseIntRaw[cnt] = rawAdcHit.GetPulseIntRaw();
       fAdcPulseAmpRaw[cnt] = rawAdcHit.GetPulseAmpRaw();
       fAdcPulseTimeRaw[cnt] = rawAdcHit.GetPulseTimeRaw();
+      fAdcPulseTime[cnt] = rawAdcHit.GetPulseTime();
 
       fAdcPed[cnt] = rawAdcHit.GetPed();
       fAdcPulseInt[cnt] = rawAdcHit.GetPulseInt();
@@ -292,6 +295,7 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   std::vector<TString> adcPulseIntRawTitle(fNumAdc), adcPulseIntRawVar(fNumAdc);
   std::vector<TString> adcPulseAmpRawTitle(fNumAdc), adcPulseAmpRawVar(fNumAdc);
   std::vector<TString> adcPulseTimeRawTitle(fNumAdc), adcPulseTimeRawVar(fNumAdc);
+  std::vector<TString> adcPulseTimeTitle(fNumAdc), adcPulseTimeVar(fNumAdc);
   std::vector<TString> adcPedTitle(fNumAdc), adcPedVar(fNumAdc);
   std::vector<TString> adcPulseIntTitle(fNumAdc), adcPulseIntVar(fNumAdc);
   std::vector<TString> adcPulseAmpTitle(fNumAdc), adcPulseAmpVar(fNumAdc);
@@ -369,8 +373,18 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
       adcMultiplicityVar.at(i).Data()
     };
     vars.push_back(entry8);
-  }
+  
+ 
 
+    adcPulseTimeTitle.at(i) = fAdcNames.at(i) + "_adcPulseTime";
+    adcPulseTimeVar.at(i) = TString::Format("fAdcPulseTime[%d]", i);
+    RVarDef entry9 {
+      adcPulseTimeTitle.at(i).Data(),
+      adcPulseTimeTitle.at(i).Data(),
+      adcPulseTimeVar.at(i).Data()
+    };
+    vars.push_back(entry9);
+  } // loop over fNumAdc 
   // Push the variable names for TDC channels.
   std::vector<TString> tdcTimeRawTitle(fNumTdc), tdcTimeRawVar(fNumTdc);
   std::vector<TString> tdcTimeTitle(fNumTdc), tdcTimeVar(fNumTdc);

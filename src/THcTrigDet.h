@@ -56,6 +56,7 @@ class THcTrigDet : public THaDetector, public THcHitList {
     Double_t fAdcPed[fMaxAdcChannels];
     Double_t fAdcPulseInt[fMaxAdcChannels];
     Double_t fAdcPulseAmp[fMaxAdcChannels];
+    Double_t fAdcPulseTime[fMaxAdcChannels];
 
     Int_t fTdcMultiplicity[fMaxTdcChannels];
     Int_t fAdcMultiplicity[fMaxAdcChannels];
