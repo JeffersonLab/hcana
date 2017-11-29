@@ -494,13 +494,13 @@ void THcScintillatorPlane::Clear( Option_t* )
     fGoodPosAdcPed.at(ielem)         = 0.0;
     fGoodPosAdcPulseInt.at(ielem)    = 0.0;
     fGoodPosAdcPulseAmp.at(ielem)    = 0.0;
-    fGoodPosAdcPulseTime.at(ielem)   = 0.0;
+    fGoodPosAdcPulseTime.at(ielem)   = kBig;
   }
   for (UInt_t ielem = 0; ielem < fGoodNegAdcPed.size(); ielem++) {
     fGoodNegAdcPed.at(ielem)         = 0.0;
     fGoodNegAdcPulseInt.at(ielem)    = 0.0;
     fGoodNegAdcPulseAmp.at(ielem)    = 0.0;
-    fGoodNegAdcPulseTime.at(ielem)   = 0.0;
+    fGoodNegAdcPulseTime.at(ielem)   = kBig;
   }
 
   //Clear Good TDC Variables

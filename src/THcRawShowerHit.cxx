@@ -83,11 +83,13 @@ void THcRawShowerHit::SetDataTimePedestalPeak(
 
 
 void THcRawShowerHit::SetReference(Int_t signal, Int_t reference) {
-  std::cerr
-    << "Warning:"
-    << " `THcRawShowerHit::SetReference`:"
-    << " ADC signal should not have reference time!"
-    << std::endl;
+  if (signal < fNAdcSignals) {
+    fAdcHits[signal].SetRefTime(reference);
+  } else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::SetReference`: only signals `2` and `3` available!"
+    );
+  }
 }
 
 
