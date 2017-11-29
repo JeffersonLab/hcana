@@ -330,7 +330,7 @@ void THcCherenkov::Clear(Option_t* opt)
     fGoodAdcPulseInt.at(ielem)    = 0.0;
     fGoodAdcPulseIntRaw.at(ielem) = 0.0;
     fGoodAdcPulseAmp.at(ielem)    = 0.0;
-    fGoodAdcPulseTime.at(ielem)   = 0.0;
+    fGoodAdcPulseTime.at(ielem)   = kBig;
     fNpe.at(ielem)                = 0.0;
   }
 

@@ -430,7 +430,7 @@ void THcShowerPlane::Clear( Option_t* )
     fGoodPosAdcPulseIntRaw.at(ielem)      = 0.0;
     fGoodPosAdcPulseInt.at(ielem)         = 0.0;
     fGoodPosAdcPulseAmp.at(ielem)         = 0.0;
-    fGoodPosAdcPulseTime.at(ielem)        = 0.0;
+    fGoodPosAdcPulseTime.at(ielem)        = kBig;
     fEpos.at(ielem)                       = 0.0;
     fNumGoodPosAdcHits.at(ielem)          = 0.0;
   }
@@ -440,7 +440,7 @@ void THcShowerPlane::Clear( Option_t* )
     fGoodNegAdcPulseIntRaw.at(ielem)      = 0.0;
     fGoodNegAdcPulseInt.at(ielem)         = 0.0;
     fGoodNegAdcPulseAmp.at(ielem)         = 0.0;
-    fGoodNegAdcPulseTime.at(ielem)        = 0.0;
+    fGoodNegAdcPulseTime.at(ielem)        = kBig;
     fEneg.at(ielem)                       = 0.0;
     fNumGoodNegAdcHits.at(ielem)          = 0.0;
   }

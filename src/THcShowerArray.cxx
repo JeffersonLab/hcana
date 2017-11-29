@@ -163,13 +163,13 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   };
 
   fDebugAdc = 0;  // Set ADC debug parameter to false unless set in parameter file
-
-  gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   fADCMode=kADCDynamicPedestal;
   fAdcTimeWindowMin=0;
   fAdcTimeWindowMax=10000;
   fAdcTdcOffset=0.0;
   fAdcThreshold=0.;
+
+  gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   fNelem = fNRows*fNColumns;
 
   fXPos = new Double_t* [fNRows];
@@ -483,7 +483,7 @@ void THcShowerArray::Clear( Option_t* )
     fGoodAdcPed.at(ielem)              = 0.0;
     fGoodAdcPulseInt.at(ielem)         = 0.0;
     fGoodAdcPulseAmp.at(ielem)         = 0.0;
-    fGoodAdcPulseTime.at(ielem)        = 0.0;
+    fGoodAdcPulseTime.at(ielem)        = kBig;
     fNumGoodAdcHits.at(ielem)          = 0.0;
     fE.at(ielem)                       = 0.0;
   }
@@ -913,7 +913,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   }
 
   fEarray = 0;
-
+ 
   // Process raw hits. Get ADC hits for the plane, assign variables for each
   // channel.
 
@@ -945,7 +945,7 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp(thit));
 
       ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTimeRaw(thit));
-      ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTime(thit));
+      ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
 
       if (rawAdcHit.GetPulseAmp(thit)>0&&rawAdcHit.GetPulseIntRaw(thit)>0) {
 	((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum,0);

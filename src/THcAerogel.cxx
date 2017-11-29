@@ -519,7 +519,7 @@ void THcAerogel::Clear(Option_t* opt)
     fGoodPosAdcPulseInt.at(ielem)    = 0.0;
     fGoodPosAdcPulseIntRaw.at(ielem) = 0.0;
     fGoodPosAdcPulseAmp.at(ielem)    = 0.0;
-    fGoodPosAdcPulseTime.at(ielem)   = 0.0;
+    fGoodPosAdcPulseTime.at(ielem)   = kBig;
     fPosNpe.at(ielem)                = 0.0;
   }
   for (UInt_t ielem = 0; ielem < fGoodNegAdcPed.size(); ielem++) {
@@ -527,7 +527,7 @@ void THcAerogel::Clear(Option_t* opt)
     fGoodNegAdcPulseInt.at(ielem)    = 0.0;
     fGoodNegAdcPulseIntRaw.at(ielem) = 0.0;
     fGoodNegAdcPulseAmp.at(ielem)    = 0.0;
-    fGoodNegAdcPulseTime.at(ielem)   = 0.0;
+    fGoodNegAdcPulseTime.at(ielem)   = kBig;
     fNegNpe.at(ielem)                = 0.0;
   }
 
