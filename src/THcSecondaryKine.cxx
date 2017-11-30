@@ -145,8 +145,7 @@ Int_t THcSecondaryKine::Process( const THaEvData& )
   if( !IsOK() ) return -1;
 
   //Get secondary particle mass
-
-  fMX = fHC_Spectro->GetParticleMass();
+  fMX = dynamic_cast <THcHallCSpectrometer*> (fSpectro)->GetParticleMass();
 
   // Tracking information from the secondary spectrometer
   THaTrackInfo* trkifo = fSpectro->GetTrackInfo();

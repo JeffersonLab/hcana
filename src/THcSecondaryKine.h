@@ -106,7 +106,6 @@ public:
 
   TString            fSpectroName;  // Name of spectrometer for secondary particle
   THaTrackingModule* fSpectro;      // Pointer to spectrometer object
-  THcHallCSpectrometer* fHC_Spectro;
   TString            fPrimaryName;  // Name of module for primary interaction kinematics
   THcPrimaryKine*    fPrimary;      // Pointer to primary kinematics module
 
