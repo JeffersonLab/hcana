@@ -79,7 +79,7 @@ using namespace std;
 
 //_____________________________________________________________________________
 THcHallCSpectrometer::THcHallCSpectrometer( const char* name, const char* description ) :
-  THaSpectrometer( name, description )
+  THaSpectrometer( name, description ), fPresent(kTRUE)
 {
   // Constructor. Defines the standard detectors for the HRS.
   //  AddDetector( new THaTriggerTime("trg","Trigger-based time offset"));
@@ -87,6 +87,7 @@ THcHallCSpectrometer::THcHallCSpectrometer( const char* name, const char* descri
   //sc_ref = static_cast<THaScintillator*>(GetDetector("s1"));
 
   SetTrSorting(kTRUE);
+  eventtypes.clear();
 }
 
 //_____________________________________________________________________________
@@ -107,6 +108,7 @@ Int_t THcHallCSpectrometer::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
   RVarDef vars[] = {
     { "tr.betachisq", "Chi2 of beta", "fTracks.THaTrack.GetBetaChi2()"},
+    { "present", "Trigger Type includes this spectrometer", "fPresent"},
     { 0 }
   };
 
@@ -864,6 +866,20 @@ Int_t THcHallCSpectrometer::TrackTimes( TClonesArray* Tracks ) {
   return 0;
 }
 
+Int_t THcHallCSpectrometer::Decode( const THaEvData& evdata )
+{
+
+  fPresent=kTRUE;
+  if(eventtypes.size()!=0) {
+    Int_t evtype = evdata.GetEvType();
+    if(!IsMyEvent(evtype)) {
+      fPresent = kFALSE;
+    }
+  }
+
+  return THaSpectrometer::Decode(evdata);
+}
+
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::ReadRunDatabase( const TDatime& date )
 {
@@ -871,6 +887,24 @@ Int_t THcHallCSpectrometer::ReadRunDatabase( const TDatime& date )
   // read in ReadDatabase.
 
   return kOK;
+}
+
+void THcHallCSpectrometer::AddEvtType(int evtype) {
+  eventtypes.push_back(evtype);
+}
+  
+void THcHallCSpectrometer::SetEvtType(int evtype) {
+  eventtypes.clear();
+  AddEvtType(evtype);
+}
+
+Bool_t THcHallCSpectrometer::IsMyEvent(Int_t evtype) const
+{
+  for (UInt_t i=0; i < eventtypes.size(); i++) {
+    if (evtype == eventtypes[i]) return kTRUE;
+  }
+
+  return kFALSE;
 }
 
 //_____________________________________________________________________________

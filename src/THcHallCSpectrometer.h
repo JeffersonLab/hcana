@@ -49,6 +49,8 @@ public:
   virtual Int_t   BestTrackUsingPrune();
   virtual Int_t   TrackTimes( TClonesArray* tracks );
 
+  virtual Int_t   Decode( const THaEvData& );
+
   virtual Int_t   ReadRunDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
 
@@ -59,6 +61,13 @@ public:
   Double_t GetParticleMass() const {return fPartMass; }
   Double_t GetBetaAtPcentral() const { return
       fPcentral/TMath::Sqrt(fPcentral*fPcentral+fPartMass*fPartMass);}
+
+  virtual void AddEvtType(int evtype);
+  virtual void SetEvtType(int evtype);
+  virtual Bool_t IsMyEvent(Int_t evtype) const;
+  virtual Int_t GetNumTypes() { return eventtypes.size(); };
+  virtual Bool_t IsPresent() {return fPresent;};
+
 
 protected:
   void InitializeReconstruction();
@@ -139,6 +148,9 @@ protected:
 
   // Flag for fProperties indicating that tracks are to be sorted by chi2
   static const UInt_t kSortTracks = BIT(16);
+
+  std::vector<Int_t> eventtypes;
+  Bool_t fPresent;
 
   ClassDef(THcHallCSpectrometer,0) //A Hall C Spectrometer
 };
