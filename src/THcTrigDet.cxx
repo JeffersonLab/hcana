@@ -223,7 +223,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
       fAdcPulseIntRaw[cnt] = rawAdcHit.GetPulseIntRaw();
       fAdcPulseAmpRaw[cnt] = rawAdcHit.GetPulseAmpRaw();
       fAdcPulseTimeRaw[cnt] = rawAdcHit.GetPulseTimeRaw();
-      fAdcPulseTime[cnt] = rawAdcHit.GetPulseTime();
+      fAdcPulseTime[cnt] = rawAdcHit.GetPulseTime()+fAdcTdcOffset;
 
       fAdcPed[cnt] = rawAdcHit.GetPed();
       fAdcPulseInt[cnt] = rawAdcHit.GetPulseInt();
@@ -235,7 +235,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
       THcRawTdcHit rawTdcHit = hit->GetRawTdcHit();
 
       fTdcTimeRaw[cnt] = rawTdcHit.GetTimeRaw();
-      fTdcTime[cnt] = rawTdcHit.GetTime()*fTdcChanperNS-fTdcOffset;
+      fTdcTime[cnt] = rawTdcHit.GetTime()*fTdcChanperNS+fTdcOffset;
 
       fTdcMultiplicity[cnt] = rawTdcHit.GetNHits();
     }
@@ -269,11 +269,13 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
     {"_adcNames", &adcNames, kString},  // Names of ADC channels.
     {"_tdcNames", &tdcNames, kString},  // Names of TDC channels.
     {"_tdcoffset", &fTdcOffset, kDouble,0,1},  // Offset of tdc channels
+    {"_adc_tdc_offset", &fTdcOffset, kDouble,0,1},  // Offset of Adc Pulse time (ns)
     {"_tdcchanperns", &fTdcChanperNS, kDouble,0,1},  // Convert channesl to ns
     {0}
   };
   fTdcChanperNS=0.1;
   fTdcOffset=300.;
+  fAdcTdcOffset=200.;
   gHcParms->LoadParmValues(list, fKwPrefix.c_str());
 
   // Split the names to std::vector<std::string>.
