@@ -135,7 +135,7 @@ multiple signal types (e.g. ADC+, ADC-, TDC+, TDC-), or multiplehits for multihi
 The hit list is sorted (by plane, counter) after filling.
 
 */
-Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
+Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarnings ) {
 
   // cout << " Clearing TClonesArray " << endl;
   fRawHitList->Clear( );
@@ -235,21 +235,25 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	    Int_t reftime = evdata.GetData(d->crate, d->slot, d->refchan, 0);
 	    rawhit->SetReference(signal, reftime);
 	  } else {
-	    cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
-	      " missing for (" << d->crate << ", " << d->slot <<
-	      ", " << chan << ")" << endl;
+	    if(!suppresswarnings) {
+	      cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
+		" missing for (" << d->crate << ", " << d->slot <<
+		", " << chan << ")" << endl;
+	    }
 	  }
 	} else {
 	  if(d->refindex >=0 && d->refindex < fNRefIndex) {
 	    if(fRefIndexMaps[d->refindex].hashit) {
 	      rawhit->SetReference(signal, fRefIndexMaps[d->refindex].reftime);
 	    } else {
-	      cout << "HitList(event=" << evdata.GetEvNum() << "): refindex " << d->refindex <<
-          " (" << fRefIndexMaps[d->refindex].crate <<
-          ", " << fRefIndexMaps[d->refindex].slot <<
-          ", " << fRefIndexMaps[d->refindex].channel << ")" <<
-		" missing for (" << d->crate << ", " << d->slot <<
-		", " << chan << ")" << endl;
+	      if(!suppresswarnings) {
+		cout << "HitList(event=" << evdata.GetEvNum() << "): refindex " << d->refindex <<
+		  " (" << fRefIndexMaps[d->refindex].crate <<
+		  ", " << fRefIndexMaps[d->refindex].slot <<
+		  ", " << fRefIndexMaps[d->refindex].channel << ")" <<
+		  " missing for (" << d->crate << ", " << d->slot <<
+		  ", " << chan << ")" << endl;
+	      }
 	    }
 	  }
 	}
@@ -288,21 +292,25 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata ) {
 	    Int_t reftime = evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, d->refchan, 0);
 	    rawhit->SetReference(signal, reftime);
 	  } else {
-	    cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
-	      " missing for (" << d->crate << ", " << d->slot <<
-	      ", " << chan << ")" << endl;
+	    if(!suppresswarnings) {
+	      cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
+		" missing for (" << d->crate << ", " << d->slot <<
+		", " << chan << ")" << endl;
+	    }
 	  }
 	} else {
 	  if(d->refindex >=0 && d->refindex < fNRefIndex) {
 	    if(fRefIndexMaps[d->refindex].hashit) {
 	      rawhit->SetReference(signal, fRefIndexMaps[d->refindex].reftime);
 	    } else {
-	      cout << "HitList(event=" << evdata.GetEvNum() << "): refindex " << d->refindex <<
-          " (" << fRefIndexMaps[d->refindex].crate <<
-          ", " << fRefIndexMaps[d->refindex].slot <<
-          ", " << fRefIndexMaps[d->refindex].channel << ")" <<
-		" missing for (" << d->crate << ", " << d->slot <<
-		", " << chan << ")" << endl;
+	      if(!suppresswarnings) {
+		cout << "HitList(event=" << evdata.GetEvNum() << "): refindex " << d->refindex <<
+		  " (" << fRefIndexMaps[d->refindex].crate <<
+		  ", " << fRefIndexMaps[d->refindex].slot <<
+		  ", " << fRefIndexMaps[d->refindex].channel << ")" <<
+		  " missing for (" << d->crate << ", " << d->slot <<
+		  ", " << chan << ")" << endl;
+	      }
 	    }
 	  }
 	}
