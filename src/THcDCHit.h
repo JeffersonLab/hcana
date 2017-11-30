@@ -16,9 +16,9 @@
 class THcDCHit : public TObject {
 
 public:
-  THcDCHit( THcDCWire* wire=NULL, Int_t rawtime=0, Double_t time=0.0,
+  THcDCHit( THcDCWire* wire=NULL, Int_t rawnorefcorrtime=0, Int_t rawtime=0, Double_t time=0.0,
     THcDriftChamberPlane* wp=0) :
-    fWire(wire), fRawTime(rawtime), fTime(time), fWirePlane(wp),
+    fWire(wire), fRawNoRefCorrTime(rawnorefcorrtime), fRawTime(rawtime), fTime(time), fWirePlane(wp),
     fDist(0.0), ftrDist(kBig) {
       if (wire) ConvertTimeToDist();
       fCorrected = 0;
@@ -34,6 +34,7 @@ public:
   THcDCWire* GetWire() const { return fWire; }
   Int_t    GetWireNum() const { return fWire->GetNum(); }
   Int_t    GetRawTime() const { return fRawTime; }
+  Int_t    GetRawNoRefCorrTime() const { return fRawNoRefCorrTime; }
   Double_t GetTime()    const { return fTime; }
   Double_t GetDist()    const { return fDist; }
   Double_t GetPos()     const { return fWire->GetPos(); } //Position of hit wire
@@ -168,7 +169,8 @@ protected:
   static const Double_t kBig;  //!
 
   THcDCWire*  fWire;     // Wire on which the hit occurred
-  Int_t       fRawTime;  // TDC value (channels)
+  Int_t       fRawNoRefCorrTime;  // raw TDC value (channels) 
+  Int_t       fRawTime;  // TDC value (channels) reference time subtracted
   Double_t    fTime;     // Time corrected for time offset of wire (s)
   THcDriftChamberPlane* fWirePlane; //! Pointer to parent wire plane
   Double_t    fDist;     // (Perpendicular) Drift Distance
