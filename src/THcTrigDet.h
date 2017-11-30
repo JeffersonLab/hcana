@@ -36,6 +36,7 @@ class THcTrigDet : public THaDetector, public THcHitList {
     Int_t fNumAdc;
     Int_t fNumTdc;
 
+    Double_t fAdcTdcOffset;
     Double_t fTdcOffset;
     Double_t fTdcChanperNS;
 
