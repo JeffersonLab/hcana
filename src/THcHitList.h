@@ -28,7 +28,7 @@ public:
 
   THcHitList();
 
-  virtual Int_t DecodeToHitList( const THaEvData& );
+  virtual Int_t DecodeToHitList( const THaEvData&, Bool_t suppress=kFALSE );
   void          InitHitList(THaDetMap* detmap,
 			    const char *hitclass, Int_t maxhits);
 
