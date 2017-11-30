@@ -268,7 +268,9 @@ Int_t THcDriftChamberPlane::DefineVariables( EMode mode )
   RVarDef vars[] = {
     {"wirenum", "List of TDC wire number",
      "fHits.THcDCHit.GetWireNum()"},
-    {"rawtdc", "Raw TDC Values",
+    {"rawnorefcorrtdc", "Raw TDC Values",
+     "fHits.THcDCHit.GetRawNoRefCorrTime()"},
+    {"rawtdc", "Raw TDC with reference time subtracted Values",
      "fHits.THcDCHit.GetRawTime()"},
     {"time","Drift times",
      "fHits.THcDCHit.GetTime()"},
@@ -348,7 +350,8 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     for(UInt_t mhit=0; mhit<hit->GetRawTdcHit().GetNHits(); mhit++) {
       fNRawhits++;
       /* Sort into early, late and ontime */
-      Int_t rawtdc = hit->GetRawTdcHit().GetTime(mhit); // Get the ref time subtracted time
+      Int_t rawnorefcorrtdc = hit->GetRawTdcHit().GetTimeRaw(mhit); // Get the ref time subtracted time
+       Int_t rawtdc = hit->GetRawTdcHit().GetTime(mhit); // Get the ref time subtracted time
       if(rawtdc < fTdcWinMin) {
 	// Increment early counter  (Actually late because TDC is backward)
       } else if (rawtdc > fTdcWinMax) {
@@ -361,7 +364,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	//	  - (rawtdc-reftime)*fNSperChan + fPlaneTimeZero;
 	// How do we get this start time from the hodoscope to here
 	// (or at least have it ready by coarse process)
-	new( (*fHits)[nextHit++] ) THcDCHit(wire, rawtdc, time, this);
+	new( (*fHits)[nextHit++] ) THcDCHit(wire, rawnorefcorrtdc,rawtdc, time, this);
 	break;			// Take just the first hit in the time window
       }
     }
