@@ -170,6 +170,7 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
 
   DBRequest list_1[] = {
     {"_tot_pmts", &fNelem, kInt},
+    {"_num_regions",      &fNRegions,         kInt},
     {0}
   };
 
@@ -206,7 +207,6 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
     {"_adcTimeWindowMin", &fAdcTimeWindowMin, kDouble},
     {"_adcTimeWindowMax", &fAdcTimeWindowMax, kDouble},
     {"_adc_tdc_offset",   &fAdcTdcOffset,     kDouble, 0, 1},
-    {"_num_regions",      &fNRegions,         kInt},
     {"_region",           &fRegionValue[0],   kDouble,  (UInt_t) fRegionsValueMax},
     {0}
   };
