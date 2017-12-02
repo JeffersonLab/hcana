@@ -392,10 +392,11 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "y", "Y at focal plane", "fDCTracks.THcDCTrack.GetY()"},
     { "xp", "XP at focal plane", "fDCTracks.THcDCTrack.GetXP()"},
     { "yp", "YP at focal plane", "fDCTracks.THcDCTrack.GetYP()"},
-    { "x_fp", "X at focal plane (best chi2 track)", "fX_fp_best"},
-    { "y_fp", "Y at focal plane( best chi2 track)", "fY_fp_best"},
-    { "xp_fp", "XP at focal plane (best chi2 track)", "fXp_fp_best"},
-    { "yp_fp", "YP at focal plane(best chi2 track) ", "fYp_fp_best"},
+    { "x_fp", "X at focal plane (golden track)", "fX_fp_best"},
+    { "y_fp", "Y at focal plane( golden track)", "fY_fp_best"},
+    { "xp_fp", "XP at focal plane (golden track)", "fXp_fp_best"},
+    { "yp_fp", "YP at focal plane(golden track) ", "fYp_fp_best"},
+    { "chisq", "chisq/dof (golde track) ", "fChisq_best"},
     { "residual", "Residuals", "fResiduals"},
     { "wireHitDid","Wire did have  matched track hit", "fWire_hit_did"},
     { "wireHitShould", "Wire should have matched track hit", "fWire_hit_should"},
@@ -477,7 +478,7 @@ void THcDC::ClearEvent()
   fY_fp_best=-10000.;
   fXp_fp_best=-10000.;
   fYp_fp_best=-10000.;
-
+  fChisq_best=kBig;
   for(UInt_t i=0;i<fNChambers;i++) {
     fChambers[i]->Clear();
   }
@@ -616,6 +617,7 @@ void THcDC::SetFocalPlaneBestTrack(Int_t golden_track_index)
       fY_fp_best=tr1->GetY();
       fXp_fp_best=tr1->GetXP();
       fYp_fp_best=tr1->GetYP();
+      fChisq_best=tr1->GetChisq();
          for (UInt_t ihit = 0; ihit < UInt_t (tr1->GetNHits()); ihit++) {
 	THcDCHit *hit = tr1->GetHit(ihit);
 	Int_t plane = hit->GetPlaneNum() - 1;
