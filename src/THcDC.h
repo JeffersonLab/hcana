@@ -169,6 +169,7 @@ protected:
   Double_t fY_fp_best;
   Double_t fXp_fp_best;
   Double_t fYp_fp_best;
+  Double_t fChisq_best;
  // For accumulating statitics for efficiencies
   Int_t fTotEvents;
   Int_t* fNChamHits;
