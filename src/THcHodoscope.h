@@ -15,6 +15,7 @@
 #include "THcHodoHit.h"
 #include "THcRawHodoHit.h"
 #include "THcScintillatorPlane.h"
+#include "THcCherenkov.h"
 
 #include "THaTrackingDetector.h"
 #include "THcHitList.h"
@@ -117,6 +118,8 @@ public:
   THcHodoscope();  // for ROOT I/O
 protected:
 
+  THcCherenkov* fCherenkov;
+
   Int_t fAnalyzePedestals;
 
   Int_t fNHits;
@@ -212,6 +215,9 @@ protected:
 
   Double_t fTOFCalib_shtrk_lo;
   Double_t fTOFCalib_shtrk_hi;
+  Double_t fTOFCalib_cer_lo;
+  Double_t fTOFCalib_beta_lo;
+  Double_t fTOFCalib_beta_hi;
   Int_t        fDumpTOF;
   ofstream    fDumpOut;
   string       fTOFDumpFile;
