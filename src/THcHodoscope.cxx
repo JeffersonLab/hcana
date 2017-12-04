@@ -130,6 +130,14 @@ void THcHodoscope::Setup(const char* name, const char* description)
   fPartMass = app->GetParticleMass();
   fBetaNominal = app->GetBetaAtPcentral();
 
+
+
+  if (fSHMS) {
+    fCherenkov = dynamic_cast<THcCherenkov*>(app->GetDetector("hgcer"));
+  } else {
+    fCherenkov = dynamic_cast<THcCherenkov*>(app->GetDetector("cer"));
+  }
+
   delete [] desc;
 }
 
@@ -188,6 +196,9 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   for (int ip=0; ip<fNPlanes; ++ip) {
     fScinHitPaddle.push_back(std::vector<Int_t>(fNPaddle[ip], 0));
   }
+
+
+
 
   return fStatus = kOK;
 }
@@ -318,6 +329,9 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"dumptof",                          &fDumpTOF,               kInt,    0, 1},
     {"TOFCalib_shtrk_lo",                &fTOFCalib_shtrk_lo,               kDouble,    0, 1},
     {"TOFCalib_shtrk_hi",                &fTOFCalib_shtrk_hi,               kDouble,    0, 1},
+    {"TOFCalib_cer_lo",                &fTOFCalib_cer_lo,               kDouble,    0, 1},
+    {"TOFCalib_beta_lo",                &fTOFCalib_beta_lo,               kDouble,    0, 1},
+    {"TOFCalib_beta_hi",                &fTOFCalib_beta_hi,               kDouble,    0, 1},
     {"dumptof_filename",                 &fTOFDumpFile,           kString, 0, 1},
     {0}
   };
@@ -328,7 +342,11 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     fAdcTimeWindowMin[ip] = 0.;
     fAdcTimeWindowMax[ip] = 1000.;
   }
-  
+  fTOFCalib_shtrk_lo=-kBig;
+  fTOFCalib_shtrk_hi= kBig;
+  fTOFCalib_cer_lo=-kBig;
+  fTOFCalib_beta_lo=-kBig;
+  fTOFCalib_beta_hi= kBig;
   fdebugprintscinraw=0;
   fDumpTOF = 0;
   fTOFDumpFile="";
@@ -1545,7 +1563,10 @@ Int_t THcHodoscope::FineProcess( TClonesArray&  tracks  )
 	for (Int_t iphit = 0; iphit < fPlanes[ip]->GetNScinHits(); iphit++ ){
           THcHodoHit *hit = fTOFPInfo[ih].hit;
 	  if (fGoodFlags[itrk][ip][iphit].goodScinTime) {
-	    if(fDumpTOF && Ntracks==1 && fGoodEventTOFCalib && shower_track_enorm > fTOFCalib_shtrk_lo && shower_track_enorm < fTOFCalib_shtrk_hi ) {
+            Bool_t sh_pid=(shower_track_enorm > fTOFCalib_shtrk_lo && shower_track_enorm < fTOFCalib_shtrk_hi);
+            Bool_t beta_pid=( fBeta > fTOFCalib_beta_lo &&  fBeta < fTOFCalib_beta_hi);
+	    Bool_t cer_pid=( fCherenkov->GetCerNPE() > fTOFCalib_cer_lo);
+	    if(fDumpTOF && Ntracks==1 && fGoodEventTOFCalib && sh_pid && beta_pid && cer_pid) {
               fDumpOut << fixed << setprecision(2);
              fDumpOut  << showpoint << " 1" << setw(3) << ip+1 << setw(3) << hit->GetPaddleNumber()  << setw(10) << hit->GetPosTDC()*fScinTdcToTime  << setw(10) << fTOFPInfo[ih].pathp << setw(10) << fTOFPInfo[ih].zcor  << setw(10) << fTOFPInfo[ih].time_pos << setw(10) << hit->GetPosADC() << endl;
              fDumpOut  << showpoint << " 2" << setw(3) << ip+1 << setw(3) << hit->GetPaddleNumber() << setw(10) << hit->GetNegTDC()*fScinTdcToTime  << setw(10) << fTOFPInfo[ih].pathn << setw(10) << fTOFPInfo[ih].zcor  << setw(10) << fTOFPInfo[ih].time_neg << setw(10) << hit->GetNegADC() << endl;
