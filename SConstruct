@@ -56,32 +56,32 @@ baseenv.Append(BUILDERS = {'RootCint': bld})
 
 proceed = "1" or "y" or "yes" or "Yes" or "Y"
 if baseenv.subst('$CPPCHECK')==proceed:
-	is_cppcheck = which('cppcheck')
-	print ("Path to cppcheck is %s\n" % is_cppcheck)
+    is_cppcheck = which('cppcheck')
+    print ("Path to cppcheck is %s\n" % is_cppcheck)
 
-	if(is_cppcheck == None):
-		print('!!! cppcheck not found on this system.  Check if cppcheck is installed and in your PATH.')
-		Exit(1)
-	else:
-		cppcheck_command = baseenv.Command('cppcheck_report.txt',[],"cppcheck --quiet --enable=all src/ 2> $TARGET")
-		baseenv.AlwaysBuild(cppcheck_command)
+    if(is_cppcheck == None):
+        print('!!! cppcheck not found on this system.  Check if cppcheck is installed and in your PATH.')
+        Exit(1)
+    else:
+        cppcheck_command = baseenv.Command('cppcheck_report.txt',[],"cppcheck --quiet --enable=all src/ 2> $TARGET")
+        baseenv.AlwaysBuild(cppcheck_command)
 
 ######## Configure Section #######
 
 if not (baseenv.GetOption('clean') or baseenv.GetOption('help')):
 
-        configure.config(baseenv,ARGUMENTS)
+    configure.config(baseenv,ARGUMENTS)
 
-        conf = Configure(baseenv)
-        if not conf.CheckCXX():
-                print('!!! Your compiler and/or environment is not correctly configured.')
-                Exit(1)
-        # if not conf.CheckFunc('printf'):
-        #         print('!!! Your compiler and/or environment is not correctly configured.')
-        #         Exit(1)
-        if conf.CheckCXXHeader('sstream'):
-                conf.env.Append(CPPDEFINES = 'HAS_SSTREAM')
-        baseenv = conf.Finish()
+    conf = Configure(baseenv)
+    if not conf.CheckCXX():
+        print('!!! Your compiler and/or environment is not correctly configured.')
+        Exit(1)
+    # if not conf.CheckFunc('printf'):
+    #         print('!!! Your compiler and/or environment is not correctly configured.')
+    #         Exit(1)
+    if conf.CheckCXXHeader('sstream'):
+        conf.env.Append(CPPDEFINES = 'HAS_SSTREAM')
+    baseenv = conf.Finish()
 
 Export('baseenv')
 
@@ -109,10 +109,10 @@ baseenv.Prepend(LIBS=[hallalib,dclib,eviolib])
 Export('pbaseenv')
 
 if pbaseenv['CXX'] == 'g++':
-	gxxVersion = [int(i) for i in pbaseenv['CXXVERSION'].split('.')]
-	if (gxxVersion[0] < 4) or (gxxVersion[0] == 4 and gxxVersion[1] < 4):
-		print('Error: g++ version too old! Need at least g++ 4.4!')
-		Exit(1)
+    gxxVersion = [int(i) for i in pbaseenv['CXXVERSION'].split('.')]
+    if (gxxVersion[0] < 4) or (gxxVersion[0] == 4 and gxxVersion[1] < 4):
+        print('Error: g++ version too old! Need at least g++ 4.4!')
+        Exit(1)
 
 ##directorylist = ['./','src','podd','podd/src','podd/hana_decode']
 ##SConscript('podd/SConstruct')
@@ -124,11 +124,11 @@ else:
     subprocess.call(['echo', '!!!!!! Building Podd !!!!!! '])
     podd_command_scons = "cd %s; scons" % baseenv.subst('$HA_DIR')
     if baseenv.GetOption('num_jobs'):
-	podd_command_scons += " -j%s" % (GetOption('num_jobs')) 
+        podd_command_scons += " -j%s" % (GetOption('num_jobs')) 
     if baseenv.GetOption('silent'):
-	podd_command_scons += " -s"
+        podd_command_scons += " -s"
     for key,value in ARGLIST:
-	podd_command_scons += " %s=%s" % (key,value)
+        podd_command_scons += " %s=%s" % (key,value)
 
 print ("podd_command_scons = %s" % podd_command_scons)
 

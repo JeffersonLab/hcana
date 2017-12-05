@@ -24,9 +24,9 @@ localmajorcleantarget = '../'+linkbase+'.so'
 print('cleantarget = %s\n' % cleantarget)
 print('localmajorcleantarget = %s\n' % localmajorcleantarget)
 try:
-	os.symlink(cleantarget,localmajorcleantarget)
+    os.symlink(cleantarget,localmajorcleantarget)
 except:
-	print (" Continuing ... ")
+    print (" Continuing ... ")
 
 Clean(srclib,cleantarget)
 Clean(srclib,localmajorcleantarget)
