@@ -177,6 +177,11 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
   //      <<  GetName() << endl;
   // cout << "---------------------------------------------------------------\n";
 
+  fPresentP = 0;
+  THaVar* vpresent = gHaVars->Find(Form("%s.present",GetApparatus()->GetName()));
+  if(vpresent) {
+    fPresentP = (Bool_t *) vpresent->GetValuePointer();
+  }
   return fStatus = kOK;
 }
 
@@ -626,7 +631,11 @@ Int_t THcShower::Decode( const THaEvData& evdata )
   Clear();
 
   // Get the Hall C style hitlist (fRawHitList) for this event
-  Int_t nhits = DecodeToHitList(evdata);
+  Bool_t present = kTRUE;	// Suppress reference time warnings
+  if(fPresentP) {		// if this spectrometer not part of trigger
+    present = *fPresentP;
+  }
+  Int_t nhits = DecodeToHitList(evdata, !present);
   
   fEvent = evdata.GetEvNum();
 

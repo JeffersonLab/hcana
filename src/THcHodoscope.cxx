@@ -197,8 +197,11 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
     fScinHitPaddle.push_back(std::vector<Int_t>(fNPaddle[ip], 0));
   }
 
-
-
+  fPresentP = 0;
+  THaVar* vpresent = gHaVars->Find(Form("%s.present",GetApparatus()->GetName()));
+  if(vpresent) {
+    fPresentP = (Bool_t *) vpresent->GetValuePointer();
+  }
 
   return fStatus = kOK;
 }
@@ -590,7 +593,11 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
    */
   ClearEvent();
   // Get the Hall C style hitlist (fRawHitList) for this event
-  fNHits = DecodeToHitList(evdata);
+  Bool_t present = kTRUE;	// Suppress reference time warnings
+  if(fPresentP) {		// if this spectrometer not part of trigger
+    present = *fPresentP;
+  }
+  fNHits = DecodeToHitList(evdata, !present);
 
   //
   // GN: print event number so we can cross-check with engine
