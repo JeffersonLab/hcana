@@ -94,14 +94,14 @@ public:
     return fNBlocks[layer];
   }
 
-  //Coordinate correction for single PMT modules.
+  //Coordinate correction for HMS single PMT modules.
   //PMT attached at right (positive) side.
 
   Float_t Ycor(Double_t y) {
     return TMath::Exp(y/fAcor)/(1. + y*y/fBcor);
   }
 
-  //Coordinate correction for double PMT modules.
+  //Coordinate correction for HMS double PMT modules.
   //
 
   Float_t Ycor(Double_t y, Int_t side) {
@@ -112,6 +112,28 @@ public:
     Int_t sign = 1 - 2*side;
     //    return (fCcor + sign*y)/(fCcor + sign*y/fDcor);
     return (fCcor[side] + sign*y)/(fCcor[side] + sign*y/fDcor[side]);
+  }
+
+  // Coordinate correction for SHMS Preshower modules.
+  //
+  
+  Float_t YcorPr(Double_t y, Int_t side) {
+
+    if (side!=0&&side!=1) {
+      cout << "THcShower::YcorPr : wrong side " << side << endl;
+      return 0.;
+    }
+
+    Float_t cor;
+
+    // Check if the hit coordinate matches the fired block's side.
+
+    if ((y < 0. && side == 1) || (y > 0. && side == 0))
+      cor = 1./(1. + TMath::Power(TMath::Abs(y)/fAcor, fBcor));
+    else
+      cor = 1.;
+
+    return cor;
   }
 
   // Get part of energy deposited in the cluster matched to the given
