@@ -1079,27 +1079,36 @@ Float_t THcShower::GetShEnergy(THaTrack* Track, UInt_t NLayers, UInt_t L0) {
 
     THcShowerCluster* cluster = *(fClusterList->begin()+mclust);
 
+    char prefix = GetApparatus()->GetName()[0];
+
     // Correct track energy depositions for the impact coordinate.
 
     //    for (UInt_t ip=0; ip<fNLayers; ip++) {
     for (UInt_t ip=L0; ip<L0+NLayers; ip++) {
 
       // Coordinate correction factors for positive and negative sides,
-      // different for double PMT counters in the 1-st two layes and for
-      // single PMT counters in the rear two layers.
+      // different for double PMT counters in the 1-st two HMS layes,
+      // single PMT counters in the rear two HMS layers, and in the SHMS
+      // Preshower.
       Float_t corpos = 1.;
       Float_t corneg = 1.;
 
       if (ip < fNegCols) {
-	corpos = Ycor(Ytr,0);
-	corneg = Ycor(Ytr,1);
+	if (prefix == 'H') {              //HMS 1-st 2 layers
+	  corpos = Ycor(Ytr,0);
+	  corneg = Ycor(Ytr,1);
+	}
+	else {                            //SHMS Preshower
+	  corpos = YcorPr(Ytr,0);
+	  corneg = YcorPr(Ytr,1);
+	}
       }
       else {
 	corpos = Ycor(Ytr);
 	corneg = 0.;
       }
 
-      // cout << ip << " clust energy pos = " <<  clEplane(cluster,ip,0)<< " clust energy pos = " <<  clEplane(cluster,ip,1) << endl;
+      // cout << ip << " clust energy pos = " <<  clEplane(cluster,ip,0)<< " clust energy neg = " <<  clEplane(cluster,ip,1) << endl;
       Etrk += clEplane(cluster,ip,0) * corpos;
       Etrk += clEplane(cluster,ip,1) * corneg;
 
