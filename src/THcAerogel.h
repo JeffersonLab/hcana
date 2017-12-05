@@ -40,6 +40,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
 
   // Event information
   Int_t fNhits;
+  Bool_t* fPresentP;
 
   // 12 GeV variables
   // Vector/TClonesArray length parameters

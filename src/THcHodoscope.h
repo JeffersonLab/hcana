@@ -132,6 +132,7 @@ protected:
   Double_t fStartTime;
   Double_t fFPTimeAll;
   Int_t fNfptimes;
+  Bool_t* fPresentP;
 
   Double_t     fBeta;
 

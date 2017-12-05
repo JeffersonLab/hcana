@@ -152,6 +152,11 @@ THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
   if((status = THaNonTrackingDetector::Init( date )))
     return fStatus=status;
 
+ fPresentP = 0;
+  THaVar* vpresent = gHaVars->Find(Form("%s.present",GetApparatus()->GetName()));
+  if(vpresent) {
+    fPresentP = (Bool_t *) vpresent->GetValuePointer();
+  }
   return fStatus = kOK;
 }
 
@@ -340,7 +345,11 @@ void THcCherenkov::Clear(Option_t* opt)
 Int_t THcCherenkov::Decode( const THaEvData& evdata )
 {
   // Get the Hall C style hitlist (fRawHitList) for this event
-  fNhits = DecodeToHitList(evdata);
+  Bool_t present = kTRUE;	// Suppress reference time warnings
+  if(fPresentP) {		// if this spectrometer not part of trigger
+    present = *fPresentP;
+  }
+  fNhits = DecodeToHitList(evdata, !present);
 
   if(gHaCuts->Result("Pedestal_event")) {
     AccumulatePedestals(fRawHitList);

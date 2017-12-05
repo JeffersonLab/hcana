@@ -175,6 +175,10 @@ protected:
   Int_t* fNChamHits;
   Int_t* fPlaneEvents;
 
+  // Pointer to global var indicating whether this spectrometer is triggered
+  // for this event.
+  Bool_t* fPresentP;
+
   // Useful derived quantities
   // double tan_angle, sin_angle, cos_angle;
 

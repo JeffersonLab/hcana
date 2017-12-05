@@ -43,6 +43,7 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
 
   THcCherenkov();  // for ROOT I/O
  protected:
+  Bool_t*   fPresentP;
   Int_t     fAnalyzePedestals;
   Int_t     fDebugAdc;
   Double_t* fWidth;
