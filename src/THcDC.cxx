@@ -246,7 +246,12 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   //    { &fLTNhit, &fLANhit, fLT, fLT_c, fLA, fLA_p, fLA_c, fLOff, fLPed, fLGain }
   //  };
   //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
-
+  
+  fPresentP = 0;
+  THaVar* vpresent = gHaVars->Find(Form("%s.present",GetApparatus()->GetName()));
+  if(vpresent) {
+    fPresentP = (Bool_t *) vpresent->GetValuePointer();
+  }
   return fStatus = kOK;
 }
 
@@ -502,7 +507,12 @@ Int_t THcDC::Decode( const THaEvData& evdata )
   Int_t num_event = evdata.GetEvNum();
   if (fdebugprintrawdc ||fdebugprintdecodeddc || fdebuglinkstubs || fdebugtrackprint) cout << " event num = " << num_event << endl;
   // Get the Hall C style hitlist (fRawHitList) for this event
-  fNhits = DecodeToHitList(evdata);
+
+  Bool_t present = kTRUE;	// Suppress reference time warnings
+  if(fPresentP) {		// if this spectrometer not part of trigger
+    present = *fPresentP;
+  }
+  fNhits = DecodeToHitList(evdata, !present);
 
   if(!gHaCuts->Result("Pedestal_event")) {
     // Let each plane get its hits

@@ -145,6 +145,7 @@ public:
 
 protected:
 
+  Bool_t* fPresentP;
   Int_t fEvent;
   Int_t fADCMode;		//   != 0 if using FADC 
    //  1 == Use the pulse int - pulse ped
