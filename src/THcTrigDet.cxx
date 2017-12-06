@@ -129,7 +129,11 @@ THcTrigDet::THcTrigDet(
   fAdcPedRaw(), fAdcPulseIntRaw(), fAdcPulseAmpRaw(), fAdcPulseTimeRaw(),
   fAdcPed(), fAdcPulseInt(), fAdcPulseAmp(), fAdcPulseTime(),
   fTdcMultiplicity(), fAdcMultiplicity()
-{}
+{
+  // Guess at spectrometer name that this trigger detector is associated with
+  // Can override with SetSpectName
+  fSpectName = name[0];
+}
 
 
 THcTrigDet::~THcTrigDet() {}
@@ -178,6 +182,12 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
   // printf(" Init trig det hitlist\n");
   InitHitList(fDetMap, "THcTrigRawHit", 100);
 
+  fPresentP = 0;
+  THaVar* vpresent = gHaVars->Find(Form("%s.present",fSpectName.Data()));
+  if(vpresent) {
+    fPresentP = (Bool_t *) vpresent->GetValuePointer();
+  }
+
   fStatus = kOK;
   return fStatus;
 }
@@ -208,7 +218,11 @@ void THcTrigDet::Clear(Option_t* opt) {
 
 Int_t THcTrigDet::Decode(const THaEvData& evData) {
   // Decode raw data for this event.
-  Int_t numHits = DecodeToHitList(evData);
+  Bool_t present = kTRUE;	// Suppress reference time warnings
+  if(fPresentP) {		// if this spectrometer not part of trigger
+    present = *fPresentP;
+  }
+  Int_t numHits = DecodeToHitList(evData, !present);
 
   // Process each hit and fill variables.
   Int_t iHit = 0;
@@ -426,6 +440,11 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
 
   return DefineVarsFromList(vars.data(), mode);
 }
+void THcTrigDet::SetSpectName( const char* name)
+{
+  fSpectName = name;
+}
+
 
 
 ClassImp(THcTrigDet)
