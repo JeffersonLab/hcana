@@ -85,6 +85,7 @@ protected:
   Double_t     fPruneChiBeta;
   Double_t     fPruneFpTime;
   Double_t     fPruneNPMT;
+  Double_t     fSatCorr;
 
   Int_t        fGoodTrack;
   Int_t        fSelUsingScin;
