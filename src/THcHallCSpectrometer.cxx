@@ -203,6 +203,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     {"_oopcentral_offset",    &fOopCentralOffset,      kDouble               },
     {"pcentral_offset",       &fPCentralOffset,        kDouble               },
     {"pcentral",              &fPcentral,              kDouble               },
+    {"satcorr",               &fSatCorr,               kDouble,         0,  1},
     {"theta_lab",             &fTheta_lab,             kDouble               },
     {"partmass",              &fPartMass,              kDouble               },
     {"phi_lab",               &fPhi_lab,               kDouble,         0,  1},
@@ -236,6 +237,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   fSelUsingScin = 0;
   fSelUsingPrune = 0;
   fPhi_lab = 0.;
+  fSatCorr=0.;
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   EnforcePruneLimits();
@@ -261,7 +263,6 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   // Check that these offsets are in radians
   fTheta_lab=fTheta_lab + fThetaCentralOffset*TMath::RadToDeg();
   Double_t ph = fPhi_lab+fPhiOffset*TMath::RadToDeg();
-  cout << "Central angles = " << fTheta_lab << endl;
   // SetCentralAngles method in podd THaSpectrometer
   // fTheta_lab and ph are geographical angles, converts to spherical coordinates
   // Need to set fTheta_lab to negative for spectrometer like HMS on beam right
@@ -426,10 +427,14 @@ void THcHallCSpectrometer::CalculateTargetQuantities(THaTrack* track,Double_t& g
 	sum[k] += term*fReconTerms[iterm].Coeff[k];
       }
     }
-    xptar=sum[0];
+    xptar=sum[0] + fPhiOffset;
     ytar=sum[1];
-    yptar=sum[2];
-    delta=sum[3];
+    yptar=sum[2] + fThetaOffset;
+    delta=sum[3] + fDeltaOffset;
+    if (fSatCorr == 2000) {
+      Double_t p0corr = 0.82825*fPcentral-1.223  ;    
+      delta = delta + p0corr*xptar;
+    }
 }
 //
 //_____________________________________________________________________________
