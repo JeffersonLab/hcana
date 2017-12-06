@@ -26,6 +26,8 @@ class THcTrigDet : public THaDetector, public THcHitList {
     virtual void Clear(Option_t* opt="");
     Int_t Decode(const THaEvData& evData);
 
+    virtual void SetSpectName( const char* name);
+
   protected:
     void Setup(const char* name, const char* description);
     virtual Int_t ReadDatabase(const TDatime& date);
@@ -61,6 +63,9 @@ class THcTrigDet : public THaDetector, public THcHitList {
 
     Int_t fTdcMultiplicity[fMaxTdcChannels];
     Int_t fAdcMultiplicity[fMaxAdcChannels];
+
+    TString fSpectName;
+    Bool_t* fPresentP;
 
   private:
     THcTrigDet();
