@@ -318,7 +318,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
 	   ,&fReconTerms[fNReconTerms].Exp[2]
 	   ,&fReconTerms[fNReconTerms].Exp[3]
 	   ,&fReconTerms[fNReconTerms].Exp[4]);
-    fNReconTerms++;
+   fNReconTerms++;
     good = getline(ifile,line).good();
   }
   cout << "Read " << fNReconTerms << " matrix element terms"  << endl;
@@ -367,10 +367,8 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     //;    but for unknown reasons the yp offset is named  htheta_offset
     //;    and  the xp offset is named  hphi_offset
 
-    track->SetTarget(0.0, ytar*100.0, xptar+fPhiOffset, yptar+fThetaOffset);
-    track->SetDp(delta*100.0+fDeltaOffset);	// Percent.  (Don't think podd cares if it is % or fraction)
-    // There is an hpcentral_offset that needs to be applied somewhere.
-    // (happly_offs)
+    track->SetTarget(0.0, ytar*100.0, xptar, yptar);
+    track->SetDp(delta*100.0);	// Percent.  
     Double_t ptemp = fPcentral*(1+track->GetDp()/100.0);
       track->SetMomentum(ptemp);
     TVector3 pvect_temp;
@@ -431,23 +429,21 @@ void THcHallCSpectrometer::CalculateTargetQuantities(THaTrack* track,Double_t& g
     ytar=sum[1];
     yptar=sum[2] + fThetaOffset;
     delta=sum[3] + fDeltaOffset;
-    if (fSatCorr == 2000) {
+     if (fSatCorr == 2000) {
       Double_t p0corr = 0.82825*fPcentral-1.223  ;    
-      delta = delta + p0corr*xptar;
+      delta = delta + p0corr*xptar/100.;
     }
 }
 //
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::TrackCalc()
 {
-
   if( fNtracks > 0 ) {
     Int_t hit_gold_track=0; // find track with index =0 which is best track
     for (Int_t itrack = 0; itrack < fNtracks; itrack++ ){
       THaTrack* aTrack = static_cast<THaTrack*>( fTracks->At(itrack) );
       if (aTrack->GetIndex()==0) hit_gold_track=itrack;  
     }
-    
     fDC->SetFocalPlaneBestTrack(hit_gold_track);
     fGoldenTrack = static_cast<THaTrack*>( fTracks->At(hit_gold_track) );
     fTrkIfo      = *fGoldenTrack;
