@@ -6,6 +6,7 @@
 */
 
 #include "THcCherenkov.h"
+#include "THcHodoscope.h"
 #include "TClonesArray.h"
 #include "THcSignalHit.h"
 #include "THaEvData.h"
@@ -22,6 +23,7 @@
 #include "TClonesArray.h"
 #include "TMath.h"
 #include "THaTrackProj.h"
+#include "THcHallCSpectrometer.h"
 
 #include <algorithm>
 #include <cstring>
@@ -30,6 +32,7 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+
 
 using namespace std;
 
@@ -65,6 +68,7 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
   fGoodAdcPulseIntRaw = vector<Double_t> (MaxNumCerPmt, 0.0);
   fGoodAdcPulseAmp    = vector<Double_t> (MaxNumCerPmt, 0.0);
   fGoodAdcPulseTime   = vector<Double_t> (MaxNumCerPmt, 0.0);
+  fGoodAdcTdcDiffTime   = vector<Double_t> (MaxNumCerPmt, 0.0);
 
   InitArrays();
 }
@@ -151,6 +155,13 @@ THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
   EStatus status;
   if((status = THaNonTrackingDetector::Init( date )))
     return fStatus=status;
+
+  THcHallCSpectrometer *app=dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+   if(  !app ||
+      !(fglHod = dynamic_cast<THcHodoscope*>(app->GetDetector("hod"))) ) {
+    static const char* const here = "ReadDatabase()";
+    Warning(Here(here),"Hodoscope \"%s\" not found. ","hod");
+  }
 
  fPresentP = 0;
   THaVar* vpresent = gHaVars->Find(Form("%s.present",GetApparatus()->GetName()));
@@ -290,7 +301,8 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
     {"goodAdcPulseIntRaw",  "Good ADC raw pulse integrals", "fGoodAdcPulseIntRaw"},
     {"goodAdcPulseAmp",     "Good ADC pulse amplitudes",    "fGoodAdcPulseAmp"},
     {"goodAdcPulseTime",    "Good ADC pulse times",         "fGoodAdcPulseTime"},
-    { 0 }
+     {"goodAdcTdcDiffTime",    "Good Hodo Start - ADC pulse times",         "fGoodAdcTdcDiffTime"},
+   { 0 }
   };
 
   return DefineVarsFromList(vars, mode);
@@ -336,6 +348,7 @@ void THcCherenkov::Clear(Option_t* opt)
     fGoodAdcPulseIntRaw.at(ielem) = 0.0;
     fGoodAdcPulseAmp.at(ielem)    = 0.0;
     fGoodAdcPulseTime.at(ielem)   = kBig;
+    fGoodAdcTdcDiffTime.at(ielem)   = kBig;
     fNpe.at(ielem)                = 0.0;
   }
 
@@ -406,6 +419,8 @@ Int_t THcCherenkov::ApplyCorrections( void )
 //_____________________________________________________________________________
 Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
 {
+  Double_t StartTime = 0.0;
+  if( fglHod ) StartTime = fglHod->GetStartTime();
 
   // Loop over the elements in the TClonesArray
   for(Int_t ielem = 0; ielem < frAdcPulseInt->GetEntries(); ielem++) {
@@ -416,8 +431,9 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
     Double_t pulseIntRaw  = ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
     Double_t pulseAmp     = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
     Double_t pulseTime    = ((THcSignalHit*) frAdcPulseTime->ConstructedAt(ielem))->GetData();
-    Bool_t   errorFlag    = ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(ielem))->GetData();
-    Bool_t   pulseTimeCut = pulseTime > fAdcTimeWindowMin && pulseTime < fAdcTimeWindowMax;
+   Double_t adctdcdiffTime = StartTime-pulseTime;
+     Bool_t   errorFlag    = ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(ielem))->GetData();
+    Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
 
     // By default, the last hit within the timing cut will be considered "good"
     if (!errorFlag && pulseTimeCut) {
@@ -426,6 +442,7 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
       fGoodAdcPulseIntRaw.at(npmt) = pulseIntRaw;
       fGoodAdcPulseAmp.at(npmt)    = pulseAmp;
       fGoodAdcPulseTime.at(npmt)   = pulseTime;
+      fGoodAdcTdcDiffTime.at(npmt)   = adctdcdiffTime;
 
       fNpe.at(npmt) = fGain[npmt]*fGoodAdcPulseInt.at(npmt);
       fNpeSum += fNpe.at(npmt);

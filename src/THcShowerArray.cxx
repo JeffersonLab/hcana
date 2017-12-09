@@ -6,6 +6,7 @@
 */
 
 #include "THcShowerArray.h"
+#include "THcHodoscope.h"
 #include "TClonesArray.h"
 #include "THcSignalHit.h"
 #include "THcGlobals.h"
@@ -107,6 +108,12 @@ THaAnalysisObject::EStatus THcShowerArray::Init( const TDatime& date )
   // How to get information for parent
   //  if( GetParent() )
   //    fOrigin = GetParent()->GetOrigin();
+  THcHallCSpectrometer *app=dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+   if(  !app ||
+      !(fglHod = dynamic_cast<THcHodoscope*>(app->GetDetector("hod"))) ) {
+    static const char* const here = "ReadDatabase()";
+    Warning(Here(here),"Hodoscope \"%s\" not found. ","hod");
+  }
 
   EStatus status;
   if( (status=THaSubDetector::Init( date )) )
@@ -346,6 +353,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   fGoodAdcPulseInt         = vector<Double_t> (fNelem, 0.0);
   fGoodAdcPulseAmp         = vector<Double_t> (fNelem, 0.0);
   fGoodAdcPulseTime        = vector<Double_t> (fNelem, 0.0);
+  fGoodAdcTdcDiffTime        = vector<Double_t> (fNelem, 0.0);
 
 
   fBlock_ClusterID = new Int_t[fNelem];
@@ -431,6 +439,7 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
     {"goodAdcPulseInt", "Good ADC Pulse Integrals", "fGoodAdcPulseInt"},     //this is defined as pulseInt, which is the pedestal subtracted pulse integrals, and is defined if threshold is passed
     {"goodAdcPulseAmp", "Good ADC Pulse Amplitudes", "fGoodAdcPulseAmp"},
     {"goodAdcPulseTime", "Good ADC Pulse Times", "fGoodAdcPulseTime"},     //this is defined as pulseInt, which is the pedestal subtracted pulse integrals, and is defined if threshold is passed
+    {"goodAdcTdcDiffTime", "Good Hodo Starttime - ADC Pulse Times", "fGoodAdcTdcDiffTime"},     
 
 
     {"e", "Energy Depositions per block", "fE"},       //defined as fE = fA_p*fGain = pulseInt * Gain
@@ -484,6 +493,7 @@ void THcShowerArray::Clear( Option_t* )
     fGoodAdcPulseInt.at(ielem)         = 0.0;
     fGoodAdcPulseAmp.at(ielem)         = 0.0;
     fGoodAdcPulseTime.at(ielem)        = kBig;
+    fGoodAdcTdcDiffTime.at(ielem)        = kBig;
     fNumGoodAdcHits.at(ielem)          = 0.0;
     fE.at(ielem)                       = 0.0;
   }
@@ -849,6 +859,8 @@ void THcShowerArray::FillADC_Standard()
 //_____________________________________________________________________________
 void THcShowerArray::FillADC_DynamicPedestal()
 {
+  Double_t StartTime = 0.0;
+  if( fglHod ) StartTime = fglHod->GetStartTime();
   for (Int_t ielem=0;ielem<frAdcPulseInt->GetEntries();ielem++) {
     
     Int_t npad           = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
@@ -857,8 +869,9 @@ void THcShowerArray::FillADC_DynamicPedestal()
     Double_t pulseInt    = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetData();
     Double_t pulseAmp    = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
     Double_t pulseTime   = ((THcSignalHit*) frAdcPulseTime->ConstructedAt(ielem))->GetData();
+    Double_t adctdcdiffTime = StartTime-pulseTime;
     Bool_t errorflag     = ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(ielem))->GetData();
-    Bool_t pulseTimeCut  = (pulseTime > fAdcTimeWindowMin) &&  (pulseTime < fAdcTimeWindowMax);
+    Bool_t pulseTimeCut  = (adctdcdiffTime > fAdcTimeWindowMin) &&  (adctdcdiffTime < fAdcTimeWindowMax);
 
     if (!errorflag && pulseTimeCut) {
       
@@ -874,6 +887,7 @@ void THcShowerArray::FillADC_DynamicPedestal()
        fGoodAdcPed.at(npad) = pulsePed;
        fGoodAdcPulseAmp.at(npad) = pulseAmp;
        fGoodAdcPulseTime.at(npad) = pulseTime;
+       fGoodAdcTdcDiffTime.at(npad) = adctdcdiffTime;
 
        fNumGoodAdcHits.at(npad) = npad + 1;
       }

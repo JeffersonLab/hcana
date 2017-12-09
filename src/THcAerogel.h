@@ -11,6 +11,7 @@
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
 #include "THcAerogelHit.h"
+class THcHodoscope;
 
 class THcAerogel : public THaNonTrackingDetector, public THcHitList {
 
@@ -113,11 +114,13 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   vector<Double_t> fGoodPosAdcPulseIntRaw;
   vector<Double_t> fGoodPosAdcPulseAmp;
   vector<Double_t> fGoodPosAdcPulseTime;
+  vector<Double_t> fGoodPosAdcTdcDiffTime;
   vector<Double_t> fGoodNegAdcPed;
   vector<Double_t> fGoodNegAdcPulseInt;
   vector<Double_t> fGoodNegAdcPulseIntRaw;
   vector<Double_t> fGoodNegAdcPulseAmp;
   vector<Double_t> fGoodNegAdcPulseTime;
+ vector<Double_t> fGoodNegAdcTdcDiffTime;
 
   // 6 GeV era variables
   Int_t     fAnalyzePedestals;
@@ -166,6 +169,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
 
   void Setup(const char* name, const char* description);
   virtual void  InitializePedestals( );
+ THcHodoscope* fglHod;		// Hodoscope to get start time
 
   ClassDef(THcAerogel,0)   // Generic aerogel class
 }
