@@ -741,13 +741,11 @@ void THcHodoscope::EstimateFocalPlaneTime( void )
 	  - (fPlanes[ip]->GetZpos()+(index%2)*fPlanes[ip]->GetDzpos())
 	  / (29.979 * fBetaNominal);
 	}
-	if(TMath::Abs(fptime-fStartTimeCenter)<=fStartTimeSlop) {
           Ngood_hits_plane++;
 	  Plane_fptime_sum+=fptime;
 	  fpTimeSum += fptime;
 	  fNfptimes++;
 	  goodplanetime[ip] = kTRUE;
-	}
       } else {
 	hit->SetTwoGoodTimes(kFALSE);
       }
