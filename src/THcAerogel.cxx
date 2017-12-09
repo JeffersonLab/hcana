@@ -6,6 +6,7 @@
 */
 
 #include "THcAerogel.h"
+#include "THcHodoscope.h"
 #include "TClonesArray.h"
 #include "THcSignalHit.h"
 #include "THaEvData.h"
@@ -23,6 +24,7 @@
 #include "TMath.h"
 #include "THaTrackProj.h"
 #include "THcRawAdcHit.h"
+#include "THcHallCSpectrometer.h"
 
 #include <cstring>
 #include <cstdio>
@@ -190,6 +192,13 @@ THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
   EStatus status;
   if( (status = THaNonTrackingDetector::Init( date )) )
     return fStatus=status;
+ 
+ THcHallCSpectrometer *app=dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+   if(  !app ||
+      !(fglHod = dynamic_cast<THcHodoscope*>(app->GetDetector("hod"))) ) {
+    static const char* const here = "ReadDatabase()";
+    Warning(Here(here),"Hodoscope \"%s\" not found. ","hod");
+  }
 
   fPresentP = 0;
   THaVar* vpresent = gHaVars->Find(Form("%s.present",GetApparatus()->GetName()));
@@ -274,11 +283,13 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fGoodPosAdcPulseIntRaw = vector<Double_t> (fNelem, 0.0);
   fGoodPosAdcPulseAmp    = vector<Double_t> (fNelem, 0.0);
   fGoodPosAdcPulseTime   = vector<Double_t> (fNelem, 0.0);
+  fGoodPosAdcTdcDiffTime   = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPed         = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseInt    = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseIntRaw = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseAmp    = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseTime   = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcTdcDiffTime   = vector<Double_t> (fNelem, 0.0);
 
   // 6 GeV variables
   fPosTDCHits = new TClonesArray("THcSignalHit", fNelem*16);
@@ -452,12 +463,14 @@ Int_t THcAerogel::DefineVariables( EMode mode )
     {"goodPosAdcPulseIntRaw", "Good Negative ADC raw pulse integrals", "fGoodPosAdcPulseIntRaw"},
     {"goodPosAdcPulseAmp",    "Good Negative ADC pulse amplitudes",    "fGoodPosAdcPulseAmp"},
     {"goodPosAdcPulseTime",   "Good Negative ADC pulse times",         "fGoodPosAdcPulseTime"},
+    {"goodPosAdcTdcDiffTime",   "Good Positive hodo Start - ADC pulse times",         "fGoodPosAdcTdcDiffTime"},
 
     {"goodNegAdcPed",         "Good Negative ADC pedestals",           "fGoodNegAdcPed"},
     {"goodNegAdcPulseInt",    "Good Negative ADC pulse integrals",     "fGoodNegAdcPulseInt"},
     {"goodNegAdcPulseIntRaw", "Good Negative ADC raw pulse integrals", "fGoodNegAdcPulseIntRaw"},
     {"goodNegAdcPulseAmp",    "Good Negative ADC pulse amplitudes",    "fGoodNegAdcPulseAmp"},
     {"goodNegAdcPulseTime",   "Good Negative ADC pulse times",         "fGoodNegAdcPulseTime"},
+    {"goodNegAdcTdcDiffTime",   "Good Negative hodo Start - ADC pulse times",         "fGoodNegAdcTdcDiffTime"},
     { 0 }
   };
 
@@ -525,6 +538,7 @@ void THcAerogel::Clear(Option_t* opt)
     fGoodPosAdcPulseIntRaw.at(ielem) = 0.0;
     fGoodPosAdcPulseAmp.at(ielem)    = 0.0;
     fGoodPosAdcPulseTime.at(ielem)   = kBig;
+    fGoodPosAdcTdcDiffTime.at(ielem)   = kBig;
     fPosNpe.at(ielem)                = 0.0;
   }
   for (UInt_t ielem = 0; ielem < fGoodNegAdcPed.size(); ielem++) {
@@ -533,6 +547,7 @@ void THcAerogel::Clear(Option_t* opt)
     fGoodNegAdcPulseIntRaw.at(ielem) = 0.0;
     fGoodNegAdcPulseAmp.at(ielem)    = 0.0;
     fGoodNegAdcPulseTime.at(ielem)   = kBig;
+    fGoodNegAdcTdcDiffTime.at(ielem)   = kBig;
     fNegNpe.at(ielem)                = 0.0;
   }
 
@@ -657,6 +672,8 @@ Int_t THcAerogel::ApplyCorrections( void )
 //_____________________________________________________________________________
 Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
 {
+  Double_t StartTime = 0.0;
+  if( fglHod ) StartTime = fglHod->GetStartTime();
 
     // Loop over the elements in the TClonesArray
     for(Int_t ielem = 0; ielem < frPosAdcPulseInt->GetEntries(); ielem++) {
@@ -667,8 +684,9 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       Double_t pulseIntRaw  = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
       Double_t pulseAmp     = ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(ielem))->GetData();
       Double_t pulseTime    = ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(ielem))->GetData();
+      Double_t adctdcdiffTime = StartTime-pulseTime;
       Bool_t   errorFlag    = ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(ielem))->GetData();
-      Bool_t   pulseTimeCut = pulseTime > fAdcTimeWindowMin && pulseTime < fAdcTimeWindowMax;
+      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
 
       // By default, the last hit within the timing cut will be considered "good"
       if (!errorFlag && pulseTimeCut) {
@@ -677,6 +695,7 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
     	fGoodPosAdcPulseIntRaw.at(npmt) = pulseIntRaw;
     	fGoodPosAdcPulseAmp.at(npmt)    = pulseAmp;
     	fGoodPosAdcPulseTime.at(npmt)   = pulseTime;
+    	fGoodPosAdcTdcDiffTime.at(npmt)   = adctdcdiffTime;
 
     	fPosNpe.at(npmt) = fPosGain[npmt]*fGoodPosAdcPulseInt.at(npmt);
  	fPosNpeSum += fPosNpe.at(npmt);
@@ -696,8 +715,9 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       Double_t pulseIntRaw  = ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
       Double_t pulseAmp     = ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(ielem))->GetData();
       Double_t pulseTime    = ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(ielem))->GetData();
+      Double_t adctdcdiffTime = StartTime-pulseTime;
       Bool_t   errorFlag    = ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
-      Bool_t   pulseTimeCut = pulseTime > fAdcTimeWindowMin && pulseTime < fAdcTimeWindowMax;
+      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
 
       // By default, the last hit within the timing cut will be considered "good"
       if (!errorFlag && pulseTimeCut) {
@@ -706,6 +726,7 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
     	fGoodNegAdcPulseIntRaw.at(npmt) = pulseIntRaw;
     	fGoodNegAdcPulseAmp.at(npmt)    = pulseAmp;
     	fGoodNegAdcPulseTime.at(npmt)   = pulseTime;
+    	fGoodNegAdcTdcDiffTime.at(npmt)   = adctdcdiffTime;
 
     	fNegNpe.at(npmt) = fNegGain[npmt]*fGoodNegAdcPulseInt.at(npmt);
  	fNegNpeSum += fNegNpe.at(npmt);

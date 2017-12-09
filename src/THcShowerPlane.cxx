@@ -6,6 +6,7 @@ One plane of shower blocks with side readout
 */
 
 #include "THcShowerPlane.h"
+#include "THcHodoscope.h"
 #include "TClonesArray.h"
 #include "THcSignalHit.h"
 #include "THcGlobals.h"
@@ -152,6 +153,12 @@ THaAnalysisObject::EStatus THcShowerPlane::Init( const TDatime& date )
     cout << "****** THcShowerPlane::Accumulate will be skipped ******" << endl;
   }
 
+  if(  !app ||
+      !(fglHod = dynamic_cast<THcHodoscope*>(app->GetDetector("hod"))) ) {
+    static const char* const here = "ReadDatabase()";
+    Warning(Here(here),"Hodoscope \"%s\" not found. ","hod");
+  }
+
   EStatus status;
   if( (status=THaSubDetector::Init( date )) )
     return fStatus = status;
@@ -253,11 +260,13 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   fGoodPosAdcPulseInt         = vector<Double_t> (fNelem, 0.0);
   fGoodPosAdcPulseAmp         = vector<Double_t> (fNelem, 0.0);
   fGoodPosAdcPulseTime        = vector<Double_t> (fNelem, 0.0);
+  fGoodPosAdcTdcDiffTime        = vector<Double_t> (fNelem, 0.0);
 
   fGoodNegAdcPed              = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseInt         = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseAmp         = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseTime        = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcTdcDiffTime        = vector<Double_t> (fNelem, 0.0);
 
   // Energy depositions per block (not corrected for track coordinate)
 
@@ -375,11 +384,13 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
     {"goodPosAdcPulseInt", "Good Positive ADC integrals",           "fGoodPosAdcPulseInt"},
     {"goodPosAdcPulseAmp", "Good Positive ADC amplitudes",          "fGoodPosAdcPulseAmp"},
     {"goodPosAdcPulseTime","Good Positive ADC times",               "fGoodPosAdcPulseTime"},
+    {"goodPosAdcTdcDiffTime","Good Positive Hodo Start time-ADC times",               "fGoodPosAdcTdcDiffTime"},
 
     {"goodNegAdcPed",      "Good Negative ADC pedestals",           "fGoodNegAdcPed"},
     {"goodNegAdcPulseInt", "Good Negative ADC integrals",           "fGoodNegAdcPulseInt"},
     {"goodNegAdcPulseAmp", "Good Negative ADC amplitudes",          "fGoodNegAdcPulseAmp"},
     {"goodNegAdcPulseTime","Good Negative ADC times",               "fGoodNegAdcPulseTime"},
+   {"goodNegAdcTdcDiffTime","Good Negative Hodo Start time-ADC times",               "fGoodNegAdcTdcDiffTime"},
 
     {"epos",       "Energy Depositions from Positive Side PMTs",    "fEpos"},
     {"eneg",       "Energy Depositions from Negative Side PMTs",    "fEneg"},
@@ -431,6 +442,7 @@ void THcShowerPlane::Clear( Option_t* )
     fGoodPosAdcPulseInt.at(ielem)         = 0.0;
     fGoodPosAdcPulseAmp.at(ielem)         = 0.0;
     fGoodPosAdcPulseTime.at(ielem)        = kBig;
+    fGoodPosAdcTdcDiffTime.at(ielem)        = kBig;
     fEpos.at(ielem)                       = 0.0;
     fNumGoodPosAdcHits.at(ielem)          = 0.0;
   }
@@ -441,6 +453,7 @@ void THcShowerPlane::Clear( Option_t* )
     fGoodNegAdcPulseInt.at(ielem)         = 0.0;
     fGoodNegAdcPulseAmp.at(ielem)         = 0.0;
     fGoodNegAdcPulseTime.at(ielem)        = kBig;
+    fGoodNegAdcTdcDiffTime.at(ielem)        = kBig;
     fEneg.at(ielem)                       = 0.0;
     fNumGoodNegAdcHits.at(ielem)          = 0.0;
   }
@@ -723,6 +736,8 @@ void THcShowerPlane::FillADC_Standard()
 //_____________________________________________________________________________
 void THcShowerPlane::FillADC_DynamicPedestal()
 {
+  Double_t StartTime = 0.0;
+  if( fglHod ) StartTime = fglHod->GetStartTime();
   Double_t AdcTimeWindowMin=static_cast<THcShower*>(fParent)->GetAdcTimeWindowMin();
   Double_t AdcTimeWindowMax=static_cast<THcShower*>(fParent)->GetAdcTimeWindowMax();
   for (Int_t ielem=0;ielem<frNegAdcPulseInt->GetEntries();ielem++) {
@@ -732,9 +747,10 @@ void THcShowerPlane::FillADC_DynamicPedestal()
     Double_t pulseAmp     = ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(ielem))->GetData();
     Double_t pulseIntRaw  = ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
     Double_t pulseTime    = ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(ielem))->GetData();
+    Double_t adctdcdiffTime = StartTime-pulseTime;
     Double_t threshold    = ((THcSignalHit*) frNegAdcThreshold->ConstructedAt(ielem))->GetData();
     Bool_t   errorflag    = ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
-    Bool_t   pulseTimeCut = (pulseTime > AdcTimeWindowMin) && (pulseTime < AdcTimeWindowMax);
+    Bool_t   pulseTimeCut = (adctdcdiffTime > AdcTimeWindowMin) && (adctdcdiffTime < AdcTimeWindowMax);
     if (!errorflag && pulseTimeCut) {
       fGoodNegAdcPulseIntRaw.at(npad) =pulseIntRaw;
 
@@ -747,6 +763,7 @@ void THcShowerPlane::FillADC_DynamicPedestal()
 	fGoodNegAdcPed.at(npad) = pulsePed;
       fGoodNegAdcPulseAmp.at(npad) = pulseAmp;
       fGoodNegAdcPulseTime.at(npad) = pulseTime;
+      fGoodNegAdcTdcDiffTime.at(npad) = adctdcdiffTime;
 
       fTotNumGoodAdcHits++;
       fTotNumGoodNegAdcHits++;
@@ -765,8 +782,9 @@ void THcShowerPlane::FillADC_DynamicPedestal()
     Double_t pulseInt     = ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(ielem))->GetData();
     Double_t pulseIntRaw  = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
     Double_t pulseTime    = ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(ielem))->GetData();
-    Bool_t   errorflag    = ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(ielem))->GetData();
-    Bool_t   pulseTimeCut = (pulseTime > AdcTimeWindowMin) &&  (pulseTime < AdcTimeWindowMax);
+     Double_t adctdcdiffTime = StartTime-pulseTime;
+   Bool_t   errorflag    = ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(ielem))->GetData();
+    Bool_t   pulseTimeCut = (adctdcdiffTime > AdcTimeWindowMin) &&  (adctdcdiffTime < AdcTimeWindowMax);
     if (!errorflag && pulseTimeCut) {
       fGoodPosAdcPulseIntRaw.at(npad) = pulseIntRaw;
 
@@ -780,6 +798,7 @@ void THcShowerPlane::FillADC_DynamicPedestal()
 	fGoodPosAdcPed.at(npad) = pulsePed;
 	fGoodPosAdcPulseAmp.at(npad) = pulseAmp;
 	fGoodPosAdcPulseTime.at(npad) = pulseTime;
+	fGoodPosAdcTdcDiffTime.at(npad) = adctdcdiffTime;
 
 	fTotNumGoodAdcHits++;
 	fTotNumGoodPosAdcHits++;

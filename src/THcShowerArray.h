@@ -27,6 +27,7 @@
 
 class THaEvData;
 class THaSignalHit;
+class THcHodoscope;
 
 class THcShowerArray : public THaSubDetector {
 
@@ -113,6 +114,7 @@ protected:
   vector<Double_t>      fGoodAdcPulseInt;       // [fNelem] good pedestal subtracted pulse integrals
   vector<Double_t>      fGoodAdcPulseAmp;
   vector<Double_t>      fGoodAdcPulseTime;
+  vector<Double_t>      fGoodAdcTdcDiffTime;
 
   vector<Double_t>      fE;                    //[fNelem] energy deposition in shower blocks
 
@@ -208,6 +210,7 @@ protected:
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
+ THcHodoscope* fglHod;		// Hodoscope to get start time
   ClassDef(THcShowerArray,0); // Fly;s Eye calorimeter array
 };
 

@@ -11,6 +11,7 @@
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
 #include "THcCherenkovHit.h"
+class THcHodoscope;
 
 class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
 
@@ -65,6 +66,7 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   vector<Double_t> fGoodAdcPulseIntRaw;
   vector<Double_t> fGoodAdcPulseAmp;
   vector<Double_t> fGoodAdcPulseTime;
+  vector<Double_t> fGoodAdcTdcDiffTime;
   vector<Double_t> fNpe;
 
   Int_t     fNRegions;
@@ -110,6 +112,7 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
 
   void Setup(const char* name, const char* description);
   virtual void  InitializePedestals( );
+ THcHodoscope* fglHod;		// Hodoscope to get start time
 
   ClassDef(THcCherenkov,0)        // Generic cherenkov class
 };

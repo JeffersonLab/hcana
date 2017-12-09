@@ -24,6 +24,7 @@ using namespace std;
 
 class THaEvData;
 class THaSignalHit;
+class THcHodoscope;
 
 class THcShowerPlane : public THaSubDetector {
 
@@ -153,11 +154,13 @@ protected:
   vector<Double_t>      fGoodPosAdcPulseInt;
   vector<Double_t>      fGoodPosAdcPulseAmp;
   vector<Double_t>      fGoodPosAdcPulseTime;
+  vector<Double_t>      fGoodPosAdcTdcDiffTime;
 
   vector<Double_t>      fGoodNegAdcPed;
   vector<Double_t>      fGoodNegAdcPulseInt;
   vector<Double_t>      fGoodNegAdcPulseAmp;
   vector<Double_t>      fGoodNegAdcPulseTime;
+ vector<Double_t>       fGoodNegAdcTdcDiffTime;
 
   vector<Double_t>      fGoodPosAdcPulseIntRaw;
   vector<Double_t>      fGoodNegAdcPulseIntRaw;
@@ -237,6 +240,8 @@ protected:
   vector<Int_t> fStatNumHit;
   Int_t fTotStatNumTrk;
   Int_t fTotStatNumHit;
+
+ THcHodoscope* fglHod;		// Hodoscope to get start time
   
   ClassDef(THcShowerPlane,0); // Calorimeter bars in a plane
 };
