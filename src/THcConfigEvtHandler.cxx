@@ -238,15 +238,15 @@ void THcConfigEvtHandler::MakeParms(Int_t roc)
 	for(Int_t i=0;i<cinfo->TI.num_prescales;i++) {
 	  ps_exps[i] = cinfo->TI.prescales[i];
 	  if(ps_exps[i] > 0) {
-	    ps_factors[i] = 1<<(ps_exps[i]-1) + 1;
+	    ps_factors[i] = (1<<(ps_exps[i]-1)) + 1;
 	  } else if (ps_exps[i] == 0) {
 	    ps_factors[i] = 1;
 	  } else {
 	    ps_factors[i] = -1;
 	  }
 	}
-	gHcParms->Define(Form("g%s_ti_ps[%d]",fName.Data(),cinfo->TI.num_prescales),"TI Event Prescaler settings",*ps_exps);
-	gHcParms->Define(Form("g%s_ti_ps_factors[%d]",fName.Data(),cinfo->TI.num_prescales),"TI Event Prescaler settings",*ps_exps);
+	gHcParms->Define(Form("g%s_ti_ps[%d]",fName.Data(),cinfo->TI.num_prescales),"TI Event Prescale Internal Value",*ps_exps);
+	gHcParms->Define(Form("g%s_ti_ps_factors[%d]",fName.Data(),cinfo->TI.num_prescales),"TI Event Prescale Factor",*ps_factors);
       }
     }
     it++;
