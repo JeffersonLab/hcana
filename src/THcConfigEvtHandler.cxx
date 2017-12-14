@@ -354,6 +354,8 @@ THaAnalysisObject::EStatus THcConfigEvtHandler::Init(const TDatime& date)
     eventtypes.push_back(125);  // what events to look for
   }
 
+  CrateInfoMap.clear();
+
   fStatus = kOK;
   return kOK;
 }

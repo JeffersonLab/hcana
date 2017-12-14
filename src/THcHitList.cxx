@@ -118,10 +118,21 @@ void THcHitList::InitHitList(THaDetMap* detmap,
     }
   }
 
-  fPSE125 = static_cast<THcConfigEvtHandler*>(gHaEvtHandlers->FindObject("HC"));
-  if (!fPSE125) {
-    cout << "THcHitList::InitHitList : Prestart event 125 not found." << endl;
+  // Find the Event 125 handler
+  TObjLink *lnk = gHaEvtHandlers->FirstLink();
+  while (lnk) {
+    if(strcmp(lnk->GetObject()->ClassName(),"THcConfigEvtHandler")==0) {
+      break;
+    }
+    lnk = lnk->Next();
   }
+  if(lnk) {
+    fPSE125 = static_cast<THcConfigEvtHandler*>(lnk->GetObject());
+  } else {
+    cout << "THcHitList::InitHitList : Prestart event 125 not found." << endl;
+    fPSE125 = 0;
+  }
+  fHaveFADCInfo = kFALSE;
 }
 
 /**
@@ -259,12 +270,15 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	}
       } else {			// This is a Flash ADC
 
-        if (fPSE125) {  // Set F250 parameters.
-          rawhit->SetF250Params(
-            fPSE125->GetNSA(d->crate),
-            fPSE125->GetNSB(d->crate),
-            fPSE125->GetNPED(d->crate)
-          );
+        if (fPSE125) {
+	  if(!fHaveFADCInfo) {
+	    fNSA = fPSE125->GetNSA(d->crate);
+	    fNSB = fPSE125->GetNSB(d->crate);
+	    fNPED = fPSE125->GetNPED(d->crate);
+	    fHaveFADCInfo = kTRUE;
+	  }
+// Set F250 parameters.
+          rawhit->SetF250Params(fNSA, fNSB, fNPED);
         }
 
 	// Copy the samples

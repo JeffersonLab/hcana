@@ -60,6 +60,10 @@ protected:
   THcRawHit::ESignalType *fSignalTypes;
 
   THcConfigEvtHandler* fPSE125;
+  Bool_t fHaveFADCInfo;
+  Int_t fNSA;
+  Int_t fNSB;
+  Int_t fNPED;
 
   ClassDef(THcHitList,0);  // List of raw hits sorted by plane, counter
 };
