@@ -300,8 +300,8 @@ void THcRaster::CalculatePedestals( )
   */
   
     fFrXA_ADC_zero_offset = fPedADC[0]/ fNPedestalEvents;
-    fFrYA_ADC_zero_offset = fPedADC[1]/ fNPedestalEvents;
-    fFrXB_ADC_zero_offset = fPedADC[2]/ fNPedestalEvents;
+    fFrXB_ADC_zero_offset = fPedADC[1]/ fNPedestalEvents;
+    fFrYA_ADC_zero_offset = fPedADC[2]/ fNPedestalEvents;
     fFrYB_ADC_zero_offset = fPedADC[3]/ fNPedestalEvents;
     
   
@@ -390,8 +390,8 @@ gHcParms->LoadParmValues(list);
 
   // calculate the raster currents
   fXA_ADC =  FRXA_rawadc-fFrXA_ADC_zero_offset;
-  fYA_ADC =  FRXB_rawadc-fFrYA_ADC_zero_offset;
-  fXB_ADC =  FRYA_rawadc-fFrXB_ADC_zero_offset;
+  fYA_ADC =  FRYA_rawadc-fFrYA_ADC_zero_offset;
+  fXB_ADC =  FRXB_rawadc-fFrXB_ADC_zero_offset;
   fYB_ADC =  FRYB_rawadc-fFrYB_ADC_zero_offset;
   
   //std::cout<<" Raw X ADC = "<<fXADC<<" Raw Y ADC = "<<fYADC<<std::endl;
