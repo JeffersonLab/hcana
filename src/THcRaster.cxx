@@ -61,9 +61,9 @@ THcRaster::THcRaster( const char* name, const char* description,
   fFrXB_ADCperCM = 1.0;
   fFrYB_ADCperCM = 1.0;
   fFrXA_ADC_zero_offset = 0;
-  fFrXA_ADC_zero_offset =0;
-  fFrXA_ADC_zero_offset =0;
-  fFrXA_ADC_zero_offset =0;
+  fFrXB_ADC_zero_offset =0;
+  fFrYA_ADC_zero_offset =0;
+  fFrYB_ADC_zero_offset =0;
 
   frPosAdcPulseIntRaw  = NULL;
 
