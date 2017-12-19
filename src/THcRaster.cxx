@@ -197,8 +197,8 @@ Int_t THcRaster::DefineVariables( EMode mode )
 
   RVarDef vars[] = {
     {"frxaRawAdc",  "Raster XA raw ADC",    "FRXA_rawadc"},
-    {"fryaRawAdc",  "Raster YA raw ADC",    "FRXB_rawadc"},
-    {"frxbRawAdc",  "Raster XB raw ADC",    "FRYA_rawadc"},
+    {"fryaRawAdc",  "Raster YA raw ADC",    "FRYA_rawadc"},
+    {"frxbRawAdc",  "Raster XB raw ADC",    "FRXB_rawadc"},
     {"frybRawAdc",  "Raster YB raw ADC",    "FRYB_rawadc"},
     {"frxa_adc",  "Raster XA ADC",    "fXA_ADC"},
     {"frya_adc",  "Raster YA ADC",    "fYA_ADC"},
