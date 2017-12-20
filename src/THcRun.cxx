@@ -62,7 +62,7 @@ THcRun::~THcRun()
 void THcRun::Print( Option_t* opt ) const
 {
   THaRun::Print( opt );
-  fHcParms->Print();
+  //  fHcParms->Print();
 }
 
 ClassImp(THaRun)
