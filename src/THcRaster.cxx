@@ -61,9 +61,9 @@ THcRaster::THcRaster( const char* name, const char* description,
   fFrXB_ADCperCM = 1.0;
   fFrYB_ADCperCM = 1.0;
   fFrXA_ADC_zero_offset = 0;
-  fFrXA_ADC_zero_offset =0;
-  fFrXA_ADC_zero_offset =0;
-  fFrXA_ADC_zero_offset =0;
+  fFrXB_ADC_zero_offset =0;
+  fFrYA_ADC_zero_offset =0;
+  fFrYB_ADC_zero_offset =0;
 
   frPosAdcPulseIntRaw  = NULL;
 
@@ -197,8 +197,8 @@ Int_t THcRaster::DefineVariables( EMode mode )
 
   RVarDef vars[] = {
     {"frxaRawAdc",  "Raster XA raw ADC",    "FRXA_rawadc"},
-    {"fryaRawAdc",  "Raster YA raw ADC",    "FRXB_rawadc"},
-    {"frxbRawAdc",  "Raster XB raw ADC",    "FRYA_rawadc"},
+    {"fryaRawAdc",  "Raster YA raw ADC",    "FRYA_rawadc"},
+    {"frxbRawAdc",  "Raster XB raw ADC",    "FRXB_rawadc"},
     {"frybRawAdc",  "Raster YB raw ADC",    "FRYB_rawadc"},
     {"frxa_adc",  "Raster XA ADC",    "fXA_ADC"},
     {"frya_adc",  "Raster YA ADC",    "fYA_ADC"},
