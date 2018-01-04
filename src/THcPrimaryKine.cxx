@@ -188,19 +188,12 @@ Int_t THcPrimaryKine::ReadDatabase( const TDatime& date )
 #ifdef WITH_DEBUG
   cout << "In THcPrimaryKine::ReadDatabase()" << endl;
 #endif
-  //
-  char prefix[2];
-
-  // cout << " GetName() " << GetName() << endl;
-
-  prefix[0]=tolower(GetName()[0]);
-  prefix[1]='\0';
 
   DBRequest list[]={
-    {"targmass_amu",          &fMA_amu,             kDouble,         0,  1},
+    {"gtargmass_amu",          &fMA_amu,             kDouble,         0,  1},
     {0}
   };
-  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  gHcParms->LoadParmValues((DBRequest*)&list);
     //
   fMA= fMA_amu*931.5/1000.;
   return kOK;
