@@ -6,7 +6,7 @@
 
 #include "THcPrimaryKine.h"
 #include "THcSecondaryKine.h"
-#include "THaTrackingModule.h"
+#include "THcHallCSpectrometer.h"
 #include "THcGlobals.h"
 #include "THcParmList.h"
 #include "VarDef.h"
@@ -82,8 +82,10 @@ Int_t THcSecondaryKine::DefineVariables( EMode mode )
     { "pmiss_x",  "x-component of p_miss wrt q (GeV)", "fPmiss_x" },
     { "pmiss_y",  "y-component of p_miss wrt q (GeV)", "fPmiss_y" },
     { "pmiss_z",  "z-component of p_miss, along q (GeV)", "fPmiss_z" },
-    { "emiss",    "Missing energy (GeV), nuclear physics definition "
-                  "omega-Tx-Tb", "fEmiss" },
+    { "emiss_nuc",    "Missing energy (GeV), nuclear physics definition "
+                  "omega-Tx-Tb", "fEmiss_nuc" },
+    { "emiss",    "Missing energy (GeV), ENGINE definition "
+                  "omega-Mt-Ex", "fEmiss" },
     { "Mrecoil",  "Invariant mass of recoil system (GeV)", "fMrecoil" },
     { "Erecoil",  "Total energy of recoil system (GeV)", "fErecoil" },
     { "Prec_x",   "x-component of recoil system in lab (GeV/c)", "fB.X()" },
@@ -118,22 +120,29 @@ THaAnalysisObject::EStatus THcSecondaryKine::Init( const TDatime& run_time )
   // Standard initialization. Calls this object's DefineVariables().
   
   //  cout << "*************&&&&&&&&&&&&&&************" << endl;
-  //cout << "In THcSecondaryKine::Init() " << endl;
+  //  cout << "In THcSecondaryKine::Init() " << endl;
 
-  if( THaPhysicsModule::Init( run_time ) != kOK )
+  fStatus = kOK;
+
+  fSpectro = dynamic_cast<THcHallCSpectrometer*>
+    ( FindModule( fSpectroName.Data(), "THcHallCSpectrometer"));
+  if( !fSpectro ) {
+    fStatus = kInitError;
     return fStatus;
-
-
-  fSpectro = dynamic_cast<THaTrackingModule*>
-    ( FindModule( fSpectroName.Data(), "THaTrackingModule"));
-  if( fStatus ) return fStatus;
+  }
 
   fPrimary = dynamic_cast<THcPrimaryKine*>
     ( FindModule( fPrimaryName.Data(), "THcPrimaryKine"));
+  if(!fPrimary) {
+    fStatus = kInitError;
+    return fStatus;
+  }
+
+  if( (fStatus=THaPhysicsModule::Init( run_time )) != kOK ) {
+    return fStatus;
+  }
+
   return fStatus;
-
-
-
 }
 
 //_____________________________________________________________________________
@@ -145,7 +154,7 @@ Int_t THcSecondaryKine::Process( const THaEvData& )
   if( !IsOK() ) return -1;
 
   //Get secondary particle mass
-  fMX = dynamic_cast <THcHallCSpectrometer*> (fSpectro)->GetParticleMass();
+  //fMX = dynamic_cast <THcHallCSpectrometer*> (fSpectro)->GetParticleMass();
 
   // Tracking information from the secondary spectrometer
   THaTrackInfo* trkifo = fSpectro->GetTrackInfo();
@@ -155,9 +164,12 @@ Int_t THcSecondaryKine::Process( const THaEvData& )
   if( !fPrimary->DataValid() ) return 2;
 
   // Measured momentum of secondary particle X in lab
-  const TVector3& pX3 = trkifo->GetPvect();
+  Double_t xptar = trkifo->GetTheta() + fOopCentralOffset;
+  TVector3 pvect;
+  fSpectro->TransportToLab(trkifo->GetP(), xptar, trkifo->GetPhi(), pvect);
+
   // 4-momentum of X
-  fX.SetVectM( pX3, fMX );
+  fX.SetVectM( pvect, fMX );
 
   // 4-momenta of the the primary interaction
   const TLorentzVector* pA  = fPrimary->GetA();  // Initial target
@@ -213,7 +225,9 @@ Int_t THcSecondaryKine::Process( const THaEvData& )
   // NB: If X is knocked out of a lower shell, the recoil system carries
   // a significant excitation energy. This excitation is included in Emiss
   // here, as it should, since it results from the binding of X.
-  fEmiss = omega - fTX - fTB;
+  fEmiss_nuc = omega - fTX - fTB;
+  // Target Mass + Beam Energy - scatt ele energy - hadron total energy
+  fEmiss = omega + pA->M() - fX.E();
 
   // In production reactions, the "missing energy" is defined 
   // as the total energy of the undetected recoil system.
@@ -274,31 +288,21 @@ Int_t THcSecondaryKine::Process( const THaEvData& )
 Int_t THcSecondaryKine::ReadDatabase( const TDatime& date )
 {
   // cout << "In THcSecondaryKine::ReadDatabase() " << endl;
-  // cout << "particleMASS: " << fMX << endl; 
-// Query the run database for any parameters of the module that were not
-  // set by the constructor. This module has only one parameter,
-  // the mass of the detected secondary particle X.
-  //
-  // First searches for "<prefix>.MX", then, if not found, for "MX".
-  // If still not found, use proton mass.
-  /*
-  Int_t err = THaPhysicsModule::ReadRunDatabase( date );
-  if( err ) return err;
 
-  FILE* f = OpenRunDBFile( date );
-  if( !f ) return kFileError;
+  char prefix[2];
 
-  if ( fMX <= 0.0 ) { 
-    TString name(fPrefix), tag("MX"); name += tag;
-    Int_t st = LoadDBvalue( f, date, name.Data(), fMX );
-    if( st )
-      LoadDBvalue( f, date, tag.Data(), fMX );
-    if( fMX <= 0.0 ) fMX = 0.938;
-  }
-  fclose(f);
-  return 0;
-  */
-  //fMX = 0.938;
+  prefix[0] = tolower(GetName()[0]);
+  prefix[1] = '\0';
+
+  fOopCentralOffset = 0.0;
+  DBRequest list[]={
+    {"_oopcentral_offset",&fOopCentralOffset,kDouble, 0, 1},
+    {"partmass",          &fMX,        kDouble      },
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  cout << "THcSecondaryKine particleMASS: " << fMX << endl; 
+  
   return kOK;
 }
   
