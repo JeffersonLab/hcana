@@ -12,7 +12,7 @@
 #include "TLorentzVector.h"
 #include "TString.h"
 
-class THaTrackingModule;
+class THcHallCSpectrometer;
 typedef TLorentzVector FourVect;
 
 class THcSecondaryKine : public THaPhysicsModule {
@@ -81,7 +81,8 @@ public:
   Double_t fPmiss_x;    // x-component of p_miss wrt q (GeV)
   Double_t fPmiss_y;    // y-component of p_miss wrt q (GeV)
   Double_t fPmiss_z;    // z-component of p_miss, along q (GeV)
-  Double_t fEmiss;      // Missing energy (GeV), nuclear physics definition omega-Tx-Tb
+  Double_t fEmiss_nuc;      // Missing energy (GeV), nuclear physics definition omega-Tx-Tb
+  Double_t fEmiss; // Missing energy (GeV), correct definition omega+Mt-Ex
   Double_t fMrecoil;    // Invariant mass of recoil system (GeV)
   Double_t fErecoil;    // Total energy of recoil system (GeV)
   Double_t fTX;         // Kinetic energy of detected particle (GeV)
@@ -103,9 +104,10 @@ public:
 
   // Parameters
   Double_t fMX;         // Mass of secondary particle (GeV)
+  Double_t fOopCentralOffset; //Offset of central out-of-plane angle (rad)
 
   TString            fSpectroName;  // Name of spectrometer for secondary particle
-  THaTrackingModule* fSpectro;      // Pointer to spectrometer object
+  THcHallCSpectrometer* fSpectro;   // Pointer to spectrometer object
   TString            fPrimaryName;  // Name of module for primary interaction kinematics
   THcPrimaryKine*    fPrimary;      // Pointer to primary kinematics module
 
