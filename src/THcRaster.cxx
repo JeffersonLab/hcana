@@ -61,9 +61,9 @@ THcRaster::THcRaster( const char* name, const char* description,
   fFrXB_ADCperCM = 1.0;
   fFrYB_ADCperCM = 1.0;
   fFrXA_ADC_zero_offset = 0;
-  fFrXA_ADC_zero_offset =0;
-  fFrXA_ADC_zero_offset =0;
-  fFrXA_ADC_zero_offset =0;
+  fFrXB_ADC_zero_offset =0;
+  fFrYA_ADC_zero_offset =0;
+  fFrYB_ADC_zero_offset =0;
 
   frPosAdcPulseIntRaw  = NULL;
 
@@ -197,8 +197,8 @@ Int_t THcRaster::DefineVariables( EMode mode )
 
   RVarDef vars[] = {
     {"frxaRawAdc",  "Raster XA raw ADC",    "FRXA_rawadc"},
-    {"fryaRawAdc",  "Raster YA raw ADC",    "FRXB_rawadc"},
-    {"frxbRawAdc",  "Raster XB raw ADC",    "FRYA_rawadc"},
+    {"fryaRawAdc",  "Raster YA raw ADC",    "FRYA_rawadc"},
+    {"frxbRawAdc",  "Raster XB raw ADC",    "FRXB_rawadc"},
     {"frybRawAdc",  "Raster YB raw ADC",    "FRYB_rawadc"},
     {"frxa_adc",  "Raster XA ADC",    "fXA_ADC"},
     {"frya_adc",  "Raster YA ADC",    "fYA_ADC"},
@@ -268,7 +268,7 @@ void THcRaster::AccumulatePedestals(TClonesArray* rawhits)
    for(Int_t ielem = 0; ielem < frPosAdcPulseIntRaw->GetEntries(); ielem++) {
        Int_t    nraster        = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetPaddleNumber() - 1;
         Double_t pulseIntRaw  = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
-       if (nraster ==0) fPedADC[0] = pulseIntRaw;
+        if (nraster ==0) fPedADC[0] = pulseIntRaw;
         if (nraster ==1) fPedADC[1] = pulseIntRaw;
         if (nraster ==2) fPedADC[2] = pulseIntRaw;
         if (nraster ==3) fPedADC[3] = pulseIntRaw;
@@ -299,10 +299,10 @@ void THcRaster::CalculatePedestals( )
      endif
   */
   
-    fFrXA_ADC_zero_offset = fPedADC[0]/ fNPedestalEvents;
-    fFrXB_ADC_zero_offset = fPedADC[1]/ fNPedestalEvents;
-    fFrYA_ADC_zero_offset = fPedADC[2]/ fNPedestalEvents;
-    fFrYB_ADC_zero_offset = fPedADC[3]/ fNPedestalEvents;
+    fFrYA_ADC_zero_offset = fPedADC[0]/ fNPedestalEvents;
+    fFrXA_ADC_zero_offset = fPedADC[1]/ fNPedestalEvents;
+    fFrYB_ADC_zero_offset = fPedADC[2]/ fNPedestalEvents;
+    fFrXB_ADC_zero_offset = fPedADC[3]/ fNPedestalEvents;
     
   
 }
@@ -354,10 +354,10 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
    for(Int_t ielem = 0; ielem < frPosAdcPulseIntRaw->GetEntries(); ielem++) {
        Int_t    nraster        = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetPaddleNumber() - 1;
         Double_t pulseIntRaw  = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
-        if (nraster ==0) FRXA_rawadc = pulseIntRaw;
-        if (nraster ==1) FRXB_rawadc = pulseIntRaw;
-        if (nraster ==2) FRYA_rawadc = pulseIntRaw;
-        if (nraster ==3) FRYB_rawadc = pulseIntRaw;
+        if (nraster ==0) FRYA_rawadc = pulseIntRaw;
+        if (nraster ==1) FRXA_rawadc = pulseIntRaw;
+        if (nraster ==2) FRYB_rawadc = pulseIntRaw;
+        if (nraster ==3) FRXB_rawadc = pulseIntRaw;
    }
 
 
@@ -404,9 +404,9 @@ gHcParms->LoadParmValues(list);
   */
 
   fXA_pos = (fXA_ADC/fFrXA_ADCperCM)*(fFrCalMom/fgpBeam);
-  fYA_pos = (fYA_ADC/fFrYA_ADCperCM)*(fFrCalMom/fgpBeam);
+  fYA_pos = (-1)*(fYA_ADC/fFrYA_ADCperCM)*(fFrCalMom/fgpBeam);
   fXB_pos = (fXB_ADC/fFrXB_ADCperCM)*(fFrCalMom/fgpBeam);
-  fYB_pos = (fYB_ADC/fFrYB_ADCperCM)*(fFrCalMom/fgpBeam);
+  fYB_pos = (-1)*(fYB_ADC/fFrYB_ADCperCM)*(fFrCalMom/fgpBeam);
 
   // std::cout<<" X = "<<fXpos<<" Y = "<<fYpos<<std::endl;
 
@@ -415,11 +415,12 @@ gHcParms->LoadParmValues(list);
   Double_t tp;
   if(fgusefr != 0) {
     fPosition[1].SetXYZ(fXA_pos+fgbeam_xoff, fYA_pos+fgbeam_yoff, 0.0);
-    tt = fXA_pos/fgfrx_dist+fgbeam_xpoff;
+    tt = (-1)*(fXA_pos/fgfrx_dist+fgbeam_xpoff);
     tp = fYA_pos/fgfry_dist+fgbeam_ypoff;
+
   } else {			// Just use fixed beam position and angle
     fPosition[0].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
-    tt = fgbeam_xpoff;
+    tt = (-1)*fgbeam_xpoff;
     tp = fgbeam_ypoff;
   }
   fDirection.SetXYZ(tt, tp ,1.0); // Set arbitrarily to avoid run time warnings
