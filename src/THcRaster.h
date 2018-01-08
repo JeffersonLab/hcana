@@ -42,7 +42,6 @@ class THcRaster : public THaBeamDet, public THcHitList {
  
   Int_t      Process();
 
-  //  TVector3 GetPosition()  const { return fPosition[2]; }
   TVector3 GetPosition()  const { return fPosition[1]; }
   TVector3 GetDirection() const { return fDirection; }
 
@@ -91,7 +90,7 @@ class THcRaster : public THaBeamDet, public THcHitList {
   //Double_t       fAvgPedADC[4];     // Avergage ADC poedestals
 
   Double_t       fRawPos[2];     // current in Raster ADCs for position
-  TVector3       fPosition[4];   // Beam position at 1st, 2nd BPM or at the target (meters)
+  TVector3       fPosition[2];   // Beam position at 1st, 2nd BPM or at the target (meters)
   TVector3       fDirection;
 
   TClonesArray* frPosAdcPulseIntRaw;
