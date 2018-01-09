@@ -131,24 +131,24 @@ Int_t THcExtTarCor::Process( const THaEvData& )
   Double_t xtar_new=vertex[1];
   TClonesArray* tracks = spectro->GetTracks();
   if( !tracks ){
-  return -2;
+    return -2;
   }
   for( Int_t i = 0; i<ntracks; i++ ) {
-   THaTrack* theTrack = static_cast<THaTrack*>( tracks->At(i) );
+    THaTrack* theTrack = static_cast<THaTrack*>( tracks->At(i) );
     if( theTrack == spectro->GetGoldenTrack() ) {
 
-  // Calculate corrections & recalculate track parameters
-  Double_t x_tg = vertex[1];
-  spectro->CalculateTargetQuantities(theTrack,x_tg,xptar,ytar,yptar,delta);
-  p  = spectro->GetPcentral() * ( 1.0+delta );
-  spectro->TransportToLab( p, xptar, yptar, pvect );
-  Double_t theta=spectro->GetThetaSph();
-  xtar_new = x_tg - xptar*ztarg*cos(theta);
-  // Get a second-iteration value for x_tg based on the 
-  spectro->CalculateTargetQuantities(theTrack,xtar_new,xptar,ytar,yptar,delta);
-  fDeltaDp = delta*100 -theTrack->GetDp();
-  fDeltaP = p - theTrack->GetP();
-  fDeltaTh = xptar -  theTrack->GetTTheta();
+      // Calculate corrections & recalculate track parameters
+      Double_t x_tg = vertex[1];
+      spectro->CalculateTargetQuantities(theTrack,x_tg,xptar,ytar,yptar,delta);
+      p  = spectro->GetPcentral() * ( 1.0+delta );
+      spectro->TransportToLab( p, xptar, yptar, pvect );
+      Double_t theta=spectro->GetThetaSph();
+      xtar_new = x_tg - xptar*ztarg*cos(theta);
+      // Get a second-iteration value for x_tg based on the 
+      spectro->CalculateTargetQuantities(theTrack,xtar_new,xptar,ytar,yptar,delta);
+      fDeltaDp = delta*100 -theTrack->GetDp();
+      fDeltaP = p - theTrack->GetP();
+      fDeltaTh = xptar -  theTrack->GetTTheta();
     }
   }
  // Save results in our TrackInfo
