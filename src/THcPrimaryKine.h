@@ -11,7 +11,7 @@
 #include "TLorentzVector.h"
 #include "TString.h"
 
-class THaTrackingModule;
+class THcHallCSpectrometer;
 class THaBeamModule;
 typedef TLorentzVector FourVect;
 
@@ -80,12 +80,13 @@ protected:
   Double_t          fM;            // Mass of incident particle (GeV/c^2)
   Double_t          fMA;           // Target mass (GeV/c^2)
   Double_t          fMA_amu;           // Target mass (amu)
+  Double_t          fOopCentralOffset; // Out plane offset of spectrometer
 
   virtual Int_t DefineVariables( EMode mode = kDefine );
 
   TString                 fSpectroName;  // Name of spectrometer to consider
   TString                 fBeamName;     // Name of beam position apparatus
-  THaTrackingModule*      fSpectro;      // Pointer to spectrometer object
+  THcHallCSpectrometer*   fSpectro;      // Pointer to spectrometer object
   THaBeamModule*          fBeam;         // Pointer to beam position apparatus
 
   ClassDef(THcPrimaryKine,0)   //Single arm kinematics module
