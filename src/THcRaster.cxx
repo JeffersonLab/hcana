@@ -414,12 +414,12 @@ gHcParms->LoadParmValues(list);
   Double_t tt;
   Double_t tp;
   if(fgusefr != 0) {
-    fPosition[1].SetXYZ(fXA_pos+fgbeam_xoff, fYA_pos+fgbeam_yoff, 0.0);
+    fPosition[1].SetXYZ((-1)*(fXA_pos+fgbeam_xoff), fYA_pos+fgbeam_yoff, 0.0);
     tt = (-1)*(fXA_pos/fgfrx_dist+fgbeam_xpoff);
     tp = fYA_pos/fgfry_dist+fgbeam_ypoff;
 
   } else {			// Just use fixed beam position and angle
-    fPosition[0].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
+    fPosition[0].SetXYZ((-1)*fgbeam_xoff, fgbeam_yoff, 0.0);
     tt = (-1)*fgbeam_xpoff;
     tp = fgbeam_ypoff;
   }
