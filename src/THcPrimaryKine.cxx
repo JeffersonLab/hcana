@@ -6,7 +6,7 @@ These are usually the electron kinematics.
 */
 
 #include "THcPrimaryKine.h"
-#include "THaTrackingModule.h"
+#include "THcHallCSpectrometer.h"
 #include "THcGlobals.h"
 #include "THcParmList.h"
 #include "THaRunBase.h"
@@ -106,17 +106,21 @@ THaAnalysisObject::EStatus THcPrimaryKine::Init( const TDatime& run_time )
   // Locate the spectrometer apparatus named in fSpectroName and save
   // pointer to it.
 
-  fSpectro = dynamic_cast<THaTrackingModule*>
-    ( FindModule( fSpectroName.Data(), "THaTrackingModule"));
-  if( !fSpectro )
+  fSpectro = dynamic_cast<THcHallCSpectrometer*>
+    ( FindModule( fSpectroName.Data(), "THcHallCSpectrometer"));
+  if( !fSpectro ) {
+    fStatus = kInitError;
     return fStatus;
+  }
 
   // Optional beam apparatus
   if( fBeamName.Length() > 0 ) {
     fBeam = dynamic_cast<THaBeamModule*>
       ( FindModule( fBeamName.Data(), "THaBeamModule") );
-    if( !fBeam )
+    if( !fBeam ) {
+      fStatus = kInitError;
       return fStatus;
+    }
     if( fM <= 0.0 )
       fM = fBeam->GetBeamInfo()->GetM();
   }
@@ -144,6 +148,11 @@ Int_t THcPrimaryKine::Process( const THaEvData& )
   // Determine 4-momentum of incident particle. 
   // If a beam module given, use it to get the beam momentum. This 
   // module may apply corrections for beam energy loss, variations, etc.
+
+  Double_t xptar = trkifo->GetTheta() + fOopCentralOffset;
+  TVector3 pvect;
+  fSpectro->TransportToLab(trkifo->GetP(), xptar, trkifo->GetPhi(), pvect);
+
   if( fBeam ) {
     fP0.SetVectM( fBeam->GetBeamInfo()->GetPvect(), fM );
   } else {
@@ -152,7 +161,7 @@ Int_t THcPrimaryKine::Process( const THaEvData& )
     fP0.SetXYZM( 0.0, 0.0, p_in, fM );
   }
 
-  fP1.SetVectM( trkifo->GetPvect(), fM );
+  fP1.SetVectM( pvect, fM );
   fA.SetXYZM( 0.0, 0.0, 0.0, fMA );         // Assume target at rest
 
   // proton mass (for x_bj)
@@ -161,10 +170,11 @@ Int_t THcPrimaryKine::Process( const THaEvData& )
 
 
   // Standard electron kinematics
-  fQ         = fP0 - fP1;
+  fQ         = fP0 - fP1;  // cqx, cqy, cqz, omega
   fQ2        = -fQ.M2();
   fQ3mag     = fQ.P();
   fOmega     = fQ.E();
+  // cqxzabs = TMath::Sqrt(fQ.X()*fQ.X() + fQ.Y()*fQ.Y());
   fA1        = fA + fQ;
   //  fW2        = fA1.M2();
   fMp1        = fMp + fQ;
@@ -189,8 +199,15 @@ Int_t THcPrimaryKine::ReadDatabase( const TDatime& date )
   cout << "In THcPrimaryKine::ReadDatabase()" << endl;
 #endif
 
+  char prefix[2];
+
+  prefix[0] = tolower(GetName()[0]);
+  prefix[1] = '\0';
+  
+  fOopCentralOffset = 0.0;
   DBRequest list[]={
     {"gtargmass_amu",          &fMA_amu,             kDouble,         0,  1},
+    {Form("%s_oopcentral_offset",prefix), &fOopCentralOffset,kDouble, 0, 1},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list);
