@@ -218,8 +218,12 @@ void THcTrigDet::Clear(Option_t* opt) {
 
 Int_t THcTrigDet::Decode(const THaEvData& evData) {
   // Decode raw data for this event.
-  Bool_t present = kTRUE;	// Suppress reference time warnings
-  if(fPresentP) {		// if this spectrometer not part of trigger
+  Bool_t present = kTRUE;	// Don't suppress reference time warnings
+  if(HaveIgnoreList()) {
+    if(IsIgnoreType(evData.GetEvType())) {
+      present = kFALSE;
+    }
+  } else if(fPresentP) {		// if this spectrometer not part of trigger
     present = *fPresentP;
   }
   Int_t numHits = DecodeToHitList(evData, !present);
@@ -445,6 +449,26 @@ void THcTrigDet::SetSpectName( const char* name)
   fSpectName = name;
 }
 
+void THcTrigDet::AddEvtType(int evtype) {
+  eventtypes.push_back(evtype);
+}
+  
+void THcTrigDet::SetEvtType(int evtype) {
+  eventtypes.clear();
+  AddEvtType(evtype);
+}
 
+Bool_t THcTrigDet::IsIgnoreType(Int_t evtype) const
+{
+  for (UInt_t i=0; i < eventtypes.size(); i++) {
+    if (evtype == eventtypes[i]) return kTRUE;
+  }
+  return kFALSE; 
+}
+
+Bool_t THcTrigDet::HaveIgnoreList() const
+{
+  return( (eventtypes.size()>0) ? kTRUE : kFALSE);
+}
 
 ClassImp(THcTrigDet)
