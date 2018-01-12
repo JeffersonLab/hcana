@@ -27,6 +27,10 @@ class THcTrigDet : public THaDetector, public THcHitList {
     Int_t Decode(const THaEvData& evData);
 
     virtual void SetSpectName( const char* name);
+    virtual void AddEvtType(int evtype);
+    virtual void SetEvtType(int evtype);
+    virtual Bool_t IsIgnoreType(Int_t evtype) const;
+    virtual Bool_t HaveIgnoreList() const;
 
   protected:
     void Setup(const char* name, const char* description);
@@ -65,6 +69,7 @@ class THcTrigDet : public THaDetector, public THcHitList {
     Int_t fAdcMultiplicity[fMaxAdcChannels];
 
     TString fSpectName;
+    std::vector<Int_t> eventtypes;
     Bool_t* fPresentP;
 
   private:
