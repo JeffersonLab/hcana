@@ -491,7 +491,8 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 		} else {
 		  diff = scaldata - scal_prev_read[nscal-1];
 		}
-		dvars[ivar]=(diff/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		dvars[ivar]=0.;
+ 		if (fDeltaTime>0) dvars[ivar]=(diff/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
 	      }
 	      if (bcm_ind == fbcm_Current_Threshold_Index) scal_current= dvars[ivar];
 	    }
@@ -504,8 +505,9 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 		} else {
 		  diff = scaldata - scal_prev_read[nscal-1];
 		}
-		fBCM_delta_charge[bcm_ind]=fDeltaTime*(diff/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
-                dvars[ivar]+=fBCM_delta_charge[bcm_ind];
+		fBCM_delta_charge[bcm_ind]=0;
+		if (fDeltaTime>0)  fBCM_delta_charge[bcm_ind]=fDeltaTime*(diff/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+                 dvars[ivar]+=fBCM_delta_charge[bcm_ind];
 	      }
 	    }
 	    //	    printf("event %i index %i fBCMname %s scalerloc %s offset %f gain %f computed %f\n",evcount, bcm_ind, fBCM_Name[bcm_ind],scalerloc[ivar]->name.Data(),fBCM_Offset[bcm_ind],fBCM_Gain[bcm_ind],dvars[ivar]);
