@@ -65,6 +65,8 @@ private:
    char** fBCM_Name;
    UInt_t evcount;
    Double_t evcountR;
+   UInt_t evNumber;
+   Double_t evNumberR;
    Int_t Nvars, ifound, fNormIdx, nscalers;
    Double_t *dvars;
    UInt_t *dvars_prev_read;
