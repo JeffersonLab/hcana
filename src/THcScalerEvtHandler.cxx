@@ -103,7 +103,7 @@ Int_t THcScalerEvtHandler::End( THaRunBase* r)
     AnalyzeBuffer(rdata,kFALSE);
   }
   if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
-
+    evNumberR = -1;
   if (fScalerTree) fScalerTree->Fill();
 
   fDelayedEvents.clear();	// Does this free the arrays?
@@ -207,6 +207,10 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     name = "evcount";
     tinfo = name + "/D";
     fScalerTree->Branch(name.Data(), &evcountR, tinfo.Data(), 4000);
+ 
+   name = "evNumber";
+    tinfo = name + "/D";
+    fScalerTree->Branch(name.Data(), &evNumberR, tinfo.Data(), 4000);
 
     for (size_t i = 0; i < scalerloc.size(); i++) {
       name = scalerloc[i]->name;
@@ -220,6 +224,7 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 
   if( evdata->GetEvType() == fDelayedType) { // Save this event for processing later
     Int_t evlen = evdata->GetEvLength();
+    
     UInt_t *datacopy = new UInt_t[evlen];
     fDelayedEvents.push_back(datacopy);
     for(Int_t i=0;i<evlen;i++) {
@@ -227,7 +232,9 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     }
     return 1;
   } else { 			// A normal event
-    if (fDebugFile) *fDebugFile<<"\n\nTHcScalerEvtHandler :: Debugging event type "<<dec<<evdata->GetEvType()<<endl<<endl;
+    if (fDebugFile) *fDebugFile<<"\n\nTHcScalerEvtHandler :: Debugging event type "<<dec<<evdata->GetEvType()<< " event num = " << evdata->GetEvNum() << endl<<endl;
+    evNumber=evdata->GetEvNum();
+    evNumberR = evNumber;
     Int_t ret;
     if((ret=AnalyzeBuffer(rdata,fOnlySyncEvents))) {
       if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
@@ -344,6 +351,11 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
   fTotalTime = (thisClock+(((Double_t) fClockOverflows)*kMaxUInt+fClockOverflows))/fClockFreq;
   fLastClock = thisClock;
   fDeltaTime= fTotalTime - fPrevTotalTime;
+  if (fDeltaTime==0) {
+    cout << " *******************   Severe Warning ****************************" << endl;
+    cout << " In THcScalerEvtHandler have found fDeltaTime is zero !!   " << endl;
+      cout << " ******************* Alert DAQ experts ****************************" << endl;
+  }
   fPrevTotalTime=fTotalTime;
   Int_t nscal=0;
   for (size_t i = 0; i < scalerloc.size(); i++)  {
