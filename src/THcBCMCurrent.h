@@ -23,27 +23,36 @@ class THcBCMCurrent : public THaPhysicsModule {
 
  private:
   
-  Int_t CheckGoodEvent( Int_t fevn );
-  virtual Int_t ReadDatabase( const TDatime& date);
-  virtual Int_t DefineVariables( EMode mode = kDefine );
-
   Int_t     fNscaler;
   Double_t  fThreshold;
   Double_t* fiBCM1;
   Double_t* fiBCM2;
+  Double_t* fiBCM4a;
+  Double_t* fiBCM4b;
+  Double_t* fiBCM17;
   Int_t*    fEvtNum;
 
-  Bool_t    fPrevious; 
+  Int_t    fBCM1flag;
+  Int_t    fBCM2flag;
 
-  Int_t fBCM1flag;
-  Int_t fBCM2flag;
-
-  enum {kBeamOff, kBeamOn, kCarryOn};
+  Double_t fBCM1avg;
+  Double_t fBCM2avg;
+  Double_t fBCM4aavg;
+  Double_t fBCM4bavg;
+  Double_t fBCM17avg;
 
   struct BCMInfo{
     Double_t bcm1_current;
     Double_t bcm2_current;
+    Double_t bcm4a_current;
+    Double_t bcm4b_current;
+    Double_t bcm17_current;
   };
+
+  Int_t GetAvgCurrent( Int_t fevn, BCMInfo &bcminfo );
+  virtual Int_t ReadDatabase( const TDatime& date);
+  virtual Int_t DefineVariables( EMode mode = kDefine );
+
 
   std::map<Int_t, BCMInfo> BCMInfoMap;
 
