@@ -127,8 +127,8 @@ Int_t THcBCMCurrent::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
 
   RVarDef vars[] = {
-    {"bcm1_currentflag",     "BCM1 current flag for good event", "fBCM1flag"},
-    {"bcm2_currentflag",     "BCM2 current flag for good event", "fBCM2flag"},
+    {"bcm1.currentflag",     "BCM1 current flag for good event", "fBCM1flag"},
+    {"bcm2.currentflag",     "BCM2 current flag for good event", "fBCM2flag"},
     {"bcm1.AvgCurrentCut",  "BCM1  average beam current", "fBCM1avg"},
     {"bcm2.AvgCurrentCut",  "BCM2  average beam current", "fBCM2avg"},
     {"bcm4a.AvgCurrentCut", "BCM4a average beam current", "fBCM4aavg"},
