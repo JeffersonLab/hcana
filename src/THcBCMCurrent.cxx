@@ -8,7 +8,7 @@ using namespace std;
 
 THcBCMCurrent::THcBCMCurrent(const char* name,
 			     const char* description) :
-  THaPhysicsModule(name, description), fPrevious(kFALSE)
+  THaPhysicsModule(name, description), fThreshold(0), fPrevious(kFALSE)
 {
 
   fBCM1flag = 0;
@@ -24,7 +24,6 @@ THcBCMCurrent::~THcBCMCurrent()
   DefineVariables (kDelete);
 
   delete [] fiBCM1;  fiBCM1 = NULL;
-  delete [] fiBCM2;  fiBCM2 = NULL;
   delete [] fiBCM2;  fiBCM2 = NULL;
   delete [] fEvtNum; fEvtNum = NULL;
 
@@ -65,7 +64,7 @@ Int_t THcBCMCurrent::ReadDatabase( const TDatime& date )
   };
   gHcParms->LoadParmValues((DBRequest*)&list1);
   
-  if(fThreshold < 1.e-9)
+  if(fThreshold < 1.e-5)
     {
       DBRequest list2[] = {
 	{"gBCM_Current_threshold", &fThreshold, kDouble}, 
