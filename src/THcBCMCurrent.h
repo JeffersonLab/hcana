@@ -19,12 +19,13 @@ class THcBCMCurrent : public THaPhysicsModule {
   virtual EStatus Init( const TDatime& date);
   virtual Int_t Process( const THaEvData& );  
 
-  void SetCurrentCut(Double_t _threshold){ fThreshold = _threshold; }
+  enum BCMopt {BCM1, BCM2, UNSER, BCM4A, BCM4B, BCM17};
 
  private:
   
   Int_t     fNscaler;
   Double_t  fThreshold;
+  Int_t     fBCMIndex;
   Double_t* fiBCM1;
   Double_t* fiBCM2;
   Double_t* fiBCM4a;
@@ -32,8 +33,7 @@ class THcBCMCurrent : public THaPhysicsModule {
   Double_t* fiBCM17;
   Int_t*    fEvtNum;
 
-  Int_t    fBCM1flag;
-  Int_t    fBCM2flag;
+  Int_t    fBCMflag;
 
   Double_t fBCM1avg;
   Double_t fBCM2avg;
@@ -49,12 +49,11 @@ class THcBCMCurrent : public THaPhysicsModule {
     Double_t bcm17_current;
   };
 
+  std::map<Int_t, BCMInfo> BCMInfoMap;
+
   Int_t GetAvgCurrent( Int_t fevn, BCMInfo &bcminfo );
   virtual Int_t ReadDatabase( const TDatime& date);
   virtual Int_t DefineVariables( EMode mode = kDefine );
-
-
-  std::map<Int_t, BCMInfo> BCMInfoMap;
 
   ClassDef(THcBCMCurrent, 0)
 

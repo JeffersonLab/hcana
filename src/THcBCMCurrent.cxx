@@ -21,11 +21,10 @@ using namespace std;
 
 THcBCMCurrent::THcBCMCurrent(const char* name,
 			     const char* description) :
-  THaPhysicsModule(name, description), fThreshold(0)
+  THaPhysicsModule(name, description)
 {
 
-  fBCM1flag = 0;
-  fBCM2flag = 0;
+  fBCMflag = 0;
 
   fBCM1avg  = 0;
   fBCM2avg  = 0;
@@ -68,19 +67,13 @@ Int_t THcBCMCurrent::ReadDatabase( const TDatime& date )
 {
   
   DBRequest list1[] = {
-    {"num_scal_reads", &fNscaler, kInt},
+    {"num_scal_reads",               &fNscaler,   kInt},
+    {"gBCM_Current_threshold",       &fThreshold, kDouble}, 
+    {"gBCM_Current_threshold_index", &fBCMIndex,  kInt}, 
     {0}
   };
+
   gHcParms->LoadParmValues((DBRequest*)&list1);
-  
-  if(fThreshold < 1.e-5)
-    {
-      DBRequest list2[] = {
-	{"gBCM_Current_threshold", &fThreshold, kDouble}, 
-	{0}
-      };
-      gHcParms->LoadParmValues((DBRequest*)&list2);  
-    }  
   
   fiBCM1     = new Double_t[fNscaler];
   fiBCM2     = new Double_t[fNscaler];
@@ -90,7 +83,7 @@ Int_t THcBCMCurrent::ReadDatabase( const TDatime& date )
 
   fEvtNum    = new Int_t[fNscaler];
 
-  DBRequest list3[] = {
+  DBRequest list2[] = {
     {"scal_read_bcm1_current",  fiBCM1,     kDouble, (UInt_t) fNscaler},
     {"scal_read_bcm2_current",  fiBCM2,     kDouble, (UInt_t) fNscaler},
     {"scal_read_bcm4a_current", fiBCM4a,    kDouble, (UInt_t) fNscaler},
@@ -100,7 +93,7 @@ Int_t THcBCMCurrent::ReadDatabase( const TDatime& date )
     {0}
   };
 
-  gHcParms->LoadParmValues((DBRequest*)&list3);
+  gHcParms->LoadParmValues((DBRequest*)&list2);
 
   BCMInfo binfo;
   for(int i=0; i<fNscaler; i++)
@@ -127,13 +120,12 @@ Int_t THcBCMCurrent::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
 
   RVarDef vars[] = {
-    {"bcm1.currentflag", "BCM1 current flag for good event", "fBCM1flag"},
-    {"bcm2.currentflag", "BCM2 current flag for good event", "fBCM2flag"},
-    {"bcm1.AvgCurrent",  "BCM1  average beam current", "fBCM1avg"},
-    {"bcm2.AvgCurrent",  "BCM2  average beam current", "fBCM2avg"},
-    {"bcm4a.AvgCurrent", "BCM4a average beam current", "fBCM4aavg"},
-    {"bcm4b.AvgCurrent", "BCM4b average beam current", "fBCM4bavg"},
-    {"bcm17.AvgCurrent", "BCM17 average beam current", "fBCM17avg"},
+    {"CurrentFlag",      "BCM current flag for good event", "fBCMflag"},
+    {"bcm1.AvgCurrent",  "BCM1  average beam current",      "fBCM1avg"},
+    {"bcm2.AvgCurrent",  "BCM2  average beam current",      "fBCM2avg"},
+    {"bcm4a.AvgCurrent", "BCM4a average beam current",      "fBCM4aavg"},
+    {"bcm4b.AvgCurrent", "BCM4b average beam current",      "fBCM4bavg"},
+    {"bcm17.AvgCurrent", "BCM17 average beam current",      "fBCM17avg"},
     { 0 }
   };
 
@@ -170,15 +162,27 @@ Int_t THcBCMCurrent::Process( const THaEvData& evdata )
       fBCM17avg = binfo.bcm17_current;
     }
 
-  if(fBCM1avg < fThreshold)
-    fBCM1flag = 0;
-  else
-    fBCM1flag = 1;
-
-  if(fBCM2avg < fThreshold)
-    fBCM2flag = 0;
-  else
-    fBCM2flag = 1;
+  switch (fBCMIndex) 
+    {
+    case BCM1 :
+      fBCMflag = ( fBCM1avg < fThreshold )?0:1;
+      break;
+    case BCM2:
+      fBCMflag = ( fBCM2avg < fThreshold )?0:1;
+      break;
+    case BCM4A:
+      fBCMflag = ( fBCM4aavg < fThreshold )?0:1;
+      break;
+    case BCM4B:
+      fBCMflag = ( fBCM4bavg < fThreshold )?0:1;
+      break;
+    case BCM17:
+      fBCMflag = ( fBCM17avg < fThreshold )?0:1;
+      break;
+    default:
+      fBCMflag = 0;
+      break;
+    }
 
   return kOK;
 
