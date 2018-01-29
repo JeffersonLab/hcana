@@ -2,7 +2,7 @@
   
   This physics module does:
   - Read average BCM beam current values from scaler parameter file.
-  - Write the values into bcm#.AvgCurrentCut for each event  
+  - Write the values into bcm#.AvgCurrent for each event  
   - Compare the current values with the threshold and 
   set event flags (BCM1 and BCM2 only)
 
@@ -91,12 +91,12 @@ Int_t THcBCMCurrent::ReadDatabase( const TDatime& date )
   fEvtNum    = new Int_t[fNscaler];
 
   DBRequest list3[] = {
-    {"scal_read_bcm1_current",  fiBCM1,    kDouble, (UInt_t) fNscaler},
-    {"scal_read_bcm2_current",  fiBCM2,    kDouble, (UInt_t) fNscaler},
-    {"scal_read_bcm4a_current", fiBCM2,    kDouble, (UInt_t) fNscaler},
-    {"scal_read_bcm4b_current", fiBCM2,    kDouble, (UInt_t) fNscaler},
-    {"scal_read_bcm17_current", fiBCM2,    kDouble, (UInt_t) fNscaler},
-    {"scal_read_event",         fEvtNum,   kInt,    (UInt_t) fNscaler},
+    {"scal_read_bcm1_current",  fiBCM1,     kDouble, (UInt_t) fNscaler},
+    {"scal_read_bcm2_current",  fiBCM2,     kDouble, (UInt_t) fNscaler},
+    {"scal_read_bcm4a_current", fiBCM4a,    kDouble, (UInt_t) fNscaler},
+    {"scal_read_bcm4b_current", fiBCM4b,    kDouble, (UInt_t) fNscaler},
+    {"scal_read_bcm17_current", fiBCM17,    kDouble, (UInt_t) fNscaler},
+    {"scal_read_event",         fEvtNum,    kInt,    (UInt_t) fNscaler},
     {0}
   };
 
@@ -127,13 +127,13 @@ Int_t THcBCMCurrent::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
 
   RVarDef vars[] = {
-    {"bcm1.currentflag",     "BCM1 current flag for good event", "fBCM1flag"},
-    {"bcm2.currentflag",     "BCM2 current flag for good event", "fBCM2flag"},
-    {"bcm1.AvgCurrentCut",  "BCM1  average beam current", "fBCM1avg"},
-    {"bcm2.AvgCurrentCut",  "BCM2  average beam current", "fBCM2avg"},
-    {"bcm4a.AvgCurrentCut", "BCM4a average beam current", "fBCM4aavg"},
-    {"bcm4b.AvgCurrentCut", "BCM4b average beam current", "fBCM4bavg"},
-    {"bcm17.AvgCurrentCut", "BCM17 average beam current", "fBCM17avg"},
+    {"bcm1.currentflag", "BCM1 current flag for good event", "fBCM1flag"},
+    {"bcm2.currentflag", "BCM2 current flag for good event", "fBCM2flag"},
+    {"bcm1.AvgCurrent",  "BCM1  average beam current", "fBCM1avg"},
+    {"bcm2.AvgCurrent",  "BCM2  average beam current", "fBCM2avg"},
+    {"bcm4a.AvgCurrent", "BCM4a average beam current", "fBCM4aavg"},
+    {"bcm4b.AvgCurrent", "BCM4b average beam current", "fBCM4bavg"},
+    {"bcm17.AvgCurrent", "BCM17 average beam current", "fBCM17avg"},
     { 0 }
   };
 
