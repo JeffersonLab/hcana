@@ -38,6 +38,7 @@ SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcHodoEff.cxx \
 	src/THcTrigApp.cxx src/THcTrigDet.cxx src/THcTrigRawHit.cxx \
 	src/THcRawAdcHit.cxx src/THcRawTdcHit.cxx \
+	src/THcBCMCurrent.cxx
 	src/THcDummySpectrometer.cxx
 endif
 
