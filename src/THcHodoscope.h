@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "TClonesArray.h"
+#include "TH1F.h"
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
 #include "THcHodoHit.h"
@@ -124,6 +125,7 @@ protected:
 
   Int_t fNHits;
 
+  TH1F *hTime;
   // Calibration
 
   // Per-event data
