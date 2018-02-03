@@ -49,8 +49,8 @@ class THcTrigDet : public THaDetector, public THcHitList {
     std::vector<std::string> fAdcNames;
     std::vector<std::string> fTdcNames;
 
-    static const int fMaxAdcChannels = 100;
-    static const int fMaxTdcChannels = 100;
+    static const int fMaxAdcChannels = 200;
+    static const int fMaxTdcChannels = 200;
 
     Int_t fTdcTimeRaw[fMaxTdcChannels];
     Double_t fTdcTime[fMaxTdcChannels];
