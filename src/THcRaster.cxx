@@ -394,7 +394,6 @@ gHcParms->LoadParmValues(list);
   fXB_ADC =  FRXB_rawadc-fFrXB_ADC_zero_offset;
   fYB_ADC =  FRYB_rawadc-fFrYB_ADC_zero_offset;
   
-  //std::cout<<" Raw X ADC = "<<fXADC<<" Raw Y ADC = "<<fYADC<<std::endl;
 
   /*
     calculate the raster positions
@@ -404,9 +403,9 @@ gHcParms->LoadParmValues(list);
   */
 
   fXA_pos = (fXA_ADC/fFrXA_ADCperCM)*(fFrCalMom/fgpBeam);
-  fYA_pos = (-1)*(fYA_ADC/fFrYA_ADCperCM)*(fFrCalMom/fgpBeam);
+  fYA_pos = (-1.)*(fYA_ADC/fFrYA_ADCperCM)*(fFrCalMom/fgpBeam);
   fXB_pos = (fXB_ADC/fFrXB_ADCperCM)*(fFrCalMom/fgpBeam);
-  fYB_pos = (-1)*(fYB_ADC/fFrYB_ADCperCM)*(fFrCalMom/fgpBeam);
+  fYB_pos = (-1.)*(fYB_ADC/fFrYB_ADCperCM)*(fFrCalMom/fgpBeam);
 
   // std::cout<<" X = "<<fXpos<<" Y = "<<fYpos<<std::endl;
 
@@ -414,12 +413,12 @@ gHcParms->LoadParmValues(list);
   Double_t tt;
   Double_t tp;
   if(fgusefr != 0) {
-    fPosition[1].SetXYZ(fXA_pos+fgbeam_xoff, fYA_pos+fgbeam_yoff, 0.0);
+    fPosition[1].SetXYZ((-1.)*(fXA_pos+fgbeam_xoff), fYA_pos+fgbeam_yoff, 0.0);
     tt = (-1)*(fXA_pos/fgfrx_dist+fgbeam_xpoff);
     tp = fYA_pos/fgfry_dist+fgbeam_ypoff;
 
   } else {			// Just use fixed beam position and angle
-    fPosition[0].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
+    fPosition[0].SetXYZ((-1.)*fgbeam_xoff, fgbeam_yoff, 0.0);
     tt = (-1)*fgbeam_xpoff;
     tp = fgbeam_ypoff;
   }
