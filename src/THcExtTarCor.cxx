@@ -136,8 +136,8 @@ Int_t THcExtTarCor::Process( const THaEvData& )
   for( Int_t i = 0; i<ntracks; i++ ) {
     THaTrack* theTrack = static_cast<THaTrack*>( tracks->At(i) );
     if( theTrack == spectro->GetGoldenTrack() ) {
-
-      // Calculate corrections & recalculate track parameters
+      // Calculate corrections & recalculate ,,,track parameters
+      //cout << " orig" << spectro->GetName() << " " <<theTrack->GetTTheta()<< " " << theTrack->GetDp() << endl;
       Double_t x_tg = vertex[1];
       spectro->CalculateTargetQuantities(theTrack,x_tg,xptar,ytar,yptar,delta);
       p  = spectro->GetPcentral() * ( 1.0+delta );
@@ -149,11 +149,19 @@ Int_t THcExtTarCor::Process( const THaEvData& )
       fDeltaDp = delta*100 -theTrack->GetDp();
       fDeltaP = p - theTrack->GetP();
       fDeltaTh = xptar -  theTrack->GetTTheta();
+     theTrack->SetTarget(0.0, ytar*100.0, xptar, yptar);
+    theTrack->SetDp(delta*100.0);	// Percent.  
+    Double_t ptemp =spectro->GetPcentral()*(1+theTrack->GetDp()/100.0);
+      theTrack->SetMomentum(ptemp);
+    TVector3 pvect_temp;
+    spectro->TransportToLab(theTrack->GetP(),theTrack->GetTTheta(),theTrack->GetTPhi(),pvect_temp);
+    theTrack->SetPvect(pvect_temp);
     }
   }
  // Save results in our TrackInfo
+ // cout << spectro->GetName() << " exttarcor = " << xptar << " " << delta*100 << endl;
+  trkifo->Set( p, delta*100, xtar_new,100*ytar, xptar, yptar, pvect );
   fTrkIfo.Set( p, delta*100, xtar_new,100*ytar, xptar, yptar, pvect );
-
   fDataValid = true;
   return 0;
 }
