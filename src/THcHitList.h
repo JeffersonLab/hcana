@@ -39,6 +39,8 @@ public:
   Int_t         fNMaxRawHits;
   Int_t         fTDC_RefTimeCut;
   Int_t         fADC_RefTimeCut;
+  Bool_t        fTDC_RefTimeBest;
+  Bool_t        fADC_RefTimeBest;
   TClonesArray* fRawHitList; // List of raw hits
   TClass* fRawHitClass;		  // Class of raw hit object to use
 
