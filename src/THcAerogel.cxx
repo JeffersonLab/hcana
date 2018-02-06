@@ -185,14 +185,15 @@ THaAnalysisObject::EStatus THcAerogel::Init( const TDatime& date )
     return kInitError;
   }
 
-  // Should probably put this in ReadDatabase as we will know the
-  // maximum number of hits after setting up the detector map
-  InitHitList(fDetMap, "THcAerogelHit", fDetMap->GetTotNumChan()+1);
-
   EStatus status;
   if( (status = THaNonTrackingDetector::Init( date )) )
     return fStatus=status;
- 
+
+  // Should probably put this in ReadDatabase as we will know the
+  // maximum number of hits after setting up the detector map
+  InitHitList(fDetMap, "THcAerogelHit", fDetMap->GetTotNumChan()+1,
+	      0, fADC_RefTimeCut);
+
  THcHallCSpectrometer *app=dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
    if(  !app ||
       !(fglHod = dynamic_cast<THcHodoscope*>(app->GetDetector("hod"))) ) {
@@ -333,13 +334,14 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_tdc_offset",       &fTdcOffset,        kInt,    0,               optional},
     {"aero_min_peds",         &fMinPeds,          kInt,    0,               optional},
     {"aero_region",           &fRegionValue[0],   kDouble, (UInt_t) fRegionsValueMax},
-
+    {"aero_adcrefcut",        &fADC_RefTimeCut,   kInt,    0, 1},
     {0}
   };
 
   fSixGevData = 0; // Set 6 GeV data parameter to false unless set in parameter file
   fDebugAdc   = 0; // Set ADC debug parameter to false unless set in parameter file
   fAdcTdcOffset = 0.0;
+  fADC_RefTimeCut = 0;
 
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 

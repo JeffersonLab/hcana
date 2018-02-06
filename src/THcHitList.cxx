@@ -42,13 +42,29 @@ initialize a hit array of hits of class hitclass
 */
 
 void THcHitList::InitHitList(THaDetMap* detmap,
-				  const char *hitclass, Int_t maxhits) {
-
-
+			     const char *hitclass, Int_t maxhits,
+			     Int_t tdcref_cut, Int_t adcref_cut) {
+  cout << "InitHitList: " << hitclass << " RefTimeCuts: " << tdcref_cut << " " << adcref_cut << endl;
   fRawHitList = new TClonesArray(hitclass, maxhits);
   fRawHitClass = fRawHitList->GetClass();
   fNMaxRawHits = maxhits;
   fNRawHits = 0;
+
+  if(tdcref_cut >= 0) {
+    fTDC_RefTimeBest = kFALSE;
+    fTDC_RefTimeCut = tdcref_cut;
+  } else {
+    fTDC_RefTimeBest = kTRUE;
+    fTDC_RefTimeCut = -tdcref_cut;
+  }
+  if(adcref_cut >= 0) {
+    fADC_RefTimeBest = kFALSE;
+    fADC_RefTimeCut = adcref_cut;
+  } else {
+    fADC_RefTimeBest = kTRUE;
+    fADC_RefTimeCut = -adcref_cut;
+  }
+
   for(Int_t i=0;i<maxhits;i++) {
     fRawHitList->ConstructedAt(i);
   }
@@ -163,36 +179,52 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
       if(evdata.IsMultifunction(fRefIndexMaps[i].crate,
 				fRefIndexMaps[i].slot)) { // Multifunction module (e.g. FADC)
 	// Make sure at least one pulse
-	if(evdata.GetNumEvents(Decoder::kPulseTime, fRefIndexMaps[i].crate,
-			       fRefIndexMaps[i].slot,
-			       fRefIndexMaps[i].channel) > 0) {
-	  fRefIndexMaps[i].reftime =
-	    evdata.GetData(Decoder::kPulseTime,fRefIndexMaps[i].crate,fRefIndexMaps[i].slot,
-			   fRefIndexMaps[i].channel,0);
-	  fRefIndexMaps[i].hashit = kTRUE;
-	} else {
-	  fRefIndexMaps[i].hashit = kFALSE;
+	Int_t nrefhits = evdata.GetNumEvents(Decoder::kPulseTime,
+					     fRefIndexMaps[i].crate,
+					     fRefIndexMaps[i].slot,
+					     fRefIndexMaps[i].channel);
+	fRefIndexMaps[i].hashit = kFALSE;
+	Bool_t goodreftime=kFALSE;
+	Int_t reftime = 0;
+	for(Int_t ihit=0; ihit<nrefhits; ihit++) {
+	  reftime = evdata.GetData(Decoder::kPulseTime,fRefIndexMaps[i].crate,
+				   fRefIndexMaps[i].slot, fRefIndexMaps[i].channel,ihit);
+	  if(reftime >= fADC_RefTimeCut) {
+	    goodreftime = kTRUE;
+	    break;
+	  }
 	}
-      } else {
-	if(evdata.GetNumHits(fRefIndexMaps[i].crate,
-			     fRefIndexMaps[i].slot,
-			     fRefIndexMaps[i].channel) > 0) {
-	  // Only take first hit in this reference channel
-	  // Here we need to check if it is a multifunction type and get the time
-	  // if it is.
-	  fRefIndexMaps[i].reftime =
-	    evdata.GetData(fRefIndexMaps[i].crate,fRefIndexMaps[i].slot,
-			   fRefIndexMaps[i].channel,0);
+	if(goodreftime || (nrefhits>0 && fADC_RefTimeBest)) {
+	  fRefIndexMaps[i].reftime = reftime;
 	  fRefIndexMaps[i].hashit = kTRUE;
-	} else {
-	  fRefIndexMaps[i].hashit = kFALSE;
+	}
+      } else {			// Assume this is a TDC
+	Int_t nrefhits = evdata.GetNumHits(fRefIndexMaps[i].crate,
+					   fRefIndexMaps[i].slot,
+					   fRefIndexMaps[i].channel);
+	fRefIndexMaps[i].hashit = kFALSE;
+	// Only take first hit in this reference channel that is bigger
+	// then fTDC_RefTimeCut
+	Bool_t goodreftime=kFALSE;
+	Int_t reftime = 0;
+	for(Int_t ihit=0; ihit<nrefhits; ihit++) {
+	  reftime = evdata.GetData(fRefIndexMaps[i].crate,fRefIndexMaps[i].slot,
+				   fRefIndexMaps[i].channel,ihit);
+	  if(reftime >= fTDC_RefTimeCut) {
+	    goodreftime = kTRUE;
+	    break;
+	  }
+	}
+	if(goodreftime || (nrefhits>0 && fTDC_RefTimeBest)) {
+	    fRefIndexMaps[i].reftime = reftime;
+	    fRefIndexMaps[i].hashit = kTRUE;
 	}
       }
     }
   }
   for ( Int_t i=0; i < fdMap->GetSize(); i++ ) {
     THaDetMap::Module* d = fdMap->GetModule(i);
-
+    
     // Loop over all channels that have a hit.
     //    cout << "Crate/Slot: " << d->crate << "/" << d->slot << endl;
     Int_t plane = d->plane;
@@ -243,20 +275,27 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	  // cout << "Signal " << signal << "=" << data << endl;
 	  rawhit->SetData(signal,data);
 	}
-	// Get the reference time.  Only take the first hit
-	// If a reference channel
-	// was specified, it takes precidence of reference index
+	// Get the reference time.
 	if(d->refchan >= 0) {
-	  if( evdata.GetNumHits(d->crate,d->slot,d->refchan) > 0) {
-	    Int_t reftime = evdata.GetData(d->crate, d->slot, d->refchan, 0);
-	    rawhit->SetReference(signal, reftime);
-	  } else {
-	    if(!suppresswarnings) {
-	      cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
-		" missing for (" << d->crate << ", " << d->slot <<
-		", " << chan << ")" << endl;
-	      tdcref_miss = kTRUE;
+	  Int_t nrefhits = evdata.GetNumHits(d->crate,d->slot,d->refchan);
+	  Bool_t goodreftime=kFALSE;
+	  Int_t reftime=0;
+	  for(Int_t ihit=0; ihit<nrefhits; ihit++) {
+	    reftime = evdata.GetData(d->crate, d->slot, d->refchan, ihit);
+	    if(reftime >= fTDC_RefTimeCut) {
+	      goodreftime = kTRUE;
+	      break;
 	    }
+	  }
+	  // If RefTimeBest flag set, take the last hit if none of the
+	  // hits make the RefTimeCut
+	  if(goodreftime || (nrefhits>0 && fTDC_RefTimeBest)) {
+	    rawhit->SetReference(signal, reftime);
+	  } else if (!suppresswarnings) {
+	    cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
+	      " missing for (" << d->crate << ", " << d->slot <<
+	      ", " << chan << ")" << endl;
+	      tdcref_miss = kTRUE;
 	  }
 	} else {
 	  if(d->refindex >=0 && d->refindex < fNRefIndex) {
@@ -284,10 +323,10 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	    fNPED = fPSE125->GetNPED(d->crate);
 	    fHaveFADCInfo = kTRUE;
 	  }
-// Set F250 parameters.
+	  // Set F250 parameters.
           rawhit->SetF250Params(fNSA, fNSB, fNPED);
         }
-
+	
 	// Copy the samples
 	Int_t nsamples=evdata.GetNumEvents(Decoder::kSampleADC, d->crate, d->slot, chan);
 
@@ -309,16 +348,26 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	}
 	// Get the reference time for the FADC pulse time
 	if(d->refchan >= 0) {	// Reference time for the slot
-	  if(evdata.GetNumEvents(Decoder::kPulseIntegral, d->crate, d->slot, d->refchan) > 0) {
-	    Int_t reftime = evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, d->refchan, 0);
-	    rawhit->SetReference(signal, reftime);
-	  } else {
-	    if(!suppresswarnings) {
-	      cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
-		" missing for (" << d->crate << ", " << d->slot <<
-		", " << chan << ")" << endl;
-	      adcref_miss = kTRUE;
+	  Int_t nrefhits = evdata.GetNumEvents(Decoder::kPulseIntegral,
+					       d->crate, d->slot, d->refchan);
+	  Bool_t goodreftime=kFALSE;
+	  Int_t reftime = 0;
+	  for(Int_t ihit=0; ihit<nrefhits; ihit++) {
+	    reftime = evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, d->refchan, ihit);
+	    if(reftime >= fADC_RefTimeCut) {
+	      goodreftime=kTRUE;
+	      break;
 	    }
+	  }
+	  // If RefTimeBest flag set, take the last hit if none of the
+	  // hits make the RefTimeCut
+	  if(goodreftime || (nrefhits>0 && fADC_RefTimeBest)) {
+	    rawhit->SetReference(signal, reftime);
+	  } else if (!suppresswarnings) {
+	    cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
+	      " missing for (" << d->crate << ", " << d->slot <<
+	      ", " << chan << ")" << endl;
+	      adcref_miss = kTRUE;
 	  }
 	} else {
 	  if(d->refindex >=0 && d->refindex < fNRefIndex) {
@@ -344,7 +393,6 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 
   fNTDCRef_miss += (tdcref_miss ? 1 : 0);
   fNADCRef_miss += (adcref_miss ? 1 : 0);
-
   return fNRawHits;		// Does anything care what is returned
 }
 void THcHitList::MissReport(const char *name)
