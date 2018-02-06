@@ -117,10 +117,12 @@ void THcDC::Setup(const char* name, const char* description)
     {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
     {"dc_wire_velocity",&fWireVelocity,kDouble},
     {"dc_plane_names",&planenamelist, kString},
-	{"dc_version", &fVersion, kInt, 0, optional},
+    {"dc_version", &fVersion, kInt, 0, optional},
+    {"dc_tdcrefcut", &fTDC_RefTimeCut, kInt, 0, 1},
     {0}
   };
 
+  fTDC_RefTimeCut = 0;		// Minimum allowed reference times
   gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
 
   if(fVersion==0) {
@@ -207,7 +209,8 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
 
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
-  InitHitList(fDetMap, "THcRawDCHit", fDetMap->GetTotNumChan()+1);
+  InitHitList(fDetMap, "THcRawDCHit", fDetMap->GetTotNumChan()+1,
+	      fTDC_RefTimeCut, 0);
 
   EStatus status;
   // This triggers call of ReadDatabase and DefineVariables
