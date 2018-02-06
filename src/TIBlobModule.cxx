@@ -81,7 +81,7 @@ namespace Decoder {
     Int_t evlen = evbuffer.size();
     if(evlen>0) {
       // The first word might be a filler word
-      Int_t ifill = ((evbuffer[0]>>27)&0x1F == 0x1F) ? 1 : 0;
+      Int_t ifill = (((evbuffer[0]>>27)&0x1F) == 0x1F) ? 1 : 0;
       if (evlen>=5+ifill) {// Need at least two headers and the trailer and 2 data words
 	UInt_t header1=evbuffer[ifill];
 	Int_t slot_blk_hdr=(header1 >> 22) & 0x1F;  // Slot number (set by VME64x backplane), mask 5 bits
