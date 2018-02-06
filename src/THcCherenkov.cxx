@@ -148,13 +148,14 @@ THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
     return kInitError;
   }
 
-  // Should probably put this in ReadDatabase as we will know the
-  // maximum number of hits after setting up the detector map
-  InitHitList(fDetMap, "THcCherenkovHit", fDetMap->GetTotNumChan()+1);
-
   EStatus status;
   if((status = THaNonTrackingDetector::Init( date )))
     return fStatus=status;
+
+  // Should probably put this in ReadDatabase as we will know the
+  // maximum number of hits after setting up the detector map
+  InitHitList(fDetMap, "THcCherenkovHit", fDetMap->GetTotNumChan()+1,
+	      0, fADC_RefTimeCut);
 
   THcHallCSpectrometer *app=dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
    if(  !app ||
@@ -224,11 +225,13 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
     {"_adcTimeWindowMax", &fAdcTimeWindowMax, kDouble},
     {"_adc_tdc_offset",   &fAdcTdcOffset,     kDouble, 0, 1},
     {"_region",           &fRegionValue[0],   kDouble,  (UInt_t) fRegionsValueMax},
+    {"_adcrefcut",        &fADC_RefTimeCut,   kInt,    0, 1},
     {0}
   };
 
   fDebugAdc = 0; // Set ADC debug parameter to false unless set in parameter file
   fAdcTdcOffset = 0.0;
+  fADC_RefTimeCut = 0;
 
   gHcParms->LoadParmValues((DBRequest*)&list, prefix.c_str());
 

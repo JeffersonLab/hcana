@@ -95,9 +95,13 @@ void THcHodoscope::Setup(const char* name, const char* description)
   DBRequest listextra[]={
     {"hodo_num_planes", &fNPlanes, kInt},
     {"hodo_plane_names",&planenamelist, kString},
+    {"hodo_tdcrefcut", &fTDC_RefTimeCut, kInt, 0, 1},
+    {"hodo_adcrefcut", &fADC_RefTimeCut, kInt, 0, 1},
     {0}
   };
   //fNPlanes = 4; 		// Default if not defined
+  fTDC_RefTimeCut = 0;		// Minimum allowed reference times
+  fADC_RefTimeCut = 0;
   gHcParms->LoadParmValues((DBRequest*)&listextra,prefix);
 
   cout << "Plane Name List : " << planenamelist << endl;
@@ -160,7 +164,8 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   // But it needs to happen before the sub detectors are initialized
   // so that they can get the pointer to the hitlist.
 
-  InitHitList(fDetMap, "THcRawHodoHit", fDetMap->GetTotNumChan()+1);
+  InitHitList(fDetMap, "THcRawHodoHit", fDetMap->GetTotNumChan()+1,
+	      fTDC_RefTimeCut, fADC_RefTimeCut);
 
   EStatus status;
   // This triggers call of ReadDatabase and DefineVariables
