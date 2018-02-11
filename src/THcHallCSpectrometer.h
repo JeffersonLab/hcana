@@ -144,6 +144,8 @@ protected:
   Double_t fPCentralOffset; // Offset Central spectrometer momentum (%)
   Double_t fTheta_lab; // Central spectrometer angle (deg)
   Double_t fPhi_lab; // Central spectrometer angle (deg)
+  Double_t fMispointing_x; // Spectrometer Verticcal Mispointing
+  Double_t fMispointing_y; // Spectrometer Horizontal Mispointing
   // For spectrometer central momentum use fPcentral in THaSpectrometer.h
   //  THaScintillator *sc_ref;  // calculate time track hits this plane
 

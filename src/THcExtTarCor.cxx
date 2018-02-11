@@ -128,7 +128,8 @@ Int_t THcExtTarCor::Process( const THaEvData& )
   Double_t delta;
   Double_t p=0;
   TVector3 pvect;
-  Double_t xtar_new=vertex[1];
+  TVector3 pointing_off=spectro->GetPointingOffset();
+  Double_t xtar_new=-vertex[1];
   TClonesArray* tracks = spectro->GetTracks();
   if( !tracks ){
     return -2;
@@ -137,19 +138,18 @@ Int_t THcExtTarCor::Process( const THaEvData& )
     THaTrack* theTrack = static_cast<THaTrack*>( tracks->At(i) );
     if( theTrack == spectro->GetGoldenTrack() ) {
       // Calculate corrections & recalculate ,,,track parameters
-      //cout << " orig" << spectro->GetName() << " " <<theTrack->GetTTheta()<< " " << theTrack->GetDp() << endl;
-      Double_t x_tg = vertex[1];
+      Double_t x_tg = -vertex[1]+pointing_off[0]; // units of cm, beam position in spectrometer coordinate system
       spectro->CalculateTargetQuantities(theTrack,x_tg,xptar,ytar,yptar,delta);
       p  = spectro->GetPcentral() * ( 1.0+delta );
       spectro->TransportToLab( p, xptar, yptar, pvect );
       Double_t theta=spectro->GetThetaSph();
-      xtar_new = x_tg - xptar*ztarg*cos(theta);
+      xtar_new = x_tg - xptar*ztarg*cos(theta); //units of cm
       // Get a second-iteration value for x_tg based on the 
       spectro->CalculateTargetQuantities(theTrack,xtar_new,xptar,ytar,yptar,delta);
       fDeltaDp = delta*100 -theTrack->GetDp();
       fDeltaP = p - theTrack->GetP();
       fDeltaTh = xptar -  theTrack->GetTTheta();
-     theTrack->SetTarget(0.0, ytar*100.0, xptar, yptar);
+     theTrack->SetTarget(xtar_new, ytar*100.0, xptar, yptar);
     theTrack->SetDp(delta*100.0);	// Percent.  
     Double_t ptemp =spectro->GetPcentral()*(1+theTrack->GetDp()/100.0);
       theTrack->SetMomentum(ptemp);
