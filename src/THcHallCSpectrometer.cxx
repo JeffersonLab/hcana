@@ -207,6 +207,8 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     {"theta_lab",             &fTheta_lab,             kDouble               },
     {"partmass",              &fPartMass,              kDouble               },
     {"phi_lab",               &fPhi_lab,               kDouble,         0,  1},
+    {"mispointing_x",               &fMispointing_x,               kDouble,         0,  1},
+    {"mispointing_y",               &fMispointing_y,               kDouble,         0,  1},
     {"sel_using_scin",        &fSelUsingScin,          kInt,            0,  1},
     {"sel_using_prune",       &fSelUsingPrune,         kInt,            0,  1},
     {"sel_ndegreesmin",       &fSelNDegreesMin,        kDouble,         0,  1},
@@ -238,6 +240,8 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   fSelUsingPrune = 0;
   fPhi_lab = 0.;
   fSatCorr=0.;
+  fMispointing_x=0.;
+  fMispointing_y=0.;
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   EnforcePruneLimits();
@@ -270,9 +274,8 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   // Computes TRotation fToLabRot and fToTraRot
   Bool_t bend_down = kFALSE;
   SetCentralAngles(fTheta_lab, ph, bend_down);
-  Double_t off_x = 0.0, off_y = 0.0, off_z = 0.0;
-  fPointingOffset.SetXYZ( off_x, off_y, off_z );
-
+  Double_t off_z = 0.0;
+  fPointingOffset.SetXYZ( fMispointing_x, fMispointing_y, off_z );
   //
   ifstream ifile;
   ifile.open(reconCoeffFilename.c_str());
@@ -388,7 +391,7 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
   return 0;
 }
 //
-void THcHallCSpectrometer::CalculateTargetQuantities(THaTrack* track,Double_t& gbeam_y,Double_t&  xptar,Double_t& ytar,Double_t& yptar,Double_t& delta) 
+void THcHallCSpectrometer::CalculateTargetQuantities(THaTrack* track,Double_t& xtar,Double_t&  xptar,Double_t& ytar,Double_t& yptar,Double_t& delta) 
 {
     Double_t hut[5];
     Double_t hut_rot[5];
@@ -398,7 +401,7 @@ void THcHallCSpectrometer::CalculateTargetQuantities(THaTrack* track,Double_t& g
     hut[2] = track->GetY()/100.0 + fZTrueFocus*track->GetPhi() + fDetOffset_y;//m
     hut[3] = track->GetPhi() + fAngOffset_y;//radians
 
-    hut[4] = -gbeam_y/100.0;
+    hut[4] = xtar/100.0;
 
     // Retrieve the focal plane coordnates
     // Do the transpormation
