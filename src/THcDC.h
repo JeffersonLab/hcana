@@ -92,6 +92,8 @@ protected:
   Int_t fdebugprintdecodeddc;
   Int_t fHMSStyleChambers;
 
+  Int_t fTDC_RefTimeCut;
+
   UInt_t fNDCTracks;
   TClonesArray* fDCTracks;     // Tracks found from stubs (THcDCTrack obj)
   // Calibration

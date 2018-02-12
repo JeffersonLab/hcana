@@ -63,9 +63,11 @@ void THcShower::Setup(const char* name, const char* description)
     {"cal_num_layers", &fNLayers, kInt},
     {"cal_layer_names", &layernamelist, kString},
     {"cal_array",&fHasArray, kInt,0, 1},
+    {"cal_adcrefcut", &fADC_RefTimeCut, kInt, 0, 1},
     {0}
   };
 
+  fADC_RefTimeCut = 0;
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   fNTotLayers = (fNLayers+(fHasArray!=0?1:0));
   vector<string> layer_names = vsplit(layernamelist);
@@ -141,7 +143,8 @@ THaAnalysisObject::EStatus THcShower::Init( const TDatime& date )
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
 
-  InitHitList(fDetMap, "THcRawShowerHit", fDetMap->GetTotNumChan()+1);
+  InitHitList(fDetMap, "THcRawShowerHit", fDetMap->GetTotNumChan()+1,
+	      0, fADC_RefTimeCut);
 
   EStatus status;
   if( (status = THaNonTrackingDetector::Init( date )) )

@@ -49,6 +49,8 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Int_t     fDebugAdc;
   Double_t* fWidth;
 
+  Int_t     fADC_RefTimeCut;
+
   Int_t     fNhits;
   Int_t     fTotNumAdcHits;
   Int_t     fTotNumGoodAdcHits;

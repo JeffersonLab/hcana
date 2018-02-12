@@ -30,12 +30,17 @@ public:
 
   virtual Int_t DecodeToHitList( const THaEvData&, Bool_t suppress=kFALSE );
   void          InitHitList(THaDetMap* detmap,
-			    const char *hitclass, Int_t maxhits);
+			    const char *hitclass, Int_t maxhits,
+			    Int_t tdcref_cut=0, Int_t adcref_cut=0);
 
   TClonesArray* GetHitList() const {return fRawHitList; }
 
   UInt_t         fNRawHits;
   Int_t         fNMaxRawHits;
+  Int_t         fTDC_RefTimeCut;
+  Int_t         fADC_RefTimeCut;
+  Bool_t        fTDC_RefTimeBest;
+  Bool_t        fADC_RefTimeBest;
   TClonesArray* fRawHitList; // List of raw hits
   TClass* fRawHitClass;		  // Class of raw hit object to use
 
