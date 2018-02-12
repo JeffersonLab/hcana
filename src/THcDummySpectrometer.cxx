@@ -93,11 +93,12 @@ Int_t THcDummySpectrometer::DefineVariables(THaAnalysisObject::EMode mode) {
   if (mode == kDefine && fIsSetup) return kOK;
   fIsSetup = (mode == kDefine);
 
-  std::vector<RVarDef> vars;
-  RVarDef end {0};
-  vars.push_back(end);
+  return kOK;
+  //  std::vector<RVarDef> vars;
+  //  RVarDef end {0};
+  //  vars.push_back(end);
 
-  return DefineVarsFromList(vars.data(), mode);
+  //  return DefineVarsFromList(vars.data(), mode);
 }
 
 
