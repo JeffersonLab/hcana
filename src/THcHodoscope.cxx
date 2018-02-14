@@ -1586,5 +1586,11 @@ Int_t THcHodoscope::GetScinIndex( Int_t nSide, Int_t nPlane, Int_t nPaddle ) {
 Double_t THcHodoscope::GetPathLengthCentral() {
   return fPathLengthCentral;
 }
+//_____________________________________________________________________________
+Int_t THcHodoscope::End(THaRunBase* run)
+{
+  MissReport(Form("%s.%s", GetApparatus()->GetName(), GetName()));
+  return 0;
+}
 ClassImp(THcHodoscope)
 ////////////////////////////////////////////////////////////////////////////////

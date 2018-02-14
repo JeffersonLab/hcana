@@ -46,6 +46,7 @@ public:
 
   virtual Int_t      CoarseProcess( TClonesArray& tracks );
   virtual Int_t      FineProcess( TClonesArray& tracks );
+  virtual Int_t      End(THaRunBase* run=0);
 
   void EstimateFocalPlaneTime(void);
   virtual Int_t      ApplyCorrections( void );

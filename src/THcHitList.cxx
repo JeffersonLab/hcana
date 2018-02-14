@@ -133,6 +133,9 @@ void THcHitList::InitHitList(THaDetMap* detmap,
     fPSE125 = 0;
   }
   fHaveFADCInfo = kFALSE;
+
+  fNTDCRef_miss = 0;
+  fNADCRef_miss = 0;
 }
 
 /**
@@ -151,6 +154,8 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
   // cout << " Clearing TClonesArray " << endl;
   fRawHitList->Clear( );
   fNRawHits = 0;
+  Bool_t tdcref_miss = kFALSE;
+  Bool_t adcref_miss = kFALSE;
 
   // Get the indexed reference times for this event
   for(Int_t i=0;i<fNRefIndex;i++) {
@@ -250,6 +255,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	      cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
 		" missing for (" << d->crate << ", " << d->slot <<
 		", " << chan << ")" << endl;
+	      tdcref_miss = kTRUE;
 	    }
 	  }
 	} else {
@@ -264,6 +270,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 		  ", " << fRefIndexMaps[d->refindex].channel << ")" <<
 		  " missing for (" << d->crate << ", " << d->slot <<
 		  ", " << chan << ")" << endl;
+		tdcref_miss = kTRUE;
 	      }
 	    }
 	  }
@@ -310,6 +317,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	      cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
 		" missing for (" << d->crate << ", " << d->slot <<
 		", " << chan << ")" << endl;
+	      adcref_miss = kTRUE;
 	    }
 	  }
 	} else {
@@ -324,6 +332,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 		  ", " << fRefIndexMaps[d->refindex].channel << ")" <<
 		  " missing for (" << d->crate << ", " << d->slot <<
 		  ", " << chan << ")" << endl;
+		adcref_miss = kTRUE;
 	      }
 	    }
 	  }
@@ -333,7 +342,14 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
   }
   fRawHitList->Sort(fNRawHits);
 
+  fNTDCRef_miss += (tdcref_miss ? 1 : 0);
+  fNADCRef_miss += (adcref_miss ? 1 : 0);
+
   return fNRawHits;		// Does anything care what is returned
+}
+void THcHitList::MissReport(const char *name)
+{
+  cout << "Missing Ref times:" << setw(20) << name << setw(10) << fNTDCRef_miss << setw(10) << fNADCRef_miss << endl;
 }
 
 ClassImp(THcHitList)

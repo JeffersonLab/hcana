@@ -1023,6 +1023,11 @@ void THcAerogel::Print(const Option_t* opt) const
   cout << " fMinPeds = " << fMinPeds << endl;
   cout << endl;
 }
-
+//_____________________________________________________________________________
+Int_t THcAerogel::End(THaRunBase* run)
+{
+  MissReport(Form("%s.%s", GetApparatus()->GetName(), GetName()));
+  return 0;
+}
 ClassImp(THcAerogel)
 ////////////////////////////////////////////////////////////////////////////////

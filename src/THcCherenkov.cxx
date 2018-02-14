@@ -620,6 +620,11 @@ Double_t THcCherenkov::GetCerNPE()
 {
   return fNpeSum;
 }
-
+//_____________________________________________________________________________
+Int_t THcCherenkov::End(THaRunBase* run)
+{
+  MissReport(Form("%s.%s", GetApparatus()->GetName(), GetName()));
+  return 0;
+}
 ClassImp(THcCherenkov)
 ////////////////////////////////////////////////////////////////////////////////

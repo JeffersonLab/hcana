@@ -8,6 +8,7 @@
 #include "TObject.h"
 #include "Decoder.h"
 
+#include <iomanip>
 
 using namespace std;
 
@@ -33,6 +34,7 @@ public:
 			    const char *hitclass, Int_t maxhits);
 
   TClonesArray* GetHitList() const {return fRawHitList; }
+  void          MissReport(const char *name);
 
   UInt_t         fNRawHits;
   Int_t         fNMaxRawHits;
@@ -64,6 +66,9 @@ protected:
   Int_t fNSA;
   Int_t fNSB;
   Int_t fNPED;
+
+  Int_t fNTDCRef_miss;
+  Int_t fNADCRef_miss;
 
   ClassDef(THcHitList,0);  // List of raw hits sorted by plane, counter
 };

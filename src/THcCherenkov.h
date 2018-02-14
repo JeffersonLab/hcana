@@ -30,6 +30,8 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   virtual Int_t   FineProcess(TClonesArray& tracks);
   virtual Int_t   ApplyCorrections( void );
   virtual EStatus Init(const TDatime& run_time);
+  Int_t           End(THaRunBase* run);
+
 
   void  InitArrays();
   void  DeleteArrays();
