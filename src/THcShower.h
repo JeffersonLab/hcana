@@ -252,6 +252,8 @@ protected:
 
   void ClusterHits(THcShowerHitSet& HitSet, THcShowerClusterList* ClusterList);
 
+  virtual Int_t      End(THaRunBase *r = 0);
+
   friend class THcShowerPlane;   //to access debug flags.
   friend class THcShowerArray;   //to access debug flags.
 

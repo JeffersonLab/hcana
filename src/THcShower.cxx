@@ -1230,6 +1230,12 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 Double_t THcShower::GetNormETot( ){
   return fEtotNorm;
 }
+//_____________________________________________________________________________
+Int_t THcShower::End(THaRunBase* run)
+{
+  MissReport(Form("%s.%s", GetApparatus()->GetName(), GetName()));
+  return 0;
+}
 
 ClassImp(THcShower)
 ////////////////////////////////////////////////////////////////////////////////

@@ -29,6 +29,7 @@ public:
 
   virtual Int_t      Decode( const THaEvData& );
   virtual EStatus    Init( const TDatime& run_time );
+  virtual Int_t      End(THaRunBase* run=0);
   virtual Int_t      CoarseTrack( TClonesArray& tracks );
   virtual Int_t      FineTrack( TClonesArray& tracks );
 
@@ -197,7 +198,6 @@ protected:
   void           LinkStubs();
   void           TrackFit();
   Double_t       DpsiFun(Double_t ray[4], Int_t plane);
-  Int_t          End(THaRunBase* run);
   void           EffInit();
   void           Eff();
 

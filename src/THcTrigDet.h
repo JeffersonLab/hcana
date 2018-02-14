@@ -31,6 +31,7 @@ class THcTrigDet : public THaDetector, public THcHitList {
     virtual void SetEvtType(int evtype);
     virtual Bool_t IsIgnoreType(Int_t evtype) const;
     virtual Bool_t HaveIgnoreList() const;
+    Int_t          End(THaRunBase* run);
 
   protected:
     void Setup(const char* name, const char* description);

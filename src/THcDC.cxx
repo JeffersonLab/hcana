@@ -1173,6 +1173,7 @@ Double_t THcDC::DpsiFun(Double_t ray[4], Int_t plane)
 Int_t THcDC::End(THaRunBase* run)
 {
   //  EffCalc();
+  MissReport(Form("%s.%s", GetApparatus()->GetName(), GetName()));
   return 0;
 }
 

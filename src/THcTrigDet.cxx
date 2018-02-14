@@ -470,5 +470,11 @@ Bool_t THcTrigDet::HaveIgnoreList() const
 {
   return( (eventtypes.size()>0) ? kTRUE : kFALSE);
 }
+//_____________________________________________________________________________
+Int_t THcTrigDet::End(THaRunBase* run)
+{
+  MissReport(Form("%s.%s", GetApparatus()->GetName(), GetName()));
+  return 0;
+}
 
 ClassImp(THcTrigDet)
