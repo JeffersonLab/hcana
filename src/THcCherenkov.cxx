@@ -183,6 +183,8 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   string prefix = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
   std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
 
+  CreateMissReportParms(prefix.c_str());
+
   fNRegions = 4;  // Defualt if not set in paramter file
 
   DBRequest list_1[] = {

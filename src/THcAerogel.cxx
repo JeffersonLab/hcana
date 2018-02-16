@@ -221,6 +221,8 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
 
+  CreateMissReportParms(Form("%saero",prefix));
+
   fNRegions = 1;   // Default if not set in parameter file
 
   DBRequest listextra[]={

@@ -238,6 +238,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   //  Int_t plen=strlen(parname);
   // cout << " readdatabse hodo fnplanes = " << fNPlanes << endl;
 
+  CreateMissReportParms(Form("%sscin",prefix));
+
   fBetaNoTrk = 0.;
   fBetaNoTrkChiSq = 0.;
 

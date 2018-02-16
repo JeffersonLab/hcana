@@ -212,6 +212,8 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   InitHitList(fDetMap, "THcRawDCHit", fDetMap->GetTotNumChan()+1,
 	      fTDC_RefTimeCut, 0);
 
+  CreateMissReportParms(Form("%sdc",fPrefix));
+
   EStatus status;
   // This triggers call of ReadDatabase and DefineVariables
   if( (status = THaTrackingDetector::Init( date )) )

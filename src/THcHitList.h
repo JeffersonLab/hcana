@@ -35,6 +35,7 @@ public:
 			    Int_t tdcref_cut=0, Int_t adcref_cut=0);
 
   TClonesArray* GetHitList() const {return fRawHitList; }
+  void          CreateMissReportParms(const char *prefix);
   void          MissReport(const char *name);
 
   UInt_t         fNRawHits;
