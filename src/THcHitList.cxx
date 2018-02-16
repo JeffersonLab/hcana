@@ -13,6 +13,8 @@
 
 #include "THcConfigEvtHandler.h"
 #include "THaGlobals.h"
+#include "THcGlobals.h"
+#include "THcParmList.h"
 #include "TList.h"
 
 using namespace std;
@@ -394,6 +396,19 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
   fNTDCRef_miss += (tdcref_miss ? 1 : 0);
   fNADCRef_miss += (adcref_miss ? 1 : 0);
   return fNRawHits;		// Does anything care what is returned
+}
+void THcHitList::CreateMissReportParms(const char *prefix)
+{
+  /**
+
+\brief Create parameters to hold missing reference time statistics
+
+Parameters created are ${prefix}_tdcref_miss and ${prefix}_adcref_miss
+
+  */
+  cout << "Defining " << Form("%s_tdcref_miss", prefix) << " and " << Form("%s_adcref_miss", prefix) << endl;
+  gHcParms->Define(Form("%s_tdcref_miss", prefix), "Missing TDC reference times", fNTDCRef_miss);
+  gHcParms->Define(Form("%s_adcref_miss", prefix), "Missing ADC reference times", fNADCRef_miss);
 }
 void THcHitList::MissReport(const char *name)
 {

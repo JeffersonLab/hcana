@@ -212,6 +212,8 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
   prefix[1]='\0';
 
+  CreateMissReportParms(Form("%scal",prefix));
+
   fNegCols = fNLayers;		// If not defined assume tube on each end
                                 // for every layer
   {

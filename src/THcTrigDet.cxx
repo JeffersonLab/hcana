@@ -181,6 +181,7 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
   // Initialize hitlist part of the class.
   // printf(" Init trig det hitlist\n");
   InitHitList(fDetMap, "THcTrigRawHit", 100);
+  CreateMissReportParms(fKwPrefix.c_str());
 
   fPresentP = 0;
   THaVar* vpresent = gHaVars->Find(Form("%s.present",fSpectName.Data()));
