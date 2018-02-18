@@ -16,12 +16,14 @@ that the cut has been tested can be accessed with cutname.`scaler` (or
 
 #include "THcFormula.h"
 #include "THcParmList.h"
+#include "THaArrayString.h"
 #include "THaVarList.h"
 #include "THaCutList.h"
 #include "THaCut.h"
 #include "TMath.h"
 
 #include <iostream>
+#include <cassert>
 #include <numeric>
 
 using namespace std;
