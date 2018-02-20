@@ -85,13 +85,17 @@ THcFormula::THcFormula(const char* name, const char* expression,
 THcFormula& THcFormula::operator=( const THcFormula& rhs )
 {
   if( this != &rhs ) {
-    TFormula::operator=(rhs);
+    THaFormula::operator=(rhs);
     fParmList = rhs.fParmList;
-    fVarList = rhs.fVarList;
-    fCutList = rhs.fCutList;
-    fInstance = 0;
   }
   return *this;
+}
+
+//_____________________________________________________________________________
+THcFormula::THcFormula( const THcFormula& rhs ) :
+  THaFormula(rhs), fParmList(rhs.fParmList)
+{
+  // Copy ctor
 }
 
 //_____________________________________________________________________________
