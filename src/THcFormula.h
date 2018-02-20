@@ -19,6 +19,7 @@ public:
   THcFormula( const char* name, const char* formula,
 	      const THcParmList*, const THaVarList*,
 	      const THaCutList* clst);
+  THcFormula( const THcFormula& rhs );
   THcFormula& operator=( const THcFormula& rhs );
   virtual ~THcFormula();
 
