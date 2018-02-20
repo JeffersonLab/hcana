@@ -49,6 +49,8 @@ public:
   virtual Int_t      End(THaRunBase* run=0);
 
   void EstimateFocalPlaneTime(void);
+  void OriginalTrackEffTest(void);
+  void TrackEffTest(void);
   virtual Int_t      ApplyCorrections( void );
   Double_t GetStartTime() const { return fStartTime; }
   Bool_t IsStartTimeGood() const {return fGoodStartTime;};
@@ -336,6 +338,8 @@ scin_pos_time(0.0), scin_neg_time(0.0) {}
   std::vector<Int_t > fNScinHit;		        // # scins hit for the track
   std::vector<std::vector<Int_t> > fScinHitPaddle;	// Vector over hits in a plane #
   std::vector<Int_t > fNClust;		                // # scins clusters for the plane
+  std::vector<std::vector<Int_t> > fClustSize;		                // # scin cluster size
+  std::vector<std::vector<Double_t> > fClustPos;		                // # scin cluster position
   std::vector<Int_t > fThreeScin;	                // # scins three clusters for the plane
   std::vector<Int_t > fGoodScinHitsX;                   // # hits in fid x range
   // Could combine the above into a structure
