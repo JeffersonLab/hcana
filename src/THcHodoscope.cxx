@@ -578,6 +578,8 @@ void THcHodoscope::ClearEvent()
   fdEdX.clear();
   fNScinHit.clear();
   fNClust.clear();
+  fClustSize.clear();
+  fClustPos.clear();
   fThreeScin.clear();
   fGoodScinHitsX.clear();
 }
@@ -1307,6 +1309,130 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
   } // If condition for at least one track
 
 
+  //OriginalTrackEffTest();
+   TrackEffTest();
+
+
+  return 0;
+
+}
+//
+void THcHodoscope::TrackEffTest(void)
+{
+  Double_t PadLow[4];
+  Double_t PadHigh[4];
+  // assume X planes are 0,2 and Y planes are 1,3
+  PadLow[0]=fxLoScin[0];
+  PadLow[2]=fxLoScin[1];
+  PadLow[1]=fyLoScin[0];
+  PadLow[3]=fyLoScin[1];
+  PadHigh[0]=fxHiScin[0];
+  PadHigh[2]=fxHiScin[1];
+  PadHigh[1]=fyHiScin[0];
+  PadHigh[3]=fyHiScin[1];
+  //
+  Double_t PadPosLo[4];
+  Double_t PadPosHi[4];
+    for (Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ){
+      Double_t lowtemp=fPlanes[ip]->GetPosCenter(PadLow[ip]-1)+ fPlanes[ip]->GetPosOffset();
+      Double_t hitemp=fPlanes[ip]->GetPosCenter(PadHigh[ip]-1)+ fPlanes[ip]->GetPosOffset();
+      if (lowtemp < hitemp) {
+	PadPosLo[ip]=lowtemp;
+	PadPosHi[ip]=hitemp;
+      } else {
+	PadPosLo[ip]=hitemp;
+	PadPosHi[ip]=lowtemp;
+      }
+    }  
+  //
+  const Int_t MaxNClus=5;
+  std::vector<Int_t > iw(MaxNClus,0);
+  std::vector<Double_t > dw(MaxNClus,0);
+  for(Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ) {
+    fNClust.push_back(0);
+    fClustSize.push_back(iw);
+    fClustPos.push_back(dw);
+  }
+     for (Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ){
+ 	TClonesArray* hodoHits = fPlanes[ip]->GetHits();
+        Int_t prev_padnum=-100;
+	for (Int_t iphit = 0; iphit < fPlanes[ip]->GetNScinHits(); iphit++ ){
+          THcHodoHit *hit = (THcHodoHit*)hodoHits->At(iphit);
+           Int_t padnum  = hit->GetPaddleNumber();
+	  if ( hit->GetTwoGoodTimes() ) {
+           if ( padnum==prev_padnum+1 ) {
+	     fClustSize[ip][fNClust[ip]-1]=fClustSize[ip][fNClust[ip]-1]+1;
+      	     fClustPos[ip][fNClust[ip]-1]=fClustPos[ip][fNClust[ip]-1]+fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset();
+	     //  cout << "Add to cluster  pl = " << ip+1 << " hit = " << iphit << " pad = " << padnum << " clus =  " << fNClust[ip] << " cl size = " << fClustSize[ip][fNClust[ip]-1] << " pos " << fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset() << endl;
+            } else {
+              if (fNClust[ip]<MaxNClus) fNClust[ip]++;
+	     fClustSize[ip][fNClust[ip]-1]=1;
+	     fClustPos[ip][fNClust[ip]-1]=fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset();
+	     //  cout << " New clus pl = " << ip+1 << " hit = " << iphit << " pad = " << padnum << " clus = " << fNClust[ip] << " cl size = " << fClustSize[ip][fNClust[ip]] << " pos " << fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset() << endl;
+	    }
+	      prev_padnum=padnum;
+          }
+	}
+     }
+     //
+     Bool_t inside_bound[4]={kFALSE,kFALSE,kFALSE,kFALSE};
+       for(Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ) {	 
+          for(Int_t ic = 0; ic <fNClust[ip] ; ic++ ) {
+	    fClustPos[ip][ic]=fClustPos[ip][ic]/fClustSize[ip][ic];
+	    inside_bound[ip] = fClustPos[ip][ic]>=PadPosLo[ip] &&  fClustPos[ip][ic]<=PadPosHi[ip];
+	    //cout << "plane = " << ip+1 << " Cluster = " << ic+1 << " size = " << fClustSize[ip][ic]<< " pos = " << fClustPos[ip][ic] << " inside = " << inside_bound[ip] << " lo = " << PadPosLo[ip]<< " hi = " << PadPosHi[ip]<< endl;
+          }
+        }
+       //
+     Int_t good_for_track_test[4]={0,0,0,0};
+     Int_t sum_good_track_test=0;
+        for(Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ) {
+	  if (fNClust[ip]==1 && inside_bound[ip] && fClustSize[ip][0]<=2) good_for_track_test[ip]=1;
+	  //cout << " good for track = " << good_for_track_test[ip] << endl;
+	  sum_good_track_test+=good_for_track_test[ip];
+	}	 
+	//
+        Double_t trackeff_scint_ydiff_max= 10. ;
+        Double_t trackeff_scint_xdiff_max= 10. ;
+	  Bool_t xdiffTest=kFALSE;
+	  Bool_t ydiffTest=kFALSE;
+        fGoodScinHits = 0;
+	if (fTrackEffTestNScinPlanes == 4) {
+	  if (fTrackEffTestNScinPlanes==sum_good_track_test) {
+	    xdiffTest= TMath::Abs(fClustPos[0][0]-fClustPos[2][0])<trackeff_scint_xdiff_max;
+	    ydiffTest= TMath::Abs(fClustPos[1][0]-fClustPos[3][0])<trackeff_scint_ydiff_max;
+	    if (xdiffTest && ydiffTest) fGoodScinHits = 1;
+	  }
+        }
+	//
+	if (fTrackEffTestNScinPlanes == 3) {
+	  if (fTrackEffTestNScinPlanes==sum_good_track_test) {
+	    if(good_for_track_test[0]==1&&good_for_track_test[2]==1) {
+               xdiffTest= TMath::Abs(fClustPos[0][0]-fClustPos[2][0])<trackeff_scint_xdiff_max;
+	       ydiffTest=kTRUE;
+	    }
+	    if (good_for_track_test[1]==1&&good_for_track_test[3]==1) {
+	        xdiffTest=kTRUE;
+	        ydiffTest= TMath::Abs(fClustPos[1][0]-fClustPos[3][0])<trackeff_scint_ydiff_max;
+	    }
+	    if (xdiffTest && ydiffTest) fGoodScinHits = 1;
+	  }
+	  if (sum_good_track_test==4) {
+	    xdiffTest= TMath::Abs(fClustPos[0][0]-fClustPos[2][0])<trackeff_scint_xdiff_max;
+	    ydiffTest= TMath::Abs(fClustPos[1][0]-fClustPos[3][0])<trackeff_scint_ydiff_max;
+	    if (xdiffTest && ydiffTest) fGoodScinHits = 1;
+	  }
+        }
+     //       
+	//	cout << " good scin = " << fGoodScinHits << " " << sum_good_track_test << " " << xdiffTest  << " " << ydiffTest<< endl;
+	//cout << " ************" << endl;
+     //
+}
+//
+//
+//
+void THcHodoscope::OriginalTrackEffTest(void)
+{
   //-----------------------------------------------------------------------
   //
   //   Trnslation of h_track_tests.f file for tracking efficiency
@@ -1316,20 +1442,21 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
   //************************now look at some hodoscope tests
   //  *second, we move the scintillators.  here we use scintillator cuts to see
   //  *if a track should have been found.
-
+  cout << " enter track eff" <<  fNumPlanesBetaCalc << endl;
   for(Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ) {
-    if (!fPlanes[ip])
-      return -1;
+  cout << " loop over planes " <<  ip+1 << endl;
 
     TClonesArray* hodoHits = fPlanes[ip]->GetHits();
     //    TClonesArray* scinPosTDC = fPlanes[ip]->GetPosTDC();
     //    TClonesArray* scinNegTDC = fPlanes[ip]->GetNegTDC();
 
     fNScinHits[ip] = fPlanes[ip]->GetNScinHits();
+     cout << " hits =  " << fNScinHits[ip]  << endl;
     for (Int_t iphit = 0; iphit < fNScinHits[ip]; iphit++ ){
       Int_t paddle = ((THcHodoHit*)hodoHits->At(iphit))->GetPaddleNumber()-1;
 
       fScinHitPaddle[ip][paddle] = 1;
+      cout << " hit =  " << iphit+1 << " " << paddle+1   << endl;
     }
   }
 
@@ -1341,28 +1468,28 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
   for(Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ) {
     // Planes ip = 0 = 1X
     // Planes ip = 2 = 2X
-    if (!fPlanes[ip]) return -1;
     fNClust.push_back(0);
     fThreeScin.push_back(0);
   }
 
   // *look for clusters in x planes... (16 scins)  !this assume both x planes have same
   // *number of scintillators.
+  cout << " looking for cluster in x planes" << endl;
   Int_t icount;
   for (Int_t ip = 0; ip < 3; ip +=2 ) {
     icount = 0;
-    if ( fScinHitPaddle[ip][0] == 1 )
-      icount ++;
+    if ( fScinHitPaddle[ip][0] == 1 ) icount ++;
+    cout << "plane =" << ip <<  "check if paddle 1 hit " << icount << endl;
 
     for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[ip] - 1; ipaddle++ ){
       // !look for number of clusters of 1 or more hits
-
       if ( ( fScinHitPaddle[ip][ipaddle] == 0 ) &&
 	   ( fScinHitPaddle[ip][ipaddle + 1] == 1 ) )
 	icount ++;
-
+      cout << " paddle =  " << ipaddle+1 << " " << icount << endl;
+ 
     } // Loop over  paddles
-
+     cout << "Two  cluster in plane =  " << ip+1 << " " << icount << endl;
     fNClust[ip] = icount;
     icount = 0;
 
@@ -1374,6 +1501,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	   ( fScinHitPaddle[ip][ipaddle + 2] == 1 ) )
 	icount ++;
     } // Second loop over paddles
+     cout << "Three  clusters in plane =  " << ip+1 << " " << icount << endl;
 
     if ( icount > 0 )
       fThreeScin[ip] = 1;
@@ -1382,15 +1510,15 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 
   // *look for clusters in y planes... (10 scins)  !this assume both y planes have same
   // *number of scintillators.
+  cout << " looking for cluster in y planes" << endl;
 
   for (Int_t ip = 1; ip < fNumPlanesBetaCalc; ip +=2 ) {
     // Planes ip = 1 = 1Y
     // Planes ip = 3 = 2Y
-    if (!fPlanes[ip]) return -1;
 
     icount = 0;
-    if ( fScinHitPaddle[ip][0] == 1 )
-      icount ++;
+    if ( fScinHitPaddle[ip][0] == 1 ) icount ++;
+    cout << "plane =" << ip <<  "check if paddle 1 hit " << icount << endl;
 
     for (Int_t ipaddle = 0; ipaddle < (Int_t) fNPaddle[ip] - 1; ipaddle++ ){
       //  !look for number of clusters of 1 or more hits
@@ -1398,8 +1526,10 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
       if ( ( fScinHitPaddle[ip][ipaddle] == 0 ) &&
 	   ( fScinHitPaddle[ip][ipaddle + 1] == 1 ) )
 	icount ++;
+      cout << " paddle =  " << ipaddle+1 << " " << icount << endl;
 
     } // Loop over Y paddles
+     cout << "Two  cluster in plane =  " << ip+1 << " " << icount << endl;
 
     fNClust[ip] = icount;
     icount = 0;
@@ -1413,6 +1543,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	icount ++;
 
     } // Second loop over Y paddles
+     cout << "Three  clusters in plane =  " << ip+1 << " " << icount << endl;
 
     if ( icount > 0 )
       fThreeScin[ip] = 1;
@@ -1514,11 +1645,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
     if ( TMath::Abs( fSweet1YScin - fSweet2YScin ) > 2 )
       fGoodScinHits = 0;
   }
-
-
-
-  return 0;
-
+//
 }
 //_____________________________________________________________________________
 Int_t THcHodoscope::FineProcess( TClonesArray&  tracks  )
@@ -1593,6 +1720,7 @@ Int_t THcHodoscope::GetScinIndex( Int_t nSide, Int_t nPlane, Int_t nPaddle ) {
 Double_t THcHodoscope::GetPathLengthCentral() {
   return fPathLengthCentral;
 }
+
 //_____________________________________________________________________________
 Int_t THcHodoscope::End(THaRunBase* run)
 {
