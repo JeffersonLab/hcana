@@ -1,3 +1,5 @@
+// Remove this line to restore missing ADC reference time messages
+#define SUPPRESSMISSINGADCREFTIMEMESSAGES 1
 /** \class THcHitList
     \ingroup Base
 
@@ -366,9 +368,11 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	  if(goodreftime || (nrefhits>0 && fADC_RefTimeBest)) {
 	    rawhit->SetReference(signal, reftime);
 	  } else if (!suppresswarnings) {
+#ifndef SUPPRESSMISSINGADCREFTIMEMESSAGES
 	    cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
 	      " missing for (" << d->crate << ", " << d->slot <<
 	      ", " << chan << ")" << endl;
+#endif
 	      adcref_miss = kTRUE;
 	  }
 	} else {
@@ -377,12 +381,14 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	      rawhit->SetReference(signal, fRefIndexMaps[d->refindex].reftime);
 	    } else {
 	      if(!suppresswarnings) {
+#ifndef SUPPRESSMISSINGADCREFTIMEMESSAGES
 		cout << "HitList(event=" << evdata.GetEvNum() << "): refindex " << d->refindex <<
 		  " (" << fRefIndexMaps[d->refindex].crate <<
 		  ", " << fRefIndexMaps[d->refindex].slot <<
 		  ", " << fRefIndexMaps[d->refindex].channel << ")" <<
 		  " missing for (" << d->crate << ", " << d->slot <<
 		  ", " << chan << ")" << endl;
+#endif
 		adcref_miss = kTRUE;
 	      }
 	    }
