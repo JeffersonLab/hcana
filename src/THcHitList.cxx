@@ -1,5 +1,4 @@
 // Remove this line to restore missing ADC reference time messages
-#define SUPPRESSMISSINGADCREFTIMEMESSAGES 1
 /** \class THcHitList
     \ingroup Base
 
@@ -21,6 +20,7 @@
 
 using namespace std;
 
+#define SUPPRESSMISSINGADCREFTIMEMESSAGES 1
 THcHitList::THcHitList()
 {
   /// Normal constructor.
