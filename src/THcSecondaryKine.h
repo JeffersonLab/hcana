@@ -73,10 +73,20 @@ public:
   
   // Event data
   Double_t fTheta_xq;   // Polar angle of detected particle with q (rad)
+  Double_t fTheta_xq_deg;   // Polar angle of detected particle with q (deg)
+
   Double_t fPhi_xq;     // Azimuth of detected particle with scattering plane (rad)
+  Double_t fPhi_xq_deg;     // Azimuth of detected particle with scattering plane (deg)
+
   Double_t fTheta_bq;   // Polar angle of recoil system with q (rad)
+  Double_t fTheta_bq_deg;   // Polar angle of recoil system with q (deg)
+
   Double_t fPhi_bq;     // Azimuth of recoil system with scattering plane (rad)
+  Double_t fPhi_bq_deg;     // Azimuth of recoil system with scattering plane (deg)
+
   Double_t fXangle;     // Angle of detected particle with scattered electron (rad)
+  Double_t fXangle_deg;     // Angle of detected particle with scattered electron (deg)
+  
   Double_t fPmiss;      // Missing momentum magnitude (GeV), nuclear physics definition (-pB)
   Double_t fPmiss_x;    // x-component of p_miss wrt q (GeV)
   Double_t fPmiss_y;    // y-component of p_miss wrt q (GeV)

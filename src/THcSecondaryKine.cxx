@@ -50,7 +50,8 @@ void THcSecondaryKine::Clear( Option_t* opt )
   // Clear all internal variables.
 
   THaPhysicsModule::Clear(opt);
-  fTheta_xq = fPhi_xq = fTheta_bq = fPhi_bq = fXangle = fPmiss
+  fTheta_xq = fTheta_xq_deg = fPhi_xq = fPhi_xq_deg = fTheta_bq = fTheta_bq_deg
+    = fPhi_bq = fPhi_bq_deg = fXangle = fXangle_deg = fPmiss
     = fPmiss_x = fPmiss_y = fPmiss_z = fEmiss = fMrecoil = fErecoil
     = fTX = fTB = fPX_cm = fTheta_x_cm = fPhi_x_cm = fTheta_b_cm
     = fPhi_b_cm = fTX_cm = fTB_cm = fTtot_cm = fMandelS = fMandelT
@@ -70,13 +71,34 @@ Int_t THcSecondaryKine::DefineVariables( EMode mode )
   RVarDef vars[] = {
     { "th_xq",    "Polar angle of detected particle with q (rad)",
                   "fTheta_xq" },
+
+    { "th_xq_deg", "Polar angle of detected particle with q (deg)",
+                   "fTheta_xq_deg" },
+
     { "ph_xq",    "Azimuth of detected particle with scattering plane (rad)",
                   "fPhi_xq" },
-    { "th_bq",    "Polar angle of recoil system with q (rad)", "fTheta_bq" },
+
+    { "ph_xq_deg",  "Azimuth of detected particle with scattering plane (deg)",
+                    "fPhi_xq_deg" },
+
+    { "th_bq",      "Polar angle of recoil system with q (rad)", "fTheta_bq" },
+
+    { "th_bq_deg",  "Polar angle of recoil system with q (deg)", "fTheta_bq_deg" },
+
+    
     { "ph_bq",    "Azimuth of recoil system with scattering plane (rad)",
                   "fPhi_bq" },
+
+    { "ph_bq_deg",  "Azimuth of recoil system with scattering plane (deg)",
+                    "fPhi_bq_deg" },
+
+    
     { "xangle",   "Angle of detected particle with scattered electron (rad)",
                   "fXangle" },
+
+    { "xangle_deg",   "Angle of detected particle with scattered electron (deg)",
+                  "fXangle_deg" },
+
     { "pmiss",    "Missing momentum magnitude (GeV), nuclear physics "
                   "definition (-pB)", "fPmiss" },
     { "pmiss_x",  "x-component of p_miss wrt q (GeV)", "fPmiss_x" },
@@ -183,6 +205,7 @@ Int_t THcSecondaryKine::Process( const THaEvData& )
 
   // Angle of X with scattered primary particle
   fXangle = fX.Angle( pP1->Vect());
+  fXangle_deg = fXangle*TMath::RadToDeg();
 
   // Angles of X and B wrt q-vector 
   // xq and bq are the 3-momentum vectors of X and B expressed in
@@ -200,7 +223,11 @@ Int_t THcSecondaryKine::Process( const THaEvData& )
   fPhi_xq   = xq.Phi();     //"out-of-plane angle", "phi"
   fTheta_bq = bq.Theta();
   fPhi_bq   = bq.Phi();
-
+  //convert angles from radians to degrees
+  fTheta_xq_deg = fTheta_xq*TMath::RadToDeg();
+  fPhi_xq_deg   = fPhi_xq*TMath::RadToDeg();
+  fTheta_bq_deg = fTheta_bq*TMath::RadToDeg();
+  fPhi_bq_deg   = fPhi_bq*TMath::RadToDeg();
   // Missing momentum and components wrt q-vector
   // The definition of p_miss as the negative of the undetected recoil
   // momentum is the standard nuclear physics convention.
