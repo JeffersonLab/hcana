@@ -64,6 +64,8 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
   fNumTracksFired     = vector<Int_t>    (MaxNumCerPmt, 0.0);
   fNpe                = vector<Double_t> (MaxNumCerPmt, 0.0);
   fGoodAdcPed         = vector<Double_t> (MaxNumCerPmt, 0.0);
+  fGoodAdcMult         = vector<Double_t> (MaxNumCerPmt, 0.0);
+  fGoodAdcHitUsed         = vector<Double_t> (MaxNumCerPmt, 0.0);
   fGoodAdcPulseInt    = vector<Double_t> (MaxNumCerPmt, 0.0);
   fGoodAdcPulseIntRaw = vector<Double_t> (MaxNumCerPmt, 0.0);
   fGoodAdcPulseAmp    = vector<Double_t> (MaxNumCerPmt, 0.0);
@@ -204,7 +206,8 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fPedLimit = new Int_t[fNelem];
   fGain     = new Double_t[fNelem];
   fPedMean  = new Double_t[fNelem];
-
+  fAdcTimeWindowMin =  new Double_t[fNelem];
+  fAdcTimeWindowMax=  new Double_t[fNelem];
   // Region parameters
   fRegionsValueMax = fNRegions * 8;
   fRegionValue     = new Double_t[fRegionsValueMax];
@@ -223,14 +226,17 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
     {"_mirror_zpos",      &fMirrorZPos,       kDouble},
     {"_npe_thresh",       &fNpeThresh,        kDouble},
     {"_debug_adc",        &fDebugAdc,         kInt, 0, 1},
-    {"_adcTimeWindowMin", &fAdcTimeWindowMin, kDouble},
-    {"_adcTimeWindowMax", &fAdcTimeWindowMax, kDouble},
+    {"_adcTimeWindowMin", fAdcTimeWindowMin, kDouble,(UInt_t) fNelem,1},
+    {"_adcTimeWindowMax", fAdcTimeWindowMax, kDouble, (UInt_t) fNelem,1},
     {"_adc_tdc_offset",   &fAdcTdcOffset,     kDouble, 0, 1},
     {"_region",           &fRegionValue[0],   kDouble,  (UInt_t) fRegionsValueMax},
     {"_adcrefcut",        &fADC_RefTimeCut,   kInt,    0, 1},
     {0}
   };
-
+  for (Int_t i=0;i<fNelem;i++) {
+    fAdcTimeWindowMin[i]=-1000.;
+    fAdcTimeWindowMax[i]=1000.;
+  }
   fDebugAdc = 0; // Set ADC debug parameter to false unless set in parameter file
   fAdcTdcOffset = 0.0;
   fADC_RefTimeCut = 0;
@@ -302,6 +308,8 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
     {"npeSum",       "Total Number of PEs",            "fNpeSum"},
 
     {"goodAdcPed",          "Good ADC pedestals",           "fGoodAdcPed"},
+    {"goodAdcMult",          "Good ADC Multiplicity",           "fGoodAdcMult"},
+    {"goodAdcHitUsed",          "Good ADC Hit Used",           "fGoodAdcHitUsed"},
     {"goodAdcPulseInt",     "Good ADC pulse integrals",     "fGoodAdcPulseInt"},
     {"goodAdcPulseIntRaw",  "Good ADC raw pulse integrals", "fGoodAdcPulseIntRaw"},
     {"goodAdcPulseAmp",     "Good ADC pulse amplitudes",    "fGoodAdcPulseAmp"},
@@ -349,6 +357,8 @@ void THcCherenkov::Clear(Option_t* opt)
     fNumTracksFired.at(ielem) = 0;
   for (UInt_t ielem = 0; ielem < fGoodAdcPed.size(); ielem++) {
     fGoodAdcPed.at(ielem)         = 0.0;
+    fGoodAdcMult.at(ielem)         = 0.0;
+    fGoodAdcHitUsed.at(ielem)         = 0.0;
     fGoodAdcPulseInt.at(ielem)    = 0.0;
     fGoodAdcPulseIntRaw.at(ielem) = 0.0;
     fGoodAdcPulseAmp.at(ielem)    = 0.0;
@@ -438,11 +448,13 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
     Double_t pulseTime    = ((THcSignalHit*) frAdcPulseTime->ConstructedAt(ielem))->GetData();
    Double_t adctdcdiffTime = StartTime-pulseTime;
      Bool_t   errorFlag    = ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(ielem))->GetData();
-    Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
+    Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin[npmt] && adctdcdiffTime < fAdcTimeWindowMax[npmt];
 
     // By default, the last hit within the timing cut will be considered "good"
     if (!errorFlag && pulseTimeCut) {
       fGoodAdcPed.at(npmt)         = pulsePed;
+      fGoodAdcHitUsed.at(npmt)         = ielem+1;
+      fGoodAdcMult.at(npmt)         =frAdcPulseInt->GetEntries() ;
       fGoodAdcPulseInt.at(npmt)    = pulseInt;
       fGoodAdcPulseIntRaw.at(npmt) = pulseIntRaw;
       fGoodAdcPulseAmp.at(npmt)    = pulseAmp;
