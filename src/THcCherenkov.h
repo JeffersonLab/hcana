@@ -66,6 +66,8 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   vector<Int_t>    fNumTracksMatched;
   vector<Int_t>    fNumTracksFired;
   vector<Double_t> fGoodAdcPed;
+  vector<Double_t> fGoodAdcMult;
+  vector<Double_t> fGoodAdcHitUsed;
   vector<Double_t> fGoodAdcPulseInt;
   vector<Double_t> fGoodAdcPulseIntRaw;
   vector<Double_t> fGoodAdcPulseAmp;
@@ -87,8 +89,8 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Double_t  fXAtCer;
   Double_t  fYAtCer;
   Double_t  fNpeThresh;
-  Double_t  fAdcTimeWindowMin;
-  Double_t  fAdcTimeWindowMax;
+  Double_t*  fAdcTimeWindowMin;
+  Double_t*  fAdcTimeWindowMax;
   Double_t  fAdcTdcOffset;
   Double_t* fRegionValue;
 
