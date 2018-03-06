@@ -138,7 +138,7 @@ Int_t THcExtTarCor::Process( const THaEvData& )
     THaTrack* theTrack = static_cast<THaTrack*>( tracks->At(i) );
     if( theTrack == spectro->GetGoldenTrack() ) {
       // Calculate corrections & recalculate ,,,track parameters
-      Double_t x_tg = -vertex[1]+pointing_off[0]; // units of cm, beam position in spectrometer coordinate system
+      Double_t x_tg = -vertex[1]-pointing_off[0]; // units of cm, beam position in spectrometer coordinate system
       spectro->CalculateTargetQuantities(theTrack,x_tg,xptar,ytar,yptar,delta);
       p  = spectro->GetPcentral() * ( 1.0+delta );
       spectro->TransportToLab( p, xptar, yptar, pvect );
