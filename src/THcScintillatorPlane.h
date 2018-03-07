@@ -50,8 +50,6 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t GetSpacing() {return fSpacing;}; // spacing of paddles
   Double_t GetSize() {return fSize;};    // paddle size
   Double_t GetHodoSlop() {return fHodoSlop;}; // hodo slop
-  Double_t GetAdcTimeWindowMin() { return fAdcTimeWindowMin;}
-  Double_t GetAdcTimeWindowMax() { return fAdcTimeWindowMax;}
   Double_t GetZpos() {return fZpos;};   //return the z position
   Double_t GetDzpos() {return fDzpos;};
   Double_t GetPosLeft() {return fPosLeft;};
@@ -137,6 +135,12 @@ class THcScintillatorPlane : public THaSubDetector {
   vector<Double_t>  fGoodPosAdcPed;
   vector<Double_t>  fGoodNegAdcPed;
 
+  vector<Double_t>  fGoodPosAdcMult;
+  vector<Double_t>  fGoodNegAdcMult;
+
+  vector<Double_t>  fGoodPosAdcHitUsed;
+  vector<Double_t>  fGoodNegAdcHitUsed;
+
   vector<Double_t>  fGoodPosAdcPulseAmp;
   vector<Double_t>  fGoodNegAdcPulseAmp;
 
@@ -189,8 +193,6 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t fZpos;               /* z position */
   Double_t fDzpos;
   Double_t fHodoSlop;           /* max allowed slop for this plane */
-  Double_t fAdcTimeWindowMin;    
-  Double_t fAdcTimeWindowMax;
   Double_t fPosLeft;            /* NOTE: "left" = "bottom" for a Y scintillator */
   Double_t fPosRight;           /* NOTE: "right" = "top" for a Y scintillator */
   Double_t fPosOffset;
@@ -212,6 +214,10 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t *fHodoVelLight;
   Double_t *fHodoPosInvAdcOffset;
   Double_t *fHodoNegInvAdcOffset;
+  Double_t *fHodoPosAdcTimeWindowMin;    
+  Double_t *fHodoPosAdcTimeWindowMax;
+  Double_t *fHodoNegAdcTimeWindowMin;    
+  Double_t *fHodoNegAdcTimeWindowMax;
   Double_t *fHodoPosInvAdcLinear;
   Double_t *fHodoNegInvAdcLinear;
   Double_t *fHodoPosInvAdcAdc;

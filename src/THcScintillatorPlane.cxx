@@ -134,6 +134,11 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete [] fHodoNegInvAdcOffset; fHodoNegInvAdcOffset = NULL;
   delete [] fHodoPosInvAdcLinear; fHodoPosInvAdcLinear = NULL;
   delete [] fHodoNegInvAdcLinear; fHodoNegInvAdcLinear = NULL;
+  delete [] fHodoPosAdcTimeWindowMax; fHodoPosAdcTimeWindowMax = NULL;
+  delete [] fHodoPosAdcTimeWindowMin; fHodoPosAdcTimeWindowMin = NULL;
+  delete [] fHodoNegAdcTimeWindowMax; fHodoNegAdcTimeWindowMax = NULL;
+  delete [] fHodoNegAdcTimeWindowMin; fHodoNegAdcTimeWindowMin = NULL;
+  delete [] fHodoNegInvAdcLinear; fHodoNegInvAdcLinear = NULL;
   delete [] fHodoPosInvAdcAdc; fHodoPosInvAdcAdc = NULL;
   delete [] fHodoNegInvAdcAdc; fHodoNegInvAdcAdc = NULL;
 
@@ -235,8 +240,6 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 
   // Retrieve parameters we need from parent class
   // Common for all planes
-  fAdcTimeWindowMin = ((THcHodoscope*) GetParent())->GetAdcTimeWindowMin(fPlaneNum-1);
-  fAdcTimeWindowMax = ((THcHodoscope*) GetParent())->GetAdcTimeWindowMax(fPlaneNum-1);
 
   fHodoSlop= ((THcHodoscope*) GetParent())->GetHodoSlop(fPlaneNum-1);
   fTdcOffset= ((THcHodoscope*) GetParent())->GetTdcOffset(fPlaneNum-1);
@@ -260,11 +263,19 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   fHodoNegInvAdcOffset = new Double_t[fNelem];
   fHodoPosInvAdcLinear = new Double_t[fNelem];
   fHodoNegInvAdcLinear = new Double_t[fNelem];
+  fHodoPosAdcTimeWindowMin = new Double_t[fNelem];
+  fHodoNegAdcTimeWindowMin = new Double_t[fNelem];
+  fHodoPosAdcTimeWindowMax = new Double_t[fNelem];
+  fHodoNegAdcTimeWindowMax = new Double_t[fNelem];
   fHodoPosInvAdcAdc = new Double_t[fNelem];
   fHodoNegInvAdcAdc = new Double_t[fNelem];
   fHodoSigma = new Double_t[fNelem];
   for(Int_t j=0;j<(Int_t) fNelem;j++) {
     Int_t index=((THcHodoscope *)GetParent())->GetScinIndex(fPlaneNum-1,j);
+    fHodoPosAdcTimeWindowMin[j] = ((THcHodoscope*) GetParent())->GetHodoPosAdcTimeWindowMin(index);
+    fHodoPosAdcTimeWindowMax[j] = ((THcHodoscope*) GetParent())->GetHodoPosAdcTimeWindowMax(index);
+    fHodoNegAdcTimeWindowMin[j] = ((THcHodoscope*) GetParent())->GetHodoNegAdcTimeWindowMin(index);
+    fHodoNegAdcTimeWindowMax[j] = ((THcHodoscope*) GetParent())->GetHodoNegAdcTimeWindowMax(index);
     fHodoPosMinPh[j] = ((THcHodoscope *)GetParent())->GetHodoPosMinPh(index);
     fHodoNegMinPh[j] = ((THcHodoscope *)GetParent())->GetHodoNegMinPh(index);
     fHodoPosPhcCoeff[j] = ((THcHodoscope *)GetParent())->GetHodoPosPhcCoeff(index);
@@ -313,6 +324,10 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 
   fGoodPosAdcPed         = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPed         = vector<Double_t> (fNelem, 0.0);
+  fGoodPosAdcMult         = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcMult         = vector<Double_t> (fNelem, 0.0);
+  fGoodPosAdcHitUsed         = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcHitUsed         = vector<Double_t> (fNelem, 0.0);
   fGoodPosAdcPulseAmp    = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseAmp    = vector<Double_t> (fNelem, 0.0);
   fGoodPosAdcPulseInt    = vector<Double_t> (fNelem, 0.0);
@@ -415,6 +430,10 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 
     {"GoodPosAdcPed",  "List of Positive ADC pedestals (passed TDC && ADC Min and Max cuts for either end)",           "fGoodPosAdcPed"}, //vector<Double_t>
     {"GoodNegAdcPed",  "List of Negative ADC pedestals (passed TDC && ADC Min and Max cuts for either end)",           "fGoodNegAdcPed"}, //vector<Double_t>
+    {"GoodPosAdcMult",  "List of Positive ADC Mult (passed TDC && ADC Min and Max cuts for either end)",           "fGoodPosAdcMult"}, //vector<Double_t>
+    {"GoodNegAdcMult",  "List of Negative ADC Mult (passed TDC && ADC Min and Max cuts for either end)",           "fGoodNegAdcMult"}, //vector<Double_t>
+    {"GoodPosAdcHitUsed",  "List of Positive ADC Hit Used (passed TDC && ADC Min and Max cuts for either end)",           "fGoodPosAdcHitUsed"}, //vector<Double_t>
+    {"GoodNegAdcHitUsed",  "List of Negative ADC Hit Used (passed TDC && ADC Min and Max cuts for either end)",           "fGoodNegAdcHitUsed"}, //vector<Double_t>
 
     {"GoodNegTdcTimeUnCorr",  "List of negative TDC values (passed TDC && ADC Min and Max cuts for either end)",        "fGoodNegTdcTimeUnCorr"},  //Units ns
     {"GoodNegTdcTimeCorr",    "List of negative corrected TDC values (corrected for PMT offset and ADC)",           "fGoodNegTdcTimeCorr"},
@@ -496,6 +515,8 @@ void THcScintillatorPlane::Clear( Option_t* )
   //Clear Ped/Amps/Int/Time
   for (UInt_t ielem = 0; ielem < fGoodPosAdcPed.size(); ielem++) {
     fGoodPosAdcPed.at(ielem)         = 0.0;
+    fGoodPosAdcMult.at(ielem)         = 0.0;
+    fGoodPosAdcHitUsed.at(ielem)         = 0.0;
     fGoodPosAdcPulseInt.at(ielem)    = 0.0;
     fGoodPosAdcPulseAmp.at(ielem)    = 0.0;
     fGoodPosAdcPulseTime.at(ielem)   = kBig;
@@ -503,6 +524,8 @@ void THcScintillatorPlane::Clear( Option_t* )
   }
   for (UInt_t ielem = 0; ielem < fGoodNegAdcPed.size(); ielem++) {
     fGoodNegAdcPed.at(ielem)         = 0.0;
+    fGoodNegAdcMult.at(ielem)         = 0.0;
+    fGoodNegAdcHitUsed.at(ielem)         = 0.0;
     fGoodNegAdcPulseInt.at(ielem)    = 0.0;
     fGoodNegAdcPulseAmp.at(ielem)    = 0.0;
     fGoodNegAdcPulseTime.at(ielem)   = kBig;
@@ -738,6 +761,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Bool_t badcraw_neg=kFALSE;
     Int_t adcped_pos=-999;
     Int_t adcped_neg=-999;
+    Int_t adcmult_pos=0;
+    Int_t adcmult_neg=0;
+    Int_t adchitused_pos=0;
+    Int_t adchitused_neg=0;
     Double_t adcint_pos=-999;
     Double_t adcint_neg=-999;
     Double_t adcamp_pos=-kBig;
@@ -783,9 +810,11 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	Bool_t   errorflag = 0   ;
         Double_t TdcAdcTimeDiff = tdc_neg*fScinTdcToTime-pulseTime;
         if (rawNegAdcHit.GetPulseAmpRaw(ielem) <= 0) errorflag=1;
-	Bool_t   pulseTimeCut =( TdcAdcTimeDiff > fAdcTimeWindowMin) &&  (TdcAdcTimeDiff < fAdcTimeWindowMax);
+	Bool_t   pulseTimeCut =( TdcAdcTimeDiff > fHodoNegAdcTimeWindowMin[index]) &&  (TdcAdcTimeDiff < fHodoNegAdcTimeWindowMax[index]);
 	if (!errorflag && pulseTimeCut && adcint_neg == -999) {
 	  adcped_neg = pulsePed;
+	  adcmult_neg = rawNegAdcHit.GetNPulses();
+	  adchitused_neg = ielem+1;
 	  adcint_neg = pulseInt;
 	  adcamp_neg = pulseAmp;
 	  adctime_neg = pulseTime;
@@ -805,9 +834,11 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	Bool_t   errorflag = 0   ;
         Double_t TdcAdcTimeDiff = tdc_pos*fScinTdcToTime-pulseTime;
         if (rawPosAdcHit.GetPulseAmpRaw(ielem) <= 0) errorflag=1;
-	Bool_t   pulseTimeCut =( TdcAdcTimeDiff > fAdcTimeWindowMin) &&  (TdcAdcTimeDiff < fAdcTimeWindowMax);
+	Bool_t   pulseTimeCut =( TdcAdcTimeDiff > fHodoPosAdcTimeWindowMin[index]) &&  (TdcAdcTimeDiff < fHodoPosAdcTimeWindowMax[index]);
 	if (!errorflag && pulseTimeCut && adcint_pos == -999) {
 	  adcped_pos = pulsePed;
+	  adcmult_pos = rawPosAdcHit.GetNPulses();
+	  adchitused_pos = ielem+1;
 	  adcint_pos = pulseInt;
 	  adcamp_pos = pulseAmp;
 	  adctime_pos = pulseTime;
@@ -850,6 +881,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	//good adc occupancy
 	fNumGoodPosAdcHits.at(padnum-1) = padnum;
 	fGoodPosAdcPed.at(padnum-1)       = adcped_pos;
+	fGoodPosAdcMult.at(padnum-1)       = adcmult_pos;
+	fGoodPosAdcHitUsed.at(padnum-1)       = adchitused_pos;
 	fGoodPosAdcPulseInt.at(padnum-1)  = adcint_pos;
 	fGoodPosAdcPulseAmp.at(padnum-1)  = adcamp_pos;
 	fGoodPosAdcPulseTime.at(padnum-1) = adctime_pos;
@@ -862,6 +895,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	//good adc occupancy
 	fNumGoodNegAdcHits.at(padnum-1) = padnum;
 	fGoodNegAdcPed.at(padnum-1)       = adcped_neg;
+	fGoodNegAdcMult.at(padnum-1)       = adcmult_neg;
+	fGoodNegAdcHitUsed.at(padnum-1)       = adchitused_neg;
 	fGoodNegAdcPulseInt.at(padnum-1)  = adcint_neg;
 	fGoodNegAdcPulseAmp.at(padnum-1)  = adcamp_neg;
 	fGoodNegAdcPulseTime.at(padnum-1) = adctime_neg;

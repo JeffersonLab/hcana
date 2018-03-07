@@ -77,6 +77,10 @@ public:
   Double_t GetHodoNegInvAdcLinear(Int_t iii) const {return fHodoNegInvAdcLinear[iii];}
   Double_t GetHodoPosInvAdcAdc(Int_t iii) const {return fHodoPosInvAdcAdc[iii];}
   Double_t GetHodoNegInvAdcAdc(Int_t iii) const {return fHodoNegInvAdcAdc[iii];}
+  Double_t GetHodoPosAdcTimeWindowMax(Int_t iii) const {return fHodoPosAdcTimeWindowMax[iii];}
+  Double_t GetHodoPosAdcTimeWindowMin(Int_t iii) const {return fHodoPosAdcTimeWindowMin[iii];}
+  Double_t GetHodoNegAdcTimeWindowMax(Int_t iii) const {return fHodoNegAdcTimeWindowMax[iii];}
+  Double_t GetHodoNegAdcTimeWindowMin(Int_t iii) const {return fHodoNegAdcTimeWindowMin[iii];}
 
   Double_t GetStartTimeCenter() const {return fStartTimeCenter;}
   Double_t GetStartTimeSlop() const {return fStartTimeSlop;}
@@ -96,8 +100,6 @@ public:
   Int_t GetTdcOffset(Int_t ip) const { return fTdcOffset[ip];}
   Double_t GetAdcTdcOffset(Int_t ip) const { return fAdcTdcOffset[ip];}
 
-  Double_t GetAdcTimeWindowMin(Int_t ip) { return fAdcTimeWindowMin[ip];}
-  Double_t GetAdcTimeWindowMax(Int_t ip) { return fAdcTimeWindowMax[ip];}
 
   Double_t GetBeta() const {return fBeta;}
 
@@ -160,8 +162,10 @@ protected:
   char** fPlaneNames;
   UInt_t* fNPaddle;		// Number of paddles per plane
 
-  Double_t *fAdcTimeWindowMin;    
-  Double_t *fAdcTimeWindowMax;
+  Double_t *fHodoNegAdcTimeWindowMin;    
+  Double_t *fHodoNegAdcTimeWindowMax;
+  Double_t *fHodoPosAdcTimeWindowMin;    
+  Double_t *fHodoPosAdcTimeWindowMax;
 
   Double_t* fHodoVelLight;
   Double_t* fHodoPosSigma;
