@@ -299,8 +299,10 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fHodoSlop = new Double_t [fNPlanes];
   fTdcOffset = new Int_t [fNPlanes];
   fAdcTdcOffset = new Double_t [fNPlanes];
-  fAdcTimeWindowMin = new Double_t [fNPlanes];
-  fAdcTimeWindowMax = new Double_t [fNPlanes];
+  fHodoPosAdcTimeWindowMin = new Double_t [fMaxHodoScin];
+  fHodoPosAdcTimeWindowMax = new Double_t [fMaxHodoScin];
+  fHodoNegAdcTimeWindowMin = new Double_t [fMaxHodoScin];
+  fHodoNegAdcTimeWindowMax = new Double_t [fMaxHodoScin];
 
 
   for(Int_t ip=0;ip<fNPlanes;ip++) { // Set a large default window
@@ -334,8 +336,10 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"debugprintscinraw",                &fdebugprintscinraw,               kInt,  0,1},
     {"hodo_tdc_offset",                  fTdcOffset,              kInt,     (UInt_t) fNPlanes, 1},
     {"hodo_adc_tdc_offset",              fAdcTdcOffset,           kDouble,  (UInt_t) fNPlanes, 1},
-    {"hodo_AdcTimeWindowMin",            fAdcTimeWindowMin,       kDouble,  (UInt_t) fNPlanes},
-    {"hodo_AdcTimeWindowMax",            fAdcTimeWindowMax,       kDouble,  (UInt_t) fNPlanes},
+    {"hodo_PosAdcTimeWindowMin",            fHodoPosAdcTimeWindowMin,       kDouble,  (UInt_t) fMaxHodoScin},
+    {"hodo_PosAdcTimeWindowMax",            fHodoPosAdcTimeWindowMax,       kDouble,  (UInt_t) fMaxHodoScin},
+    {"hodo_NegAdcTimeWindowMin",            fHodoNegAdcTimeWindowMin,       kDouble,  (UInt_t) fMaxHodoScin},
+    {"hodo_NegAdcTimeWindowMax",            fHodoNegAdcTimeWindowMax,       kDouble,  (UInt_t) fMaxHodoScin},
     {"dumptof",                          &fDumpTOF,               kInt,    0, 1},
     {"TOFCalib_shtrk_lo",                &fTOFCalib_shtrk_lo,               kDouble,    0, 1},
     {"TOFCalib_shtrk_hi",                &fTOFCalib_shtrk_hi,               kDouble,    0, 1},
@@ -348,9 +352,11 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   // Defaults if not defined in parameter file
 
-  for(Int_t ip=0;ip<fNPlanes;ip++) {
-    fAdcTimeWindowMin[ip] = 0.;
-    fAdcTimeWindowMax[ip] = 1000.;
+  for(UInt_t ip=0;ip<fMaxHodoScin;ip++) {
+    fHodoPosAdcTimeWindowMin[ip] = -1000.;
+    fHodoPosAdcTimeWindowMax[ip] = 1000.;
+    fHodoNegAdcTimeWindowMin[ip] = -1000.;
+    fHodoNegAdcTimeWindowMax[ip] = 1000.;
   }
   fTOFCalib_shtrk_lo=-kBig;
   fTOFCalib_shtrk_hi= kBig;
@@ -543,8 +549,10 @@ void THcHodoscope::DeleteArrays()
   delete [] fSumPlaneTime;        fSumPlaneTime = NULL;
   delete [] fNScinHits;           fNScinHits = NULL;
   delete [] fTdcOffset;           fTdcOffset = NULL;
-  delete [] fAdcTimeWindowMin;    fAdcTimeWindowMin = NULL;
-  delete [] fAdcTimeWindowMax;    fAdcTimeWindowMax = NULL;
+  delete [] fHodoNegAdcTimeWindowMin;    fHodoNegAdcTimeWindowMin = NULL;
+  delete [] fHodoNegAdcTimeWindowMax;    fHodoNegAdcTimeWindowMax = NULL;
+  delete [] fHodoPosAdcTimeWindowMin;    fHodoPosAdcTimeWindowMin = NULL;
+  delete [] fHodoPosAdcTimeWindowMax;    fHodoPosAdcTimeWindowMax = NULL;
 
 }
 
