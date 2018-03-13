@@ -67,6 +67,10 @@ public:
   void IncCombos() { fNCombos++; };
   void SetCombos(Int_t ncombos) { fNCombos=ncombos; };
   Int_t GetCombos() { return fNCombos; };
+  Double_t GetStubX() {return fStub[0];};
+  Double_t GetStubXP() {return fStub[2];};
+  Double_t GetStubY() {return fStub[1];};
+  Double_t GetStubYP() {return fStub[3];};
 
   // This is the chamber number (1,2), not index (0,1).  Sometime
   // we need figure out how to avoid confusion between number and index.
