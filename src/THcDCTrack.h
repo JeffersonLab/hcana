@@ -42,6 +42,8 @@ public:
   Double_t GetY()                 const {return fY_fp;}
   Double_t GetXP()                 const {return fXp_fp;}
   Double_t GetYP()                 const {return fYp_fp;}
+  Double_t GetSp1_ID()                 const {return fSp1_ID;}
+  Double_t GetSp2_ID()                 const {return fSp1_ID;}
   Double_t GetChisq()              const {return fChi2_fp;}
   void SetNFree(Int_t nfree)           {fNfree = nfree;}
   void SetCoord(Int_t ip, Double_t coord) {fCoords[ip] = coord;}
@@ -50,6 +52,8 @@ public:
   void SetVector(Double_t x, Double_t y, Double_t z,
 		 Double_t xp, Double_t yp) {fX_fp = x; fY_fp=y; fZ_fp=z; fXp_fp=xp; fYp_fp=yp;}
   void SetChisq(Double_t chi2)   {fChi2_fp = chi2;}
+  void SetSp1_ID(Int_t isp1) {fSp1_ID= isp1;}
+  void SetSp2_ID(Int_t isp2) {fSp2_ID= isp2;}
 
   virtual void ClearHits( );
 
@@ -59,7 +63,8 @@ public:
 protected:
   Int_t fnSP; /* Number of space points in this track */
   THcSpacePoint* fSp[10];         /* List of space points in this track */
-
+  Int_t fSp1_ID;
+  Int_t fSp2_ID;
   Int_t fNHits;
   Int_t fNfree;		  /* Number of degrees of freedom */
   struct Hit {

@@ -42,6 +42,8 @@ void THcDCTrack::Clear( const Option_t* )
 {
   // Clear the space point and hit lists
   fnSP = 0;
+  fSp1_ID=-1;
+  fSp2_ID=-1;
   ClearHits();
   // Need to set default values  (0 or -100)
   //fCoords.clear();
