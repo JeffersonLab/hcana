@@ -17,9 +17,7 @@ using namespace std;
 //_____________________________________________________________________________
 THcExtTarCor::THcExtTarCor( const char* name, const char* description,
 			    const char* spectro, const char* vertex ) :
-  THaPhysicsModule(name,description), fThetaCorr(0.0), fDeltaCorr(0.0),
-  fSpectroName(spectro), fVertexName(vertex), 
-  fTrackModule(NULL), fVertexModule(NULL)
+  THaExtTarCor(name, description, spectro, vertex)
 {
   // Normal constructor.
 
@@ -32,47 +30,6 @@ THcExtTarCor::~THcExtTarCor()
   // Destructor
 
   DefineVariables( kDelete );
-}
-
-//_____________________________________________________________________________
-void THcExtTarCor::Clear( Option_t* opt )
-{
-  // Clear all event-by-event variables.
-  
-  THaPhysicsModule::Clear(opt);
-  TrkIfoClear();
-  fDeltaTh = fDeltaDp = fDeltaP = 0.0;
-}
-
-//_____________________________________________________________________________
-THaAnalysisObject::EStatus THcExtTarCor::Init( const TDatime& run_time )
-{
-  // Initialize the module.
-  // Locate the spectrometer apparatus named in fSpectroName and save
-  // pointer to it.
-  // Also, if given, locate the vertex module given in fVertexName
-  // and save pointer to it.
-
-  fTrackModule = dynamic_cast<THaTrackingModule*>
-    ( FindModule( fSpectroName.Data(), "THaTrackingModule"));
-  if( !fTrackModule )
-    return fStatus;
-
-  fTrkIfo.SetSpectrometer( fTrackModule->GetTrackInfo()->GetSpectrometer() );
-
-  // If no vertex module given, try to get the vertex info from the
-  // same module as the tracks, e.g. from a spectrometer
-  if( fVertexName.IsNull())  fVertexName = fSpectroName;
-
-  fVertexModule = dynamic_cast<THaVertexModule*>
-    ( FindModule( fVertexName.Data(), "THaVertexModule" ));
-  if( !fVertexModule )
-    return fStatus;
-    
-  // Standard initialization. Calls this object's DefineVariables().
-  THaPhysicsModule::Init( run_time );
-
-  return fStatus;
 }
 
 //_____________________________________________________________________________
