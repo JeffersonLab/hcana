@@ -120,6 +120,7 @@ protected:
   Int_t fNthits;
   Int_t fN_True_RawHits;
   Int_t fNSp;                   // Number of space points
+  Int_t fNsp_best;                   // Number of space points for gloden track
   Double_t* fResiduals;         //[fNPlanes] Array of residuals
   Double_t* fWire_hit_did;      //[fNPlanes]
   Double_t* fWire_hit_should;   //[fNPlanes]
@@ -173,6 +174,8 @@ protected:
   Double_t fXp_fp_best;
   Double_t fYp_fp_best;
   Double_t fChisq_best;
+  Int_t fSp1_ID_best;
+  Int_t fSp2_ID_best;
  // For accumulating statitics for efficiencies
   Int_t fTotEvents;
   Int_t* fNChamHits;

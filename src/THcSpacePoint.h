@@ -75,6 +75,7 @@ public:
   // This is the chamber number (1,2), not index (0,1).  Sometime
   // we need figure out how to avoid confusion between number and index.
   Int_t fNChamber;
+  Int_t fNChamber_spnum;
 
 protected:
 

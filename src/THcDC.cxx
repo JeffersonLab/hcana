@@ -332,7 +332,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"dc_central_wire", fCentralWire, kDouble, (UInt_t)fNPlanes},
     {"dc_plane_time_zero", fPlaneTimeZero, kDouble, (UInt_t)fNPlanes},
     {"dc_sigma", fSigma, kDouble, (UInt_t)fNPlanes},
-    {"single_stub",&fSingleStub, kInt},
+    {"single_stub",&fSingleStub, kInt,0,1},
     {"ntracks_max_fp", &fNTracksMaxFP, kInt},
     {"xt_track_criterion", &fXtTrCriterion, kDouble},
     {"yt_track_criterion", &fYtTrCriterion, kDouble},
@@ -348,6 +348,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"debugtrackprint", &fdebugtrackprint , kInt},
     {0}
   };
+  fSingleStub=0;
    for(Int_t ip=0; ip<fNPlanes;ip++) {
     fReadoutLR[ip] = 0.0;
     fReadoutTB[ip] = 0.0;
@@ -398,6 +399,7 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "trawhit", "Number of true raw DC hits", "fN_True_RawHits" },
     { "ntrack", "Number of Tracks", "fNDCTracks" },
     { "nsp", "Number of Space Points", "fNSp" },
+    { "track_nsp", "Number of spacepoints in track", "fDCTracks.THcDCTrack.GetNSpacePoints()"},
     { "x", "X at focal plane", "fDCTracks.THcDCTrack.GetX()"},
     { "y", "Y at focal plane", "fDCTracks.THcDCTrack.GetY()"},
     { "xp", "XP at focal plane", "fDCTracks.THcDCTrack.GetXP()"},
@@ -406,7 +408,10 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "y_fp", "Y at focal plane( golden track)", "fY_fp_best"},
     { "xp_fp", "XP at focal plane (golden track)", "fXp_fp_best"},
     { "yp_fp", "YP at focal plane(golden track) ", "fYp_fp_best"},
-    { "chisq", "chisq/dof (golde track) ", "fChisq_best"},
+    { "chisq", "chisq/dof (golden track) ", "fChisq_best"},
+    { "sp1_id", " (golden track) ", "fSp1_ID_best"},
+    { "sp2_id", " (golden track) ", "fSp2_ID_best"},
+    { "gtrack_nsp", " Number of space points in golden track ", "fNsp_best"},
     { "residual", "Residuals", "fResiduals"},
     { "wireHitDid","Wire did have  matched track hit", "fWire_hit_did"},
     { "wireHitShould", "Wire should have matched track hit", "fWire_hit_should"},
@@ -489,6 +494,7 @@ void THcDC::ClearEvent()
   fXp_fp_best=-10000.;
   fYp_fp_best=-10000.;
   fChisq_best=kBig;
+  fNsp_best=0;
   for(UInt_t i=0;i<fNChambers;i++) {
     fChambers[i]->Clear();
   }
@@ -632,7 +638,10 @@ void THcDC::SetFocalPlaneBestTrack(Int_t golden_track_index)
       fY_fp_best=tr1->GetY();
       fXp_fp_best=tr1->GetXP();
       fYp_fp_best=tr1->GetYP();
+      fSp1_ID_best=tr1->GetSp1_ID();
+      fSp2_ID_best=tr1->GetSp2_ID();
       fChisq_best=tr1->GetChisq();
+      fNsp_best=tr1->GetNSpacePoints();
          for (UInt_t ihit = 0; ihit < UInt_t (tr1->GetNHits()); ihit++) {
 	THcDCHit *hit = tr1->GetHit(ihit);
 	Int_t plane = hit->GetPlaneNum() - 1;
@@ -703,7 +712,7 @@ void THcDC::LinkStubs()
   //                  1) loop over all space points as seeds  isp1
   //                  2) Check if this space point is all ready in a track
   //                  3) loop over all succeeding space pointss   isp2
-  //                  4) check if there is a track-criterion match
+  //                  4)  check if there is a track-criterion match
   //                       either add to existing track
   //                       or if there is another point in same chamber
   //                          make a copy containing isp2 rather than
@@ -722,6 +731,7 @@ void THcDC::LinkStubs()
     for(Int_t isp=0;isp<fChambers[ich]->GetNSpacePoints();isp++) {
       fSp.push_back(static_cast<THcSpacePoint*>(spacepointarray->At(isp)));
       fSp[fNSp]->fNChamber = nchamber;
+      fSp[fNSp]->fNChamber_spnum = isp;
       fNSp++;
     }
   }
@@ -732,7 +742,7 @@ void THcDC::LinkStubs()
   Double_t stubminxp = 999999;
   Double_t stubminyp = 999999;
   Int_t stub_tracks[MAXTRACKS];
-  if(!fSingleStub) {
+  if(fSingleStub==0) {
     for(Int_t isp1=0;isp1<fNSp-1;isp1++) { // isp1 is index/id in total list of space points
       THcSpacePoint* sp1 = fSp[isp1];
       Int_t sptracks=0;
@@ -797,10 +807,10 @@ void THcDC::LinkStubs()
 		  THcDCTrack *theDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
 		  theDCTrack->AddSpacePoint(sp1);
 		  theDCTrack->AddSpacePoint(sp2);
-		  // Now save the X, Y and XP for the two stubs
-		  // in arrays hx_sp1, hy_sp1, hy_sp1, ... hxp_sp2
-		  // Why not also YP?
-		  // Skip for here.  May be a diagnostic thing
+		  if (sp1->fNChamber==1) theDCTrack->SetSp1_ID(sp1->fNChamber_spnum);
+		  if (sp1->fNChamber==2) theDCTrack->SetSp2_ID(sp1->fNChamber_spnum);
+		  if (sp2->fNChamber==1) theDCTrack->SetSp1_ID(sp2->fNChamber_spnum);
+		  if (sp2->fNChamber==2) theDCTrack->SetSp2_ID(sp2->fNChamber_spnum);
 		  newtrack = 0; // Make no more tracks in this loop
 		  // (But could replace a SP?)
 		} else {
@@ -814,7 +824,6 @@ void THcDC::LinkStubs()
 		for(Int_t itrack=0;itrack<sptracks;itrack++) {
 		  Int_t track=stub_tracks[itrack];
 		  THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(track));
-
 		  Int_t spoint=-1;
 		  Int_t duppoint=0;
 		  for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
@@ -832,8 +841,10 @@ void THcDC::LinkStubs()
 		  if(!duppoint) {
 		    if(spoint<0) {
 		      theDCTrack->AddSpacePoint(sp2);
+		      if (sp2->fNChamber==1) theDCTrack->SetSp1_ID(sp2->fNChamber_spnum);
+		      if (sp2->fNChamber==2) theDCTrack->SetSp2_ID(sp2->fNChamber_spnum);
 		    } else {
-		      // If there is another point in the same chamber
+		      		      // If there is another point in the same chamber
 		      // in this track create a new track with all the
 		      // same space points except spoint
  		      if(fNDCTracks < MAXTRACKS) {
@@ -842,8 +853,12 @@ void THcDC::LinkStubs()
 			for(Int_t isp=0;isp<theDCTrack->GetNSpacePoints();isp++) {
 			  if(isp!=spoint) {
 			    newDCTrack->AddSpacePoint(theDCTrack->GetSpacePoint(isp));
+		            if (newDCTrack->GetSpacePoint(isp)->fNChamber==1) newDCTrack->SetSp1_ID(theDCTrack->GetSpacePoint(isp)->fNChamber_spnum);
+		            if (newDCTrack->GetSpacePoint(isp)->fNChamber==2) newDCTrack->SetSp2_ID(theDCTrack->GetSpacePoint(isp)->fNChamber_spnum);
 			  } else {
 			    newDCTrack->AddSpacePoint(sp2);
+		            if (sp2->fNChamber==1) newDCTrack->SetSp1_ID(sp2->fNChamber_spnum);
+		            if (sp2->fNChamber==2) newDCTrack->SetSp2_ID(sp2->fNChamber_spnum);
 			  } // End check for dup on copy
 			} // End copy of track
 		      } else {
@@ -856,15 +871,15 @@ void THcDC::LinkStubs()
 		    } // end if on same chamber
 		  } // end if on duplicate point
 		} // end for over tracks with isp1
-	      }
-	    }
+	      } // else newtrack
+	    } // criterion
 	  } // end test on same chamber
 	} // end isp2 loop over new space points
       } // end test on tryflag
     } // end isp1 outer loop over space points
     //
   //
-   } else { // Make track out of each single space point
+  } else { // Make track out of each single space point
     for(Int_t isp=0;isp<fNSp;isp++) {
       if(fNDCTracks<MAXTRACKS) {
 	// Need some constructed t thingy
@@ -879,7 +894,7 @@ void THcDC::LinkStubs()
     }
   }
   ///
-  if (fdebuglinkstubs) {
+if (fdebuglinkstubs) {
      cout << " Number of tracks from link stubs = " << fNDCTracks << endl;
      printf("%s %s \n","Track","Plane Wire ");
      for (UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
