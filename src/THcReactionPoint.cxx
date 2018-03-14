@@ -1,4 +1,4 @@
-//*-- Author :    Ole Hansen   13-Mar-03
+//*-- Author :    Mark Jones, March 2018
 
 #include "THcReactionPoint.h"
 #include "THaSpectrometer.h"
@@ -19,8 +19,7 @@ ClassImp(THcReactionPoint)
 //_____________________________________________________________________________
 THcReactionPoint::THcReactionPoint( const char* name, const char* description,
 				    const char* spectro, const char* beam ) :
-  THaPhysicsModule(name,description), fSpectroName(spectro), 
-  fBeamName(beam), fSpectro(NULL), fBeam(NULL)
+THaReactionPoint(name, description, spectro, beam)
 {
   // Normal constructor.
 
@@ -32,48 +31,6 @@ THcReactionPoint::~THcReactionPoint()
   // Destructor
 
   DefineVariables( kDelete );
-}
-
-//_____________________________________________________________________________
-void THcReactionPoint::Clear( Option_t* opt )
-{
-  // Clear all event-by-event variables.
-  
-  THaPhysicsModule::Clear(opt);
-  VertexClear();
-}
-
-//_____________________________________________________________________________
-Int_t THcReactionPoint::DefineVariables( EMode mode )
-{
-  // Define/delete analysis variables
-
-  if( mode == kDefine && fIsSetup ) return kOK;
-  fIsSetup = ( mode == kDefine );
-
-  return DefineVarsFromList( THaVertexModule::GetRVarDef(), mode );
-}
-
-//_____________________________________________________________________________
-THaAnalysisObject::EStatus THcReactionPoint::Init( const TDatime& run_time )
-{
-  // Initialize the module.
-  // Locate the spectrometer apparatus named in fSpectroName and save
-  // pointer to it.
-
-  // Standard initialization. Calls this object's DefineVariables().
-  if( THaPhysicsModule::Init( run_time ) != kOK )
-    return fStatus;
-
-  fSpectro = static_cast<THaSpectrometer*>
-    ( FindModule( fSpectroName.Data(), "THaSpectrometer"));
-  if( !fSpectro )
-    return fStatus;
-
-  if( fBeamName.Length() > 0 )
-    fBeam = static_cast<THaBeam*>( FindModule( fBeamName.Data(), "THaBeam") );
-  
-  return fStatus;
 }
 
 //_____________________________________________________________________________
