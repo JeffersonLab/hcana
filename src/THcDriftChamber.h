@@ -93,6 +93,7 @@ protected:
   Int_t fHMSStyleChambers;
   Int_t fhdebugflagpr;
   Int_t fdebugstubchisq;
+  Double_t fRatio_xpfp_to_xfp; // Used in selecting stubs 
   Double_t fZPos;
   Double_t fXCenter;
   Double_t fYCenter;

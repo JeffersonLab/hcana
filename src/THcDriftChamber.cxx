@@ -137,18 +137,23 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   DBRequest list[]={
     {"_remove_sppt_if_one_y_plane",&fRemove_Sppt_If_One_YPlane, kInt,0,1},
     {"dc_wire_velocity", &fWireVelocity, kDouble},
-    {"SmallAngleApprox", &fSmallAngleApprox, kInt},
+    {"SmallAngleApprox", &fSmallAngleApprox, kInt,0,1},
     {"stub_max_xpdiff", &fStubMaxXPDiff, kDouble,0,1},
     {"debugflagpr", &fhdebugflagpr, kInt},
     {"debugstubchisq", &fdebugstubchisq, kInt},
     {Form("dc_%d_zpos",fChamberNum), &fZPos, kDouble},
     {0}
   };
-
+  fSmallAngleApprox=0;
+  fRatio_xpfp_to_xfp=1.0;
+  TString SHMS="p";
+  TString HMS="h";
+  TString test=prefix[0];
+  if (test==SHMS ) fRatio_xpfp_to_xfp=0.0018; // SHMS 
+  if (test == HMS ) fRatio_xpfp_to_xfp=0.0011; // HMS 
   fRemove_Sppt_If_One_YPlane = 0; // Default
-  fStubMaxXPDiff = 0.05;	  // The HMS default.  Not used for SOS.
+  fStubMaxXPDiff = 999.;	  // 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-
   // Get parameters parent knows about
   THcDC* fParent;
   fParent = (THcDC*) GetParent();
@@ -229,6 +234,11 @@ Int_t THcDriftChamber::DefineVariables( EMode mode )
      { "spacepoints", "Space points of DC",      "fNSpacePoints" },
      { "nhit", "Number of DC hits",  "fNhits" },
      { "trawhit", "Number of True Raw hits", "fN_True_RawHits" },
+     { "stub_x", "", "fSpacePoints.THcSpacePoint.GetStubX()" },
+     { "stub_xp", "", "fSpacePoints.THcSpacePoint.GetStubXP()" },
+     { "stub_y", "", "fSpacePoints.THcSpacePoint.GetStubY()" },
+     { "stub_yp", "", "fSpacePoints.THcSpacePoint.GetStubYP()" },
+     { "ncombos", "", "fSpacePoints.THcSpacePoint.GetCombos()" },
      { 0 }
    };
    return DefineVarsFromList( vars, mode );
@@ -266,7 +276,47 @@ void THcDriftChamber::PrintDecode( void )
 
 Int_t THcDriftChamber::FindSpacePoints( void )
 {
+  /*
+1) First check if number of hits is between fMinHits=min_hit and fMaxHits=max_pr_hits
+   if fails then fNSpacePoints=0
+2) Determines if it is an easy spacepoint.
+  a) if HMS style chambers finds the Y and Y' planes
+     if not HMS style chambers finds the X and X' planes
+  b) if both planes ahve only one hit and the difference in hit position
+     between the hits < fSpacePointCriterion and less than 6 hits .
+     then easy spacepoint and calls either method FindEasySpacePoint_HMS or FindEasySpacePoint_SOS
+  c) FindEasySpacePoint_SOS
+     1) Loops through hits and gets y_pos from the non-X planes and determines average Yt
+     2) Loops through hits and sees if any of "Y-planes" hits has 
+          difference of y_pos -Yt > TMath::Sqrt(fSpacePointCriterion/2.0)
+     3) Adds a spacepoint and set ncombos to zero.
 
+
+3) if not  EasySpacePoint calls FindHardSpacePoints
+  a) loops though hits and determines pairs of hits in planes with angles grerater then 17.5 degs
+      between them. These are test pairs and stores the x and y position of pair
+  b) Double loops through the test pairs to determine number of pair combinations.
+     i) Calculates d2 = (xi -xj)^2 + (yi-yj)^2 from the two pairs (i,j).
+     ii) If d2 <  fSpacePointCriterion then fills combos structure with pair info
+         and increments ncombos.
+  c) Loop through ncombos
+     i) First combo is set as spacepoint which is loaded with hit info from combos.
+     ii) Next combo 
+        a) Loops through previous space points
+        b) calculates  d2 = (x_c -x_sp)^2 + (y_c-y_sp)^2 between combos and spacepoint
+           if d2 < fSpacePointCriterion then adds combos hit info to that spacepoint
+           which is not already in the spacepoint.
+        c) if that combo is not already added to existing spacepoint
+           then new spacepoint is made from the combo.
+4) If it found a spacepoint
+    i) For HMS-style chamber it would DestroyPoorSpacePoints if fRemove_Sppt_If_One_YPlane
+    ii) Presently if  HMS-style chamber calls SpacePointMultiWire()
+    iii) Calls ChooseSingleHit this looks to see if two hits in the same plane.
+             If two hits then rejects on with longer drift time.
+    iv) calls SelectSpacePoints. Goes through the spacepoints and eliminates spacepoints
+          that do not have nhits >  min_hits and ncombos> min_combos 
+          ( exception for easyspacepoint)
+  */
   fSpacePoints->Clear();
 
   Int_t plane_hitind=0;
@@ -1038,7 +1088,7 @@ void THcDriftChamber::LeftRight()
     Int_t nhits = sp->GetNHits();
     UInt_t bitpat  = 0;		// Bit pattern of which planes are hit
     Double_t minchi2 = 1.0e10;
-    Double_t tmp_minchi2;
+    Double_t tmp_minchi2=1.0e10;
     Double_t minxp = 0.25;
     Int_t hasy1 = -1;
     Int_t hasy2 = -1;
@@ -1137,11 +1187,11 @@ void THcDriftChamber::LeftRight()
 	}
       }
       if (nplaneshit >= fNPlanes-1) {
-	Double_t chi2 = FindStub(nhits, sp,
-				     plane_list, bitpat, plusminus, stub);
+	Double_t chi2;
+	 chi2 = FindStub(nhits, sp,plane_list, bitpat, plusminus, stub);
 	if (fdebugstubchisq) cout << " pmloop = " << pmloop << " chi2 = " << chi2 << endl;
 	if(chi2 < minchi2) {
-	  if(fHMSStyleChambers) { // Perhaps a different flag here
+	  if (fStubMaxXPDiff<100. ) {
 	    // Take best chi2 IF x' of the stub agrees with x' as expected from x.
 	    // Sometimes an incorrect x' gives a good chi2 for the stub, even though it is
 	    // not the correct left/right combination for the real track.
@@ -1152,8 +1202,7 @@ void THcDriftChamber::LeftRight()
 	    }
 	    Double_t xp_fit=stub[2]-fTanBeta[plane_list[0]]
 	      /(1+stub[2]*fTanBeta[plane_list[0]]);
-	    // Tune depdendent.  Definitely HMS specific
-	    Double_t xp_expect = sp->GetX()/875.0;
+	    Double_t xp_expect = sp->GetX()*fRatio_xpfp_to_xfp;
 	    if(TMath::Abs(xp_fit-xp_expect)<fStubMaxXPDiff) {
 	      minchi2 = chi2;
 	      for(Int_t ihit=0;ihit<nhits;ihit++) {
@@ -1161,12 +1210,14 @@ void THcDriftChamber::LeftRight()
 	      }
               sp->SetStub(stub);
 	    } else {		// Record best stub failing angle cut
+              if (chi2 < tmp_minchi2) {
 	      tmp_minchi2 = chi2;
 	      for(Int_t ihit=0;ihit<nhits;ihit++) {
 		tmp_plusminus[ihit] = plusminus[ihit];
 	      }
 	      for(Int_t i=0;i<4;i++) {
 		tmp_stub[i] = stub[i];
+	      }
 	      }
 	    }
 	  } else { // Not HMS specific
@@ -1179,8 +1230,7 @@ void THcDriftChamber::LeftRight()
 	}
 	///////////////
       } else if (nplaneshit >= fNPlanes-2 && fHMSStyleChambers) { // Two planes missing
-	Double_t chi2 = FindStub(nhits, sp,
-				     plane_list, bitpat, plusminus, stub);
+	Double_t chi2 = FindStub(nhits, sp,plane_list, bitpat, plusminus, stub);
 	//if(debugging)
 	//if (fhdebugflagpr) cout << "pmloop=" << pmloop << " Chi2=" << chi2 << endl;
 	// Isn't this a bad idea, doing == with reals
