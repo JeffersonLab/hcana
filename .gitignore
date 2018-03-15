@@ -16,6 +16,7 @@ haDict.h
 haDict.C
 hcana
 src/HallC_LinkDef.h
+src/hc_compiledata.h
 
 # scons stuff
 config.log
