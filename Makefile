@@ -7,9 +7,16 @@
 # List only the implementation files (*.cxx). For every implementation file
 # there must be a corresponding header file (*.h).
 
+SOVERSION := 0.90
+PATCH     := 0
+VERSION   := $(SOVERSION).$(PATCH)
+EXTVERS   :=
+VERCODE := $(shell echo $(subst ., ,$(SOVERSION)) $(PATCH) | \
+   awk '{ print $$1*65536 + $$2*256 + $$3 }')
+
 USEWILDCARD = 1
 ifdef USEWILDCARD
-SRC = $(wildcard src/*.cxx)
+SRC = $(sort $(wildcard src/*.cxx))
 else
 SRC  =  src/THcInterface.cxx src/THcParmList.cxx src/THcAnalyzer.cxx \
 	src/THcHallCSpectrometer.cxx \
@@ -183,8 +190,30 @@ HDR           = $(SRC:.cxx=.h)
 DEP           = $(SRC:.cxx=.d) src/main.d
 OBJS          = $(OBJ) $(USERDICT).o
 HDR_COMPILEDATA = $(ANALYZER)/src/ha_compiledata.h
+HCHDR_COMPILEDATA = src/hc_compiledata.h
 
 all:		$(USERLIB) hcana
+
+src/hc_compiledata.h: Makefile
+		@echo "#ifndef HCANA_COMPILEDATA_H" > $@
+		@echo "#define HCANA_COMPILEDATA_H" >> $@
+		@echo "" >> $@
+		@echo "#define HC_INCLUDEPATH \"$(shell pwd)/src\"" >> $@
+		@echo "#define HC_VERSION \"$(VERSION)$(EXTVERS)\"" >> $@
+		@echo "#define HC_DATE \"$(shell date '+%b %d %Y')\"" >> $@
+#		@echo "#define HC_DATETIME \"$(shell date '+%a %b %d %H:%M:%S %Z %Y')\"" >> $@
+		@echo "#define HC_DATETIME \"$(shell date '+%a %b %d %Y')\"" >> $@
+		@echo "#define HC_PLATFORM \"$(shell uname -s)-$(shell uname -r)-$(shell uname -m)\"" >> $@
+		@echo "#define HC_BUILDNODE \"$(shell uname -n)\"" >> $@
+		@echo "#define HC_BUILDDIR \"$(shell pwd)\"" >> $@
+		@echo "#define HC_BUILDUSER \"$(shell whoami)\"" >> $@
+		@echo "#define HC_GITVERS \"$(shell git rev-parse HEAD 2>/dev/null | cut -c1-7)\"" >> $@
+		@echo "#define HC_CXXVERS \"$(shell $(CXX) --version 2>/dev/null | head -1)\"" >> $@
+		@echo "#define HC_ROOTVERS \"$(shell root-config --version)\"" >> $@
+		@echo "#define HCANA_VERSION_CODE $(VERCODE)" >> $@
+		@echo "#define HCANA_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))" >> $@
+		@echo "" >> $@
+		@echo "#endif" >> $@
 
 LIBDIR:=$(ANALYZER)
 LIBHALLA     := $(LIBDIR)/libHallA.so
@@ -199,21 +228,25 @@ else
   EVIOLIB    := -levio
 endif
 
-src/THcInterface.d:  $(HDR_COMPILEDATA)
+src/THcInterface.d:  $(HDR_COMPILEDATA) $(HCHDR_COMPILEDATA)
 
 hcana:		src/main.o $(LIBDC) $(LIBHALLA) $(USERLIB)
 		$(LD) $(LDFLAGS) $< -lHallC $(HALLALIBS) $(EVIOLIB) -L. $(CCDBLIBS) \
 		$(GLIBS) -o $@
 
-$(USERLIB):	$(HDR) $(OBJS)
+$(USERLIB).$(VERSION):	$(HDR) $(OBJS)
 		$(LD) $(LDFLAGS) $(SOFLAGS) -o $@ $(OBJS)
 		@echo "$@ done"
+
+$(USERLIB): $(USERLIB).$(VERSION)
+	rm -f $@
+	ln -s $(notdir $<) $@
 
 $(HDR_COMPILEDATA) $(LIBHALLA) $(LIBDC): $(ANALYZER)/Makefile
 		@echo "Building Podd"
 		@cd $(ANALYZER) ; export PODD_EXTRA_DEFINES=-DHALLC_MODS ; make
 
-$(USERDICT).cxx: $(RCHDR) $(HDR) $(LINKDEF)
+$(USERDICT).C: $(RCHDR) $(HDR) $(LINKDEF)
 	@echo "Generating dictionary $(USERDICT)..."
 	$(ROOTBIN)/rootcint -f $@ -c $(INCLUDES) $(CCDBFLAGS) $^
 
@@ -228,7 +261,7 @@ install:	all
 	cp -p $(USERLIB) $(HOME)/cue/SRC/ana
 
 clean:
-		rm -f src/*.o *~ $(USERLIB) $(USERDICT).*
+		rm -f src/*.o *~ $(USERLIB) $(USERLIB).$(VERSION) $(USERDICT).*
 
 realclean:	clean
 		rm -f *.d NormAnaDict.* THaDecDict.* THaScallDict.* bin/hcana

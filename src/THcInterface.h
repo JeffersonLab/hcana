@@ -24,6 +24,7 @@ public:
 #else
   virtual void PrintLogo(Bool_t lite = kFALSE);
 #endif
+  static const char* GetVersionString();
 
 protected:
 

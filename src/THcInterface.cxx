@@ -15,6 +15,8 @@ for the Hall C style parameter database.
 #include "THcDetectorMap.h"
 #include "THcGlobals.h"
 #include "ha_compiledata.h"
+#include "hc_compiledata.h"
+#include <sstream>
 
 #include "TTree.h"
 
@@ -90,7 +92,7 @@ void THcInterface::PrintLogo( Bool_t lite )
      mille = iyear;
    char* root_date = Form("%s %d %4d",months[imonth-1],iday,mille);
 
-   const char* halla_version = HA_VERSION;
+   //   const char* halla_version = HA_VERSION;
    //   const char* halla_date = Form("%d %s %4d",24,months[2-1],2003);
 
 #if ROOT_VERSION_CODE >= ROOT_VERSION(5,18,0)
@@ -101,9 +103,9 @@ void THcInterface::PrintLogo( Bool_t lite )
      Printf("  *            W E L C O M E  to  the            *");
      Printf("  *          H A L L C ++  A N A L Y Z E R       *");
      Printf("  *                                              *");
-     Printf("  *            Based on                          *");
-     Printf("  *  PODD Release  %10s %18s *",halla_version,__DATE__);
-     Printf("  *  Based on ROOT %8s %20s *",root_version,root_date);
+     Printf("  *  hcana release %10s %18s *",HC_VERSION,HC_DATE);
+     Printf("  *  PODD release  %10s %18s *",HA_VERSION,HA_DATE);
+     Printf("  *  ROOT            %8s %18s *",root_version,root_date);
      Printf("  *                                              *");
      Printf("  *            For information visit             *");
      Printf("  *      http://hallcweb.jlab.org/hcana/docs/    *");
@@ -120,6 +122,24 @@ void THcInterface::PrintLogo( Bool_t lite )
 
    gInterpreter->PrintIntro();
 
+}
+
+//_____________________________________________________________________________
+const char* THcInterface::GetVersionString()
+{
+  // Get software version string (printed by analyzer -v)
+
+  static TString version_string;
+
+  if( version_string.IsNull() ) {
+    ostringstream ostr;
+    ostr << "hcana " << HC_VERSION << " ";
+    if( strlen(HC_GITVERS) > 0 )
+      ostr << "git @" << HC_GITVERS << " ";
+    ostr << THaInterface::GetVersionString();
+    version_string = ostr.str().c_str();
+  }
+  return version_string.Data();
 }
 
 //_____________________________________________________________________________

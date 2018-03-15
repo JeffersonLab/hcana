@@ -26,7 +26,7 @@ int main(int argc, char **argv)
   }
 
   if( print_version ) {
-    cout << "hcana using " << THcInterface::GetVersionString() << endl;
+    cout << THcInterface::GetVersionString() << endl;
     return 0;
   }
 
