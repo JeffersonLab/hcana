@@ -10,6 +10,7 @@ for the Hall C style parameter database.
 
 #include "TROOT.h"
 #include "THcInterface.h"
+#include "TInterpreter.h"
 #include "THcParmList.h"
 #include "THcDetectorMap.h"
 #include "THcGlobals.h"
