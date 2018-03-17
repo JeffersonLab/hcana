@@ -241,6 +241,7 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   }
 
   fResiduals = new Double_t [fNPlanes];
+  fResidualsExclPlane = new Double_t [fNPlanes];
   fWire_hit_did = new Double_t [fNPlanes];
   fWire_hit_should = new Double_t [fNPlanes];
 
@@ -413,6 +414,7 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "sp2_id", " (golden track) ", "fSp2_ID_best"},
     { "gtrack_nsp", " Number of space points in golden track ", "fNsp_best"},
     { "residual", "Residuals", "fResiduals"},
+    { "residualExclPlane", "Residuals", "fResidualsExclPlane"},
     { "wireHitDid","Wire did have  matched track hit", "fWire_hit_did"},
     { "wireHitShould", "Wire should have matched track hit", "fWire_hit_should"},
     { 0 }
@@ -501,6 +503,7 @@ void THcDC::ClearEvent()
 
   for(Int_t i=0;i<fNPlanes;i++) {
     fResiduals[i] = 1000.0;
+    fResidualsExclPlane[i] = 1000.0;
     fWire_hit_did[i] = 1000.0;
     fWire_hit_should[i] = 1000.0;
   }
@@ -646,6 +649,7 @@ void THcDC::SetFocalPlaneBestTrack(Int_t golden_track_index)
 	THcDCHit *hit = tr1->GetHit(ihit);
 	Int_t plane = hit->GetPlaneNum() - 1;
         fResiduals[plane] = tr1->GetResidual(plane);
+        fResidualsExclPlane[plane] = tr1->GetResidualExclPlane(plane);
 	 } 
 	 EfficiencyPerWire(golden_track_index);
 }
@@ -1027,7 +1031,55 @@ void THcDC::TrackFit()
       theDCTrack->SetVector(dray[0], dray[1], 0.0, dray[2], dray[3]);
     }
     theDCTrack->SetChisq(chi2);
+
+      // calculate ray without a plane in track
+    for(Int_t ipl_hit=0;ipl_hit < theDCTrack->GetNHits();ipl_hit++) {    
+    if(theDCTrack->GetNFree() > 0) {
+      TVectorD TT(NUM_FPRAY);
+      TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
+      for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
+	TT[irayp] = 0.0;
+	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+          if (ihit != ipl_hit) {
+	  TT[irayp] += (coords[ihit]*
+			fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])
+	    /pow(fSigma[planes[ihit]],2);
+          }
+	}
+      }
+      for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
+	for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
+	  AA[irayp][jrayp] = 0.0;
+	  if(jrayp<irayp) { // Symmetric
+	    AA[irayp][jrayp] = AA[jrayp][irayp];
+	  } else {
+	    for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+              if (ihit != ipl_hit) {
+	      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
+		fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
+		pow(fSigma[planes[ihit]],2);
+	      }
+	    }
+	  }
+	}
+      }
+      //
+     // Solve 4x4 equations
+      // Should check that it is invertable
+      TVectorD dray(NUM_FPRAY);
+      AA.Invert();
+      dray = AA*TT;
+	Double_t coord=0.0;
+	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
+	  coord += fPlaneCoeffs[planes[ipl_hit]][raycoeffmap[ir]]*dray[ir];
+	  // cout << "ir = " << ir << ", dray[ir] = " << dray[ir] << endl;
+	}
+	Double_t residual = coords[ipl_hit] - coord;
+	theDCTrack->SetResidualExclPlane(planes[ipl_hit], residual);
+    }
+    }
   }
+      //Calculate residual without plane
 
   // Calculate residuals for each chamber if in single stub mode
   // and there was a track found in each chamber

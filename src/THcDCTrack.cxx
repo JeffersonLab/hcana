@@ -13,6 +13,7 @@ THcDCTrack::THcDCTrack(Int_t nplanes) : fnSP(0), fNHits(0)
   fHits.clear();
   fCoords.resize(nplanes);
   fResiduals.resize(nplanes);
+  fResidualsExclPlane.resize(nplanes);
   fDoubleResiduals.resize(nplanes);
 }
 
