@@ -122,6 +122,7 @@ protected:
   Int_t fNSp;                   // Number of space points
   Int_t fNsp_best;                   // Number of space points for gloden track
   Double_t* fResiduals;         //[fNPlanes] Array of residuals
+  Double_t* fResidualsExclPlane;         //[fNPlanes] Array of residuals with plane excluded
   Double_t* fWire_hit_did;      //[fNPlanes]
   Double_t* fWire_hit_should;   //[fNPlanes]
 

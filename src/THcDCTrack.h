@@ -37,6 +37,7 @@ public:
   Double_t GetCoord(Int_t ip)     const {return fCoords[ip];}
   Double_t GetResidual(Int_t ip)     const {return fResiduals[ip];}
   Double_t GetResidual1()     const {return fResiduals[0];}
+  Double_t GetResidualExclPlane(Int_t ip)     const {return fResidualsExclPlane[ip];}
   void GetRay(Double_t *ray) const {ray[0]=fX_fp; ray[1]=fY_fp; ray[2]=fXp_fp; ray[3]=fYp_fp;}
   Double_t GetX()                 const {return fX_fp;}
   Double_t GetY()                 const {return fY_fp;}
@@ -48,6 +49,7 @@ public:
   void SetNFree(Int_t nfree)           {fNfree = nfree;}
   void SetCoord(Int_t ip, Double_t coord) {fCoords[ip] = coord;}
   void SetResidual(Int_t ip, Double_t coord) {fResiduals[ip] = coord;}
+  void SetResidualExclPlane(Int_t ip, Double_t coord) {fResidualsExclPlane[ip] = coord;}
   void SetDoubleResidual(Int_t ip, Double_t coord) {fDoubleResiduals[ip] = coord;}
   void SetVector(Double_t x, Double_t y, Double_t z,
 		 Double_t xp, Double_t yp) {fX_fp = x; fY_fp=y; fZ_fp=z; fXp_fp=xp; fYp_fp=yp;}
@@ -78,6 +80,7 @@ protected:
   //std::vector<THcDCHit*> fHits; /* List of hits for this track */
   std::vector<Double_t> fCoords; /* Coordinate on each plane */
   std::vector<Double_t> fResiduals; /* Residual on each plane */
+  std::vector<Double_t> fResidualsExclPlane; /* Residual on each plane */
   std::vector<Double_t> fDoubleResiduals; /* Residual on each plane for single stub mode */
   Double_t fX_fp, fY_fp, fZ_fp;
   Double_t fXp_fp, fYp_fp;
