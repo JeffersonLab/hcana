@@ -25,6 +25,8 @@ for hcheaderfile in hcheadersbase:
     basefilename = filename.rsplit('.',1)
     newbasefilename = basefilename[0].rsplit('/',1)
     # Assume filenames beginning with Scaler are decoder classes
+    if newbasefilename[1] == 'hc_compiledata':
+        continue
     if newbasefilename[1][:6] == 'Scaler' or newbasefilename[1] == "TIBlobModule":
         cmd1 = "echo '#pragma link C++ class Decoder::%s+;' >> src/HallC_LinkDef.h" % newbasefilename[1]
     else:
@@ -34,13 +36,13 @@ for hcheaderfile in hcheadersbase:
 cmd = "cat src/HallC_LinkDef.h_postamble >> src/HallC_LinkDef.h"
 os.system(cmd)
 
-hcheaders = Glob('src/*.h',exclude=['src/HallC_LinkDef.h'])+Glob('src/HallC_LinkDef.h')
+hcheaders = Glob('src/*.h',exclude=['src/HallC_LinkDef.h','src/hc_compiledata.h'])+Glob('src/HallC_LinkDef.h')
 
 pbaseenv.RootCint(roothcdict,hcheaders)
 pbaseenv.Clean(roothcdict,re.sub(r'\.C\Z','_rdict.pcm',roothcdict))
 pbaseenv.SharedObject(target = roothcobj, source = roothcdict)
 
-#######  write src/ha_compiledata.h header file ######
+#######  write src/hc_compiledata.h header file ######
 
 if sys.version_info >= (2, 7):
     try:
