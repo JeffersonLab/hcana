@@ -53,6 +53,8 @@ examples/db_cratemap.dat
 examples/report.out
 examples/periodic.out
 examples/HScaler.txt
+examples/raw
+examples/cache
 
 # Working directory
 work
