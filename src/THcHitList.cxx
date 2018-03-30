@@ -21,12 +21,13 @@
 using namespace std;
 
 #define SUPPRESSMISSINGADCREFTIMEMESSAGES 1
-THcHitList::THcHitList()
+THcHitList::THcHitList() : fMap(0), fTISlot(0)
 {
   /// Normal constructor.
 
   fRawHitList = NULL;
   fPSE125 = NULL;
+  fFADCSlotMap.clear();
 
 }
 
@@ -42,6 +43,16 @@ initialize a hit array of hits of class hitclass
 \param[in] detmap Electronics mapping made by THcDetectorMap::FillMap
 \param[in] hitclass Name of hit class used by this detector
 \param[in] maxhits Maximum number of hits for this detector
+
+*/
+
+
+/* InitHitList should make a list of ROCs that have FADCs in them.  (Probably
+just one.)  It then needs to figure out where the TI is and make sure
+the decoder is setup for pulling out the event time.
+
+Do we need to somehow configure this in the Hall C style map file.  Is there
+a method to ask the OO decoder what kind of module is in a given slot?
 
 */
 
@@ -171,6 +182,48 @@ The hit list is sorted (by plane, counter) after filling.
 */
 Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarnings ) {
 
+  if(!fMap) {			// Find the TI slot for ADCs
+    // Assumes that all FADCs are in the same crate
+    cout << "Got the Crate map" << endl;
+    fMap = evdata.GetCrateMap();
+    for (Int_t i=0; i < fdMap->GetSize(); i++) { // Look for a FADC250
+      THaDetMap::Module* d = fdMap->GetModule(i);
+      Decoder::Fadc250Module* isfadc = dynamic_cast<Decoder::Fadc250Module*>(evdata.GetModule(d->crate, d->slot));
+      if(isfadc) {
+	// Scan this crate to find the TI.
+	for(Int_t slot=0;slot<Decoder::MAXSLOT;slot++) {
+	  if(fMap->getModel(d->crate, slot) == 4) {
+	    fTISlot = slot;
+	    fTICrate = d->crate;
+	    cout << "TI Slot = " << fTISlot << endl;
+	    break;
+	  }
+	}
+	// Now make a map of all the FADCs in this crate
+	if(fTISlot>0) {
+	  for(Int_t slot=0;slot<Decoder::MAXSLOT;slot++) {
+	    Decoder::Fadc250Module* fadc = dynamic_cast<Decoder::Fadc250Module*>
+	      (evdata.GetModule(d->crate, slot));
+	    if(fadc) {
+	      fFADCSlotMap[slot] = fadc;
+	    }
+	  }	    
+	}
+	break;
+      }
+    }
+  }
+    
+  Int_t titime = 0;
+  if(fTISlot!=0) {
+#define FUDGE 7
+    titime = evdata.GetData(fTICrate, fTISlot, 2, 0)-FUDGE;
+    // Need to get the FADC time for all modules in this crate
+    // that have hits.  Make a map with these times.
+    fTrigTimeShiftMap.clear();
+    //cout << "TI Crate: " << fTICrate << " " << (UInt_t) titime << endl;
+  }
+
   // cout << " Clearing TClonesArray " << endl;
   fRawHitList->Clear( );
   fNRawHits = 0;
@@ -180,6 +233,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
   // Get the indexed reference times for this event
   for(Int_t i=0;i<fNRefIndex;i++) {
     if(fRefIndexMaps[i].defined) {
+      
       if(evdata.IsMultifunction(fRefIndexMaps[i].crate,
 				fRefIndexMaps[i].slot)) { // Multifunction module (e.g. FADC)
 	// Make sure at least one pulse
@@ -187,12 +241,24 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 					     fRefIndexMaps[i].crate,
 					     fRefIndexMaps[i].slot,
 					     fRefIndexMaps[i].channel);
+	Int_t timeshift=0;
+	if(fTISlot>0) {		// Get the trigger time for this module
+	  if(fTrigTimeShiftMap.find(fRefIndexMaps[i].slot)
+	     == fTrigTimeShiftMap.end()) { // 
+	    if(fFADCSlotMap.find(fRefIndexMaps[i].slot) != fFADCSlotMap.end()) {
+	      fTrigTimeShiftMap[fRefIndexMaps[i].slot]
+		= fFADCSlotMap[fRefIndexMaps[i].slot]->GetTriggerTime() - titime;
+	    }
+	    timeshift = fTrigTimeShiftMap[fRefIndexMaps[i].slot];
+	  }
+	}
 	fRefIndexMaps[i].hashit = kFALSE;
 	Bool_t goodreftime=kFALSE;
 	Int_t reftime = 0;
 	for(Int_t ihit=0; ihit<nrefhits; ihit++) {
 	  reftime = evdata.GetData(Decoder::kPulseTime,fRefIndexMaps[i].crate,
 				   fRefIndexMaps[i].slot, fRefIndexMaps[i].channel,ihit);
+	  reftime += 64*timeshift;
 	  if(reftime >= fADC_RefTimeCut) {
 	    goodreftime = kTRUE;
 	    break;
@@ -343,10 +409,21 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	// Pulse area will go into regular SetData, others will use special hit methods
 	Int_t npulses=evdata.GetNumEvents(Decoder::kPulseIntegral, d->crate, d->slot, chan);
 	// Assume that the # of pulses for kPulseTime, kPulsePeak and kPulsePedestal are same;
+	Int_t timeshift=0;
+	if(fTISlot>0) {		// Get the trigger time for this module
+	  if(fTrigTimeShiftMap.find(d->slot)
+	     == fTrigTimeShiftMap.end()) { // 
+	    if(fFADCSlotMap.find(d->slot) != fFADCSlotMap.end()) {
+	      fTrigTimeShiftMap[d->slot]
+		= fFADCSlotMap[d->slot]->GetTriggerTime() - titime;
+	    }
+	  }
+	  timeshift = fTrigTimeShiftMap[d->slot];
+	}
 	for (Int_t ipulse=0;ipulse<npulses;ipulse++) {
 	  rawhit->SetDataTimePedestalPeak(signal,
 					  evdata.GetData(Decoder::kPulseIntegral, d->crate, d->slot, chan, ipulse),
-					  evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, chan, ipulse),
+					  evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, chan, ipulse)+64*timeshift,
 					  evdata.GetData(Decoder::kPulsePedestal, d->crate, d->slot, chan, ipulse),
 					  evdata.GetData(Decoder::kPulsePeak, d->crate, d->slot, chan, ipulse));
 	}
@@ -356,8 +433,20 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 					       d->crate, d->slot, d->refchan);
 	  Bool_t goodreftime=kFALSE;
 	  Int_t reftime = 0;
+	  timeshift=0;
+	  if(fTISlot>0) {		// Get the trigger time for this module
+	    if(fTrigTimeShiftMap.find(d->slot)
+	       == fTrigTimeShiftMap.end()) { // 
+	      if(fFADCSlotMap.find(d->slot) != fFADCSlotMap.end()) {
+		fTrigTimeShiftMap[d->slot]
+		  = fFADCSlotMap[d->slot]->GetTriggerTime() - titime;
+	      }
+	    }
+	    timeshift = fTrigTimeShiftMap[d->slot];
+	  }
 	  for(Int_t ihit=0; ihit<nrefhits; ihit++) {
 	    reftime = evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, d->refchan, ihit);
+	    reftime += 64*timeshift;
 	    if(reftime >= fADC_RefTimeCut) {
 	      goodreftime=kTRUE;
 	      break;
@@ -397,6 +486,18 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
       }
     }
   }
+#if 1
+  if(fTISlot) {
+    //    cout << "TI ROC: " << fTICrate << "   TI Time: " << titime << endl;
+    map<Int_t, Int_t>::iterator it;
+    for(it=fTrigTimeShiftMap.begin(); it!=fTrigTimeShiftMap.end(); it++) {
+      if(it->second < -3 || it->second > 3) {
+	cout << "Big ADC Trigger Time Shift, ROC " << fTICrate << endl;
+	cout << it->first << " " << it->second << endl;
+      }
+    }
+  }
+#endif    
   fRawHitList->Sort(fNRawHits);
 
   fNTDCRef_miss += (tdcref_miss ? 1 : 0);

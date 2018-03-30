@@ -7,8 +7,11 @@
 #include "TClonesArray.h"
 #include "TObject.h"
 #include "Decoder.h"
+#include "THaCrateMap.h"
+#include "Fadc250Module.h"
 
 #include <iomanip>
+#include <map>
 
 using namespace std;
 
@@ -29,7 +32,7 @@ public:
 
   THcHitList();
 
-  virtual Int_t DecodeToHitList( const THaEvData&, Bool_t suppress=kFALSE );
+  virtual Int_t DecodeToHitList( const THaEvData& evdata, Bool_t suppress=kFALSE );
   void          InitHitList(THaDetMap* detmap,
 			    const char *hitclass, Int_t maxhits,
 			    Int_t tdcref_cut=0, Int_t adcref_cut=0);
@@ -75,6 +78,12 @@ protected:
 
   Int_t fNTDCRef_miss;
   Int_t fNADCRef_miss;
+
+  Decoder::THaCrateMap* fMap;	/* The Crate map */
+  Int_t fTISlot;
+  Int_t fTICrate;
+  std::map<Int_t, Int_t> fTrigTimeShiftMap;
+  std::map<Int_t, Decoder::Fadc250Module*> fFADCSlotMap;
 
   ClassDef(THcHitList,0);  // List of raw hits sorted by plane, counter
 };
