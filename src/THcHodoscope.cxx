@@ -1295,7 +1295,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	  fFPTime[ip] = 1000. * ( ip + 1 );
 	}
       }
-      Double_t fptime = FPTimeSum/nFPTimeSum;
+      Double_t fptime=-1000;
+      if (nFPTimeSum>0) fptime = FPTimeSum/nFPTimeSum;
       fFPTimeAll = fptime;
       Double_t dedx=0.0;
       for(UInt_t ih=0;ih<fTOFCalc.size();ih++) {
@@ -1666,6 +1667,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray&  tracks  )
     THaTrack* theTrack = static_cast<THaTrack*>( tracks[itrk] );
     if (theTrack->GetIndex()==0) {
     fBeta=theTrack->GetBeta();
+    fFPTimeAll=theTrack->GetFPTime();
     Double_t shower_track_enorm = theTrack->GetEnergy()/theTrack->GetP();
     for (Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ){
         Double_t pl_xypos=0;
