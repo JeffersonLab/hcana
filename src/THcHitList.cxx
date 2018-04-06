@@ -21,7 +21,7 @@
 using namespace std;
 
 #define SUPPRESSMISSINGADCREFTIMEMESSAGES 1
-THcHitList::THcHitList() : fMap(0), fTISlot(0)
+THcHitList::THcHitList() : fMap(0), fTISlot(0), fDisableSlipCorrection(kFALSE)
 {
   /// Normal constructor.
 
@@ -167,6 +167,8 @@ void THcHitList::InitHitList(THaDetMap* detmap,
 
   fNTDCRef_miss = 0;
   fNADCRef_miss = 0;
+
+  //  DisableSlipCorrection();
 }
 
 /**
@@ -213,9 +215,10 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
       }
     }
   }
+  if(fDisableSlipCorrection) fTISlot = -1;
     
   Int_t titime = 0;
-  if(fTISlot!=0) {
+  if(fTISlot>0) {
 #define FUDGE 7
     titime = evdata.GetData(fTICrate, fTISlot, 2, 0)-FUDGE;
     // Need to get the FADC time for all modules in this crate
@@ -487,7 +490,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
     }
   }
 #if 1
-  if(fTISlot) {
+  if(fTISlot>0) {
     //    cout << "TI ROC: " << fTICrate << "   TI Time: " << titime << endl;
     map<Int_t, Int_t>::iterator it;
     for(it=fTrigTimeShiftMap.begin(); it!=fTrigTimeShiftMap.end(); it++) {

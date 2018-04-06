@@ -40,6 +40,7 @@ public:
   TClonesArray* GetHitList() const {return fRawHitList; }
   void          CreateMissReportParms(const char *prefix);
   void          MissReport(const char *name);
+  void          DisableSlipCorrection() {fDisableSlipCorrection = kTRUE;}
 
   UInt_t         fNRawHits;
   Int_t         fNMaxRawHits;
@@ -82,6 +83,7 @@ protected:
   Decoder::THaCrateMap* fMap;	/* The Crate map */
   Int_t fTISlot;
   Int_t fTICrate;
+  Double_t fDisableSlipCorrection;
   std::map<Int_t, Int_t> fTrigTimeShiftMap;
   std::map<Int_t, Decoder::Fadc250Module*> fFADCSlotMap;
 
