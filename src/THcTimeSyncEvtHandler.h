@@ -8,9 +8,13 @@
 /////////////////////////////////////////////////////////////////////
 
 #include "THaEvtTypeHandler.h"
+#include "Decoder.h"
 #include <string>
 #include <vector>
 #include <map>
+
+//class THaRunBase;
+//class THaEvData;
 
 class THcTimeSyncEvtHandler : public THaEvtTypeHandler {
 
@@ -24,23 +28,43 @@ public:
   virtual void PrintStats();
   virtual void SetExpectedOffset(Int_t roc, Int_t offset);
   virtual void AddExpectedOffset(Int_t roc, Int_t offset);
-
- //  Float_t GetData(const std::string& tag);
+  virtual Int_t End( THaRunBase* r=0 );
+  virtual Int_t SetRewriteFile(const char *filename);
+  virtual void SetBadROC(Int_t roc) {fBadROC = roc;}
+  virtual void SetResync(Bool_t b) {fResync = b;}
+  virtual void SetBadSyncSizeTrigger(Int_t sizetrigger) {fBadSyncSizeTrigger = sizetrigger;}
 
 private:
 
   virtual void InitStats();
-  virtual void AccumulateStats();
+  virtual void AccumulateStats(Bool_t sync);
 
   Bool_t fFirstTime;
   Int_t fMasterRoc; // ROC with the TI master
   Int_t fNEvents;   // Number of events analyzed
+  Int_t fSlippage;
+  UInt_t fLastEvent[32000];
+  UInt_t fSlippingBank[32000];
+  Bool_t fWriteDelayed;
+  Int_t fDumpNew;
+  Int_t fBadROC;		// ROC to check and filter sync problems
+  Bool_t fResync;		// If true, stop correcting events on sync
+  Int_t fBadSyncSizeTrigger;
+  Bool_t fLastEventWasSync;	// True when last event was sync event
+
+  Decoder::THaCodaFile* fCodaOut; // The CODA output file
+  Int_t handle;
 
   typedef struct RocTimes {
     Bool_t has_ti_ttime;
     UInt_t ti_ttime;
+    UInt_t ti_evcount;
     std::map<Int_t, UInt_t> fadcTimesMap;
-    RocTimes() : has_ti_ttime(kFALSE) {fadcTimesMap.clear();}
+    std::map<Int_t, UInt_t> ftdcEvCountMap;
+    RocTimes() : has_ti_ttime(kFALSE) {
+      fadcTimesMap.clear();
+      ftdcEvCountMap.clear();
+    }
   } RocTimes_t;
 
   typedef struct RocStats {
@@ -51,12 +75,16 @@ private:
     std::map<Int_t, Int_t> fadcOffsetMap;
     std::map<Int_t, Int_t> fadcEarlySlipCountMap;
     std::map<Int_t, Int_t> fadcLateSlipCountMap;
+    std::map<Int_t, Int_t> ftdcEvCountWrongMap;
+    std::map<Int_t, Int_t> ftdcEvCountOffsetMap;
     RocStats() : ti_ttime_offset(0), ti_earlyslipcount(0), ti_lateslipcount(0),
       fadc_expected_offset(0)
     {
       fadcOffsetMap.clear();
       fadcEarlySlipCountMap.clear();
       fadcLateSlipCountMap.clear();
+      ftdcEvCountWrongMap.clear();
+      ftdcEvCountOffsetMap.clear();
     }
   } RocStats_t;
 
