@@ -55,7 +55,15 @@ class THcTrigDet : public THaDetector, public THcHitList {
 
     Int_t fTdcTimeRaw[fMaxTdcChannels];
     Double_t fTdcTime[fMaxTdcChannels];
+    Int_t fTDC_RefTimeCut;
+    Int_t fADC_RefTimeCut;
 
+    Double_t *fAdcTimeWindowMin;    
+    Double_t *fAdcTimeWindowMax;    
+    Double_t *fTdcTimeWindowMin;    
+    Double_t *fTdcTimeWindowMax;    
+
+    
     Int_t fAdcPedRaw[fMaxAdcChannels];
     Int_t fAdcPulseIntRaw[fMaxAdcChannels];
     Int_t fAdcPulseAmpRaw[fMaxAdcChannels];
