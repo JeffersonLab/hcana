@@ -173,9 +173,8 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
   if (status) {
     fStatus = status;
     return fStatus;
-  }
-
-
+  
+}
   // Fill in detector map.
   string EngineDID = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
   std::transform(EngineDID.begin(), EngineDID.end(), EngineDID.begin(), ::toupper);
@@ -338,8 +337,8 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   DBRequest list2[]={
     {"_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble,     (UInt_t) fNumAdc, 1},
     {"_AdcTimeWindowMax", fAdcTimeWindowMax, kDouble,     (UInt_t) fNumAdc, 1},
-    {"_TdcTimeWindowMin", fTdcTimeWindowMin, kDouble,     (UInt_t) fNumAdc, 1},
-    {"_TdcTimeWindowMax", fTdcTimeWindowMax, kDouble,     (UInt_t) fNumAdc, 1},
+    {"_TdcTimeWindowMin", fTdcTimeWindowMin, kDouble,     (UInt_t) fNumTdc, 1},
+    {"_TdcTimeWindowMax", fTdcTimeWindowMax, kDouble,     (UInt_t) fNumTdc, 1},
     {0}
   };
 
