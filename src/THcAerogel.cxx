@@ -282,12 +282,14 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fPosNpe                = vector<Double_t> (fNelem, 0.0);
   fNegNpe                = vector<Double_t> (fNelem, 0.0);
   fGoodPosAdcPed         = vector<Double_t> (fNelem, 0.0);
+  fGoodPosAdcMult         = vector<Double_t> (fNelem, 0.0);
   fGoodPosAdcPulseInt    = vector<Double_t> (fNelem, 0.0);
   fGoodPosAdcPulseIntRaw = vector<Double_t> (fNelem, 0.0);
   fGoodPosAdcPulseAmp    = vector<Double_t> (fNelem, 0.0);
   fGoodPosAdcPulseTime   = vector<Double_t> (fNelem, 0.0);
   fGoodPosAdcTdcDiffTime   = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPed         = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcMult        = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseInt    = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseIntRaw = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseAmp    = vector<Double_t> (fNelem, 0.0);
@@ -322,8 +324,12 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_dp_max",           &fDpMax,            kDouble},
     {"aero_diff_box_zpos",    &fDiffBoxZPos,      kDouble},
     {"aero_npe_thresh",       &fNpeThresh,        kDouble},
-    {"aero_adcTimeWindowMin", &fAdcTimeWindowMin, kDouble},
-    {"aero_adcTimeWindowMax", &fAdcTimeWindowMax, kDouble},
+    ////    {"aero_adcTimeWindowMin", &fAdcTimeWindowMin, kDouble},
+    ////    {"aero_adcTimeWindowMax", &fAdcTimeWindowMax, kDouble},
+    {"aero_adcPosTimeWindowMin", &fAdcPosTimeWindowMin, kDouble, 0, 1},
+    {"aero_adcPosTimeWindowMax", &fAdcPosTimeWindowMax, kDouble, 0, 1},
+    {"aero_adcNegTimeWindowMin", &fAdcNegTimeWindowMin, kDouble, 0, 1},
+    {"aero_adcNegTimeWindowMax", &fAdcNegTimeWindowMax, kDouble, 0, 1},
     {"aero_adc_tdc_offset",   &fAdcTdcOffset,     kDouble, 0, 1},
     {"aero_debug_adc",        &fDebugAdc,         kInt,    0, 1},
     {"aero_six_gev_data",     &fSixGevData,       kInt,    0, 1},
@@ -339,7 +345,10 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_adcrefcut",        &fADC_RefTimeCut,   kInt,    0, 1},
     {0}
   };
-
+  fAdcPosTimeWindowMin=-1000.;
+  fAdcNegTimeWindowMin=-1000.;
+  fAdcPosTimeWindowMax=1000.;
+  fAdcNegTimeWindowMax=1000.;
   fSixGevData = 0; // Set 6 GeV data parameter to false unless set in parameter file
   fDebugAdc   = 0; // Set ADC debug parameter to false unless set in parameter file
   fAdcTdcOffset = 0.0;
@@ -463,6 +472,7 @@ Int_t THcAerogel::DefineVariables( EMode mode )
     {"npeSum",    "Total Number of PEs",          "fNpeSum"},
 
     {"goodPosAdcPed",         "Good Negative ADC pedestals",           "fGoodPosAdcPed"},
+    {"goodPosAdcMult",         "Good Positive ADC mult",           "fGoodPosAdcMult"},
     {"goodPosAdcPulseInt",    "Good Negative ADC pulse integrals",     "fGoodPosAdcPulseInt"},
     {"goodPosAdcPulseIntRaw", "Good Negative ADC raw pulse integrals", "fGoodPosAdcPulseIntRaw"},
     {"goodPosAdcPulseAmp",    "Good Negative ADC pulse amplitudes",    "fGoodPosAdcPulseAmp"},
@@ -470,6 +480,7 @@ Int_t THcAerogel::DefineVariables( EMode mode )
     {"goodPosAdcTdcDiffTime",   "Good Positive hodo Start - ADC pulse times",         "fGoodPosAdcTdcDiffTime"},
 
     {"goodNegAdcPed",         "Good Negative ADC pedestals",           "fGoodNegAdcPed"},
+    {"goodNegAdcMult",         "Good Negative ADC Mult",           "fGoodNegAdcMult"},
     {"goodNegAdcPulseInt",    "Good Negative ADC pulse integrals",     "fGoodNegAdcPulseInt"},
     {"goodNegAdcPulseIntRaw", "Good Negative ADC raw pulse integrals", "fGoodNegAdcPulseIntRaw"},
     {"goodNegAdcPulseAmp",    "Good Negative ADC pulse amplitudes",    "fGoodNegAdcPulseAmp"},
@@ -538,6 +549,7 @@ void THcAerogel::Clear(Option_t* opt)
 
   for (UInt_t ielem = 0; ielem < fGoodPosAdcPed.size(); ielem++) {
     fGoodPosAdcPed.at(ielem)         = 0.0;
+    fGoodPosAdcMult.at(ielem)         = 0.0;
     fGoodPosAdcPulseInt.at(ielem)    = 0.0;
     fGoodPosAdcPulseIntRaw.at(ielem) = 0.0;
     fGoodPosAdcPulseAmp.at(ielem)    = 0.0;
@@ -547,6 +559,7 @@ void THcAerogel::Clear(Option_t* opt)
   }
   for (UInt_t ielem = 0; ielem < fGoodNegAdcPed.size(); ielem++) {
     fGoodNegAdcPed.at(ielem)         = 0.0;
+    fGoodNegAdcMult.at(ielem)         = 0.0;
     fGoodNegAdcPulseInt.at(ielem)    = 0.0;
     fGoodNegAdcPulseIntRaw.at(ielem) = 0.0;
     fGoodNegAdcPulseAmp.at(ielem)    = 0.0;
@@ -678,7 +691,7 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
 {
   Double_t StartTime = 0.0;
   if( fglHod ) StartTime = fglHod->GetStartTime();
-
+  //cout << " starttime = " << StartTime << endl ;
     // Loop over the elements in the TClonesArray
     for(Int_t ielem = 0; ielem < frPosAdcPulseInt->GetEntries(); ielem++) {
 
@@ -690,11 +703,14 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       Double_t pulseTime    = ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(ielem))->GetData();
       Double_t adctdcdiffTime = StartTime-pulseTime;
       Bool_t   errorFlag    = ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(ielem))->GetData();
-      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
+      ////      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
+      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcPosTimeWindowMin && adctdcdiffTime < fAdcPosTimeWindowMax;
 
       // By default, the last hit within the timing cut will be considered "good"
       if (!errorFlag && pulseTimeCut) {
     	fGoodPosAdcPed.at(npmt)         = pulsePed;
+   	fGoodPosAdcMult.at(npmt)         = frPosAdcPulseInt->GetEntries();
+	//	cout << " out = " << npmt << " " <<   frPosAdcPulseInt->GetEntries() << " " <<fGoodPosAdcMult.at(npmt); 
     	fGoodPosAdcPulseInt.at(npmt)    = pulseInt;
     	fGoodPosAdcPulseIntRaw.at(npmt) = pulseIntRaw;
     	fGoodPosAdcPulseAmp.at(npmt)    = pulseAmp;
@@ -721,11 +737,13 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       Double_t pulseTime    = ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(ielem))->GetData();
       Double_t adctdcdiffTime = StartTime-pulseTime;
       Bool_t   errorFlag    = ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
-      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
+      ////      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
+      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcNegTimeWindowMin && adctdcdiffTime < fAdcNegTimeWindowMax;
 
       // By default, the last hit within the timing cut will be considered "good"
       if (!errorFlag && pulseTimeCut) {
     	fGoodNegAdcPed.at(npmt)         = pulsePed;
+   	fGoodNegAdcMult.at(npmt)         = frNegAdcPulseInt->GetEntries();
     	fGoodNegAdcPulseInt.at(npmt)    = pulseInt;
     	fGoodNegAdcPulseIntRaw.at(npmt) = pulseIntRaw;
     	fGoodNegAdcPulseAmp.at(npmt)    = pulseAmp;
@@ -865,12 +883,12 @@ Int_t THcAerogel::FineProcess( TClonesArray& tracks )
     Bool_t trackBetaCut    = trackBeta    > fBetaMin    && trackBeta    < fBetaMax;
     Bool_t trackENormCut   = trackENorm   > fENormMin   && trackENorm   < fENormMax;
     Bool_t trackDpCut      = trackDp      > fDpMin      && trackDp      < fDpMax;
+        fXAtAero = trackXfp + trackTheta * fDiffBoxZPos;
+        fYAtAero = trackYfp + trackPhi   * fDiffBoxZPos;
 
     if (trackRedChi2Cut && trackBetaCut && trackENormCut && trackDpCut) {
 
         // Project the track to the Aerogel diffuser box plane
-        fXAtAero = trackXfp + trackTheta * fDiffBoxZPos;
-        fYAtAero = trackYfp + trackPhi   * fDiffBoxZPos;
 
         // cout << "Aerogel Detector: " << GetName() << endl;
         // cout << "nTracks = " << nTracks << "\t" << "trackChi2 = " << trackChi2

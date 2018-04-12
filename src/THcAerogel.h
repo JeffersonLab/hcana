@@ -65,8 +65,14 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   Double_t  fXAtAero;
   Double_t  fYAtAero;
   Double_t  fNpeThresh;
-  Double_t  fAdcTimeWindowMin;
-  Double_t  fAdcTimeWindowMax;
+
+  ////  Double_t  fAdcTimeWindowMin;
+  ////  Double_t  fAdcTimeWindowMax;
+  Double_t  fAdcPosTimeWindowMin;
+  Double_t  fAdcPosTimeWindowMax;
+  Double_t  fAdcNegTimeWindowMin;
+  Double_t  fAdcNegTimeWindowMax;
+
   Double_t  fAdcTdcOffset;
   Double_t  *fRegionValue;
   // Counting variables
@@ -113,12 +119,14 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   vector<Double_t> fPosNpe;
   vector<Double_t> fNegNpe;
   vector<Double_t> fGoodPosAdcPed;
+  vector<Double_t> fGoodPosAdcMult;
   vector<Double_t> fGoodPosAdcPulseInt;
   vector<Double_t> fGoodPosAdcPulseIntRaw;
   vector<Double_t> fGoodPosAdcPulseAmp;
   vector<Double_t> fGoodPosAdcPulseTime;
   vector<Double_t> fGoodPosAdcTdcDiffTime;
   vector<Double_t> fGoodNegAdcPed;
+  vector<Double_t> fGoodNegAdcMult;
   vector<Double_t> fGoodNegAdcPulseInt;
   vector<Double_t> fGoodNegAdcPulseIntRaw;
   vector<Double_t> fGoodNegAdcPulseAmp;
