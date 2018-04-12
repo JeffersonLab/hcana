@@ -499,12 +499,12 @@ Int_t THcCherenkov::FineProcess( TClonesArray& tracks )
     Bool_t trackBetaCut    = trackBeta    > fBetaMin    && trackBeta    < fBetaMax;
     Bool_t trackENormCut   = trackENorm   > fENormMin   && trackENorm   < fENormMax;
     Bool_t trackDpCut      = trackDp      > fDpMin      && trackDp      < fDpMax;
+        fXAtCer = trackXfp + trackTheta * fMirrorZPos;
+        fYAtCer = trackYfp + trackPhi   * fMirrorZPos;
 
     if (trackRedChi2Cut && trackBetaCut && trackENormCut && trackDpCut) {
 
         // Project the track to the Cherenkov mirror planes
-        fXAtCer = trackXfp + trackTheta * fMirrorZPos;
-        fYAtCer = trackYfp + trackPhi   * fMirrorZPos;
 
         // cout << "Cherenkov Detector: " << GetName() << " has fNRegions = " << fNRegions << endl;
         // cout << "nTracks = " << nTracks << "\t" << "trackChi2 = " << trackChi2
