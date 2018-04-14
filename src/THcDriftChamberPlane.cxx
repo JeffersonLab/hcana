@@ -325,17 +325,9 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   // Assumes that the hit list is sorted by plane, so we stop when the
   // plane doesn't agree and return the index for the next hit.
 
-  Double_t StartTime = 0.0;
-  // Would be nice to have a way to determine that the hodoscope decode was
-  // actually called for this event.
-  if( fglHod ) StartTime = fglHod->GetStartTime();
-  //cout << "Start time " << StartTime << endl;
-
-  //Int_t nTDCHits=0;
   fHits->Clear();
 
   Int_t nrawhits = rawhits->GetLast()+1;
-  // cout << "THcDriftChamberPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
   fNRawhits=0;
   Int_t ihit = nexthit;
   Int_t nextHit = 0;
@@ -346,7 +338,6 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
     Int_t wireNum = hit->fCounter;
     THcDCWire* wire = GetWire(wireNum);
-    // Int_t reftime = hit->GetReference(0);
     for(UInt_t mhit=0; mhit<hit->GetRawTdcHit().GetNHits(); mhit++) {
       fNRawhits++;
       /* Sort into early, late and ontime */
@@ -357,13 +348,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       } else if (rawtdc > fTdcWinMax) {
 	// Increment late count
       } else {
-	Double_t time = -StartTime   // (comes from h_trans_scin
-	  - rawtdc*fNSperChan + fPlaneTimeZero - fTzeroWire[wireNum-1]; // fNSperChan > 0 for 1877
-	// (cout << " Plane = " << GetName() << " wire = " << wireNum << " " <<  fPlaneTimeZero << " "  << fTzeroWire[wireNum-1] << endl;
-	// < 0 for Caen1190.
-	//	  - (rawtdc-reftime)*fNSperChan + fPlaneTimeZero;
-	// How do we get this start time from the hodoscope to here
-	// (or at least have it ready by coarse process)
+	Double_t time = - rawtdc*fNSperChan + fPlaneTimeZero - fTzeroWire[wireNum-1]; // fNSperChan > 0 for 1877
 	new( (*fHits)[nextHit++] ) THcDCHit(wire, rawnorefcorrtdc,rawtdc, time, this);
 	break;			// Take just the first hit in the time window
       }
@@ -371,4 +356,15 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     ihit++;
   }
   return(ihit);
+}
+Int_t THcDriftChamberPlane::SubtractStartTime()
+{
+  Double_t StartTime = 0.0;
+  if( fglHod ) StartTime = fglHod->GetStartTime();
+   for(Int_t ihit=0;ihit<GetNHits();ihit++) { 
+     THcDCHit *thishit = (THcDCHit*) fHits->At(ihit);
+     Double_t temptime= thishit->GetTime()-StartTime;
+     thishit->SetTime(temptime);
+   }
+  return 0;
 }

@@ -209,6 +209,7 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
 
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
+  cout << " DC tdc ref time cut = " << fTDC_RefTimeCut  << endl;
   InitHitList(fDetMap, "THcRawDCHit", fDetMap->GetTotNumChan()+1,
 	      fTDC_RefTimeCut, 0);
 
@@ -528,6 +529,8 @@ Int_t THcDC::Decode( const THaEvData& evdata )
   }
   fNhits = DecodeToHitList(evdata, !present);
 
+
+
   if(!gHaCuts->Result("Pedestal_event")) {
     // Let each plane get its hits
     Int_t nexthit = 0;
@@ -537,11 +540,6 @@ Int_t THcDC::Decode( const THaEvData& evdata )
 
     }
 
-    // Let each chamber get its hits
-    for(UInt_t ic=0;ic<fNChambers;ic++) {
-      fChambers[ic]->ProcessHits();
-      fNthits += fChambers[ic]->GetNHits();
-    }
     // fRawHitList is TClones array of THcRawDCHit objects
     Int_t counter=0;
     if (fdebugprintrawdc) {
@@ -577,11 +575,19 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
   // Apply corrections and reconstruct the complete hits.
   //
   //  static const Double_t sqrt2 = TMath::Sqrt(2.);
-  if (fdebugprintdecodeddc) {
-   for(UInt_t i=0;i<fNChambers;i++) {
-    fChambers[i]->PrintDecode();
-   }
-  }
+  //
+  // Subtract starttimes from each plane hit
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
+      fPlanes[ip]->SubtractStartTime();
+    }
+  //
+    // Let each chamber get its hits
+    for(UInt_t ic=0;ic<fNChambers;ic++) {
+      fChambers[ic]->ProcessHits();
+      fNthits += fChambers[ic]->GetNHits();
+      if (fdebugprintdecodeddc)fChambers[ic]->PrintDecode();
+    }
+    //
   for(UInt_t i=0;i<fNChambers;i++) {
     fChambers[i]->FindSpacePoints();
     fChambers[i]->CorrectHitTimes();
@@ -1201,6 +1207,8 @@ void THcDC::TrackFit()
 
   //
 }
+//
+//
 Double_t THcDC::DpsiFun(Double_t ray[4], Int_t plane)
 {
   /*
