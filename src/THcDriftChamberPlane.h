@@ -42,6 +42,9 @@ public:
 
   virtual Int_t ProcessHits(TClonesArray* rawhits, Int_t nexthit);
 
+  virtual Int_t SubtractStartTime();
+
+
   // Get and Set functions
   Int_t        GetNWires()   const { return fWires->GetLast()+1; }
   THcDCWire*  GetWire(Int_t i) const
