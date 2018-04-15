@@ -44,7 +44,7 @@ public:
   Double_t GetXP()                 const {return fXp_fp;}
   Double_t GetYP()                 const {return fYp_fp;}
   Double_t GetSp1_ID()                 const {return fSp1_ID;}
-  Double_t GetSp2_ID()                 const {return fSp1_ID;}
+  Double_t GetSp2_ID()                 const {return fSp2_ID;}
   Double_t GetChisq()              const {return fChi2_fp;}
   void SetNFree(Int_t nfree)           {fNfree = nfree;}
   void SetCoord(Int_t ip, Double_t coord) {fCoords[ip] = coord;}
