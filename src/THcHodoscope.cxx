@@ -163,6 +163,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   // maximum number of hits after setting up the detector map
   // But it needs to happen before the sub detectors are initialized
   // so that they can get the pointer to the hitlist.
+  cout << " Hodo tdc ref time cut = " << fTDC_RefTimeCut << " " << fADC_RefTimeCut << endl;
 
   InitHitList(fDetMap, "THcRawHodoHit", fDetMap->GetTotNumChan()+1,
 	      fTDC_RefTimeCut, fADC_RefTimeCut);
@@ -645,6 +646,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   Int_t nexthit = 0;
 
   fNfptimes=0;
+  Int_t thits=0;
   for(Int_t ip=0;ip<fNPlanes;ip++) {
 
     fPlaneCenter[ip] = fPlanes[ip]->GetPosCenter(0) + fPlanes[ip]->GetPosOffset();
@@ -654,11 +656,12 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     // GN: select only events that have reasonable TDC values to start with
     // as per the Engine h_strip_scin.f
     nexthit = fPlanes[ip]->ProcessHits(fRawHitList,nexthit);
+    thits+=fPlanes[ip]->GetNScinHits();
   }
-  EstimateFocalPlaneTime();
+    fStartTime=-1000;
+    if (thits>0 ) EstimateFocalPlaneTime();
 
   if (fdebugprintscinraw == 1) {
-    cout << " Event number = " << evdata.GetEvNum()<<endl;
   for(UInt_t ihit = 0; ihit < fNRawHits ; ihit++) {
 //    THcRawHodoHit* hit = (THcRawHodoHit *) fRawHitList->At(ihit);
 //    cout << ihit << " : " << hit->fPlane << ":" << hit->fCounter << " : "
