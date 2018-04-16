@@ -365,6 +365,7 @@ Int_t THcDriftChamberPlane::SubtractStartTime()
      THcDCHit *thishit = (THcDCHit*) fHits->At(ihit);
      Double_t temptime= thishit->GetTime()-StartTime;
      thishit->SetTime(temptime);
+     thishit->ConvertTimeToDist();
    }
   return 0;
 }
