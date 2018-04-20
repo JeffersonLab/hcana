@@ -23,7 +23,11 @@ void slipstudy(TString Spec="", Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   }
 
   // Create file name patterns.
-  strcat(RunFileNamePattern, "_all_%05d.dat");
+  strcat(RunFileNamePattern, "_all_%05d");
+  char FilteredFileNamePattern[100];
+  strcpy(FilteredFileNamePattern, RunFileNamePattern);
+  strcat(RunFileNamePattern, ".dat");
+  strcat(FilteredFileNamePattern, "_filtered.dat");
   vector<TString> pathList;
   pathList.push_back(".");
   pathList.push_back("./raw");
@@ -46,18 +50,22 @@ void slipstudy(TString Spec="", Int_t RunNumber = 0, Int_t MaxEvent = 0) {
   gHcParms->Load("PARAM/hcana.param");
   system("cp slip_db_cratemap.dat db_cratemap.dat");
 
-  THcTimeSyncEvtHandler* fadcsynccheck = new THcTimeSyncEvtHandler("SYNC","Synchronization test");
-  fadcsynccheck->AddExpectedOffset(1, -6);
-  fadcsynccheck->AddExpectedOffset(2, -7);
-  fadcsynccheck->AddExpectedOffset(4, -6);
-  fadcsynccheck->AddEvtType(1);
-  fadcsynccheck->AddEvtType(2);
-  fadcsynccheck->AddEvtType(3);
-  fadcsynccheck->AddEvtType(4);
-  fadcsynccheck->AddEvtType(5);
-  fadcsynccheck->AddEvtType(6);
-  fadcsynccheck->AddEvtType(7);
-  gHaEvtHandlers->Add(fadcsynccheck);
+  THcTimeSyncEvtHandler* synccheck = new THcTimeSyncEvtHandler("SYNC","Synchronization test");
+  synccheck->AddExpectedOffset(1, -6);
+  synccheck->AddExpectedOffset(2, -7);
+  synccheck->AddExpectedOffset(4, -6);
+  synccheck->AddEvtType(1);
+  synccheck->AddEvtType(2);
+  synccheck->AddEvtType(3);
+  synccheck->AddEvtType(4);
+  synccheck->AddEvtType(5);
+  synccheck->AddEvtType(6);
+  synccheck->AddEvtType(7);
+  synccheck->SetResync(kTRUE);	// Use kFALSE for runs before April 12, 2018, 11AM
+  synccheck->SetBadSyncSizeTrigger(450); // Trigger sync fixing if 1190 bank bigger than this
+  synccheck->SetBadROC(3);	// The ROC experiencing sync problems
+  synccheck->SetRewriteFile(Form(FilteredFileNamePattern, RunNumber));
+  gHaEvtHandlers->Add(synccheck);
 
   // Set up the analyzer - we use the standard one,
   // but this could be an experiment-specific one as well.
@@ -90,5 +98,5 @@ run->SetEventRange(1, MaxEvent); // Physics Event number, does not include scale
   analyzer->SetOutFile("slipstudy.root");
   analyzer->SetOdefFile("slipstudy.def");
   analyzer->Process(run);
-  fadcsynccheck->PrintStats();
+  synccheck->PrintStats();
 }
