@@ -19,17 +19,20 @@
 #include <iostream>
 
 #include "THaPhysicsModule.h"
+#include "THcTrigDet.h" 
 #include "THcHodoscope.h"
-#include "THaSpectrometer.h"
+//#include "THaSpectrometer.h"
+#include "THcHallCSpectrometer.h"
 #include "THaTrack.h"
 
 class THcCoinTime : public THaPhysicsModule {
 public:
-  THcCoinTime( const char* name, const char* description, const char* coinname);
+  THcCoinTime( const char* name, const char* description, const char* hadArmName, 
+	       const char* elecArmName, const char* coinname);
+
   virtual ~THcCoinTime();
 
-  virtual Int_t Begin( THaRunBase* r=0 );
-  virtual Int_t End( THaRunBase* r=0 );
+
   virtual EStatus Init( const TDatime& run_time );
   virtual Int_t   Process( const THaEvData& );
 
@@ -42,14 +45,22 @@ protected:
 
   // Data needed for addind coincidence time as a Leaf Variable
 
-  TString       fHodName;		// Name of hodoscope
-  THcHodoscope* fHod;		// Hodscope object
 
-  TString     fCoinName;         // Name of Coin Trigger
-  THcTrigDet* fCoinTRG;         //Coin Trigger detector object
+  
+  TString     fHodName;		// Name of hodoscope
+  TString     fCoinDetName;         // Name of Coin Trigger
+  TString     fhadArmName;       //name of hadron arm
+  TString     felecArmName;     // name of electron arm
+
+
+
+  THcHallCSpectrometer* fhadSpectro;	// hadron Spectrometer object
+  THcHallCSpectrometer* felecSpectro;	// electron Spectrometer object
+  THcTrigDet* fCoinDet;                 //Coin Trigger detector object
+
+  THcHodoscope* fHod;	                // Hodscope object
  
  
-  THaSpectrometer* fSpectro;	// Spectrometer object
 
   Long64_t fNevt;
 
