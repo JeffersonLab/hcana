@@ -24,9 +24,17 @@
 using namespace std;
 
 //_____________________________________________________________________________
-THcCoinTime::THcCoinTime (const char *name, const char* description,
-			const char* coinname) :
-  THaPhysicsModule(name, description), fName(coinname), fCoinTRG(NULL), fNevt(0)
+THcCoinTime::THcCoinTime (const char *name, const char* description, const char* hadArmName, 
+			  const char* elecArmName, const char* coinname) :
+  
+  THaPhysicsModule(name, description), 
+  fhadArmName(hadArmName),                 //initialize spectro names
+  felecArmName(elecArmName),
+  fCoinDetName(coinname), 
+  fhadSpectro(NULL),                      //initialize spectro objects
+  felecSpectro(NULL),
+  fCoinDet(NULL), 
+  fNevt(0)
 {
 
 }
@@ -47,41 +55,48 @@ void THcCoinTime::Reset( Option_t* opt)
   Clear(opt);
 }
 
-//_____________________________________________________________________________
-Int_t THcCoinTime::Begin( THaRunBase* )
-{
-  // Start of analysis
-
-  if (!IsOK() ) return -1;
-
-  return 0;
-}
-
-//_____________________________________________________________________________
-Int_t THcCoinTime::End( THaRunBase* )
-{
-  // End of analysis
-
-
-  return 0;
-}
 
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcCoinTime::Init( const TDatime& run_time )
 {
   // Initialize THcCoinTime physics module
-
-  //  const char* const here = "Init";
-
-  // Standard initialization. Calls ReadDatabase(), ReadRunDatabase(),
-  // and DefineVariables() (see THaAnalysisObject::Init)
-
   
-  if( THaPhysicsModule::Init( run_time ) != kOK )
+  cout << "*************************************************" << endl;
+  cout << "Initializing THcCointTime Physics Modue" << endl;
+  cout << "Hadron Arm   -------> " << fhadArmName << endl;
+  cout << "Electron Arm -------> " << felecArmName << endl;
+  cout << "**************************************************" << endl;
+
+  fStatus = kOK;
+
+  fhadSpectro = dynamic_cast<THcHallCSpectrometer*>
+    ( FindModule( fhadArmName.Data(), "THcHallCSpectrometer"));
+  if( !fhadSpectro ) {
+    fStatus = kInitError;
     return fStatus;
+  }
+  
+  felecSpectro = dynamic_cast<THcHallCSpectrometer*>
+    ( FindModule( felecArmName.Data(), "THcHallCSpectrometer"));
+  if( !felecSpectro ) {
+    fStatus = kInitError;
+    return fStatus;
+  }
+    
+  fCoinDet = dynamic_cast<THcTrigDet*>
+    ( FindModule( fCoinDetName.Data(), "THcTrigDet"));
+  if( !fCoinDet ) {
+    fStatus = kInitError;
+    return fStatus;
+  }
   
 
-  return fStatus = kOK;
+  
+  if( (fStatus=THaPhysicsModule::Init( run_time )) != kOK ) {
+    return fStatus;
+  }
+
+  return fStatus;
 }
 
 //_____________________________________________________________________________
@@ -97,12 +112,12 @@ Int_t THcCoinTime::ReadDatabase( const TDatime& date )
 Int_t THcCoinTime::DefineVariables( EMode mode )
 {
 
-  if( mode == kDefine && fIsSetup ) return kOK;
-  fIsSetup = ( mode == kDefine );
+  //if( mode == kDefine && fIsSetup ) return kOK;
+  //fIsSetup = ( mode == kDefine );
 
 
-  return DefineVarsFromList( vars, mode );
-
+  //return DefineVarsFromList( vars, mode );
+  return 0;
 }
 
 //_____________________________________________________________________________
@@ -110,7 +125,7 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 {
 
 
-  if( !IsOK() ) return -1;
+  //  if( !IsOK() ) return -1;
 
   return 0;
 }
