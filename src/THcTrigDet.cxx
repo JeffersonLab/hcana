@@ -221,8 +221,19 @@ void THcTrigDet::Clear(Option_t* opt) {
   };
 }
 
+//Added function to SET coincidence trigger times
+void THcTrigDet::SetCoinTrigTimes() 
+{ 
+  pTrig1_ROC1 = fTdcTimeRaw[fidx0];
+  pTrig4_ROC1 = fTdcTimeRaw[fidx1];
+  pTrig1_ROC2 = fTdcTimeRaw[fidx2];
+  pTrig4_ROC2 = fTdcTimeRaw[fidx3];
+
+}
+
 
 Int_t THcTrigDet::Decode(const THaEvData& evData) {
+    
   // Decode raw data for this event.
   Bool_t present = kTRUE;	// Don't suppress reference time warnings
   if(HaveIgnoreList()) {
@@ -289,8 +300,13 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
     ++iHit;
   }
 
+  //Set raw Tdc coin. trigger times for pTRIG1/4
+  SetCoinTrigTimes();
+
   return 0;
 }
+
+
 
 
 void THcTrigDet::Setup(const char* name, const char* description) {
@@ -348,11 +364,44 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   fAdcNames = vsplit(adcNames);
   fTdcNames = vsplit(tdcNames);
 
+  //default index values
+  fidx0 = 27;
+  fidx1 = 30;
+  fidx2 = 58;
+  fidx3 = 61;	
+
+  //Assign an index to coincidence trigger times strings
+  for (int i = 0; i <fNumTdc; i++)
+    {
+     
+      if(fTdcNames.at(i)=="pTRIG1_ROC1")
+	{
+	  fidx0 = i;
+	}
+      else if(fTdcNames.at(i)=="pTRIG4_ROC1")
+	{
+	  fidx1 = i;
+	}
+      else if(fTdcNames.at(i)=="pTRIG1_ROC2")
+	{
+	  fidx2 = i;
+	}
+      else if(fTdcNames.at(i)=="pTRIG4_ROC2")
+	{
+	  fidx3 = i;
+	}
+
+    }
+  
+  
+
   return kOK;
 }
 
 
 Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
+
+
   if (mode == kDefine && fIsSetup) return kOK;
   fIsSetup = (mode == kDefine);
 
@@ -461,6 +510,8 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   for (int i=0; i<fNumTdc; ++i) {
     tdcTimeRawTitle.at(i) = fTdcNames.at(i) + "_tdcTimeRaw";
     tdcTimeRawVar.at(i) = TString::Format("fTdcTimeRaw[%d]", i);
+    
+
     RVarDef entry1 {
       tdcTimeRawTitle.at(i).Data(),
       tdcTimeRawTitle.at(i).Data(),
