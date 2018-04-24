@@ -37,21 +37,19 @@ public:
   virtual Int_t   Process( const THaEvData& );
 
   void            Reset( Option_t* opt="" );
+  
 
-protected:
+ protected:
 
   virtual Int_t ReadDatabase( const TDatime& date);
   virtual Int_t  DefineVariables( EMode mode = kDefine );
 
   // Data needed for addind coincidence time as a Leaf Variable
-
-
   
   TString     fHodName;		// Name of hodoscope
   TString     fCoinDetName;         // Name of Coin Trigger
   TString     fhadArmName;       //name of hadron arm
   TString     felecArmName;     // name of electron arm
-
 
 
   THcHallCSpectrometer* fhadSpectro;	// hadron Spectrometer object

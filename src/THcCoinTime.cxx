@@ -16,6 +16,7 @@
 #include <iostream>
 
 #include "THcCoinTime.h"
+#include "THcTrigDet.h"
 #include "THaApparatus.h"
 #include "THcHodoHit.h"
 #include "THcGlobals.h"
@@ -120,10 +121,17 @@ Int_t THcCoinTime::DefineVariables( EMode mode )
   return 0;
 }
 
+
+
 //_____________________________________________________________________________
 Int_t THcCoinTime::Process( const THaEvData& evdata )
 {
 
+  cout << "^^^^THcCoinTime: NEW EVENT^^^^^^NEW EVENT^^^^^^^NEW EVENT^^^^^^^^" << endl;
+  cout << ">>>Calling function Get_pTRG1_ROC1_rawTdctime(): " << fCoinDet->Get_pTRG1_ROC1_rawTdctime() << endl;
+  cout << ">>>Calling function Get_pTRG4_ROC1_rawTdctime(): " << fCoinDet->Get_pTRG4_ROC1_rawTdctime() << endl;
+  cout << ">>>Calling function Get_pTRG1_ROC2_rawTdctime(): " << fCoinDet->Get_pTRG1_ROC2_rawTdctime() << endl;
+  cout << ">>>Calling function Get_pTRG4_ROC2_rawTdctime(): " << fCoinDet->Get_pTRG4_ROC2_rawTdctime() << endl;
 
   //  if( !IsOK() ) return -1;
 

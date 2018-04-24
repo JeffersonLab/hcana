@@ -221,8 +221,19 @@ void THcTrigDet::Clear(Option_t* opt) {
   };
 }
 
+//Added function to SET coincidence trigger times
+void THcTrigDet::SetCoinTrigTimes() 
+{ 
+  pTrig1_ROC1 = fTdcTimeRaw[27];
+  pTrig4_ROC1 = fTdcTimeRaw[30];
+  pTrig1_ROC2 = fTdcTimeRaw[58];
+  pTrig4_ROC2 = fTdcTimeRaw[61];
+
+}
+
 
 Int_t THcTrigDet::Decode(const THaEvData& evData) {
+    
   // Decode raw data for this event.
   Bool_t present = kTRUE;	// Don't suppress reference time warnings
   if(HaveIgnoreList()) {
@@ -289,8 +300,19 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
     ++iHit;
   }
 
+  //Set raw Tdc coin. trigger times for pTRIG1/4
+  SetCoinTrigTimes();
+
+  cout << "***THcTrigDet:*********NEW EVENT*****NEW EVENT********NEW EVENT*************" << endl;
+  cout << ">>>Calling function Get_pTRG1_ROC1_rawTdctime(): " << Get_pTRG1_ROC1_rawTdctime() << endl;
+  cout << ">>>Calling function Get_pTRG4_ROC1_rawTdctime(): " << Get_pTRG4_ROC1_rawTdctime() << endl;
+  cout << ">>>Calling function Get_pTRG1_ROC2_rawTdctime(): " << Get_pTRG1_ROC2_rawTdctime() << endl;
+  cout << ">>>Calling function Get_pTRG4_ROC2_rawTdctime(): " << Get_pTRG4_ROC2_rawTdctime() << endl;
+
   return 0;
 }
+
+
 
 
 void THcTrigDet::Setup(const char* name, const char* description) {
@@ -353,6 +375,9 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
 
 
 Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
+
+  cout << ">>>>>> Entering DefineVariables() <<<<<<< " << endl;
+
   if (mode == kDefine && fIsSetup) return kOK;
   fIsSetup = (mode == kDefine);
 
@@ -461,6 +486,14 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   for (int i=0; i<fNumTdc; ++i) {
     tdcTimeRawTitle.at(i) = fTdcNames.at(i) + "_tdcTimeRaw";
     tdcTimeRawVar.at(i) = TString::Format("fTdcTimeRaw[%d]", i);
+    
+    //Date: April, 24, 2018, Indices for coin. time calculation 
+    //index i = 27 ---> pTRIG1_ROC1_tdcTimeRaw (SHMS 3/4 trig)
+    //index i = 30 ---> pTRIG4_ROC1_tdcTimeRaw (HMS 3/4 trig)
+    //index i = 58 ---> pTRIG1_ROC2_tdcTimeRaw (SHMS 3/4 trig)
+    //index i = 61 ---> pTRIG4_ROC2_tdcTimeRaw (HMS 3/4 trig)
+    
+
     RVarDef entry1 {
       tdcTimeRawTitle.at(i).Data(),
       tdcTimeRawTitle.at(i).Data(),
