@@ -34,7 +34,7 @@ THcCoinTime::THcCoinTime (const char *name, const char* description, const char*
   fCoinDetName(coinname), 
   fhadSpectro(NULL),                      //initialize spectro objects
   felecSpectro(NULL),
-  fCoinDet(NULL), 
+  fCoinDet(NULL)
 {
 
 }
@@ -142,49 +142,31 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
   THaTrack* theElecTrack = /*static_cast<THaTrack*>*/(felecSpectro->GetGoldenTrack());
   
   //Gather relevant variables for Coincidence time calculation
-  
-  //------SHMS coin. time Correction factors 
-  //1. SHMScentralPathLen, speedOfLight   (just a constant)
-  
-  //2. PgtrBetaCalc: P.gtr.p (goldentrack momentum), shms particle mass  
-  
-  //3. DeltaSHMSpathLength: P.gtr.th, P.gtr.dp, 
+  lightSpeed = 29.9792; // in cm/ns
 
-  //4. SHMS focal plane time (P.hod.fpHitsTime)
-  // ??? Hodo starttime ??? not needed ???
+  //Particle Masses (HardCoded)
+  elecMass =  0.510998/1000.0; // electron mass in GeV/c^2
+  positronMass =  0.510998/1000.0;
+  protonMass = 938.27208/1000.0; // proton mass in GeV/c^2	
+  kaonMass = 493.677/1000.0;    //charged kaon mass in GeV/c^2
+  pionMass = 139.570/1000.0;    //charged pion mass in GeV/c^2
 
-
-  //-----HMS coin. time Correction factors
-  //1. HMScentralPathLen, speedOfLight   (just a constant)
-
-  //2. HgtrBetaCalc: H.gtr.p (goldentrack momentum), hms particle mass  
-
-  //3. DeltaHMSpathLength: H.dc.xp_fp, H.dc.x_fp, H.dc.yp_fp (golden focal plane from THcDCTrack?)
+  SHMScentralPathLen =  18.1*100;    //cm       //TODO: put in a GEN Param file, and read it from there 
+  HMScentralPathLen =  22.*100;   //cm
  
-  //4. HHMS focal plane time (H.hod.fpHitsTime)
-  // ??? Hodo starttime ??? not needed ???
+  //electron arm
+  theElecTrack->GetP();        //hadron golden track arm momentum
+  theElecTrack->GetTTheta();    //xp_fp
+  theElecTrack->GetDp();        //electron arm deltaP 
+  theElecTrack->GetFPTime();    //electron arm focal plane time
+  
+  //hadron arm
+  theHadTrack->GetP();    //hadron golden track arm momentum
+  theHadTrack->GetRX();  //x_fp
+  theHadTrack->GetRTheta();  //xp_fp
+  theHadTrack->GetRPhi();  //yp_fp
+  theHadTrack->GetFPTime();  //hadron-arm focal plane time
 
-
-
-
-
-  //>>>>>>>>>>>>>>>>>> TESTING SECTION <<<<<<<<<<<<<<<<<<<<<<<<<<
-  //Get Momentum
-  //cout << "HADRON MOMENTUM>>>>>>>> " << theHadTrack->GetP() << endl;
-  //cout << "ELECTRON MOMENTUM>>>>>>>> " << theElecTrack->GetP() << endl;
-
-  //cout << "Is Track for " << fhadArmName << " OK? >>> " << had_trkifo->IsOK() << endl;
-  //cout << "Is Track for " << felecArmName << " OK? >>> " << elec_trkifo->IsOK() << endl;
-
-
-  //  cout << "^^^^THcCoinTime: NEW EVENT^^^^^^NEW EVENT^^^^^^^NEW EVENT^^^^^^^^" << endl;
-  // cout << ">>>Calling function Get_pTRG1_ROC1_rawTdctime(): " << fCoinDet->Get_pTRG1_ROC1_rawTdctime() << endl;
-  // cout << ">>>Calling function Get_pTRG4_ROC1_rawTdctime(): " << fCoinDet->Get_pTRG4_ROC1_rawTdctime() << endl;
-  // cout << ">>>Calling function Get_pTRG1_ROC2_rawTdctime(): " << fCoinDet->Get_pTRG1_ROC2_rawTdctime() << endl;
-  // cout << ">>>Calling function Get_pTRG4_ROC2_rawTdctime(): " << fCoinDet->Get_pTRG4_ROC2_rawTdctime() << endl;
-
-  //  if( !IsOK() ) return -1;
-  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   return 0;
 }

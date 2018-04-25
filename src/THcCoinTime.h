@@ -60,7 +60,14 @@ public:
  
   //-----Declare Variables used in HMS/SHMS Coin. time correction-----
   Double_t lightSpeed;
-  Double_t elecPartMass;
+  Double_t elecMass;
+  Double_t positronMass;
+
+  //hadron masses (the e- could be in coincidence with any of the hadrons)
+  Double_t protonMass;
+  Double_t kaonMass;
+  Double_t pionMass;
+ 
 
   Double_t ROC1_epCoin;
   Double_t ROC2_epCoin;
@@ -78,11 +85,18 @@ public:
   Double_t DeltaHMSpathLength;
   Double_t HhodFPtime;
 
-  // Relevant 'golden' target/focal plane variables
-  Double_t P_gtrP;   //shms golden track momentum
- 
+  Double_t elec_P;     //electron golden track momentum
+  Double_t elec_dP;     //electron golden track delta-> (P-P0 / P0)
+  Double_t elec_th;    //electron golden track theta (xptar, :) 
+  Double_t elec_FPtime;   //electron focal plane time
 
+  Double_t had_P;     //hadron golden track momentum
+  Double_t had_xfp;      //hadron x-focal plane
+  Double_t had_xpfp;     //hadron xp focal plane
+  Double_t had_ypfp;     //hadron yp focal plane
+  Double_t had_FPtime;   //hadron focal plane time
 
+  //--------------------------------------------------------------------
 
   ClassDef(THcCoinTime,0) 	// Coincidence Time Module
 };
