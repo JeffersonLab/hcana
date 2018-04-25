@@ -44,7 +44,7 @@ public:
   virtual Int_t ReadDatabase( const TDatime& date);
   virtual Int_t  DefineVariables( EMode mode = kDefine );
 
-  // Data needed for addind coincidence time as a Leaf Variable
+  // Data needed for adding coincidence time as a Leaf Variable
   
   TString     fHodName;		// Name of hodoscope
   TString     fCoinDetName;         // Name of Coin Trigger
@@ -58,18 +58,30 @@ public:
 
   THcHodoscope* fHod;	                // Hodscope object
  
+  //-----Declare Variables used in HMS/SHMS Coin. time correction-----
+  Double_t lightSpeed;
+  Double_t elecPartMass;
+
+  Double_t ROC1_epCoin;
+  Double_t ROC2_epCoin;
+
+  Double_t SHMScoinCorr;
+  Double_t SHMScentralPathLen;
+  Double_t PgtrBetaCalc;
+  Double_t DeltaSHMSpathLength;
+  Double_t PhodFPtime;
+  Double_t pOffset;
+
+  Double_t HMScoinCorr;
+  Double_t HMScentralPathLen;
+  Double_t HgtrBetaCalc;
+  Double_t DeltaHMSpathLength;
+  Double_t HhodFPtime;
+
+  // Relevant 'golden' target/focal plane variables
+  Double_t P_gtrP;   //shms golden track momentum
  
 
-  Long64_t fNevt;
-
-  // Information about the hodoscopes that we get from the
-  // THcHodoscope object
-
-
-  //Information about the trigger apparatus that we get from the
-  //THc
-
- 
 
 
   ClassDef(THcCoinTime,0) 	// Coincidence Time Module

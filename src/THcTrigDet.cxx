@@ -303,11 +303,11 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
   //Set raw Tdc coin. trigger times for pTRIG1/4
   SetCoinTrigTimes();
 
-  cout << "***THcTrigDet:*********NEW EVENT*****NEW EVENT********NEW EVENT*************" << endl;
-  cout << ">>>Calling function Get_pTRG1_ROC1_rawTdctime(): " << Get_pTRG1_ROC1_rawTdctime() << endl;
-  cout << ">>>Calling function Get_pTRG4_ROC1_rawTdctime(): " << Get_pTRG4_ROC1_rawTdctime() << endl;
-  cout << ">>>Calling function Get_pTRG1_ROC2_rawTdctime(): " << Get_pTRG1_ROC2_rawTdctime() << endl;
-  cout << ">>>Calling function Get_pTRG4_ROC2_rawTdctime(): " << Get_pTRG4_ROC2_rawTdctime() << endl;
+  //cout << "***THcTrigDet:*********NEW EVENT*****NEW EVENT********NEW EVENT*************" << endl;
+  //cout << ">>>Calling function Get_pTRG1_ROC1_rawTdctime(): " << Get_pTRG1_ROC1_rawTdctime() << endl;
+  //cout << ">>>Calling function Get_pTRG4_ROC1_rawTdctime(): " << Get_pTRG4_ROC1_rawTdctime() << endl;
+  //cout << ">>>Calling function Get_pTRG1_ROC2_rawTdctime(): " << Get_pTRG1_ROC2_rawTdctime() << endl;
+  //cout << ">>>Calling function Get_pTRG4_ROC2_rawTdctime(): " << Get_pTRG4_ROC2_rawTdctime() << endl;
 
   return 0;
 }

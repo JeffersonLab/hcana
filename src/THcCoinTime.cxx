@@ -35,7 +35,6 @@ THcCoinTime::THcCoinTime (const char *name, const char* description, const char*
   fhadSpectro(NULL),                      //initialize spectro objects
   felecSpectro(NULL),
   fCoinDet(NULL), 
-  fNevt(0)
 {
 
 }
@@ -104,7 +103,8 @@ THaAnalysisObject::EStatus THcCoinTime::Init( const TDatime& run_time )
 Int_t THcCoinTime::ReadDatabase( const TDatime& date )
 {
   // Read database. Gets variable needed for CoinTime calculation
-
+  //Get coin time offset
+  //pathlenghths for HMS/SHMS
 
   return kOK;
 }
@@ -126,14 +126,65 @@ Int_t THcCoinTime::DefineVariables( EMode mode )
 //_____________________________________________________________________________
 Int_t THcCoinTime::Process( const THaEvData& evdata )
 {
+  
+  if( !IsOK() || !gHaRun ) return -1;
 
-  cout << "^^^^THcCoinTime: NEW EVENT^^^^^^NEW EVENT^^^^^^^NEW EVENT^^^^^^^^" << endl;
-  cout << ">>>Calling function Get_pTRG1_ROC1_rawTdctime(): " << fCoinDet->Get_pTRG1_ROC1_rawTdctime() << endl;
-  cout << ">>>Calling function Get_pTRG4_ROC1_rawTdctime(): " << fCoinDet->Get_pTRG4_ROC1_rawTdctime() << endl;
-  cout << ">>>Calling function Get_pTRG1_ROC2_rawTdctime(): " << fCoinDet->Get_pTRG1_ROC2_rawTdctime() << endl;
-  cout << ">>>Calling function Get_pTRG4_ROC2_rawTdctime(): " << fCoinDet->Get_pTRG4_ROC2_rawTdctime() << endl;
+  //Declare track information objects for hadron/electron arm
+  THaTrackInfo* had_trkifo = fhadSpectro->GetTrackInfo();
+  THaTrackInfo* elec_trkifo = felecSpectro->GetTrackInfo();
+
+  //Check if the hadron/electron arm had a track
+  if( !had_trkifo || !had_trkifo->IsOK() ) return 1;
+  if( !elec_trkifo || !elec_trkifo->IsOK() ) return 1;
+
+  //Create THaTrack object for hadron/elec arms to get relevant golden track quantities
+  THaTrack* theHadTrack = /*static_cast<THaTrack*>*/(fhadSpectro->GetGoldenTrack());  //cast / no cast makes no diff.
+  THaTrack* theElecTrack = /*static_cast<THaTrack*>*/(felecSpectro->GetGoldenTrack());
+  
+  //Gather relevant variables for Coincidence time calculation
+  
+  //------SHMS coin. time Correction factors 
+  //1. SHMScentralPathLen, speedOfLight   (just a constant)
+  
+  //2. PgtrBetaCalc: P.gtr.p (goldentrack momentum), shms particle mass  
+  
+  //3. DeltaSHMSpathLength: P.gtr.th, P.gtr.dp, 
+
+  //4. SHMS focal plane time (P.hod.fpHitsTime)
+  // ??? Hodo starttime ??? not needed ???
+
+
+  //-----HMS coin. time Correction factors
+  //1. HMScentralPathLen, speedOfLight   (just a constant)
+
+  //2. HgtrBetaCalc: H.gtr.p (goldentrack momentum), hms particle mass  
+
+  //3. DeltaHMSpathLength: H.dc.xp_fp, H.dc.x_fp, H.dc.yp_fp (golden focal plane from THcDCTrack?)
+ 
+  //4. HHMS focal plane time (H.hod.fpHitsTime)
+  // ??? Hodo starttime ??? not needed ???
+
+
+
+
+
+  //>>>>>>>>>>>>>>>>>> TESTING SECTION <<<<<<<<<<<<<<<<<<<<<<<<<<
+  //Get Momentum
+  //cout << "HADRON MOMENTUM>>>>>>>> " << theHadTrack->GetP() << endl;
+  //cout << "ELECTRON MOMENTUM>>>>>>>> " << theElecTrack->GetP() << endl;
+
+  //cout << "Is Track for " << fhadArmName << " OK? >>> " << had_trkifo->IsOK() << endl;
+  //cout << "Is Track for " << felecArmName << " OK? >>> " << elec_trkifo->IsOK() << endl;
+
+
+  //  cout << "^^^^THcCoinTime: NEW EVENT^^^^^^NEW EVENT^^^^^^^NEW EVENT^^^^^^^^" << endl;
+  // cout << ">>>Calling function Get_pTRG1_ROC1_rawTdctime(): " << fCoinDet->Get_pTRG1_ROC1_rawTdctime() << endl;
+  // cout << ">>>Calling function Get_pTRG4_ROC1_rawTdctime(): " << fCoinDet->Get_pTRG4_ROC1_rawTdctime() << endl;
+  // cout << ">>>Calling function Get_pTRG1_ROC2_rawTdctime(): " << fCoinDet->Get_pTRG1_ROC2_rawTdctime() << endl;
+  // cout << ">>>Calling function Get_pTRG4_ROC2_rawTdctime(): " << fCoinDet->Get_pTRG4_ROC2_rawTdctime() << endl;
 
   //  if( !IsOK() ) return -1;
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
   return 0;
 }
