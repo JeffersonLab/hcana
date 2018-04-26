@@ -67,32 +67,29 @@ public:
   Double_t protonMass;
   Double_t kaonMass;
   Double_t pionMass;
-  
+
+  Double_t ep_CT_Offset;  //ep coincidence time offset
+
   Double_t SHMScentralPathLen;  //TODO: Put this in a param file, to be read in
   Double_t HMScentralPathLen;   //TODO: Put this in a param file, to be read in
 
   Double_t DeltaSHMSpathLength;
   Double_t DeltaHMSpathLength ;
 
-  Double_t ROC1_epCoin;
-  Double_t ROC2_epCoin;
+  Double_t fROC1_epCoinTime;
+  Double_t fROC2_epCoinTime;
 
-  Double_t Elec_CentPL;       //E-ARM central path lenth
-  Double_t Elec_coinCorr;
+  Double_t elec_coinCorr;
   Double_t elecArm_BetaCalc;
-  Double_t elecArm_Delta_pathLength;
   Double_t elec_hodFPtime;
-  Double_t pOffset;
 
-  Double_t Had_CentPL;       //Hadron arm central path length
-  Double_t Had_coinCorr;
+  Double_t had_coinCorr;
   Double_t hadArm_BetaCalc;
-  Double_t hadArm_Delta_pathLength;
   Double_t had_hodFPtime;
 
   Double_t elec_P;     //electron golden track momentum
   Double_t elec_dP;     //electron golden track delta-> (P-P0 / P0)
-  Double_t elec_th;    //electron golden track theta (xptar, :) 
+  Double_t elec_xptar;    //electron golden track theta (xptar, :) 
   Double_t elec_FPtime;   //electron focal plane time
 
   Double_t had_P;     //hadron golden track momentum
@@ -100,6 +97,12 @@ public:
   Double_t had_xpfp;     //hadron xp focal plane
   Double_t had_ypfp;     //hadron yp focal plane
   Double_t had_FPtime;   //hadron focal plane time
+
+  //Raw trigger times pTrig1 (SHMS 3/4 trig) and pTrig4 (HMS 3/4 trig)
+  Int_t pTRIG1_rawTdcTime_ROC1;
+  Int_t pTRIG4_rawTdcTime_ROC1;
+  Int_t pTRIG1_rawTdcTime_ROC2;
+  Int_t pTRIG4_rawTdcTime_ROC2;
 
   //--------------------------------------------------------------------
 

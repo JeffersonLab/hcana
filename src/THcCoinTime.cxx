@@ -103,8 +103,22 @@ THaAnalysisObject::EStatus THcCoinTime::Init( const TDatime& run_time )
 Int_t THcCoinTime::ReadDatabase( const TDatime& date )
 {
   // Read database. Gets variable needed for CoinTime calculation
-  //Get coin time offset
-  //pathlenghths for HMS/SHMS
+
+
+  DBRequest list[]={
+    {"epCoinTime_Offset",  &ep_CT_Offset, kDouble, 0, 1},   //coin time offset for ep coincidences
+    {"HMS_CentralPathLen",  &HMScentralPathLen, kDouble, 0, 1},
+    {"SHMS_CentralPathLen", &SHMScentralPathLen, kDouble, 0, 1},
+    {0}
+  };
+  
+  //Default values if not read from param file
+  ep_CT_Offset = 0.0;
+  HMScentralPathLen = 22.0*100.;
+  SHMScentralPathLen = 18.1*100.;
+
+  
+  gHcParms->LoadParmValues((DBRequest*)&list, "");
 
   return kOK;
 }
@@ -113,12 +127,17 @@ Int_t THcCoinTime::ReadDatabase( const TDatime& date )
 Int_t THcCoinTime::DefineVariables( EMode mode )
 {
 
-  //if( mode == kDefine && fIsSetup ) return kOK;
-  //fIsSetup = ( mode == kDefine );
+  if( mode == kDefine && fIsSetup ) return kOK;
+  fIsSetup = ( mode == kDefine );
 
+  const RVarDef vars[] = {
+    {"epCoinTime_ROC1",    "ROC1 Corrected ep Coincidence Time",  "fROC1_epCoinTime"},
+    {"epCoinTime_ROC2",    "ROC2 Corrected ep Coincidence Time",  "fROC2_epCoinTime"},
+    { 0 }
+  };
 
-  //return DefineVarsFromList( vars, mode );
-  return 0;
+  return DefineVarsFromList( vars, mode );
+
 }
 
 
@@ -151,41 +170,67 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
   kaonMass = 493.677/1000.0;    //charged kaon mass in GeV/c^2
   pionMass = 139.570/1000.0;    //charged pion mass in GeV/c^2
 
-  SHMScentralPathLen =  18.1*100;    //cm       //TODO: put in a GEN Param file, and read it from there 
-  HMScentralPathLen =  22.*100;   //cm          //TODO: put in a GEN Param file, and read it from there 
+  //SHMScentralPathLen =  18.1*100;    //cm       //TODO: put in a GEN Param file, and read it from there 
+  //HMScentralPathLen =  22.*100;   //cm          //TODO: put in a GEN Param file, and read it from there 
  
   //Check if there was a golden track in both arms
-  if (!theHadTrack && !theElecTrack) return 1;
+  if (!theHadTrack || !theElecTrack)
+    {
+      return 1;
+    }
 
   //Check if Database is reading the correct elec-arm particle mass
-  if (felecSpectro->GetParticleMass() < 0.00052)
-   {
-
+  if (felecSpectro->GetParticleMass() > 0.00052) return 1;
+   
      
       //electron arm
       elec_P = theElecTrack->GetP();              //electron golden track arm momentum
-      elec_th = theElecTrack->GetTTheta();        //xp_tar
+      elec_xptar = theElecTrack->GetTTheta();        //xp_tar
       elec_dP = theElecTrack->GetDp();            //electron arm deltaP 
       elec_FPtime = theElecTrack->GetFPTime();    //electron arm focal plane time
       
       //hadron arm
       had_P = theHadTrack->GetP();              //hadron golden track arm momentum
-      had_xfp = theHadTrack->GetRX();           //x_fp
-      had_xpfp = theHadTrack->GetRTheta();      //xp_fp
-      had_ypfp = theHadTrack->GetRPhi();        //yp_fp
+      had_xfp = theHadTrack->GetX();           //x_fp
+      had_xpfp = theHadTrack->GetTheta();      //xp_fp
+      had_ypfp = theHadTrack->GetPhi();        //yp_fp
       had_FPtime = theHadTrack->GetFPTime();    //hadron-arm focal plane time
-
-
-     //HMS/SHMS pathlength correction
-      //DeltaSHMSpathLength = -0.11*atan2(elec_th);
-     
       
-      
-      elecArm_BetaCalc = elec_P / sqrt(elec_P*elec_P + elecMass*elecMass);
+      //Get raw TDC Times for HMS/SHMS (3/4 trigger)
+      pTRIG1_rawTdcTime_ROC1 = fCoinDet->Get_pTRG1_ROC1_rawTdctime();  //TDC Channels (0.1 ns/Ch)
+      pTRIG4_rawTdcTime_ROC1 = fCoinDet->Get_pTRG4_ROC1_rawTdctime();
+      pTRIG1_rawTdcTime_ROC2 = fCoinDet->Get_pTRG1_ROC2_rawTdctime();
+      pTRIG4_rawTdcTime_ROC2 = fCoinDet->Get_pTRG4_ROC2_rawTdctime();
 
 
+      //Assume electron arm is SHMS 
+      if (felecArmName=="P")
+	{
+	  
+	  //pathlength corrections
+	  DeltaSHMSpathLength = -0.11*atan2(elec_xptar,1)*1000 - 0.057*elec_dP;
+	  DeltaHMSpathLength = 12.462*had_xpfp + 0.1138*had_xpfp*had_xfp - 0.0154*had_xfp - 72.292*had_xpfp*had_xpfp - 0.0000544*had_xfp*had_xfp - 116.52*had_ypfp*had_ypfp;
 
-   }
+	  //beta calculations beta = v/c = p/E
+	  elecArm_BetaCalc = elec_P / sqrt(elec_P*elec_P + elecMass*elecMass);
+	  hadArm_BetaCalc = had_P / sqrt(had_P*had_P + protonMass*protonMass);
+	  
+	  //Coincidence Corrections
+	  elec_coinCorr = (SHMScentralPathLen +  DeltaSHMSpathLength) / (lightSpeed * elecArm_BetaCalc ) - elec_FPtime;
+	  had_coinCorr = (HMScentralPathLen +  DeltaHMSpathLength) / (lightSpeed * hadArm_BetaCalc ) - had_FPtime;
+
+	  //Corrected Coincidence Time for ROC1/ROC2 (Should be identical)
+	  fROC1_epCoinTime =  (pTRIG1_rawTdcTime_ROC1*0.1 - elec_coinCorr) - 
+	    (pTRIG4_rawTdcTime_ROC1*0.1 - had_coinCorr) - ep_CT_Offset;
+	  
+	  fROC2_epCoinTime =  (pTRIG1_rawTdcTime_ROC2*0.1 - elec_coinCorr) - 
+	    (pTRIG4_rawTdcTime_ROC2*0.1 - had_coinCorr) - ep_CT_Offset;
+
+
+	}
+
+
+   
   
   
   return 0;
