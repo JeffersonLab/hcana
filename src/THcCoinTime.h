@@ -67,23 +67,28 @@ public:
   Double_t protonMass;
   Double_t kaonMass;
   Double_t pionMass;
- 
+  
+  Double_t SHMScentralPathLen;  //TODO: Put this in a param file, to be read in
+  Double_t HMScentralPathLen;   //TODO: Put this in a param file, to be read in
+
+  Double_t DeltaSHMSpathLength;
+  Double_t DeltaHMSpathLength ;
 
   Double_t ROC1_epCoin;
   Double_t ROC2_epCoin;
 
-  Double_t SHMScoinCorr;
-  Double_t SHMScentralPathLen;
-  Double_t PgtrBetaCalc;
-  Double_t DeltaSHMSpathLength;
-  Double_t PhodFPtime;
+  Double_t Elec_CentPL;       //E-ARM central path lenth
+  Double_t Elec_coinCorr;
+  Double_t elecArm_BetaCalc;
+  Double_t elecArm_Delta_pathLength;
+  Double_t elec_hodFPtime;
   Double_t pOffset;
 
-  Double_t HMScoinCorr;
-  Double_t HMScentralPathLen;
-  Double_t HgtrBetaCalc;
-  Double_t DeltaHMSpathLength;
-  Double_t HhodFPtime;
+  Double_t Had_CentPL;       //Hadron arm central path length
+  Double_t Had_coinCorr;
+  Double_t hadArm_BetaCalc;
+  Double_t hadArm_Delta_pathLength;
+  Double_t had_hodFPtime;
 
   Double_t elec_P;     //electron golden track momentum
   Double_t elec_dP;     //electron golden track delta-> (P-P0 / P0)

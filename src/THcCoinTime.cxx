@@ -157,22 +157,37 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
   //Check if there was a golden track in both arms
   if (!theHadTrack && !theElecTrack) return 1;
 
-  //electron arm
-  elec_P = theElecTrack->GetP();              //electron golden track arm momentum
-  elec_th = theElecTrack->GetTTheta();        //xp_tar
-  elec_dP = theElecTrack->GetDp();            //electron arm deltaP 
-  elec_FPtime = theElecTrack->GetFPTime();    //electron arm focal plane time
+  //Check if Database is reading the correct elec-arm particle mass
+  if (felecSpectro->GetParticleMass() < 0.00052)
+   {
+
+     
+      //electron arm
+      elec_P = theElecTrack->GetP();              //electron golden track arm momentum
+      elec_th = theElecTrack->GetTTheta();        //xp_tar
+      elec_dP = theElecTrack->GetDp();            //electron arm deltaP 
+      elec_FPtime = theElecTrack->GetFPTime();    //electron arm focal plane time
+      
+      //hadron arm
+      had_P = theHadTrack->GetP();              //hadron golden track arm momentum
+      had_xfp = theHadTrack->GetRX();           //x_fp
+      had_xpfp = theHadTrack->GetRTheta();      //xp_fp
+      had_ypfp = theHadTrack->GetRPhi();        //yp_fp
+      had_FPtime = theHadTrack->GetFPTime();    //hadron-arm focal plane time
+
+
+     //HMS/SHMS pathlength correction
+      //DeltaSHMSpathLength = -0.11*atan2(elec_th);
+     
+      
+      
+      elecArm_BetaCalc = elec_P / sqrt(elec_P*elec_P + elecMass*elecMass);
+
+
+
+   }
   
-  //hadron arm
-  had_P = theHadTrack->GetP();              //hadron golden track arm momentum
-  had_xfp = theHadTrack->GetRX();           //x_fp
-  had_xpfp = theHadTrack->GetRTheta();      //xp_fp
-  had_ypfp = theHadTrack->GetRPhi();        //yp_fp
-  had_FPtime = theHadTrack->GetFPTime();    //hadron-arm focal plane time
-
   
-
-
   return 0;
 }
 
