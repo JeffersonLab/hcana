@@ -76,6 +76,9 @@ public:
   Double_t DeltaSHMSpathLength;
   Double_t DeltaHMSpathLength ;
 
+  Double_t fROC1_RAW_epCoinTime;
+  Double_t fROC2_RAW_epCoinTime;
+
   Double_t fROC1_epCoinTime;
   Double_t fROC2_epCoinTime;
 

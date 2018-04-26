@@ -133,6 +133,8 @@ Int_t THcCoinTime::DefineVariables( EMode mode )
   const RVarDef vars[] = {
     {"epCoinTime_ROC1",    "ROC1 Corrected ep Coincidence Time",  "fROC1_epCoinTime"},
     {"epCoinTime_ROC2",    "ROC2 Corrected ep Coincidence Time",  "fROC2_epCoinTime"},
+    {"epCoinTime_RAW_ROC1",    "ROC1 Corrected ep Coincidence Time",  "fROC1_RAW_epCoinTime"},
+    {"epCoinTime_RAW_ROC2",    "ROC2 Corrected ep Coincidence Time",  "fROC2_RAW_epCoinTime"},
     { 0 }
   };
 
@@ -219,6 +221,11 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 	  elec_coinCorr = (SHMScentralPathLen +  DeltaSHMSpathLength) / (lightSpeed * elecArm_BetaCalc ) - elec_FPtime;
 	  had_coinCorr = (HMScentralPathLen +  DeltaHMSpathLength) / (lightSpeed * hadArm_BetaCalc ) - had_FPtime;
 
+	  //Raw, Uncorrected Coincidence Time
+	  fROC1_RAW_epCoinTime =  (pTRIG1_rawTdcTime_ROC1*0.1) - (pTRIG4_rawTdcTime_ROC1*0.1);
+	  fROC2_RAW_epCoinTime =  (pTRIG1_rawTdcTime_ROC2*0.1) - (pTRIG4_rawTdcTime_ROC2*0.1);
+	  
+	  
 	  //Corrected Coincidence Time for ROC1/ROC2 (Should be identical)
 	  fROC1_epCoinTime =  (pTRIG1_rawTdcTime_ROC1*0.1 - elec_coinCorr) - 
 	    (pTRIG4_rawTdcTime_ROC1*0.1 - had_coinCorr) - ep_CT_Offset;
