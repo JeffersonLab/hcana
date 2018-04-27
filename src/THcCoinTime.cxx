@@ -106,10 +106,7 @@ Int_t THcCoinTime::ReadDatabase( const TDatime& date )
 
 
   DBRequest list[]={
-    {"epCoinTime_Offset",  &ep_CT_Offset, kDouble, 0, 1},   //coin time offset for ep coincidences
-    {"eKCoinTime_Offset",  &eK_CT_Offset, kDouble, 0, 1},   //coin time offset for ep coincidences
-    {"ePiCoinTime_Offset",  &ePi_CT_Offset, kDouble, 0, 1},   //coin time offset for ep coincidences
-    {"ePosiCoinTime_Offset",  &eposi_CT_Offset, kDouble, 0, 1},   //coin time offset for e-positron coincidences
+    {"eHadCoinTime_Offset",  &eHad_CT_Offset, kDouble, 0, 1},   //coin time offset for ep coincidences
 
     {"HMS_CentralPathLen",  &HMScentralPathLen, kDouble, 0, 1},
     {"SHMS_CentralPathLen", &SHMScentralPathLen, kDouble, 0, 1},
@@ -117,10 +114,7 @@ Int_t THcCoinTime::ReadDatabase( const TDatime& date )
   };
   
   //Default values if not read from param file
-  ep_CT_Offset = 0.0;
-  eK_CT_Offset = 0.0;
-  ePi_CT_Offset = 0.0;
-  eposi_CT_Offset = 0.0;
+  eHad_CT_Offset = 0.0;
 
   HMScentralPathLen = 22.0*100.;
   SHMScentralPathLen = 18.1*100.;
@@ -151,8 +145,8 @@ Int_t THcCoinTime::DefineVariables( EMode mode )
     {"ePositronCoinTime_ROC1",    "ROC1 Corrected e-Positorn Coincidence Time",  "fROC1_ePosCoinTime"},
     {"ePositronCoinTime_ROC2",    "ROC2 Corrected e-Positron Coincidence Time",  "fROC2_ePosCoinTime"},
     
-    {"eHadCoinTime_RAW_ROC1",    "ROC1 RAW ep Coincidence Time",  "fROC1_RAW_eHadCoinTime"},
-    {"eHadCoinTime_RAW_ROC2",    "ROC2 RAW ep Coincidence Time",  "fROC2_RAW_eHadCoinTime"},
+    {"eHadCoinTime_RAW_ROC1",    "ROC1 RAW e-Hadron Coincidence Time",  "fROC1_RAW_eHadCoinTime"},
+    {"eHadCoinTime_RAW_ROC2",    "ROC2 RAW e-Hadron Coincidence Time",  "fROC2_RAW_eHadCoinTime"},
     { 0 }
   };
 
@@ -241,55 +235,35 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 
 
 	  //Coincidence Corrections
-	  elec_coinCorr = (SHMScentralPathLen +  DeltaSHMSpathLength) / (lightSpeed * elecArm_BetaCalc ) - elec_FPtime;
-	  had_coinCorr_proton = (HMScentralPathLen +  DeltaHMSpathLength) / (lightSpeed * hadArm_BetaCalc_proton ) - had_FPtime;
-	  had_coinCorr_Kaon = (HMScentralPathLen +  DeltaHMSpathLength) / (lightSpeed * hadArm_BetaCalc_Kaon ) - had_FPtime;
-	  had_coinCorr_Pion = (HMScentralPathLen +  DeltaHMSpathLength) / (lightSpeed * hadArm_BetaCalc_Pion ) - had_FPtime;
-	  had_coinCorr_Positron = (HMScentralPathLen +  DeltaHMSpathLength) / (lightSpeed * hadArm_BetaCalc_Positron ) - had_FPtime;
+	  elec_coinCorr = (SHMScentralPathLen +  DeltaSHMSpathLength) / (lightSpeed * elecArm_BetaCalc );
+	  had_coinCorr_proton = (HMScentralPathLen +  DeltaHMSpathLength) / (lightSpeed * hadArm_BetaCalc_proton );
+	  had_coinCorr_Kaon = (HMScentralPathLen +  DeltaHMSpathLength) / (lightSpeed * hadArm_BetaCalc_Kaon );
+	  had_coinCorr_Pion = (HMScentralPathLen +  DeltaHMSpathLength) / (lightSpeed * hadArm_BetaCalc_Pion );
+	  had_coinCorr_Positron = (HMScentralPathLen +  DeltaHMSpathLength) / (lightSpeed * hadArm_BetaCalc_Positron );
 
 	  //Raw, Uncorrected e-Hadron Coincidence Time
-	  fROC1_RAW_eHadCoinTime =  (pTRIG1_rawTdcTime_ROC1*0.1) - (pTRIG4_rawTdcTime_ROC1*0.1);
-	  fROC2_RAW_eHadCoinTime =  (pTRIG1_rawTdcTime_ROC2*0.1) - (pTRIG4_rawTdcTime_ROC2*0.1);
+	  fROC1_RAW_eHadCoinTime =  (pTRIG1_rawTdcTime_ROC1*0.1 + elec_FPtime) - (pTRIG4_rawTdcTime_ROC1*0.1 + had_FPtime);
+	  fROC2_RAW_eHadCoinTime =  (pTRIG1_rawTdcTime_ROC2*0.1 + elec_FPtime) - (pTRIG4_rawTdcTime_ROC2*0.1 + had_FPtime);
 	  
 	  
-	  //Corrected Coincidence Time for ROC1/ROC2 (Should be identical)
+	  //Corrected Coincidence Time for ROC1/ROC2 (ROC1 Should be identical to ROC2)
 	  
 	  //PROTON
-	  fROC1_epCoinTime =  (pTRIG1_rawTdcTime_ROC1*0.1 - elec_coinCorr) - 
-	    (pTRIG4_rawTdcTime_ROC1*0.1 - had_coinCorr_proton) - ep_CT_Offset;
-	  
-	  fROC2_epCoinTime =  (pTRIG1_rawTdcTime_ROC2*0.1 - elec_coinCorr) - 
-	    (pTRIG4_rawTdcTime_ROC2*0.1 - had_coinCorr_proton) - ep_CT_Offset;
+	  fROC1_epCoinTime = fROC1_RAW_eHadCoinTime - elec_coinCorr + had_coinCorr_proton - eHad_CT_Offset; 
+	  fROC2_epCoinTime = fROC2_RAW_eHadCoinTime - elec_coinCorr + had_coinCorr_proton - eHad_CT_Offset;       
 
 	  //KAON
-	  fROC1_eKCoinTime =  (pTRIG1_rawTdcTime_ROC1*0.1 - elec_coinCorr) - 
-	    (pTRIG4_rawTdcTime_ROC1*0.1 - had_coinCorr_Kaon) - eK_CT_Offset;
-	  
-	  fROC2_eKCoinTime =  (pTRIG1_rawTdcTime_ROC2*0.1 - elec_coinCorr) - 
-	    (pTRIG4_rawTdcTime_ROC2*0.1 - had_coinCorr_Kaon) - eK_CT_Offset;
+	  fROC1_eKCoinTime = fROC1_RAW_eHadCoinTime - elec_coinCorr + had_coinCorr_Kaon - eHad_CT_Offset;
+	  fROC2_eKCoinTime = fROC2_RAW_eHadCoinTime - elec_coinCorr + had_coinCorr_Kaon - eHad_CT_Offset;
 	
 	  //PION
-	  fROC1_ePiCoinTime =  (pTRIG1_rawTdcTime_ROC1*0.1 - elec_coinCorr) - 
-	    (pTRIG4_rawTdcTime_ROC1*0.1 - had_coinCorr_Pion) - ePi_CT_Offset;
-	  
-	  fROC2_ePiCoinTime =  (pTRIG1_rawTdcTime_ROC2*0.1 - elec_coinCorr) - 
-	    (pTRIG4_rawTdcTime_ROC2*0.1 - had_coinCorr_Pion) - ePi_CT_Offset;
+	  fROC1_ePiCoinTime = fROC1_RAW_eHadCoinTime - elec_coinCorr + had_coinCorr_Pion - eHad_CT_Offset;	  
+	  fROC2_ePiCoinTime = fROC2_RAW_eHadCoinTime - elec_coinCorr + had_coinCorr_Pion - eHad_CT_Offset;
 
 	  //POSITRON
-	  fROC1_ePosCoinTime =  (pTRIG1_rawTdcTime_ROC1*0.1 - elec_coinCorr) - 
-	    (pTRIG4_rawTdcTime_ROC1*0.1 - had_coinCorr_Positron) - eposi_CT_Offset;
+	  fROC1_ePosCoinTime = fROC1_RAW_eHadCoinTime - elec_coinCorr + had_coinCorr_Positron - eHad_CT_Offset ;	  
+	  fROC2_ePosCoinTime = fROC2_RAW_eHadCoinTime - elec_coinCorr + had_coinCorr_Positron - eHad_CT_Offset;
 	  
-	  fROC2_ePosCoinTime =  (pTRIG1_rawTdcTime_ROC2*0.1 - elec_coinCorr) - 
-	    (pTRIG4_rawTdcTime_ROC2*0.1 - had_coinCorr_Positron) - eposi_CT_Offset;
-	  
-	  cout << "fROC1_epCoinTime: " << fROC1_epCoinTime << endl;
-	  cout << "fROC2_epCoinTime: " << fROC2_epCoinTime << endl;
-	  cout << "fROC1_eKCoinTime: " << fROC1_eKCoinTime << endl;
-	  cout << "fROC2_eKCoinTime: " << fROC2_eKCoinTime << endl;
-	  cout << "fROC1_ePiCoinTime: " << fROC1_ePiCoinTime << endl;
-	  cout << "fROC2_ePiCoinTime: " << fROC2_ePiCoinTime << endl;
-	  cout << "fROC1_ePosCoinTime: " << fROC1_ePosCoinTime << endl;
-	  cout << "fROC2_ePosCoinTime: " << fROC2_ePosCoinTime << endl;
 
 	}
 

@@ -68,10 +68,7 @@ public:
   Double_t kaonMass;
   Double_t pionMass;
 
-  Double_t ep_CT_Offset;  //e-Proton coincidence time offset
-  Double_t eK_CT_Offset;  //e-Kaon coin time offset
-  Double_t ePi_CT_Offset;  //e-Pion coin time offset
-  Double_t eposi_CT_Offset;  //ee+ Coin time offset
+  Double_t eHad_CT_Offset;  //e-Hadron coin time Offset
 
   Double_t SHMScentralPathLen;  
   Double_t HMScentralPathLen;   
@@ -81,7 +78,10 @@ public:
 
   Double_t fROC1_RAW_eHadCoinTime;
   Double_t fROC2_RAW_eHadCoinTime;
-
+  
+  Double_t fROC1_eHadCoinTime;
+  Double_t fROC2_eHadCoinTime;
+  
   Double_t fROC1_epCoinTime;
   Double_t fROC2_epCoinTime;
 
@@ -97,7 +97,7 @@ public:
   Double_t elec_coinCorr;
   Double_t elecArm_BetaCalc;
   Double_t elec_hodFPtime;
-
+  
   Double_t had_coinCorr_proton;
   Double_t hadArm_BetaCalc_proton;
   
@@ -110,7 +110,6 @@ public:
   Double_t had_coinCorr_Positron;
   Double_t hadArm_BetaCalc_Positron;
   
-  Double_t had_hodFPtime;
 
   Double_t elec_P;     //electron golden track momentum
   Double_t elec_dP;     //electron golden track delta-> (P-P0 / P0)
