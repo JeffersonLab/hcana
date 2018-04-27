@@ -68,13 +68,15 @@ public:
   Double_t kaonMass;
   Double_t pionMass;
 
-  Double_t ep_CT_Offset;  //ep coincidence time offset
+  Double_t ep_CT_Offset;  //e-Proton coincidence time offset
+  Double_t eK_CT_Offset;  //e-Kaon coin time offset
+  Double_t ePi_CT_Offset;  //e-Pion coin time offset
 
-  Double_t SHMScentralPathLen;  //TODO: Put this in a param file, to be read in
-  Double_t HMScentralPathLen;   //TODO: Put this in a param file, to be read in
+  Double_t SHMScentralPathLen;  
+  Double_t HMScentralPathLen;   
 
   Double_t DeltaSHMSpathLength;
-  Double_t DeltaHMSpathLength ;
+  Double_t DeltaHMSpathLength;
 
   Double_t fROC1_RAW_epCoinTime;
   Double_t fROC2_RAW_epCoinTime;
@@ -82,12 +84,25 @@ public:
   Double_t fROC1_epCoinTime;
   Double_t fROC2_epCoinTime;
 
+  Double_t fROC1_eKCoinTime;
+  Double_t fROC2_eKCoinTime;
+ 
+  Double_t fROC1_ePiCoinTime;
+  Double_t fROC2_ePiCoinTime;
+
   Double_t elec_coinCorr;
   Double_t elecArm_BetaCalc;
   Double_t elec_hodFPtime;
 
-  Double_t had_coinCorr;
-  Double_t hadArm_BetaCalc;
+  Double_t had_coinCorr_proton;
+  Double_t hadArm_BetaCalc_proton;
+  
+  Double_t had_coinCorr_Kaon;
+  Double_t hadArm_BetaCalc_Kaon;
+   
+  Double_t had_coinCorr_Pion;
+  Double_t hadArm_BetaCalc_Pion;
+  
   Double_t had_hodFPtime;
 
   Double_t elec_P;     //electron golden track momentum
