@@ -593,7 +593,7 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
     fChambers[i]->CorrectHitTimes();
     fChambers[i]->LeftRight();
   }
-  if (fdebugflagpr) PrintSpacePoints();
+  if (fdebugflagstubs) PrintSpacePoints();
   if (fdebugflagstubs)  PrintStubs();
   // Now link the stubs between chambers
   LinkStubs();
@@ -691,7 +691,7 @@ void THcDC::PrintSpacePoints()
 	printf("%5d %8.5f %8.5f %5d  %5d ",isp+1,sp->GetX(),sp->GetY(),sp->GetNHits(),sp->GetCombos()) ;
 	for (Int_t ii=0;ii<sp->GetNHits();ii++) {
 	  THcDCHit* hittemp = (THcDCHit*)(sp->GetHit(ii));
-	  printf("%3d %3d",hittemp->GetPlaneNum(),hittemp->GetWireNum());
+	  printf("%3d %3d %3d",hittemp->GetPlaneNum(),hittemp->GetWireNum(),hittemp->GetLR());
         }
 	    printf("\n");
     }
@@ -734,7 +734,11 @@ void THcDC::LinkStubs()
   fNSp=0;
   fSp.clear();
   fSp.reserve(10);
+  fNDCTracks=0;		// Number of Focal Plane tracks found
+  fDCTracks->Delete();
   // Make a vector of pointers to the SpacePoints
+  if (fChambers[0]->GetNSpacePoints()+fChambers[1]->GetNSpacePoints()>10) return;
+
   for(UInt_t ich=0;ich<fNChambers;ich++) {
     Int_t nchamber=fChambers[ich]->GetChamberNum();
     TClonesArray* spacepointarray = fChambers[ich]->GetSpacePointsP();
@@ -743,10 +747,9 @@ void THcDC::LinkStubs()
       fSp[fNSp]->fNChamber = nchamber;
       fSp[fNSp]->fNChamber_spnum = isp;
       fNSp++;
+      if (fNSp>10) break;
     }
   }
-  fNDCTracks=0;		// Number of Focal Plane tracks found
-  fDCTracks->Clear("C");
   Double_t stubminx = 999999;
   Double_t stubminy = 999999;
   Double_t stubminxp = 999999;
@@ -772,7 +775,7 @@ void THcDC::LinkStubs()
 	Int_t newtrack=1;
 	for(Int_t isp2=isp1+1;isp2<fNSp;isp2++) {
 	  THcSpacePoint* sp2=fSp[isp2];
-	  if(sp1->fNChamber!=sp2->fNChamber) {
+	  if(sp1->fNChamber!=sp2->fNChamber&&sp1->GetSetStubFlag()&&sp2->GetSetStubFlag()) {
 	    Double_t *spstub1=sp1->GetStubP();
 	    Double_t *spstub2=sp2->GetStubP();
 	    Double_t dposx = spstub1[0] - spstub2[0];
@@ -893,8 +896,10 @@ void THcDC::LinkStubs()
     for(Int_t isp=0;isp<fNSp;isp++) {
       if(fNDCTracks<MAXTRACKS) {
 	// Need some constructed t thingy
+        if (fSp[isp]->GetSetStubFlag()) {
 	THcDCTrack *newDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
 	newDCTrack->AddSpacePoint(fSp[isp]);
+	}
       } else {
 	if (fdebuglinkstubs) cout << "EPIC FAIL 3:  Too many tracks found in THcDC::LinkStubs" << endl;
 	fNDCTracks=0;
