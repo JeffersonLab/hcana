@@ -3,6 +3,8 @@
 
 \brief Class for calculating and adding the Coincidence Time in the Tree.
 
+//Author: Carlos Yero
+//Date: April 27, 2018
 */
 #include "THaEvData.h"
 #include "THaCutList.h"
