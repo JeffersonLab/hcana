@@ -224,10 +224,10 @@ void THcTrigDet::Clear(Option_t* opt) {
 //Added function to SET coincidence trigger times
 void THcTrigDet::SetCoinTrigTimes() 
 { 
-  pTrig1_ROC1 = fTdcTimeRaw[27];
-  pTrig4_ROC1 = fTdcTimeRaw[30];
-  pTrig1_ROC2 = fTdcTimeRaw[58];
-  pTrig4_ROC2 = fTdcTimeRaw[61];
+  pTrig1_ROC1 = fTdcTimeRaw[fidx0];
+  pTrig4_ROC1 = fTdcTimeRaw[fidx1];
+  pTrig1_ROC2 = fTdcTimeRaw[fidx2];
+  pTrig4_ROC2 = fTdcTimeRaw[fidx3];
 
 }
 
@@ -303,12 +303,6 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
   //Set raw Tdc coin. trigger times for pTRIG1/4
   SetCoinTrigTimes();
 
-  //cout << "***THcTrigDet:*********NEW EVENT*****NEW EVENT********NEW EVENT*************" << endl;
-  //cout << ">>>Calling function Get_pTRG1_ROC1_rawTdctime(): " << Get_pTRG1_ROC1_rawTdctime() << endl;
-  //cout << ">>>Calling function Get_pTRG4_ROC1_rawTdctime(): " << Get_pTRG4_ROC1_rawTdctime() << endl;
-  //cout << ">>>Calling function Get_pTRG1_ROC2_rawTdctime(): " << Get_pTRG1_ROC2_rawTdctime() << endl;
-  //cout << ">>>Calling function Get_pTRG4_ROC2_rawTdctime(): " << Get_pTRG4_ROC2_rawTdctime() << endl;
-
   return 0;
 }
 
@@ -370,13 +364,43 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   fAdcNames = vsplit(adcNames);
   fTdcNames = vsplit(tdcNames);
 
+  //default index values
+  fidx0 = 27;
+  fidx1 = 30;
+  fidx2 = 58;
+  fidx3 = 61;	
+
+  //Assign an index to coincidence trigger times strings
+  for (int i = 0; i <fNumTdc; i++)
+    {
+     
+      if(fTdcNames.at(i)=="pTRIG1_ROC1")
+	{
+	  fidx0 = i;
+	}
+      else if(fTdcNames.at(i)=="pTRIG4_ROC1")
+	{
+	  fidx1 = i;
+	}
+      else if(fTdcNames.at(i)=="pTRIG1_ROC2")
+	{
+	  fidx2 = i;
+	}
+      else if(fTdcNames.at(i)=="pTRIG4_ROC2")
+	{
+	  fidx3 = i;
+	}
+
+    }
+  
+  
+
   return kOK;
 }
 
 
 Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
 
-  cout << ">>>>>> Entering DefineVariables() <<<<<<< " << endl;
 
   if (mode == kDefine && fIsSetup) return kOK;
   fIsSetup = (mode == kDefine);
@@ -486,12 +510,6 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   for (int i=0; i<fNumTdc; ++i) {
     tdcTimeRawTitle.at(i) = fTdcNames.at(i) + "_tdcTimeRaw";
     tdcTimeRawVar.at(i) = TString::Format("fTdcTimeRaw[%d]", i);
-    
-    //Date: April, 24, 2018, Indices for coin. time calculation 
-    //index i = 27 ---> pTRIG1_ROC1_tdcTimeRaw (SHMS 3/4 trig)
-    //index i = 30 ---> pTRIG4_ROC1_tdcTimeRaw (HMS 3/4 trig)
-    //index i = 58 ---> pTRIG1_ROC2_tdcTimeRaw (SHMS 3/4 trig)
-    //index i = 61 ---> pTRIG4_ROC2_tdcTimeRaw (HMS 3/4 trig)
     
 
     RVarDef entry1 {

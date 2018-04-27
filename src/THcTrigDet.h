@@ -46,15 +46,18 @@ class THcTrigDet : public THaDetector, public THcHitList {
     
     //Added for coin. time calculation
     void SetCoinTrigTimes();
-   
+
+    //indices to store pTrig string locations
+    Int_t fidx0;
+    Int_t fidx1;
+    Int_t fidx2;
+    Int_t fidx3;
+
+
     Int_t pTrig1_ROC1;
     Int_t pTrig4_ROC1;
     Int_t pTrig1_ROC2;
     Int_t pTrig4_ROC2;
-
-
-
-
 
     std::string fKwPrefix;
 
