@@ -71,6 +71,7 @@ public:
   Double_t ep_CT_Offset;  //e-Proton coincidence time offset
   Double_t eK_CT_Offset;  //e-Kaon coin time offset
   Double_t ePi_CT_Offset;  //e-Pion coin time offset
+  Double_t eposi_CT_Offset;  //ee+ Coin time offset
 
   Double_t SHMScentralPathLen;  
   Double_t HMScentralPathLen;   
@@ -78,8 +79,8 @@ public:
   Double_t DeltaSHMSpathLength;
   Double_t DeltaHMSpathLength;
 
-  Double_t fROC1_RAW_epCoinTime;
-  Double_t fROC2_RAW_epCoinTime;
+  Double_t fROC1_RAW_eHadCoinTime;
+  Double_t fROC2_RAW_eHadCoinTime;
 
   Double_t fROC1_epCoinTime;
   Double_t fROC2_epCoinTime;
@@ -89,7 +90,10 @@ public:
  
   Double_t fROC1_ePiCoinTime;
   Double_t fROC2_ePiCoinTime;
-
+ 
+  Double_t fROC1_ePosCoinTime;   //electron-positron coin time 
+  Double_t fROC2_ePosCoinTime;
+  
   Double_t elec_coinCorr;
   Double_t elecArm_BetaCalc;
   Double_t elec_hodFPtime;
@@ -102,6 +106,9 @@ public:
    
   Double_t had_coinCorr_Pion;
   Double_t hadArm_BetaCalc_Pion;
+  
+  Double_t had_coinCorr_Positron;
+  Double_t hadArm_BetaCalc_Positron;
   
   Double_t had_hodFPtime;
 
