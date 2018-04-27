@@ -31,11 +31,13 @@ void THcDCTrack::AddSpacePoint( THcSpacePoint* sp )
 {
   // Add to list of space points in this track
   // Need a check for maximum spacepoints of 10
+  if (fnSP <10) {
   fSp[fnSP++] = sp;
   // Copy all the hits from the space point into the track
   // Will need to also copy the corrected distance and lr information
   for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
     AddHit(sp->GetHit(ihit),sp->GetHitDist(ihit),sp->GetHitLR(ihit));
+  }
   }
 }
 

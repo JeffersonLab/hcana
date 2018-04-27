@@ -250,7 +250,7 @@ void THcDriftChamber::ProcessHits( void)
   // Make a list of hits for whole chamber
   fNhits = 0;
   fHits.clear();
-  fHits.reserve(10);
+  fHits.reserve(40);
 
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     TClonesArray* hitsarray = fPlanes[ip]->GetHits();
@@ -317,7 +317,8 @@ Int_t THcDriftChamber::FindSpacePoints( void )
           that do not have nhits >  min_hits and ncombos> min_combos 
           ( exception for easyspacepoint)
   */
-  fSpacePoints->Clear();
+  // fSpacePoints->Clear();
+  fSpacePoints->Delete();
 
   Int_t plane_hitind=0;
   Int_t planep_hitind=0;
@@ -352,7 +353,6 @@ Int_t THcDriftChamber::FindSpacePoints( void )
     if(!fEasySpacePoint) {	// It's not easy
       FindHardSpacePoints();
     }
-
     // We have our space points for this chamber
     if(fNSpacePoints > 0) {
       if(fHMSStyleChambers) {
@@ -536,6 +536,7 @@ Int_t THcDriftChamber::FindHardSpacePoints()
     Double_t xt = (combos[icombo].pair1->x + combos[icombo].pair2->x)/2.0;
     Double_t yt = (combos[icombo].pair1->y + combos[icombo].pair2->y)/2.0;
     // Loop over space points
+    
     if(fNSpacePoints > 0) {
       Int_t add_flag=1;
       for(Int_t ispace=0;ispace<fNSpacePoints;ispace++) {
@@ -842,12 +843,10 @@ void THcDriftChamber::ChooseSingleHit()
 {
   // Look at all hits in a space point.  If two hits are in the same plane,
   // reject the one with the longer drift time.
-
   for(Int_t isp=0;isp<fNSpacePoints;isp++) {
     THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
     Int_t startnum = sp->GetNHits();
     Int_t goodhit[startnum];
-
     for(Int_t ihit=0;ihit<startnum;ihit++) {
       goodhit[ihit] = 1;
     }
@@ -866,15 +865,12 @@ void THcDriftChamber::ChooseSingleHit()
 	  } else {
 	    goodhit[ihit2] = 0;
 	  }
-	  // if (fhdebugflagpr) cout << " Rejecting hit " << ihit1 << " " << tdrift1 << " " << ihit2 << " " << tdrift2 << endl;
 	}
       }
     }
     // Gather the remaining hits
     Int_t finalnum = 0;
     for(Int_t ihit=0;ihit<startnum;ihit++) {
-      //THcDCHit* hit = sp->GetHit(ihit);
-	//	if (fhdebugflagpr) cout << " good hit = "<< ihit << " " << goodhit[ihit] << " time = " << hit->GetTime() << endl;
       if(goodhit[ihit] > 0) {	// Keep this hit
 	if (ihit > finalnum) {	// Move hit
 	  sp->ReplaceHit(finalnum++, sp->GetHit(ihit));
@@ -899,13 +895,11 @@ void THcDriftChamber::SelectSpacePoints()
   for(Int_t isp=0;isp<fNSpacePoints;isp++) {
     // Include fEasySpacePoint because ncombos not filled in
     THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
-    // if (fhdebugflagpr) cout << " looping sp points " << sp->GetCombos() << " " << fMinCombos << " " << fEasySpacePoint << " " << sp->GetNHits() << " " <<  fMinHits << endl;
     if(sp->GetCombos() >= fMinCombos || fEasySpacePoint) {
       if(sp->GetNHits() >= fMinHits) {
 	if(isp > sp_count) {
 	  //	  (*fSpacePoints)[sp_count] = (*fSpacePoints)[isp];
         THcSpacePoint* sp1 = (THcSpacePoint*)(*fSpacePoints)[sp_count];
-        //if (fhdebugflagpr) cout << " select space pt = " << isp << endl;
         sp1->Clear();
         Double_t xt,yt;
         xt=sp->GetX();
@@ -921,7 +915,6 @@ void THcDriftChamber::SelectSpacePoints()
       }
     }
   }
-  // if(sp_count < fNSpacePoints)    if (fhdebugflagpr) cout << "Reduced from " << fNSpacePoints << " to " << sp_count << " space points" << endl;
   fNSpacePoints = sp_count;
   //for(Int_t isp=0;isp<fNSpacePoints;isp++) {
   //  THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
@@ -1087,8 +1080,9 @@ void THcDriftChamber::LeftRight()
     THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
     Int_t nhits = sp->GetNHits();
     UInt_t bitpat  = 0;		// Bit pattern of which planes are hit
-    Double_t minchi2 = 1.0e10;
-    Double_t tmp_minchi2=1.0e10;
+    Double_t maxchi2= 1.0e10;
+    Double_t minchi2 = maxchi2;
+    Double_t tmp_minchi2=maxchi2;
     Double_t minxp = 0.25;
     Int_t hasy1 = -1;
     Int_t hasy2 = -1;
@@ -1253,7 +1247,10 @@ void THcDriftChamber::LeftRight()
       }
     } // End loop of pm combinations
 
-    if(minchi2 > 9.9e9) {	// No track passed angle cut
+    if (minchi2 == maxchi2 && tmp_minchi2 == maxchi2) {
+ 
+    }else{
+    if(minchi2 == maxchi2 ) {	// No track passed angle cut
       minchi2 = tmp_minchi2;
       for(Int_t ihit=0;ihit<nhits;ihit++) {
 	plusminusbest[ihit] = tmp_plusminus[ihit];
@@ -1290,6 +1287,7 @@ void THcDriftChamber::LeftRight()
       - spstub[1]*stub[3]*fSinBeta[pindex];
     sp->SetStub(stub);
     //if (fhdebugflagpr) cout << " Left/Right space pt " << isp+1 << " " << stub[0]<< " " << stub[1] << " " << stub[2]<< " " << stub[3] << endl;
+    }
   }
   // Option to print stubs
 }

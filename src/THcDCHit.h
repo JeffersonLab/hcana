@@ -19,7 +19,7 @@ public:
   THcDCHit( THcDCWire* wire=NULL, Int_t rawnorefcorrtime=0, Int_t rawtime=0, Double_t time=0.0,
     THcDriftChamberPlane* wp=0) :
     fWire(wire), fRawNoRefCorrTime(rawnorefcorrtime), fRawTime(rawtime), fTime(time), fWirePlane(wp),
-    fDist(0.0), ftrDist(kBig) {
+      fDist(0.0), fLR(0), ftrDist(kBig) {
       if (wire) ConvertTimeToDist();
       fCorrected = 0;
     }
