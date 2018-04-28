@@ -646,7 +646,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
   Int_t nexthit = 0;
 
   fNfptimes=0;
-  Int_t thits=0;
+  Int_t thits = 0;
   for(Int_t ip=0;ip<fNPlanes;ip++) {
 
     fPlaneCenter[ip] = fPlanes[ip]->GetPosCenter(0) + fPlanes[ip]->GetPosOffset();
@@ -676,7 +676,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 }
 
 //_____________________________________________________________________________
-void THcHodoscope::EstimateFocalPlaneTime( void )
+void THcHodoscope::EstimateFocalPlaneTime()
 {
   /*! \brief Calculates the Drift Chamber start time and fBetaNoTrk (velocity determined without track info)
    *
