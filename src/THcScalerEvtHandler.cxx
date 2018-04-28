@@ -143,14 +143,8 @@ Int_t THcScalerEvtHandler::ReadDatabase(const TDatime& date )
     fbcm_Current_Threshold_Index = 0;
     gHcParms->LoadParmValues((DBRequest*)&list2, prefix);
     vector<string> bcm_names = vsplit(bcm_namelist);
-    fBCM_Name = new char* [fNumBCMs];
     for(Int_t i=0;i<fNumBCMs;i++) {
-      fBCM_Name[i] = new char[bcm_names[i].length()+1];
-      strcpy(fBCM_Name[i], bcm_names[i].c_str());
-      strcat(fBCM_Name[i],".scal");
-      //    cout << fBCM_Gain[i] << " " << fBCM_Offset[i] << " " << fBCM_Name[i] << endl;
-    }
-    for(Int_t i=0;i<fNumBCMs;i++) {
+      fBCM_Name.push_back(bcm_names[i]+".scal");
       fBCM_delta_charge[i]=0.;
     }
   }

@@ -17,6 +17,8 @@
 #include <set>
 #include "TTree.h"
 #include "TString.h"
+#include <cstring>
+
 
 class HCScalerLoc { // Utility class used by THaScalerEvtHandler
  public:
@@ -62,7 +64,7 @@ private:
    Double_t fbcm_Current_Threshold;
    Double_t fClockFreq;
    Int_t fbcm_Current_Threshold_Index;
-   char** fBCM_Name;
+   std::vector <std::string> fBCM_Name;
    UInt_t evcount;
    Double_t evcountR;
    UInt_t evNumber;
