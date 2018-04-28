@@ -377,6 +377,8 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
 
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     Int_t hitcounter = hitCounter[ip];
+    if (hitcounter>=fNCounters[ip]) hitcounter=fNCounters[ip]-1;
+    if (hitcounter<0) hitcounter=0;    
     Double_t dist = hitDistance[ip];
     Int_t nphits=fPlanes[ip]->GetNScinHits();
     TClonesArray* hodoHits = fPlanes[ip]->GetHits();
@@ -387,7 +389,6 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
       Bool_t onTrack, goodScinTime, goodTdcNeg, goodTdcPos;
       fHod->GetFlags(trackIndex,ip,ihit,
 		     onTrack, goodScinTime, goodTdcNeg, goodTdcPos);
-
       if(TMath::Abs(dist) <= fStatSlop &&
 	 TMath::Abs(hitcounter-counter) <= checkHit[ip] &&
 	 fHitPlane[ip] == 0 &&
