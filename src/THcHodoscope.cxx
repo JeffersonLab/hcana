@@ -80,7 +80,6 @@ void THcHodoscope::Setup(const char* name, const char* description)
   if( IsZombie()) return;
 
   // fDebug = 1;  // Keep this at one while we're working on the code
-  hTime = new TH1F("timehist","",400,0,200);
 
   char prefix[2];
 
@@ -90,6 +89,8 @@ void THcHodoscope::Setup(const char* name, const char* description)
   TString temp(prefix[0]);
   fSHMS=kFALSE;
   if (temp == "p" ) fSHMS=kTRUE;
+  TString histname=temp+"_timehist";
+  hTime = new TH1F(histname,"",400,0,200);
   // cout << " fSHMS = " << fSHMS << endl;
   string planenamelist;
   DBRequest listextra[]={
@@ -713,6 +714,7 @@ void THcHodoscope::EstimateFocalPlaneTime()
   Double_t Plane_fptime_sum=0.0;
   Bool_t goodplanetime[fNPlanes];
   Bool_t twogoodtimes[nscinhits];
+  Double_t tmin = 0.5*hTime->GetMaximumBin();
   for(Int_t ip=0;ip<fNumPlanesBetaCalc;ip++) {
     goodplanetime[ip] = kFALSE;
     Int_t nphits=fPlanes[ip]->GetNScinHits();
@@ -723,8 +725,7 @@ void THcHodoscope::EstimateFocalPlaneTime()
       THcHodoHit *hit = (THcHodoHit*)hodoHits->At(i);
       twogoodtimes[ihit] = kFALSE;
       if(hit->GetHasCorrectedTimes()) {
-      Double_t tmin = 0.5*hTime->GetMaximumBin();
-      Double_t postime=hit->GetPosTOFCorrectedTime();
+       Double_t postime=hit->GetPosTOFCorrectedTime();
       Double_t negtime=hit->GetNegTOFCorrectedTime();
       if ((postime>(tmin-fTofTolerance)) && (postime<(tmin+fTofTolerance)) &&
 	  (negtime>(tmin-fTofTolerance)) && (negtime<(tmin+fTofTolerance)) ) {
