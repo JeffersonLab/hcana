@@ -32,11 +32,32 @@ class THcTrigDet : public THaDetector, public THcHitList {
     virtual Bool_t IsIgnoreType(Int_t evtype) const;
     virtual Bool_t HaveIgnoreList() const;
     Int_t          End(THaRunBase* run);
+    
+    //Funtions to get raw TdcTimes 
+    Int_t Get_pTRG1_ROC1_rawTdctime() {return pTrig1_ROC1;}
+    Int_t Get_pTRG4_ROC1_rawTdctime() {return pTrig4_ROC1;}
+    Int_t Get_pTRG1_ROC2_rawTdctime() {return pTrig1_ROC2;}
+    Int_t Get_pTRG4_ROC2_rawTdctime() {return pTrig4_ROC2;}
 
   protected:
     void Setup(const char* name, const char* description);
     virtual Int_t ReadDatabase(const TDatime& date);
     virtual Int_t DefineVariables(EMode mode=kDefine);
+    
+    //Added for coin. time calculation
+    void SetCoinTrigTimes();
+
+    //indices to store pTrig string locations
+    Int_t fidx0;
+    Int_t fidx1;
+    Int_t fidx2;
+    Int_t fidx3;
+
+
+    Int_t pTrig1_ROC1;
+    Int_t pTrig4_ROC1;
+    Int_t pTrig1_ROC2;
+    Int_t pTrig4_ROC2;
 
     std::string fKwPrefix;
 
