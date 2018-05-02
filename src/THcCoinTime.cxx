@@ -31,9 +31,9 @@ THcCoinTime::THcCoinTime (const char *name, const char* description, const char*
 			  const char* elecArmName, const char* coinname) :
   
   THaPhysicsModule(name, description), 
+  fCoinDetName(coinname), 
   fhadArmName(hadArmName),                 //initialize spectro names
   felecArmName(elecArmName),
-  fCoinDetName(coinname), 
   fhadSpectro(NULL),                      //initialize spectro objects
   felecSpectro(NULL),
   fCoinDet(NULL)
