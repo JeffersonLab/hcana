@@ -156,9 +156,13 @@ Int_t THcCoinTime::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
 
   const RVarDef vars[] = {
+
+    {"deltaSHMS_pathLen",    "SHMS PathLength Correction (cm)",   "DeltaSHMSpathLength"},
+    {"deltaHMS_pathLen",    "HMS PathLength Correction (cm)",   "DeltaHMSpathLength"},
+
     {"epCoinTime_ROC1",    "ROC1 Corrected ep Coincidence Time",  "fROC1_epCoinTime"},
     {"epCoinTime_ROC2",    "ROC2 Corrected ep Coincidence Time",  "fROC2_epCoinTime"},
-  
+    
     {"eKCoinTime_ROC1",    "ROC1 Corrected eK Coincidence Time",  "fROC1_eKCoinTime"},
     {"eKCoinTime_ROC2",    "ROC2 Corrected eK Coincidence Time",  "fROC2_eKCoinTime"},
     
