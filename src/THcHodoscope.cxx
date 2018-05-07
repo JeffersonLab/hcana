@@ -751,8 +751,8 @@ void THcHodoscope::EstimateFocalPlaneTime()
 	  hit->SetTwoGoodTimes(kFALSE);
 	}
       }
+      ihit++;
     }
-    ihit++;
     fPlanes[ip]->SetFpTime(Plane_fptime_sum/float(Ngood_hits_plane));
     fPlanes[ip]->SetNGoodHits(Ngood_hits_plane);
   }
