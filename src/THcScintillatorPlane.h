@@ -162,6 +162,9 @@ class THcScintillatorPlane : public THaSubDetector {
   vector<Double_t>  fGoodNegTdcTimeCorr;
   vector<Double_t>  fGoodNegTdcTimeTOFCorr;
   
+  //Time Walk Corrected
+  vector<Double_t>  fGoodPosTdcTimeWalkCorr;
+  vector<Double_t>  fGoodNegTdcTimeWalkCorr;
 
 
   Int_t fDebugAdc;
@@ -222,6 +225,16 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t *fHodoNegInvAdcLinear;
   Double_t *fHodoPosInvAdcAdc;
   Double_t *fHodoNegInvAdcAdc;
+  //Time-Walk Parameters
+  Double_t* fHodoPos_c1;
+  Double_t* fHodoNeg_c1;
+  Double_t* fHodoPos_c2;
+  Double_t* fHodoNeg_c2;
+  Double_t  fTdc_Thrs;  
+
+  Double_t tw_corr_pos;
+  Double_t tw_corr_neg;
+
   Double_t *fHodoSigma;
   Double_t fTolerance; /* need this for Focal Plane Time estimation */
   Double_t fFptime;
