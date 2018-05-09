@@ -81,6 +81,13 @@ public:
   Double_t GetHodoPosAdcTimeWindowMin(Int_t iii) const {return fHodoPosAdcTimeWindowMin[iii];}
   Double_t GetHodoNegAdcTimeWindowMax(Int_t iii) const {return fHodoNegAdcTimeWindowMax[iii];}
   Double_t GetHodoNegAdcTimeWindowMin(Int_t iii) const {return fHodoNegAdcTimeWindowMin[iii];}
+ 
+  //Get Time Walk Parameters
+  Double_t GetHodoPos_c1(Int_t iii) const {return fHodoPos_c1[iii];}
+  Double_t GetHodoNeg_c1(Int_t iii) const {return fHodoNeg_c1[iii];}
+  Double_t GetHodoPos_c2(Int_t iii) const {return fHodoPos_c2[iii];}
+  Double_t GetHodoNeg_c2(Int_t iii) const {return fHodoNeg_c2[iii];}
+  Double_t GetTDCThrs() const {return fTdc_Thrs;}
 
   Double_t GetStartTimeCenter() const {return fStartTimeCenter;}
   Double_t GetStartTimeSlop() const {return fStartTimeSlop;}
