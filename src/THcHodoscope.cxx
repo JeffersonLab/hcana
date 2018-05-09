@@ -293,6 +293,13 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fHodoPosInvAdcAdc=new Double_t [fMaxHodoScin];
   fHodoNegInvAdcAdc=new Double_t [fMaxHodoScin];
 
+  //New Time-Walk Calibration Parameters
+  fHodoPos_c1=new Double_t [fMaxHodoScin];
+  fHodoNeg_c1=new Double_t [fMaxHodoScin];
+  fHodoPos_c2=new Double_t [fMaxHodoScin];
+  fHodoNeg_c2=new Double_t [fMaxHodoScin];
+
+
   fNHodoscopes = 2;
   fxLoScin = new Int_t [fNHodoscopes];
   fxHiScin = new Int_t [fNHodoscopes];
@@ -421,8 +428,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     };
     gHcParms->LoadParmValues((DBRequest*)&list2,prefix);
   };
-  if (!fTofUsingInvAdc) {
-    DBRequest list3[]={
+ if (!fTofUsingInvAdc) {
+      DBRequest list3[]={
     {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
     {"hodo_pos_minph",                   &fHodoPosMinPh[0],       kDouble,  fMaxHodoScin},
     {"hodo_neg_minph",                   &fHodoNegMinPh[0],       kDouble,  fMaxHodoScin},
@@ -430,10 +437,31 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"hodo_neg_phc_coeff",               &fHodoNegPhcCoeff[0],    kDouble,  fMaxHodoScin},
     {"hodo_pos_time_offset",             &fHodoPosTimeOffset[0],  kDouble,  fMaxHodoScin},
     {"hodo_neg_time_offset",             &fHodoNegTimeOffset[0],  kDouble,  fMaxHodoScin},
-      {0}
+    {"c1_Pos",                           &fHodoPos_c1[0], kDouble, fMaxHodoScin},
+    {"c1_Neg",                           &fHodoNeg_c1[0], kDouble, fMaxHodoScin},
+    {"c2_Pos",                           &fHodoPos_c2[0], kDouble, fMaxHodoScin},
+    {"c2_Neg",                           &fHodoNeg_c2[0], kDouble, fMaxHodoScin},
+    {"TDC_threshold",                    &fTdc_Thrs,      kDouble, 0, 1},
+    {0}   
     };
+   
+    
+
     gHcParms->LoadParmValues((DBRequest*)&list3,prefix);
-  };
+ }
+     DBRequest list4[]={
+    {"c1_Pos",                           &fHodoPos_c1[0], kDouble, fMaxHodoScin},
+    {"c1_Neg",                           &fHodoNeg_c1[0], kDouble, fMaxHodoScin},
+    {"c2_Pos",                           &fHodoPos_c2[0], kDouble, fMaxHodoScin},
+    {"c2_Neg",                           &fHodoNeg_c2[0], kDouble, fMaxHodoScin},
+    {"TDC_threshold",                    &fTdc_Thrs,      kDouble, 0, 1},
+    {0}   
+    };
+   
+    
+
+    gHcParms->LoadParmValues((DBRequest*)&list4,prefix);
+  
   if (fDebug >=1) {
     cout <<"******* Testing Hodoscope Parameter Reading ***\n";
     cout<<"StarTimeCenter = "<<fStartTimeCenter<<endl;
@@ -555,6 +583,10 @@ void THcHodoscope::DeleteArrays()
   delete [] fHodoNegAdcTimeWindowMax;    fHodoNegAdcTimeWindowMax = NULL;
   delete [] fHodoPosAdcTimeWindowMin;    fHodoPosAdcTimeWindowMin = NULL;
   delete [] fHodoPosAdcTimeWindowMax;    fHodoPosAdcTimeWindowMax = NULL;
+  delete [] fHodoPos_c1;                 fHodoPos_c1 = NULL;
+  delete [] fHodoNeg_c1;                 fHodoNeg_c1 = NULL;
+  delete [] fHodoPos_c2;                 fHodoPos_c2 = NULL;
+  delete [] fHodoNeg_c2;                 fHodoNeg_c2 = NULL;
 
 }
 
@@ -872,6 +904,15 @@ Double_t THcHodoscope::TimeWalkCorrection(const Int_t& paddle,
 //_____________________________________________________________________________
 Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 {
+
+  cout << "******* ENTERING COARSE PROCESS METHOD*********** " << endl;
+  cout << "HMS HODO CALIBRATION PARAMETERS: " << endl;
+  cout << "c1Pos: " << fHodoPos_c1[2] << endl;
+  cout << "c1Neg: " << fHodoNeg_c1[7] << endl;
+  cout << "c2Pos: " << fHodoPos_c2[10] << endl;
+  cout << "c2Neg: " << fHodoNeg_c2[2] << endl;
+  cout << "TDC Thrs: " << fTdc_Thrs << endl;
+
 
   Int_t ntracks = tracks.GetLast()+1; // Number of reconstructed tracks
   // -------------------------------------------------

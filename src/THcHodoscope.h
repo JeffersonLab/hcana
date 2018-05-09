@@ -187,6 +187,13 @@ protected:
   Double_t* fHodoPosInvAdcAdc;
   Double_t* fHodoNegInvAdcAdc;
 
+  //New Time-Walk Calibration Parameters
+  Double_t* fHodoPos_c1;
+  Double_t* fHodoNeg_c1;
+  Double_t* fHodoPos_c2;
+  Double_t* fHodoNeg_c2;
+  Double_t  fTdc_Thrs;  
+
   Double_t fPartMass;		// Nominal particle mass
   Double_t fBetaNominal;	// Beta for central ray of nominal particle type
 
