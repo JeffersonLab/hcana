@@ -439,10 +439,10 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"hodo_neg_time_offset",             &fHodoNegTimeOffset[0],  kDouble,  fMaxHodoScin},
     {0}   
     };
-  */
+  
     
     gHcParms->LoadParmValues((DBRequest*)&list3,prefix);
- }
+  */
      DBRequest list4[]={
     {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
     {"c1_Pos",                           &fHodoPos_c1[0], kDouble, fMaxHodoScin},
@@ -451,8 +451,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"c2_Neg",                           &fHodoNeg_c2[0], kDouble, fMaxHodoScin},
     {"TDC_threshold",                    &fTdc_Thrs,      kDouble, 0, 1},
     {0}   
-    };
-   
+     };
+     
     
     gHcParms->LoadParmValues((DBRequest*)&list4,prefix);
   
