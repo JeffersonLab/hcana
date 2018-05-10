@@ -417,7 +417,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   if (fTofUsingInvAdc) {
     DBRequest list2[]={
-    {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
+      {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
       {"hodo_pos_invadc_offset",&fHodoPosInvAdcOffset[0],kDouble,fMaxHodoScin},
       {"hodo_neg_invadc_offset",&fHodoNegInvAdcOffset[0],kDouble,fMaxHodoScin},
       {"hodo_pos_invadc_linear",&fHodoPosInvAdcLinear[0],kDouble,fMaxHodoScin},
@@ -428,7 +428,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     };
     gHcParms->LoadParmValues((DBRequest*)&list2,prefix);
   };
- if (!fTofUsingInvAdc) {
+  /* if (!fTofUsingInvAdc) {
       DBRequest list3[]={
     {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
     {"hodo_pos_minph",                   &fHodoPosMinPh[0],       kDouble,  fMaxHodoScin},
@@ -439,11 +439,12 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"hodo_neg_time_offset",             &fHodoNegTimeOffset[0],  kDouble,  fMaxHodoScin},
     {0}   
     };
-   
+  */
     
     gHcParms->LoadParmValues((DBRequest*)&list3,prefix);
  }
      DBRequest list4[]={
+    {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
     {"c1_Pos",                           &fHodoPos_c1[0], kDouble, fMaxHodoScin},
     {"c1_Neg",                           &fHodoNeg_c1[0], kDouble, fMaxHodoScin},
     {"c2_Pos",                           &fHodoPos_c2[0], kDouble, fMaxHodoScin},

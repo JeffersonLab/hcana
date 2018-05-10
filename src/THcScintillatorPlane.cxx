@@ -979,13 +979,9 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	  timec_neg = tdc_neg*fScinTdcToTime
 	    - fHodoNegInvAdcOffset[index]
 	    - fHodoNegInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0*.020,adcint_neg));
-	} else {		// Old style
-	  timec_pos = tdc_pos*fScinTdcToTime - fHodoPosPhcCoeff[index]*
-	    TMath::Sqrt(TMath::Max(0.0,adcint_pos/fHodoPosMinPh[index]-1.0))
-	    - fHodoPosTimeOffset[index];
-	  timec_neg = tdc_neg*fScinTdcToTime - fHodoNegPhcCoeff[index]*
-	    TMath::Sqrt(TMath::Max(0.0,adcint_neg/fHodoNegMinPh[index]-1.0))
-	    - fHodoNegTimeOffset[index];
+	} else {		// FADC style
+	  timec_pos =  tdc_pos*fScinTdcToTime -tw_corr_pos- fHodoPosInvAdcOffset[index];
+	  timec_neg =  tdc_neg*fScinTdcToTime -tw_corr_neg- fHodoNegInvAdcOffset[index];
 	}
 	// Find hit position using ADCs
 	// If postime larger, then hit was nearer negative side.
@@ -1038,10 +1034,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	    timec_pos = tdc_pos*fScinTdcToTime
 	      - fHodoPosInvAdcOffset[index]
 	      - fHodoPosInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0*.020,adcint_pos));
-	  } else {		// Old style
-	    timec_pos = tdc_pos*fScinTdcToTime - fHodoPosPhcCoeff[index]*
-	      TMath::Sqrt(TMath::Max(0.0,adcint_pos/fHodoPosMinPh[index]-1.0))
-	      - fHodoPosTimeOffset[index];
+	  } else {		// FADC style
+	    timec_pos =  tdc_pos*fScinTdcToTime -tw_corr_pos- fHodoPosInvAdcOffset[index];
 	  }
 	}
 	if(btdcraw_neg) {
@@ -1049,10 +1043,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	    timec_neg = tdc_neg*fScinTdcToTime
 	      - fHodoNegInvAdcOffset[index]
 	      - fHodoNegInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0*.020,adcint_neg));
-	  } else {		// Old style
-	    timec_neg = tdc_neg*fScinTdcToTime - fHodoNegPhcCoeff[index]*
-	      TMath::Sqrt(TMath::Max(0.0,adcint_neg/fHodoNegMinPh[index]-1.0))
-	      - fHodoNegTimeOffset[index];
+	  } else {		// FADC style
+	    timec_neg =tdc_neg*fScinTdcToTime -tw_corr_neg- fHodoNegInvAdcOffset[index];
 	  }
 	}
         ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPaddleCenter(fPosCenter[index]);
