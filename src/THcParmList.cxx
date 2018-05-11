@@ -118,6 +118,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
   char varname[100];
   Int_t InRunRange;
   Int_t currentindex = 0;
+  Int_t linecount=0;		// Count of non comment/blank lines
 
   varname[0] = '\0';
 
@@ -236,6 +237,9 @@ The ENGINE CTP support parameter "blocks" which were marked with
     // Need to do something to bug out if line is empty
 
     // If in Engine database mode, check if line is a number range AAAA-BBBB
+    linecount++;
+    // If RunNumber>0 and first line we encounter is not a run range, need to
+    // print an error
     if(RunNumber>0) {
       if(line.find_first_not_of("0123456789-")==string::npos) { // Interpret as runnum range
 	if( (pos=line.find_first_of("-")) != string::npos) {
@@ -254,6 +258,12 @@ The ENGINE CTP support parameter "blocks" which were marked with
 	  }
 	}
 	continue;		// Skip to next line
+      } else {
+	if(linecount==1) {
+	  cout << "WARNING: THcParmList::Load in database mode but first line is not" << endl;
+	  cout << "   a run number or run number range.  Parameter definitions" << endl;
+	  cout << "   will be ignored until a run number or range is specified." << endl;
+	}
       }
     }
 
