@@ -294,6 +294,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fHodoNegInvAdcAdc=new Double_t [fMaxHodoScin];
 
   //New Time-Walk Calibration Parameters
+  fHodoVelFit=new Double_t [fMaxHodoScin];
+  fHodoCableFit=new Double_t [fMaxHodoScin];
   fHodoPos_c1=new Double_t [fMaxHodoScin];
   fHodoNeg_c1=new Double_t [fMaxHodoScin];
   fHodoPos_c2=new Double_t [fMaxHodoScin];
@@ -444,12 +446,14 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     gHcParms->LoadParmValues((DBRequest*)&list3,prefix);
   */
      DBRequest list4[]={
-    {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
-    {"c1_Pos",                           &fHodoPos_c1[0], kDouble, fMaxHodoScin},
-    {"c1_Neg",                           &fHodoNeg_c1[0], kDouble, fMaxHodoScin},
-    {"c2_Pos",                           &fHodoPos_c2[0], kDouble, fMaxHodoScin},
-    {"c2_Neg",                           &fHodoNeg_c2[0], kDouble, fMaxHodoScin},
-    {"TDC_threshold",                    &fTdc_Thrs,      kDouble, 0, 1},
+    {"hodo_vel_light",                   &fHodoVelLight[0], kDouble,  fMaxHodoScin},
+    {"hodo_velFit",                      &fHodoVelFit[0],   kDouble,  fMaxHodoScin},
+    {"hodo_cableFit",                    &fHodoCableFit[0], kDouble,  fMaxHodoScin},
+    {"c1_Pos",                           &fHodoPos_c1[0],   kDouble,  fMaxHodoScin},
+    {"c1_Neg",                           &fHodoNeg_c1[0],   kDouble,  fMaxHodoScin},
+    {"c2_Pos",                           &fHodoPos_c2[0],   kDouble,  fMaxHodoScin},
+    {"c2_Neg",                           &fHodoNeg_c2[0],   kDouble,  fMaxHodoScin},
+    {"TDC_threshold",                    &fTdc_Thrs,        kDouble, 0, 1},
     {0}   
      };
      
@@ -577,6 +581,10 @@ void THcHodoscope::DeleteArrays()
   delete [] fHodoNegAdcTimeWindowMax;    fHodoNegAdcTimeWindowMax = NULL;
   delete [] fHodoPosAdcTimeWindowMin;    fHodoPosAdcTimeWindowMin = NULL;
   delete [] fHodoPosAdcTimeWindowMax;    fHodoPosAdcTimeWindowMax = NULL;
+   
+  delete [] fHodoVelFit;                 fHodoVelFit = NULL;
+  delete [] fHodoCableFit;               fHodoCableFit = NULL;
+
   delete [] fHodoPos_c1;                 fHodoPos_c1 = NULL;
   delete [] fHodoNeg_c1;                 fHodoNeg_c1 = NULL;
   delete [] fHodoPos_c2;                 fHodoPos_c2 = NULL;
