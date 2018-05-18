@@ -141,6 +141,8 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete [] fHodoNegInvAdcLinear; fHodoNegInvAdcLinear = NULL;
   delete [] fHodoPosInvAdcAdc; fHodoPosInvAdcAdc = NULL;
   delete [] fHodoNegInvAdcAdc; fHodoNegInvAdcAdc = NULL;
+  delete [] fHodoVelFit;                 fHodoVelFit = NULL;
+  delete [] fHodoCableFit;               fHodoCableFit = NULL;
   delete [] fHodoPos_c1;                 fHodoPos_c1 = NULL;
   delete [] fHodoNeg_c1;                 fHodoNeg_c1 = NULL;
   delete [] fHodoPos_c2;                 fHodoPos_c2 = NULL;
@@ -277,6 +279,8 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   fHodoSigma = new Double_t[fNelem];
   
   //New Time-Walk Calibration Parameters
+  fHodoVelFit=new Double_t [fNelem];
+  fHodoCableFit=new Double_t [fNelem];
   fHodoPos_c1=new Double_t [fNelem];
   fHodoNeg_c1=new Double_t [fNelem];
   fHodoPos_c2=new Double_t [fNelem];
@@ -302,6 +306,8 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
     fHodoNegInvAdcAdc[j] = ((THcHodoscope *)GetParent())->GetHodoNegInvAdcAdc(index);
     fHodoVelLight[j] = ((THcHodoscope *)GetParent())->GetHodoVelLight(index);
     //Get Time-Walk correction param
+    fHodoVelFit[j] = ((THcHodoscope *)GetParent())->GetHodoVelFit(index);
+    fHodoCableFit[j] = ((THcHodoscope *)GetParent())->GetHodoCableFit(index);
     fHodoPos_c1[j] = ((THcHodoscope *)GetParent())->GetHodoPos_c1(index);
     fHodoNeg_c1[j] = ((THcHodoscope *)GetParent())->GetHodoNeg_c1(index);
     fHodoPos_c2[j] = ((THcHodoscope *)GetParent())->GetHodoPos_c2(index);
@@ -365,7 +371,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   fGoodNegTdcTimeTOFCorr = vector<Double_t> (fNelem, 0.0);
   fGoodPosTdcTimeWalkCorr = vector<Double_t> (fNelem, 0.0);
   fGoodNegTdcTimeWalkCorr = vector<Double_t> (fNelem, 0.0);
-
+  fGoodDiffDistTrack = vector<Double_t> (fNelem, 0.0);
   return kOK;
 }
 //_____________________________________________________________________________
@@ -474,6 +480,7 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     {"GoodPosAdcTdcDiffTime",   "List of positive TDC - ADC time (passed TDC && ADC Min and Max cuts for either end)", "fGoodPosAdcTdcDiffTime"},
     {"GoodNegAdcTdcDiffTime",   "List of Negative TDC - ADC time (passed TDC && ADC Min and Max cuts for either end)", "fGoodNegAdcTdcDiffTime"},
     {"DiffDisTrack",   "Difference between track and scintillator position (cm)", "fHitDistance"},
+    {"DiffDisTrackCorr",   "TW Corrected Dist Difference between track and scintillator position (cm)", "fGoodDiffDistTrack"},
     {"TrackXPos",   "Track X position at plane (cm)", "fTrackXPosition"},
     {"TrackYPos",   "Track Y position at plane (cm)", "fTrackYPosition"},
     //{"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
@@ -569,9 +576,11 @@ void THcScintillatorPlane::Clear( Option_t* )
     fGoodNegTdcTimeCorr.at(ielem)      = kBig;
     fGoodNegTdcTimeTOFCorr.at(ielem)   = kBig;
     fGoodNegTdcTimeWalkCorr.at(ielem)  = kBig;
-
   }
 
+   for (UInt_t ielem = 0; ielem < fGoodDiffDistTrack.size(); ielem++) {
+    fGoodDiffDistTrack.at(ielem) = kBig;
+   }
 
   fpTime = -1.e4;
   fHitDistance = kBig;
@@ -953,7 +962,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCtime(adctime_pos);
       ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCtime(adctime_neg);
 
-      //DEFINE TIME-WALK CORRECTIONS HERE!!!!
+      //CALCULATE TIME-WALK CORRECTIONS HERE!!!!
       //Define GoodTdcUnCorrTime
       if(btdcraw_pos) {
 	fGoodPosTdcTimeUnCorr.at(padnum-1) = tdc_pos*fScinTdcToTime;
@@ -963,7 +972,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       if(btdcraw_neg) {
 	fGoodNegTdcTimeUnCorr.at(padnum-1) = tdc_neg*fScinTdcToTime;
 	tw_corr_neg = fHodoNeg_c1[padnum-1]/pow(adcamp_neg/fTdc_Thrs,fHodoNeg_c2[padnum-1]) -  fHodoNeg_c1[padnum-1]/pow(200./fTdc_Thrs, fHodoNeg_c2[padnum-1]);
-	fGoodNegTdcTimeWalkCorr.at(padnum-1) = tdc_neg*fScinTdcToTime -tw_corr_neg;
+	fGoodNegTdcTimeWalkCorr.at(padnum-1) = tdc_neg*fScinTdcToTime -tw_corr_neg- 2*fHodoCableFit[index];
 
       }
         
@@ -980,9 +989,15 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	    - fHodoNegInvAdcOffset[index]
 	    - fHodoNegInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0*.020,adcint_neg));
 	} else {		// FADC style
-	  timec_pos =  tdc_pos*fScinTdcToTime -tw_corr_pos- fHodoPosInvAdcOffset[index];
-	  timec_neg =  tdc_neg*fScinTdcToTime -tw_corr_neg- fHodoNegInvAdcOffset[index];
+	  timec_pos =  tdc_pos*fScinTdcToTime -tw_corr_pos;
+	  timec_neg =  tdc_neg*fScinTdcToTime -tw_corr_neg- 2*fHodoCableFit[index] ;
 	}
+
+ 	Double_t TWCorrDiff = fGoodNegTdcTimeWalkCorr.at(padnum-1) - fGoodPosTdcTimeWalkCorr.at(padnum-1); 
+     	
+        Double_t fHitDistCorr = 0.5*TWCorrDiff*fHodoVelFit[index];  
+
+	fGoodDiffDistTrack.at(index) =  fHitDistCorr;
 	// Find hit position using ADCs
 	// If postime larger, then hit was nearer negative side.
 	Double_t vellight=fHodoVelLight[index];
@@ -1006,9 +1021,9 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	    negtime = timec_neg - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	  }
 	} else {
-	  postime=timec_pos-(fPosLeft-hit_position)/fHodoVelLight[index];
-	  negtime=timec_neg-(hit_position-fPosRight)/fHodoVelLight[index];
-	  scin_corrected_time = 0.5*(postime+negtime);
+	  scin_corrected_time = 0.5*(timec_neg+timec_pos);  // add constants for each paddle, 25ns, 25 + zpos, . . . //remove propagation time
+	  timec_pos= scin_corrected_time;    
+	  timec_neg= scin_corrected_time;	 
 	  if (fCosmicFlag) {
 	    postime = timec_pos + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	    negtime = timec_neg + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);

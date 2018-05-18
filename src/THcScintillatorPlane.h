@@ -165,7 +165,7 @@ class THcScintillatorPlane : public THaSubDetector {
   //Time Walk Corrected
   vector<Double_t>  fGoodPosTdcTimeWalkCorr;
   vector<Double_t>  fGoodNegTdcTimeWalkCorr;
-
+  vector<Double_t>  fGoodDiffDistTrack;
 
   Int_t fDebugAdc;
   Double_t fHitDistance;
@@ -226,6 +226,8 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t *fHodoPosInvAdcAdc;
   Double_t *fHodoNegInvAdcAdc;
   //Time-Walk Parameters
+  Double_t* fHodoVelFit;
+  Double_t* fHodoCableFit;
   Double_t* fHodoPos_c1;
   Double_t* fHodoNeg_c1;
   Double_t* fHodoPos_c2;
