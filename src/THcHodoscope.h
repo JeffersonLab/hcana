@@ -85,6 +85,8 @@ public:
   //Get Time Walk Parameters
   Double_t GetHodoVelFit(Int_t iii) const {return fHodoVelFit[iii];}
   Double_t GetHodoCableFit(Int_t iii) const {return fHodoCableFit[iii];}
+  Double_t GetHodoLCoeff(Int_t iii) const {return fHodo_LCoeff[iii];}
+
 
   Double_t GetHodoPos_c1(Int_t iii) const {return fHodoPos_c1[iii];}
   Double_t GetHodoNeg_c1(Int_t iii) const {return fHodoNeg_c1[iii];}
@@ -200,6 +202,7 @@ protected:
   //New Time-Walk Calibration Parameters
   Double_t* fHodoVelFit;
   Double_t* fHodoCableFit;
+  Double_t* fHodo_LCoeff;
   Double_t* fHodoPos_c1;
   Double_t* fHodoNeg_c1;
   Double_t* fHodoPos_c2;

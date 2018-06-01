@@ -296,6 +296,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   //New Time-Walk Calibration Parameters
   fHodoVelFit=new Double_t [fMaxHodoScin];
   fHodoCableFit=new Double_t [fMaxHodoScin];
+  fHodo_LCoeff=new Double_t [fMaxHodoScin];
   fHodoPos_c1=new Double_t [fMaxHodoScin];
   fHodoNeg_c1=new Double_t [fMaxHodoScin];
   fHodoPos_c2=new Double_t [fMaxHodoScin];
@@ -447,18 +448,37 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   */
      DBRequest list4[]={
     {"hodo_vel_light",                   &fHodoVelLight[0], kDouble,  fMaxHodoScin},
-    {"hodo_velFit",                      &fHodoVelFit[0],   kDouble,  fMaxHodoScin},
-    {"hodo_cableFit",                    &fHodoCableFit[0], kDouble,  fMaxHodoScin},
-    {"c1_Pos",                           &fHodoPos_c1[0],   kDouble,  fMaxHodoScin},
-    {"c1_Neg",                           &fHodoNeg_c1[0],   kDouble,  fMaxHodoScin},
-    {"c2_Pos",                           &fHodoPos_c2[0],   kDouble,  fMaxHodoScin},
-    {"c2_Neg",                           &fHodoNeg_c2[0],   kDouble,  fMaxHodoScin},
+    {"hodo_velFit",                      &fHodoVelFit[0],   kDouble,  fMaxHodoScin, 1},
+    {"hodo_cableFit",                    &fHodoCableFit[0], kDouble,  fMaxHodoScin, 1},
+    {"hodo_LCoeff",                      &fHodo_LCoeff[0],  kDouble,  fMaxHodoScin, 1},
+    {"c1_Pos",                           &fHodoPos_c1[0],   kDouble,  fMaxHodoScin, 1},
+    {"c1_Neg",                           &fHodoNeg_c1[0],   kDouble,  fMaxHodoScin, 1},
+    {"c2_Pos",                           &fHodoPos_c2[0],   kDouble,  fMaxHodoScin, 1},
+    {"c2_Neg",                           &fHodoNeg_c2[0],   kDouble,  fMaxHodoScin, 1},
     {"TDC_threshold",                    &fTdc_Thrs,        kDouble, 0, 1},
     {0}   
      };
      
+     fTdc_Thrs = 1.0;
+     //Set Default Values if NOT defined in param file
+     for (UInt_t i=0; i<fMaxHodoScin; i++)
+       {
+	 
+	 //Turn OFF Time-Walk Correction if param file NOT found
+	 
+	 fHodoPos_c1[i] = 0.0;
+	 fHodoPos_c2[i] = 0.0;
+	 fHodoNeg_c1[i] = 0.0;
+	 fHodoNeg_c2[i] = 0.0;
+	 //Set scin Velocity/Cable to default
+	 fHodoCableFit[i] = 0.0;
+	 fHodoVelFit[i] = 15.0;
+	 //set time coeff between paddles to default
+	 fHodo_LCoeff[i] = 0.0;
+	 
+       }
     
-    gHcParms->LoadParmValues((DBRequest*)&list4,prefix);
+     gHcParms->LoadParmValues((DBRequest*)&list4,prefix);
   
   if (fDebug >=1) {
     cout <<"******* Testing Hodoscope Parameter Reading ***\n";
@@ -584,7 +604,7 @@ void THcHodoscope::DeleteArrays()
    
   delete [] fHodoVelFit;                 fHodoVelFit = NULL;
   delete [] fHodoCableFit;               fHodoCableFit = NULL;
-
+  delete [] fHodo_LCoeff;                fHodo_LCoeff = NULL;
   delete [] fHodoPos_c1;                 fHodoPos_c1 = NULL;
   delete [] fHodoNeg_c1;                 fHodoNeg_c1 = NULL;
   delete [] fHodoPos_c2;                 fHodoPos_c2 = NULL;
@@ -1044,10 +1064,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 		  + fHodoPosInvAdcAdc[fPIndex]
 		  /TMath::Sqrt(TMath::Max(20.0*.020,adc_pos));
 	      } else {
-		timep -= fHodoPosPhcCoeff[fPIndex]*
-		  TMath::Sqrt(TMath::Max(0.0,adc_pos/fHodoPosMinPh[fPIndex]-1.0))
-		  + pathp/fHodoVelLight[fPIndex]
-		  + fHodoPosTimeOffset[fPIndex];
+	        Double_t tw_corr_pos = fHodoPos_c1[fPIndex]/pow(adc_pos/fTdc_Thrs,fHodoPos_c2[fPIndex]) -  fHodoPos_c1[fPIndex]/pow(200./fTdc_Thrs, fHodoPos_c2[fPIndex]);
+	        timep += -tw_corr_pos + fHodo_LCoeff[fPIndex];
 	      }
 	      fTOFPInfo[ihhit].scin_pos_time = timep;
  	      timep -= zcor;
@@ -1067,10 +1085,9 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 		  + fHodoNegInvAdcAdc[fPIndex]
 		  /TMath::Sqrt(TMath::Max(20.0*.020,adc_neg));
 	      } else {
-		timen -= fHodoNegPhcCoeff[fPIndex]*
-		  TMath::Sqrt(TMath::Max(0.0,adc_neg/fHodoNegMinPh[fPIndex]-1.0))
-		  + pathn/fHodoVelLight[fPIndex]
-		  + fHodoNegTimeOffset[fPIndex];
+	        Double_t tw_corr_neg = fHodoNeg_c1[fPIndex]/pow(adc_neg/fTdc_Thrs,fHodoNeg_c2[fPIndex]) -  fHodoNeg_c1[fPIndex]/pow(200./fTdc_Thrs, fHodoNeg_c2[fPIndex]);
+		timen += -tw_corr_neg- 2*fHodoCableFit[fPIndex] + fHodo_LCoeff[fPIndex];
+
 	      }
 	      fTOFPInfo[ihhit].scin_neg_time = timen;
 	      timen -=  zcor;
