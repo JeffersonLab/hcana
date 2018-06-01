@@ -228,6 +228,7 @@ class THcScintillatorPlane : public THaSubDetector {
   //Time-Walk Parameters
   Double_t* fHodoVelFit;
   Double_t* fHodoCableFit;
+  Double_t* fHodo_LCoeff;
   Double_t* fHodoPos_c1;
   Double_t* fHodoNeg_c1;
   Double_t* fHodoPos_c2;

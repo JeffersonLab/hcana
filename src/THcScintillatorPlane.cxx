@@ -143,6 +143,7 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete [] fHodoNegInvAdcAdc; fHodoNegInvAdcAdc = NULL;
   delete [] fHodoVelFit;                 fHodoVelFit = NULL;
   delete [] fHodoCableFit;               fHodoCableFit = NULL;
+  delete [] fHodo_LCoeff;                fHodo_LCoeff = NULL;
   delete [] fHodoPos_c1;                 fHodoPos_c1 = NULL;
   delete [] fHodoNeg_c1;                 fHodoNeg_c1 = NULL;
   delete [] fHodoPos_c2;                 fHodoPos_c2 = NULL;
@@ -281,6 +282,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   //New Time-Walk Calibration Parameters
   fHodoVelFit=new Double_t [fNelem];
   fHodoCableFit=new Double_t [fNelem];
+  fHodo_LCoeff=new Double_t [fNelem];
   fHodoPos_c1=new Double_t [fNelem];
   fHodoNeg_c1=new Double_t [fNelem];
   fHodoPos_c2=new Double_t [fNelem];
@@ -308,6 +310,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
     //Get Time-Walk correction param
     fHodoVelFit[j] = ((THcHodoscope *)GetParent())->GetHodoVelFit(index);
     fHodoCableFit[j] = ((THcHodoscope *)GetParent())->GetHodoCableFit(index);
+    fHodo_LCoeff[j] =  ((THcHodoscope *)GetParent())->GetHodoLCoeff(index);
     fHodoPos_c1[j] = ((THcHodoscope *)GetParent())->GetHodoPos_c1(index);
     fHodoNeg_c1[j] = ((THcHodoscope *)GetParent())->GetHodoNeg_c1(index);
     fHodoPos_c2[j] = ((THcHodoscope *)GetParent())->GetHodoPos_c2(index);
@@ -972,10 +975,9 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       if(btdcraw_neg) {
 	fGoodNegTdcTimeUnCorr.at(padnum-1) = tdc_neg*fScinTdcToTime;
 	tw_corr_neg = fHodoNeg_c1[padnum-1]/pow(adcamp_neg/fTdc_Thrs,fHodoNeg_c2[padnum-1]) -  fHodoNeg_c1[padnum-1]/pow(200./fTdc_Thrs, fHodoNeg_c2[padnum-1]);
-	fGoodNegTdcTimeWalkCorr.at(padnum-1) = tdc_neg*fScinTdcToTime -tw_corr_neg- 2*fHodoCableFit[index];
+	fGoodNegTdcTimeWalkCorr.at(padnum-1) = tdc_neg*fScinTdcToTime -tw_corr_neg;
 
       }
-        
 
       // Do corrections if valid TDC on both ends of bar
       if(btdcraw_pos && btdcraw_neg) {
@@ -989,18 +991,30 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	    - fHodoNegInvAdcOffset[index]
 	    - fHodoNegInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0*.020,adcint_neg));
 	} else {		// FADC style
-	  timec_pos =  tdc_pos*fScinTdcToTime -tw_corr_pos;
-	  timec_neg =  tdc_neg*fScinTdcToTime -tw_corr_neg- 2*fHodoCableFit[index] ;
+	  timec_pos =  tdc_pos*fScinTdcToTime -tw_corr_pos + fHodo_LCoeff[index];
+	  timec_neg =  tdc_neg*fScinTdcToTime -tw_corr_neg- 2*fHodoCableFit[index] + fHodo_LCoeff[index];
 	}
 
- 	Double_t TWCorrDiff = fGoodNegTdcTimeWalkCorr.at(padnum-1) - fGoodPosTdcTimeWalkCorr.at(padnum-1); 
+ 	Double_t TWCorrDiff = fGoodNegTdcTimeWalkCorr.at(padnum-1) - 2*fHodoCableFit[index] - fGoodPosTdcTimeWalkCorr.at(padnum-1); 
      	
         Double_t fHitDistCorr = 0.5*TWCorrDiff*fHodoVelFit[index];  
+
+	/*Debug
+	cout << Form("****fHodo_LCoeff[%d]", index) << fHodo_LCoeff[index] << endl;
+	cout << Form("****fHodoCableFit[%d]", index) << fHodoCableFit[index] << endl;
+	cout << Form("****fHodoVelFit[%d]", index) << fHodoVelFit[index] << endl;
+	cout << Form("****fHodoVelLight[%d]", index) << fHodoVelLight[index] << endl;
+	cout << Form("****c1_Pos/Neg[%d]", index) <<  fHodoPos_c1[index] << " / " << fHodoNeg_c1[index] << endl;
+	cout << "" << endl;
+	*/
 
 	fGoodDiffDistTrack.at(index) =  fHitDistCorr;
 	// Find hit position using ADCs
 	// If postime larger, then hit was nearer negative side.
-	Double_t vellight=fHodoVelLight[index];
+	
+	//Double_t vellight=fHodoVelLight[index]; //read from hodo_cuts.param, where it is set fixed to 15.0 
+	Double_t vellight=fHodoVelFit[index];   //use scin prop vel. values from hodo_calibVp_run#.param file
+	
 	Double_t dist_from_center=0.5*(timec_neg-timec_pos)*vellight;
 	Double_t scint_center=0.5*(fPosLeft+fPosRight);
 	Double_t hit_position=scint_center+dist_from_center;
@@ -1050,7 +1064,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	      - fHodoPosInvAdcOffset[index]
 	      - fHodoPosInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0*.020,adcint_pos));
 	  } else {		// FADC style
-	    timec_pos =  tdc_pos*fScinTdcToTime -tw_corr_pos- fHodoPosInvAdcOffset[index];
+	  timec_pos =  tdc_pos*fScinTdcToTime -tw_corr_pos + fHodo_LCoeff[index];
 	  }
 	}
 	if(btdcraw_neg) {
@@ -1059,7 +1073,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	      - fHodoNegInvAdcOffset[index]
 	      - fHodoNegInvAdcAdc[index]/TMath::Sqrt(TMath::Max(20.0*.020,adcint_neg));
 	  } else {		// FADC style
-	    timec_neg =tdc_neg*fScinTdcToTime -tw_corr_neg- fHodoNegInvAdcOffset[index];
+	  timec_neg =  tdc_neg*fScinTdcToTime -tw_corr_neg- 2*fHodoCableFit[index] + fHodo_LCoeff[index];
 	  }
 	}
         ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPaddleCenter(fPosCenter[index]);
