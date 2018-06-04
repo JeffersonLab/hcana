@@ -465,7 +465,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
        {
 	 
 	 //Turn OFF Time-Walk Correction if param file NOT found
-	 
 	 fHodoPos_c1[i] = 0.0;
 	 fHodoPos_c2[i] = 0.0;
 	 fHodoNeg_c1[i] = 0.0;
@@ -1055,6 +1054,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	    Double_t tdc_pos = hit->GetPosTDC();
 	    if(tdc_pos >=fScinTdcMin && tdc_pos <= fScinTdcMax ) {
 	      Double_t adc_pos = hit->GetPosADC();
+	      Double_t adcamp_pos = hit->GetPosADCpeak();
 	      Double_t pathp = fPlanes[ip]->GetPosLeft() - scinLongCoord;
 	      fTOFPInfo[ihhit].pathp = pathp;
 	      Double_t timep = tdc_pos*fScinTdcToTime;
@@ -1064,7 +1064,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 		  + fHodoPosInvAdcAdc[fPIndex]
 		  /TMath::Sqrt(TMath::Max(20.0*.020,adc_pos));
 	      } else {
-	        Double_t tw_corr_pos = fHodoPos_c1[fPIndex]/pow(adc_pos/fTdc_Thrs,fHodoPos_c2[fPIndex]) -  fHodoPos_c1[fPIndex]/pow(200./fTdc_Thrs, fHodoPos_c2[fPIndex]);
+	        Double_t tw_corr_pos = fHodoPos_c1[fPIndex]/pow(adcamp_pos/fTdc_Thrs,fHodoPos_c2[fPIndex]) -  fHodoPos_c1[fPIndex]/pow(200./fTdc_Thrs, fHodoPos_c2[fPIndex]);
 	        timep += -tw_corr_pos + fHodo_LCoeff[fPIndex];
 	      }
 	      fTOFPInfo[ihhit].scin_pos_time = timep;
@@ -1076,6 +1076,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	    Double_t tdc_neg = hit->GetNegTDC();
 	    if(tdc_neg >=fScinTdcMin && tdc_neg <= fScinTdcMax ) {
 	      Double_t adc_neg = hit->GetNegADC();
+	      Double_t adcamp_neg = hit->GetNegADCpeak();
 	      Double_t pathn =  scinLongCoord - fPlanes[ip]->GetPosRight();
 	      fTOFPInfo[ihhit].pathn = pathn;
 	      Double_t timen = tdc_neg*fScinTdcToTime;
@@ -1085,7 +1086,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 		  + fHodoNegInvAdcAdc[fPIndex]
 		  /TMath::Sqrt(TMath::Max(20.0*.020,adc_neg));
 	      } else {
-	        Double_t tw_corr_neg = fHodoNeg_c1[fPIndex]/pow(adc_neg/fTdc_Thrs,fHodoNeg_c2[fPIndex]) -  fHodoNeg_c1[fPIndex]/pow(200./fTdc_Thrs, fHodoNeg_c2[fPIndex]);
+	        Double_t tw_corr_neg = fHodoNeg_c1[fPIndex]/pow(adcamp_neg/fTdc_Thrs,fHodoNeg_c2[fPIndex]) -  fHodoNeg_c1[fPIndex]/pow(200./fTdc_Thrs, fHodoNeg_c2[fPIndex]);
 		timen += -tw_corr_neg- 2*fHodoCableFit[fPIndex] + fHodo_LCoeff[fPIndex];
 
 	      }

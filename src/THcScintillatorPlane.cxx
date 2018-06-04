@@ -1000,11 +1000,14 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
         Double_t fHitDistCorr = 0.5*TWCorrDiff*fHodoVelFit[index];  
 
 	/*Debug
+	cout << "*****************" << endl;
+	cout << "fPlNum: " << fPlaneNum << endl;
+	cout << "*****************" << endl;
 	cout << Form("****fHodo_LCoeff[%d]", index) << fHodo_LCoeff[index] << endl;
 	cout << Form("****fHodoCableFit[%d]", index) << fHodoCableFit[index] << endl;
 	cout << Form("****fHodoVelFit[%d]", index) << fHodoVelFit[index] << endl;
-	cout << Form("****fHodoVelLight[%d]", index) << fHodoVelLight[index] << endl;
 	cout << Form("****c1_Pos/Neg[%d]", index) <<  fHodoPos_c1[index] << " / " << fHodoNeg_c1[index] << endl;
+	cout << "TW Corr +/-: " << tw_corr_pos << " / " << tw_corr_neg << endl; 
 	cout << "" << endl;
 	*/
 
@@ -1050,6 +1053,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,         
 								     postime, negtime,
 								     scin_corrected_time);
+	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCpeak(adcamp_pos); // need for new TWCOrr
+	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCpeak(adcamp_neg); // need for new TWCOrr
 	fGoodPosTdcTimeCorr.at(padnum-1) = timec_pos;
 	fGoodNegTdcTimeCorr.at(padnum-1) = timec_neg;
 	fGoodPosTdcTimeTOFCorr.at(padnum-1) = postime;
@@ -1079,6 +1084,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
         ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPaddleCenter(fPosCenter[index]);
 	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCorrectedTimes(timec_pos,timec_neg,
 								     timec_pos,timec_neg,0.0);
+	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCpeak(adcamp_neg); // needed for new TWCOrr
+	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCpeak(adcamp_pos); // needed for new TWCOrr
 	fGoodPosTdcTimeCorr.at(padnum-1) = timec_pos;
 	fGoodNegTdcTimeCorr.at(padnum-1) = timec_neg;
 	fGoodPosTdcTimeTOFCorr.at(padnum-1) = timec_pos;
