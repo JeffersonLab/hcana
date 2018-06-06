@@ -276,8 +276,8 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     {"cal_arr_ped_limit", fPedLimit, kInt, static_cast<UInt_t>(fNelem),1},
     {"cal_arr_cal_const", cal_arr_cal_const, kDouble, static_cast<UInt_t>(fNelem)},
     {"cal_arr_gain_cor",  cal_arr_gain_cor,  kDouble, static_cast<UInt_t>(fNelem)},
-    {"cal_arr_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNelem)},
-    {"cal_arr_AdcTimeWindowMax", fAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNelem)},
+    {"cal_arr_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNelem),1},
+    {"cal_arr_AdcTimeWindowMax", fAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNelem),1},
     {0}
   };
 
