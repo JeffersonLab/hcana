@@ -382,8 +382,8 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     {"cal_neg_cal_const", hcal_neg_cal_const, kDouble, fNTotBlocks},
     {"cal_neg_ped_limit", fShNegPedLimit, kInt,    fNTotBlocks,1},
     {"cal_neg_gain_cor",  hcal_neg_gain_cor,  kDouble, fNTotBlocks},
-    {"cal_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNTotBlocks)},
-    {"cal_AdcTimeWindowMax", fAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNTotBlocks)},
+    {"cal_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNTotBlocks),1},
+    {"cal_AdcTimeWindowMax", fAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNTotBlocks),1},
     {"cal_min_peds", &fShMinPeds, kInt,0,1},
     {0}
   };
