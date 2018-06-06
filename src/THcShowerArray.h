@@ -145,8 +145,8 @@ protected:
   static const Int_t kADCDynamicPedestal=1;
   static const Int_t kADCSampleIntegral=2;
   static const Int_t kADCSampIntDynPed=3;
-  Double_t fAdcTimeWindowMin ;
-  Double_t fAdcTimeWindowMax ;
+  Double_t *fAdcTimeWindowMin ;
+  Double_t *fAdcTimeWindowMax ;
   Double_t fAdcThreshold ;
   Double_t fAdcTdcOffset;
 

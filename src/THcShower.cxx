@@ -223,8 +223,6 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
       {"cal_fv_test", &fvTest, kInt,0,1},
       {"cal_fv_delta", &fvDelta, kDouble,0,1},
       {"cal_ADCMode", &fADCMode, kInt, 0, 1},
-      {"cal_AdcTimeWindowMin", &fAdcTimeWindowMin, kDouble, 0, 1},
-      {"cal_AdcTimeWindowMax", &fAdcTimeWindowMax, kDouble, 0, 1},
       {"cal_adc_tdc_offset", &fAdcTdcOffset, kDouble, 0, 1},
       {"dbg_raw_cal", &fdbg_raw_cal, kInt, 0, 1},
       {"dbg_decoded_cal", &fdbg_decoded_cal, kInt, 0, 1},
@@ -241,8 +239,6 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     fdbg_clusters_cal = 0;
     fdbg_tracks_cal = 0;
     fdbg_init_cal = 0;
-    fAdcTimeWindowMin=0;
-    fAdcTimeWindowMax=10000;
     fAdcTdcOffset=0.0;
     fADCMode=kADCDynamicPedestal;
     gHcParms->LoadParmValues((DBRequest*)&list, prefix);
@@ -376,6 +372,9 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   Double_t hcal_neg_cal_const[fNTotBlocks];
   Double_t hcal_neg_gain_cor[fNTotBlocks];
 
+  fAdcTimeWindowMin = new Double_t [fNTotBlocks];
+  fAdcTimeWindowMax = new Double_t [fNTotBlocks];
+
   DBRequest list[]={
     {"cal_pos_cal_const", hcal_pos_cal_const, kDouble, fNTotBlocks},
     {"cal_pos_ped_limit", fShPosPedLimit, kInt,    fNTotBlocks,1},
@@ -383,10 +382,18 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     {"cal_neg_cal_const", hcal_neg_cal_const, kDouble, fNTotBlocks},
     {"cal_neg_ped_limit", fShNegPedLimit, kInt,    fNTotBlocks,1},
     {"cal_neg_gain_cor",  hcal_neg_gain_cor,  kDouble, fNTotBlocks},
+    {"cal_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNTotBlocks)},
+    {"cal_AdcTimeWindowMax", fAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNTotBlocks)},
     {"cal_min_peds", &fShMinPeds, kInt,0,1},
     {0}
   };
   fShMinPeds=0.;
+
+  for(UInt_t ip=0;ip<fNTotBlocks;ip++) {
+    fAdcTimeWindowMin[ip] = -1000.;
+    fAdcTimeWindowMax[ip] = 1000.;
+   }
+
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 
   // Debug output.

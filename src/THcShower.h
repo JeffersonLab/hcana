@@ -74,10 +74,10 @@ public:
   Int_t GetADCMode() {
     return fADCMode;
   }
-  Double_t GetAdcTimeWindowMin() {
+  Double_t* GetAdcTimeWindowMin() {
     return fAdcTimeWindowMin;
   }
-  Double_t GetAdcTimeWindowMax() {
+  Double_t* GetAdcTimeWindowMax() {
     return fAdcTimeWindowMax;
   }
   Double_t GetAdcTdcOffset() {
@@ -155,8 +155,8 @@ protected:
   static const Int_t kADCDynamicPedestal=1;
   static const Int_t kADCSampleIntegral=2;
   static const Int_t kADCSampIntDynPed=3;
-  Double_t fAdcTimeWindowMin;
-  Double_t fAdcTimeWindowMax;
+  Double_t* fAdcTimeWindowMin;
+  Double_t* fAdcTimeWindowMax;
   Double_t fAdcTdcOffset;
 
   Int_t fAnalyzePedestals;   // Flag for pedestal analysis.

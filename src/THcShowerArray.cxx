@@ -154,8 +154,6 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     {"cal_arr_zsize", &fZSize, kDouble},
     {"cal_using_fadc", &fUsingFADC, kInt, 0, 1},
     {"cal_arr_ADCMode", &fADCMode, kInt, 0, 1},
-    {"cal_arr_AdcTimeWindowMin", &fAdcTimeWindowMin, kDouble, 0, 1},
-    {"cal_arr_AdcTimeWindowMax", &fAdcTimeWindowMax, kDouble, 0, 1},
     {"cal_arr_adc_tdc_offset", &fAdcTdcOffset, kDouble, 0, 1},
     {"cal_arr_AdcThreshold", &fAdcThreshold, kDouble, 0, 1},
     {"cal_ped_sample_low", &fPedSampLow, kInt, 0, 1},
@@ -171,8 +169,6 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 
   fDebugAdc = 0;  // Set ADC debug parameter to false unless set in parameter file
   fADCMode=kADCDynamicPedestal;
-  fAdcTimeWindowMin=0;
-  fAdcTimeWindowMax=10000;
   fAdcTdcOffset=0.0;
   fAdcThreshold=0.;
 
@@ -273,12 +269,23 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   Double_t cal_arr_cal_const[fNelem];
   Double_t cal_arr_gain_cor[fNelem];
 
+  fAdcTimeWindowMin = new Double_t [fNelem];
+  fAdcTimeWindowMax = new Double_t [fNelem];
+
   DBRequest list1[]={
     {"cal_arr_ped_limit", fPedLimit, kInt, static_cast<UInt_t>(fNelem),1},
     {"cal_arr_cal_const", cal_arr_cal_const, kDouble, static_cast<UInt_t>(fNelem)},
     {"cal_arr_gain_cor",  cal_arr_gain_cor,  kDouble, static_cast<UInt_t>(fNelem)},
+    {"cal_arr_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNelem)},
+    {"cal_arr_AdcTimeWindowMax", fAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNelem)},
     {0}
   };
+
+   for(UInt_t ip=0;ip<fNelem;ip++) {
+    fAdcTimeWindowMin[ip] = -1000.;
+    fAdcTimeWindowMax[ip] = 1000.;
+   }
+
   gHcParms->LoadParmValues((DBRequest*)&list1, prefix);
 
   // Debug output.
@@ -871,7 +878,7 @@ void THcShowerArray::FillADC_DynamicPedestal()
     Double_t pulseTime   = ((THcSignalHit*) frAdcPulseTime->ConstructedAt(ielem))->GetData();
     Double_t adctdcdiffTime = StartTime-pulseTime;
     Bool_t errorflag     = ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(ielem))->GetData();
-    Bool_t pulseTimeCut  = (adctdcdiffTime > fAdcTimeWindowMin) &&  (adctdcdiffTime < fAdcTimeWindowMax);
+    Bool_t pulseTimeCut  = (adctdcdiffTime > fAdcTimeWindowMin[npad]) &&  (adctdcdiffTime < fAdcTimeWindowMax[npad]);
 
     if (!errorflag && pulseTimeCut) {
       
