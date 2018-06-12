@@ -320,6 +320,9 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
     Double_t negsigma = ((THcHodoscope *)GetParent())->GetHodoNegSigma(index);
     fHodoSigma[j] = TMath::Sqrt(possigma*possigma+negsigma*negsigma)/2.0;
     
+
+  
+
   }
 
   fTdc_Thrs = ((THcHodoscope *)GetParent())->GetTDCThrs();
@@ -969,12 +972,19 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       //Define GoodTdcUnCorrTime
       if(btdcraw_pos) {
 	fGoodPosTdcTimeUnCorr.at(padnum-1) = tdc_pos*fScinTdcToTime;
-	tw_corr_pos = fHodoPos_c1[padnum-1]/pow(adcamp_pos/fTdc_Thrs,fHodoPos_c2[padnum-1]) -  fHodoPos_c1[padnum-1]/pow(200./fTdc_Thrs, fHodoPos_c2[padnum-1]);
+	//tw_corr_pos = fHodoPos_c1[padnum-1]/pow(adcamp_pos/fTdc_Thrs,fHodoPos_c2[padnum-1]) -  fHodoPos_c1[padnum-1]/pow(200./fTdc_Thrs, fHodoPos_c2[padnum-1]);
+	
+	tw_corr_pos =  1./pow(adcamp_pos/fTdc_Thrs,fHodoPos_c2[padnum-1]) -  1./pow(200./fTdc_Thrs, fHodoPos_c2[padnum-1]);
+
 	fGoodPosTdcTimeWalkCorr.at(padnum-1) = tdc_pos*fScinTdcToTime -tw_corr_pos;
       }
       if(btdcraw_neg) {
 	fGoodNegTdcTimeUnCorr.at(padnum-1) = tdc_neg*fScinTdcToTime;
-	tw_corr_neg = fHodoNeg_c1[padnum-1]/pow(adcamp_neg/fTdc_Thrs,fHodoNeg_c2[padnum-1]) -  fHodoNeg_c1[padnum-1]/pow(200./fTdc_Thrs, fHodoNeg_c2[padnum-1]);
+	
+	//tw_corr_neg = fHodoNeg_c1[padnum-1]/pow(adcamp_neg/fTdc_Thrs,fHodoNeg_c2[padnum-1]) -  fHodoNeg_c1[padnum-1]/pow(200./fTdc_Thrs, fHodoNeg_c2[padnum-1]);
+		
+	tw_corr_neg =  1./pow(adcamp_neg/fTdc_Thrs,fHodoNeg_c2[padnum-1]) - 1./pow(200./fTdc_Thrs, fHodoNeg_c2[padnum-1]);
+
 	fGoodNegTdcTimeWalkCorr.at(padnum-1) = tdc_neg*fScinTdcToTime -tw_corr_neg;
 
       }
@@ -999,17 +1009,25 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
      	
         Double_t fHitDistCorr = 0.5*TWCorrDiff*fHodoVelFit[index];  
 
-	/*Debug
-	cout << "*****************" << endl;
-	cout << "fPlNum: " << fPlaneNum << endl;
-	cout << "*****************" << endl;
-	cout << Form("****fHodo_LCoeff[%d]", index) << fHodo_LCoeff[index] << endl;
-	cout << Form("****fHodoCableFit[%d]", index) << fHodoCableFit[index] << endl;
-	cout << Form("****fHodoVelFit[%d]", index) << fHodoVelFit[index] << endl;
-	cout << Form("****c1_Pos/Neg[%d]", index) <<  fHodoPos_c1[index] << " / " << fHodoNeg_c1[index] << endl;
-	cout << "TW Corr +/-: " << tw_corr_pos << " / " << tw_corr_neg << endl; 
-	cout << "" << endl;
-	*/
+	/*Debug*/
+	//cout << "*****************" << endl;
+	//cout << "fPlNum: " << fPlaneNum << endl;
+	//cout << "*****************" << endl;
+	//cout << "Paddle index: " << index << endl;
+	//cout << "pos_sigma: " << fHodoSigma[index] << endl;
+	//cout << "fZPos: " << fZpos << endl;
+	//cout << "fDzPos: " << fDzpos << endl;
+	//cout << "Zcorr = fZpos+(index%2)*fDzpos = " << fZpos+(index%2)*fDzpos << endl;
+
+	//cout << Form("****fHodo_LCoeff[%d]", index) << fHodo_LCoeff[index] << endl;
+	//cout << Form("****fHodoCableFit[%d]", index) << fHodoCableFit[index] << endl;
+	//cout << Form("****fHodoVelFit[%d]", index) << fHodoVelFit[index] << endl;
+	//cout << Form("****c1_Pos/Neg[%d]", index) <<  fHodoPos_c1[index] << " / " << fHodoNeg_c1[index] << endl;
+	//cout << Form("****c2_Pos/Neg[%d]", index) <<  fHodoPos_c2[index] << " / " << fHodoNeg_c2[index] << endl;
+	//cout << "TW Corr val. +/-: " << tw_corr_pos << " / " << tw_corr_neg << endl; 
+	//cout << "TW UnCorr +/-: " << fGoodPosTdcTimeUnCorr.at(padnum-1) << " / " << fGoodNegTdcTimeUnCorr.at(padnum-1) << endl;
+	//cout << "TW Corr +/-: " << fGoodPosTdcTimeWalkCorr.at(padnum-1) << " / " << fGoodNegTdcTimeWalkCorr.at(padnum-1) << endl;
+	
 
 	fGoodDiffDistTrack.at(index) =  fHitDistCorr;
 	// Find hit position using ADCs

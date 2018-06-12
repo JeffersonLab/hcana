@@ -334,8 +334,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"pathlength_central",               &fPathLengthCentral,                    kDouble},
     {"hodo_pos_sigma",                   &fHodoPosSigma[0],       kDouble,  fMaxHodoScin},
     {"hodo_neg_sigma",                   &fHodoNegSigma[0],       kDouble,  fMaxHodoScin},
-    {"hodo_pos_ped_limit",               &fHodoPosPedLimit[0],    kInt,     fMaxHodoScin},
-    {"hodo_neg_ped_limit",               &fHodoNegPedLimit[0],    kInt,     fMaxHodoScin},
+    {"hodo_pos_ped_limit",               &fHodoPosPedLimit[0],    kInt,     fMaxHodoScin, 1},
+    {"hodo_neg_ped_limit",               &fHodoNegPedLimit[0],    kInt,     fMaxHodoScin, 1},
     {"tofusinginvadc",                   &fTofUsingInvAdc,        kInt,            0,  1},
     {"xloscin",                          &fxLoScin[0],            kInt,     (UInt_t) fNHodoscopes},
     {"xhiscin",                          &fxHiScin[0],            kInt,     (UInt_t) fNHodoscopes},
@@ -369,6 +369,10 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     fHodoPosAdcTimeWindowMax[ip] = 1000.;
     fHodoNegAdcTimeWindowMin[ip] = -1000.;
     fHodoNegAdcTimeWindowMax[ip] = 1000.;
+
+    fHodoPosPedLimit[ip] = 0.0;
+    fHodoNegPedLimit[ip] = 0.0;
+
   }
   fTOFCalib_shtrk_lo=-kBig;
   fTOFCalib_shtrk_hi= kBig;
@@ -420,7 +424,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   if (fTofUsingInvAdc) {
     DBRequest list2[]={
-      {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin},
+      {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin, 1},
       {"hodo_pos_invadc_offset",&fHodoPosInvAdcOffset[0],kDouble,fMaxHodoScin},
       {"hodo_neg_invadc_offset",&fHodoNegInvAdcOffset[0],kDouble,fMaxHodoScin},
       {"hodo_pos_invadc_linear",&fHodoPosInvAdcLinear[0],kDouble,fMaxHodoScin},
@@ -429,6 +433,14 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
       {"hodo_neg_invadc_adc",&fHodoNegInvAdcAdc[0],kDouble,fMaxHodoScin},
       {0}
     };
+    
+       for (UInt_t i=0; i<fMaxHodoScin; i++)                                                                    
+       {  
+	 //Set scin Velocity/Cable to default
+	 fHodoVelLight[i] = 15.0;
+	 
+       }
+    
     gHcParms->LoadParmValues((DBRequest*)&list2,prefix);
   };
   /* if (!fTofUsingInvAdc) {
@@ -447,7 +459,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     gHcParms->LoadParmValues((DBRequest*)&list3,prefix);
   */
      DBRequest list4[]={
-    {"hodo_vel_light",                   &fHodoVelLight[0], kDouble,  fMaxHodoScin},
     {"hodo_velFit",                      &fHodoVelFit[0],   kDouble,  fMaxHodoScin, 1},
     {"hodo_cableFit",                    &fHodoCableFit[0], kDouble,  fMaxHodoScin, 1},
     {"hodo_LCoeff",                      &fHodo_LCoeff[0],  kDouble,  fMaxHodoScin, 1},
@@ -469,6 +480,9 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 	 fHodoPos_c2[i] = 0.0;
 	 fHodoNeg_c1[i] = 0.0;
 	 fHodoNeg_c2[i] = 0.0;
+       }
+     for (UInt_t i=0; i<fMaxHodoScin; i++)                                                                    
+       {  
 	 //Set scin Velocity/Cable to default
 	 fHodoCableFit[i] = 0.0;
 	 fHodoVelFit[i] = 15.0;
@@ -1064,8 +1078,9 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 		  + fHodoPosInvAdcAdc[fPIndex]
 		  /TMath::Sqrt(TMath::Max(20.0*.020,adc_pos));
 	      } else {
-	        Double_t tw_corr_pos = fHodoPos_c1[fPIndex]/pow(adcamp_pos/fTdc_Thrs,fHodoPos_c2[fPIndex]) -  fHodoPos_c1[fPIndex]/pow(200./fTdc_Thrs, fHodoPos_c2[fPIndex]);
-	        timep += -tw_corr_pos + fHodo_LCoeff[fPIndex];
+	        //Double_t tw_corr_pos = fHodoPos_c1[fPIndex]/pow(adcamp_pos/fTdc_Thrs,fHodoPos_c2[fPIndex]) -  fHodoPos_c1[fPIndex]/pow(200./fTdc_Thrs, fHodoPos_c2[fPIndex]);
+		Double_t tw_corr_pos = 1./pow(adcamp_pos/fTdc_Thrs,fHodoPos_c2[fPIndex]) -  1./pow(200./fTdc_Thrs, fHodoPos_c2[fPIndex]);            
+		timep += -tw_corr_pos + fHodo_LCoeff[fPIndex];
 	      }
 	      fTOFPInfo[ihhit].scin_pos_time = timep;
  	      timep -= zcor;
@@ -1086,7 +1101,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 		  + fHodoNegInvAdcAdc[fPIndex]
 		  /TMath::Sqrt(TMath::Max(20.0*.020,adc_neg));
 	      } else {
-	        Double_t tw_corr_neg = fHodoNeg_c1[fPIndex]/pow(adcamp_neg/fTdc_Thrs,fHodoNeg_c2[fPIndex]) -  fHodoNeg_c1[fPIndex]/pow(200./fTdc_Thrs, fHodoNeg_c2[fPIndex]);
+		// Double_t tw_corr_neg = fHodoNeg_c1[fPIndex]/pow(adcamp_neg/fTdc_Thrs,fHodoNeg_c2[fPIndex]) -  fHodoNeg_c1[fPIndex]/pow(200./fTdc_Thrs, fHodoNeg_c2[fPIndex]);
+		Double_t tw_corr_neg = 1./pow(adcamp_neg/fTdc_Thrs,fHodoNeg_c2[fPIndex]) -  1./pow(200./fTdc_Thrs, fHodoNeg_c2[fPIndex]);              
 		timen += -tw_corr_neg- 2*fHodoCableFit[fPIndex] + fHodo_LCoeff[fPIndex];
 
 	      }
