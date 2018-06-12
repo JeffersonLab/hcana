@@ -332,8 +332,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"scin_tdc_max",                     &fScinTdcMax,                           kDouble},
     {"tof_tolerance",                    &fTofTolerance,          kDouble,         0,  1},
     {"pathlength_central",               &fPathLengthCentral,                    kDouble},
-    {"hodo_pos_sigma",                   &fHodoPosSigma[0],       kDouble,  fMaxHodoScin},
-    {"hodo_neg_sigma",                   &fHodoNegSigma[0],       kDouble,  fMaxHodoScin},
+    {"hodo_pos_sigma",                   &fHodoPosSigma[0],       kDouble,  fMaxHodoScin, 1},
+    {"hodo_neg_sigma",                   &fHodoNegSigma[0],       kDouble,  fMaxHodoScin, 1},
     {"hodo_pos_ped_limit",               &fHodoPosPedLimit[0],    kInt,     fMaxHodoScin, 1},
     {"hodo_neg_ped_limit",               &fHodoNegPedLimit[0],    kInt,     fMaxHodoScin, 1},
     {"tofusinginvadc",                   &fTofUsingInvAdc,        kInt,            0,  1},
@@ -372,7 +372,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
     fHodoPosPedLimit[ip] = 0.0;
     fHodoNegPedLimit[ip] = 0.0;
-
+    fHodoPosSigma[ip] = 0.2;
+    fHodoNegSigma[ip] = 0.2;
   }
   fTOFCalib_shtrk_lo=-kBig;
   fTOFCalib_shtrk_hi= kBig;
