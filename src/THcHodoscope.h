@@ -208,6 +208,8 @@ protected:
   Double_t* fHodoPos_c2;
   Double_t* fHodoNeg_c2;
   Double_t  fTdc_Thrs;  
+  Double_t* fHodoSigmaPos;
+  Double_t* fHodoSigmaNeg;
 
   Double_t fPartMass;		// Nominal particle mass
   Double_t fBetaNominal;	// Beta for central ray of nominal particle type

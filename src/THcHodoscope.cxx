@@ -301,7 +301,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   fHodoNeg_c1=new Double_t [fMaxHodoScin];
   fHodoPos_c2=new Double_t [fMaxHodoScin];
   fHodoNeg_c2=new Double_t [fMaxHodoScin];
-
+  fHodoSigmaPos=new Double_t [fMaxHodoScin];
+  fHodoSigmaNeg=new Double_t [fMaxHodoScin];
 
   fNHodoscopes = 2;
   fxLoScin = new Int_t [fNHodoscopes];
@@ -468,6 +469,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"c2_Pos",                           &fHodoPos_c2[0],   kDouble,  fMaxHodoScin, 1},
     {"c2_Neg",                           &fHodoNeg_c2[0],   kDouble,  fMaxHodoScin, 1},
     {"TDC_threshold",                    &fTdc_Thrs,        kDouble, 0, 1},
+    {"hodo_PosSigma",                   &fHodoSigmaPos[0], kDouble,  fMaxHodoScin, 1},
+    {"hodo_NegSigma",                   &fHodoSigmaNeg[0], kDouble,  fMaxHodoScin, 1},
     {0}   
      };
      
@@ -623,7 +626,8 @@ void THcHodoscope::DeleteArrays()
   delete [] fHodoNeg_c1;                 fHodoNeg_c1 = NULL;
   delete [] fHodoPos_c2;                 fHodoPos_c2 = NULL;
   delete [] fHodoNeg_c2;                 fHodoNeg_c2 = NULL;
-
+  delete [] fHodoSigmaPos;               fHodoSigmaPos = NULL;
+  delete [] fHodoSigmaNeg;               fHodoSigmaNeg = NULL;
 }
 
 //_____________________________________________________________________________
@@ -855,12 +859,21 @@ void THcHodoscope::EstimateFocalPlaneTime()
 
 	if(twogoodtimes[ihhit]){
 
-	  Double_t sigma = 0.5 * ( TMath::Sqrt( TMath::Power( fHodoPosSigma[GetScinIndex(ip,index)],2) +
-						TMath::Power( fHodoNegSigma[GetScinIndex(ip,index)],2) ) );
+	  Double_t sigma = 0.0;
+	  if(fTofUsingInvAdc)
+	    {
+	      sigma = 0.5 * ( TMath::Sqrt( TMath::Power( fHodoPosSigma[GetScinIndex(ip,index)],2) +
+					   TMath::Power( fHodoNegSigma[GetScinIndex(ip,index)],2) ) );
+	    }
+	  else{
+	    sigma = 0.5 * ( TMath::Sqrt( TMath::Power( fHodoSigmaPos[GetScinIndex(ip,index)],2) +
+					 TMath::Power( fHodoSigmaNeg[GetScinIndex(ip,index)],2) ) );
+	  }
+
 	  Double_t scinWeight = 1 / TMath::Power(sigma,2);
 	  Double_t zPosition = fPlanes[ip]->GetZpos() + (index%2)*fPlanes[ip]->GetDzpos();
  	  //	  cout << "hit = " << ihhit + 1 << "   zpos = " << zPosition << "   sigma = " << sigma << endl;
-
+	  //cout << "fHodoSigma+ = " << fHodoSigmaPos[GetScinIndex(ip,index)] << endl;
 	  sumW  += scinWeight;
 	  sumT  += scinWeight * ((THcHodoHit*)hodoHits->At(i))->GetScinCorrectedTime();
 	  sumZ  += scinWeight * zPosition;
@@ -893,8 +906,17 @@ void THcHodoscope::EstimateFocalPlaneTime()
 
 	    Double_t zPosition = fPlanes[ip]->GetZpos() + (index%2)*fPlanes[ip]->GetDzpos();
 	    Double_t timeDif = ( ((THcHodoHit*)hodoHits->At(i))->GetScinCorrectedTime() - t0 );
-	    Double_t sigma = 0.5 * ( TMath::Sqrt( TMath::Power( fHodoPosSigma[GetScinIndex(ip,index)],2) +
-						  TMath::Power( fHodoNegSigma[GetScinIndex(ip,index)],2) ) );
+	   
+	    Double_t sigma = 0.0;
+	    if(fTofUsingInvAdc){
+	      sigma = 0.5 * ( TMath::Sqrt( TMath::Power( fHodoPosSigma[GetScinIndex(ip,index)],2) +
+					   TMath::Power( fHodoNegSigma[GetScinIndex(ip,index)],2) ) );
+	    }
+	    else {
+	      sigma = 0.5 * ( TMath::Sqrt( TMath::Power( fHodoSigmaPos[GetScinIndex(ip,index)],2) +
+					   TMath::Power( fHodoSigmaNeg[GetScinIndex(ip,index)],2) ) );
+	    }
+
 	    fBetaNoTrkChiSq += ( ( zPosition / fBetaNoTrk - timeDif ) *
 				 ( zPosition / fBetaNoTrk - timeDif ) ) / ( sigma * sigma );
 
@@ -1188,14 +1210,29 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 					  fTOFPInfo[ih].scin_neg_time ) / 2.;
 	      fTOFCalc[ih].scin_time_fp  = ( fTOFPInfo[ih].time_pos +
 					     fTOFPInfo[ih].time_neg ) / 2.;
-	      fTOFCalc[ih].scin_sigma = TMath::Sqrt( fHodoPosSigma[fPIndex] * fHodoPosSigma[fPIndex] +
-						     fHodoNegSigma[fPIndex] * fHodoNegSigma[fPIndex] )/2.;
+	      
+	      if (fTofUsingInvAdc){
+		fTOFCalc[ih].scin_sigma = TMath::Sqrt( fHodoPosSigma[fPIndex] * fHodoPosSigma[fPIndex] +
+						       fHodoNegSigma[fPIndex] * fHodoNegSigma[fPIndex] )/2.;
+	      }
+	      else {
+		fTOFCalc[ih].scin_sigma = TMath::Sqrt( fHodoSigmaPos[fPIndex] * fHodoSigmaPos[fPIndex] +
+						       fHodoSigmaNeg[fPIndex] * fHodoSigmaNeg[fPIndex] )/2.;
+	      }
+
 	      fTOFCalc[ih].good_scin_time = kTRUE;
 	      fGoodFlags[itrack][ip][iphit].goodScinTime = kTRUE;
 	    } else{
 	      fTOFCalc[ih].scin_time = fTOFPInfo[ih].scin_pos_time;
 	      fTOFCalc[ih].scin_time_fp = fTOFPInfo[ih].time_pos;
-	      fTOFCalc[ih].scin_sigma = fHodoPosSigma[fPIndex];
+	      
+	      if (fTofUsingInvAdc){
+		fTOFCalc[ih].scin_sigma = fHodoPosSigma[fPIndex];
+	      }
+	      else{
+		fTOFCalc[ih].scin_sigma = fHodoSigmaPos[fPIndex];
+	      }
+	      
 	      fTOFCalc[ih].good_scin_time = kTRUE;
 	      fGoodFlags[itrack][ip][iphit].goodScinTime = kTRUE;
 	    }
@@ -1203,7 +1240,12 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	    if ( fTOFCalc[ih].good_tdc_neg ){
 	      fTOFCalc[ih].scin_time = fTOFPInfo[ih].scin_neg_time;
 	      fTOFCalc[ih].scin_time_fp = fTOFPInfo[ih].time_neg;
-	      fTOFCalc[ih].scin_sigma = fHodoNegSigma[fPIndex];
+	      if (fTofUsingInvAdc){
+		fTOFCalc[ih].scin_sigma = fHodoNegSigma[fPIndex];
+	      }
+	      else{
+		fTOFCalc[ih].scin_sigma = fHodoSigmaNeg[fPIndex];
+	      }
 	      fTOFCalc[ih].good_scin_time = kTRUE;
 	      fGoodFlags[itrack][ip][iphit].goodScinTime = kTRUE;
 	    }
