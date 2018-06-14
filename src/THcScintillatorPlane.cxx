@@ -1033,8 +1033,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	// Find hit position using ADCs
 	// If postime larger, then hit was nearer negative side.
 	
-	//Double_t vellight=fHodoVelLight[index]; //read from hodo_cuts.param, where it is set fixed to 15.0 
-	Double_t vellight=fHodoVelFit[index];   //use scin prop vel. values from hodo_calibVp_run#.param file
+	Double_t vellight=fHodoVelLight[index]; //read from hodo_cuts.param, where it is set fixed to 15.0 
+	//Double_t vellight=fHodoVelFit[index];   //use scin prop vel. values from hodo_calibVp_run#.param file
 	
 	Double_t dist_from_center=0.5*(timec_neg-timec_pos)*vellight;
 	Double_t scint_center=0.5*(fPosLeft+fPosRight);
