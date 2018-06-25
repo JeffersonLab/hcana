@@ -744,6 +744,7 @@ void THcShowerPlane::FillADC_DynamicPedestal()
   Double_t* NegAdcTimeWindowMax=static_cast<THcShower*>(fParent)->GetNegAdcTimeWindowMax();
   for (Int_t ielem=0;ielem<frNegAdcPulseInt->GetEntries();ielem++) {
     Int_t    npad         = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+    Int_t    nblock	  = npad*(fLayerNum-1)+npad;
     Double_t pulseInt     = ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(ielem))->GetData();
     Double_t pulsePed     = ((THcSignalHit*) frNegAdcPed->ConstructedAt(ielem))->GetData();
     Double_t pulseAmp     = ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(ielem))->GetData();
@@ -752,7 +753,7 @@ void THcShowerPlane::FillADC_DynamicPedestal()
     Double_t adctdcdiffTime = StartTime-pulseTime;
     Double_t threshold    = ((THcSignalHit*) frNegAdcThreshold->ConstructedAt(ielem))->GetData();
     Bool_t   errorflag    = ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
-    Bool_t   pulseTimeCut = (adctdcdiffTime > NegAdcTimeWindowMin[npad]) && (adctdcdiffTime < NegAdcTimeWindowMax[npad]);
+    Bool_t   pulseTimeCut = (adctdcdiffTime > NegAdcTimeWindowMin[nblock]) && (adctdcdiffTime < NegAdcTimeWindowMax[nblock]);
     if (!errorflag && pulseTimeCut) {
       fGoodNegAdcPulseIntRaw.at(npad) =pulseIntRaw;
 
@@ -778,6 +779,7 @@ void THcShowerPlane::FillADC_DynamicPedestal()
   //
   for (Int_t ielem=0;ielem<frPosAdcPulseInt->GetEntries();ielem++) {
     Int_t    npad         = ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+    Int_t    nblock	  = npad*(fLayerNum-1)+npad;
     Double_t pulsePed     = ((THcSignalHit*) frPosAdcPed->ConstructedAt(ielem))->GetData();
     Double_t threshold    = ((THcSignalHit*) frPosAdcThreshold->ConstructedAt(ielem))->GetData();
     Double_t pulseAmp     = ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(ielem))->GetData();
@@ -786,7 +788,7 @@ void THcShowerPlane::FillADC_DynamicPedestal()
     Double_t pulseTime    = ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(ielem))->GetData();
      Double_t adctdcdiffTime = StartTime-pulseTime;
    Bool_t   errorflag    = ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(ielem))->GetData();
-    Bool_t   pulseTimeCut = (adctdcdiffTime > PosAdcTimeWindowMin[npad]) &&  (adctdcdiffTime < PosAdcTimeWindowMax[npad]);
+    Bool_t   pulseTimeCut = (adctdcdiffTime > PosAdcTimeWindowMin[nblock]) &&  (adctdcdiffTime < PosAdcTimeWindowMax[nblock]);
     if (!errorflag && pulseTimeCut) {
       fGoodPosAdcPulseIntRaw.at(npad) = pulseIntRaw;
 
