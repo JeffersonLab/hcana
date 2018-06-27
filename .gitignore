@@ -58,3 +58,4 @@ examples/cache
 
 # Working directory
 work
+build/
