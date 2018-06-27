@@ -40,6 +40,8 @@ export LD_LIBRARY_PATH=$HOME/my_exp_soft/lib:$HOME/my_exp_soft/lib64:$LD_LIBRARY
 
 **Do not install into the source directories**. (ノಠ益ಠ)ノ彡┻━┻
 
+First you should build evio followed by podd. Here are all the steps:
+
 #### Build EVIO with cmake
 
 ```
