@@ -372,8 +372,10 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   Double_t hcal_neg_cal_const[fNTotBlocks];
   Double_t hcal_neg_gain_cor[fNTotBlocks];
 
-  fAdcTimeWindowMin = new Double_t [fNTotBlocks];
-  fAdcTimeWindowMax = new Double_t [fNTotBlocks];
+  fPosAdcTimeWindowMin = new Double_t [fNTotBlocks];
+  fNegAdcTimeWindowMin = new Double_t [fNTotBlocks];
+  fPosAdcTimeWindowMax = new Double_t [fNTotBlocks];
+  fNegAdcTimeWindowMax = new Double_t [fNTotBlocks];
 
   DBRequest list[]={
     {"cal_pos_cal_const", hcal_pos_cal_const, kDouble, fNTotBlocks},
@@ -382,16 +384,20 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     {"cal_neg_cal_const", hcal_neg_cal_const, kDouble, fNTotBlocks},
     {"cal_neg_ped_limit", fShNegPedLimit, kInt,    fNTotBlocks,1},
     {"cal_neg_gain_cor",  hcal_neg_gain_cor,  kDouble, fNTotBlocks},
-    {"cal_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNTotBlocks),1},
-    {"cal_AdcTimeWindowMax", fAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNTotBlocks),1},
+    {"cal_pos_AdcTimeWindowMin", fPosAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNTotBlocks),1},
+    {"cal_neg_AdcTimeWindowMin", fNegAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNTotBlocks),1},
+    {"cal_pos_AdcTimeWindowMax", fPosAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNTotBlocks),1},
+    {"cal_neg_AdcTimeWindowMax", fNegAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNTotBlocks),1},
     {"cal_min_peds", &fShMinPeds, kInt,0,1},
     {0}
   };
   fShMinPeds=0.;
 
   for(UInt_t ip=0;ip<fNTotBlocks;ip++) {
-    fAdcTimeWindowMin[ip] = -1000.;
-    fAdcTimeWindowMax[ip] = 1000.;
+    fPosAdcTimeWindowMin[ip] = -1000.;
+    fNegAdcTimeWindowMin[ip] = -1000.;
+    fPosAdcTimeWindowMax[ip] = 1000.;
+    fNegAdcTimeWindowMax[ip] = 1000.;
    }
 
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
