@@ -37,10 +37,11 @@ towards the end of your `.bashrc`):
 export PATH=$HOME/my_exp_soft/bin:$PATH
 export LD_LIBRARY_PATH=$HOME/my_exp_soft/lib:$HOME/my_exp_soft/lib64:$LD_LIBRARY_PATH
 ```
+ (ノಠ益ಠ)ノ彡┻━┻ **Do not install into the source directories**.
 
-**Do not install into the source directories**. (ノಠ益ಠ)ノ彡┻━┻
-
+(ノ^_^)ノ┻━┻ ┬─┬ ノ( ^_^ノ)
 First you should build evio followed by podd. Here are all the steps:
+
 
 #### Build EVIO with cmake
 
