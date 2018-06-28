@@ -164,6 +164,9 @@ protected:
 
   vector<Double_t>      fGoodPosAdcPulseIntRaw;
   vector<Double_t>      fGoodNegAdcPulseIntRaw;
+  
+  vector<Double_t> fGoodPosAdcMult;
+  vector<Double_t> fGoodNegAdcMult;
 
 
   vector<Double_t>      fEpos;        // [fNelem] energy depositions seen by positive PMTs

@@ -450,11 +450,16 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
      Bool_t   errorFlag    = ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(ielem))->GetData();
     Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin[npmt] && adctdcdiffTime < fAdcTimeWindowMax[npmt];
 
+    
+    if (!errorFlag)
+      {
+	fGoodAdcMult.at(npmt) += 1;
+      }
+
     // By default, the last hit within the timing cut will be considered "good"
     if (!errorFlag && pulseTimeCut) {
       fGoodAdcPed.at(npmt)         = pulsePed;
       fGoodAdcHitUsed.at(npmt)         = ielem+1;
-      fGoodAdcMult.at(npmt)         =frAdcPulseInt->GetEntries() ;
       fGoodAdcPulseInt.at(npmt)    = pulseInt;
       fGoodAdcPulseIntRaw.at(npmt) = pulseIntRaw;
       fGoodAdcPulseAmp.at(npmt)    = pulseAmp;

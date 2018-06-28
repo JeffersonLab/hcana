@@ -267,6 +267,9 @@ Int_t THcShowerPlane::ReadDatabase( const TDatime& date )
   fGoodNegAdcPulseAmp         = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcPulseTime        = vector<Double_t> (fNelem, 0.0);
   fGoodNegAdcTdcDiffTime        = vector<Double_t> (fNelem, 0.0);
+  
+  fGoodPosAdcMult         = vector<Double_t> (fNelem, 0.0);
+  fGoodNegAdcMult         = vector<Double_t> (fNelem, 0.0);
 
   // Energy depositions per block (not corrected for track coordinate)
 
@@ -390,8 +393,9 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
     {"goodNegAdcPulseInt", "Good Negative ADC integrals",           "fGoodNegAdcPulseInt"},
     {"goodNegAdcPulseAmp", "Good Negative ADC amplitudes",          "fGoodNegAdcPulseAmp"},
     {"goodNegAdcPulseTime","Good Negative ADC times",               "fGoodNegAdcPulseTime"},
-   {"goodNegAdcTdcDiffTime","Good Negative Hodo Start time-ADC times",               "fGoodNegAdcTdcDiffTime"},
-
+    {"goodNegAdcTdcDiffTime","Good Negative Hodo Start time-ADC times",               "fGoodNegAdcTdcDiffTime"},
+    {"goodPosAdcMult",          "Good Positive ADC Multiplicity",           "fGoodPosAdcMult"},
+    {"goodNegAdcMult",          "Good Negative ADC Multiplicity",           "fGoodNegAdcMult"},
     {"epos",       "Energy Depositions from Positive Side PMTs",    "fEpos"},
     {"eneg",       "Energy Depositions from Negative Side PMTs",    "fEneg"},
     {"emean",      "Mean Energy Depositions",                       "fEmean"},
@@ -443,6 +447,7 @@ void THcShowerPlane::Clear( Option_t* )
     fGoodPosAdcPulseAmp.at(ielem)         = 0.0;
     fGoodPosAdcPulseTime.at(ielem)        = kBig;
     fGoodPosAdcTdcDiffTime.at(ielem)        = kBig;
+    fGoodPosAdcMult.at(ielem)               = 0.0;
     fEpos.at(ielem)                       = 0.0;
     fNumGoodPosAdcHits.at(ielem)          = 0.0;
   }
@@ -454,6 +459,7 @@ void THcShowerPlane::Clear( Option_t* )
     fGoodNegAdcPulseAmp.at(ielem)         = 0.0;
     fGoodNegAdcPulseTime.at(ielem)        = kBig;
     fGoodNegAdcTdcDiffTime.at(ielem)        = kBig;
+    fGoodNegAdcMult.at(ielem)               = 0.0;
     fEneg.at(ielem)                       = 0.0;
     fNumGoodNegAdcHits.at(ielem)          = 0.0;
   }
@@ -754,6 +760,11 @@ void THcShowerPlane::FillADC_DynamicPedestal()
     Double_t threshold    = ((THcSignalHit*) frNegAdcThreshold->ConstructedAt(ielem))->GetData();
     Bool_t   errorflag    = ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
     Bool_t   pulseTimeCut = (adctdcdiffTime > NegAdcTimeWindowMin[nblock]) && (adctdcdiffTime < NegAdcTimeWindowMax[nblock]);
+    
+    if (!errorflag)
+      {
+	fGoodNegAdcMult.at(npad) += 1;
+      }
     if (!errorflag && pulseTimeCut) {
       fGoodNegAdcPulseIntRaw.at(npad) =pulseIntRaw;
 
@@ -789,6 +800,12 @@ void THcShowerPlane::FillADC_DynamicPedestal()
      Double_t adctdcdiffTime = StartTime-pulseTime;
    Bool_t   errorflag    = ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(ielem))->GetData();
     Bool_t   pulseTimeCut = (adctdcdiffTime > PosAdcTimeWindowMin[nblock]) &&  (adctdcdiffTime < PosAdcTimeWindowMax[nblock]);
+       
+    if (!errorflag)
+      {
+	fGoodPosAdcMult.at(npad) += 1;
+      }
+    
     if (!errorflag && pulseTimeCut) {
       fGoodPosAdcPulseIntRaw.at(npad) = pulseIntRaw;
 
