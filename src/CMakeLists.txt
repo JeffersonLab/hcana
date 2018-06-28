@@ -61,8 +61,6 @@ target_include_directories(HallC
 target_compile_options(HallC PRIVATE $<$<CXX_COMPILER_ID:GNU>:-DHAS_SSTREAM=1>)
 
 target_link_libraries(HallC
-  #PUBLIC ${EXPAT_LIBRARIES}
-  #PUBLIC ${CMAKE_THREAD_LIBS_INIT}
   PUBLIC ${ROOT_LIBRARIES} 
   PUBLIC PODD::HallA
   PUBLIC PODD::Decode
@@ -70,8 +68,8 @@ target_link_libraries(HallC
 #This is required so that the exported target has the name JSONUtils and not jsonutils
 #set_target_properties(HallC PROPERTIES EXPORT_NAME hallC)
 
-add_executable(hc_analyzer main.C)
-target_include_directories(hc_analyzer
+add_executable(hcana main.C)
+target_include_directories(hcana
     PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -82,15 +80,13 @@ target_include_directories(hc_analyzer
 )
 
 #target_compile_features(HallC PRIVATE cxx_auto_type)
-target_compile_options(hc_analyzer PRIVATE $<$<CXX_COMPILER_ID:GNU>:-DHAS_SSTREAM=1>)
-target_link_libraries(hc_analyzer
+target_compile_options(hcana PRIVATE $<$<CXX_COMPILER_ID:GNU>:-DHAS_SSTREAM=1>)
+target_link_libraries(hcana
   PUBLIC HallC
-  PUBLIC PODD::HallA
-  PUBLIC PODD::Decode
   PUBLIC ${ROOT_LIBRARIES} 
 )
 
-install(TARGETS HallC hc_analyzer
+install(TARGETS HallC hcana
   EXPORT HCANA-targets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

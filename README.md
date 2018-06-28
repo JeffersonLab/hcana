@@ -73,7 +73,27 @@ cmake ../. -DCMAKE_INSTALL_PREFIX=$HOME/my_exp_soft
 make -j4 install
 ```
 
-All done.  Now you can run `hc_analyzer` and you're off to analyze.
+All done.  Now you can run `hcana` and you're off to analyze.
+
+#### Loading the libraries into ROOT 
+
+```
+// .rootlogon.C
+{
+  gSystem->AddIncludePath(" -Iinclude/podd" );
+  gSystem->AddIncludePath(" -Iinclude/hcana");
+  gSystem->AddIncludePath(" -Iinclude/evio" );
+  gInterpreter->AddIncludePath("include/podd" );
+  gInterpreter->AddIncludePath("include/hcana");
+  gInterpreter->AddIncludePath("include/evio" );
+  
+  gSystem->Load("libevioxx.so");
+  gSystem->Load("libHallA.so");
+  gSystem->Load("libdc.so");
+  gSystem->Load("libHallC.so");
+}
+```
+![libHallC in ROOT](/docs/libHallC_in_root.png)
 
 ### Other builds
 
