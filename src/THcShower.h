@@ -71,6 +71,28 @@ public:
     return ( Side == 0 ? fPosGain[nelem] : fNegGain[nelem]);
   }
 
+  Double_t GetWindowMin(Int_t NBlock, Int_t NLayer, Int_t Side) {
+    if (Side!=0&&Side!=1) {
+      cout << "*** Wrong Side in GetWindowMin:" << Side << " ***" << endl;
+      return -1;
+    }
+    Int_t nelem = 0;
+    for (Int_t i=0; i<NLayer; i++) nelem += fNBlocks[i];
+    nelem += NBlock;
+    return ( Side == 0 ? fPosAdcTimeWindowMin[nelem] : fNegAdcTimeWindowMin[nelem] );
+  }
+
+  Double_t GetWindowMax(Int_t NBlock, Int_t NLayer, Int_t Side) {
+    if (Side!=0&&Side!=1) {
+      cout << "*** Wrong Side in GetWindowMax:" << Side << " ***" << endl;
+      return -1;
+    }
+    Int_t nelem = 0;
+    for (Int_t i=0; i<NLayer; i++) nelem += fNBlocks[i];
+    nelem += NBlock;
+    return ( Side == 0 ? fPosAdcTimeWindowMax[nelem] : fNegAdcTimeWindowMax[nelem] );
+  }
+
   Int_t GetADCMode() {
     return fADCMode;
   }
