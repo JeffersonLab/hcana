@@ -281,7 +281,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     {0}
   };
 
-   for(UInt_t ip=0;ip<fNelem;ip++) {
+   for(Int_t ip=0;ip<fNelem;ip++) {
     fAdcTimeWindowMin[ip] = -1000.;
     fAdcTimeWindowMax[ip] = 1000.;
    }
