@@ -38,6 +38,7 @@ config.log
 *.os
 *.pcm
 \#*\#
+.nfs*
 
 # Doxygen generated documentation directory
 docs/ROOT.tag
