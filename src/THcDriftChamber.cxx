@@ -276,44 +276,42 @@ void THcDriftChamber::PrintDecode( void )
 
 Int_t THcDriftChamber::FindSpacePoints( void )
 {
-  /*
-1) First check if number of hits is between fMinHits=min_hit and fMaxHits=max_pr_hits
+  /**
+1. First check if number of hits is between fMinHits=min_hit and fMaxHits=max_pr_hits
    if fails then fNSpacePoints=0
-2) Determines if it is an easy spacepoint.
-  a) if HMS style chambers finds the Y and Y' planes
+2. Determines if it is an easy spacepoint.
+  1. if HMS style chambers finds the Y and Y' planes
      if not HMS style chambers finds the X and X' planes
-  b) if both planes ahve only one hit and the difference in hit position
+  2. if both planes ahve only one hit and the difference in hit position
      between the hits < fSpacePointCriterion and less than 6 hits .
      then easy spacepoint and calls either method FindEasySpacePoint_HMS or FindEasySpacePoint_SOS
-  c) FindEasySpacePoint_SOS
-     1) Loops through hits and gets y_pos from the non-X planes and determines average Yt
-     2) Loops through hits and sees if any of "Y-planes" hits has 
+  3. FindEasySpacePoint_SOS
+     1. Loops through hits and gets y_pos from the non-X planes and determines average Yt
+     2. Loops through hits and sees if any of "Y-planes" hits has 
           difference of y_pos -Yt > TMath::Sqrt(fSpacePointCriterion/2.0)
-     3) Adds a spacepoint and set ncombos to zero.
-
-
-3) if not  EasySpacePoint calls FindHardSpacePoints
-  a) loops though hits and determines pairs of hits in planes with angles grerater then 17.5 degs
+     3. Adds a spacepoint and set ncombos to zero.
+3. if not  EasySpacePoint calls FindHardSpacePoints
+  1. loops though hits and determines pairs of hits in planes with angles grerater then 17.5 degs
       between them. These are test pairs and stores the x and y position of pair
-  b) Double loops through the test pairs to determine number of pair combinations.
-     i) Calculates d2 = (xi -xj)^2 + (yi-yj)^2 from the two pairs (i,j).
-     ii) If d2 <  fSpacePointCriterion then fills combos structure with pair info
+  1. Double loops through the test pairs to determine number of pair combinations.
+     1. Calculates d2 = (xi -xj)^2 + (yi-yj)^2 from the two pairs (i,j).
+     2. If d2 <  fSpacePointCriterion then fills combos structure with pair info
          and increments ncombos.
-  c) Loop through ncombos
-     i) First combo is set as spacepoint which is loaded with hit info from combos.
-     ii) Next combo 
-        a) Loops through previous space points
-        b) calculates  d2 = (x_c -x_sp)^2 + (y_c-y_sp)^2 between combos and spacepoint
+  c. Loop through ncombos
+     1. First combo is set as spacepoint which is loaded with hit info from combos.
+     2. Next combo 
+        1. Loops through previous space points
+        2. calculates  d2 = (x_c -x_sp)^2 + (y_c-y_sp)^2 between combos and spacepoint
            if d2 < fSpacePointCriterion then adds combos hit info to that spacepoint
            which is not already in the spacepoint.
-        c) if that combo is not already added to existing spacepoint
+        3. if that combo is not already added to existing spacepoint
            then new spacepoint is made from the combo.
-4) If it found a spacepoint
-    i) For HMS-style chamber it would DestroyPoorSpacePoints if fRemove_Sppt_If_One_YPlane
-    ii) Presently if  HMS-style chamber calls SpacePointMultiWire()
-    iii) Calls ChooseSingleHit this looks to see if two hits in the same plane.
+4. If it found a spacepoint
+    1. For HMS-style chamber it would DestroyPoorSpacePoints if fRemove_Sppt_If_One_YPlane
+    2. Presently if  HMS-style chamber calls SpacePointMultiWire()
+    3. Calls ChooseSingleHit this looks to see if two hits in the same plane.
              If two hits then rejects on with longer drift time.
-    iv) calls SelectSpacePoints. Goes through the spacepoints and eliminates spacepoints
+    4. calls SelectSpacePoints. Goes through the spacepoints and eliminates spacepoints
           that do not have nhits >  min_hits and ncombos> min_combos 
           ( exception for easyspacepoint)
   */
@@ -379,9 +377,14 @@ Int_t THcDriftChamber::FindSpacePoints( void )
 // HMS Specific
 Int_t THcDriftChamber::FindEasySpacePoint_HMS(Int_t yplane_hitind,Int_t yplanep_hitind)
 {
-  // Simplified HMS find_space_point routing.  It is given all y hits and
-  // checks to see if all x-like hits are close enough together to make
-  // a space point.
+  /**
+     Simplified HMS find_space_point routing.  It is given all y hits and
+     checks to see if all x-like hits are close enough together to make
+     a space point.
+
+     This is used for the old style HMS drift chambers, so is not used for any
+     data since the new HMS chambers were installed before the Fall 2017 run.
+  */
 
   Int_t easy_space_point=0;
   Double_t yt = (fHits[yplane_hitind]->GetPos() + fHits[yplanep_hitind]->GetPos())/2.0;
@@ -425,9 +428,14 @@ Int_t THcDriftChamber::FindEasySpacePoint_HMS(Int_t yplane_hitind,Int_t yplanep_
 // SOS Specific
 Int_t THcDriftChamber::FindEasySpacePoint_SOS(Int_t xplane_hitind,Int_t xplanep_hitind)
 {
-  // Simplified SOS find_space_point routing.  It is given all x hits and
-  // checks to see if all y-like hits are close enough together to make
-  // a space point.
+  /**
+     Simplified SOS find_space_point routing.  It is given all x hits and
+     checks to see if all y-like hits are close enough together to make
+     a space point.
+
+     This is used for the SHMS and HMS (since Fall 2017) drift chambers which are
+     of the same style as the old SOS chambers (XUV).
+  */
 
   Int_t easy_space_point=0;
   Double_t xt = (fHits[xplane_hitind]->GetPos() + fHits[xplanep_hitind]->GetPos())/2.0;
@@ -691,18 +699,20 @@ Int_t THcDriftChamber::DestroyPoorSpacePoints()
 
 //_____________________________________________________________________________
 // HMS Specific?
-  /*
-   Purpose and Methods :  This routine loops over space points and
-                          looks at all hits in the space
-                          point. If more than 1 hit is in the same
-                          plane then the space point is cloned with
-                          all combinations of 1 wire per plane.  The
-                          requirements for cloning are:  1) at least
-                          4 planes fire, and 2) no more than 6 planes
-                          have multiple hits.
-  */
 Int_t THcDriftChamber::SpacePointMultiWire()
 {
+/**
+   This method is only used for the old style HMS chambers (before Fall 2017).
+
+   This routine loops over space points and
+   looks at all hits in the space
+   point. If more than 1 hit is in the same
+   plane then the space point is cloned with
+   all combinations of 1 wire per plane.  The
+   requirements for cloning are:  1) at least
+   4 planes fire, and 2) no more than 6 planes
+   have multiple hits.
+*/
   Int_t nhitsperplane[fNPlanes];
   THcDCHit* hits_plane[fNPlanes][MAX_HITS_PER_POINT];
 
@@ -841,8 +851,10 @@ Int_t THcDriftChamber::SpacePointMultiWire()
 // Generic
 void THcDriftChamber::ChooseSingleHit()
 {
-  // Look at all hits in a space point.  If two hits are in the same plane,
-  // reject the one with the longer drift time.
+  /**
+     Look at all hits in a space point.  If two hits are in the same plane,
+     reject the one with the longer drift time.
+  */
   for(Int_t isp=0;isp<fNSpacePoints;isp++) {
     THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
     Int_t startnum = sp->GetNHits();
@@ -886,11 +898,13 @@ void THcDriftChamber::ChooseSingleHit()
 //_____________________________________________________________________________
 // Generic
 void THcDriftChamber::SelectSpacePoints()
-//    This routine goes through the list of space_points and space_point_hits
-//    found by find_space_points and only accepts those with
-//    number of hits > min_hits
-//    number of combinations > min_combos
 {
+  /**
+     This routine goes through the list of space_points and space_point_hits
+     found by find_space_points and only accepts those with
+     number of hits > min_hits
+     number of combinations > min_combos
+  */
   Int_t sp_count=0;
   for(Int_t isp=0;isp<fNSpacePoints;isp++) {
     // Include fEasySpacePoint because ncombos not filled in
@@ -929,16 +943,18 @@ void THcDriftChamber::SelectSpacePoints()
 
 void THcDriftChamber::CorrectHitTimes()
 {
-	//cout<<"next event"<<endl;
-  // Use the rough hit positions in the chambers to correct the drift time
-  // for hits in the space points.
+  /**
+   Use the rough hit positions in the chambers to correct the drift time
+   for hits in the space points.
 
-  // Assume all wires for a plane are read out on the same side (l/r or t/b).
-  // If the wire is closer to horizontal, read out left/right.  If nearer
-  // vertical, assume top/bottom.  (Note, this is not always true for the
-  // SOS u and v planes.  They have 1 card each on the side, but the overall
-  // time offset per card will cancel much of the error caused by this.  The
-  // alternative is to check by card, rather than by plane and this is harder.
+   Assume all wires for a plane are read out on the same side (l/r or t/b).
+   If the wire is closer to horizontal, read out left/right.  If nearer
+   vertical, assume top/bottom.  (Note, this is not always true for the
+   SOS u and v planes.  They have 1 card each on the side, but the overall
+   time offset per card will cancel much of the error caused by this.  The
+   alternative is to check by card, rather than by plane and this is harder.
+  */
+
   //if (fhdebugflagpr) cout << "In correcthittimes fNSpacePoints = " << fNSpacePoints << endl;
 
   for(Int_t isp=0;isp<fNSpacePoints;isp++) {
@@ -1071,9 +1087,11 @@ UInt_t THcDriftChamber::Count1Bits(UInt_t x)
 //_____________________________________________________________________________
 void THcDriftChamber::LeftRight()
 {
-  // For each space point,
-  // Fit stubs to all possible left-right combinations of drift distances
-  // and choose the set with the minimum chi**2.
+  /**
+     For each space point,
+     Fit stubs to all possible left-right combinations of drift distances
+     and choose the set with the minimum chi**2.
+  */
 
   for(Int_t isp=0; isp<fNSpacePoints; isp++) {
     // Build a bit pattern of which planes are hit

@@ -86,8 +86,12 @@ THaAnalysisObject::EStatus THcDriftChamberPlane::Init( const TDatime& date )
 Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
 {
 
-  // See what file it looks for
+  /**
+     Load the drift time to drift distance map.
 
+     Retrieve geometry parameters from main drift chamber detector object (THcDC)
+  */
+  
   char prefix[2];
   UInt_t NumDriftMapBins;
   Double_t DriftMapFirstBin;
@@ -321,9 +325,11 @@ Int_t THcDriftChamberPlane::FineProcess( TClonesArray& tracks )
 }
 Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 {
-  // Extract the data for this plane from hit list
-  // Assumes that the hit list is sorted by plane, so we stop when the
-  // plane doesn't agree and return the index for the next hit.
+  /**
+     Extract the data for this plane from hit list
+     Assumes that the hit list is sorted by plane, so we stop when the
+     plane doesn't agree and return the index for the next hit.
+  */
 
   fHits->Clear();
 

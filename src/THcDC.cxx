@@ -265,11 +265,12 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
 //_____________________________________________________________________________
 Int_t THcDC::ReadDatabase( const TDatime& date )
 {
-  // Read this detector's parameters from the ThcParmList
-  // This function is called by THaDetectorBase::Init() once at the
-  // beginning of the analysis.
-  // 'date' contains the date/time of the run being analyzed.
+  /**
+  Read this detector's parameters from the ThcParmList
+  This function is called by THaDetectorBase::Init() once at the
+  beginning of the analysis.
 
+  */
   //  static const char* const here = "ReadDatabase()";
 
   delete [] fXCenter;  fXCenter = new Double_t [fNChambers];
@@ -387,8 +388,9 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
 //_____________________________________________________________________________
 Int_t THcDC::DefineVariables( EMode mode )
 {
-  // Initialize global variables for histograms and Root tree
-
+  /**
+    Initialize global variables for histograms and Root tree
+  */
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
 
@@ -515,9 +517,11 @@ void THcDC::ClearEvent()
 //_____________________________________________________________________________
 Int_t THcDC::Decode( const THaEvData& evdata )
 {
-  // Decode event into hit list.
-  // Pass hit list to the planes.
-  // Load hits from planes into chamber objects
+  /**
+    Decode event into hit list.
+    Pass hit list to the planes.
+    Load hits from planes into chamber objects
+  */
   ClearEvent();
   Int_t num_event = evdata.GetEvNum();
   if (fdebugprintrawdc ||fdebugprintdecodeddc || fdebuglinkstubs || fdebugtrackprint) cout << " event num = " << num_event << endl;
@@ -568,14 +572,12 @@ Int_t THcDC::ApplyCorrections( void )
 //_____________________________________________________________________________
 Int_t THcDC::CoarseTrack( TClonesArray& tracks )
 {
-  // Calculation of coordinates of particle track cross point with scint
-  // plane in the detector coordinate system. For this, parameters of track
-  // reconstructed in THaVDC::CoarseTrack() are used.
-  //
-  // Apply corrections and reconstruct the complete hits.
-  //
-  //  static const Double_t sqrt2 = TMath::Sqrt(2.);
-  //
+  /**
+     Find a set of tracks through the drift chambers and put them
+     into the tracks TClonesArray.
+     Tracks are in the detector coordinate system.
+  */
+
   // Subtract starttimes from each plane hit
     for(Int_t ip=0;ip<fNPlanes;ip++) {
       fPlanes[ip]->SubtractStartTime();
@@ -628,14 +630,6 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
 //_____________________________________________________________________________
 Int_t THcDC::FineTrack( TClonesArray& tracks )
 {
-  // Reconstruct coordinates of particle track cross point with scintillator
-  // plane, and copy the data into the following local data structure:
-  //
-  // Units of measurements are meters.
-
-  // Calculation of coordinates of particle track cross point with scint
-  // plane in the detector coordinate system. For this, parameters of track
-  // reconstructed in THaVDC::FineTrack() are used.
 
   return 0;
 }
@@ -717,18 +711,20 @@ void THcDC::PrintStubs()
 //_____________________________________________________________________________
 void THcDC::LinkStubs()
 {
-  //     The logic is
-  //                  0) Put all space points in a single list
-  //                  1) loop over all space points as seeds  isp1
-  //                  2) Check if this space point is all ready in a track
-  //                  3) loop over all succeeding space pointss   isp2
-  //                  4)  check if there is a track-criterion match
-  //                       either add to existing track
-  //                       or if there is another point in same chamber
-  //                          make a copy containing isp2 rather than
-  //                            other point in same chamber
-  //                  5) If hsingle_stub is set, make a track of all single
-  //                     stubs.
+  /**
+       The logic is
+                    0) Put all space points in a single list
+                    1) loop over all space points as seeds  isp1
+                    2) Check if this space point is all ready in a track
+                    3) loop over all succeeding space pointss   isp2
+                    4)  check if there is a track-criterion match
+                         either add to existing track
+                         or if there is another point in same chamber
+                            make a copy containing isp2 rather than
+                              other point in same chamber
+                    5) If hsingle_stub is set, make a track of all single
+                       stubs.
+  */
 
   std::vector<THcSpacePoint*> fSp;
   fNSp=0;
@@ -927,27 +923,12 @@ if (fdebuglinkstubs) {
 //_____________________________________________________________________________
 void THcDC::TrackFit()
 {
-  // Primary track fitting routine
+  /**
+     Primary track fitting routine
+  */
 
   // Number of ray parameters in focal plane.
   const Int_t raycoeffmap[]={4,5,2,3};
-
-  // EJB_Note:  Why is this here?  It does not appear to be used anywhere ... commenting out for now.
-  //
-  //// Initialize residuals
-  //// Need to make these member variables so they can be histogrammed
-  //// Probably an array of vectors.
-  //Double_t double_resolution[fNPlanes][fNDCTracks];
-  //Double_t single_resolution[fNPlanes][fNDCTracks];
-  //Double_t double_res[fNPlanes]; // For the good track
-  //
-  // for(Int_t ip=0;ip<fNPlanes;ip++) {
-  //  double_res[ip] = 1000.0;
-  //  for(Int_t itrack=0;itrack<fNDCTracks;itrack++) {
-  //    double_resolution[ip][itrack] = 1000.0;
-  //    single_resolution[ip][itrack] = 1000.0;
-  //  }
-  // }
 
   Double_t dummychi2 = 1.0E4;
   for(UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
@@ -1216,7 +1197,7 @@ void THcDC::TrackFit()
 //
 Double_t THcDC::DpsiFun(Double_t ray[4], Int_t plane)
 {
-  /*
+  /**
     this function calculates the psi coordinate of the intersection
     of a ray (defined by ray) with a hms wire chamber plane. the geometry
     of the plane is contained in the coeff array calculated in the
@@ -1265,9 +1246,11 @@ Int_t THcDC::End(THaRunBase* run)
 //_____________________________________________________________________________
 void THcDC::EffInit()
 {
-  // Create, and initialize counters used to calculate
-  // efficiencies.  Register the counters in gHcParms so that the
-  // variables can be used in end of run reports.
+  /**
+     Create, and initialize counters used to calculate
+     efficiencies.  Register the counters in gHcParms so that the
+     variables can be used in end of run reports.
+  */
 
   delete [] fNChamHits; fNChamHits = new Int_t [fNChambers];
   delete [] fPlaneEvents; fPlaneEvents = new Int_t [fNPlanes];
@@ -1287,7 +1270,9 @@ void THcDC::EffInit()
 //_____________________________________________________________________________
 void THcDC::Eff()
 {
-  // Accumulate statistics for efficiency calculations
+  /**
+     Accumulate statistics for efficiency calculations
+  */
 
   fTotEvents++;
   for(UInt_t i=0;i<fNChambers;i++) {
