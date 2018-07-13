@@ -34,7 +34,9 @@ THcDCLookupTTDConv::~THcDCLookupTTDConv()
 //______________________________________________________________________________
 Double_t THcDCLookupTTDConv::ConvertTimeToDist(Double_t time)
 {
-  // Lookup in table
+  /**
+     Convert drift time to a distance from the wire by looking up in a table.
+  */
   Int_t ib = (time-fT0)/fBinSize;
   Double_t frac = 0;
   if(ib >= 0 && ib+1 < fNumBins) {
