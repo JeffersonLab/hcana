@@ -31,11 +31,11 @@ Before compiling, type
 `source setup.sh` or `source setup.csh`
 depending on whether your shell is bash or csh.
 
-### Compiling with make
-    make
-
 ### Compiling with scons
-    scons
+
+```
+scons
+```
 
 ### Additional SCons features 
 To do the equivalent of "make clean", do
@@ -46,6 +46,47 @@ To compile the standalone codes the are part of podd, do
 `scons standalone=1`
 To run cppcheck (if installed) on the Hall C src diretory, do
 `scons cppcheck=1`
+
+### Compiling with CMake (experimental)
+
+Do the usual CMake setup
+
+```
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=$HOME/local/hcana ..
+make -jN install
+```
+
+Here `$HOME/local/hcana` is an example installation destination;
+modify as appropriate. You will need to add the `bin` and `lib[64]` sub-directories
+under the installation prefix to your environment:
+
+```
+export PATH=$HOME/local/hcana/bin:$PATH
+export LD_LIBRARY_PATH=$HOME/local/hcana/lib64:$LD_LIBRARY_PATH
+```
+
+On macOS, the library directory is usually simply `lib` instead of `lib64`.
+
+CMake does not yet support the SCons features "standalone" and "cppcheck".
+
+The default CMake build type is "RelWithDebInfo", i.e. debug symbols are
+included in the binaries, but the code is optimized, which may cause the
+debugger to act in a confusing way on occasion. To build a
+non-optimized debug version, run CMake as follows:
+```
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$HOME/local/hcana-dbg ..
+make -jN install
+```
+
+### Compiling with make (deprecated)
+
+```
+make [-jN]
+```
 
 Running
 -------
