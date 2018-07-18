@@ -40,8 +40,12 @@ file(APPEND "${linkdef}" "${postamble}")
 unset(postamble)
 
 #----------------------------------------------------------------------------
-# Generate ha_compiledata.h
+# Generate hc_compiledata.h
 include(PoddCompileInfo)
+
+# Ensure there's no old hc_compiledata.h hanging around from a non-CMake build
+file(REMOVE "${CMAKE_CURRENT_SOURCE_DIR}/hc_compiledata.h")
+
 configure_file(hc_compiledata.h.in hc_compiledata.h)
 list(APPEND allheaders "${CMAKE_CURRENT_BINARY_DIR}/hc_compiledata.h")
 
