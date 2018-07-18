@@ -40,8 +40,12 @@ file(APPEND "${linkdef}" "${postamble}")
 unset(postamble)
 
 #----------------------------------------------------------------------------
-# Generate ha_compiledata.h
+# Generate hc_compiledata.h
 include(PoddCompileInfo)
+
+# Ensure there's no old hc_compiledata.h hanging around from a non-CMake build
+file(REMOVE "${CMAKE_CURRENT_SOURCE_DIR}/hc_compiledata.h")
+
 configure_file(hc_compiledata.h.in hc_compiledata.h)
 list(APPEND allheaders "${CMAKE_CURRENT_BINARY_DIR}/hc_compiledata.h")
 
@@ -79,7 +83,7 @@ set_target_properties(${LIBNAME} PROPERTIES
   )
 
 install(TARGETS ${LIBNAME}
-  EXPORT ${PROJECT_NAME_LC}-exports
+  EXPORT ${MAIN_PROJECT_NAME_LC}-exports
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -88,18 +92,10 @@ install(FILES ${allheaders} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 #----------------------------------------------------------------------------
 # libHallCDict
-get_target_definitions(${LIBNAME} defines)
-
-root_generate_dictionary(${LIBNAME} ${defines} ${headers}
+build_root_dictionary(${LIBNAME} ${headers}
   TARGETS ${LIBNAME}
   LINKDEF ${linkdef}
   )
-set(PCM_FILE ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}_rdict.pcm)
-
-add_custom_target(${LIBNAME}_ROOTDICT
-  DEPENDS ${src} ${headers} ${LIBNAME}_LinkDef.h ${LIBNAME}Dict.cxx)
-
-install(FILES ${PCM_FILE} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 #----------------------------------------------------------------------------
 # hcana executable
