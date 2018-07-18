@@ -88,18 +88,10 @@ install(FILES ${allheaders} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 #----------------------------------------------------------------------------
 # libHallCDict
-get_target_definitions(${LIBNAME} defines)
-
-root_generate_dictionary(${LIBNAME} ${defines} ${headers}
+root_generate_dictionary(${LIBNAME} ${headers}
   TARGETS ${LIBNAME}
   LINKDEF ${linkdef}
   )
-set(PCM_FILE ${CMAKE_CURRENT_BINARY_DIR}/lib${LIBNAME}_rdict.pcm)
-
-add_custom_target(${LIBNAME}_ROOTDICT
-  DEPENDS ${src} ${headers} ${LIBNAME}_LinkDef.h ${LIBNAME}Dict.cxx)
-
-install(FILES ${PCM_FILE} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 #----------------------------------------------------------------------------
 # hcana executable
