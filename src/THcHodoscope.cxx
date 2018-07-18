@@ -1791,7 +1791,8 @@ Int_t THcHodoscope::FineProcess( TClonesArray&  tracks  )
 	  if ( fTOFCalc[ih].good_tdc_pos && fTOFCalc[ih].good_tdc_neg ) {
 	    Bool_t sh_pid=(shower_track_enorm > fTOFCalib_shtrk_lo && shower_track_enorm < fTOFCalib_shtrk_hi);
 	    Bool_t beta_pid=( fBeta > fTOFCalib_beta_lo &&  fBeta < fTOFCalib_beta_hi);
-	    Bool_t cer_pid=( fCherenkov->GetCerNPE() > fTOFCalib_cer_lo);
+	    // cer_pid is true if there is no Cherenkov detector
+	    Bool_t cer_pid=(fCherenkov?(fCherenkov->GetCerNPE()>fTOFCalib_cer_lo):kTRUE);
 	    if(fDumpTOF && Ntracks==1 && fGoodEventTOFCalib && sh_pid && beta_pid && cer_pid) {
 	      fDumpOut << fixed << setprecision(2);
 	      fDumpOut  << showpoint << " 1" << setw(3) << ip+1 << setw(3) << hit->GetPaddleNumber()  << setw(10) << hit->GetPosTDC()*fScinTdcToTime  << setw(10) << fTOFPInfo[ih].pathp << setw(10) << fTOFPInfo[ih].zcor  << setw(10) << fTOFPInfo[ih].time_pos << setw(10) << hit->GetPosADC() << endl;

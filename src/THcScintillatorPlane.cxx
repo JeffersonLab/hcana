@@ -893,12 +893,15 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     } else if (fADCMode == kADCSampleIntegral) {
       adcint_pos = hit->GetRawAdcHitPos().GetSampleIntRaw() - fPosPed[index];
       adcint_neg = hit->GetRawAdcHitNeg().GetSampleIntRaw() - fNegPed[index];
+      badcraw_pos = badcraw_neg = kTRUE;
     } else if (fADCMode == kADCSampIntDynPed) {
       adcint_pos = hit->GetRawAdcHitPos().GetSampleInt();
       adcint_neg = hit->GetRawAdcHitNeg().GetSampleInt();
+      badcraw_pos = badcraw_neg = kTRUE;
     } else {
       adcint_pos = hit->GetRawAdcHitPos().GetPulseIntRaw()-fPosPed[index];
       adcint_neg = hit->GetRawAdcHitNeg().GetPulseIntRaw()-fNegPed[index];
+      badcraw_pos = badcraw_neg = kTRUE;
     }
     if (adcint_pos >= fADCDiagCut) {
       ((THcSignalHit*) frPosADCHits->ConstructedAt(nrPosADCHits))->Set(padnum, adcint_pos);
