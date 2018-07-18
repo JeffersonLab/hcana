@@ -7,6 +7,7 @@ hhodo_num_planes = 4
 hhodo_plane_names = "1x 1y 2x 2y"
 hhodo_AdcTimeWindowMin = 0., 0., 0., 0.
 hhodo_AdcTimeWindowMax = 3200., 3200., 3200., 3200.
+hhodo_adc_mode = 0 # Standard ADC
 
 hcal_num_layers = 4
 
@@ -50,6 +51,8 @@ shodo_plane_names = "1x 1y 2x 2y"
 
 shodo_AdcTimeWindowMin = 0., 0., 0., 0.
 shodo_AdcTimeWindowMax = 3200., 3200., 3200., 3200.
+
+shodo_adc_mode = 0 # Standard ADC
 
 scal_num_layers = 4
 
