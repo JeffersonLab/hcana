@@ -83,7 +83,7 @@ set_target_properties(${LIBNAME} PROPERTIES
   )
 
 install(TARGETS ${LIBNAME}
-  EXPORT ${PROJECT_NAME_LC}-exports
+  EXPORT ${MAIN_PROJECT_NAME_LC}-exports
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -92,7 +92,7 @@ install(FILES ${allheaders} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 #----------------------------------------------------------------------------
 # libHallCDict
-root_generate_dictionary(${LIBNAME} ${headers}
+build_root_dictionary(${LIBNAME} ${headers}
   TARGETS ${LIBNAME}
   LINKDEF ${linkdef}
   )

@@ -5,7 +5,7 @@ project(hcana VERSION 0.90 LANGUAGES CXX)
 option(HCANA_BUILTIN_PODD "Use built-in Podd submodule (default: YES)" ON)
 
 #----------------------------------------------------------------------------
-# Use Podd modules and utility functions
+# Set up Podd and ROOT dependencies
 if(HCANA_BUILTIN_PODD)
   set(CMAKE_MODULE_PATH
     ${PROJECT_SOURCE_DIR}/podd/cmake/Modules
@@ -14,9 +14,15 @@ if(HCANA_BUILTIN_PODD)
   include(PoddCMakeEnv)
   find_package(ROOT 5.10 REQUIRED)
 else()
-  # This will automatically set up ROOT
+  # Find Podd and register it as a dependency
+  # This will also automatically set up ROOT
   find_package(Podd 1.6 REQUIRED)
+  include(PoddCMakeEnv)
+  config_add_dependency(Podd 1.6)
 endif()
+
+# Register ROOT dependency - it's in our public interface
+config_add_dependency(ROOT 5.10)
 
 #----------------------------------------------------------------------------
 # Set up the compiler flags
@@ -27,7 +33,7 @@ report_build_info()
 #----------------------------------------------------------------------------
 # Install in GNU-style directory layout
 include(GNUInstallDirs)
-set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME_LC})
+set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/${MAIN_PROJECT_NAME_LC})
 
 #----------------------------------------------------------------------------
 # Directories in which we build things
@@ -35,11 +41,4 @@ if(HCANA_BUILTIN_PODD)
   add_subdirectory(podd)
 endif()
 add_subdirectory(src)
-
-#----------------------------------------------------------------------------
-# Install and export targets defined in the subdirectories
-install(EXPORT ${PROJECT_NAME_LC}-exports
- FILE ${PROJECT_NAME}Targets.cmake
- NAMESPACE ${PROJECT_NAME}::
- DESTINATION ${INSTALL_CONFIGDIR}
- )
+add_subdirectory(cmake)
