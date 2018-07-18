@@ -103,9 +103,9 @@ void THcInterface::PrintLogo( Bool_t lite )
      Printf("  *            W E L C O M E  to  the            *");
      Printf("  *          H A L L C ++  A N A L Y Z E R       *");
      Printf("  *                                              *");
-     Printf("  *  hcana release %10s %18s *",HC_VERSION,HC_DATE);
-     Printf("  *  PODD release  %10s %18s *",HA_VERSION,HA_DATE);
-     Printf("  *  ROOT            %8s %18s *",root_version,root_date);
+     Printf("  *  hcana release %12s %16s *",HC_VERSION,HC_DATE);
+     Printf("  *  PODD release %13s %16s *",HA_VERSION,HA_DATE);
+     Printf("  *  ROOT            %10s %16s *",root_version,root_date);
      Printf("  *                                              *");
      Printf("  *            For information visit             *");
      Printf("  *      http://hallcweb.jlab.org/hcana/docs/    *");
