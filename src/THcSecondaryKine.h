@@ -12,6 +12,7 @@
 #include "TLorentzVector.h"
 #include "TString.h"
 
+class THcPrimaryKine;
 class THcHallCSpectrometer;
 typedef TLorentzVector FourVect;
 

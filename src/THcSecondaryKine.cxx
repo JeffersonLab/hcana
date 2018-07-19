@@ -4,8 +4,8 @@
 \brief Class for the Calculate kinematics of scattering of the secondary (hadron) particle.
 */
 
-#include "THcPrimaryKine.h"
 #include "THcSecondaryKine.h"
+#include "THcPrimaryKine.h"
 #include "THcHallCSpectrometer.h"
 #include "THcGlobals.h"
 #include "THcParmList.h"
