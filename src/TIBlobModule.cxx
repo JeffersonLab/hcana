@@ -1,12 +1,11 @@
-/////////////////////////////////////////////////////////////////////
-//
-//   TIBlob
-//   author Stephen Wood
-//
-//   Decoder module to pull information out of the TI blob that
-//   read in each ROC.
-//
-/////////////////////////////////////////////////////////////////////
+/**
+   \class TIBlobModule
+   \ingroup Decoders
+
+   \brief Decoder module to pull information out of the TI blob that is read in each ROC.
+
+   The TI blob is identified by a bank with the tag 4.
+*/
 
 #include "TIBlobModule.h"
 #include "THaSlotData.h"

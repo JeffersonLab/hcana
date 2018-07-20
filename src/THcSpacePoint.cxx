@@ -1,7 +1,7 @@
 /** \class THcSpacePoint
     \ingroup DetSupport
 
- Class representing a single hit DC
+    \brief Class representing a single hit DC
 
 */
 

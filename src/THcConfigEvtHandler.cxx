@@ -1,19 +1,24 @@
 /** \class THcConfigEvtHandler
-    \ingroup base
+    \ingroup Base
 
-  Event handler for Hall C prestart config event.  Type 125
+    \brief Analyze Hall C Configuration events.  (Event type 125).
 
-  To use as a plugin with your own modifications, you can do this in
-  your analysis script
+    Hall C Configuration events contain information such as FADC250
+    thresholds, mode settings, window settings, pulse mode settings, etc.
+    or CAEN1190 window and resolution settings.
 
-  gHaEvtHandlers->Add (new THcConfigEvtHandler("hallcpre","for evtype 125"));
+    To analyze these events, add
 
-  As config data is found, Hall C parameters will be created to hold the configuration
-  data.
+      gHaEvtHandlers->Add (new THcConfigEvtHandler("hallcpre","for evtype 125"));
 
-  All the configuation data can also be printed out with the PrintConfig method
+    to the analysis script.  The first argument ("hallcpre") is an arbitrary
+    name that will be used to construct THcParmList type parameters with names
+    of the form ghallcpre_*.  These parameters hold the configuration information
+    that is found in the events.
 
-\author Stephen Wood (saw@jlab.org)
+    All the configuation data can also be printed out with the PrintConfig method
+
+    \author Stephen Wood (saw@jlab.org)
 */
 
 #include "THcConfigEvtHandler.h"

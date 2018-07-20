@@ -1,8 +1,11 @@
-////////////////////////////////////////////////////////////////////
-//
-//   FADC250 scalers
-//
-/////////////////////////////////////////////////////////////////////
+/**
+   \class Scaler9250
+   \ingroup Decoders
+
+   \brief Decoder module to read the FADC250 scalers.
+
+   These scalers are identified by a bank with the tag 9250.
+*/
 
 #include "Scaler9250.h"
 

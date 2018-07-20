@@ -158,7 +158,6 @@ THcScintillatorPlane::~THcScintillatorPlane()
 //______________________________________________________________________________
 THaAnalysisObject::EStatus THcScintillatorPlane::Init( const TDatime& date )
 {
-  // Extra initialization for scintillator plane: set up DataDest map
 
   // cout << "THcScintillatorPlane::Init called " << GetName() << endl;
 
@@ -383,7 +382,9 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 //_____________________________________________________________________________
 Int_t THcScintillatorPlane::DefineVariables( EMode mode )
 {
-  // Initialize global variables and lookup table for decoder
+  /**
+    Initialize global variables for histograms and Root tree
+  */
 
   // cout << "THcScintillatorPlane::DefineVariables called " << GetName() << endl;
 

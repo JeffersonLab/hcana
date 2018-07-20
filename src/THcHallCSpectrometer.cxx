@@ -1,52 +1,81 @@
-/** \class THcHallCSpectrometer
-    \ingroup Base
+/**
+   \class THcHallCSpectrometer
+   \ingroup Apparatuses
 
-\brief A standard Hall C spectrometer apparatus
+   \brief A standard Hall C spectrometer apparatus
+    
+   The usual name of this object is either "H", "P", "S"
+   for HMS, suPerHMS, or SOS respectively
 
- Uses the standard optics polynomials to trace back to target
+   Defines the functions FindVertices() and TrackCalc(), which are common
+   to the HMS, SHMS and SOS.
 
- Contains no standard detectors.  All detectors must be added.
+   FindVertices() transports all the tracks in focal plane transport coordinates to
+   the target using the method CalculateTargetQuantities() which uses the standard
+   optics polynomials.  The tracks are then rotated to the LAB coordinate system
+   where +Z points to beam dump, +Y is up, and +X is beam left.  The Golden track
+   is then selected using one of the methods BestTrackSimple(),
+   BestTrackUsingPrune(), BestTrackUsingScin(), depending on parameter settings.
 
- The usual name of this object is either "H", "S", "P"
- for HMS, SOS, or suPerHMS respectively
+   \author S. A. Wood
 
- In method ReadDatabase  calls the THaSpectrometer::SetCentralAngles(th_geo,ph_geo,bend_down)
-  bend_down is flag that should equal kFALSE for Hall C spectrometers
-  th_geo and ph_geo in degrees.
-  Define the LAB coordinate system so the +Z points to beam dump, +Y is up, +X is beam left
-  th_geo is rotation about the Y axis in XZ plane to coordinates X',Y=Y',Z'
-  After th_geo rotation, ph_geo rotation is about the X' axis in the  Y'Z' plane.
-  Calls THaAnalysisObject::GeoToSph to calculate the spherical angles. th_sph and ph_sph
-  th_sph is rotation about the Y axis in XZ plane to coordinates X',Y=Y',Z
-  After th_sph rotation, ph_sph rotation is about the original Z axis
-  In Lab coordinate system:
-       X = r*sin(th_geo)*cos(ph_geo)          X = r*sin(th_sph)*cos(ph_sph)
-       Y = r*sin(ph_geo)                      Y = r*sin(th_sph)*sin(ph_sph)
-       Z = r*cos(th_geo)*cos(ph_geo)          Z = r*cos(th_sph)
+   \fn THcHallCSpectrometer::ReadDatabase( const TDatime& date )
+   \brief Loads parameters to characterize a Hall C spectrometer.
+
+   \fn THcHallCSpectrometer::EnforcePruneLimits()
+   \brief Enforce minimum values for the prune cuts
+
+   \fn THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
+   \brief Reconstruct target coordinates.
+
+   \fn THcHallCSpectrometer::CalculateTargetQuantities(THaTrack* track,Double_t& xtar,Double_t&  xptar,Double_t& ytar,Double_t& yptar,Double_t& delta)
+   \brief Transport focal plane track to target.
+
+   \fn THcHallCSpectrometer::BestTrackSimple()
+   \brief Choose best track based on Chisq.
+
+   \fn THcHallCSpectrometer::BestTrackUsingScin()
+   \brief Choose best track using closeness to scintillator hits.
+
+   \fn THcHallCSpectrometer::BestTrackUsingPrune()
+   \brief Choose best track after pruning.
+
+*/
+
+/*
+  THESE comments need to be reviewed.
+
+ th_geo is rotation about the Y axis in XZ plane to coordinates X',Y=Y',Z'
+ After th_geo rotation, ph_geo rotation is about the X' axis in the  Y'Z' plane.
+
+
+ Calls THaAnalysisObject::GeoToSph to calculate the spherical angles. th_sph and ph_sph
+ th_sph is rotation about the Y axis in XZ plane to coordinates X',Y=Y',Z
+ After th_sph rotation, ph_sph rotation is about the original Z axis
+ In Lab coordinate system:
+
+      X = r*sin(th_geo)*cos(ph_geo)         X = r*sin(th_sph)*cos(ph_sph)
+      Y = r*sin(ph_geo)                     Y = r*sin(th_sph)*sin(ph_sph)
+      Z = r*cos(th_geo)*cos(ph_geo)         Z = r*cos(th_sph)
 
       cos(th_sph) = cos(th_geo)*cos(ph_geo)
       cos(ph_sph) = sin(th_geo)*cos(ph_geo)/sqrt(1-cos^2(th_geo)*cos^2(ph_geo))
 
-      GeoToSph is coded so that 
-       1) negative th_geo and ph_geo = 0 returns th_sph=abs(th_geo) and ph_sph =180
-       2) positive th_geo and ph_geo = 0 returns th_sph=th_geo and ph_sph =0
+ GeoToSph is coded so that 
+ 1. negative th_geo and ph_geo = 0 returns th_sph=abs(th_geo) and ph_sph =180
+ 2. positive th_geo and ph_geo = 0 returns th_sph=th_geo and ph_sph =0
 
-   Using the spherical angles, the TRotation fToLabRot and inverse fToTraRot are calculated
-    fToLabRot is rotation matrix from the spectrometer TRANSPORT system to Lab system
-     TRANSPORT coordinates are +X_tra points vertically down, +Z_tra is along the central ray and +Y_tra = ZxX
-     For ph_sph = 0   X_lab = Y_tra*cos(th_sph) + Z_tra*sin(th_sph)
-                      Y_lab = -X_tra
-                      Z_lab = -Y_tra*sin(th_sph) + Z_tra*cos(th_sph)
-     For ph_sph = 180 X_lab = Y_tra*cos(th_sph) - Z_tra*sin(th_sph)
-                      Y_lab = -X_tra
-                      Z_lab = Y_tra*sin(th_sph) + Z_tra*cos(th_sph)
+ Using the spherical angles, the TRotation fToLabRot and inverse fToTraRot are calculated
+ fToLabRot is rotation matrix from the spectrometer TRANSPORT system to Lab system
+ TRANSPORT coordinates are +X_tra points vertically down, +Z_tra is along the central ray and +Y_tra = ZxX
 
+      For ph_sph = 0    X_lab =  Y_tra*cos(th_sph) + Z_tra*sin(th_sph)
+                        Y_lab = -X_tra
+                        Z_lab = -Y_tra*sin(th_sph) + Z_tra*cos(th_sph)
+      For ph_sph = 180  X_lab =  Y_tra*cos(th_sph) - Z_tra*sin(th_sph)
+                        Y_lab = -X_tra
+                        Z_lab =  Y_tra*sin(th_sph) + Z_tra*cos(th_sph)
 
-                      
-
-  
-
-\author S. A. Wood
 
 */
 //////////////////////////////////////////////////////////////////////////
@@ -149,6 +178,19 @@ void THcHallCSpectrometer::InitializeReconstruction()
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
 {
+  /**
+     Loads parameters including the
+     angle settings of the spectrometer, various offsets, and the name
+     of the file containing the hut to target transformation polynomials.
+     Also loads parameters to control best track selection.
+
+     Reads the hut to target transformation polynomial coefficients for
+     use by CalculateTargetQuantities().
+
+     Calls SetCentralAngles(th_geo,ph_geo,bend_down)
+     where bend_down is a flag that should equal kFALSE for Hall C
+     spectrometers.  th_geo and ph_geo are in degrees.
+  */
 
   static const char* const here = "THcHallCSpectrometer::ReadDatabase";
 
@@ -335,7 +377,6 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
 //_____________________________________________________________________________
 void THcHallCSpectrometer::EnforcePruneLimits()
 {
-  // Enforce minimum values for the prune cuts
 
   fPruneXp      = TMath::Max( 0.08, fPruneXp);
   fPruneYp      = TMath::Max( 0.04, fPruneYp);
@@ -351,11 +392,17 @@ void THcHallCSpectrometer::EnforcePruneLimits()
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 {
-  // Reconstruct target coordinates for all tracks found in the focal plane.
+  /** 
+      Reconstruct target coordinates for all tracks found in the focal plane.
 
-  // In Hall A, this is passed off to the tracking detectors.
-  // In Hall C, we do the target traceback here since the traceback should
-  // not depend on which tracking detectors are used.
+      In Hall A, this is passed off to the tracking detectors.
+  
+      In Hall C, we do the target traceback here since the traceback should
+      not depend on which tracking detectors are used.
+
+      Select the best track.
+
+  */
 
   fNtracks = tracks.GetLast()+1;
 
@@ -393,49 +440,57 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 //
 void THcHallCSpectrometer::CalculateTargetQuantities(THaTrack* track,Double_t& xtar,Double_t&  xptar,Double_t& ytar,Double_t& yptar,Double_t& delta) 
 {
-    Double_t hut[5];
-    Double_t hut_rot[5];
+  /**
+     Transport a track in the the focal plane coordinate system to the
+     target using the reconstruction matrix elements.
 
-    hut[0] = track->GetX()/100.0 + fZTrueFocus*track->GetTheta() + fDetOffset_x;//m
-    hut[1] = track->GetTheta() + fAngOffset_x;//radians
-    hut[2] = track->GetY()/100.0 + fZTrueFocus*track->GetPhi() + fDetOffset_y;//m
-    hut[3] = track->GetPhi() + fAngOffset_y;//radians
+     If Xsatcorr is 2000, apply a specific correction to delta for
+     saturation effects.
+  */
 
-    hut[4] = xtar/100.0;
+  Double_t hut[5];
+  Double_t hut_rot[5];
 
-    // Retrieve the focal plane coordnates
-    // Do the transpormation
-    // Stuff results into track
-    hut_rot[0] = hut[0];
-    hut_rot[1] = hut[1] + hut[0]*fAngSlope_x;
-    hut_rot[2] = hut[2];
-    hut_rot[3] = hut[3] + hut[2]*fAngSlope_y;
-    hut_rot[4] = hut[4];
+  hut[0] = track->GetX()/100.0 + fZTrueFocus*track->GetTheta() + fDetOffset_x;//m
+  hut[1] = track->GetTheta() + fAngOffset_x;//radians
+  hut[2] = track->GetY()/100.0 + fZTrueFocus*track->GetPhi() + fDetOffset_y;//m
+  hut[3] = track->GetPhi() + fAngOffset_y;//radians
 
-    // Compute COSY sums
-    Double_t sum[4];
+  hut[4] = xtar/100.0;
+
+  // Retrieve the focal plane coordnates
+  // Do the transformation
+  // Stuff results into track
+  hut_rot[0] = hut[0];
+  hut_rot[1] = hut[1] + hut[0]*fAngSlope_x;
+  hut_rot[2] = hut[2];
+  hut_rot[3] = hut[3] + hut[2]*fAngSlope_y;
+  hut_rot[4] = hut[4];
+
+  // Compute COSY sums
+  Double_t sum[4];
+  for(Int_t k=0;k<4;k++) {
+    sum[k] = 0.0;
+  }
+  for(Int_t iterm=0;iterm<fNReconTerms;iterm++) {
+    Double_t term=1.0;
+    for(Int_t j=0;j<5;j++) {
+      if(fReconTerms[iterm].Exp[j]!=0) {
+	term *= pow(hut_rot[j],fReconTerms[iterm].Exp[j]);
+      }
+    }
     for(Int_t k=0;k<4;k++) {
-      sum[k] = 0.0;
+      sum[k] += term*fReconTerms[iterm].Coeff[k];
     }
-    for(Int_t iterm=0;iterm<fNReconTerms;iterm++) {
-      Double_t term=1.0;
-      for(Int_t j=0;j<5;j++) {
-	if(fReconTerms[iterm].Exp[j]!=0) {
-	  term *= pow(hut_rot[j],fReconTerms[iterm].Exp[j]);
-	}
-      }
-      for(Int_t k=0;k<4;k++) {
-	sum[k] += term*fReconTerms[iterm].Coeff[k];
-      }
-    }
-    xptar=sum[0] + fPhiOffset;
-    ytar=sum[1];
-    yptar=sum[2] + fThetaOffset;
-    delta=sum[3] + fDeltaOffset;
-     if (fSatCorr == 2000) {
-      Double_t p0corr = 0.82825*fPcentral-1.223  ;    
-      delta = delta + p0corr*xptar/100.;
-    }
+  }
+  xptar=sum[0] + fPhiOffset;
+  ytar=sum[1];
+  yptar=sum[2] + fThetaOffset;
+  delta=sum[3] + fDeltaOffset;
+  if (fSatCorr == 2000) {
+    Double_t p0corr = 0.82825*fPcentral-1.223  ;    
+    delta = delta + p0corr*xptar/100.;
+  }
 }
 //
 //_____________________________________________________________________________
@@ -461,6 +516,10 @@ Int_t THcHallCSpectrometer::TrackCalc()
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::BestTrackSimple()
 {
+  /**
+     Choose the track with the lowest tracking fitting Chisq to be
+     the "best track"
+  */
 
   if( GetTrSorting() )   fTracks->Sort();
 
@@ -477,6 +536,13 @@ Int_t THcHallCSpectrometer::BestTrackSimple()
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::BestTrackUsingScin()
 {
+  /**
+     Select as best track the track closest to a S2Y hit.  If there
+     are no S2Y hits, select the track closest to a S2X hit.
+
+     Also reject tracks if they fail dEdx, beta, or calorimeter energy cuts.
+  */
+
   Double_t chi2Min;
 
   if( fNtracks > 0 ) {
@@ -628,7 +694,13 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
 //_____________________________________________________________________________
 Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 {
-
+  /**
+     Select as best track the track with the lowest Chisq after pruning
+     tracks that don't meet various criteria such as xptar, yptar, ytar
+     delta, beta, degrees of freedom (of track fit), difference between
+     measured beta and beta from p, chisq of beta fit, focal plane time
+     and number of PMT hit.
+  */
 
   Int_t nGood;
   Double_t chi2Min;

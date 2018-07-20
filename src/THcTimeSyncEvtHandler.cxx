@@ -1,23 +1,31 @@
 /** \class THcTimeSyncEvtHandler
-    \ingroup base
+    \ingroup Base
 
-  Event handler for to check syncronization of 4ns clock times
-  recorded by the TIs and the FADCs.
+    \brief Event handler to check TI and FADC synchronization.
 
-  To use as a plugin, add to the analysis script:
+    Check syncronization of 4ns clock times recorded by the TIs and the FADCs.
+    Also can be used to detect CAEN1190 TDC syncronization problems and
+    write out a new coda file that corrects the synchronization.  (These
+    TDC synchronization problems were occuring in the spring of 2018.)
 
-  THcTimeSyncEvtHandler *timesync = new THcTimeSyncEvtHandler("timesync","ADC/TI Time synchrnoziation"));
-  timesync->AddEvtType(1);
-  timesync->AddEvtType(2);
-  ...
-  gHaEvtHandlers->Add(timesync);
+    This event handler is typically not used in normal anlysis scripts.  It is
+    used with custom to check suspect runs and write synchronization corrected
+    data files.
 
-  Assumes that all FADCs are in banks with the tag 250 and all
-  TIblob banks are tag 4.  And that these banks are contained
-  without further structure in ROC banks.  Also asssumes that the
-  only banks containing banks are ROC banks.
+    To use as a plugin, add to the analysis script:
 
-\author Stephen Wood (saw@jlab.org)
+    THcTimeSyncEvtHandler *timesync = new THcTimeSyncEvtHandler("timesync","ADC/TI Time synchrnoziation"));
+    timesync->AddEvtType(1);
+    timesync->AddEvtType(2);
+    ...
+    gHaEvtHandlers->Add(timesync);
+
+    Assumes that all FADCs are in banks with the tag 250 and all
+    TIblob banks are tag 4.  And that these banks are contained
+    without further structure in ROC banks.  Also asssumes that the
+    only banks containing banks are ROC banks.
+
+    \author Stephen Wood (saw@jlab.org)
 */
 /* This version will deal with bad run coin_all_03302.dat.
 

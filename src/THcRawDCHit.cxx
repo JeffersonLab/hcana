@@ -1,8 +1,8 @@
 /** \class  THcRawDCHit
     \ingroup DetSupport
 
- Class representing for drift chamber wire (or other device with
-   a single multihit TDC channel per detector element
+    \brief Class representing for drift chamber wire (or other device with
+    a single multihit TDC channel per detector element
 
 */
 

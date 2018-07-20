@@ -1,4 +1,10 @@
-/////////////////////////////////////////////////////////////////////////
+/**
+   \class THcExtTarCor
+   \ingroup PhysMods
+
+   \brief Extended target corrections physics module.
+
+*/
 
 #include "THcExtTarCor.h"
 #include "THaVertexModule.h"
