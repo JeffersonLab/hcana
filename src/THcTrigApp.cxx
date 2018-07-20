@@ -1,6 +1,6 @@
 /**
 \class THcTrigApp
-\ingroup Base
+\ingroup Apparatuses
 
 \brief A mock spectrometer to hold all trigger related data.
 

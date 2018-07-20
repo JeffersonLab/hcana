@@ -1,15 +1,19 @@
-// Author : Buddhini Waidyawansa
-// Date : 23-01-2014
-//Author : Burcu Duran - Melanie Rehfuss (2017)
+/**
+   \class THcRasterRawHit
+   \ingroup DetSupport
 
+   \brief Class representing a single raw hit for the raster.
+
+   Contains the X, Y raster voltage signals and sync signals
+   
+   \author Buddhini Waidyawansa (January 2014)
+   \author Burcu Duran, Melanie Rehfuss (2017)
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // THcRasterRawHit                                                           //
 //                                                                           //
-// Class representing a single raw hit for the raster                        //
-//                                                                           //
-// Contains the X, Y raster voltage signals and sync signals                 //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 

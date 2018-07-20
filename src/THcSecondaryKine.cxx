@@ -1,5 +1,5 @@
 /** \class THcSecondaryKine
-    \ingroup Physics
+    \ingroup PhysMods
 
 \brief Class for the Calculate kinematics of scattering of the secondary (hadron) particle.
 */

@@ -1,13 +1,13 @@
 /** \class THcRaster
-    \ingroup DetSupport
+    \ingroup Detectors
 
-  A class to 
- the fast raster signals.
-  Measures the two magnet currents which are proportional to horizontal and
-  vertical beam position
+    \brief Detector class for fast raster.
 
-\author Buddhini Waidyawansa 
-\author Burcu Duran - Melanie Rehfuss (2017)
+    Measures the two magnet currents which are proportional to horizontal and
+    vertical beam position
+
+    \author Buddhini Waidyawansa 
+    \author Burcu Duran - Melanie Rehfuss (2017)
 
 */
 #include "TMath.h"

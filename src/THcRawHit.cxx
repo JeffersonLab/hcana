@@ -1,9 +1,9 @@
 /** \class THcRawHit
     \ingroup DetSupport
 
- Abstract class for a single raw hit
+    \brief Base class detector specific raw hit that go into hit lists
 
- Contains plane, counter and at least one data value
+    Contains plane, counter and at least one data value
 
 */
 

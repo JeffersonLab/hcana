@@ -1,6 +1,6 @@
 /**
 \class THcDummySpectrometer
-\ingroup Base
+\ingroup Apparatuses
 
 \brief A dummy spectrometer apparatus for testing detectors.
 

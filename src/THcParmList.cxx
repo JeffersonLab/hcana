@@ -18,6 +18,24 @@ to retrieve a set of parameters from the list.
 
 An instance of THaTextvars is created to hold the string parameters.
 
+\fn THcParmList::Load( const char* fname, Int_t RunNumber )
+\brief Load the parameter cache by reading a CTP style parameter file.
+
+\fn THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
+\brief Retrieve parameter values from the parameter cache.
+
+\fn THcParmList::GetArray(const char* attr, Int_t* array, Int_t size)
+\brief  Read in a set of Int_t's in to a C-style array.
+
+\fn THcParmList::GetArray(const char* attr, Double_t* array, Int_t size)
+\brief Read in a set of Double_t's in to a vector.
+
+\fn THcParmList::ReadArray(const char* attrC, T* array, Int_t size)
+\brief Copy values from parameter store to array.
+
+\fn THcParmList::PrintFull( Option_t* option )
+\brief Print all the numeric parameter desciptions and value and text parameters.
+
 */
 
 #define INCLUDESTR "#include"
@@ -59,8 +77,7 @@ inline static bool IsComment( const string& s, string::size_type pos )
 void THcParmList::Load( const char* fname, Int_t RunNumber )
 {
   /**
-\brief Load the parameter cache by reading a CTP style parameter file.  Most
-parameter files used in the ENGINE should work.
+Most parameter files used in the ENGINE should work.
 
 A line in the file of the form
 ~~~
@@ -498,9 +515,6 @@ The ENGINE CTP support parameter "blocks" which were marked with
 Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
 {
   /**
-
-\brief Retrieve parameter values from the parameter cache.
-
 The following example loads several parameters held in the `gHcParms`
 parameter cache into scalar variables or arrays.
 ~~~
@@ -609,19 +623,11 @@ zero), then there will be no error if the parameter is missing.
 //_____________________________________________________________________________
 Int_t THcParmList::GetArray(const char* attr, Int_t* array, Int_t size)
 {
-  /**
-  \brief  Read in a set of Int_t's in to a C-style array.
-  */
-
   return ReadArray(attr,array,size);
 }
 //_____________________________________________________________________________
 Int_t THcParmList::GetArray(const char* attr, Double_t* array, Int_t size)
 {
-  /**
-  \brief Read in a set of Double_t's in to a vector.
-  */
-
   return ReadArray(attr,array,size);
 }
 
@@ -630,8 +636,7 @@ template<class T>
 Int_t THcParmList::ReadArray(const char* attrC, T* array, Int_t size)
 {
   /**
-  \brief Copy values from parameter store to array.
-  No resizing is done, so only 'size' elements may be stored.
+     No resizing is done, so only 'size' elements may be stored.
   */
 
   Int_t cnt=0;
@@ -671,8 +676,6 @@ Int_t THcParmList::ReadArray(const char* attrC, T* array, Int_t size)
 //_____________________________________________________________________________
 void THcParmList::PrintFull( Option_t* option ) const
 {
-  /** \brief Print all the numeric parameter desciptions and value and text parameters.
-  */
   THaVarList::PrintFull(option);
   TextList->Print();
 }

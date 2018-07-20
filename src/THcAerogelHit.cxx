@@ -1,14 +1,11 @@
 /** \class THcAerogelHit
     \ingroup DetSupport
 
-Raw Aerogel Hit Info
-Inherits from THcRawHodoHit
+    \brief Raw Aerogel Hit Info
 
- Contains plane, counter and pos/neg adc
+    Inherits from THcRawHodoHit
 
-
-
-
+    Contains plane, counter and pos/neg adc
 
 */
 #include "THcAerogelHit.h"

@@ -1,6 +1,7 @@
 /** \class THcDCLookupTTDConv
     \ingroup DetSupport
 
+    \brief Drift time to distance conversion via lookup table.
 
 */
 #include "THcDCLookupTTDConv.h"

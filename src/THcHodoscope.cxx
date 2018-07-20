@@ -70,13 +70,15 @@ THcHodoscope::THcHodoscope( ) :
 //_____________________________________________________________________________
 void THcHodoscope::Setup(const char* name, const char* description)
 {
+  /**
+     Create the scintillator plane objects for the hodoscope.
+     
+     Uses the Xhodo_num_planes and Xhodo_plane_names to get the number of
+     planes and their names.
 
-  //  static const char* const here = "Setup()";
-  //  static const char* const message =
-  //    "Must construct %s detector with valid name! Object construction failed.";
+     Gets a pointer to the Cherenkov named "cer" ("hgcer" in the case of the SHMS.)
 
-  // cout << "In THcHodoscope::Setup()" << endl;
-  // Base class constructor failed?
+  */     
   if( IsZombie()) return;
 
   // fDebug = 1;  // Keep this at one while we're working on the code
@@ -180,13 +182,6 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
     }
   }
 
-  // Replace with what we need for Hall C
-  //  const DataDest tmp[NDEST] = {
-  //    { &fRTNhit, &fRANhit, fRT, fRT_c, fRA, fRA_p, fRA_c, fROff, fRPed, fRGain },
-  //    { &fLTNhit, &fLANhit, fLT, fLT_c, fLA, fLA_p, fLA_c, fLOff, fLPed, fLGain }
-  //  };
-  //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
-
   fNScinHits     = new Int_t [fNPlanes];
   fGoodPlaneTime = new Bool_t [fNPlanes];
   fNPlaneTime    = new Int_t [fNPlanes];
@@ -215,21 +210,17 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
 //_____________________________________________________________________________
 Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 {
+  /**
+     Read this detector's parameters from the ThcParmlist.
 
-  // Read this detector's parameters from the database file 'fi'.
-  // This function is called by THaDetectorBase::Init() once at the
-  // beginning of the analysis.
-  // 'date' contains the date/time of the run being analyzed.
-
+     This function is called by THaDetectorBase::Init() once at the
+     beginning of the analysis.
+  */
   //  static const char* const here = "ReadDatabase()";
   char prefix[2];
   char parname[100];
 
-  // Read data from database
-  // Pull values from the THcParmList instead of reading a database
-  // file like Hall A does.
-
-  // Will need to determine which spectrometer in order to construct
+  // Determine which spectrometer in order to construct
   // the parameter names (e.g. hscin_1x_nr vs. sscin_1x_nr)
 
   prefix[0]=tolower(GetApparatus()->GetName()[0]);
@@ -537,7 +528,9 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 //_____________________________________________________________________________
 Int_t THcHodoscope::DefineVariables( EMode mode )
 {
-  // Initialize global variables and lookup table for decoder
+  /**
+    Initialize global variables for histograms and Root tree
+  */
   // cout << "THcHodoscope::DefineVariables called " << GetName() << endl;
   if( mode == kDefine && fIsSetup ) return kOK;
   fIsSetup = ( mode == kDefine );
@@ -1554,11 +1547,9 @@ void THcHodoscope::TrackEffTest(void)
 //
 void THcHodoscope::OriginalTrackEffTest(void)
 {
-  //-----------------------------------------------------------------------
-  //
-  //   Trnslation of h_track_tests.f file for tracking efficiency
-  //
-  //-----------------------------------------------------------------------
+  /**
+      Translation of h_track_tests.f file for tracking efficiency
+  */
 
   //************************now look at some hodoscope tests
   //  *second, we move the scintillators.  here we use scintillator cuts to see

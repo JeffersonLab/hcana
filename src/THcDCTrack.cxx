@@ -1,7 +1,7 @@
 /** \class THcDCTrack
     \ingroup DetSupport
 
- Class representing a track found from linking DC Space points
+    \brief Class representing a track found from linking DC Space points
 
 */
 

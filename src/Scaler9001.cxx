@@ -1,9 +1,11 @@
-////////////////////////////////////////////////////////////////////
-//
-//   TI scalers
-//     Identified by a 9001 bank
-//
-/////////////////////////////////////////////////////////////////////
+/**
+   \class Scaler9001
+   \ingroup Decoders
+
+   \brief Decoder module to retrieve the TI scalers.
+
+   These scalers are identified by a bank with the tag 9001.
+*/
 
 #include "Scaler9001.h"
 

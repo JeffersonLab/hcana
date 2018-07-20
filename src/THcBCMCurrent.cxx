@@ -1,5 +1,9 @@
-/*
+/**
+   \class THcBCMCurrent
+   \ingroup PhysMods
   
+   \brief Read BCM current from scalers and compare to thresholds
+
   This physics module does:
   - Read average BCM beam current values from scaler parameter file.
   - Write the values into bcm#.AvgCurrent for each event  

@@ -1,7 +1,7 @@
 /** \class THcShowerPlane
-    \group DetSupport
+    \ingroup DetSupport
 
-One plane of shower blocks with side readout
+    \brief One plane of shower blocks with side readout
 
 */
 

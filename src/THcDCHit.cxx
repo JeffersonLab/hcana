@@ -1,7 +1,7 @@
 /** \class THcDCHit
     \ingroup DetSupport
 
-Drift chamber wire hit info
+    \brief Drift chamber wire hit info
 
 */
 #include "THcDCHit.h"

@@ -1,4 +1,11 @@
-//*-- Author :    Mark Jones, March 2018
+/**
+   \class THcReactionPoint
+   \ingroup PhysMods
+
+   \brief Calculate vertex coordinates.
+
+   \author Mark Jones
+*/
 
 #include "THcReactionPoint.h"
 #include "THaSpectrometer.h"

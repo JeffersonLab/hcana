@@ -1,5 +1,5 @@
 /** \class THcPrimaryKine
-    \ingroup Physics
+    \ingroup PhysMods
 
 \brief Class for the Calculate kinematics of scattering of the primary (beam) particle.
 These are usually the electron kinematics.

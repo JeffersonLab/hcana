@@ -1,7 +1,7 @@
 /** \class THcHodoHit
     \ingroup DetSupport
 
- Class representing a single hit for the Hodoscopes
+    \brief Class representing a single hit for the Hodoscopes
 
 */
 #include "THcHodoHit.h"
