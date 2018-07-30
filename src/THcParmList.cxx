@@ -241,20 +241,30 @@ The ENGINE CTP support parameter "blocks" which were marked with
     // If RunNumber>0 and first line we encounter is not a run range, need to
     // print an error
     if(RunNumber>0) {
-      if(line.find_first_not_of("0123456789-")==string::npos) { // Interpret as runnum range
-	if( (pos=line.find_first_of("-")) != string::npos) {
-	  Int_t RangeStart=atoi(line.substr(0,pos).c_str());
-	  Int_t RangeEnd=atoi(line.substr(pos+1,string::npos).c_str());
-	  if(RunNumber >= RangeStart && RunNumber <= RangeEnd) {
-	    InRunRange = 1;
-	  } else {
-	    InRunRange = 0;
-	  }
-	} else {		// A single number.  Run
-	  if(atoi(line.c_str()) == RunNumber) {
-	    InRunRange = 1;
-	  } else {
-	    InRunRange = 0;
+      if(line.find_first_not_of("0123456789-,")==string::npos) { // Interpret as runnum range
+	// Interpret line as a list of comma separated run numbers or ranges
+	TString runnums(line.c_str());
+	TObjArray *runnumarr = runnums.Tokenize(",");
+	Int_t nranges=runnumarr->GetLast()+1;
+
+	InRunRange = 0;
+	Int_t ind;
+	for(Int_t i=0;i<nranges;i++) {
+	  TString runstr = ((TObjString *)runnumarr->At(i))->GetString();
+	  if(runstr.IsDec()) {	// A single run number
+	    if(RunNumber == runstr.Atoi()) {
+	      InRunRange = 1;
+	      break;
+	    }
+	  } else if ((ind=runstr.First('-'))>=0) {		// A run range
+	    TString start=runstr(0,ind);
+	    TString end=runstr(ind+1,runstr.Length());
+	    if(start.IsDec() && end.IsDec()) {
+	      if((RunNumber >= start.Atoi()) && (RunNumber <= end.Atoi())) {
+		InRunRange = 1;
+		break;
+	      }
+	    }
 	  }
 	}
 	continue;		// Skip to next line
