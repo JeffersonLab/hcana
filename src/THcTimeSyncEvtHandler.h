@@ -33,7 +33,7 @@ public:
   virtual void SetBadROC(Int_t roc) {fBadROC = roc;}
   virtual void SetResync(Bool_t b) {fResync = b;}
   virtual void SetBadSyncSizeTrigger(Int_t sizetrigger) {fBadSyncSizeTrigger = sizetrigger;}
-
+  virtual Int_t AllTdcsPresent(UInt_t *bank);
 private:
 
   virtual void InitStats();
@@ -51,6 +51,8 @@ private:
   Bool_t fResync;		// If true, stop correcting events on sync
   Int_t fBadSyncSizeTrigger;
   Bool_t fLastEventWasSync;	// True when last event was sync event
+  Bool_t fFirstTdcCheck;
+  UInt_t fTdcMask;		  // Bit Pattern of TDC in ROC being checked
 
   Decoder::THaCodaFile* fCodaOut; // The CODA output file
   Int_t handle;

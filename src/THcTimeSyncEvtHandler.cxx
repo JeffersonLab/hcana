@@ -168,9 +168,12 @@ Int_t THcTimeSyncEvtHandler::Analyze(THaEvData *evdata)
 	  if(fSlippage) {
 	    pslippedbank = p-2;
 	    //	    cout << banklen << " " << pslippedbank[0] << endl;
+	    if(AllTdcsPresent(pslippedbank) && (banklen > fBadSyncSizeTrigger)) {
+	      cout << "Slippage detected at event " << evdata->GetEvNum() << " with size " << banklen << " but not corrected" << endl;
+	    }
 	  } else {
-	    if(banklen > fBadSyncSizeTrigger) {
-	      cout << "Slippage enabled at event " << evdata->GetEvNum() << endl;
+	    if(AllTdcsPresent(p-2) && (banklen > fBadSyncSizeTrigger)) {
+	      cout << "Slippage enabled at event " << evdata->GetEvNum() << " with size " << banklen << endl;
 	      fSlippage = 1;
 	    }
 	  }
@@ -502,6 +505,7 @@ THaAnalysisObject::EStatus THcTimeSyncEvtHandler::Init(const TDatime& date)
   }
 
   fFirstTime = kTRUE;
+  fFirstTdcCheck = kTRUE;
   fMasterRoc = -1;
   fNEvents = 0;
   CrateTimeMap.clear();
@@ -544,6 +548,48 @@ Int_t THcTimeSyncEvtHandler::SetRewriteFile(const char *filename) {
   }
   return(0);
 }
+Int_t THcTimeSyncEvtHandler::AllTdcsPresent(UInt_t *bank) {
+  /**
+     Check that all the 1190 TDCs that should be present are there.
 
+     Return codes:
+       0: All TDCs present
+       1: TDCs missing at high end of crate
+       2: TDCs missing at low end of crate
+       3: Other arrangement of missing 
+  */
+  UInt_t headermask=0;
+  UInt_t trailermask=0;
 
+  UInt_t *p=bank;
+  Int_t banklen = *p;
+  p++;			// Header word
+  while(p++ < bank+banklen) {
+    if((*p & 0xf8000000) == 0x40000000) {
+      headermask |= (1<<(*p&0x1f));
+    } else if ((*p & 0xf8000000) == 0x80000000) {
+      trailermask |= (1<<(*p&0x1f));
+    }
+  }
+
+  if(fFirstTdcCheck) {
+    fFirstTdcCheck=kFALSE;
+    fTdcMask = headermask | trailermask;
+    return(0);			// All TDC present by definition
+  } else {
+    if((fTdcMask == headermask) && (fTdcMask == trailermask)) {
+      return(0);
+    } else {
+      cout << hex << "Header mask " << headermask << "  Trailer mask " << trailermask << dec << endl;
+      cout << "TDC1190 Bank" << endl;
+      for(Int_t i=0;i<=banklen;i++) {
+	if(i%5 == 0) cout<<endl<<dec<<i<<": ";
+	cout << hex << setw(10) << bank[i];
+      }
+      cout << dec << endl;
+      return(1);		// Just return this for now
+    }
+  }
+}
+  
 ClassImp(THcTimeSyncEvtHandler)
