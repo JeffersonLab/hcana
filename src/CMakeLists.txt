@@ -89,6 +89,7 @@ install(TARGETS ${LIBNAME}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   )
 install(FILES ${allheaders} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY nlohmann DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 #----------------------------------------------------------------------------
 # libHallCDict

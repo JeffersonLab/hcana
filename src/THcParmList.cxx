@@ -25,7 +25,7 @@ An instance of THaTextvars is created to hold the string parameters.
 #include <iomanip>
 
 #include "TBufferJSON.h"
-#include "json.hpp"
+#include "nlohmann/json.hpp"
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "TSystem.h"
