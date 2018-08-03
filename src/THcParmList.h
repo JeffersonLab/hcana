@@ -35,6 +35,8 @@ public:
 
   virtual void PrintFull(Option_t *opt="") const;
 
+  std::string  PrintJSON(int run_number = 0) const;
+
   const char* GetString(const std::string& name) const {
     return(TextList->Get(name, 0));
   }

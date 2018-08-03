@@ -22,6 +22,10 @@ An instance of THaTextvars is created to hold the string parameters.
 
 #define INCLUDESTR "#include"
 
+#include <iomanip>
+
+#include "TBufferJSON.h"
+#include "json.hpp"
 #include "TObjArray.h"
 #include "TObjString.h"
 #include "TSystem.h"
@@ -669,6 +673,36 @@ Int_t THcParmList::ReadArray(const char* attrC, T* array, Int_t size)
 }
 
 //_____________________________________________________________________________
+
+std::string THcParmList::PrintJSON(int run_number ) const {
+  TIter next(this);
+  nlohmann::json j;
+  while( THaVar* obj = (THaVar*) next() ) {
+
+    if( obj->IsBasic() )  {
+      if( obj->IsArray() )  {
+        if( obj->GetLen() == 1 ) {
+          j[obj->GetName()] = obj->GetValue();
+        } else {
+          j[obj->GetName()] = obj->GetValues();
+        }
+      } else {
+        obj->Print();
+      }
+    } else { 
+      obj->Print();
+    }
+  }
+  nlohmann::json jrun;
+  jrun[std::to_string(run_number)] = j;
+  //std::cout << j.dump(2) << "\n";
+  // write prettified JSON to another file
+  std::ofstream o("pretty.json");
+  o << std::setw(4) << jrun << std::endl;
+  return jrun.dump();
+}
+
+
 void THcParmList::PrintFull( Option_t* option ) const
 {
   /** \brief Print all the numeric parameter desciptions and value and text parameters.
