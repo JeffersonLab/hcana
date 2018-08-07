@@ -15,7 +15,7 @@
 #include "THcRaster.h"
 #include "THaEvData.h"
 #include "THaDetMap.h"
-
+#include "THcAnalyzer.h"
 
 #include "THcParmList.h"
 #include "THcGlobals.h"
@@ -55,6 +55,18 @@ THcRaster::THcRaster( const char* name, const char* description,
   fYA_pos = 0;
   fXB_pos = 0;
   fYB_pos = 0;
+  BPMXA_raw = 0;
+  BPMYA_raw = 0;
+  BPMXB_raw = 0;
+  BPMYB_raw = 0;
+  BPMXC_raw = 0;
+  BPMYC_raw = 0;
+  BPMXA_pos = 0;
+  BPMYA_pos = 0;
+  BPMXB_pos = 0;
+  BPMYB_pos = 0;
+  BPMXC_pos = 0;
+  BPMYC_pos = 0;
   fFrCalMom = 0;
   fFrXA_ADCperCM = 1.0;
   fFrYA_ADCperCM = 1.0;
@@ -101,7 +113,7 @@ THcRaster::~THcRaster()
 
 THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
 {
-  //cout << "THcRaster::Init()" << endl;
+  //cout << "In THcRaster::Init()" << endl;
 
   char EngineDID[] = "xRASTER";
   EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
@@ -129,6 +141,8 @@ THaAnalysisObject::EStatus THcRaster::Init( const TDatime& date )
 Int_t THcRaster::ReadDatabase( const TDatime& date )
 
 {
+
+  //cout << "THcRaster::ReadDatabase()" << endl;
 
   // Read parameters such as calibration factor, of this detector from the database.
   //cout << "THcRaster::ReadDatabase()" << endl;
@@ -161,15 +175,43 @@ Int_t THcRaster::ReadDatabase( const TDatime& date )
     {"beam_xp", &fgbeam_xpoff, kDouble,0,1},
     {"beam_y", &fgbeam_yoff, kDouble,0,1},
     {"beam_yp", &fgbeam_ypoff, kDouble,0,1},
+    {"bpmxa_slope", &fgbpmxa_slope, kDouble,0,1},
+    {"bpmxa_off", &fgbpmxa_off, kDouble,0,1},
+    {"bpmxb_slope", &fgbpmxb_slope, kDouble,0,1},
+    {"bpmxb_off", &fgbpmxb_off, kDouble,0,1},
+    {"bpmxc_slope", &fgbpmxc_slope, kDouble,0,1},
+    {"bpmxc_off", &fgbpmxc_off, kDouble,0,1},
+    {"bpmya_slope", &fgbpmya_slope, kDouble,0,1},
+    {"bpmya_off", &fgbpmya_off, kDouble,0,1},
+    {"bpmyb_slope", &fgbpmyb_slope, kDouble,0,1},
+    {"bpmyb_off", &fgbpmyb_off, kDouble,0,1},
+    {"bpmyc_slope", &fgbpmyc_slope, kDouble,0,1},
+    {"bpmyc_off", &fgbpmyc_off, kDouble,0,1},
+    {"bpma_zpos", &fgbpma_zpos, kDouble,0,1},
+    {"bpmb_zpos", &fgbpmb_zpos, kDouble,0,1},
+    {"bpmc_zpos", &fgbpmc_zpos, kDouble,0,1},
     {"usefr", &fgusefr, kInt,0,1},
     {0}
   };
 
-  // Default offsets to zero
+  // Default offsets to zero and slopes to +/- 1
   fgbeam_xoff = 0.0;
   fgbeam_xpoff = 0.0;
   fgbeam_yoff = 0.0;
   fgbeam_ypoff = 0.0;
+  //
+  fgbpmxa_off = 0.0;
+  fgbpmxa_slope = -1.0;
+  fgbpmxb_off = 0.0;
+  fgbpmxb_slope = -1.0;
+  fgbpmxc_off = 0.0;
+  fgbpmxc_slope = -1.0;
+  fgbpmya_off = 0.0;
+  fgbpmya_slope = 1.0;
+  fgbpmyb_off = 0.0;
+  fgbpmyb_slope = 1.0;
+  fgbpmyc_off = 0.0;
+  fgbpmyc_slope = 1.0;
   fgusefr = 0;
  
   
@@ -177,6 +219,9 @@ Int_t THcRaster::ReadDatabase( const TDatime& date )
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
   frPosAdcPulseIntRaw  = new TClonesArray("THcSignalHit", 4);
+
+  THcAnalyzer *analyzer = dynamic_cast<THcAnalyzer*>(THcAnalyzer::GetInstance());
+  fEpicsHandler = analyzer->GetEpicsEvtHandler();
 
   return kOK;
 
@@ -245,6 +290,7 @@ void THcRaster::AccumulatePedestals(TClonesArray* rawhits)
   ! channels, gives sigma of 100 channels, so check for diff>130.
   !
   */
+  //cout << "THcRaster::AccumulatePedestels()" << endl;
 
   Int_t nrawhits = rawhits->GetLast()+1;
 
@@ -298,6 +344,7 @@ void THcRaster::CalculatePedestals( )
        endif
      endif
   */
+    //cout << "THcRaster::CalculatePedestels()" << endl;
   
     fFrYA_ADC_zero_offset = fPedADC[0]/ fNPedestalEvents;
     fFrXA_ADC_zero_offset = fPedADC[1]/ fNPedestalEvents;
@@ -312,7 +359,7 @@ void THcRaster::CalculatePedestals( )
 Int_t THcRaster::Decode( const THaEvData& evdata )
 {
 
-  
+  //cout << "THcRaster::Decode()" << endl;
   // Get the Hall C style hitlist (fRawHitList) for this event
 
   fNhits = DecodeToHitList(evdata);
@@ -350,7 +397,6 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
      ihit++;
   }
 
-
    for(Int_t ielem = 0; ielem < frPosAdcPulseIntRaw->GetEntries(); ielem++) {
        Int_t    nraster        = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetPaddleNumber() - 1;
         Double_t pulseIntRaw  = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
@@ -360,26 +406,42 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
         if (nraster ==3) FRXB_rawadc = pulseIntRaw;
    }
 
-
-
+   if (fEpicsHandler) {
+           if (fEpicsHandler->IsLoaded("IPM3H07A.XRAW")){
+            BPMXA_raw = atof(fEpicsHandler->GetString("IPM3H07A.XRAW"));
+           }
+           if (fEpicsHandler->IsLoaded("IPM3H07A.YRAW")){
+            BPMYA_raw = atof(fEpicsHandler->GetString("IPM3H07A.YRAW"));
+           }
+           if (fEpicsHandler->IsLoaded("IPM3H07B.XRAW")){
+            BPMXB_raw = atof(fEpicsHandler->GetString("IPM3H07B.XRAW"));
+           }
+           if (fEpicsHandler->IsLoaded("IPM3H07B.YRAW")){
+            BPMYB_raw = atof(fEpicsHandler->GetString("IPM3H07B.YRAW"));
+           }
+           if (fEpicsHandler->IsLoaded("IPM3H07C.XRAW")){
+            BPMXC_raw = atof(fEpicsHandler->GetString("IPM3H07C.XRAW"));
+           }
+           if (fEpicsHandler->IsLoaded("IPM3H07C.YRAW")){
+            BPMYC_raw = atof(fEpicsHandler->GetString("IPM3H07C.YRAW"));
+           }
+   }
 
   return 0;
 
 }
 
-
-
-
-
 //_____________________________________________________________________________
-Int_t THcRaster::Process( ){
+Int_t THcRaster::Process(){
+
+  //cout << "In THcRaster::Process()" << endl;
 
   Double_t fgpBeam = 0.001;
   DBRequest list[] = {
     {"gpbeam", &fgpBeam, kDouble, 0, 1},
     {0}
   };
-gHcParms->LoadParmValues(list);
+  gHcParms->LoadParmValues(list);
   /*
     calculate raster position from ADC value.
     From ENGINE/g_analyze_misc.f -
@@ -388,6 +450,12 @@ gHcParms->LoadParmValues(list);
     gfry_adc = gfry_raw_adc - gfry_adc_ped
   */
 
+  //std::cout << "Beam energy = " << fgpBeam << std::endl;
+  //std::cout << "Raster Calibration Momentum = " << fFrCalMom << std::endl;
+  //std::cout << "Raster X calibration per cm = " << fFrXA_ADCperCM << std::endl;
+  //std::cout << "Raster Y calibration per cm = " << fFrYA_ADCperCM << std::endl;
+  //std::cout << "Raster Offsets: " << "XA = " << fFrXA_ADC_zero_offset << " YA = " << fFrYA_ADC_zero_offset<< std::endl;
+  //std::cout << "Raster Offsets: " << "XB = " << fFrXB_ADC_zero_offset << " YB = " << fFrYB_ADC_zero_offset<< std::endl;
   // calculate the raster currents
   fXA_ADC =  FRXA_rawadc-fFrXA_ADC_zero_offset;
   fYA_ADC =  FRYA_rawadc-fFrYA_ADC_zero_offset;
@@ -407,24 +475,96 @@ gHcParms->LoadParmValues(list);
   fXB_pos = (fXB_ADC/fFrXB_ADCperCM)*(fFrCalMom/fgpBeam);
   fYB_pos = (-1.)*(fYB_ADC/fFrYB_ADCperCM)*(fFrCalMom/fgpBeam);
 
-  // std::cout<<" X = "<<fXpos<<" Y = "<<fYpos<<std::endl;
+  //cout << "BPMXA_raw = " << BPMXA_raw << endl;
+  //cout << "BPMYA_raw = " << BPMYA_raw << endl;
+  //cout << "BPMXB_raw = " << BPMXB_raw << endl;
+  //cout << "BPMYB_raw = " << BPMYB_raw << endl;
+  //cout << "BPMXC_raw = " << BPMXC_raw << endl;
+  //cout << "BPMYC_raw = " << BPMYC_raw << endl;
 
+  Bool_t checkBPM = (BPMXA_raw == 0) && (BPMYA_raw == 0) && (BPMXB_raw == 0) &&
+	  		(BPMYB_raw == 0) && (BPMXC_raw ==0) && (BPMYC_raw == 0);
+  //cout << "BPM's working? " << checkBPM << endl;
 
-  Double_t tt;
-  Double_t tp;
-  if(fgusefr != 0) {
-    fPosition[1].SetXYZ((-1.)*(fXA_pos+fgbeam_xoff), fYA_pos+fgbeam_yoff, 0.0);
-    tt = (-1)*(fXA_pos/fgfrx_dist+fgbeam_xpoff);
-    tp = fYA_pos/fgfry_dist+fgbeam_ypoff;
+  // Factor of 0.1 is to convert from mm to cm
+  // BPM's are typically calibrated in mm, whereas the standard distances are in cm
+  // in the analyzer.
+  //
+  BPMXA_pos = 0.1*(fgbpmxa_slope*BPMXA_raw + fgbpmxa_off);
+  BPMXB_pos = 0.1*(fgbpmxb_slope*BPMXB_raw + fgbpmxb_off);
+  BPMXC_pos = 0.1*(fgbpmxc_slope*BPMXC_raw + fgbpmxc_off);
+  BPMYA_pos = 0.1*(fgbpmya_slope*BPMYA_raw + fgbpmya_off);
+  BPMYB_pos = 0.1*(fgbpmyb_slope*BPMYB_raw + fgbpmyb_off);
+  BPMYC_pos = 0.1*(fgbpmyc_slope*BPMYC_raw + fgbpmyc_off);
+  
+  //cout << "BPMXA_pos = " << BPMXA_pos << endl;
+  //cout << "BPMYA_pos = " << BPMYA_pos << endl;
+  //cout << "BPMXB_pos = " << BPMXB_pos << endl;
+  //cout << "BPMYB_pos = " << BPMYB_pos << endl;
+  //cout << "BPMXC_pos = " << BPMXC_pos << endl;
+  //cout << "BPMYC_pos = " << BPMYC_pos << endl;
 
-  } else {			// Just use fixed beam position and angle
-    fPosition[0].SetXYZ((-1.)*fgbeam_xoff, fgbeam_yoff, 0.0);
-    tt = (-1)*fgbeam_xpoff;
-    tp = fgbeam_ypoff;
+  // Calculate position and direction at target from BPM values
+  // Use the A and B BPM information, as these are located upstream of the raster
+  // magnets.  If there is no BPM information available, assume zero offsets.
+  //
+  if (!checkBPM){
+  	fgbeam_xoff = BPMXA_pos - (BPMXA_pos - BPMXB_pos)/(fgbpma_zpos - fgbpmb_zpos)*fgbpma_zpos;
+  	fgbeam_yoff = BPMYA_pos - (BPMYA_pos - BPMYB_pos)/(fgbpma_zpos - fgbpmb_zpos)*fgbpma_zpos;
+	fgbeam_xpoff = (fgbeam_xoff-BPMXA_pos)/fgbpma_zpos;
+	fgbeam_ypoff = (fgbeam_yoff-BPMYA_pos)/fgbpma_zpos;
+  }else{
+	  fgbeam_xoff = 0;
+	  fgbeam_yoff = 0;
+	  fgbeam_xpoff = 0;
+	  fgbeam_ypoff = 0;
   }
-  fDirection.SetXYZ(tt, tp ,1.0); // Set arbitrarily to avoid run time warnings
-  fDirection *= 1.0/TMath::Sqrt(1.0+tt*tt+tp*tp);
 
+  //std::cout<<" XA = "<<fXA_pos<<" YA = "<<fYA_pos<<std::endl;
+  //std::cout<<" XB = "<<fXB_pos<<" YB = "<<fYB_pos<<std::endl;
+
+  //std::cout << "Use FR? " << fgusefr << std::endl;
+
+  //std::cout << "BPM X at Z=0 -> " << fgbeam_xoff << std::endl;
+  //std::cout << "BPM Y at Z=0 -> " << fgbeam_yoff << std::endl;
+  //std::cout << "BPM XP at Z=0 -> " << fgbeam_xpoff << std::endl;
+  //std::cout << "BPM YP at Z=0 -> " << fgbeam_ypoff << std::endl;
+
+  //std::cout << "Raster X distance = " << fgfrx_dist << std::endl;
+  //std::cout << "Raster Y distance = " << fgfry_dist << std::endl;
+
+  Double_t tt = fgbeam_xpoff;
+  Double_t tp = fgbeam_ypoff;
+
+  if(fgusefr != 0) {
+    fPosition[0].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
+    fPosition[1].SetXYZ((-1.)*(fXA_pos)+fgbeam_xoff, fYA_pos+fgbeam_yoff, 0.0);
+    fPosition[2].SetXYZ((-1.)*(fXB_pos)+fgbeam_xoff, fYB_pos+fgbeam_yoff, 0.0);
+    tt = (-1.)*fXA_pos/fgfrx_dist+fgbeam_xpoff;
+    tp = fYA_pos/fgfry_dist+fgbeam_ypoff;
+    fDirection.SetXYZ(tt, tp ,1.0); // Set arbitrarily to avoid run time warnings
+    fDirection *= 1.0/TMath::Sqrt(1.0+tt*tt+tp*tp);
+  } else {			// Just use fixed beam position and angle
+    fPosition[0].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
+    fPosition[1].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
+    fPosition[2].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
+    fDirection.SetXYZ(tt, tp ,1.0); // Set arbitrarily to avoid run time warnings
+    fDirection *= 1.0/TMath::Sqrt(1.0+tt*tt+tp*tp);
+  }
+  fXA_pos = fPosition[1](0);
+  fYA_pos = fPosition[1](1);
+  fXB_pos = fPosition[2](0);
+  fYB_pos = fPosition[2](1);
+
+  //std::cout<<" Setting fPosition and fDirection ... " << std::endl;
+  //std::cout<< fPosition[0](0) << " " << fPosition[0](1) << " " << fPosition[0](2) << std::endl;
+  //std::cout<< fPosition[1](0) << " " << fPosition[1](1) << " " << fPosition[1](2) << std::endl;
+  //std::cout<< fPosition[2](0) << " " << fPosition[2](1) << " " << fPosition[2](2) << std::endl;
+  //std::cout<< fDirection(0) << " " << fDirection(1) << " " << fDirection(2) << std::endl;
+
+  //std::cout<<" FRXA = "<<fXA_pos<<" FRYA = "<<fYA_pos<<std::endl;
+  //std::cout<<" FRXB = "<<fXB_pos<<" FRYB = "<<fYB_pos<<std::endl;
+  
   return 0;
 }
 
