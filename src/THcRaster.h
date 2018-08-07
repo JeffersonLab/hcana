@@ -17,7 +17,8 @@
 #include "THcDetectorMap.h"
 #include "THcRasterRawHit.h"
 #include "THaCutList.h"
-
+#include "THaOutput.h"
+#include "THaEpicsEvtHandler.h"
 
 class THcRaster : public THaBeamDet, public THcHitList {
 
@@ -40,7 +41,7 @@ class THcRaster : public THaBeamDet, public THcHitList {
   void  InitArrays() { /* do nothing */;}
   void  DeleteArrays() { /* do nothing */;}
  
-  Int_t      Process();
+  Int_t Process();
 
   TVector3 GetPosition()  const { return fPosition[1]; }
   TVector3 GetDirection() const { return fDirection; }
@@ -65,12 +66,39 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Double_t       fgbeam_xpoff; // Beam offsets
   Double_t       fgbeam_yoff; // Beam offsets
   Double_t       fgbeam_ypoff; // Beam offsets
+  Double_t       fgbpmxa_slope; // BPM slope/offsets
+  Double_t       fgbpmxa_off; // BPM slope/offsets
+  Double_t       fgbpmxb_slope; // BPM slope/offsets
+  Double_t       fgbpmxb_off; // BPM slope/offsets
+  Double_t       fgbpmxc_slope; // BPM slope/offsets
+  Double_t       fgbpmxc_off; // BPM slope/offsets
+  Double_t       fgbpmya_slope; // BPM slope/offsets
+  Double_t       fgbpmya_off; // BPM slope/offsets
+  Double_t       fgbpmyb_slope; // BPM slope/offsets
+  Double_t       fgbpmyb_off; // BPM slope/offsets
+  Double_t       fgbpmyc_slope; // BPM slope/offsets
+  Double_t       fgbpmyc_off; // BPM slope/offsets
+  Double_t       fgbpma_zpos; // BPM A z position
+  Double_t       fgbpmb_zpos; // BPM B z position
+  Double_t       fgbpmc_zpos; // BPM C x position
   Int_t          fgusefr;   /* Use Raster for beam position */
 
   Double_t       FRXA_rawadc;  // XA raw ADC
   Double_t       FRYA_rawadc;  // YA raw ADC
   Double_t       FRXB_rawadc;  // XB raw ADC
   Double_t       FRYB_rawadc;  // YB raw ADC
+  Double_t       BPMXA_raw; // BPM A Raw X Position
+  Double_t       BPMYA_raw; // BPM A Raw Y Position
+  Double_t       BPMXB_raw; // BPM B Raw X Position
+  Double_t       BPMYB_raw; // BPM B Raw Y Position
+  Double_t       BPMXC_raw; // BPM C Raw X Position
+  Double_t       BPMYC_raw; // BPM C Raw Y Position
+  Double_t       BPMXA_pos; // BPM A Corrected X Position
+  Double_t       BPMYA_pos; // BPM A Corrected Y Position
+  Double_t       BPMXB_pos; // BPM B Corrected X Position
+  Double_t       BPMYB_pos; // BPM B Corrected Y Position
+  Double_t       BPMXC_pos; // BPM C Corrected X Position
+  Double_t       BPMYC_pos; // BPM C Corrected Y Position
   Double_t       fXA_ADC;     // XA ADC
   Double_t       fYA_ADC;     // YA ADC
   Double_t       fXB_ADC;     // XB ADC
@@ -90,10 +118,11 @@ class THcRaster : public THaBeamDet, public THcHitList {
   //Double_t       fAvgPedADC[4];     // Avergage ADC poedestals
 
   Double_t       fRawPos[2];     // current in Raster ADCs for position
-  TVector3       fPosition[2];   // Beam position at 1st, 2nd BPM or at the target (meters)
+  TVector3       fPosition[3];   // Beam position at 1st, 2nd BPM or at the target (meters)
   TVector3       fDirection;
 
   TClonesArray* frPosAdcPulseIntRaw;
+  THaEpicsEvtHandler* fEpicsHandler;
 
  private:
   Bool_t    fAnalyzePedestals;
