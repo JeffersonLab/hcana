@@ -89,11 +89,12 @@ install(TARGETS ${LIBNAME}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   )
 install(FILES ${allheaders} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(DIRECTORY nlohmann DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+#install(DIRECTORY nlohmann DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 #----------------------------------------------------------------------------
 # libHallCDict
 build_root_dictionary(${LIBNAME} ${headers}
+  INCLUDEDIRS -I${CMAKE_CURRENT_SOURCE_DIR}
   TARGETS ${LIBNAME}
   LINKDEF ${linkdef}
   )
