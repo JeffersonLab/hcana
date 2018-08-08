@@ -8,7 +8,7 @@ set(EXENAME hcana)
 #----------------------------------------------------------------------------
 # Sources and headers
 file(GLOB src "*.cxx")
-file(GLOB allheaders "*.h")
+file(GLOB allheaders RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.h")
 list(REMOVE_ITEM allheaders
   "${CMAKE_CURRENT_SOURCE_DIR}/${LIBNAME}_LinkDef.h"
   )
@@ -94,9 +94,9 @@ install(FILES ${allheaders} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 #----------------------------------------------------------------------------
 # libHallCDict
 build_root_dictionary(${LIBNAME} ${headers}
-  INCLUDEDIRS -I${CMAKE_CURRENT_SOURCE_DIR}
+  INCLUDEDIRS -I${CMAKE_CURRENT_SOURCE_DIR} -I${Podd_DIR}/../../include
   TARGETS ${LIBNAME}
-  LINKDEF ${linkdef}
+  LINKDEF include/HallC_LinkDef.h 
   )
 
 #----------------------------------------------------------------------------
