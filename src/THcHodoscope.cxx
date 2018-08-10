@@ -546,7 +546,10 @@ Int_t THcHodoscope::DefineVariables( EMode mode )
     {"starttime",         "Hodoscope Start Time",                         "fStartTime"},
     {"goodstarttime",     "Hodoscope Good Start Time (logical flag)",                    "fGoodStartTime"},
     {"goodscinhit",       "Hit in fid area",                              "fGoodScinHits"},
-    { 0 }
+    {"TimeHist_Sigma",       "",                              "fTimeHist_Sigma"},
+    {"TimeHist_Peak",       "",                              "fTimeHist_Peak"},
+    {"TimeHist_Hits",       "",                              "fTimeHist_Hits"},
+     { 0 }
   };
   return DefineVarsFromList( vars, mode );
   //  return kOK;
@@ -632,6 +635,9 @@ void THcHodoscope::ClearEvent()
    *  Called by  THcHodoscope::Decode
    *
    */
+  fTimeHist_Sigma=  kBig;
+  fTimeHist_Peak=  kBig;
+  fTimeHist_Hits=  kBig;
 
   fBeta = 0.0;
   fBetaNoTrk = 0.0;
@@ -780,6 +786,9 @@ void THcHodoscope::EstimateFocalPlaneTime()
   Bool_t goodplanetime[fNPlanes];
   Bool_t twogoodtimes[nscinhits];
   Double_t tmin = 0.5*hTime->GetMaximumBin();
+  fTimeHist_Peak=  tmin;
+  fTimeHist_Sigma=  hTime->GetRMS();
+  fTimeHist_Hits=  hTime->Integral();
   for(Int_t ip=0;ip<fNumPlanesBetaCalc;ip++) {
     goodplanetime[ip] = kFALSE;
     Int_t nphits=fPlanes[ip]->GetNScinHits();
