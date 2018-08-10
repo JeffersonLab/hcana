@@ -155,6 +155,9 @@ protected:
   Double_t fFPTimeAll;
   Int_t fNfptimes;
   Bool_t* fPresentP;
+  Double_t fTimeHist_Peak;
+  Double_t fTimeHist_Sigma;
+  Double_t fTimeHist_Hits;
 
   Double_t     fBeta;
 
