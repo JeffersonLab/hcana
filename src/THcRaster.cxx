@@ -193,7 +193,10 @@ Int_t THcRaster::ReadDatabase( const TDatime& date )
     {"usefr", &fgusefr, kInt,0,1},
     {0}
   };
-
+  //
+  fgbpma_zpos = 370.82;
+  fgbpmb_zpos = 224.96 ;// cm
+    fgbpmc_zpos = 129.30 ;// cm
   // Default offsets to zero and slopes to +/- 1
   fgbeam_xoff = 0.0;
   fgbeam_xpoff = 0.0;
