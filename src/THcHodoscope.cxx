@@ -778,6 +778,7 @@ void THcHodoscope::EstimateFocalPlaneTime()
     }
   }
   //
+  //
   ihit = 0;
   Double_t fpTimeSum = 0.0;
   fNfptimes=0;
@@ -827,7 +828,7 @@ void THcHodoscope::EstimateFocalPlaneTime()
       }
       ihit++;
     }
-    fPlanes[ip]->SetFpTime(Plane_fptime_sum/float(Ngood_hits_plane));
+    if (Ngood_hits_plane) fPlanes[ip]->SetFpTime(Plane_fptime_sum/float(Ngood_hits_plane));
     fPlanes[ip]->SetNGoodHits(Ngood_hits_plane);
   }
 
@@ -840,7 +841,8 @@ void THcHodoscope::EstimateFocalPlaneTime()
     fGoodStartTime=kFALSE;
     fFPTimeAll = fStartTime ;
   }
-  //
+    //
+   //
   hTime->Reset();
   //
   if((goodplanetime[0]||goodplanetime[1]) &&(goodplanetime[2]||goodplanetime[3])) {
@@ -943,7 +945,6 @@ void THcHodoscope::EstimateFocalPlaneTime()
     if ((fNumPlanesBetaCalc==4)&&goodplanetime[0]&&goodplanetime[1]&&goodplanetime[2]&&goodplanetime[3]&&fPlanes[0]->GetNGoodHits()==1&&fPlanes[1]->GetNGoodHits()==1&&fPlanes[2]->GetNGoodHits()==1&&fPlanes[3]->GetNGoodHits()==1) fGoodEventTOFCalib=kTRUE;
     if ((fNumPlanesBetaCalc==3)&&goodplanetime[0]&&goodplanetime[1]&&goodplanetime[2]&&fPlanes[0]->GetNGoodHits()==1&&fPlanes[1]->GetNGoodHits()==1&&fPlanes[2]->GetNGoodHits()==1) fGoodEventTOFCalib=kTRUE;
     //
-
     //
   }
 }
@@ -1104,8 +1105,10 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 		  /TMath::Sqrt(TMath::Max(20.0*.020,adc_pos));
 	      } else {
 	        //Double_t tw_corr_pos = fHodoPos_c1[fPIndex]/pow(adcamp_pos/fTdc_Thrs,fHodoPos_c2[fPIndex]) -  fHodoPos_c1[fPIndex]/pow(200./fTdc_Thrs, fHodoPos_c2[fPIndex]);
-		Double_t tw_corr_pos = 1./pow(adcamp_pos/fTdc_Thrs,fHodoPos_c2[fPIndex]) -  1./pow(200./fTdc_Thrs, fHodoPos_c2[fPIndex]);            
-		timep += -tw_corr_pos + fHodo_LCoeff[fPIndex];
+		Double_t tw_corr_pos=0.;
+		pathp=scinLongCoord;
+		if (adcamp_pos>0) tw_corr_pos = 1./pow(adcamp_pos/fTdc_Thrs,fHodoPos_c2[fPIndex]) -  1./pow(200./fTdc_Thrs, fHodoPos_c2[fPIndex]);            
+		timep += -tw_corr_pos + fHodo_LCoeff[fPIndex]+ pathp/fHodoVelFit[fPIndex];
 	      }
 	      fTOFPInfo[ihhit].scin_pos_time = timep;
  	      timep -= zcor;
@@ -1126,9 +1129,10 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 		  + fHodoNegInvAdcAdc[fPIndex]
 		  /TMath::Sqrt(TMath::Max(20.0*.020,adc_neg));
 	      } else {
-		// Double_t tw_corr_neg = fHodoNeg_c1[fPIndex]/pow(adcamp_neg/fTdc_Thrs,fHodoNeg_c2[fPIndex]) -  fHodoNeg_c1[fPIndex]/pow(200./fTdc_Thrs, fHodoNeg_c2[fPIndex]);
-		Double_t tw_corr_neg = 1./pow(adcamp_neg/fTdc_Thrs,fHodoNeg_c2[fPIndex]) -  1./pow(200./fTdc_Thrs, fHodoNeg_c2[fPIndex]);              
-		timen += -tw_corr_neg- 2*fHodoCableFit[fPIndex] + fHodo_LCoeff[fPIndex];
+		pathn=scinLongCoord ;
+		Double_t tw_corr_neg =0 ;
+		if (adcamp_neg >0) tw_corr_neg= 1./pow(adcamp_neg/fTdc_Thrs,fHodoNeg_c2[fPIndex]) -  1./pow(200./fTdc_Thrs, fHodoNeg_c2[fPIndex]);              
+		timen += -tw_corr_neg- 2*fHodoCableFit[fPIndex] + fHodo_LCoeff[fPIndex]- pathn/fHodoVelFit[fPIndex];
 
 	      }
 	      fTOFPInfo[ihhit].scin_neg_time = timen;
@@ -1145,7 +1149,6 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	//-----------------------------------------------------------------------------------------------
       }
       Int_t nhits=ihhit;
-
 
 
       if(0.5*hTime->GetMaximumBin() > 0) {
