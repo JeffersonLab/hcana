@@ -37,6 +37,17 @@ THcExtTarCor::~THcExtTarCor()
 
   DefineVariables( kDelete );
 }
+//_____________________________________________________________________________
+void THcExtTarCor::Clear( Option_t* opt )
+{
+  // Clear all event-by-event variables.
+  
+  THaPhysicsModule::Clear(opt);
+  TrkIfoClear();
+  fDeltaTh = fDeltaDp = fDeltaP = 0.0;
+  fxsieve = kBig;
+  fysieve = kBig;
+}
 
 //_____________________________________________________________________________
 Int_t THcExtTarCor::DefineVariables( EMode mode )
@@ -52,6 +63,8 @@ Int_t THcExtTarCor::DefineVariables( EMode mode )
     { "delta_p",  "Size of momentum correction",    "fDeltaP" },
     { "delta_dp", "Size of delta correction (%)",       "fDeltaDp" },
     { "delta_xptar", "Size of xptar correction (rad)", "fDeltaTh" },
+    { "xsieve", "Golden track vertical position at sieve location (cm)", "fxsieve" },
+    { "ysieve", "Golden track horizontal position at sieve location (cm) (cm)", "fysieve" },
     { 0 }
   };
   DefineVarsFromList( var2, mode );
@@ -119,6 +132,16 @@ Int_t THcExtTarCor::Process( const THaEvData& )
     TVector3 pvect_temp;
     spectro->TransportToLab(theTrack->GetP(),theTrack->GetTTheta(),theTrack->GetTPhi(),pvect_temp);
     theTrack->SetPvect(pvect_temp);
+      if (strcmp(spectro->GetName(),"H")==0) {
+     fxsieve=xtar_new+xptar*168.;
+     fysieve=ytar*100.+yptar*168.;
+    }
+    if (strcmp(spectro->GetName(),"P")==0) {
+      fxsieve=xtar_new+xptar*253.;
+      Double_t delta_per=delta*100;
+      fysieve=ytar*100+yptar*253.-(0.019+40.*.01*0.052)*delta_per+(0.00019+40*.01*.00052)*delta_per*delta_per;
+    }
+        
     }
   }
  // Save results in our TrackInfo
