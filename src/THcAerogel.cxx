@@ -312,6 +312,11 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fRegionsValueMax = fNRegions * 8;
   fRegionValue     = new Double_t[fRegionsValueMax];
 
+  fAdcPosTimeWindowMin = new Double_t [fNelem];
+  fAdcPosTimeWindowMax = new Double_t [fNelem];
+  fAdcNegTimeWindowMin = new Double_t [fNelem];
+  fAdcNegTimeWindowMax = new Double_t [fNelem];
+
   DBRequest list[]={
     {"aero_num_regions",      &fNRegions,         kInt},
     {"aero_red_chi2_min",     &fRedChi2Min,       kDouble},
@@ -326,10 +331,10 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_npe_thresh",       &fNpeThresh,        kDouble},
     ////    {"aero_adcTimeWindowMin", &fAdcTimeWindowMin, kDouble},
     ////    {"aero_adcTimeWindowMax", &fAdcTimeWindowMax, kDouble},
-    {"aero_adcPosTimeWindowMin", &fAdcPosTimeWindowMin, kDouble, 0, 1},
-    {"aero_adcPosTimeWindowMax", &fAdcPosTimeWindowMax, kDouble, 0, 1},
-    {"aero_adcNegTimeWindowMin", &fAdcNegTimeWindowMin, kDouble, 0, 1},
-    {"aero_adcNegTimeWindowMax", &fAdcNegTimeWindowMax, kDouble, 0, 1},
+    {"aero_adcPosTimeWindowMin", fAdcPosTimeWindowMin, kDouble, static_cast<UInt_t>(fNelem), 1},
+    {"aero_adcPosTimeWindowMax", fAdcPosTimeWindowMax, kDouble, static_cast<UInt_t>(fNelem), 1},
+    {"aero_adcNegTimeWindowMin", fAdcNegTimeWindowMin, kDouble, static_cast<UInt_t>(fNelem), 1},
+    {"aero_adcNegTimeWindowMax", fAdcNegTimeWindowMax, kDouble, static_cast<UInt_t>(fNelem), 1},
     {"aero_adc_tdc_offset",   &fAdcTdcOffset,     kDouble, 0, 1},
     {"aero_debug_adc",        &fDebugAdc,         kInt,    0, 1},
     {"aero_six_gev_data",     &fSixGevData,       kInt,    0, 1},
@@ -345,10 +350,14 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_adcrefcut",        &fADC_RefTimeCut,   kInt,    0, 1},
     {0}
   };
-  fAdcPosTimeWindowMin=-1000.;
-  fAdcNegTimeWindowMin=-1000.;
-  fAdcPosTimeWindowMax=1000.;
-  fAdcNegTimeWindowMax=1000.;
+
+  for(Int_t ip=0;ip<fNelem;ip++) {
+   fAdcPosTimeWindowMin[ip] = -1000.;
+   fAdcNegTimeWindowMin[ip] = -1000.;
+   fAdcPosTimeWindowMax[ip] = 1000.;
+   fAdcNegTimeWindowMax[ip] = 1000.;
+  }
+
   fSixGevData = 0; // Set 6 GeV data parameter to false unless set in parameter file
   fDebugAdc   = 0; // Set ADC debug parameter to false unless set in parameter file
   fAdcTdcOffset = 0.0;
@@ -704,7 +713,7 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       Double_t adctdcdiffTime = StartTime-pulseTime;
       Bool_t   errorFlag    = ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(ielem))->GetData();
       ////      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
-      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcPosTimeWindowMin && adctdcdiffTime < fAdcPosTimeWindowMax;
+      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcPosTimeWindowMin[npmt] && adctdcdiffTime < fAdcPosTimeWindowMax[npmt];
 
       // By default, the last hit within the timing cut will be considered "good"
       if (!errorFlag && pulseTimeCut) {
@@ -738,7 +747,7 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       Double_t adctdcdiffTime = StartTime-pulseTime;
       Bool_t   errorFlag    = ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
       ////      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
-      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcNegTimeWindowMin && adctdcdiffTime < fAdcNegTimeWindowMax;
+      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcNegTimeWindowMin[npmt] && adctdcdiffTime < fAdcNegTimeWindowMax[npmt];
 
       // By default, the last hit within the timing cut will be considered "good"
       if (!errorFlag && pulseTimeCut) {
