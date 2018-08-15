@@ -802,8 +802,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     //
     Bool_t badcraw_pos=kFALSE;
     Bool_t badcraw_neg=kFALSE;
-    Int_t adcped_pos=-999;
-    Int_t adcped_neg=-999;
+    Double_t adcped_pos=-999;
+    Double_t adcped_neg=-999;
     Int_t adcmult_pos=0;
     Int_t adcmult_neg=0;
     Int_t adchitused_pos=0;
@@ -846,7 +846,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
      //Loop Here over all hits per event for neg side of plane
      if (good_ielem_negtdc != -1) {
       for (UInt_t ielem=0;ielem<rawNegAdcHit.GetNPulses();ielem++) {
-       	Int_t pulsePed     = rawNegAdcHit.GetPed();
+       	Double_t pulsePed     = rawNegAdcHit.GetPed();
        	Double_t pulseInt     = rawNegAdcHit.GetPulseInt(ielem);
        	Double_t pulseAmp     = rawNegAdcHit.GetPulseAmp(ielem);
 	Double_t pulseTime    = rawNegAdcHit.GetPulseTime(ielem)+fAdcTdcOffset;
@@ -870,7 +870,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       //Loop Here over all hits per event for pos side of plane
       if (good_ielem_postdc != -1) {
      for (UInt_t ielem=0;ielem<rawPosAdcHit.GetNPulses();ielem++) {
-       	Int_t pulsePed     = rawPosAdcHit.GetPed();
+       	Double_t pulsePed     = rawPosAdcHit.GetPed();
        	Double_t pulseInt     = rawPosAdcHit.GetPulseInt(ielem);
        	Double_t pulseAmp     = rawPosAdcHit.GetPulseAmp(ielem);
 	Double_t pulseTime    = rawPosAdcHit.GetPulseTime(ielem)+fAdcTdcOffset;
