@@ -55,6 +55,10 @@ THcRaster::THcRaster( const char* name, const char* description,
   fYA_pos = 0;
   fXB_pos = 0;
   fYB_pos = 0;
+  for (Int_t nt=0;nt<4;nt++) {
+  fXbeam_prev[nt] = 0;
+  fYbeam_prev[nt] = 0;
+  }
   BPMXA_raw = 0;
   BPMYA_raw = 0;
   BPMXB_raw = 0;
@@ -168,7 +172,7 @@ Int_t THcRaster::ReadDatabase( const TDatime& date )
     {"frya_adc_zero_offset",&fFrYA_ADC_zero_offset,kDouble},
     {"frxb_adc_zero_offset",&fFrXB_ADC_zero_offset,kDouble},
     {"fryb_adc_zero_offset",&fFrYB_ADC_zero_offset,kDouble},
-    {"pbeam",&fgpbeam, kDouble},
+    {"pbeam",&fgpbeam, kDouble,0,1},
     {"frx_dist", &fgfrx_dist, kDouble},
     {"fry_dist", &fgfry_dist, kDouble},
     {"beam_x", &fgbeam_xoff, kDouble,0,1},
@@ -193,7 +197,8 @@ Int_t THcRaster::ReadDatabase( const TDatime& date )
     {"usefr", &fgusefr, kInt,0,1},
     {0}
   };
-  //
+  fgpbeam = 0.001;
+ //
   fgbpma_zpos = 370.82;
   fgbpmb_zpos = 224.96 ;// cm
     fgbpmc_zpos = 129.30 ;// cm
@@ -256,9 +261,17 @@ Int_t THcRaster::DefineVariables( EMode mode )
     {"fr_ya",  "Raster YA position",    "fYA_pos"},
     {"fr_xb",  "Raster XB position",    "fXB_pos"},
     {"fr_yb",  "Raster YB position",    "fYB_pos"},
+    {"fr_xbpm_tar",  "X BPM at target (+X is beam right)",    "fXbpm_tar"},
+    {"fr_ybpm_tar",  "Y BPM at target (+Y is up)",    "fYbpm_tar"},
+    {"fr_xbpmA",  "X BPM at BPMA (+X is beam right)",    "fXbpm_A"},
+    {"fr_ybpmA",  "Y BPM at BPMA (+Y is up)",    "fYbpm_A"},
+    {"fr_xbpmB",  "X BPM at BPMB (+X is beam right)",    "fXbpm_B"},
+    {"fr_ybpmB",  "Y BPM at BPMB (+Y is up)",    "fYbpm_B"},
+    {"fr_xbpmC",  "X BPM at BPMC (+X is beam right)",    "fXbpm_C"},
+    {"fr_ybpmC",  "Y BPM at BPMC (+Y is up)",    "fYbpm_C"},
     { 0 }
   };
-
+ 
   return DefineVarsFromList( vars, mode );
 }
 
@@ -439,12 +452,6 @@ Int_t THcRaster::Process(){
 
   //cout << "In THcRaster::Process()" << endl;
 
-  Double_t fgpBeam = 0.001;
-  DBRequest list[] = {
-    {"gpbeam", &fgpBeam, kDouble, 0, 1},
-    {0}
-  };
-  gHcParms->LoadParmValues(list);
   /*
     calculate raster position from ADC value.
     From ENGINE/g_analyze_misc.f -
@@ -453,7 +460,7 @@ Int_t THcRaster::Process(){
     gfry_adc = gfry_raw_adc - gfry_adc_ped
   */
 
-  //std::cout << "Beam energy = " << fgpBeam << std::endl;
+  //std::cout << "Beam energy = " << fgpbeam << std::endl;
   //std::cout << "Raster Calibration Momentum = " << fFrCalMom << std::endl;
   //std::cout << "Raster X calibration per cm = " << fFrXA_ADCperCM << std::endl;
   //std::cout << "Raster Y calibration per cm = " << fFrYA_ADCperCM << std::endl;
@@ -473,17 +480,11 @@ Int_t THcRaster::Process(){
     gfry = (gfry_adc/gfry_adcpercm)*(gfr_cal_mom/ebeam)
   */
 
-  fXA_pos = (fXA_ADC/fFrXA_ADCperCM)*(fFrCalMom/fgpBeam);
-  fYA_pos = (-1.)*(fYA_ADC/fFrYA_ADCperCM)*(fFrCalMom/fgpBeam);
-  fXB_pos = (fXB_ADC/fFrXB_ADCperCM)*(fFrCalMom/fgpBeam);
-  fYB_pos = (-1.)*(fYB_ADC/fFrYB_ADCperCM)*(fFrCalMom/fgpBeam);
+  fXA_pos = (fXA_ADC/fFrXA_ADCperCM)*(fFrCalMom/fgpbeam);
+  fYA_pos = (-1.)*(fYA_ADC/fFrYA_ADCperCM)*(fFrCalMom/fgpbeam);
+  fXB_pos = (fXB_ADC/fFrXB_ADCperCM)*(fFrCalMom/fgpbeam);
+  fYB_pos = (-1.)*(fYB_ADC/fFrYB_ADCperCM)*(fFrCalMom/fgpbeam);
 
-  //cout << "BPMXA_raw = " << BPMXA_raw << endl;
-  //cout << "BPMYA_raw = " << BPMYA_raw << endl;
-  //cout << "BPMXB_raw = " << BPMXB_raw << endl;
-  //cout << "BPMYB_raw = " << BPMYB_raw << endl;
-  //cout << "BPMXC_raw = " << BPMXC_raw << endl;
-  //cout << "BPMYC_raw = " << BPMYC_raw << endl;
 
   Bool_t checkBPM = (BPMXA_raw == 0) && (BPMYA_raw == 0) && (BPMXB_raw == 0) &&
 	  		(BPMYB_raw == 0) && (BPMXC_raw ==0) && (BPMYC_raw == 0);
@@ -508,21 +509,43 @@ Int_t THcRaster::Process(){
   //cout << "BPMYC_pos = " << BPMYC_pos << endl;
 
   // Calculate position and direction at target from BPM values
-  // Use the A and B BPM information, as these are located upstream of the raster
+  // Use the A and C BPM information, as these are located downstream of the raster
   // magnets.  If there is no BPM information available, assume zero offsets.
   //
   if (!checkBPM){
-  	fgbeam_xoff = BPMXA_pos - (BPMXA_pos - BPMXB_pos)/(fgbpma_zpos - fgbpmb_zpos)*fgbpma_zpos;
-  	fgbeam_yoff = BPMYA_pos - (BPMYA_pos - BPMYB_pos)/(fgbpma_zpos - fgbpmb_zpos)*fgbpma_zpos;
+  	fgbeam_xoff = BPMXA_pos - (BPMXA_pos - BPMXC_pos)/(fgbpma_zpos - fgbpmc_zpos)*fgbpma_zpos;
+  	fgbeam_yoff = BPMYA_pos - (BPMYA_pos - BPMYC_pos)/(fgbpma_zpos - fgbpmc_zpos)*fgbpma_zpos;
 	fgbeam_xpoff = (fgbeam_xoff-BPMXA_pos)/fgbpma_zpos;
 	fgbeam_ypoff = (fgbeam_yoff-BPMYA_pos)/fgbpma_zpos;
-  }else{
-	  fgbeam_xoff = 0;
-	  fgbeam_yoff = 0;
+        fXbeam_prev[0]=fgbeam_xoff;
+        fYbeam_prev[0]=fgbeam_yoff;
+        fXbeam_prev[1]=BPMXA_pos;
+        fYbeam_prev[1]=BPMYA_pos;
+        fXbeam_prev[2]=BPMXB_pos;
+        fYbeam_prev[2]=BPMYB_pos;
+        fXbeam_prev[3]=BPMXC_pos;
+        fYbeam_prev[3]=BPMYC_pos;
+ }else{
+	  fgbeam_xoff = fXbeam_prev[0];
+	  fgbeam_yoff = fYbeam_prev[0];
+        BPMXA_pos=fXbeam_prev[1];
+        BPMYA_pos=fYbeam_prev[1];
+        BPMXB_pos=fXbeam_prev[2];
+        BPMYB_pos=fYbeam_prev[2];
+        BPMXC_pos=fXbeam_prev[3];
+        BPMYC_pos=fYbeam_prev[3];
 	  fgbeam_xpoff = 0;
 	  fgbeam_ypoff = 0;
   }
 
+  fXbpm_tar= -fgbeam_xoff; 
+  fYbpm_tar= fgbeam_yoff;
+  fXbpm_A= -fXbeam_prev[1]; 
+  fYbpm_A= fYbeam_prev[1];
+  fXbpm_B= -fXbeam_prev[2]; 
+  fYbpm_B= fYbeam_prev[2];
+  fXbpm_C= -fXbeam_prev[3]; 
+  fYbpm_C= fYbeam_prev[3];
   //std::cout<<" XA = "<<fXA_pos<<" YA = "<<fYA_pos<<std::endl;
   //std::cout<<" XB = "<<fXB_pos<<" YB = "<<fYB_pos<<std::endl;
 
@@ -554,11 +577,12 @@ Int_t THcRaster::Process(){
     fDirection.SetXYZ(tt, tp ,1.0); // Set arbitrarily to avoid run time warnings
     fDirection *= 1.0/TMath::Sqrt(1.0+tt*tt+tp*tp);
   }
+  /*  
   fXA_pos = fPosition[1](0);
   fYA_pos = fPosition[1](1);
   fXB_pos = fPosition[2](0);
   fYB_pos = fPosition[2](1);
-
+  */
   //std::cout<<" Setting fPosition and fDirection ... " << std::endl;
   //std::cout<< fPosition[0](0) << " " << fPosition[0](1) << " " << fPosition[0](2) << std::endl;
   //std::cout<< fPosition[1](0) << " " << fPosition[1](1) << " " << fPosition[1](2) << std::endl;
