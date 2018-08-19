@@ -282,9 +282,31 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   fSelUsingPrune = 0;
   fPhi_lab = 0.;
   fSatCorr=0.;
-  fMispointing_x=0.;
-  fMispointing_y=0.;
+  fMispointing_x=999.;
+  fMispointing_y=999.;
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  //  mispointing in transport system y is horizontal and +x is vertical down
+  if (fMispointing_y == 999.) {
+    if (prefix[0]=='h') {
+       fMispointing_y = 0.1*(0.52-0.012*40.+0.002*40.*40.);
+       if (fTheta_lab < 40) fMispointing_y = 0.1*(0.52-0.012*TMath::Abs(fTheta_lab)+0.002*fTheta_lab*fTheta_lab);
+    }
+    if (prefix[0]=='p') fMispointing_y = 0.1*(-0.6);
+	cout << prefix[0] << " From Formula Mispointing_y = " << fMispointing_y << endl;
+  } else {
+	cout << prefix[0] << " From Parameter Set Mispointing_y = " << fMispointing_y << endl;
+  }
+  if (fMispointing_x == 999.) {
+    if (prefix[0]=='h')  {
+         fMispointing_x = 0.1*(2.37-0.086*50+0.0012*50.*50.);
+         if (fTheta_lab < 50)fMispointing_x = 0.1*(2.37-0.086*TMath::Abs(fTheta_lab)+0.0012*fTheta_lab*fTheta_lab);
+    }
+    if (prefix[0]=='p') fMispointing_x = 0.1*(-1.26);
+	cout << prefix[0] << " From Formula Mispointing_x = " << fMispointing_x << endl;
+  } else {
+	cout << prefix[0] << " From Parameter Set Mispointing_x = " << fMispointing_x << endl;
+  }
+  //
 
   EnforcePruneLimits();
 
