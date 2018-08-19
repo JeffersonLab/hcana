@@ -107,6 +107,16 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Double_t       fYA_pos;     // YA position
   Double_t       fXB_pos;     // XB position
   Double_t       fYB_pos;     // YB position
+  Double_t       fXbpm_tar;     // X BPM at target (+X is beam right)
+  Double_t       fYbpm_tar;     // Y BPM at target  (+Y is up)
+  Double_t       fXbpm_A;     // X BPM at BPMA (+X is beam right)
+  Double_t       fYbpm_A;     // Y BPM at BPMA (+Y is up)
+  Double_t       fXbpm_B;     // X BPM at BPMB (+X is beam right)
+  Double_t       fYbpm_B;     // Y BPM at BPMB (+Y is up)
+  Double_t       fXbpm_C;     // X BPM at BPMC (+X is beam right)
+  Double_t       fYbpm_C;     // Y BPM at BPMC (+Y is up)
+  Double_t       fXbeam_prev[4];     // 
+  Double_t       fYbeam_prev[4];     // 
 
   Double_t       fFrXA_ADC_zero_offset;
   Double_t       fFrYA_ADC_zero_offset;
