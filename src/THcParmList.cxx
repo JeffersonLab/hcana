@@ -257,7 +257,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
     linecount++;
     // If RunNumber>0 and first line we encounter is not a run range, need to
     // print an error
-    if(RunNumber>0) {
+    if(RunNumber>0 && nfiles==1) {
       if(line.find_first_not_of("0123456789-,")==string::npos) { // Interpret as runnum range
 	// Interpret line as a list of comma separated run numbers or ranges
 	TString runnums(line.c_str());
