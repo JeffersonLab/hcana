@@ -38,6 +38,7 @@ THcDriftChamberPlane::THcDriftChamberPlane( const char* name,
   // Normal constructor with name and description
   fHits = new TClonesArray("THcDCHit",100);
   fWires = new TClonesArray("THcDCWire", 100);
+
   fTTDConv = NULL;
 
   fPlaneNum = planenum;
@@ -97,6 +98,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   Double_t DriftMapFirstBin;
   Double_t DriftMapBinSize;
   fUsingTzeroPerWire=0;
+  fUsingSigmaPerWire=0;
   prefix[0]=tolower(GetParent()->GetPrefix()[0]);
   prefix[1]='\0';
   DBRequest list[]={
@@ -104,6 +106,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
     {"drift1stbin", &DriftMapFirstBin, kDouble},
     {"driftbinsz", &DriftMapBinSize, kDouble},
     {"_using_tzero_per_wire", &fUsingTzeroPerWire, kInt,0,1},
+    {"_using_sigma_per_wire", &fUsingSigmaPerWire, kInt,0,1},
     {0}
   };
 
@@ -142,25 +145,35 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
 
   fNSperChan = fParent->GetNSperChan();
 
-  if (fUsingTzeroPerWire==1) {
+
   fTzeroWire = new Double_t [fNWires];
-  DBRequest list3[]={
+  fSigmaWire = new Double_t [fNWires];
+
+
+  if (fUsingTzeroPerWire==1) {
+     DBRequest list3[]={
     {Form("tzero%s",GetName()),fTzeroWire,kDouble,(UInt_t) fNWires},
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list3,prefix);
-    // printf(" using tzero per wire plane = %s  nwires = %d  \n",GetName(),fNWires);
-    //   for (Int_t iw=0;iw < fNWires;iw++) {
-    // 	//	printf("%d  %f ",iw+1,fTzeroWire[iw]) ;
-    // 	if ( iw!=0 && iw%8 == 0) printf("\n") ;
-    // 	}
+
   } else {
-  fTzeroWire = new Double_t [fNWires];
   for (Int_t iw=0;iw < fNWires;iw++) {
     fTzeroWire[iw]=0.0;
     } 
   }
 
+  if (fUsingSigmaPerWire==1) {
+    DBRequest list4[]={
+      {Form("wire_sigma%s",GetName()),fSigmaWire,kDouble,(UInt_t) fNWires},
+      {0}
+    };
+    gHcParms->LoadParmValues((DBRequest*)&list4,prefix);
+  }  else {
+    for (Int_t iw=0;iw < fNWires;iw++) {
+      fSigmaWire[iw]=fSigma;
+    }
+  }
   // Calculate Geometry Constants
   // Do we want to move all this to the Chamber of DC Package leve
   // as that is where these things will be needed?
@@ -207,7 +220,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
 			       + pow(hxpsi*fPsi0+hxchi*hchi0,2)
 			       + pow(hypsi*fPsi0+hychi*hchi0,2) );
   if(z0 < 0.0) hphi0 = -hphi0;
-
+  
   Double_t denom2 = stubxpsi*stubychi - stubxchi*stubypsi;
 
   // Why are there 4, but only 3 used?
@@ -243,10 +256,9 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   for (int i=0; i<nWires; i++) {
     Double_t pos = fPitch*( (fWireOrder==0?(i+1):fNWires-i)
 			    - fCentralWire) - fCenter;
-    new((*fWires)[i]) THcDCWire( i+1, pos , 0.0, fTTDConv);
-    //if( something < 0 ) wire->SetFlag(1);
+    new((*fWires)[i]) THcDCWire( i+1, pos , fTzeroWire[i], fSigmaWire[i], fTTDConv);    //added fTzeroWire/fSigmaWire to be read in as fTOffset --Carlos
   }
-
+  
   THaApparatus* app = GetApparatus();
   const char* nm = "hod";
   if(  !app ||
@@ -255,9 +267,9 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
     Warning(Here(here),"Hodoscope \"%s\" not found. "
 	    "Event-by-event time offsets will NOT be used!!",nm);
   }
-
+  
   return kOK;
-}
+}  
 //_____________________________________________________________________________
 Int_t THcDriftChamberPlane::DefineVariables( EMode mode )
 {
@@ -354,7 +366,8 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       } else if (rawtdc > fTdcWinMax) {
 	// Increment late count
       } else {
-	Double_t time = - rawtdc*fNSperChan + fPlaneTimeZero - fTzeroWire[wireNum-1]; // fNSperChan > 0 for 1877
+	Double_t time = - rawtdc*fNSperChan + fPlaneTimeZero - wire->GetTOffset(); // fNSperChan > 0 for 1877
+	
 	new( (*fHits)[nextHit++] ) THcDCHit(wire, rawnorefcorrtdc,rawtdc, time, this);
 	break;			// Take just the first hit in the time window
       }
