@@ -32,6 +32,7 @@ public:
 
   // Get and Set Functions
   THcDCWire* GetWire() const { return fWire; }
+  Double_t GetWireSigma() const { return fWire->GetSigma(); }
   Int_t    GetWireNum() const { return fWire->GetNum(); }
   Int_t    GetRawTime() const { return fRawTime; }
   Int_t    GetRawNoRefCorrTime() const { return fRawNoRefCorrTime; }

@@ -357,6 +357,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     fReadoutTB[ip] = 0.0;
    }
 
+
   gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
 
   //Set the default plane x,y positions to those of the chamber
@@ -958,7 +959,9 @@ void THcDC::TrackFit()
     		  coords[ihit] = hit->GetCoord();
     	  }
       }
-    }
+
+
+    } //end loop over hits
 
     theDCTrack->SetNFree(theDCTrack->GetNHits() - NUM_FPRAY);
     Double_t chi2 = dummychi2;
@@ -967,11 +970,19 @@ void THcDC::TrackFit()
       TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
     	  TT[irayp] = 0.0;
-    	  for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-    		  TT[irayp] += (coords[ihit]*
-    				  fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])
-					  /pow(fSigma[planes[ihit]],2);
-    	  }
+    	  for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {	
+	    
+	    THcDCHit* hit=theDCTrack->GetHit(ihit);
+	    
+	    TT[irayp] += (coords[ihit]*fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])/pow(hit->GetWireSigma(),2);
+	    if (hit->GetPlaneNum()==5)
+	      {
+		//	cout << "Plane: " << hit->GetPlaneNum() << endl;
+		//cout << "Wire: " <<hit->GetWireNum() << endl;
+		//cout << "Sigma: " << hit->GetWireSigma() << endl;
+	      }
+
+	  } //end hit loop
       }
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
     	  for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
@@ -979,11 +990,16 @@ void THcDC::TrackFit()
     		  if(jrayp<irayp) { // Symmetric
     			  AA[irayp][jrayp] = AA[jrayp][irayp];
     		  } else {
-    			  for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-    				  AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
-    						  fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
-							  pow(fSigma[planes[ihit]],2);
-    			  }
+		    for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+		      
+		      THcDCHit* hit=theDCTrack->GetHit(ihit);
+        
+		      
+		      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
+			fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
+			pow(hit->GetWireSigma(),2);
+
+		    } //end ihit loop
     		  }
     	  }
       }
@@ -1012,12 +1028,17 @@ void THcDC::TrackFit()
       // Compute Chi2 and residuals
       chi2 = 0.0;
       for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-    	  Double_t residual = coords[ihit] - theDCTrack->GetCoord(planes[ihit]);
-    	  theDCTrack->SetResidual(planes[ihit], residual);
+
+	THcDCHit* hit=theDCTrack->GetHit(ihit);
+
+
+	Double_t residual = coords[ihit] - theDCTrack->GetCoord(planes[ihit]);
+	theDCTrack->SetResidual(planes[ihit], residual);
 
   //  	  double track_coord = theDCTrack->GetCoord(planes[ihit]);
 //cout<<planes[ihit]<<"\t"<<track_coord<<"\t"<<coords[ihit]<<"\t"<<residual<<endl;
-    	  chi2 += pow(residual/fSigma[planes[ihit]],2);
+	chi2 += pow(residual/hit->GetWireSigma(),2);
+
       }
 
       theDCTrack->SetVector(dray[0], dray[1], 0.0, dray[2], dray[3]);
@@ -1026,16 +1047,23 @@ void THcDC::TrackFit()
 
       // calculate ray without a plane in track
     for(Int_t ipl_hit=0;ipl_hit < theDCTrack->GetNHits();ipl_hit++) {    
+ 
+
     if(theDCTrack->GetNFree() > 0) {
       TVectorD TT(NUM_FPRAY);
       TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
 	TT[irayp] = 0.0;
 	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+	  
+
+	  THcDCHit* hit=theDCTrack->GetHit(ihit);
+
           if (ihit != ipl_hit) {
 	  TT[irayp] += (coords[ihit]*
 			fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])
-	    /pow(fSigma[planes[ihit]],2);
+	    /pow(hit->GetWireSigma(),2);
+
           }
 	}
       }
@@ -1045,11 +1073,17 @@ void THcDC::TrackFit()
 	  if(jrayp<irayp) { // Symmetric
 	    AA[irayp][jrayp] = AA[jrayp][irayp];
 	  } else {
+
 	    for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+	      
+	      THcDCHit* hit=theDCTrack->GetHit(ihit);
+
+
               if (ihit != ipl_hit) {
 	      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
 		fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
-		pow(fSigma[planes[ihit]],2);
+		pow(hit->GetWireSigma(),2);
+
 	      }
 	    }
 	  }
