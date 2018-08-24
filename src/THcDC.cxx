@@ -357,6 +357,9 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     fReadoutLR[ip] = 0.0;
     fReadoutTB[ip] = 0.0;
    }
+   
+   //Set the default value to zero, in case NOT found in param
+   fFixTdcProblem = 0;
 
   gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
 
