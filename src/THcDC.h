@@ -92,7 +92,7 @@ protected:
   Int_t fdebugtrackprint;
   Int_t fdebugprintdecodeddc;
   Int_t fHMSStyleChambers;
-
+  Int_t fFixTdcProblem;
   Int_t fTDC_RefTimeCut;
 
   UInt_t fNDCTracks;

@@ -307,6 +307,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
 
 
   DBRequest list[]={
+    {"_fix_tdc_problem", &fFixTdcProblem, kInt,0,1},
     {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
     {"dc_wire_velocity",&fWireVelocity,kDouble},
 
@@ -356,6 +357,9 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     fReadoutLR[ip] = 0.0;
     fReadoutTB[ip] = 0.0;
    }
+   
+   //Set the default value to zero, in case NOT found in param
+   fFixTdcProblem = 0;
 
   gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
 
@@ -926,6 +930,7 @@ void THcDC::TrackFit()
   /**
      Primary track fitting routine
   */
+  Double_t sigma;
 
   // Number of ray parameters in focal plane.
   const Int_t raycoeffmap[]={4,5,2,3};
@@ -958,7 +963,9 @@ void THcDC::TrackFit()
     		  coords[ihit] = hit->GetCoord();
     	  }
       }
-    }
+
+
+    } //end loop over hits
 
     theDCTrack->SetNFree(theDCTrack->GetNHits() - NUM_FPRAY);
     Double_t chi2 = dummychi2;
@@ -967,11 +974,32 @@ void THcDC::TrackFit()
       TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
     	  TT[irayp] = 0.0;
-    	  for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-    		  TT[irayp] += (coords[ihit]*
-    				  fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])
-					  /pow(fSigma[planes[ihit]],2);
-    	  }
+    	  for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {	
+	    
+	    //Apply larger Weight for the wire groups that had OUT-OF SYNC ref. time, resulting in bad plane residuals
+	    //1u1[0] (81-96), 1v2[4] (49-64), 2v1[6] (81-96), 2u2[10] (49-64)
+	    //fSigma[planes[ihit]]
+	    THcDCHit* hit=theDCTrack->GetHit(ihit);
+	    Int_t wire_num = hit->GetWireNum();
+	    Int_t plane = hit->GetPlaneNum() - 1;
+	    sigma = fSigma[planes[ihit]];
+	   
+
+	    if(fFixTdcProblem)
+	      {
+		if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+		if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+		if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+		if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+	      }
+
+	    
+	    TT[irayp] += (coords[ihit]*fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])/pow(sigma,2);
+	    //TT[irayp] += (coords[ihit]*fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])/pow(fSigma[planes[ihit]],2);
+
+
+
+	  } //end hit loop
       }
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
     	  for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
@@ -979,11 +1007,27 @@ void THcDC::TrackFit()
     		  if(jrayp<irayp) { // Symmetric
     			  AA[irayp][jrayp] = AA[jrayp][irayp];
     		  } else {
-    			  for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-    				  AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
-    						  fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
-							  pow(fSigma[planes[ihit]],2);
-    			  }
+		    for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+		      
+		      THcDCHit* hit=theDCTrack->GetHit(ihit);
+		      Int_t wire_num = hit->GetWireNum();
+		      Int_t plane = hit->GetPlaneNum() - 1;
+		      sigma = fSigma[planes[ihit]];
+        
+		      if (fFixTdcProblem)
+			{
+			  if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+			  if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+			  if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+			  if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+			}
+        
+		      
+		      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
+			fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
+			pow(sigma,2);
+    			
+		    } //end ihit loop
     		  }
     	  }
       }
@@ -1012,12 +1056,27 @@ void THcDC::TrackFit()
       // Compute Chi2 and residuals
       chi2 = 0.0;
       for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-    	  Double_t residual = coords[ihit] - theDCTrack->GetCoord(planes[ihit]);
-    	  theDCTrack->SetResidual(planes[ihit], residual);
+
+	THcDCHit* hit=theDCTrack->GetHit(ihit);
+	Int_t wire_num = hit->GetWireNum();
+	Int_t plane = hit->GetPlaneNum() - 1;
+	sigma = fSigma[planes[ihit]];
+ 
+	if (fFixTdcProblem)
+	  {
+	    if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+	    if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+	    if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+	    if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+	  }
+
+
+	Double_t residual = coords[ihit] - theDCTrack->GetCoord(planes[ihit]);
+	theDCTrack->SetResidual(planes[ihit], residual);
 
   //  	  double track_coord = theDCTrack->GetCoord(planes[ihit]);
 //cout<<planes[ihit]<<"\t"<<track_coord<<"\t"<<coords[ihit]<<"\t"<<residual<<endl;
-    	  chi2 += pow(residual/fSigma[planes[ihit]],2);
+    	  chi2 += pow(residual/sigma,2);
       }
 
       theDCTrack->SetVector(dray[0], dray[1], 0.0, dray[2], dray[3]);
@@ -1026,16 +1085,33 @@ void THcDC::TrackFit()
 
       // calculate ray without a plane in track
     for(Int_t ipl_hit=0;ipl_hit < theDCTrack->GetNHits();ipl_hit++) {    
+ 
+
     if(theDCTrack->GetNFree() > 0) {
       TVectorD TT(NUM_FPRAY);
       TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
 	TT[irayp] = 0.0;
 	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+	  
+
+	  THcDCHit* hit=theDCTrack->GetHit(ihit);
+	  Int_t wire_num = hit->GetWireNum();
+	  Int_t plane = hit->GetPlaneNum() - 1;
+	  sigma = fSigma[planes[ihit]];
+
+	  if (fFixTdcProblem)
+	    {
+	      if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+	      if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+	      if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+	      if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+	    }
+
           if (ihit != ipl_hit) {
 	  TT[irayp] += (coords[ihit]*
 			fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])
-	    /pow(fSigma[planes[ihit]],2);
+	    /pow(sigma,2);
           }
 	}
       }
@@ -1045,11 +1121,27 @@ void THcDC::TrackFit()
 	  if(jrayp<irayp) { // Symmetric
 	    AA[irayp][jrayp] = AA[jrayp][irayp];
 	  } else {
+
 	    for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+	      
+	      THcDCHit* hit=theDCTrack->GetHit(ihit);
+	      Int_t wire_num = hit->GetWireNum();
+	      Int_t plane = hit->GetPlaneNum() - 1;
+	      sigma = fSigma[planes[ihit]];
+
+	       
+	      if (fFixTdcProblem)
+		{
+		  if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+		  if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+		  if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+		  if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+		}
+
               if (ihit != ipl_hit) {
 	      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
 		fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
-		pow(fSigma[planes[ihit]],2);
+		pow(sigma,2);
 	      }
 	    }
 	  }
