@@ -307,6 +307,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
 
 
   DBRequest list[]={
+    {"_fix_tdc_problem", &fFixTdcProblem, kInt,0,1},
     {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
     {"dc_wire_velocity",&fWireVelocity,kDouble},
 
@@ -979,11 +980,15 @@ void THcDC::TrackFit()
 	    Int_t wire_num = hit->GetWireNum();
 	    Int_t plane = hit->GetPlaneNum() - 1;
 	    sigma = fSigma[planes[ihit]];
+	   
 
-	    if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.6;}
-	    if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.6;}
-	    if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.6;}
-	    if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.6;}
+	    if(fFixTdcProblem)
+	      {
+		if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+		if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+		if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+		if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+	      }
 
 	    
 	    TT[irayp] += (coords[ihit]*fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])/pow(sigma,2);
@@ -1005,13 +1010,15 @@ void THcDC::TrackFit()
 		      Int_t wire_num = hit->GetWireNum();
 		      Int_t plane = hit->GetPlaneNum() - 1;
 		      sigma = fSigma[planes[ihit]];
-		      
-		      if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.6;}
-		      if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.6;}
-		      if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.6;}
-		      if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.6;}
-		      
-		      
+        
+		      if (fFixTdcProblem)
+			{
+			  if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+			  if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+			  if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+			  if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+			}
+        
 		      
 		      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
 			fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
@@ -1051,13 +1058,16 @@ void THcDC::TrackFit()
 	Int_t wire_num = hit->GetWireNum();
 	Int_t plane = hit->GetPlaneNum() - 1;
 	sigma = fSigma[planes[ihit]];
-	
-	if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.6;}
-	if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.6;}
-	if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.6;}
-	if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.6;}
-	
-	
+ 
+	if (fFixTdcProblem)
+	  {
+	    if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+	    if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+	    if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+	    if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+	  }
+
+
 	Double_t residual = coords[ihit] - theDCTrack->GetCoord(planes[ihit]);
 	theDCTrack->SetResidual(planes[ihit], residual);
 
@@ -1086,12 +1096,15 @@ void THcDC::TrackFit()
 	  Int_t wire_num = hit->GetWireNum();
 	  Int_t plane = hit->GetPlaneNum() - 1;
 	  sigma = fSigma[planes[ihit]];
-	  
-	  if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.6;}
-	  if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.6;}
-	  if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.6;}
-	  if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.6;}
-     
+
+	  if (fFixTdcProblem)
+	    {
+	      if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+	      if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+	      if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+	      if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+	    }
+
           if (ihit != ipl_hit) {
 	  TT[irayp] += (coords[ihit]*
 			fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])
@@ -1112,12 +1125,16 @@ void THcDC::TrackFit()
 	      Int_t wire_num = hit->GetWireNum();
 	      Int_t plane = hit->GetPlaneNum() - 1;
 	      sigma = fSigma[planes[ihit]];
-	      
-	      if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.6;}
-	      if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.6;}
-	      if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.6;}
-	      if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.6;}
-	      
+
+	       
+	      if (fFixTdcProblem)
+		{
+		  if(plane == 0 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+		  if(plane == 4 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+		  if(plane == 6 && wire_num>=81 && wire_num<=96) {sigma = 0.06;}
+		  if(plane == 10 && wire_num>=49 && wire_num<=64) {sigma = 0.06;}
+		}
+
               if (ihit != ipl_hit) {
 	      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
 		fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
