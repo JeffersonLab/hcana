@@ -325,7 +325,7 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
     {"_adcNames", &adcNames, kString},  // Names of ADC channels.
     {"_tdcNames", &tdcNames, kString},  // Names of TDC channels.
     {"_tdcoffset", &fTdcOffset, kDouble,0,1},  // Offset of tdc channels
-    {"_adc_tdc_offset", &fTdcOffset, kDouble,0,1},  // Offset of Adc Pulse time (ns)
+    {"_adc_tdc_offset", &fAdcTdcOffset, kDouble,0,1},  // Offset of Adc Pulse time (ns)
     {"_tdcchanperns", &fTdcChanperNS, kDouble,0,1},  // Convert channesl to ns
     {"_trig_tdcrefcut", &fTDC_RefTimeCut, kInt, 0, 1},
     {"_trig_adcrefcut", &fADC_RefTimeCut, kInt, 0, 1},
