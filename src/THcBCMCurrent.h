@@ -19,7 +19,7 @@ class THcBCMCurrent : public THaPhysicsModule {
   virtual EStatus Init( const TDatime& date);
   virtual Int_t Process( const THaEvData& );  
 
-  enum BCMopt {BCM1, BCM2, UNSER, BCM4A, BCM4B, BCM17};
+  enum BCMopt {BCM1, BCM2, UNSER, BCM4A, BCM4B, BCM4C};
 
  private:
   
@@ -30,7 +30,7 @@ class THcBCMCurrent : public THaPhysicsModule {
   Double_t* fiBCM2;
   Double_t* fiBCM4a;
   Double_t* fiBCM4b;
-  Double_t* fiBCM17;
+  Double_t* fiBCM4c;
   Int_t*    fEvtNum;
 
   Int_t    fBCMflag;
@@ -39,14 +39,14 @@ class THcBCMCurrent : public THaPhysicsModule {
   Double_t fBCM2avg;
   Double_t fBCM4aavg;
   Double_t fBCM4bavg;
-  Double_t fBCM17avg;
+  Double_t fBCM4cavg;
 
   struct BCMInfo{
     Double_t bcm1_current;
     Double_t bcm2_current;
     Double_t bcm4a_current;
     Double_t bcm4b_current;
-    Double_t bcm17_current;
+    Double_t bcm4c_current;
   };
 
   std::map<Int_t, BCMInfo> BCMInfoMap;
