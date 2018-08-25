@@ -34,7 +34,7 @@ THcBCMCurrent::THcBCMCurrent(const char* name,
   fBCM2avg  = 0;
   fBCM4aavg = 0;
   fBCM4bavg = 0;
-  fBCM17avg = 0;
+  fBCM4cavg = 0;
 }
 
 //__________________________________________________
@@ -48,7 +48,7 @@ THcBCMCurrent::~THcBCMCurrent()
   delete [] fiBCM2;  fiBCM2 = NULL;
   delete [] fiBCM4a; fiBCM4a = NULL;
   delete [] fiBCM4b; fiBCM4b = NULL;
-  delete [] fiBCM17; fiBCM17 = NULL;
+  delete [] fiBCM4c; fiBCM4c = NULL;
   delete [] fEvtNum; fEvtNum = NULL;
 
 }
@@ -83,7 +83,7 @@ Int_t THcBCMCurrent::ReadDatabase( const TDatime& date )
   fiBCM2     = new Double_t[fNscaler];
   fiBCM4a    = new Double_t[fNscaler];
   fiBCM4b    = new Double_t[fNscaler];
-  fiBCM17    = new Double_t[fNscaler];
+  fiBCM4c    = new Double_t[fNscaler];
 
   fEvtNum    = new Int_t[fNscaler];
 
@@ -92,7 +92,7 @@ Int_t THcBCMCurrent::ReadDatabase( const TDatime& date )
     {"scal_read_bcm2_current",  fiBCM2,     kDouble, (UInt_t) fNscaler},
     {"scal_read_bcm4a_current", fiBCM4a,    kDouble, (UInt_t) fNscaler},
     {"scal_read_bcm4b_current", fiBCM4b,    kDouble, (UInt_t) fNscaler},
-    {"scal_read_bcm17_current", fiBCM17,    kDouble, (UInt_t) fNscaler},
+    {"scal_read_bcm4c_current", fiBCM4c,    kDouble, (UInt_t) fNscaler},
     {"scal_read_event",         fEvtNum,    kInt,    (UInt_t) fNscaler},
     {0}
   };
@@ -106,7 +106,7 @@ Int_t THcBCMCurrent::ReadDatabase( const TDatime& date )
       binfo.bcm2_current  = fiBCM2[i];
       binfo.bcm4a_current = fiBCM4a[i];
       binfo.bcm4b_current = fiBCM4b[i];
-      binfo.bcm17_current = fiBCM17[i];
+      binfo.bcm4c_current = fiBCM4c[i];
 
       BCMInfoMap.insert( std::make_pair(fEvtNum[i], binfo) );
     }
@@ -129,7 +129,7 @@ Int_t THcBCMCurrent::DefineVariables( EMode mode )
     {"bcm2.AvgCurrent",  "BCM2  average beam current",      "fBCM2avg"},
     {"bcm4a.AvgCurrent", "BCM4a average beam current",      "fBCM4aavg"},
     {"bcm4b.AvgCurrent", "BCM4b average beam current",      "fBCM4bavg"},
-    {"bcm17.AvgCurrent", "BCM17 average beam current",      "fBCM17avg"},
+    {"bcm4c.AvgCurrent", "BCM4c average beam current",      "fBCM4cavg"},
     { 0 }
   };
 
@@ -155,7 +155,7 @@ Int_t THcBCMCurrent::Process( const THaEvData& evdata )
       fBCM2avg  = 0;
       fBCM4aavg = 0;
       fBCM4bavg = 0;
-      fBCM17avg = 0;
+      fBCM4cavg = 0;
     }
   else
     {
@@ -163,7 +163,7 @@ Int_t THcBCMCurrent::Process( const THaEvData& evdata )
       fBCM2avg  = binfo.bcm2_current;
       fBCM4aavg = binfo.bcm4a_current;
       fBCM4bavg = binfo.bcm4b_current;
-      fBCM17avg = binfo.bcm17_current;
+      fBCM4cavg = binfo.bcm4c_current;
     }
 
   switch (fBCMIndex) 
@@ -180,8 +180,8 @@ Int_t THcBCMCurrent::Process( const THaEvData& evdata )
     case BCM4B:
       fBCMflag = ( fBCM4bavg < fThreshold )?0:1;
       break;
-    case BCM17:
-      fBCMflag = ( fBCM17avg < fThreshold )?0:1;
+    case BCM4C:
+      fBCMflag = ( fBCM4cavg < fThreshold )?0:1;
       break;
     default:
       fBCMflag = 0;
@@ -205,7 +205,7 @@ Int_t THcBCMCurrent::GetAvgCurrent( Int_t fevn, BCMInfo &bcminfo )
       bcminfo.bcm2_current  = it->second.bcm2_current;
       bcminfo.bcm4a_current = it->second.bcm4a_current;
       bcminfo.bcm4b_current = it->second.bcm4b_current;
-      bcminfo.bcm17_current = it->second.bcm17_current;
+      bcminfo.bcm4c_current = it->second.bcm4c_current;
 
       return kOK;
     }
@@ -218,7 +218,7 @@ Int_t THcBCMCurrent::GetAvgCurrent( Int_t fevn, BCMInfo &bcminfo )
 	  bcminfo.bcm2_current  = next->second.bcm2_current;
 	  bcminfo.bcm4a_current = next->second.bcm4a_current;
 	  bcminfo.bcm4b_current = next->second.bcm4b_current;
-	  bcminfo.bcm17_current = next->second.bcm17_current;
+	  bcminfo.bcm4c_current = next->second.bcm4c_current;
 	  return kOK;
 	}
       return kOK+1;
