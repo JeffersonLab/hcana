@@ -183,12 +183,12 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
   DBRequest list[]={
     {"stat_slop", &fStatSlop, kDouble},
     {"stat_maxchisq",&fMaxChisq, kDouble},
+    {"HodoEff_CalEnergy_Cut",&fHodoEff_CalEnergy_Cut, kDouble,0,1},
     {"hodo_slop", fHodoSlop, kDouble, (UInt_t)fNPlanes},
     {0}
   };
-  //  fMaxShTrk = 0.05;		// For cut on fraction of momentum seen in shower
+  fHodoEff_CalEnergy_Cut=0.050; // set default value
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-
   cout << "\n\nTHcHodoEff::ReadDatabase nplanes=" << fHod->GetNPlanes() << endl;
   // Setup statistics arrays
   // Better method to put this in?
@@ -353,7 +353,7 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
     Double_t dist = hitDistance[ip];
     if(TMath::Abs(dist) <= fStatSlop &&
        theTrack->GetChi2()/theTrack->GetNDoF() <= fMaxChisq &&
-       theTrack->GetEnergy() >= 0.05 )
+       theTrack->GetEnergy() >= fHodoEff_CalEnergy_Cut )
       {
 	fStatTrk[fHod->GetScinIndex(ip,hitCounter[ip]-1)]++;
 	// Double_t delta = theTrack->GetDp();
@@ -393,7 +393,7 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
 	 TMath::Abs(hitcounter-counter) <= checkHit[ip] &&
 	 fHitPlane[ip] == 0 &&
 	 theTrack->GetChi2()/theTrack->GetNDoF() <= fMaxChisq &&
-	 theTrack->GetEnergy() >= 0.05 ) {
+	 theTrack->GetEnergy() >= fHodoEff_CalEnergy_Cut) {
 	fHitPlane[ip]++;
 
 	// Need to find out hgood_tdc_pos(igoldentrack,ihit) and neg
