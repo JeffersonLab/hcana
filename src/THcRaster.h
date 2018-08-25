@@ -117,6 +117,11 @@ class THcRaster : public THaBeamDet, public THcHitList {
   Double_t       fYbpm_C;     // Y BPM at BPMC (+Y is up)
   Double_t       fXbeam_prev[4];     // 
   Double_t       fYbeam_prev[4];     // 
+  //
+  Double_t        fEbeamEpics;
+  Double_t        fEbeamEpics_read;
+  Double_t        fEbeamEpics_prev;
+  //
 
   Double_t       fFrXA_ADC_zero_offset;
   Double_t       fFrYA_ADC_zero_offset;

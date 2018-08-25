@@ -82,7 +82,9 @@ THcRaster::THcRaster( const char* name, const char* description,
   fFrYB_ADC_zero_offset =0;
 
   frPosAdcPulseIntRaw  = NULL;
-
+  fEbeamEpics_read=0.;
+  fEbeamEpics_prev=0.;
+  fEbeamEpics=0.;
   for(Int_t i=0;i<4;i++){
 
 	fPedADC[i] = 0;
@@ -269,6 +271,7 @@ Int_t THcRaster::DefineVariables( EMode mode )
     {"fr_ybpmB",  "Y BPM at BPMB (+Y is up)",    "fYbpm_B"},
     {"fr_xbpmC",  "X BPM at BPMC (+X is beam right)",    "fXbpm_C"},
     {"fr_ybpmC",  "Y BPM at BPMC (+Y is up)",    "fYbpm_C"},
+    {"ebeam_epics",  "Beam energy of epics variable HALLC:p",    "fEbeamEpics"},
     { 0 }
   };
  
@@ -441,6 +444,9 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
            if (fEpicsHandler->IsLoaded("IPM3H07C.YRAW")){
             BPMYC_raw = atof(fEpicsHandler->GetString("IPM3H07C.YRAW"));
            }
+           if (fEpicsHandler->IsLoaded("HALLC:p")){
+            fEbeamEpics_read = atof(fEpicsHandler->GetString("HALLC:p"));
+           }
    }
 
   return 0;
@@ -525,6 +531,8 @@ Int_t THcRaster::Process(){
         fYbeam_prev[2]=BPMYB_pos;
         fXbeam_prev[3]=BPMXC_pos;
         fYbeam_prev[3]=BPMYC_pos;
+        fEbeamEpics = fEbeamEpics_read;
+	fEbeamEpics_prev=fEbeamEpics_read;
  }else{
 	  fgbeam_xoff = fXbeam_prev[0];
 	  fgbeam_yoff = fYbeam_prev[0];
@@ -536,7 +544,8 @@ Int_t THcRaster::Process(){
         BPMYC_pos=fYbeam_prev[3];
 	  fgbeam_xpoff = 0;
 	  fgbeam_ypoff = 0;
-  }
+         fEbeamEpics = fEbeamEpics_prev;
+ }
 
   fXbpm_tar= -fgbeam_xoff; 
   fYbpm_tar= fgbeam_yoff;
