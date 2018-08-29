@@ -1,7 +1,11 @@
-/** \class THcDCHit
+/** \class THcDCWire
     \ingroup DetSupport
 
- Class to represent a drift chamber wire
+    \brief Class representing a drift chamber wire
+    
+    Holds number within a plane, position within the plane, time offset
+    for that wire, resolution of the wire and pointer to the 
+    time to distance conversion class.
 
 */
 
