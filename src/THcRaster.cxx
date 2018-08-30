@@ -59,6 +59,8 @@ THcRaster::THcRaster( const char* name, const char* description,
   fXbeam_prev[nt] = 0;
   fYbeam_prev[nt] = 0;
   }
+  fXpbeam_prev = 0;
+  fYpbeam_prev = 0;
   BPMXA_raw = 0;
   BPMYA_raw = 0;
   BPMXB_raw = 0;
@@ -201,14 +203,15 @@ Int_t THcRaster::ReadDatabase( const TDatime& date )
   };
   fgpbeam = 0.001;
  //
-  fgbpma_zpos = 370.82;
-  fgbpmb_zpos = 224.96 ;// cm
-    fgbpmc_zpos = 129.30 ;// cm
+  //positions of BPMs relative to target (from Fall 2018 survey)
+  fgbpma_zpos = 320.17;
+  fgbpmb_zpos = 224.81 ;// cm
+    fgbpmc_zpos = 129.38 ;// cm
   // Default offsets to zero and slopes to +/- 1
-  fgbeam_xoff = 0.0;
-  fgbeam_xpoff = 0.0;
-  fgbeam_yoff = 0.0;
-  fgbeam_ypoff = 0.0;
+  fgbeam_xoff = -999.;
+  fgbeam_xpoff =-999.;
+  fgbeam_yoff = -999.;
+  fgbeam_ypoff =-999.;
   //
   fgbpmxa_off = 0.0;
   fgbpmxa_slope = -1.0;
@@ -232,6 +235,22 @@ Int_t THcRaster::ReadDatabase( const TDatime& date )
 
   THcAnalyzer *analyzer = dynamic_cast<THcAnalyzer*>(THcAnalyzer::GetInstance());
   fEpicsHandler = analyzer->GetEpicsEvtHandler();
+  
+  //
+  fFlag_use_EPICS_bpm = kFALSE;
+  if (fgbeam_xoff ==-999. && fgbeam_yoff ==-999.) {
+    fFlag_use_EPICS_bpm = kTRUE;
+    cout << " THcRaster is using EPICS bpm for beam position" << endl;    
+  } else {
+    if (fgbeam_xoff ==-999.) fgbeam_xoff = 0.;
+    if (fgbeam_yoff ==-999.) fgbeam_yoff = 0.;
+    if (fgbeam_xpoff ==-999.) fgbeam_xpoff = 0.;
+    if (fgbeam_ypoff ==-999.) fgbeam_ypoff = 0.;
+    cout << " THcRaster is using parameters for  beam position" << " x = " << fgbeam_xoff<< " y = " << fgbeam_yoff<< endl;    
+    cout << " THcRaster is using parameters for  beam angle position" << " xp = " << fgbeam_xpoff<< " yp = " << fgbeam_ypoff<< endl;    
+    
+  }
+
 
   return kOK;
 
@@ -518,13 +537,19 @@ Int_t THcRaster::Process(){
   // Use the A and C BPM information, as these are located downstream of the raster
   // magnets.  If there is no BPM information available, assume zero offsets.
   //
+  Double_t xbeam;
+  Double_t ybeam;
+  Double_t xpbeam;
+  Double_t ypbeam;
   if (!checkBPM){
-  	fgbeam_xoff = BPMXA_pos - (BPMXA_pos - BPMXC_pos)/(fgbpma_zpos - fgbpmc_zpos)*fgbpma_zpos;
-  	fgbeam_yoff = BPMYA_pos - (BPMYA_pos - BPMYC_pos)/(fgbpma_zpos - fgbpmc_zpos)*fgbpma_zpos;
-	fgbeam_xpoff = (fgbeam_xoff-BPMXA_pos)/fgbpma_zpos;
-	fgbeam_ypoff = (fgbeam_yoff-BPMYA_pos)/fgbpma_zpos;
-        fXbeam_prev[0]=fgbeam_xoff;
-        fYbeam_prev[0]=fgbeam_yoff;
+  	xbeam = BPMXA_pos - (BPMXA_pos - BPMXC_pos)/(fgbpma_zpos - fgbpmc_zpos)*fgbpma_zpos;
+  	ybeam = BPMYA_pos - (BPMYA_pos - BPMYC_pos)/(fgbpma_zpos - fgbpmc_zpos)*fgbpma_zpos;
+	xpbeam = (xbeam-BPMXA_pos)/fgbpma_zpos;
+	ypbeam = (ybeam-BPMYA_pos)/fgbpma_zpos;
+        fXbeam_prev[0]=xbeam;
+        fYbeam_prev[0]=ybeam;
+        fXpbeam_prev=xpbeam;
+        fYpbeam_prev=ypbeam;
         fXbeam_prev[1]=BPMXA_pos;
         fYbeam_prev[1]=BPMYA_pos;
         fXbeam_prev[2]=BPMXB_pos;
@@ -534,21 +559,34 @@ Int_t THcRaster::Process(){
         fEbeamEpics = fEbeamEpics_read;
 	fEbeamEpics_prev=fEbeamEpics_read;
  }else{
-	  fgbeam_xoff = fXbeam_prev[0];
-	  fgbeam_yoff = fYbeam_prev[0];
+	  xbeam = fXbeam_prev[0];
+	  ybeam = fYbeam_prev[0];
+	  xpbeam = fXpbeam_prev;
+	  ypbeam = fYpbeam_prev;
         BPMXA_pos=fXbeam_prev[1];
         BPMYA_pos=fYbeam_prev[1];
         BPMXB_pos=fXbeam_prev[2];
         BPMYB_pos=fYbeam_prev[2];
         BPMXC_pos=fXbeam_prev[3];
         BPMYC_pos=fYbeam_prev[3];
-	  fgbeam_xpoff = 0;
-	  fgbeam_ypoff = 0;
          fEbeamEpics = fEbeamEpics_prev;
  }
 
-  fXbpm_tar= -fgbeam_xoff; 
-  fYbpm_tar= fgbeam_yoff;
+
+  if (fFlag_use_EPICS_bpm) {
+    fXbpm_tar= -xbeam; // assumes the BPM calibration gives BPM with +X beam left (HARP coordinate system)
+    fYbpm_tar= ybeam;
+    fXpbpm_tar= -xpbeam; // assumes the BPM calibration gives BPM with +X beam left (HARP coordinate system)
+    fYpbpm_tar= ypbeam;
+    
+  } else {
+    fXbpm_tar= fgbeam_xoff; //  +X beam right (EPICS coordinate system)
+    fYbpm_tar= fgbeam_yoff;
+    fXpbpm_tar= fgbeam_xpoff; //  +X beam right (EPICS coordinate system)
+    fYpbpm_tar= fgbeam_ypoff;
+  }
+
+
   fXbpm_A= -fXbeam_prev[1]; 
   fYbpm_A= fYbeam_prev[1];
   fXbpm_B= -fXbeam_prev[2]; 
@@ -568,21 +606,21 @@ Int_t THcRaster::Process(){
   //std::cout << "Raster X distance = " << fgfrx_dist << std::endl;
   //std::cout << "Raster Y distance = " << fgfry_dist << std::endl;
 
-  Double_t tt = fgbeam_xpoff;
-  Double_t tp = fgbeam_ypoff;
+  Double_t tt = fXpbpm_tar;
+  Double_t tp = fYpbpm_tar;
 
   if(fgusefr != 0) {
-    fPosition[0].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
-    fPosition[1].SetXYZ((-1.)*(fXA_pos)+fgbeam_xoff, fYA_pos+fgbeam_yoff, 0.0);
-    fPosition[2].SetXYZ((-1.)*(fXB_pos)+fgbeam_xoff, fYB_pos+fgbeam_yoff, 0.0);
-    tt = (-1.)*fXA_pos/fgfrx_dist+fgbeam_xpoff;
-    tp = fYA_pos/fgfry_dist+fgbeam_ypoff;
+    fPosition[0].SetXYZ(-fXbpm_tar, fYbpm_tar, 0.0);
+    fPosition[1].SetXYZ((-1.)*(fXA_pos)-fXbpm_tar, fYA_pos+fYbpm_tar, 0.0);
+    fPosition[2].SetXYZ((-1.)*(fXB_pos)-fXbpm_tar, fYB_pos+fYbpm_tar, 0.0);
+    tt = (-1.)*fXA_pos/fgfrx_dist-fXpbpm_tar;
+    tp = fYA_pos/fgfry_dist+fYpbpm_tar;
     fDirection.SetXYZ(tt, tp ,1.0); // Set arbitrarily to avoid run time warnings
     fDirection *= 1.0/TMath::Sqrt(1.0+tt*tt+tp*tp);
   } else {			// Just use fixed beam position and angle
-    fPosition[0].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
-    fPosition[1].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
-    fPosition[2].SetXYZ(fgbeam_xoff, fgbeam_yoff, 0.0);
+    fPosition[0].SetXYZ(-fXbpm_tar, fYbpm_tar, 0.0);
+    fPosition[1].SetXYZ(-fXbpm_tar, fYbpm_tar, 0.0);
+    fPosition[2].SetXYZ(-fXbpm_tar, fYbpm_tar, 0.0);
     fDirection.SetXYZ(tt, tp ,1.0); // Set arbitrarily to avoid run time warnings
     fDirection *= 1.0/TMath::Sqrt(1.0+tt*tt+tp*tp);
   }
