@@ -478,7 +478,7 @@ void THcShowerPlane::Clear( Option_t* )
 
 
  // Debug output.
-  if ( static_cast<THcShower*>(GetParent())->fdbg_decoded_cal ) {
+  if ( static_cast<THcShower*>(fParent)->fdbg_decoded_cal ) {
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerPlane::Clear for "
     	 << fParent->GetPrefix() << ":" << endl;

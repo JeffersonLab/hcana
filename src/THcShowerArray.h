@@ -210,7 +210,10 @@ protected:
 
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
- THcHodoscope* fglHod;		// Hodoscope to get start time
+  THcHodoscope* fglHod;		// Hodoscope to get start time
+
+  THaDetectorBase* fParent;
+
   ClassDef(THcShowerArray,0); // Fly;s Eye calorimeter array
 };
 
