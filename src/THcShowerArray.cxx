@@ -198,10 +198,9 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 
   // Debug output.
 
-  THcShower* fParent;
-  fParent = (THcShower*) GetParent();
+  fParent = GetParent();
 
-  if (fParent->fdbg_init_cal) {
+  if (static_cast<THcShower*>(fParent)->fdbg_init_cal) {
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerArray::ReadDatabase for "
     	 << GetParent()->GetPrefix() << ":" << endl;
@@ -289,7 +288,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   gHcParms->LoadParmValues((DBRequest*)&list1, prefix);
 
   // Debug output.
-  if (fParent->fdbg_init_cal) {
+  if (static_cast<THcShower*>(fParent)->fdbg_init_cal) {
 
     cout << "  fPedLimit:" << endl;
     Int_t el=0;
@@ -330,7 +329,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   }
 
   // Debug output.
-  if (fParent->fdbg_init_cal) {
+  if (static_cast<THcShower*>(fParent)->fdbg_init_cal) {
 
     cout << "  fGain:" << endl;
     Int_t el=0;
@@ -344,7 +343,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 
   }
 
-  fMinPeds = fParent->GetMinPeds();
+  fMinPeds = static_cast<THcShower*>(fParent)->GetMinPeds();
 
   InitializePedestals();
 
@@ -386,7 +385,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 
   // Debug output.
 
-  if (fParent->fdbg_init_cal) {
+  if (static_cast<THcShower*>(fParent)->fdbg_init_cal) {
 
     cout << "  fMinPeds = " << fMinPeds << endl;
 
@@ -407,9 +406,9 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
   // Register counters for efficiency calculations in gHcParms so that the
   // variables can be used in end of run reports.
 
-  gHcParms->Define(Form("%sstat_trksum_array", GetParent()->GetPrefix()),
+  gHcParms->Define(Form("%sstat_trksum_array", fParent->GetPrefix()),
 		   "Number of tracks in calo. array", fTotStatNumTrk);
-  gHcParms->Define(Form("%sstat_hitsum_array", GetParent()->GetPrefix()),
+  gHcParms->Define(Form("%sstat_hitsum_array", fParent->GetPrefix()),
 		   "Number of hits in calo. array", fTotStatNumHit);
 
   // Register variables in global list
@@ -543,9 +542,7 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
   }
   //Debug output, print out hits before clustering.
 
-  THcShower* fParent = (THcShower*) GetParent();
-
-  if (fParent->fdbg_clusters_cal) {
+  if (static_cast<THcShower*>(fParent)->fdbg_clusters_cal) {
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerArray::CoarseProcess for " << GetName()
 	 << endl;
@@ -569,7 +566,7 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
 
   // Cluster hits and fill list of clusters.
 
-  fParent->ClusterHits(HitSet, fClusterList);
+  static_cast<THcShower*>(fParent)->ClusterHits(HitSet, fClusterList);
 
   fNclust = (*fClusterList).size();         //number of clusters
 
@@ -588,7 +585,7 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
 
   //Debug output, print out clustered hits.
 
-  if (fParent->fdbg_clusters_cal) {
+  if (static_cast<THcShower*>(fParent)->fdbg_clusters_cal) {
 
     cout << "  Clustered hits. Number of clusters: " << fNclust << endl;
 
@@ -637,9 +634,7 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
 
   fOrigin = GetOrigin();
 
-  THcShower* fParent = (THcShower*) GetParent();
-
-  fParent->CalcTrackIntercept(Track, pathl, XTrFront, YTrFront);
+  static_cast<THcShower*>(fParent)->CalcTrackIntercept(Track, pathl, XTrFront, YTrFront);
 
   // Transform coordiantes to the spectrometer's coordinate system.
 
@@ -650,7 +645,7 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
 
   // Re-evaluate Fid. Volume Flag if fid. volume test is requested
 
-  if (fParent->fvTest) {
+  if (static_cast<THcShower*>(fParent)->fvTest) {
 
     TVector3 Origin = fOrigin;         //save fOrigin
 
@@ -662,15 +657,15 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
     Double_t XTrBack = kBig;
     Double_t YTrBack = kBig;
 
-    fParent->CalcTrackIntercept(Track, pathl, XTrBack, YTrBack);
+    static_cast<THcShower*>(fParent)->CalcTrackIntercept(Track, pathl, XTrBack, YTrBack);
 
     XTrBack += GetOrigin().X();   // from local coord. system
     YTrBack += GetOrigin().Y();   // to the spectrometer system
 
-    inFidVol = (XTrFront <= fParent->fvXmax) && (XTrFront >= fParent->fvXmin) &&
-               (YTrFront <= fParent->fvYmax) && (YTrFront >= fParent->fvYmin) &&
-               (XTrBack <= fParent->fvXmax) && (XTrBack >= fParent->fvXmin) &&
-               (YTrBack <= fParent->fvYmax) && (YTrBack >= fParent->fvYmin);
+    inFidVol = (XTrFront <= static_cast<THcShower*>(fParent)->fvXmax) && (XTrFront >= static_cast<THcShower*>(fParent)->fvXmin) &&
+               (YTrFront <= static_cast<THcShower*>(fParent)->fvYmax) && (YTrFront >= static_cast<THcShower*>(fParent)->fvYmin) &&
+               (XTrBack <= static_cast<THcShower*>(fParent)->fvXmax) && (XTrBack >= static_cast<THcShower*>(fParent)->fvXmin) &&
+               (YTrBack <= static_cast<THcShower*>(fParent)->fvYmax) && (YTrBack >= static_cast<THcShower*>(fParent)->fvYmin);
 
     fOrigin = Origin;         //restore fOrigin
   }
@@ -692,13 +687,13 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
       Double_t dx = TMath::Abs( clX(cluster) - XTrFront );
       Double_t dy = TMath::Abs( clY(cluster) - YTrFront );
       Double_t distance = TMath::Sqrt(dx*dx+dy*dy);        //cluster-track dist.
-  if (fParent->fdbg_tracks_cal) {
-    cout << " match clust = " << i << " clX = " << clX(cluster)<< " clY = " << clY(cluster) << " distacne = " << distance << " test = " << (0.5*(fXStep + fYStep) + fParent->fSlop) << endl;
+  if (static_cast<THcShower*>(fParent)->fdbg_tracks_cal) {
+    cout << " match clust = " << i << " clX = " << clX(cluster)<< " clY = " << clY(cluster) << " distacne = " << distance << " test = " << (0.5*(fXStep + fYStep) + static_cast<THcShower*>(fParent)->fSlop) << endl;
   }
 
       //Choice of threshold on distance is not unuque. Use the simplest for now.
 
-      if (distance <= (0.5*(fXStep + fYStep) + fParent->fSlop)) {
+      if (distance <= (0.5*(fXStep + fYStep) + static_cast<THcShower*>(fParent)->fSlop)) {
 	fNtracks++;
 	if (distance < Delta) {
 	  mclust = i;
@@ -713,7 +708,7 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
 
   //Debug output.
 
-  if (fParent->fdbg_tracks_cal) {
+  if (static_cast<THcShower*>(fParent)->fdbg_tracks_cal) {
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerArray::MatchCluster for " << GetName()
 	 << endl;
@@ -729,7 +724,7 @@ Int_t THcShowerArray::MatchCluster(THaTrack* Track,
 	 << "  Y = " << YTrFront
 	 << "  Pathl = " << pathl
 	 << endl;
-    if (fParent->fvTest)
+    if (static_cast<THcShower*>(fParent)->fvTest)
       cout << "  Fiducial volume test: inFidVol = " << inFidVol << endl;
 
     cout << "  Matched cluster #" << mclust << ",  Delta = " << Delta << endl;
@@ -768,9 +763,7 @@ Float_t THcShowerArray::GetShEnergy(THaTrack* Track) {
 
   //Debug output.
 
-  THcShower* fParent = (THcShower*) GetParent();
-
-  if (fParent->fdbg_tracks_cal) {
+  if (static_cast<THcShower*>(fParent)->fdbg_tracks_cal) {
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerArray::GetShEnergy for "
 	 << GetName() << endl;
@@ -797,9 +790,7 @@ Int_t THcShowerArray::FineProcess( TClonesArray& tracks )
 //_____________________________________________________________________________
 Int_t THcShowerArray::CoarseProcessHits()
 {
-  THcShower* fParent;
-  fParent = (THcShower*) GetParent();
-    Int_t ADCMode=fParent->GetADCMode();
+    Int_t ADCMode=static_cast<THcShower*>(fParent)->GetADCMode();
     if(ADCMode == kADCDynamicPedestal) {
       FillADC_DynamicPedestal();
     } else if (ADCMode == kADCSampleIntegral) {
@@ -810,11 +801,11 @@ Int_t THcShowerArray::CoarseProcessHits()
       FillADC_Standard();
     }
     //
-  if (fParent->fdbg_decoded_cal) {
+  if (static_cast<THcShower*>(fParent)->fdbg_decoded_cal) {
 
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerArray::ProcessHits for "
-    	 << fParent->GetPrefix() << ":" << endl;
+    	 << static_cast<THcShower*>(fParent)->GetPrefix() << ":" << endl;
 
     cout << "  Sparsified hits for shower array, plane #" << fLayerNum
 	 << ", " << GetName() << ":" << endl;
@@ -1084,11 +1075,11 @@ Int_t THcShowerArray::AccumulatePedestals(TClonesArray* rawhits, Int_t nexthit)
 
   // Debug output.
 
-  if ( ((THcShower*) GetParent())->fdbg_raw_cal ) {
+  if ( static_cast<THcShower*>(fParent)->fdbg_raw_cal ) {
 
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerArray::AcculatePedestals for "
-    	 << GetParent()->GetPrefix() << ":" << endl;
+    	 << fParent->GetPrefix() << ":" << endl;
 
     cout << "Processed hit list for plane " << GetName() << ":\n";
 
@@ -1140,11 +1131,11 @@ void THcShowerArray::CalculatePedestals( )
 
   // Debug output.
 
-  if ( ((THcShower*) GetParent())->fdbg_raw_cal ) {
+  if ( static_cast<THcShower*>(fParent)->fdbg_raw_cal ) {
 
     cout << "---------------------------------------------------------------\n";
     cout << "Debug output from THcShowerArray::CalculatePedestals for "
-    	 << GetParent()->GetPrefix() << ":" << endl;
+    	 << fParent->GetPrefix() << ":" << endl;
 
     cout << "  ADC pedestals and thresholds for calorimeter plane "
 	 << GetName() << endl;
@@ -1184,27 +1175,19 @@ void THcShowerArray::InitializePedestals( )
 // Fiducial volume limits.
 
 Double_t THcShowerArray::fvXmin() {
-  THcShower* fParent;
-  fParent = (THcShower*) GetParent();
-  return fXPos[0][0] - fXStep/2 + fParent->fvDelta;
+  return fXPos[0][0] - fXStep/2 + static_cast<THcShower*>(fParent)->fvDelta;
 }
 
 Double_t THcShowerArray::fvYmax() {
-  THcShower* fParent;
-  fParent = (THcShower*) GetParent();
-  return fYPos[0][0] + fYStep/2 - fParent->fvDelta;
+  return fYPos[0][0] + fYStep/2 - static_cast<THcShower*>(fParent)->fvDelta;
 }
 
 Double_t THcShowerArray::fvXmax() {
-  THcShower* fParent;
-  fParent = (THcShower*) GetParent();
-  return fXPos[fNRows-1][fNColumns-1] + fXStep/2 - fParent->fvDelta;
+  return fXPos[fNRows-1][fNColumns-1] + fXStep/2 - static_cast<THcShower*>(fParent)->fvDelta;
 }
 
 Double_t THcShowerArray::fvYmin() {
-  THcShower* fParent;
-  fParent = (THcShower*) GetParent();
-  return fYPos[fNRows-1][fNColumns-1] - fYStep/2 + fParent->fvDelta;
+  return fYPos[fNRows-1][fNColumns-1] - fYStep/2 + static_cast<THcShower*>(fParent)->fvDelta;
 }
 Double_t THcShowerArray::clMaxEnergyBlock(THcShowerCluster* cluster) {
   Double_t max_energy=-1.;
@@ -1236,7 +1219,7 @@ Int_t THcShowerArray::AccumulateStat(TClonesArray& tracks )
   THcHallCSpectrometer *app=dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
 
   THaDetector* detc;
-  if (GetParent()->GetPrefix()[0] == 'P')
+  if (fParent->GetPrefix()[0] == 'P')
     detc = app->GetDetector("hgcer");
   else
     detc = app->GetDetector("cer");
@@ -1258,8 +1241,7 @@ Int_t THcShowerArray::AccumulateStat(TClonesArray& tracks )
   // local system.
 
   fOrigin = GetOrigin();
-  THcShower* fParent = (THcShower*) GetParent();
-  fParent->CalcTrackIntercept(BestTrack, pathl, XTrk, YTrk);
+  static_cast<THcShower*>(fParent)->CalcTrackIntercept(BestTrack, pathl, XTrk, YTrk);
 
   // Transform coordiantes to the spectrometer's coordinate system.
   XTrk += GetOrigin().X();
@@ -1285,7 +1267,7 @@ Int_t THcShowerArray::AccumulateStat(TClonesArray& tracks )
     
   }
 
-  if ( ((THcShower*) GetParent())->fdbg_tracks_cal ) {
+  if (static_cast<THcShower*>(fParent)->fdbg_tracks_cal ) {
     cout << "---------------------------------------------------------------\n";
     cout << "THcShowerArray::AccumulateStat:" << endl;
     cout << "   Chi2/NDF = " <<BestTrack->GetChi2()/BestTrack->GetNDoF() <<endl;

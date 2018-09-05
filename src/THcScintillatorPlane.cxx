@@ -248,16 +248,17 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   // Retrieve parameters we need from parent class
   // Common for all planes
 
-  fHodoSlop= ((THcHodoscope*) GetParent())->GetHodoSlop(fPlaneNum-1);
-  fTdcOffset= ((THcHodoscope*) GetParent())->GetTdcOffset(fPlaneNum-1);
-  fAdcTdcOffset= ((THcHodoscope*) GetParent())->GetAdcTdcOffset(fPlaneNum-1);
-  fScinTdcMin=((THcHodoscope *)GetParent())->GetTdcMin();
-  fScinTdcMax=((THcHodoscope *)GetParent())->GetTdcMax();
-  fScinTdcToTime=((THcHodoscope *)GetParent())->GetTdcToTime();
-  fTofTolerance=((THcHodoscope *)GetParent())->GetTofTolerance();
-  fBetaNominal=((THcHodoscope *)GetParent())->GetBetaNominal();
-  fStartTimeCenter=((THcHodoscope *)GetParent())->GetStartTimeCenter();
-  fStartTimeSlop=((THcHodoscope *)GetParent())->GetStartTimeSlop();
+  THcHodoscope* parent = (THcHodoscope*)GetParent();
+  fHodoSlop= parent->GetHodoSlop(fPlaneNum-1);
+  fTdcOffset= parent->GetTdcOffset(fPlaneNum-1);
+  fAdcTdcOffset= parent->GetAdcTdcOffset(fPlaneNum-1);
+  fScinTdcMin=parent->GetTdcMin();
+  fScinTdcMax=parent->GetTdcMax();
+  fScinTdcToTime=parent->GetTdcToTime();
+  fTofTolerance=parent->GetTofTolerance();
+  fBetaNominal=parent->GetBetaNominal();
+  fStartTimeCenter=parent->GetStartTimeCenter();
+  fStartTimeSlop=parent->GetStartTimeSlop();
   // Parameters for this plane
   fHodoPosMinPh = new Double_t[fNelem];
   fHodoNegMinPh = new Double_t[fNelem];
@@ -288,35 +289,35 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   fHodoNeg_c2=new Double_t [fNelem];
 
   for(Int_t j=0;j<(Int_t) fNelem;j++) {
-    Int_t index=((THcHodoscope *)GetParent())->GetScinIndex(fPlaneNum-1,j);
-    fHodoPosAdcTimeWindowMin[j] = ((THcHodoscope*) GetParent())->GetHodoPosAdcTimeWindowMin(index);
-    fHodoPosAdcTimeWindowMax[j] = ((THcHodoscope*) GetParent())->GetHodoPosAdcTimeWindowMax(index);
-    fHodoNegAdcTimeWindowMin[j] = ((THcHodoscope*) GetParent())->GetHodoNegAdcTimeWindowMin(index);
-    fHodoNegAdcTimeWindowMax[j] = ((THcHodoscope*) GetParent())->GetHodoNegAdcTimeWindowMax(index);
-    fHodoPosMinPh[j] = ((THcHodoscope *)GetParent())->GetHodoPosMinPh(index);
-    fHodoNegMinPh[j] = ((THcHodoscope *)GetParent())->GetHodoNegMinPh(index);
-    fHodoPosPhcCoeff[j] = ((THcHodoscope *)GetParent())->GetHodoPosPhcCoeff(index);
-    fHodoNegPhcCoeff[j] = ((THcHodoscope *)GetParent())->GetHodoNegPhcCoeff(index);
-    fHodoPosTimeOffset[j] = ((THcHodoscope *)GetParent())->GetHodoPosTimeOffset(index);
-    fHodoNegTimeOffset[j] = ((THcHodoscope *)GetParent())->GetHodoNegTimeOffset(index);
-    fHodoPosInvAdcOffset[j] = ((THcHodoscope *)GetParent())->GetHodoPosInvAdcOffset(index);
-    fHodoNegInvAdcOffset[j] = ((THcHodoscope *)GetParent())->GetHodoNegInvAdcOffset(index);
-    fHodoPosInvAdcLinear[j] = ((THcHodoscope *)GetParent())->GetHodoPosInvAdcLinear(index);
-    fHodoNegInvAdcLinear[j] = ((THcHodoscope *)GetParent())->GetHodoNegInvAdcLinear(index);
-    fHodoPosInvAdcAdc[j] = ((THcHodoscope *)GetParent())->GetHodoPosInvAdcAdc(index);
-    fHodoNegInvAdcAdc[j] = ((THcHodoscope *)GetParent())->GetHodoNegInvAdcAdc(index);
-    fHodoVelLight[j] = ((THcHodoscope *)GetParent())->GetHodoVelLight(index);
+    Int_t index=parent->GetScinIndex(fPlaneNum-1,j);
+    fHodoPosAdcTimeWindowMin[j] = parent->GetHodoPosAdcTimeWindowMin(index);
+    fHodoPosAdcTimeWindowMax[j] = parent->GetHodoPosAdcTimeWindowMax(index);
+    fHodoNegAdcTimeWindowMin[j] = parent->GetHodoNegAdcTimeWindowMin(index);
+    fHodoNegAdcTimeWindowMax[j] = parent->GetHodoNegAdcTimeWindowMax(index);
+    fHodoPosMinPh[j] = parent->GetHodoPosMinPh(index);
+    fHodoNegMinPh[j] = parent->GetHodoNegMinPh(index);
+    fHodoPosPhcCoeff[j] = parent->GetHodoPosPhcCoeff(index);
+    fHodoNegPhcCoeff[j] = parent->GetHodoNegPhcCoeff(index);
+    fHodoPosTimeOffset[j] = parent->GetHodoPosTimeOffset(index);
+    fHodoNegTimeOffset[j] = parent->GetHodoNegTimeOffset(index);
+    fHodoPosInvAdcOffset[j] = parent->GetHodoPosInvAdcOffset(index);
+    fHodoNegInvAdcOffset[j] = parent->GetHodoNegInvAdcOffset(index);
+    fHodoPosInvAdcLinear[j] = parent->GetHodoPosInvAdcLinear(index);
+    fHodoNegInvAdcLinear[j] = parent->GetHodoNegInvAdcLinear(index);
+    fHodoPosInvAdcAdc[j] = parent->GetHodoPosInvAdcAdc(index);
+    fHodoNegInvAdcAdc[j] = parent->GetHodoNegInvAdcAdc(index);
+    fHodoVelLight[j] = parent->GetHodoVelLight(index);
     //Get Time-Walk correction param
-    fHodoVelFit[j] = ((THcHodoscope *)GetParent())->GetHodoVelFit(index);
-    fHodoCableFit[j] = ((THcHodoscope *)GetParent())->GetHodoCableFit(index);
-    fHodo_LCoeff[j] =  ((THcHodoscope *)GetParent())->GetHodoLCoeff(index);
-    fHodoPos_c1[j] = ((THcHodoscope *)GetParent())->GetHodoPos_c1(index);
-    fHodoNeg_c1[j] = ((THcHodoscope *)GetParent())->GetHodoNeg_c1(index);
-    fHodoPos_c2[j] = ((THcHodoscope *)GetParent())->GetHodoPos_c2(index);
-    fHodoNeg_c2[j] = ((THcHodoscope *)GetParent())->GetHodoNeg_c2(index);
+    fHodoVelFit[j] = parent->GetHodoVelFit(index);
+    fHodoCableFit[j] = parent->GetHodoCableFit(index);
+    fHodo_LCoeff[j] =  parent->GetHodoLCoeff(index);
+    fHodoPos_c1[j] = parent->GetHodoPos_c1(index);
+    fHodoNeg_c1[j] = parent->GetHodoNeg_c1(index);
+    fHodoPos_c2[j] = parent->GetHodoPos_c2(index);
+    fHodoNeg_c2[j] = parent->GetHodoNeg_c2(index);
    
-    Double_t possigma = ((THcHodoscope *)GetParent())->GetHodoPosSigma(index);
-    Double_t negsigma = ((THcHodoscope *)GetParent())->GetHodoNegSigma(index);
+    Double_t possigma = parent->GetHodoPosSigma(index);
+    Double_t negsigma = parent->GetHodoNegSigma(index);
     fHodoSigma[j] = TMath::Sqrt(possigma*possigma+negsigma*negsigma)/2.0;
     
 
@@ -324,7 +325,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
 
   }
 
-  fTdc_Thrs = ((THcHodoscope *)GetParent())->GetTDCThrs();
+  fTdc_Thrs = parent->GetTDCThrs();
   // cout <<" plane num = "<<fPlaneNum<<endl;
   // cout <<" nelem     = "<<fNelem<<endl;
   // cout <<" zpos      = "<<fZpos<<endl;
