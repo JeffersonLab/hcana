@@ -75,9 +75,9 @@ Int_t THcReactionPoint::Process( const THaEvData& )
     theTrack->SetVertex(v);
     if( theTrack == fSpectro->GetGoldenTrack() ) {
       fVertex = theTrack->GetVertex();
-       fVertexOK = kTRUE;
+      fVertexOK = kTRUE;
     }
-   }
+  }
   return 0;
 }
   

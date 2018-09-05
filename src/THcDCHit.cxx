@@ -27,7 +27,7 @@ void THcDCHit::Print( Option_t* opt ) const
        << " time="     << GetTime()
        << " drift="    << GetDist();
   //       << " res="      << GetResolution()
-    //       << " z="        << GetZ()
+  //       << " z="        << GetZ()
   if( *opt != 'C' )
     cout << endl;
 }

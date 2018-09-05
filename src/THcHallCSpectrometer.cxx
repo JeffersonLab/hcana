@@ -288,23 +288,23 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   //  mispointing in transport system y is horizontal and +x is vertical down
   if (fMispointing_y == 999.) {
     if (prefix[0]=='h') {
-       fMispointing_y = 0.1*(0.52-0.012*40.+0.002*40.*40.);
-       if (fTheta_lab < 40) fMispointing_y = 0.1*(0.52-0.012*TMath::Abs(fTheta_lab)+0.002*fTheta_lab*fTheta_lab);
+      fMispointing_y = 0.1*(0.52-0.012*40.+0.002*40.*40.);
+      if (fTheta_lab < 40) fMispointing_y = 0.1*(0.52-0.012*TMath::Abs(fTheta_lab)+0.002*fTheta_lab*fTheta_lab);
     }
     if (prefix[0]=='p') fMispointing_y = 0.1*(-0.6);
-	cout << prefix[0] << " From Formula Mispointing_y = " << fMispointing_y << endl;
+    cout << prefix[0] << " From Formula Mispointing_y = " << fMispointing_y << endl;
   } else {
-	cout << prefix[0] << " From Parameter Set Mispointing_y = " << fMispointing_y << endl;
+    cout << prefix[0] << " From Parameter Set Mispointing_y = " << fMispointing_y << endl;
   }
   if (fMispointing_x == 999.) {
     if (prefix[0]=='h')  {
-         fMispointing_x = 0.1*(2.37-0.086*50+0.0012*50.*50.);
-         if (fTheta_lab < 50)fMispointing_x = 0.1*(2.37-0.086*TMath::Abs(fTheta_lab)+0.0012*fTheta_lab*fTheta_lab);
+      fMispointing_x = 0.1*(2.37-0.086*50+0.0012*50.*50.);
+      if (fTheta_lab < 50)fMispointing_x = 0.1*(2.37-0.086*TMath::Abs(fTheta_lab)+0.0012*fTheta_lab*fTheta_lab);
     }
     if (prefix[0]=='p') fMispointing_x = 0.1*(-1.26);
-	cout << prefix[0] << " From Formula Mispointing_x = " << fMispointing_x << endl;
+    cout << prefix[0] << " From Formula Mispointing_x = " << fMispointing_x << endl;
   } else {
-	cout << prefix[0] << " From Parameter Set Mispointing_x = " << fMispointing_x << endl;
+    cout << prefix[0] << " From Parameter Set Mispointing_x = " << fMispointing_x << endl;
   }
   //
 
@@ -385,7 +385,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
 	   ,&fReconTerms[fNReconTerms].Exp[2]
 	   ,&fReconTerms[fNReconTerms].Exp[3]
 	   ,&fReconTerms[fNReconTerms].Exp[4]);
-   fNReconTerms++;
+    fNReconTerms++;
     good = getline(ifile,line).good();
   }
   cout << "Read " << fNReconTerms << " matrix element terms"  << endl;
@@ -433,7 +433,7 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     Double_t xptar=kBig,yptar=kBig,ytar=kBig,delta=kBig;
     Double_t xtar=0;
     CalculateTargetQuantities(track,xtar,xptar,ytar,yptar,delta); 
-      // Transfer results to track
+    // Transfer results to track
     // No beam raster yet
     //; In transport coordinates phi = hyptar = dy/dz and theta = hxptar = dx/dz
     //;    but for unknown reasons the yp offset is named  htheta_offset
@@ -442,7 +442,7 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     track->SetTarget(0.0, ytar*100.0, xptar, yptar);
     track->SetDp(delta*100.0);	// Percent.  
     Double_t ptemp = fPcentral*(1+track->GetDp()/100.0);
-      track->SetMomentum(ptemp);
+    track->SetMomentum(ptemp);
     TVector3 pvect_temp;
     TransportToLab(track->GetP(),track->GetTTheta(),track->GetTPhi(),pvect_temp);
     track->SetPvect(pvect_temp);
@@ -528,9 +528,9 @@ Int_t THcHallCSpectrometer::TrackCalc()
     fGoldenTrack = static_cast<THaTrack*>( fTracks->At(hit_gold_track) );
     fTrkIfo      = *fGoldenTrack;
     fTrk         = fGoldenTrack;
-  } else
+  } else {
     fGoldenTrack = NULL;
-
+  }
 
   return TrackTimes( fTracks );
 }
@@ -546,11 +546,11 @@ Int_t THcHallCSpectrometer::BestTrackSimple()
   if( GetTrSorting() )   fTracks->Sort();
 
   // Assign index=0 to the best track, 
-    for (Int_t itrack = 0; itrack < fNtracks; itrack++ ){
-      THaTrack* aTrack = static_cast<THaTrack*>( fTracks->At(itrack) );
-      aTrack->SetIndex(1);  
-      if (itrack==0) aTrack->SetIndex(0);  
-    }
+  for (Int_t itrack = 0; itrack < fNtracks; itrack++ ){
+    THaTrack* aTrack = static_cast<THaTrack*>( fTracks->At(itrack) );
+    aTrack->SetIndex(1);  
+    if (itrack==0) aTrack->SetIndex(0);  
+  }
 
   return(0);
 }
@@ -607,75 +607,74 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
 	    ( aTrack->GetBeta()    > fSelBetaMin  )   &&
 	    ( aTrack->GetBeta()    < fSelBetaMax  )   &&
 	    ( aTrack->GetEnergy()  > fSelEtMin    )   &&
-	    ( aTrack->GetEnergy()  < fSelEtMax    ) )
-	  {
-	    Int_t x2D, y2D;
+	    ( aTrack->GetEnergy()  < fSelEtMax    ) ) {
+	  Int_t x2D, y2D;
 
-	    if ( fNtracks > 1 ){
-	      Double_t hitpos3  = aTrack->GetX() + aTrack->GetTheta() * ( fScin2XZpos + 0.5 * fScin2XdZpos );
-	      Int_t icounter3  = TMath::Nint( ( hitpos3 - fHodo->GetPlaneCenter(2) ) / fHodo->GetPlaneSpacing(2) ) + 1;
-	      Int_t hitCnt3  = TMath::Max( TMath::Min(icounter3, (Int_t) fHodo->GetNPaddles(2) ) , 1); // scin_2x_nr = 16
-	      //	      fHitDist3 = fHitPos3 - ( fHodo->GetPlaneSpacing(2) * ( hitCnt3 - 1 ) + fHodo->GetPlaneCenter(2) );
-	      Double_t hitpos4 = aTrack->GetY() + aTrack->GetPhi() * ( fScin2YZpos + 0.5 * fScin2YdZpos );
-	      Int_t icounter4  = TMath::Nint( ( fHodo->GetPlaneCenter(3) - hitpos4 ) / fHodo->GetPlaneSpacing(3) ) + 1;
-	      Int_t hitCnt4  = TMath::Max( TMath::Min(icounter4, (Int_t) fHodo->GetNPaddles(3) ) , 1); // scin_2y_nr = 10
-	      //	      fHitDist4 = fHitPos4 - ( fHodo->GetPlaneCenter(3) - fHodo->GetPlaneSpacing(3) * ( hitCnt4 - 1 ) );
-	      // Plane 3
-	      Int_t mindiff=1000;
-	      for (UInt_t i = 0; i <  fHodo->GetNPaddles(2); i++ ){
-		if ( x2Hits[i] ) {
-		  Int_t diff = TMath::Abs((Int_t)hitCnt3-(Int_t)i-1);
-		  if (diff < mindiff) mindiff = diff;
-		}
+	  if ( fNtracks > 1 ){
+	    Double_t hitpos3  = aTrack->GetX() + aTrack->GetTheta() * ( fScin2XZpos + 0.5 * fScin2XdZpos );
+	    Int_t icounter3  = TMath::Nint( ( hitpos3 - fHodo->GetPlaneCenter(2) ) / fHodo->GetPlaneSpacing(2) ) + 1;
+	    Int_t hitCnt3  = TMath::Max( TMath::Min(icounter3, (Int_t) fHodo->GetNPaddles(2) ) , 1); // scin_2x_nr = 16
+	    //	      fHitDist3 = fHitPos3 - ( fHodo->GetPlaneSpacing(2) * ( hitCnt3 - 1 ) + fHodo->GetPlaneCenter(2) );
+	    Double_t hitpos4 = aTrack->GetY() + aTrack->GetPhi() * ( fScin2YZpos + 0.5 * fScin2YdZpos );
+	    Int_t icounter4  = TMath::Nint( ( fHodo->GetPlaneCenter(3) - hitpos4 ) / fHodo->GetPlaneSpacing(3) ) + 1;
+	    Int_t hitCnt4  = TMath::Max( TMath::Min(icounter4, (Int_t) fHodo->GetNPaddles(3) ) , 1); // scin_2y_nr = 10
+	    //	      fHitDist4 = fHitPos4 - ( fHodo->GetPlaneCenter(3) - fHodo->GetPlaneSpacing(3) * ( hitCnt4 - 1 ) );
+	    // Plane 3
+	    Int_t mindiff=1000;
+	    for (UInt_t i = 0; i <  fHodo->GetNPaddles(2); i++ ){
+	      if ( x2Hits[i] ) {
+		Int_t diff = TMath::Abs((Int_t)hitCnt3-(Int_t)i-1);
+		if (diff < mindiff) mindiff = diff;
 	      }
-	      if(mindiff < 1000) {
-		x2D = mindiff;
-	      } else {
-		x2D = 0;	// Is this what we really want if there were no hits on this plane?
-	      }
-
-	      // Plane 4
-	      mindiff = 1000;
-	      for (UInt_t i = 0; i < fHodo->GetNPaddles(3); i++ ){
-		if ( y2Hits[i] ) {
-		  Int_t diff = TMath::Abs((Int_t)hitCnt4-(Int_t)i-1);
-		  if (diff < mindiff) mindiff = diff;
-		}
-	      }
-	      if(mindiff < 1000) {
-		y2D = mindiff;
-	      } else {
-		y2D = 0;	// Is this what we really want if there were no hits on this plane?
-	      }
-	    } else { // Only a single track
-	      x2D = 0.;
-	      y2D = 0.;
+	    }
+	    if(mindiff < 1000) {
+	      x2D = mindiff;
+	    } else {
+	      x2D = 0;	// Is this what we really want if there were no hits on this plane?
 	    }
 
-	    if ( y2D <= y2Dmin ) {
-	      if ( y2D < y2Dmin ) {
-		x2Dmin = 100;
-		chi2Min = 10000000000.;
-	      } // y2D min
+	    // Plane 4
+	    mindiff = 1000;
+	    for (UInt_t i = 0; i < fHodo->GetNPaddles(3); i++ ){
+	      if ( y2Hits[i] ) {
+		Int_t diff = TMath::Abs((Int_t)hitCnt4-(Int_t)i-1);
+		if (diff < mindiff) mindiff = diff;
+	      }
+	    }
+	    if(mindiff < 1000) {
+	      y2D = mindiff;
+	    } else {
+	      y2D = 0;	// Is this what we really want if there were no hits on this plane?
+	    }
+	  } else { // Only a single track
+	    x2D = 0.;
+	    y2D = 0.;
+	  }
 
-	      if ( x2D <= x2Dmin ){
-		if ( x2D < x2Dmin ){
-		  chi2Min = 10000000000.0;
-		} // condition x2D
-		if ( chi2PerDeg < chi2Min ){
+	  if ( y2D <= y2Dmin ) {
+	    if ( y2D < y2Dmin ) {
+	      x2Dmin = 100;
+	      chi2Min = 10000000000.;
+	    } // y2D min
 
-		  fGoodTrack = itrack; // fGoodTrack = itrack
-		  y2Dmin = y2D;
-		  x2Dmin = x2D;
-		  chi2Min = chi2PerDeg;
-
-		  fGoldenTrack = static_cast<THaTrack*>( fTracks->At( fGoodTrack ) );
-		  fTrkIfo      = *fGoldenTrack;
-		  fTrk         = fGoldenTrack;
-		}
+	    if ( x2D <= x2Dmin ){
+	      if ( x2D < x2Dmin ){
+		chi2Min = 10000000000.0;
 	      } // condition x2D
-	    } // condition y2D
-	  } // conditions for dedx, beta and trac energy
+	      if ( chi2PerDeg < chi2Min ){
+
+		fGoodTrack = itrack; // fGoodTrack = itrack
+		y2Dmin = y2D;
+		x2Dmin = x2D;
+		chi2Min = chi2PerDeg;
+
+		fGoldenTrack = static_cast<THaTrack*>( fTracks->At( fGoodTrack ) );
+		fTrkIfo      = *fGoldenTrack;
+		fTrk         = fGoldenTrack;
+	      }
+	    } // condition x2D
+	  } // condition y2D
+	} // conditions for dedx, beta and trac energy
       } // confition for fNFreeFP greater than fSelNDegreesMin
     } // loop over tracks
 
@@ -705,7 +704,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingScin()
         aTrack->SetIndex(1);
 	if (iitrack==fGoodTrack) aTrack->SetIndex(0);
       }
-     //
+      //
     }
 
   }
@@ -938,16 +937,16 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 	chi2Min = chi2PerDeg;
       }
     }
-      // Set index=0 for fGoodTrack 
-      for (Int_t iitrack = 0; iitrack < fNtracks; iitrack++ ){
- 	THaTrack* aTrack = dynamic_cast<THaTrack*>( fTracks->At(iitrack) );
-        aTrack->SetIndex(1);
-	if (iitrack==fGoodTrack) aTrack->SetIndex(0);
-      }
-     //
+    // Set index=0 for fGoodTrack 
+    for (Int_t iitrack = 0; iitrack < fNtracks; iitrack++ ){
+      THaTrack* aTrack = dynamic_cast<THaTrack*>( fTracks->At(iitrack) );
+      aTrack->SetIndex(1);
+      if (iitrack==fGoodTrack) aTrack->SetIndex(0);
+    }
+    //
 
 
-  } 
+  }
 
   return(0);
 }

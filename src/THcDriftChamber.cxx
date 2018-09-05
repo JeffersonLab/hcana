@@ -94,34 +94,34 @@ void THcDriftChamber::AddPlane(THcDriftChamberPlane *plane)
 {
   plane->SetPlaneIndex(fNPlanes);
   fPlanes.push_back(plane);
- // HMS Specific
+  // HMS Specific
   // Hard code Y plane numbers.  Eventually need to get from database
   if (fHMSStyleChambers) {
-   if(fChamberNum == 1) {
-     YPlaneNum=2;
-     YPlanePNum=5;
-    if(plane->GetPlaneNum() == 2) YPlaneInd = fNPlanes;
-    if(plane->GetPlaneNum() == 5) YPlanePInd = fNPlanes;
-   } else {
-     YPlaneNum=8;
-     YPlanePNum=11;
-    if(plane->GetPlaneNum() == 8) YPlaneInd = fNPlanes;
-    if(plane->GetPlaneNum() == 11) YPlanePInd = fNPlanes;
-   }
+    if(fChamberNum == 1) {
+      YPlaneNum=2;
+      YPlanePNum=5;
+      if(plane->GetPlaneNum() == 2) YPlaneInd = fNPlanes;
+      if(plane->GetPlaneNum() == 5) YPlanePInd = fNPlanes;
+    } else {
+      YPlaneNum=8;
+      YPlanePNum=11;
+      if(plane->GetPlaneNum() == 8) YPlaneInd = fNPlanes;
+      if(plane->GetPlaneNum() == 11) YPlanePInd = fNPlanes;
+    }
   } else {
- // SOS Specific
-  // Hard code X plane numbers.   Eventually need to get from database
-   if(fChamberNum == 1) {
-     XPlaneNum=3;
-     XPlanePNum=4;
-    if(plane->GetPlaneNum() == 3) XPlaneInd = fNPlanes;
-    if(plane->GetPlaneNum() == 4) XPlanePInd = fNPlanes;
-   } else {
-     XPlaneNum=9;
-     XPlanePNum=10;
-    if(plane->GetPlaneNum() == 9) XPlaneInd = fNPlanes;
-    if(plane->GetPlaneNum() == 10) XPlanePInd = fNPlanes;
-   }
+    // SOS Specific
+    // Hard code X plane numbers.   Eventually need to get from database
+    if(fChamberNum == 1) {
+      XPlaneNum=3;
+      XPlanePNum=4;
+      if(plane->GetPlaneNum() == 3) XPlaneInd = fNPlanes;
+      if(plane->GetPlaneNum() == 4) XPlanePInd = fNPlanes;
+    } else {
+      XPlaneNum=9;
+      XPlanePNum=10;
+      if(plane->GetPlaneNum() == 9) XPlaneInd = fNPlanes;
+      if(plane->GetPlaneNum() == 10) XPlanePInd = fNPlanes;
+    }
   }
   fNPlanes++;
   return;
@@ -165,7 +165,7 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   fSpacePointCriterion = static_cast<THcDC*>(fParent)->GetSpacePointCriterion(fChamberNum);
   fMaxDist = TMath::Sqrt(fSpacePointCriterion/2.0); // For easy space points
 
-   if (fhdebugflagpr) cout << " cham = " << fChamberNum << " Set yplane num " << YPlaneNum << " "<< YPlanePNum << endl;
+  if (fhdebugflagpr) cout << " cham = " << fChamberNum << " Set yplane num " << YPlaneNum << " "<< YPlanePNum << endl;
   // Generate the HAA3INV matrix for all the acceptable combinations
   // of hit planes.  Try to make it as generic as possible
   // pindex=0 -> Plane 1 missing, pindex5 -> plane 6 missing.  Won't
@@ -229,19 +229,19 @@ Int_t THcDriftChamber::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
   // Register variables in global list
 
-   RVarDef vars[] = {
-     { "maxhits",     "Maximum hits allowed",    "fMaxHits" },
-     { "spacepoints", "Space points of DC",      "fNSpacePoints" },
-     { "nhit", "Number of DC hits",  "fNhits" },
-     { "trawhit", "Number of True Raw hits", "fN_True_RawHits" },
-     { "stub_x", "", "fSpacePoints.THcSpacePoint.GetStubX()" },
-     { "stub_xp", "", "fSpacePoints.THcSpacePoint.GetStubXP()" },
-     { "stub_y", "", "fSpacePoints.THcSpacePoint.GetStubY()" },
-     { "stub_yp", "", "fSpacePoints.THcSpacePoint.GetStubYP()" },
-     { "ncombos", "", "fSpacePoints.THcSpacePoint.GetCombos()" },
-     { 0 }
-   };
-   return DefineVarsFromList( vars, mode );
+  RVarDef vars[] = {
+    { "maxhits",     "Maximum hits allowed",    "fMaxHits" },
+    { "spacepoints", "Space points of DC",      "fNSpacePoints" },
+    { "nhit", "Number of DC hits",  "fNhits" },
+    { "trawhit", "Number of True Raw hits", "fN_True_RawHits" },
+    { "stub_x", "", "fSpacePoints.THcSpacePoint.GetStubX()" },
+    { "stub_xp", "", "fSpacePoints.THcSpacePoint.GetStubXP()" },
+    { "stub_y", "", "fSpacePoints.THcSpacePoint.GetStubY()" },
+    { "stub_yp", "", "fSpacePoints.THcSpacePoint.GetStubYP()" },
+    { "ncombos", "", "fSpacePoints.THcSpacePoint.GetCombos()" },
+    { 0 }
+  };
+  return DefineVarsFromList( vars, mode );
   //return kOK;
 
 }
@@ -267,10 +267,10 @@ void THcDriftChamber::PrintDecode( void )
 {
   cout << " Num of nits = " << fNhits << endl;
   cout << " Num " << " Plane "  << " Wire " <<  "  Wire-Center  " << " RAW TDC " << " Drift time" << endl;
-    for(Int_t ihit=0;ihit<fNhits;ihit++) {
+  for(Int_t ihit=0;ihit<fNhits;ihit++) {
     THcDCHit* thishit = fHits[ihit];
     cout << ihit << "       " <<thishit->GetPlaneNum()  << "     " << thishit->GetWireNum() << "     " <<  thishit->GetPos() << "    " << thishit->GetRawTime() << "    " << thishit->GetTime() << endl;
-    }
+  }
 }
 
 
@@ -357,7 +357,7 @@ Int_t THcDriftChamber::FindSpacePoints( void )
 	if(fRemove_Sppt_If_One_YPlane == 1) {
 	  // The routine is specific to HMS
 	  //Int_t ndest=
-	    DestroyPoorSpacePoints(); // Only for HMS?
+	  DestroyPoorSpacePoints(); // Only for HMS?
 	  // Loop over space points and remove those with less than 4 planes
 	  // hit and missing hits in Y,Y' planes
 	}
@@ -681,17 +681,17 @@ Int_t THcDriftChamber::DestroyPoorSpacePoints()
       // Does this work, or do we have to copy each member?
       // If it doesn't we should overload the = operator
       //(*fSpacePoints)[isp] = (*fSpacePoints)[osp];
-        THcSpacePoint* spi = (THcSpacePoint*)(*fSpacePoints)[isp];
-        THcSpacePoint* spo = (THcSpacePoint*)(*fSpacePoints)[osp];
-        spi->Clear();
-        Double_t xt,yt;
-        xt=spo->GetX();
-        yt=spo->GetY();
-        spi->SetXY(xt, yt);
-        for(Int_t ihit=0;ihit<spo->GetNHits();ihit++) {
-            THcDCHit* hit = spo->GetHit(ihit);
-           spi->AddHit(hit);
-	}
+      THcSpacePoint* spi = (THcSpacePoint*)(*fSpacePoints)[isp];
+      THcSpacePoint* spo = (THcSpacePoint*)(*fSpacePoints)[osp];
+      spi->Clear();
+      Double_t xt,yt;
+      xt=spo->GetX();
+      yt=spo->GetY();
+      spi->SetXY(xt, yt);
+      for(Int_t ihit=0;ihit<spo->GetNHits();ihit++) {
+	THcDCHit* hit = spo->GetHit(ihit);
+	spi->AddHit(hit);
+      }
     }
   }
   return nremoved;
@@ -732,9 +732,9 @@ Int_t THcDriftChamber::SpacePointMultiWire()
 
     for(Int_t ip=0;ip<fNPlanes;ip++) {
       nhitsperplane[ip] = 0;
-       for(Int_t ih=0;ih<MAX_HITS_PER_POINT;ih++) {
-         hits_plane[ip][ih] = 0;
-       }
+      for(Int_t ih=0;ih<MAX_HITS_PER_POINT;ih++) {
+	hits_plane[ip][ih] = 0;
+      }
     }
     // Sort Space Points hits by plane
     THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
@@ -913,17 +913,17 @@ void THcDriftChamber::SelectSpacePoints()
       if(sp->GetNHits() >= fMinHits) {
 	if(isp > sp_count) {
 	  //	  (*fSpacePoints)[sp_count] = (*fSpacePoints)[isp];
-        THcSpacePoint* sp1 = (THcSpacePoint*)(*fSpacePoints)[sp_count];
-        sp1->Clear();
-        Double_t xt,yt;
-        xt=sp->GetX();
-        yt=sp->GetY();
-        sp1->SetXY(xt, yt);
-        sp1->SetCombos(sp->GetCombos());
-        for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
+	  THcSpacePoint* sp1 = (THcSpacePoint*)(*fSpacePoints)[sp_count];
+	  sp1->Clear();
+	  Double_t xt,yt;
+	  xt=sp->GetX();
+	  yt=sp->GetY();
+	  sp1->SetXY(xt, yt);
+	  sp1->SetCombos(sp->GetCombos());
+	  for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
             THcDCHit* hit = sp->GetHit(ihit);
-           sp1->AddHit(hit);
-	}
+	    sp1->AddHit(hit);
+	  }
 	}
 	sp_count++;
       }
@@ -958,119 +958,117 @@ void THcDriftChamber::CorrectHitTimes()
   //if (fhdebugflagpr) cout << "In correcthittimes fNSpacePoints = " << fNSpacePoints << endl;
 
   for(Int_t isp=0;isp<fNSpacePoints;isp++) {
-	  THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
-	  Double_t x = sp->GetX();
-	  Double_t y = sp->GetY();
-	  for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
-		  THcDCHit* hit = sp->GetHit(ihit);
-		  THcDriftChamberPlane* plane=hit->GetWirePlane();
+    THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
+    Double_t x = sp->GetX();
+    Double_t y = sp->GetY();
+    for(Int_t ihit=0;ihit<sp->GetNHits();ihit++) {
+      THcDCHit* hit = sp->GetHit(ihit);
+      THcDriftChamberPlane* plane=hit->GetWirePlane();
+      
+      // How do we know this correction only gets applied once?  Is
+      // it determined that a given hit can only belong to one space point?
+      Double_t time_corr = plane->GetReadoutX() ?
+	y*plane->GetReadoutCorr()/fWireVelocity :
+	x*plane->GetReadoutCorr()/fWireVelocity;
 
-		  // How do we know this correction only gets applied once?  Is
-		  // it determined that a given hit can only belong to one space point?
-		  Double_t time_corr = plane->GetReadoutX() ?
-				 y*plane->GetReadoutCorr()/fWireVelocity :
-				 x*plane->GetReadoutCorr()/fWireVelocity;
+      // This applies the wire velocity correction for new SHMS chambers --hszumila, SEP17
+      if (!fHMSStyleChambers){
+	Int_t pln = hit->GetPlaneNum();
+	Int_t readoutSide = hit->GetReadoutSide();
 
-		  // This applies the wire velocity correction for new SHMS chambers --hszumila, SEP17
-		  if (!fHMSStyleChambers){
-			  Int_t pln = hit->GetPlaneNum();
-			  Int_t readoutSide = hit->GetReadoutSide();
+	Double_t posn = hit->GetPos();
+	//The following values are determined from param file as permutations on planes 5 and 10
+	Int_t readhoriz = plane->GetReadoutLR();
+	Int_t readvert = plane->GetReadoutTB();
 
-			  Double_t posn = hit->GetPos();
-			  //The following values are determined from param file as permutations on planes 5 and 10
-			  Int_t readhoriz = plane->GetReadoutLR();
-			  Int_t readvert = plane->GetReadoutTB();
+	//+x is up and +y is beam right!
+	double alpha = static_cast<THcDC*>(fParent)->GetAlphaAngle(pln);
+	double xc = posn*TMath::Sin(alpha);
+	double yc = posn*TMath::Cos(alpha);
 
-			  //+x is up and +y is beam right!
-			  double alpha = static_cast<THcDC*>(fParent)->GetAlphaAngle(pln);
-			  double xc = posn*TMath::Sin(alpha);
-			  double yc = posn*TMath::Cos(alpha);
+	Double_t wireDistance = plane->GetReadoutX() ?
+	  (abs(y-yc))*abs(plane->GetReadoutCorr()) :
+	  (abs(x-xc))*abs(plane->GetReadoutCorr());
 
-			  Double_t wireDistance = plane->GetReadoutX() ?
-				  (abs(y-yc))*abs(plane->GetReadoutCorr()) :
-				  (abs(x-xc))*abs(plane->GetReadoutCorr());
+	//Readout side is based off wiring diagrams
+	switch (readoutSide){
+	case 1: //readout from top of chamber
+	  if (x>xc){wireDistance = -readvert*wireDistance;}
+	  else{wireDistance = readvert*wireDistance;}
+	  
+	  break;
+	case 2://readout from right of chamber
+	  if (y>yc){wireDistance = -readhoriz*wireDistance;}
+	  else{wireDistance = readhoriz*wireDistance;}
+  
+	  break;
+	case 3: //readout from bottom of chamber
+	  if (xc>x){wireDistance= -readvert*wireDistance;}
+	  else{wireDistance = readvert*wireDistance;}
 
-			  //Readout side is based off wiring diagrams
-			  switch (readoutSide){
-			  case 1: //readout from top of chamber
-				  if (x>xc){wireDistance = -readvert*wireDistance;}
-				  else{wireDistance = readvert*wireDistance;}
+	  break;
+	case 4: //readout from left of chamber
+	  if(yc>y){wireDistance = -readhoriz*wireDistance;}
+	  else{wireDistance = readhoriz*wireDistance;}
 
-				  break;
-			  case 2://readout from right of chamber
-				  if (y>yc){wireDistance = -readhoriz*wireDistance;}
-				  else{wireDistance = readhoriz*wireDistance;}
+	  break;
+	default:
+	  wireDistance = 0.0;
+	}
 
-				  break;
-			  case 3: //readout from bottom of chamber
-				  if (xc>x){wireDistance= -readvert*wireDistance;}
-				  else{wireDistance = readvert*wireDistance;}
+	Double_t timeCorrection = wireDistance/fWireVelocity;
 
-				  break;
-			  case 4: //readout from left of chamber
-				  if(yc>y){wireDistance = -readhoriz*wireDistance;}
-				  else{wireDistance = readhoriz*wireDistance;}
+	if(fFixPropagationCorrection==0) { // ENGINE behavior
+	  Double_t time=hit->GetTime();
+	  hit->SetTime(time - timeCorrection);
+	  hit->ConvertTimeToDist();
+	} else {
+	  Double_t time=hit->GetTime();
+	  Double_t dist=hit->GetDist();
 
-				  break;
-			  default:
-				  wireDistance = 0.0;
-			  }
+	  hit->SetTime(time - timeCorrection);
+	  //double usingOldTime = time-time_corr;
+	  //hit->SetTime(time- time_corr);
 
-			  Double_t timeCorrection = wireDistance/fWireVelocity;
+	  hit->ConvertTimeToDist();
+	  sp->SetHitDist(ihit, hit->GetDist());
 
-			  if(fFixPropagationCorrection==0) { // ENGINE behavior
-				  Double_t time=hit->GetTime();
-				  hit->SetTime(time - timeCorrection);
-		          hit->ConvertTimeToDist();
-			  }
-			  else{
-				  Double_t time=hit->GetTime();
-				  Double_t dist=hit->GetDist();
+	  hit->SetTime(time);	// Restore time
+	  hit->SetDist(dist);	// Restore distance
+	}
 
-				  hit->SetTime(time - timeCorrection);
-				  //double usingOldTime = time-time_corr;
-				  //hit->SetTime(time- time_corr);
-
-				  hit->ConvertTimeToDist();
-				  sp->SetHitDist(ihit, hit->GetDist());
-
-				  hit->SetTime(time);	// Restore time
-				  hit->SetDist(dist);	// Restore distance
-			  }
-
-		  }
-		  /////////////////////////////////////////////////////////////
-
-		  //     if (fhdebugflagpr) cout << "Correcting hit " << hit << " " << plane->GetPlaneNum() << " " << isp << "/" << ihit << "  " << x << "," << y << endl;
-		  // Fortran ENGINE does not do this check, so hits can get "corrected"
-		  // multiple times if they belong to multiple space points.
-		  // To reproduce the precise ENGINE behavior, remove this if condition.
-		  else{
-			  if(fFixPropagationCorrection==0) { // ENGINE behavior
-				  hit->SetTime(hit->GetTime() - plane->GetCentralTime()
-					  + plane->GetDriftTimeSign()*time_corr);
-				  hit->ConvertTimeToDist();
-			  //      hit->SetCorrectedStatus(1);
-			  } else {
-			  // New behavior: Save corrected distance with the hit in the space point
-			  // so that the same hit can have a different correction depending on
-			  // which space point it is in.
-			  //
-			  // This is a hack now because the converttimetodist method is connected to the hit
-			  // so I compute the corrected time and distance, and then restore the original
-			  // time and distance.  Can probably add a method to hit that does a conversion on a time
-			  // but does not modify the hit data.
-			  Double_t time=hit->GetTime();
-			  Double_t dist=hit->GetDist();
-			  hit->SetTime(time - plane->GetCentralTime()
-					  + plane->GetDriftTimeSign()*time_corr);
-			  hit->ConvertTimeToDist();
-			  sp->SetHitDist(ihit, hit->GetDist());
-			  hit->SetTime(time);	// Restore time
-			  hit->SetDist(dist);	// Restore distance
-			  }
-		  }
-	  }
+      } else {
+	/////////////////////////////////////////////////////////////
+	
+	//     if (fhdebugflagpr) cout << "Correcting hit " << hit << " " << plane->GetPlaneNum() << " " << isp << "/" << ihit << "  " << x << "," << y << endl;
+	// Fortran ENGINE does not do this check, so hits can get "corrected"
+	// multiple times if they belong to multiple space points.
+	// To reproduce the precise ENGINE behavior, remove this if condition.
+	if(fFixPropagationCorrection==0) { // ENGINE behavior
+	  hit->SetTime(hit->GetTime() - plane->GetCentralTime()
+		       + plane->GetDriftTimeSign()*time_corr);
+	  hit->ConvertTimeToDist();
+	  //      hit->SetCorrectedStatus(1);
+	} else {
+	  // New behavior: Save corrected distance with the hit in the space point
+	  // so that the same hit can have a different correction depending on
+	  // which space point it is in.
+	  //
+	  // This is a hack now because the converttimetodist method is connected to the hit
+	  // so I compute the corrected time and distance, and then restore the original
+	  // time and distance.  Can probably add a method to hit that does a conversion on a time
+	  // but does not modify the hit data.
+	  Double_t time=hit->GetTime();
+	  Double_t dist=hit->GetDist();
+	  hit->SetTime(time - plane->GetCentralTime()
+		       + plane->GetDriftTimeSign()*time_corr);
+	  hit->ConvertTimeToDist();
+	  sp->SetHitDist(ihit, hit->GetDist());
+	  hit->SetTime(time);	// Restore time
+	  hit->SetDist(dist);	// Restore distance
+	}
+      }
+    }
   }
 }
 UInt_t THcDriftChamber::Count1Bits(UInt_t x)
@@ -1197,7 +1195,7 @@ void THcDriftChamber::LeftRight()
       }
       if (nplaneshit >= fNPlanes-1) {
 	Double_t chi2;
-	 chi2 = FindStub(nhits, sp,plane_list, bitpat, plusminus, stub);
+	chi2 = FindStub(nhits, sp,plane_list, bitpat, plusminus, stub);
 	if (fdebugstubchisq) cout << " pmloop = " << pmloop << " chi2 = " << chi2 << endl;
 	if(chi2 < minchi2) {
 	  if (fStubMaxXPDiff<100. ) {
@@ -1220,13 +1218,13 @@ void THcDriftChamber::LeftRight()
               sp->SetStub(stub);
 	    } else {		// Record best stub failing angle cut
               if (chi2 < tmp_minchi2) {
-	      tmp_minchi2 = chi2;
-	      for(Int_t ihit=0;ihit<nhits;ihit++) {
-		tmp_plusminus[ihit] = plusminus[ihit];
-	      }
-	      for(Int_t i=0;i<4;i++) {
-		tmp_stub[i] = stub[i];
-	      }
+		tmp_minchi2 = chi2;
+		for(Int_t ihit=0;ihit<nhits;ihit++) {
+		  tmp_plusminus[ihit] = plusminus[ihit];
+		}
+		for(Int_t i=0;i<4;i++) {
+		  tmp_stub[i] = stub[i];
+		}
 	      }
 	    }
 	  } else { // Not HMS specific
@@ -1256,52 +1254,51 @@ void THcDriftChamber::LeftRight()
 	  }
           sp->SetStub(stub);
 	}
-      }//////////
-      else {
+      } else {
 	if (fhdebugflagpr) cout << "Insufficient planes hit in THcDriftChamber::LeftRight()" << bitpat <<endl;
       }
     } // End loop of pm combinations
 
     if (minchi2 == maxchi2 && tmp_minchi2 == maxchi2) {
  
-    }else{
-    if(minchi2 == maxchi2 ) {	// No track passed angle cut
-      minchi2 = tmp_minchi2;
-      for(Int_t ihit=0;ihit<nhits;ihit++) {
-	plusminusbest[ihit] = tmp_plusminus[ihit];
+    } else {
+      if(minchi2 == maxchi2 ) {	// No track passed angle cut
+	minchi2 = tmp_minchi2;
+	for(Int_t ihit=0;ihit<nhits;ihit++) {
+	  plusminusbest[ihit] = tmp_plusminus[ihit];
+	}
+	sp->SetStub(tmp_stub);
       }
-      sp->SetStub(tmp_stub);
-    }
-    Double_t *spstub = sp->GetStubP();
+      Double_t *spstub = sp->GetStubP();
 
-    // Calculate final coordinate based on plusminusbest
-    // Update the hit positions in the space points
-    for(Int_t ihit=0; ihit<nhits; ihit++) {
-      // Save left/right status with the hit and in the spaleftce point
-      // In THcDC will decide which to used based on fix_lr flag
-      sp->GetHit(ihit)->SetLeftRight(plusminusbest[ihit]);
-      sp->SetHitLR(ihit, plusminusbest[ihit]);
- }
+      // Calculate final coordinate based on plusminusbest
+      // Update the hit positions in the space points
+      for(Int_t ihit=0; ihit<nhits; ihit++) {
+	// Save left/right status with the hit and in the spaleftce point
+	// In THcDC will decide which to used based on fix_lr flag
+	sp->GetHit(ihit)->SetLeftRight(plusminusbest[ihit]);
+	sp->SetHitLR(ihit, plusminusbest[ihit]);
+      }
 
-    // Stubs are calculated in rotated coordinate system
-    // (I think this rotates in case chambers not perpendicular to central ray)
-    Int_t pindex=plane_list[0];
-    if(spstub[2] - fTanBeta[pindex] == -1.0) {
-      if (fhdebugflagpr) cout << "THcDriftChamber::LeftRight(): stub3 error" << endl;
-    }
-    stub[2] = (spstub[2] - fTanBeta[pindex])
-      / (1.0 + spstub[2]*fTanBeta[pindex]);
-    if(spstub[2]*fSinBeta[pindex] ==  -fCosBeta[pindex]) {
-      if (fhdebugflagpr) cout << "THcDriftChamber::LeftRight(): stub4 error" << endl;
-    }
-    stub[3] = spstub[3]
-      / (spstub[2]*fSinBeta[pindex]+fCosBeta[pindex]);
-    stub[0] = spstub[0]*fCosBeta[pindex]
-      - spstub[0]*stub[2]*fSinBeta[pindex];
-    stub[1] = spstub[1]
-      - spstub[1]*stub[3]*fSinBeta[pindex];
-    sp->SetStub(stub);
-    //if (fhdebugflagpr) cout << " Left/Right space pt " << isp+1 << " " << stub[0]<< " " << stub[1] << " " << stub[2]<< " " << stub[3] << endl;
+      // Stubs are calculated in rotated coordinate system
+      // (I think this rotates in case chambers not perpendicular to central ray)
+      Int_t pindex=plane_list[0];
+      if(spstub[2] - fTanBeta[pindex] == -1.0) {
+	if (fhdebugflagpr) cout << "THcDriftChamber::LeftRight(): stub3 error" << endl;
+      }
+      stub[2] = (spstub[2] - fTanBeta[pindex])
+	/ (1.0 + spstub[2]*fTanBeta[pindex]);
+      if(spstub[2]*fSinBeta[pindex] ==  -fCosBeta[pindex]) {
+	if (fhdebugflagpr) cout << "THcDriftChamber::LeftRight(): stub4 error" << endl;
+      }
+      stub[3] = spstub[3]
+	/ (spstub[2]*fSinBeta[pindex]+fCosBeta[pindex]);
+      stub[0] = spstub[0]*fCosBeta[pindex]
+	- spstub[0]*stub[2]*fSinBeta[pindex];
+      stub[1] = spstub[1]
+	- spstub[1]*stub[3]*fSinBeta[pindex];
+      sp->SetStub(stub);
+      //if (fhdebugflagpr) cout << " Left/Right space pt " << isp+1 << " " << stub[0]<< " " << stub[1] << " " << stub[2]<< " " << stub[3] << endl;
     }
   }
   // Option to print stubs
