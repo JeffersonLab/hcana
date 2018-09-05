@@ -973,10 +973,7 @@ void THcDriftChamber::CorrectHitTimes()
 				 x*plane->GetReadoutCorr()/fWireVelocity;
 
 		  // This applies the wire velocity correction for new SHMS chambers --hszumila, SEP17
-		  THcDC* fParent;
-		  fParent = (THcDC*) GetParent();
-		  Int_t version = fParent->GetVersion();
-		  if (version!= 0){
+		  if (!fHMSStyleChambers){
 			  Int_t pln = hit->GetPlaneNum();
 			  Int_t readoutSide = hit->GetReadoutSide();
 
