@@ -657,21 +657,21 @@ void THcDC::SetFocalPlaneBestTrack(Int_t golden_track_index)
 //
 void THcDC::EfficiencyPerWire(Int_t golden_track_index)
 {
-      THcDCTrack *tr1 = static_cast<THcDCTrack*>( fDCTracks->At(golden_track_index));
-      Double_t track_pos;
-      for (UInt_t ihit = 0; ihit < UInt_t (tr1->GetNHits()); ihit++) {
-	THcDCHit *hit = tr1->GetHit(ihit);
-	Int_t plane = hit->GetPlaneNum() - 1;
-	track_pos=tr1->GetCoord(plane);
-	Int_t wire_num = hit->GetWireNum();
-	Int_t wire_track_num=round(fPlanes[plane]->CalcWireFromPos(track_pos));
-        if ( (wire_num-wire_track_num) ==0) fWire_hit_did[plane]=wire_num;
-      } 
-      for(Int_t ip=0; ip<fNPlanes;ip++) {
-	track_pos=tr1->GetCoord(ip);
-	Int_t wire_should = round(fPlanes[ip]->CalcWireFromPos(track_pos));
-        fWire_hit_should[ip]=wire_should;
-      }
+  THcDCTrack *tr1 = static_cast<THcDCTrack*>( fDCTracks->At(golden_track_index));
+  Double_t track_pos;
+  for (UInt_t ihit = 0; ihit < UInt_t (tr1->GetNHits()); ihit++) {
+    THcDCHit *hit = tr1->GetHit(ihit);
+    Int_t plane = hit->GetPlaneNum() - 1;
+    track_pos=tr1->GetCoord(plane);
+    Int_t wire_num = hit->GetWireNum();
+    Int_t wire_track_num=round(fPlanes[plane]->CalcWireFromPos(track_pos));
+    if ( (wire_num-wire_track_num) ==0) fWire_hit_did[plane]=wire_num;
+  } 
+  for(Int_t ip=0; ip<fNPlanes;ip++) {
+    track_pos=tr1->GetCoord(ip);
+    Int_t wire_should = round(fPlanes[ip]->CalcWireFromPos(track_pos));
+    fWire_hit_should[ip]=wire_should;
+  }
 }
 //
 void THcDC::PrintSpacePoints()
@@ -682,13 +682,13 @@ void THcDC::PrintSpacePoints()
     printf("%6s %-8s %-8s %6s %6s %10s \n","Point","x","y"," hits ","combos"," for each hit");
     TClonesArray* spacepointarray = fChambers[ich]->GetSpacePointsP();
     for(Int_t isp=0;isp<fChambers[ich]->GetNSpacePoints();isp++) {
-	THcSpacePoint* sp = (THcSpacePoint*)(spacepointarray->At(isp));
-	printf("%5d %8.5f %8.5f %5d  %5d ",isp+1,sp->GetX(),sp->GetY(),sp->GetNHits(),sp->GetCombos()) ;
-	for (Int_t ii=0;ii<sp->GetNHits();ii++) {
-	  THcDCHit* hittemp = (THcDCHit*)(sp->GetHit(ii));
-	  printf("%3d %3d %3d",hittemp->GetPlaneNum(),hittemp->GetWireNum(),hittemp->GetLR());
-        }
-	    printf("\n");
+      THcSpacePoint* sp = (THcSpacePoint*)(spacepointarray->At(isp));
+      printf("%5d %8.5f %8.5f %5d  %5d ",isp+1,sp->GetX(),sp->GetY(),sp->GetNHits(),sp->GetCombos()) ;
+      for (Int_t ii=0;ii<sp->GetNHits();ii++) {
+	THcDCHit* hittemp = (THcDCHit*)(sp->GetHit(ii));
+	printf("%3d %3d %3d",hittemp->GetPlaneNum(),hittemp->GetWireNum(),hittemp->GetLR());
+      }
+      printf("\n");
     }
   }
 }
@@ -702,9 +702,9 @@ void THcDC::PrintStubs()
     printf("%-5s %-18s %-18s %-18s %-18s\n","     ","[cm]","[cm]","[cm]","[cm]");
     TClonesArray* spacepointarray = fChambers[ich]->GetSpacePointsP();
     for(Int_t isp=0;isp<fChambers[ich]->GetNSpacePoints();isp++) {
-	THcSpacePoint* sp = (THcSpacePoint*)(spacepointarray->At(isp));
-	    Double_t *spstubt=sp->GetStubP();
-	    printf("%-5d % 15.10e % 15.10e % 15.10e % 15.10e \n",isp+1,spstubt[0],spstubt[1],spstubt[2],spstubt[3]);
+      THcSpacePoint* sp = (THcSpacePoint*)(spacepointarray->At(isp));
+      Double_t *spstubt=sp->GetStubP();
+      printf("%-5d % 15.10e % 15.10e % 15.10e % 15.10e \n",isp+1,spstubt[0],spstubt[1],spstubt[2],spstubt[3]);
     }
   }
 }
@@ -894,8 +894,8 @@ void THcDC::LinkStubs()
       if(fNDCTracks<MAXTRACKS) {
 	// Need some constructed t thingy
         if (fSp[isp]->GetSetStubFlag()) {
-	THcDCTrack *newDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
-	newDCTrack->AddSpacePoint(fSp[isp]);
+	  THcDCTrack *newDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
+	  newDCTrack->AddSpacePoint(fSp[isp]);
 	}
       } else {
 	if (fdebuglinkstubs) cout << "EPIC FAIL 3:  Too many tracks found in THcDC::LinkStubs" << endl;
@@ -906,17 +906,17 @@ void THcDC::LinkStubs()
     }
   }
   ///
-if (fdebuglinkstubs) {
-     cout << " Number of tracks from link stubs = " << fNDCTracks << endl;
-     printf("%s %s \n","Track","Plane Wire ");
-     for (UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
-       THcDCTrack *tempTrack = (THcDCTrack*)( fDCTracks->At(itrack));
-       printf("%-5d  ",itrack+1);
-        for (Int_t ihit=0;ihit<tempTrack->GetNHits();ihit++) {
+  if (fdebuglinkstubs) {
+    cout << " Number of tracks from link stubs = " << fNDCTracks << endl;
+    printf("%s %s \n","Track","Plane Wire ");
+    for (UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
+      THcDCTrack *tempTrack = (THcDCTrack*)( fDCTracks->At(itrack));
+      printf("%-5d  ",itrack+1);
+      for (Int_t ihit=0;ihit<tempTrack->GetNHits();ihit++) {
        	THcDCHit* hit=(THcDCHit*)(tempTrack->GetHit(ihit));
        	printf("%3d %3d",hit->GetPlaneNum(),hit->GetWireNum());
-       }
-	printf("\n");
+      }
+      printf("\n");
     }
   }
 }
@@ -943,21 +943,21 @@ void THcDC::TrackFit()
       THcDCHit* hit=theDCTrack->GetHit(ihit);
       planes[ihit]=hit->GetPlaneNum()-1;
       if(fFixLR) {
-    	  if(fFixPropagationCorrection) {
-    		  coords[ihit] = hit->GetPos()
-	    		+ theDCTrack->GetHitLR(ihit)*theDCTrack->GetHitDist(ihit);
-    	  } else {
-    		  coords[ihit] = hit->GetPos()
-	    		+ theDCTrack->GetHitLR(ihit)*hit->GetDist();
-    	  }
+	if(fFixPropagationCorrection) {
+	  coords[ihit] = hit->GetPos()
+	    + theDCTrack->GetHitLR(ihit)*theDCTrack->GetHitDist(ihit);
+	} else {
+	  coords[ihit] = hit->GetPos()
+	    + theDCTrack->GetHitLR(ihit)*hit->GetDist();
+	}
 
       } else {
-    	  if(fFixPropagationCorrection) {
-    		  coords[ihit] = hit->GetPos()
-	    		+ hit->GetLR()*theDCTrack->GetHitDist(ihit);
-    	  } else {
-    		  coords[ihit] = hit->GetCoord();
-    	  }
+	if(fFixPropagationCorrection) {
+	  coords[ihit] = hit->GetPos()
+	    + hit->GetLR()*theDCTrack->GetHitDist(ihit);
+	} else {
+	  coords[ihit] = hit->GetCoord();
+	}
       }
 
 
@@ -969,39 +969,39 @@ void THcDC::TrackFit()
       TVectorD TT(NUM_FPRAY);
       TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
-    	  TT[irayp] = 0.0;
-    	  for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {	
-	    
-	    THcDCHit* hit=theDCTrack->GetHit(ihit);
-	    
-	    TT[irayp] += (coords[ihit]*fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])/pow(hit->GetWireSigma(),2);
-	    if (hit->GetPlaneNum()==5)
-	      {
-		//	cout << "Plane: " << hit->GetPlaneNum() << endl;
-		//cout << "Wire: " <<hit->GetWireNum() << endl;
-		//cout << "Sigma: " << hit->GetWireSigma() << endl;
-	      }
+	TT[irayp] = 0.0;
+	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {	
 
-	  } //end hit loop
+	  THcDCHit* hit=theDCTrack->GetHit(ihit);
+	    
+	  TT[irayp] += (coords[ihit]*fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])/pow(hit->GetWireSigma(),2);
+	  //	  if (hit->GetPlaneNum()==5)
+	  //	    {
+	  //	      //	cout << "Plane: " << hit->GetPlaneNum() << endl;
+	  //	      //cout << "Wire: " <<hit->GetWireNum() << endl;
+	  //	      //cout << "Sigma: " << hit->GetWireSigma() << endl;
+	  //	    }
+
+	} //end hit loop
       }
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
-    	  for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
-    		  AA[irayp][jrayp] = 0.0;
-    		  if(jrayp<irayp) { // Symmetric
-    			  AA[irayp][jrayp] = AA[jrayp][irayp];
-    		  } else {
-		    for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-		      
-		      THcDCHit* hit=theDCTrack->GetHit(ihit);
+	for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
+	  AA[irayp][jrayp] = 0.0;
+	  if(jrayp<irayp) { // Symmetric
+	    AA[irayp][jrayp] = AA[jrayp][irayp];
+	  } else {
+	    for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+
+	      THcDCHit* hit=theDCTrack->GetHit(ihit);
         
 		      
-		      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
-			fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
-			pow(hit->GetWireSigma(),2);
+	      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
+		fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
+		pow(hit->GetWireSigma(),2);
 
-		    } //end ihit loop
-    		  }
-    	  }
+	    } //end ihit loop
+	  }
+	}
       }
 
       // Solve 4x4 equations
@@ -1018,12 +1018,12 @@ void THcDC::TrackFit()
 
       // Make sure fCoords, fResiduals, and fDoubleResiduals are clear
       for(Int_t iplane=0;iplane < fNPlanes; iplane++) {
-    	  Double_t coord=0.0;
-    	  for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
-    		  coord += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
-    		  // cout << "ir = " << ir << ", dray[ir] = " << dray[ir] << endl;
-    	  }
-    	  theDCTrack->SetCoord(iplane,coord);
+	Double_t coord=0.0;
+	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
+	  coord += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
+	  // cout << "ir = " << ir << ", dray[ir] = " << dray[ir] << endl;
+	}
+	theDCTrack->SetCoord(iplane,coord);
       }
       // Compute Chi2 and residuals
       chi2 = 0.0;
@@ -1045,56 +1045,56 @@ void THcDC::TrackFit()
     }
     theDCTrack->SetChisq(chi2);
 
-      // calculate ray without a plane in track
+    // calculate ray without a plane in track
     for(Int_t ipl_hit=0;ipl_hit < theDCTrack->GetNHits();ipl_hit++) {    
  
 
-    if(theDCTrack->GetNFree() > 0) {
-      TVectorD TT(NUM_FPRAY);
-      TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
-      for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
-	TT[irayp] = 0.0;
-	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+      if(theDCTrack->GetNFree() > 0) {
+	TVectorD TT(NUM_FPRAY);
+	TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
+	for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
+	  TT[irayp] = 0.0;
+	  for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
 	  
 
-	  THcDCHit* hit=theDCTrack->GetHit(ihit);
+	    THcDCHit* hit=theDCTrack->GetHit(ihit);
 
-          if (ihit != ipl_hit) {
-	  TT[irayp] += (coords[ihit]*
-			fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])
-	    /pow(hit->GetWireSigma(),2);
+	    if (ihit != ipl_hit) {
+	      TT[irayp] += (coords[ihit]*
+			    fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])
+		/pow(hit->GetWireSigma(),2);
 
-          }
+	    }
+	  }
 	}
-      }
-      for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
-	for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
-	  AA[irayp][jrayp] = 0.0;
-	  if(jrayp<irayp) { // Symmetric
-	    AA[irayp][jrayp] = AA[jrayp][irayp];
-	  } else {
+	for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
+	  for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
+	    AA[irayp][jrayp] = 0.0;
+	    if(jrayp<irayp) { // Symmetric
+	      AA[irayp][jrayp] = AA[jrayp][irayp];
+	    } else {
 
-	    for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+	      for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
 	      
-	      THcDCHit* hit=theDCTrack->GetHit(ihit);
+		THcDCHit* hit=theDCTrack->GetHit(ihit);
 
 
-              if (ihit != ipl_hit) {
-	      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
-		fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
-		pow(hit->GetWireSigma(),2);
+		if (ihit != ipl_hit) {
+		  AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
+		    fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
+		    pow(hit->GetWireSigma(),2);
 
+		}
 	      }
 	    }
 	  }
 	}
-      }
-      //
-     // Solve 4x4 equations
-      // Should check that it is invertable
-      TVectorD dray(NUM_FPRAY);
-      AA.Invert();
-      dray = AA*TT;
+	//
+	// Solve 4x4 equations
+	// Should check that it is invertable
+	TVectorD dray(NUM_FPRAY);
+	AA.Invert();
+	dray = AA*TT;
 	Double_t coord=0.0;
 	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
 	  coord += fPlaneCoeffs[planes[ipl_hit]][raycoeffmap[ir]]*dray[ir];
@@ -1102,10 +1102,10 @@ void THcDC::TrackFit()
 	}
 	Double_t residual = coords[ipl_hit] - coord;
 	theDCTrack->SetResidualExclPlane(planes[ipl_hit], residual);
-    }
+      }
     }
   }
-      //Calculate residual without plane
+  //Calculate residual without plane
 
   // Calculate residuals for each chamber if in single stub mode
   // and there was a track found in each chamber
@@ -1189,41 +1189,41 @@ void THcDC::TrackFit()
     }
   }
   //
-      if (fdebugtrackprint) {
-        printf("%5s %-14s %-14s %-14s %-14s  %-10s %-10s \n","Track","x_t","y_t","xp_t","yp_t","chi2","DOF");
-        printf("%5s %-14s %-14s %-14s %-14s  %-10s %-10s \n","     ","[cm]","[cm]","[rad]","[rad]"," "," ");
-	for(UInt_t itr=0;itr < fNDCTracks;itr++) {
-        THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itr));
-	printf("%-5d %14.6e %14.6e %14.6e %14.6e %10.3e %3d \n", itr+1,theDCTrack->GetX(),theDCTrack->GetY(),theDCTrack->GetXP(),theDCTrack->GetYP(),theDCTrack->GetChisq(),theDCTrack->GetNFree());
-        }
-	for(UInt_t itr=0;itr < fNDCTracks;itr++) {
-	  printf("%s %5d \n","Hit info for track number = ",itr+1);
-          printf("%5s %-15s %-15s %-15s \n","Plane","WIRE_COORD","Fit postiion","Residual");
-         THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itr));
-	 for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-	  THcDCHit* hit=theDCTrack->GetHit(ihit);
-	  Int_t plane=hit->GetPlaneNum()-1;
-	  Double_t coords_temp;
-      if(fFixLR) {
-	if(fFixPropagationCorrection) {
-	  coords_temp = hit->GetPos()
-	    + theDCTrack->GetHitLR(ihit)*theDCTrack->GetHitDist(ihit);
+  if (fdebugtrackprint) {
+    printf("%5s %-14s %-14s %-14s %-14s  %-10s %-10s \n","Track","x_t","y_t","xp_t","yp_t","chi2","DOF");
+    printf("%5s %-14s %-14s %-14s %-14s  %-10s %-10s \n","     ","[cm]","[cm]","[rad]","[rad]"," "," ");
+    for(UInt_t itr=0;itr < fNDCTracks;itr++) {
+      THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itr));
+      printf("%-5d %14.6e %14.6e %14.6e %14.6e %10.3e %3d \n", itr+1,theDCTrack->GetX(),theDCTrack->GetY(),theDCTrack->GetXP(),theDCTrack->GetYP(),theDCTrack->GetChisq(),theDCTrack->GetNFree());
+    }
+    for(UInt_t itr=0;itr < fNDCTracks;itr++) {
+      printf("%s %5d \n","Hit info for track number = ",itr+1);
+      printf("%5s %-15s %-15s %-15s \n","Plane","WIRE_COORD","Fit postiion","Residual");
+      THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itr));
+      for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+	THcDCHit* hit=theDCTrack->GetHit(ihit);
+	Int_t plane=hit->GetPlaneNum()-1;
+	Double_t coords_temp;
+	if(fFixLR) {
+	  if(fFixPropagationCorrection) {
+	    coords_temp = hit->GetPos()
+	      + theDCTrack->GetHitLR(ihit)*theDCTrack->GetHitDist(ihit);
+	  } else {
+	    coords_temp = hit->GetPos()
+	      + theDCTrack->GetHitLR(ihit)*hit->GetDist();
+	  }
 	} else {
-	  coords_temp = hit->GetPos()
-	    + theDCTrack->GetHitLR(ihit)*hit->GetDist();
+	  if(fFixPropagationCorrection) {
+	    coords_temp = hit->GetPos()
+	      + hit->GetLR()*theDCTrack->GetHitDist(ihit);
+	  } else {
+	    coords_temp = hit->GetCoord();
+	  }
 	}
-      } else {
-	if(fFixPropagationCorrection) {
-	  coords_temp = hit->GetPos()
-	    + hit->GetLR()*theDCTrack->GetHitDist(ihit);
-	} else {
-	  coords_temp = hit->GetCoord();
-	}
+	printf("%-5d %15.7e %15.7e %15.7e \n",plane+1,coords_temp,theDCTrack->GetCoord(plane),theDCTrack->GetResidual(plane));
       }
-      printf("%-5d %15.7e %15.7e %15.7e \n",plane+1,coords_temp,theDCTrack->GetCoord(plane),theDCTrack->GetResidual(plane));
-	 }
-        }
-      }
+    }
+  }
 
   //
 }

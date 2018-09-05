@@ -262,7 +262,7 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   THaApparatus* app = GetApparatus();
   const char* nm = "hod";
   if(  !app ||
-      !(fglHod = dynamic_cast<THcHodoscope*>(app->GetDetector(nm))) ) {
+       !(fglHod = dynamic_cast<THcHodoscope*>(app->GetDetector(nm))) ) {
     static const char* const here = "ReadDatabase()";
     Warning(Here(here),"Hodoscope \"%s\" not found. "
 	    "Event-by-event time offsets will NOT be used!!",nm);
@@ -360,7 +360,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       fNRawhits++;
       /* Sort into early, late and ontime */
       Int_t rawnorefcorrtdc = hit->GetRawTdcHit().GetTimeRaw(mhit); // Get the ref time subtracted time
-       Int_t rawtdc = hit->GetRawTdcHit().GetTime(mhit); // Get the ref time subtracted time
+      Int_t rawtdc = hit->GetRawTdcHit().GetTime(mhit); // Get the ref time subtracted time
       if(rawtdc < fTdcWinMin) {
 	// Increment early counter  (Actually late because TDC is backward)
       } else if (rawtdc > fTdcWinMax) {
@@ -380,11 +380,11 @@ Int_t THcDriftChamberPlane::SubtractStartTime()
 {
   Double_t StartTime = 0.0;
   if( fglHod ) StartTime = fglHod->GetStartTime();
-   for(Int_t ihit=0;ihit<GetNHits();ihit++) { 
-     THcDCHit *thishit = (THcDCHit*) fHits->At(ihit);
-     Double_t temptime= thishit->GetTime()-StartTime;
-     thishit->SetTime(temptime);
-     thishit->ConvertTimeToDist();
-   }
+  for(Int_t ihit=0;ihit<GetNHits();ihit++) { 
+    THcDCHit *thishit = (THcDCHit*) fHits->At(ihit);
+    Double_t temptime= thishit->GetTime()-StartTime;
+    thishit->SetTime(temptime);
+    thishit->ConvertTimeToDist();
+  }
   return 0;
 }

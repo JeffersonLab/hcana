@@ -82,34 +82,30 @@ Int_t THcHodoEff::Begin( THaRunBase* )
 Int_t THcHodoEff::End( THaRunBase* )
 {
   // End of analysis
-    for(Int_t ip=0;ip<fNPlanes;ip++) {
-        fStatAndEff[ip]=0;
-        for(Int_t ic=0;ic<fNCounters[ip];ic++) {
-          fStatTrkSum[ip]+=fStatTrk[fHod->GetScinIndex(ip,ic)];
-          fStatAndSum[ip]+=fHodoAndEffi[fHod->GetScinIndex(ip,ic)];
-        }
-	if (fStatTrkSum[ip] !=0) fStatAndEff[ip]=float(fStatAndSum[ip])/float(fStatTrkSum[ip]);
-     }
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    fStatAndEff[ip]=0;
+    for(Int_t ic=0;ic<fNCounters[ip];ic++) {
+      fStatTrkSum[ip]+=fStatTrk[fHod->GetScinIndex(ip,ic)];
+      fStatAndSum[ip]+=fHodoAndEffi[fHod->GetScinIndex(ip,ic)];
+    }
+    if (fStatTrkSum[ip] !=0) fStatAndEff[ip]=float(fStatAndSum[ip])/float(fStatTrkSum[ip]);
+  }
   //
-  Double_t     p1;
-  Double_t     p2;
-  Double_t     p3;
-  Double_t     p4;
-      p1=fStatAndEff[0];
-      p2=fStatAndEff[1];
-      p3=fStatAndEff[2];
-      p4=fStatAndEff[3];
-// probability that ONLY the listed planes had triggers
- Double_t     p1234= p1*p2*p3*p4;
- Double_t     p123 = p1*p2*p3*(1.-p4);
- Double_t     p124 = p1*p2*(1.-p3)*p4;
- Double_t    p134 = p1*(1.-p2)*p3*p4;
- Double_t    p234 = (1.-p1)*p2*p3*p4;
- fHodoEff_s1 = 1. - ((1.-p1)*(1.-p2));
- fHodoEff_s2 = 1. - ((1.-p3)*(1.-p4));
- fHodoEff_tof=fHodoEff_s1 * fHodoEff_s2;
- fHodoEff_3_of_4=p1234+p123+p124+p134+p234;
- fHodoEff_4_of_4=p1234;
+  Double_t     p1=fStatAndEff[0];
+  Double_t     p2=fStatAndEff[1];
+  Double_t     p3=fStatAndEff[2];
+  Double_t     p4=fStatAndEff[3];
+  // probability that ONLY the listed planes had triggers
+  Double_t     p1234= p1*p2*p3*p4;
+  Double_t     p123 = p1*p2*p3*(1.-p4);
+  Double_t     p124 = p1*p2*(1.-p3)*p4;
+  Double_t    p134 = p1*(1.-p2)*p3*p4;
+  Double_t    p234 = (1.-p1)*p2*p3*p4;
+  fHodoEff_s1 = 1. - ((1.-p1)*(1.-p2));
+  fHodoEff_s2 = 1. - ((1.-p3)*(1.-p4));
+  fHodoEff_tof=fHodoEff_s1 * fHodoEff_s2;
+  fHodoEff_3_of_4=p1234+p123+p124+p134+p234;
+  fHodoEff_4_of_4=p1234;
   return 0;
 }
 
@@ -135,7 +131,7 @@ THaAnalysisObject::EStatus THcHodoEff::Init( const TDatime& run_time )
   cout << "THcHodoEff::Init nplanes=" << fHod->GetNPlanes() << endl;
   cout << "THcHodoEff::Init Apparatus = " << fHod->GetName() <<
     " " <<
-     (fHod->GetApparatus())->GetName() << endl;
+    (fHod->GetApparatus())->GetName() << endl;
 
   return fStatus = kOK;
 }
@@ -220,13 +216,13 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
     for(Int_t ic=0;ic<fNCounters[ip];ic++) {
       fStatTrkDel[ip][ic].resize(20); // Max this settable
       fStatAndHitDel[ip][ic].resize(20); // Max this settable
-
+      
       fHodoPosEffi[fHod->GetScinIndex(ip,ic)] = 0;
       fHodoNegEffi[fHod->GetScinIndex(ip,ic)] = 0;
       fHodoOrEffi[fHod->GetScinIndex(ip,ic)] = 0;
       fHodoAndEffi[fHod->GetScinIndex(ip,ic)] = 0;
       fStatTrk[fHod->GetScinIndex(ip,ic)] = 0;
-   }
+    }
   }
 
   // Int_t fHodPaddles = fNCounters[0];
@@ -303,17 +299,17 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
     if(ip%2 == 0) {		// X Plane
       hitPos[ip] = theTrack->GetX() + theTrack->GetTheta()*fPosZ[ip];
       hitCounter[ip] = TMath::Max(
-		       TMath::Min(
-		       TMath::Nint((hitPos[ip]-fCenterFirst[ip])/
-				   fSpacing[ip]+1),fNCounters[ip] ),1);
+			TMath::Min(
+			 TMath::Nint((hitPos[ip]-fCenterFirst[ip])/
+				     fSpacing[ip]+1),fNCounters[ip] ),1);
       hitDistance[ip] =  hitPos[ip] - (fSpacing[ip]*(hitCounter[ip]-1) +
 				       fCenterFirst[ip]);
     } else {			// Y Plane
       hitPos[ip] = theTrack->GetY() + theTrack->GetPhi()*fPosZ[ip];
       hitCounter[ip] = TMath::Max(
-		       TMath::Min(
-		       TMath::Nint((fCenterFirst[ip]-hitPos[ip])/
-				   fSpacing[ip]+1), fNCounters[ip] ),1);
+		        TMath::Min(
+		         TMath::Nint((fCenterFirst[ip]-hitPos[ip])/
+				     fSpacing[ip]+1), fNCounters[ip] ),1);
       hitDistance[ip] =  hitPos[ip] -(fCenterFirst[ip] -
 				      fSpacing[ip]*(hitCounter[ip]-1));
     }
@@ -365,7 +361,7 @@ Int_t THcHodoEff::Process( const THaEvData& evdata )
 	// lookat[ip] = TRUE;
       }
     fHitPlane[ip] = 0;
-   }
+  }
   // Is there a hit on or adjacent to paddle that track
   // passes through?
 
