@@ -156,14 +156,13 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   fStubMaxXPDiff = 999.;	  // 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   // Get parameters parent knows about
-  THcDC* fParent;
-  fParent = (THcDC*) GetParent();
-  fMinHits = fParent->GetMinHits(fChamberNum);
-  fMaxHits = fParent->GetMaxHits(fChamberNum);
-  fMinCombos = fParent->GetMinCombos(fChamberNum);
-  fFixPropagationCorrection = fParent->GetFixPropagationCorrectionFlag();
+  fParent = GetParent();
+  fMinHits = static_cast<THcDC*>(fParent)->GetMinHits(fChamberNum);
+  fMaxHits = static_cast<THcDC*>(fParent)->GetMaxHits(fChamberNum);
+  fMinCombos = static_cast<THcDC*>(fParent)->GetMinCombos(fChamberNum);
+  fFixPropagationCorrection = static_cast<THcDC*>(fParent)->GetFixPropagationCorrectionFlag();
 
-  fSpacePointCriterion = fParent->GetSpacePointCriterion(fChamberNum);
+  fSpacePointCriterion = static_cast<THcDC*>(fParent)->GetSpacePointCriterion(fChamberNum);
   fMaxDist = TMath::Sqrt(fSpacePointCriterion/2.0); // For easy space points
 
    if (fhdebugflagpr) cout << " cham = " << fChamberNum << " Set yplane num " << YPlaneNum << " "<< YPlanePNum << endl;
@@ -983,7 +982,7 @@ void THcDriftChamber::CorrectHitTimes()
 			  Int_t readvert = plane->GetReadoutTB();
 
 			  //+x is up and +y is beam right!
-			  double alpha = fParent->GetAlphaAngle(pln);
+			  double alpha = static_cast<THcDC*>(fParent)->GetAlphaAngle(pln);
 			  double xc = posn*TMath::Sin(alpha);
 			  double yc = posn*TMath::Cos(alpha);
 
