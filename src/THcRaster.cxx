@@ -405,7 +405,7 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
 
   // Get the pedestals from the first 1000 events
   //if(fNPedestalEvents < 10)
-  if(gHaCuts->Result("Pedestal_event") & (fNPedestalEvents < 1000)) {
+  if(gHaCuts->Result("Pedestal_event") && (fNPedestalEvents < 1000)) {
       AccumulatePedestals(fRawHitList);
       fAnalyzePedestals = 1;	// Analyze pedestals first normal events
       fNPedestalEvents++;
