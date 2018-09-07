@@ -256,7 +256,8 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   for (int i=0; i<nWires; i++) {
     Double_t pos = fPitch*( (fWireOrder==0?(i+1):fNWires-i)
 			    - fCentralWire) - fCenter;
-    new((*fWires)[i]) THcDCWire( i+1, pos , fTzeroWire[i], fSigmaWire[i], fTTDConv);    //added fTzeroWire/fSigmaWire to be read in as fTOffset --Carlos
+    Int_t readoutside = GetReadoutSide(i+1);
+    new((*fWires)[i]) THcDCWire( i+1, pos , fTzeroWire[i], fSigmaWire[i], readoutside, fTTDConv);    //added fTzeroWire/fSigmaWire to be read in as fTOffset --Carlos
   }
   
   THaApparatus* app = GetApparatus();
@@ -387,4 +388,84 @@ Int_t THcDriftChamberPlane::SubtractStartTime()
     thishit->ConvertTimeToDist();
   }
   return 0;
+}
+Int_t THcDriftChamberPlane::GetReadoutSide(Int_t wirenum)
+{
+  Int_t readoutside;
+  //if new HMS
+  if (fVersion == 1) {
+    if ((fPlaneNum>=3 && fPlaneNum<=4) || (fPlaneNum>=9 && fPlaneNum<=10)) {
+      if (fReadoutTB>0) {
+	if (wirenum < 60) {
+	  readoutside = 2;
+	} else {
+	  readoutside = 4;
+	}
+      } else {
+	if (wirenum < 44) {
+	  readoutside = 4;
+	} else {
+	  readoutside = 2;
+	}
+      }
+    } else {
+      if (fReadoutTB>0) {
+	if (wirenum < 51) {
+	  readoutside = 2;
+	} else if (wirenum >= 51 && wirenum <= 64) {
+	  readoutside = 1;
+	} else {
+	  readoutside =4;
+	}
+      } else {
+	if (wirenum < 33) {
+	  readoutside = 4;
+	} else if (wirenum >=33 && wirenum<=46) {
+	  readoutside = 1;
+	} else {
+	  readoutside = 2;
+	}
+      }
+    }
+  } else {//appplies SHMS DC configuration
+    //check if x board
+    if ((fPlaneNum>=3 && fPlaneNum<=4) || (fPlaneNum>=9 && fPlaneNum<=10)) {
+      if (fReadoutTB>0) {
+	if (wirenum < 49) {
+	  readoutside = 4;
+	} else {
+	  readoutside = 2;
+	}
+      } else {
+	if (wirenum < 33) {
+	  readoutside = 2;
+	} else {
+	  readoutside = 4;
+	}
+      }
+    } else { //else is u board
+      if (fReadoutTB>0) {
+	if (wirenum < 41) {
+	  readoutside = 4;
+	} else if (wirenum >= 41 && wirenum <= 63) {
+	  readoutside = 3;
+	} else if (wirenum >=64 && wirenum <=69) {
+	  readoutside = 1;
+	} else {
+	  readoutside = 2;
+	}
+      } else {
+	if (wirenum < 39) {
+	  readoutside = 2;
+	} else if (wirenum >=39 && wirenum<=44) {
+	  readoutside = 1;
+	} else if (wirenum>=45 && wirenum<=67) {
+	  readoutside = 3;
+	} else {
+	  readoutside = 4;
+	}
+      }
+    }
+  }
+  return(readoutside);
 }
