@@ -20,13 +20,15 @@
 #include <cstring>
 
 
-class HCScalerLoc { // Utility class used by THaScalerEvtHandler
+class HCScalerLoc { // Utility class used by THcScalerEvtHandler
  public:
- HCScalerLoc(TString nm, TString desc, UInt_t isc, UInt_t ich, UInt_t iki) :
-   name(nm), description(desc), iscaler(isc), ichan(ich), ikind(iki) { };
+  HCScalerLoc(TString nm, TString desc, UInt_t idx, Int_t s1, UInt_t ich,
+	      UInt_t iki, Int_t iv) :
+   name(nm), description(desc), index(idx), islot(s1), ichan(ich),
+   ikind(iki), ivar(iv) { };
   ~HCScalerLoc();
   TString name, description;
-  UInt_t iscaler, ichan, ivar, ikind;
+  UInt_t index, islot, ichan, ikind, ivar;
 };
 
 class THcScalerEvtHandler : public THaEvtTypeHandler {
@@ -69,7 +71,7 @@ private:
    Double_t evcountR;
    UInt_t evNumber;
    Double_t evNumberR;
-   Int_t Nvars, ifound, fNormIdx, nscalers;
+   Int_t Nvars, ifound, fNormIdx, fNormSlot, nscalers;
    Double_t *dvars;
    UInt_t *dvars_prev_read;
    std::vector<UInt_t> scal_prev_read;
