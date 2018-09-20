@@ -291,7 +291,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     
     if (prefix[0]=='h') {
       
-      if (fTheta_lab < 40) {fMispointing_y = 0.1*(0.52-0.012*TMath::Abs(fTheta_lab)+0.002*fTheta_lab*fTheta_lab);}
+      if (TMath::Abs(fTheta_lab) < 40) {fMispointing_y = 0.1*(0.52-0.012*TMath::Abs(fTheta_lab)+0.002*TMath::Abs(fTheta_lab)*TMath::Abs(fTheta_lab));}
       else {fMispointing_y = 0.1*(0.52-0.012*40.+0.002*40.*40.);}
       
       gHcParms->Define("hmispointing_y","HMS Y-Mispointing", fMispointing_y);
@@ -316,7 +316,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     if (prefix[0]=='h')  {
          
       
-      if (fTheta_lab < 50) {fMispointing_x = 0.1*(2.37-0.086*TMath::Abs(fTheta_lab)+0.0012*fTheta_lab*fTheta_lab);}
+      if (TMath::Abs(fTheta_lab) < 50) {fMispointing_x = 0.1*(2.37-0.086*TMath::Abs(fTheta_lab)+0.0012*TMath::Abs(fTheta_lab)*TMath::Abs(fTheta_lab));}
       else {fMispointing_x = 0.1*(2.37-0.086*50+0.0012*50.*50.);}
       
       gHcParms->Define("hmispointing_x","HMS X-Mispointing", fMispointing_x);
