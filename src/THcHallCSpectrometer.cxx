@@ -285,29 +285,62 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   fMispointing_x=999.;
   fMispointing_y=999.;
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+ 
   //  mispointing in transport system y is horizontal and +x is vertical down
   if (fMispointing_y == 999.) {
+    
     if (prefix[0]=='h') {
-      fMispointing_y = 0.1*(0.52-0.012*40.+0.002*40.*40.);
-      if (fTheta_lab < 40) fMispointing_y = 0.1*(0.52-0.012*TMath::Abs(fTheta_lab)+0.002*fTheta_lab*fTheta_lab);
+      
+      if (TMath::Abs(fTheta_lab) < 40) {fMispointing_y = 0.1*(0.52-0.012*TMath::Abs(fTheta_lab)+0.002*TMath::Abs(fTheta_lab)*TMath::Abs(fTheta_lab));}
+      else {fMispointing_y = 0.1*(0.52-0.012*40.+0.002*40.*40.);}
+      
+      gHcParms->Define("hmispointing_y","HMS Y-Mispointing", fMispointing_y);
     }
-    if (prefix[0]=='p') fMispointing_y = 0.1*(-0.6);
-    cout << prefix[0] << " From Formula Mispointing_y = " << fMispointing_y << endl;
-  } else {
+    
+    if (prefix[0]=='p') {
+      
+      fMispointing_y = 0.1*(-0.6);
+      gHcParms->Define("pmispointing_y","SHMS Y-Mispointing", fMispointing_y);
+      cout << prefix[0] << " From Formula Mispointing_y = " << fMispointing_y << endl;
+    }
+    
+  }
+  
+  else {
     cout << prefix[0] << " From Parameter Set Mispointing_y = " << fMispointing_y << endl;
   }
+  
+  
   if (fMispointing_x == 999.) {
+    
     if (prefix[0]=='h')  {
-      fMispointing_x = 0.1*(2.37-0.086*50+0.0012*50.*50.);
-      if (fTheta_lab < 50)fMispointing_x = 0.1*(2.37-0.086*TMath::Abs(fTheta_lab)+0.0012*fTheta_lab*fTheta_lab);
+         
+      
+      if (TMath::Abs(fTheta_lab) < 50) {fMispointing_x = 0.1*(2.37-0.086*TMath::Abs(fTheta_lab)+0.0012*TMath::Abs(fTheta_lab)*TMath::Abs(fTheta_lab));}
+      else {fMispointing_x = 0.1*(2.37-0.086*50+0.0012*50.*50.);}
+      
+      gHcParms->Define("hmispointing_x","HMS X-Mispointing", fMispointing_x);
+      cout << prefix[0] << " From Formula Mispointing_x = " << fMispointing_x << endl;
+      
     }
-    if (prefix[0]=='p') fMispointing_x = 0.1*(-1.26);
-    cout << prefix[0] << " From Formula Mispointing_x = " << fMispointing_x << endl;
-  } else {
+    
+    if (prefix[0]=='p') {
+      
+      fMispointing_x = 0.1*(-1.26);
+      
+      gHcParms->Define("pmispointing_x","SHMS X-Mispointing", fMispointing_x);
+      cout << prefix[0] << " From Formula Mispointing_x = " << fMispointing_x << endl;
+      
+    }
+    
+  }
+  
+  else {
     cout << prefix[0] << " From Parameter Set Mispointing_x = " << fMispointing_x << endl;
   }
   //
-
+  
+  
   EnforcePruneLimits();
 
 #ifdef WITH_DEBUG
