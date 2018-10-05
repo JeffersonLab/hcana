@@ -37,6 +37,7 @@ THcDriftChamberPlane::THcDriftChamberPlane( const char* name,
 {
   // Normal constructor with name and description
   fHits = new TClonesArray("THcDCHit",100);
+  fRawHits = new TClonesArray("THcDCHit",100);
   fWires = new TClonesArray("THcDCWire", 100);
 
   fTTDConv = NULL;
@@ -50,6 +51,7 @@ THcDriftChamberPlane::THcDriftChamberPlane() :
 {
   // Constructor
   fHits = NULL;
+  fRawHits = NULL;
   fWires = NULL;
   fTTDConv = NULL;
 }
@@ -59,6 +61,7 @@ THcDriftChamberPlane::~THcDriftChamberPlane()
   // Destructor
   delete fWires;
   delete fHits;
+  delete fRawHits;
   delete fTTDConv;
 
 }
@@ -283,7 +286,9 @@ Int_t THcDriftChamberPlane::DefineVariables( EMode mode )
 
   // Register variables in global list
   RVarDef vars[] = {
-    {"wirenum", "List of TDC wire number",
+    {"raw.wirenum", "List of TDC wire number of all hits in DC",
+     "fRawHits.THcDCHit.GetWireNum()"},
+    {"wirenum", "List of TDC wire number (select first hit in TDc window",
      "fHits.THcDCHit.GetWireNum()"},
     {"rawnorefcorrtdc", "Raw TDC Values",
      "fHits.THcDCHit.GetRawNoRefCorrTime()"},
@@ -306,6 +311,7 @@ void THcDriftChamberPlane::Clear( Option_t* )
   //cout << " Calling THcDriftChamberPlane::Clear " << GetName() << endl;
   // Clears the hit lists
   fHits->Clear();
+  fRawHits->Clear();
 }
 
 //_____________________________________________________________________________
@@ -345,11 +351,13 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   */
 
   fHits->Clear();
+  fRawHits->Clear();
 
   Int_t nrawhits = rawhits->GetLast()+1;
   fNRawhits=0;
   Int_t ihit = nexthit;
   Int_t nextHit = 0;
+  Int_t nextRawHit = 0;
   while(ihit < nrawhits) {
     THcRawDCHit* hit = (THcRawDCHit *) rawhits->At(ihit);
     if(hit->fPlane > fPlaneNum) {
@@ -357,20 +365,23 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
     Int_t wireNum = hit->fCounter;
     THcDCWire* wire = GetWire(wireNum);
+    Bool_t First_Hit_In_Window = kTRUE;
     for(UInt_t mhit=0; mhit<hit->GetRawTdcHit().GetNHits(); mhit++) {
       fNRawhits++;
       /* Sort into early, late and ontime */
       Int_t rawnorefcorrtdc = hit->GetRawTdcHit().GetTimeRaw(mhit); // Get the ref time subtracted time
       Int_t rawtdc = hit->GetRawTdcHit().GetTime(mhit); // Get the ref time subtracted time
-      if(rawtdc < fTdcWinMin) {
+      Double_t time = - rawtdc*fNSperChan + fPlaneTimeZero - wire->GetTOffset(); // fNSperChan > 0 for 1877
+      new( (*fRawHits)[nextRawHit++] ) THcDCHit(wire, rawnorefcorrtdc,rawtdc, time, this);	
+     if(rawtdc < fTdcWinMin) {
 	// Increment early counter  (Actually late because TDC is backward)
       } else if (rawtdc > fTdcWinMax) {
 	// Increment late count
       } else {
-	Double_t time = - rawtdc*fNSperChan + fPlaneTimeZero - wire->GetTOffset(); // fNSperChan > 0 for 1877
-	
+	if (First_Hit_In_Window) {
 	new( (*fHits)[nextHit++] ) THcDCHit(wire, rawnorefcorrtdc,rawtdc, time, this);
-	break;			// Take just the first hit in the time window
+	First_Hit_In_Window = kFALSE;
+	}
       }
     }
     ihit++;
