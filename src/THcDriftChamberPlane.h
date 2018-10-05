@@ -82,6 +82,7 @@ protected:
   TClonesArray* fParentHitList;
 
   TClonesArray* fHits;
+  TClonesArray* fRawHits;
   TClonesArray* fWires;
 
   Int_t fVersion;
