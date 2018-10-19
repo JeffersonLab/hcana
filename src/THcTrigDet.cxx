@@ -288,7 +288,6 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
        if (good_hit==999) good_hit=0;
       fTdcTimeRaw[cnt] = rawTdcHit.GetTimeRaw(good_hit);
       fTdcTime[cnt] = rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset;
-
       fTdcMultiplicity[cnt] = rawTdcHit.GetNHits();
     }
     else {
@@ -326,12 +325,11 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
     {"_tdcNames", &tdcNames, kString},  // Names of TDC channels.
     {"_tdcoffset", &fTdcOffset, kDouble,0,1},  // Offset of tdc channels
     {"_adc_tdc_offset", &fAdcTdcOffset, kDouble,0,1},  // Offset of Adc Pulse time (ns)
-    {"_tdcchanperns", &fTdcChanperNS, kDouble,0,1},  // Convert channesl to ns
     {"_trig_tdcrefcut", &fTDC_RefTimeCut, kInt, 0, 1},
     {"_trig_adcrefcut", &fADC_RefTimeCut, kInt, 0, 1},
     {0}
   };
-  fTdcChanperNS=0.1;
+  
   fTdcOffset=300.;
   fAdcTdcOffset=200.;
   fTDC_RefTimeCut=-1000.;
@@ -359,6 +357,12 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   };
 
   gHcParms->LoadParmValues(list2, fKwPrefix.c_str());
+
+  DBRequest listGbl[] = {
+    {"caen1190_convFactor", &fTdcChanperNS, kDouble},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*) &listGbl);
 
   // Split the names to std::vector<std::string>.
   fAdcNames = vsplit(adcNames);

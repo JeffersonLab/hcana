@@ -114,7 +114,6 @@ void THcDC::Setup(const char* name, const char* description)
   DBRequest list[]={
     {"dc_num_planes",&fNPlanes, kInt},
     {"dc_num_chambers",&fNChambers, kInt},
-    {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
     {"dc_wire_velocity",&fWireVelocity,kDouble},
     {"dc_plane_names",&planenamelist, kString},
     {"dc_version", &fVersion, kInt, 0, optional},
@@ -131,6 +130,11 @@ void THcDC::Setup(const char* name, const char* description)
     fHMSStyleChambers = 0;
   }
 
+  DBRequest listGbl[] = {
+    {"caen1190_convFactor", &fNSperChan, kDouble},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*) &listGbl);
 
   cout << "Plane Name List: " << planenamelist << endl;
   cout << "Drift Chambers: " <<  fNPlanes << " planes in " << fNChambers << " chambers" << endl;
@@ -307,7 +311,6 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
 
 
   DBRequest list[]={
-    {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
     {"dc_wire_velocity",&fWireVelocity,kDouble},
 
     {"dc_xcenter", fXCenter, kDouble, fNChambers},
@@ -359,6 +362,12 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
 
 
   gHcParms->LoadParmValues((DBRequest*)&list,fPrefix);
+
+  DBRequest listGbl[] = {
+    {"caen1190_convFactor", &fNSperChan, kDouble},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*) &listGbl);
 
   //Set the default plane x,y positions to those of the chamber
    for(Int_t ip=0; ip<fNPlanes;ip++) {

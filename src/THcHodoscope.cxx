@@ -319,7 +319,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"NumPlanesBetaCalc",                       &fNumPlanesBetaCalc,            kInt,            0,  1},
     {"start_time_center",                &fStartTimeCenter,                      kDouble},
     {"start_time_slop",                  &fStartTimeSlop,                        kDouble},
-    {"scin_tdc_to_time",                 &fScinTdcToTime,                        kDouble},
     {"scin_tdc_min",                     &fScinTdcMin,                           kDouble},
     {"scin_tdc_max",                     &fScinTdcMax,                           kDouble},
     {"tof_tolerance",                    &fTofTolerance,          kDouble,         0,  1},
@@ -397,6 +396,12 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
       cout << "Data for TOF calibration not being written." << endl;
     }
   }
+
+  DBRequest listGbl[] = {
+    {"caen1190_convFactor", &fScinTdcToTime, kDouble},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*) &listGbl);
 
   // cout << " x1 lo = " << fxLoScin[0]
   //      << " x2 lo = " << fxLoScin[1]
