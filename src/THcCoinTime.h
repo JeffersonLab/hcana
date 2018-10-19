@@ -125,6 +125,8 @@ public:
   Double_t had_ypfp;     //hadron yp focal plane
   Double_t had_FPtime;   //hadron focal plane time
 
+  Double_t fTdcToNs;  // tdc to ns conversion factor
+
   //Raw trigger times pTrig1 (SHMS 3/4 trig) and pTrig4 (HMS 3/4 trig)
   Int_t pTRIG1_rawTdcTime_ROC1;
   Int_t pTRIG4_rawTdcTime_ROC1;

@@ -141,9 +141,14 @@ Int_t THcCoinTime::ReadDatabase( const TDatime& date )
 
   HMScentralPathLen = 22.0*100.;
   SHMScentralPathLen = 18.1*100.;
-
-  
+ 
   gHcParms->LoadParmValues((DBRequest*)&list, "");
+
+  DBRequest listGbl[] = {
+    {"caen1190_convFactor", &fTdcToNs, kDouble},
+    {0}
+  };
+  gHcParms->LoadParmValues((DBRequest*) &listGbl);
 
   return kOK;
 }
@@ -273,9 +278,8 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 	  had_coinCorr_Positron = (HadPathLength) / (lightSpeed * hadArm_BetaCalc_Positron );
 
 	  //Raw, Uncorrected Coincidence Time
-	  fROC1_RAW_CoinTime =  (pTRIG1_rawTdcTime_ROC1*0.1 + SHMS_FPtime) - (pTRIG4_rawTdcTime_ROC1*0.1 + HMS_FPtime);
-	  fROC2_RAW_CoinTime =  (pTRIG1_rawTdcTime_ROC2*0.1 + SHMS_FPtime) - (pTRIG4_rawTdcTime_ROC2*0.1 + HMS_FPtime);
-	  
+	  fROC1_RAW_CoinTime =  (pTRIG1_rawTdcTime_ROC1*fTdcToNs + SHMS_FPtime) - (pTRIG4_rawTdcTime_ROC1*fTdcToNs + HMS_FPtime);
+	  fROC2_RAW_CoinTime =  (pTRIG1_rawTdcTime_ROC2*fTdcToNs + SHMS_FPtime) - (pTRIG4_rawTdcTime_ROC2*fTdcToNs + HMS_FPtime);
 	  
 	  //Corrected Coincidence Time for ROC1/ROC2 (ROC1 Should be identical to ROC2)
           // 
