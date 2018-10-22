@@ -221,16 +221,6 @@ void THcTrigDet::Clear(Option_t* opt) {
   };
 }
 
-//Added function to SET coincidence trigger times
-void THcTrigDet::SetCoinTrigTimes() 
-{ 
-  pTrig1_ROC1 = fTdcTimeRaw[fidx0];
-  pTrig4_ROC1 = fTdcTimeRaw[fidx1];
-  pTrig1_ROC2 = fTdcTimeRaw[fidx2];
-  pTrig4_ROC2 = fTdcTimeRaw[fidx3];
-
-}
-
 
 Int_t THcTrigDet::Decode(const THaEvData& evData) {
     
@@ -300,9 +290,6 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
     ++iHit;
   }
 
-  //Set raw Tdc coin. trigger times for pTRIG1/4
-  SetCoinTrigTimes();
-
   return 0;
 }
 
@@ -319,11 +306,13 @@ void THcTrigDet::Setup(const char* name, const char* description) {
 
 Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   std::string adcNames, tdcNames;
+  std::string trigNames="pTRIG1_ROC1 pTRIG4_ROC1 pTRIG1_ROC2 pTRIG4_ROC2";
   DBRequest list[] = {
     {"_numAdc", &fNumAdc, kInt},  // Number of ADC channels.
     {"_numTdc", &fNumTdc, kInt},  // Number of TDC channels.
     {"_adcNames", &adcNames, kString},  // Names of ADC channels.
     {"_tdcNames", &tdcNames, kString},  // Names of TDC channels.
+    {"_trigNames", &trigNames, kString,0,1},  // Names of Triggers for coincidence time.
     {"_tdcoffset", &fTdcOffset, kDouble,0,1},  // Offset of tdc channels
     {"_adc_tdc_offset", &fAdcTdcOffset, kDouble,0,1},  // Offset of Adc Pulse time (ns)
     {"_tdcchanperns", &fTdcChanperNS, kDouble,0,1},  // Convert channesl to ns
@@ -331,7 +320,7 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
     {"_trig_adcrefcut", &fADC_RefTimeCut, kInt, 0, 1},
     {0}
   };
-  fTdcChanperNS=0.1;
+  fTdcChanperNS=0.09766;
   fTdcOffset=300.;
   fAdcTdcOffset=200.;
   fTDC_RefTimeCut=-1000.;
@@ -363,36 +352,24 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   // Split the names to std::vector<std::string>.
   fAdcNames = vsplit(adcNames);
   fTdcNames = vsplit(tdcNames);
+  fTrigNames = vsplit(trigNames);
 
   //default index values
-  fidx0 = 27;
-  fidx1 = 30;
-  fidx2 = 58;
-  fidx3 = 61;	
-
+ 
   //Assign an index to coincidence trigger times strings
-  for (int i = 0; i <fNumTdc; i++)
-    {
-     
-      if(fTdcNames.at(i)=="pTRIG1_ROC1")
-	{
-	  fidx0 = i;
-	}
-      else if(fTdcNames.at(i)=="pTRIG4_ROC1")
-	{
-	  fidx1 = i;
-	}
-      else if(fTdcNames.at(i)=="pTRIG1_ROC2")
-	{
-	  fidx2 = i;
-	}
-      else if(fTdcNames.at(i)=="pTRIG4_ROC2")
-	{
-	  fidx3 = i;
-	}
-
-    }
-  
+     for (UInt_t j = 0; j <fTrigNames.size(); j++) {
+       fTrigId[j]=-1;
+     }
+  for (int i = 0; i <fNumTdc; i++) {
+    for (UInt_t j = 0; j <fTrigNames.size(); j++) {
+            if(fTdcNames.at(i)==fTrigNames[j]) fTrigId[j]=i;
+	  }
+  }
+ 
+  cout << " Trgi = " << fTrigNames.size() << endl;
+     for (UInt_t j = 0; j <fTrigNames.size(); j++) {
+       cout << fTrigNames[j] << " " << fTrigId[j] << endl;
+     }
   
 
   return kOK;
