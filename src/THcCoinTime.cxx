@@ -236,10 +236,10 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
       Double_t HMS_FPtime = theHMSTrack->GetFPTime();    
       
       //Get raw TDC Times for HMS/SHMS (3/4 trigger)
-      pTRIG1_rawTdcTime_ROC1 = fCoinDet->Get_pTRG1_ROC1_rawTdctime();  //TDC Channels (0.1 ns/Ch)
-      pTRIG4_rawTdcTime_ROC1 = fCoinDet->Get_pTRG4_ROC1_rawTdctime();
-      pTRIG1_rawTdcTime_ROC2 = fCoinDet->Get_pTRG1_ROC2_rawTdctime();
-      pTRIG4_rawTdcTime_ROC2 = fCoinDet->Get_pTRG4_ROC2_rawTdctime();
+      pTRIG1_TdcTime_ROC1 = fCoinDet->Get_CT_Trigtime(0);  //SHMS
+      pTRIG4_TdcTime_ROC1 = fCoinDet->Get_CT_Trigtime(1);  //HMS
+      pTRIG1_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(2);//SHMS
+      pTRIG4_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(3);//HMS
 
 	  DeltaSHMSpathLength = -0.11*atan2(shms_xptar,1)*1000 - 0.057*shms_dP;
 	  DeltaHMSpathLength = 12.462*hms_xpfp + 0.1138*hms_xpfp*hms_xfp - 0.0154*hms_xfp - 72.292*hms_xpfp*hms_xpfp - 0.0000544*hms_xfp*had_xfp - 116.52*hms_ypfp*hms_ypfp;
@@ -273,8 +273,8 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 	  had_coinCorr_Positron = (HadPathLength) / (lightSpeed * hadArm_BetaCalc_Positron );
 
 	  //Raw, Uncorrected Coincidence Time
-	  fROC1_RAW_CoinTime =  (pTRIG1_rawTdcTime_ROC1*0.1 + SHMS_FPtime) - (pTRIG4_rawTdcTime_ROC1*0.1 + HMS_FPtime);
-	  fROC2_RAW_CoinTime =  (pTRIG1_rawTdcTime_ROC2*0.1 + SHMS_FPtime) - (pTRIG4_rawTdcTime_ROC2*0.1 + HMS_FPtime);
+	  fROC1_RAW_CoinTime =  (pTRIG1_TdcTime_ROC1 + SHMS_FPtime) - (pTRIG4_TdcTime_ROC1 + HMS_FPtime);
+	  fROC2_RAW_CoinTime =  (pTRIG1_TdcTime_ROC2 + SHMS_FPtime) - (pTRIG4_TdcTime_ROC2 + HMS_FPtime);
 	  
 	  
 	  //Corrected Coincidence Time for ROC1/ROC2 (ROC1 Should be identical to ROC2)
