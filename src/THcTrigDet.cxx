@@ -183,7 +183,15 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
     Error(Here(here), "Error filling detectormap for %s.", EngineDID.c_str());
     return kInitError;
   }
-  // Initialize hitlist part of the class.
+   DBRequest listextra[]={
+    {"_trig_tdcrefcut", &fTDC_RefTimeCut, kInt, 0, 1},
+    {"_trig_adcrefcut", &fADC_RefTimeCut, kInt, 0, 1},
+    {0}
+  };
+  fTDC_RefTimeCut = -1000;		// Minimum allowed reference times
+  fADC_RefTimeCut = -1000;
+  gHcParms->LoadParmValues((DBRequest*)&listextra,fKwPrefix.c_str());
+ // Initialize hitlist part of the class.
   // printf(" Init trig det hitlist\n");
   InitHitList(fDetMap, "THcTrigRawHit", 200,fTDC_RefTimeCut,fADC_RefTimeCut);
   CreateMissReportParms(fKwPrefix.c_str());
@@ -245,15 +253,13 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
       THcRawAdcHit rawAdcHit = hit->GetRawAdcHit();
       fAdcMultiplicity[cnt] = rawAdcHit.GetNPulses();
       UInt_t good_hit=999;
-         if (rawAdcHit.GetNPulses()>1) {
           for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
-	    Int_t TestTime=rawAdcHit.GetPulseTime(thit)+fAdcTdcOffset;
-	    if (TestTime>fAdcTimeWindowMin[cnt]&&TestTime<fAdcTimeWindowMax[cnt]&&good_hit==999) {
+	    Int_t TestTime=rawAdcHit.GetPulseTimeRaw(thit);
+	    if (TestTime>fAdcTimeWindowMin[cnt]&&TestTime<fAdcTimeWindowMax[cnt]) {
 	      good_hit=thit;
 	    }
 	  }
-	 }
-       if (good_hit==999) good_hit=0;
+	 if (good_hit<rawAdcHit.GetNPulses()) {
        fAdcPedRaw[cnt] = rawAdcHit.GetPedRaw();
        fAdcPulseIntRaw[cnt] = rawAdcHit.GetPulseIntRaw(good_hit);
        fAdcPulseAmpRaw[cnt] = rawAdcHit.GetPulseAmpRaw(good_hit);
@@ -262,23 +268,22 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
        fAdcPed[cnt] = rawAdcHit.GetPed();
        fAdcPulseInt[cnt] = rawAdcHit.GetPulseInt(good_hit);
        fAdcPulseAmp[cnt] = rawAdcHit.GetPulseAmp(good_hit);
+	 }
     }
     else if (hit->fPlane == 2) {
       THcRawTdcHit rawTdcHit = hit->GetRawTdcHit();
 
       UInt_t good_hit=999;
-         if (rawTdcHit.GetNHits()>1) {
-          for (UInt_t thit=0; thit<rawTdcHit.GetNHits(); ++thit) {
-	    Int_t TestTime=rawTdcHit.GetTime(thit)*fTdcChanperNS+fTdcOffset;
-	    if (TestTime>fTdcTimeWindowMin[cnt]&&TestTime<fTdcTimeWindowMax[cnt]&&good_hit==999) {
+           for (UInt_t thit=0; thit<rawTdcHit.GetNHits(); ++thit) {
+	    Int_t TestTime= rawTdcHit.GetTimeRaw(thit);
+	    if (TestTime>fTdcTimeWindowMin[cnt]&&TestTime<fTdcTimeWindowMax[cnt]) {
 	      good_hit=thit;
 	    }
-	  }
-	 }
-       if (good_hit==999) good_hit=0;
+	   }
+	 if (good_hit<rawTdcHit.GetNHits()) {
       fTdcTimeRaw[cnt] = rawTdcHit.GetTimeRaw(good_hit);
       fTdcTime[cnt] = rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset;
-
+	 }
       fTdcMultiplicity[cnt] = rawTdcHit.GetNHits();
     }
     else {
@@ -316,15 +321,11 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
     {"_tdcoffset", &fTdcOffset, kDouble,0,1},  // Offset of tdc channels
     {"_adc_tdc_offset", &fAdcTdcOffset, kDouble,0,1},  // Offset of Adc Pulse time (ns)
     {"_tdcchanperns", &fTdcChanperNS, kDouble,0,1},  // Convert channesl to ns
-    {"_trig_tdcrefcut", &fTDC_RefTimeCut, kInt, 0, 1},
-    {"_trig_adcrefcut", &fADC_RefTimeCut, kInt, 0, 1},
-    {0}
+     {0}
   };
   fTdcChanperNS=0.09766;
   fTdcOffset=300.;
   fAdcTdcOffset=200.;
-  fTDC_RefTimeCut=-1000.;
-  fADC_RefTimeCut=-1000.;
   gHcParms->LoadParmValues(list, fKwPrefix.c_str());
   //
   fAdcTimeWindowMin = new Double_t [fNumAdc];
@@ -332,12 +333,12 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   fTdcTimeWindowMin = new Double_t [fNumTdc];
   fTdcTimeWindowMax = new Double_t [fNumTdc];
   for(Int_t ip=0;ip<fNumAdc;ip++) { // Set a large default window
-    fAdcTimeWindowMin[ip]=-1000;
-    fAdcTimeWindowMax[ip]=1000;
+    fAdcTimeWindowMin[ip]=0;
+    fAdcTimeWindowMax[ip]=10000;
   }
   for(Int_t ip=0;ip<fNumTdc;ip++) { // Set a large default window
-    fTdcTimeWindowMin[ip]=-1000;
-    fTdcTimeWindowMax[ip]=1000;
+    fTdcTimeWindowMin[ip]=0;
+    fTdcTimeWindowMax[ip]=10000;
   }
   DBRequest list2[]={
     {"_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble,     (UInt_t) fNumAdc, 1},
@@ -348,7 +349,9 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   };
 
   gHcParms->LoadParmValues(list2, fKwPrefix.c_str());
-
+  for(Int_t ip=0;ip<fNumTdc;ip++) { 
+    //    cout << ip << " " << fTdcNames.at(ip) << " " << fTdcTimeWindowMin[ip] << " " << fTdcTimeWindowMax[ip] << endl;
+  }
   // Split the names to std::vector<std::string>.
   fAdcNames = vsplit(adcNames);
   fTdcNames = vsplit(tdcNames);
@@ -366,7 +369,7 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
 	  }
   }
  
-  cout << " Trgi = " << fTrigNames.size() << endl;
+  cout << " Trig = " << fTrigNames.size() << endl;
      for (UInt_t j = 0; j <fTrigNames.size(); j++) {
        cout << fTrigNames[j] << " " << fTrigId[j] << endl;
      }
