@@ -255,7 +255,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
       UInt_t good_hit=999;
           for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
 	    Int_t TestTime=rawAdcHit.GetPulseTimeRaw(thit);
-	    if (TestTime>fAdcTimeWindowMin[cnt]&&TestTime<fAdcTimeWindowMax[cnt]) {
+	    if (TestTime>fAdcTimeWindowMin[cnt]&&TestTime<fAdcTimeWindowMax[cnt]&&good_hit==999) {
 	      good_hit=thit;
 	    }
 	  }
@@ -276,7 +276,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
       UInt_t good_hit=999;
            for (UInt_t thit=0; thit<rawTdcHit.GetNHits(); ++thit) {
 	    Int_t TestTime= rawTdcHit.GetTimeRaw(thit);
-	    if (TestTime>fTdcTimeWindowMin[cnt]&&TestTime<fTdcTimeWindowMax[cnt]) {
+	    if (TestTime>fTdcTimeWindowMin[cnt]&&TestTime<fTdcTimeWindowMax[cnt]&&good_hit==999) {
 	      good_hit=thit;
 	    }
 	   }
