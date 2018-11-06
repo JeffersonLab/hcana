@@ -356,6 +356,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   fNumGoodAdcHits          = vector<Int_t>    (fNelem, 0.0);
   fGoodAdcPulseIntRaw      = vector<Double_t> (fNelem, 0.0);
   fGoodAdcPed              = vector<Double_t> (fNelem, 0.0);
+  fGoodAdcMult              = vector<Double_t> (fNelem, 0.0);
   fGoodAdcPulseInt         = vector<Double_t> (fNelem, 0.0);
   fGoodAdcPulseAmp         = vector<Double_t> (fNelem, 0.0);
   fGoodAdcPulseTime        = vector<Double_t> (fNelem, 0.0);
@@ -442,6 +443,7 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
 
     {"goodAdcPulseIntRaw", "Good Raw ADC Pulse Integrals", "fGoodAdcPulseIntRaw"},    //this is defined as pulseIntRaw, NOT ADC Amplitude in FillADC_DynamicPedestal() method
     {"goodAdcPed", "Good ADC Pedestals", "fGoodAdcPed"},
+    {"goodAdcMult", "Good ADC Multiplicity", "fGoodAdcMult"},
     {"goodAdcPulseInt", "Good ADC Pulse Integrals", "fGoodAdcPulseInt"},     //this is defined as pulseInt, which is the pedestal subtracted pulse integrals, and is defined if threshold is passed
     {"goodAdcPulseAmp", "Good ADC Pulse Amplitudes", "fGoodAdcPulseAmp"},
     {"goodAdcPulseTime", "Good ADC Pulse Times", "fGoodAdcPulseTime"},     //this is defined as pulseInt, which is the pedestal subtracted pulse integrals, and is defined if threshold is passed
@@ -496,6 +498,7 @@ void THcShowerArray::Clear( Option_t* )
   for (UInt_t ielem = 0; ielem < fGoodAdcPed.size(); ielem++) {
     fGoodAdcPulseIntRaw.at(ielem)      = 0.0;
     fGoodAdcPed.at(ielem)              = 0.0;
+    fGoodAdcMult.at(ielem)              = 0.0;
     fGoodAdcPulseInt.at(ielem)         = 0.0;
     fGoodAdcPulseAmp.at(ielem)         = 0.0;
     fGoodAdcPulseTime.at(ielem)        = kBig;
@@ -871,6 +874,10 @@ void THcShowerArray::FillADC_DynamicPedestal()
     Bool_t errorflag     = ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(ielem))->GetData();
     Bool_t pulseTimeCut  = (adctdcdiffTime > fAdcTimeWindowMin[npad]) &&  (adctdcdiffTime < fAdcTimeWindowMax[npad]);
 
+    if (!errorflag)
+      {
+	fGoodAdcMult.at(npad) += 1;
+      }
     if (!errorflag && pulseTimeCut) {
       
       fTotNumAdcHits++;
