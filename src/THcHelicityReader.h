@@ -52,6 +52,8 @@ protected:
   Bool_t fIsHelp;
   Bool_t fIsHelm;
 
+  Int_t fADCThreshold;		// Threshold for On/Off of helicity signals
+
   ROCinfo  fROCinfo[kCount];
 
   Int_t    fQWEAKDebug;          // Debug level

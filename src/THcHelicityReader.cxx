@@ -8,6 +8,8 @@
 
 #include "THcHelicityReader.h"
 #include "THaEvData.h"
+#include "THcGlobals.h"
+#include "THcParmList.h"
 #include "TMath.h"
 #include "TError.h"
 #include "VarDef.h"
@@ -59,6 +61,15 @@ Int_t THcHelicityReader::ReadDatabase( const char* /*dbfilename*/,
   SetROCinfo(kMPS,2,14,10);
   SetROCinfo(kQrt,2,14,7);
   SetROCinfo(kTime,2,21,2);
+  
+  fADCThreshold = 8000;
+  
+  DBRequest list[] = {
+    {"helicity_adcthreshold",&fADCThreshold, kInt, 0, 1},
+    {0}
+  };
+
+  gHcParms->LoadParmValues(list, "");
 
   return THaAnalysisObject::kOK;
 }
@@ -124,27 +135,27 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   // Get the helicity control signals.  These are from the pedestals
   // acquired by FADC channels.
 
-  UInt_t helpraw = evdata.GetData(Decoder::kPulsePedestal,
+  Int_t helpraw = evdata.GetData(Decoder::kPulsePedestal,
 				  fROCinfo[kHel].roc,
 				  fROCinfo[kHel].slot,
 				  fROCinfo[kHel].index, 0);
-  UInt_t helmraw = evdata.GetData(Decoder::kPulsePedestal,
+  Int_t helmraw = evdata.GetData(Decoder::kPulsePedestal,
 				  fROCinfo[kHelm].roc,
 				  fROCinfo[kHelm].slot,
 				  fROCinfo[kHelm].index, 0);
-  UInt_t mpsraw = evdata.GetData(Decoder::kPulsePedestal,
+  Int_t mpsraw = evdata.GetData(Decoder::kPulsePedestal,
 				  fROCinfo[kMPS].roc,
 				  fROCinfo[kMPS].slot,
 				  fROCinfo[kMPS].index, 0);
-  UInt_t qrtraw = evdata.GetData(Decoder::kPulsePedestal,
+  Int_t qrtraw = evdata.GetData(Decoder::kPulsePedestal,
 				  fROCinfo[kQrt].roc,
 				  fROCinfo[kQrt].slot,
 				  fROCinfo[kQrt].index, 0);
 
-  fIsQrt = qrtraw > 1000;
-  fIsMPS = mpsraw > 1000;
-  fIsHelp = helpraw > 1000;
-  fIsHelm = helmraw > 1000;
+  fIsQrt = qrtraw > fADCThreshold;
+  fIsMPS = mpsraw > fADCThreshold;
+  fIsHelp = helpraw > fADCThreshold;
+  fIsHelm = helmraw > fADCThreshold;
 
   return 0;
 }
