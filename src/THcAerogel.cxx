@@ -716,10 +716,14 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       Bool_t   pulseTimeCut = adctdcdiffTime > fAdcPosTimeWindowMin[npmt] && adctdcdiffTime < fAdcPosTimeWindowMax[npmt];
 
       // By default, the last hit within the timing cut will be considered "good"
-      if (!errorFlag && pulseTimeCut) {
+     if (!errorFlag)
+      {
+	fGoodPosAdcMult.at(npmt) += 1;
+      }
+
+     if (!errorFlag && pulseTimeCut) {
     	fGoodPosAdcPed.at(npmt)         = pulsePed;
-   	fGoodPosAdcMult.at(npmt)         = frPosAdcPulseInt->GetEntries();
-	//	cout << " out = " << npmt << " " <<   frPosAdcPulseInt->GetEntries() << " " <<fGoodPosAdcMult.at(npmt); 
+ 	//	cout << " out = " << npmt << " " <<   frPosAdcPulseInt->GetEntries() << " " <<fGoodPosAdcMult.at(npmt); 
     	fGoodPosAdcPulseInt.at(npmt)    = pulseInt;
     	fGoodPosAdcPulseIntRaw.at(npmt) = pulseIntRaw;
     	fGoodPosAdcPulseAmp.at(npmt)    = pulseAmp;
@@ -748,15 +752,18 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       Bool_t   errorFlag    = ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
       ////      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
       Bool_t   pulseTimeCut = adctdcdiffTime > fAdcNegTimeWindowMin[npmt] && adctdcdiffTime < fAdcNegTimeWindowMax[npmt];
-
+      if (!errorFlag)
+      {
+	fGoodNegAdcMult.at(npmt) += 1;
+      }
+ 
       // By default, the last hit within the timing cut will be considered "good"
       if (!errorFlag && pulseTimeCut) {
     	fGoodNegAdcPed.at(npmt)         = pulsePed;
-   	fGoodNegAdcMult.at(npmt)         = frNegAdcPulseInt->GetEntries();
-    	fGoodNegAdcPulseInt.at(npmt)    = pulseInt;
     	fGoodNegAdcPulseIntRaw.at(npmt) = pulseIntRaw;
     	fGoodNegAdcPulseAmp.at(npmt)    = pulseAmp;
-    	fGoodNegAdcPulseTime.at(npmt)   = pulseTime;
+   	fGoodNegAdcPulseInt.at(npmt)    = pulseInt;
+   	fGoodNegAdcPulseTime.at(npmt)   = pulseTime;
     	fGoodNegAdcTdcDiffTime.at(npmt)   = adctdcdiffTime;
 
     	fNegNpe.at(npmt) = fNegGain[npmt]*fGoodNegAdcPulseInt.at(npmt);
