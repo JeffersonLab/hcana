@@ -40,7 +40,7 @@ THcRun::THcRun( const vector<TString>& pathList, const char* filename,
 }
 
 //_____________________________________________________________________________
-THcRun& THcRun::operator=(const THaRun& rhs)
+THcRun& THcRun::operator=(const THaRunBase& rhs)
 {
   // Assignment operator.  Not really sure what I (saw) am doing here.
 

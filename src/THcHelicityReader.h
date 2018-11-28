@@ -21,8 +21,6 @@ public:
   THcHelicityReader();
   virtual ~THcHelicityReader();
   
-  void Print();
-
   struct ROCinfo {
     Int_t  roc;               // ROC to read out
     Int_t  slot;            // Headers to search for (0 = ignore)
