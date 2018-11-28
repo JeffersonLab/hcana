@@ -17,7 +17,7 @@ class THcRun : public THaRun {
   THcRun( const THcRun& run );
   THcRun( const std::vector<TString>& pathList, const char* filename,
   	  const char* description="" );
-  virtual THcRun& operator=( const THaRun& rhs );
+  THcRun& operator=( const THaRunBase& rhs );
   virtual ~THcRun();
   virtual void         Print( Option_t* opt="" ) const;
   THcParmList* GetHCParms() const { return fHcParms; }
