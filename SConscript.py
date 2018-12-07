@@ -106,6 +106,14 @@ f.close()
 
 print ('LIBS = %s\n' % pbaseenv.subst('$LIBS'))
 
+# SCons seems to ignore $RPATH on macOS... sigh
+if pbaseenv['PLATFORM'] == 'darwin':
+    try:
+        for rp in pbaseenv['RPATH']:
+            pbaseenv.Append(LINKFLAGS = ['-Wl,-rpath,'+rp])
+    except KeyError:
+        pass
+
 analyzer = pbaseenv.Program(target = 'hcana', source = 'src/main.o')
 pbaseenv.Install('./bin',analyzer)
 pbaseenv.Alias('install',['./bin'])

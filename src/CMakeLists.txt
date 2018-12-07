@@ -73,7 +73,7 @@ endif()
 
 target_link_libraries(${LIBNAME}
   PUBLIC
-    Podd::HallA
+    Podd::Podd
     Podd::Decode
   )
 set_target_properties(${LIBNAME} PROPERTIES
