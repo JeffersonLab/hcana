@@ -25,9 +25,10 @@ install:
   - python --version
   - scons --version
 script:
-  - make
   - scons
+  - mkdir build; cd build; cmake ..; make
 after_success:
+  - cd $TRAVIS_BUILD_DIR
   - pwd
   - ldd $HCANALYZER/hcana
   - $HCANALYZER/hcana --version
