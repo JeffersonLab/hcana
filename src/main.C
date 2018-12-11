@@ -7,12 +7,26 @@
 #include "THcInterface.h"
 #include <iostream>
 #include <cstring>
+#include <string>
+#include <cstdlib>
 
 using namespace std;
 
 int main(int argc, char **argv)
 {
   // Create a ROOT-style interactive interface
+  //
+
+  if (const char* env_p = std::getenv("DB_DIR")) {
+    std::cout << "Your DB_DIR is: " << env_p << '\n';
+  } else {
+    std::string db_dir_env = "DBASE";
+    if (setenv("DB_DIR", db_dir_env.c_str(), 1)) {
+      std::cout << "Failed to set env var DB_DIR\n";
+      std::exit(EXIT_FAILURE);
+    }
+    std::cout << "DB_DIR set to DBASE\n";
+  }
 
   // Handle convenience command line options
   bool print_version = false, no_logo = false;
