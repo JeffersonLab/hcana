@@ -500,7 +500,7 @@ void THcTimeSyncEvtHandler::AddExpectedOffset(Int_t roc, Int_t offset) {
 THaAnalysisObject::EStatus THcTimeSyncEvtHandler::Init(const TDatime& date)
 {
 
-  cout << "Howdy !  We are initializing THcTimeSyncEvtHandler !!   name =   "<<fName<<endl;
+  //cout << "Howdy !  We are initializing THcTimeSyncEvtHandler !!   name =   "<<fName<<endl;
 
   if(eventtypes.size()==0) {
     eventtypes.push_back(1);  // If no event types specified, 

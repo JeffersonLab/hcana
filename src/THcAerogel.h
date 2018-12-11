@@ -11,9 +11,12 @@
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
 #include "THcAerogelHit.h"
+
+#include "Logger.h"
+
 class THcHodoscope;
 
-class THcAerogel : public THaNonTrackingDetector, public THcHitList {
+class THcAerogel : public hcana::ConfigLogging<THaNonTrackingDetector>, public THcHitList {
 
  public:
   THcAerogel(const char* name, const char* description = "", THaApparatus* a = NULL);

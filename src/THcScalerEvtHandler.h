@@ -19,6 +19,7 @@
 #include "TString.h"
 #include <cstring>
 
+#include "Logger.h"
 
 class HCScalerLoc { // Utility class used by THcScalerEvtHandler
  public:
@@ -31,7 +32,7 @@ class HCScalerLoc { // Utility class used by THcScalerEvtHandler
   UInt_t index, islot, ichan, ikind, ivar;
 };
 
-class THcScalerEvtHandler : public THaEvtTypeHandler {
+class THcScalerEvtHandler : public hcana::ConfigLogging<THaEvtTypeHandler> {
 
 public:
 

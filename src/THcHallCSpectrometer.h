@@ -30,10 +30,15 @@
 #include <iostream>
 #include <fstream>
 
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_color_sinks.h" //support for stdout logging
+#include "spdlog/sinks/basic_file_sink.h" // support for basic file logging
 
 //class THaScintillator;
 
 class THcHallCSpectrometer : public THaSpectrometer {
+private:
+  std::shared_ptr<spdlog::logger> _logger;
 
 public:
   THcHallCSpectrometer( const char* name, const char* description );

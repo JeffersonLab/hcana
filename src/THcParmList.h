@@ -10,6 +10,8 @@
 #include "THaVarList.h"
 #include "THaTextvars.h"
 
+#include "Logger.h"
+
 #ifdef WITH_CCDB
 #ifdef __CINT__
 struct pthread_cond_t;
@@ -22,9 +24,7 @@ using namespace ccdb;
 
 using namespace std;
 
-
-
-class THcParmList : public THaVarList {
+class THcParmList : public hcana::ConfigLogging<THaVarList> {
 
 public:
 

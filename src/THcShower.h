@@ -15,7 +15,9 @@
 #include "THcShowerHit.h"
 #include "TMath.h"
 
-class THcShower : public THaNonTrackingDetector, public THcHitList {
+#include "Logger.h"
+
+class THcShower : public hcana::ConfigLogging<THaNonTrackingDetector>, public THcHitList {
 
 public:
   THcShower( const char* name, const char* description = "",

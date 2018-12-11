@@ -57,7 +57,9 @@ add_library(${PROJECT_NAME}::${LIBNAME} ALIAS ${LIBNAME})
 target_include_directories(${LIBNAME}
   PUBLIC
     $<INSTALL_INTERFACE:include>
+    $<INSTALL_INTERFACE:include/hcana>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>  # for hc_compiledata.h
   )
 
@@ -90,9 +92,12 @@ install(TARGETS ${LIBNAME}
   )
 install(FILES ${allheaders} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
+install(DIRECTORY include/spdlog DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/hcana)
+
 #----------------------------------------------------------------------------
 # libHallCDict
 build_root_dictionary(${LIBNAME} ${headers}
+  INCLUDEDIRS -I${CMAKE_CURRENT_SOURCE_DIR} -I${CMAKE_CURRENT_SOURCE_DIR}/include -I${Podd_DIR}/../../include
   TARGETS ${LIBNAME}
   LINKDEF ${linkdef}
   )

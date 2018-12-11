@@ -31,7 +31,7 @@ using namespace std;
 //_____________________________________________________________________________
 THcShower::THcShower( const char* name, const char* description,
 				  THaApparatus* apparatus ) :
-  THaNonTrackingDetector(name,description,apparatus)
+  hcana::ConfigLogging<THaNonTrackingDetector>(name,description,apparatus)
 {
   // Constructor
   fNLayers = 0;			// No layers until we make them
@@ -43,7 +43,7 @@ THcShower::THcShower( const char* name, const char* description,
 
 //_____________________________________________________________________________
 THcShower::THcShower( ) :
-  THaNonTrackingDetector()
+  hcana::ConfigLogging<THaNonTrackingDetector>()
 {
   // Constructor
 }
@@ -111,13 +111,13 @@ void THcShower::Setup(const char* name, const char* description)
 
   // cout << "---------------------------------------------------------------\n";
 
-  cout << "From THcShower::Setup: created Shower planes for "
-       << GetApparatus()->GetName() << ": ";
-
-  for(UInt_t i=0;i < fNTotLayers;i++) {
-    cout << fLayerNames[i];
-    i < fNTotLayers-1 ? cout << ", " : cout << ".\n";
-  }
+  _logger->info("From THcShower::Setup: created Shower planes for {} ", GetApparatus()->GetName());
+  //cout << "From THcShower::Setup: created Shower planes for "
+  //     << GetApparatus()->GetName() << ": ";
+  //for(UInt_t i=0;i < fNTotLayers;i++) {
+  //  cout << fLayerNames[i];
+  //  i < fNTotLayers-1 ? cout << ", " : cout << ".\n";
+  //}
 
   // if(fHasArray)
   //   cout << fLayerNames[fNTotLayers-1] << " has fly\'s eye configuration\n";

@@ -28,7 +28,7 @@ inline static bool IsComment( const string& s, string::size_type pos )
 }
 
 //_____________________________________________________________________________
-THcDetectorMap::THcDetectorMap() : fNchans(0), fNIDs(0)
+THcDetectorMap::THcDetectorMap() : hcana::ConfigLogging<TObject>(), fNchans(0), fNIDs(0)
 {
 }
 
@@ -405,11 +405,14 @@ void THcDetectorMap::Load(const char *fname)
       fNchans++;
     }
   }
-  cout << endl << " Detector ID Map" << endl << endl;
+  _logger->info("Detector ID Map");
+  //cout << endl << " Detector ID Map" << endl << endl;
+
   for(Int_t i=0; i < fNIDs; i++) {
-    cout << "   ";
-    cout << fIDMap[i].name << " " << fIDMap[i].id << endl;
+    //cout << "   ";
+    //cout << fIDMap[i].name << " " << fIDMap[i].id << endl;
+  _logger->info("   {:<10} {:<10} ", fIDMap[i].name ,fIDMap[i].id );
   }
-  cout << endl;
+  //cout << endl;
 
 }

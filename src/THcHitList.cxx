@@ -23,6 +23,12 @@ using namespace std;
 #define SUPPRESSMISSINGADCREFTIMEMESSAGES 1
 THcHitList::THcHitList() : fMap(0), fTISlot(0), fDisableSlipCorrection(kFALSE)
 {
+  _hitlist_logger = spdlog::get("hitlst");
+  if(!_hitlist_logger) {
+    _hitlist_logger = spdlog::stdout_color_mt("hitlst");
+    _hitlist_logger->set_pattern("[%t] [%n] %^[%l]%$ %v");
+  }
+
   /// Normal constructor.
 
   fRawHitList = NULL;
@@ -59,7 +65,9 @@ a method to ask the OO decoder what kind of module is in a given slot?
 void THcHitList::InitHitList(THaDetMap* detmap,
 			     const char *hitclass, Int_t maxhits,
 			     Int_t tdcref_cut, Int_t adcref_cut) {
-  cout << "InitHitList: " << hitclass << " RefTimeCuts: " << tdcref_cut << " " << adcref_cut << endl;
+
+  _hitlist_logger->info("InitHitList: {} RefTimeCuts: {} {}", hitclass, tdcref_cut, adcref_cut);
+  //cout << "InitHitList: " << hitclass << " RefTimeCuts: " << tdcref_cut << " " << adcref_cut << endl;
   fRawHitList = new TClonesArray(hitclass, maxhits);
   fRawHitClass = fRawHitList->GetClass();
   fNMaxRawHits = maxhits;
@@ -516,13 +524,16 @@ void THcHitList::CreateMissReportParms(const char *prefix)
 Parameters created are ${prefix}_tdcref_miss and ${prefix}_adcref_miss
 
   */
-  cout << "Defining " << Form("%s_tdcref_miss", prefix) << " and " << Form("%s_adcref_miss", prefix) << endl;
+  _hitlist_logger->info("Defining {}_tdcref_miss and {}_adcref_miss", prefix, prefix);
+  //cout << "Defining " << Form("%s_tdcref_miss", prefix) << " and " << Form("%s_adcref_miss", prefix) << endl;
   gHcParms->Define(Form("%s_tdcref_miss", prefix), "Missing TDC reference times", fNTDCRef_miss);
   gHcParms->Define(Form("%s_adcref_miss", prefix), "Missing ADC reference times", fNADCRef_miss);
 }
 void THcHitList::MissReport(const char *name)
 {
-  cout << "Missing Ref times:" << setw(20) << name << setw(10) << fNTDCRef_miss << setw(10) << fNADCRef_miss << endl;
+
+  _hitlist_logger->warn("Missing Ref times: {:20} {:10} {:10}", name, fNTDCRef_miss, fNADCRef_miss);
+  //cout << "Missing Ref times:" << setw(20) << name << setw(10) << fNTDCRef_miss << setw(10) << fNADCRef_miss << endl;
 }
 
 ClassImp(THcHitList)

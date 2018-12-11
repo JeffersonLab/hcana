@@ -38,7 +38,7 @@ using namespace std;
 //_____________________________________________________________________________
 THcRaster::THcRaster( const char* name, const char* description,
 		      THaApparatus* apparatus ) :
-  THaBeamDet(name,description,apparatus)
+  hcana::ConfigLogging<THaBeamDet>(name,description,apparatus)
 {
 
   fAnalyzePedestals = 0;
@@ -97,7 +97,7 @@ THcRaster::THcRaster( const char* name, const char* description,
 
 //_____________________________________________________________________________
 THcRaster::THcRaster( ) :
-  THaBeamDet("THcRaster") // no default constructor available
+  hcana::ConfigLogging<THaBeamDet>("THcRaster") // no default constructor available
 {
 
  frPosAdcPulseIntRaw  = NULL;
@@ -246,8 +246,11 @@ Int_t THcRaster::ReadDatabase( const TDatime& date )
     if (fgbeam_yoff ==-999.) fgbeam_yoff = 0.;
     if (fgbeam_xpoff ==-999.) fgbeam_xpoff = 0.;
     if (fgbeam_ypoff ==-999.) fgbeam_ypoff = 0.;
-    cout << " THcRaster is using parameters for  beam position" << " x = " << fgbeam_xoff<< " y = " << fgbeam_yoff<< endl;    
-    cout << " THcRaster is using parameters for  beam angle position" << " xp = " << fgbeam_xpoff<< " yp = " << fgbeam_ypoff<< endl;    
+
+    _logger->info("THcRaster parameters for beam position       x = {}, y = {}", fgbeam_xoff, fgbeam_yoff);  
+    _logger->info("THcRaster parameters for beam angle position xp= {}, yp= {}", fgbeam_xpoff, fgbeam_ypoff);
+    //cout << " THcRaster is using parameters for  beam position" << " x = " << fgbeam_xoff<< " y = " << fgbeam_yoff<< endl;    
+    //cout << " THcRaster is using parameters for  beam angle position" << " xp = " << fgbeam_xpoff<< " yp = " << fgbeam_ypoff<< endl;    
     
   }
 

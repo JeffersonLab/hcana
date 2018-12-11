@@ -182,7 +182,7 @@ Int_t THcHelicityReader::SetROCinfo( EROC which, Int_t roc,
   fROCinfo[which].slot = slot;
   fROCinfo[which].index  = index;
 
-  cout << "SetROCInfo: " << which << " " << fROCinfo[kHel].roc << " " << fROCinfo[kTime].roc << endl;
+  //cout << "SetROCInfo: " << which << " " << fROCinfo[kHel].roc << " " << fROCinfo[kTime].roc << endl;
   fHaveROCs = ( fROCinfo[kHel].roc > 0 && fROCinfo[kTime].roc > 0 );
   
   return 0;

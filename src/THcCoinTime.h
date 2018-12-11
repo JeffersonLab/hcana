@@ -26,7 +26,9 @@
 #include "THcHallCSpectrometer.h"
 #include "THaTrack.h"
 
-class THcCoinTime : public THaPhysicsModule {
+#include "Logger.h"
+
+class THcCoinTime : public hcana::ConfigLogging<THaPhysicsModule> {
 public:
   THcCoinTime( const char* name, const char* description, const char* hadArmName="", 
 	       const char* elecArmName="", const char* coinname="");

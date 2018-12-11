@@ -358,9 +358,9 @@ Int_t THcShowerPlane::DefineVariables( EMode mode )
   gHcParms->Define(Form("%sstat_hitsum%d", fParent->GetPrefix(), fLayerNum),
 	 Form("Number of hits in calo. layer %d", fLayerNum), fTotStatNumHit);
 
-  cout << "THcShowerPlane::DefineVariables: registered counters "
-       << Form("%sstat_trksum%d",fParent->GetPrefix(),fLayerNum) << " and "
-       << Form("%sstat_hitsum%d",fParent->GetPrefix(),fLayerNum) << endl;
+  //cout << "THcShowerPlane::DefineVariables: registered counters "
+  //     << Form("%sstat_trksum%d",fParent->GetPrefix(),fLayerNum) << " and "
+  //     << Form("%sstat_hitsum%d",fParent->GetPrefix(),fLayerNum) << endl;
   //  getchar();
     
   RVarDef vars[] = {

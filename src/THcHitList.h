@@ -13,6 +13,8 @@
 #include <iomanip>
 #include <map>
 
+#include "Logger.h"
+
 using namespace std;
 
 //////////////////////////////////////////////////////////////////////////
@@ -25,6 +27,8 @@ using namespace std;
 class THcConfigEvtHandler;
 
 class THcHitList {
+  protected:
+    std::shared_ptr<spdlog::logger> _hitlist_logger;
 
 public:
 

@@ -23,7 +23,9 @@
 #include "THaSpectrometer.h"
 #include "THaTrack.h"
 
-class THcHodoEff : public THaPhysicsModule {
+#include "Logger.h"
+
+class THcHodoEff : public hcana::ConfigLogging<THaPhysicsModule> {
 public:
   THcHodoEff( const char* name, const char* description, const char* hodname);
   virtual ~THcHodoEff();

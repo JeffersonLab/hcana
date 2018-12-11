@@ -11,9 +11,12 @@
 #include "THaNonTrackingDetector.h"
 #include "THcHitList.h"
 #include "THcCherenkovHit.h"
+
+#include "Logger.h"
+
 class THcHodoscope;
 
-class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
+class THcCherenkov : public hcana::ConfigLogging<THaNonTrackingDetector>, public THcHitList {
 
  public:
   THcCherenkov(const char* name, const char* description = "", THaApparatus* a = NULL);

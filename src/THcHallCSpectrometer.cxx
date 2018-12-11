@@ -117,6 +117,11 @@ THcHallCSpectrometer::THcHallCSpectrometer( const char* name, const char* descri
 
   SetTrSorting(kTRUE);
   eventtypes.clear();
+
+  _logger = spdlog::get("config");
+  if(!_logger) {
+    _logger = spdlog::stdout_color_mt("config");
+  }
 }
 
 //_____________________________________________________________________________
@@ -195,7 +200,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   static const char* const here = "THcHallCSpectrometer::ReadDatabase";
 
 #ifdef WITH_DEBUG
-  cout << "In THcHallCSpectrometer::ReadDatabase()" << endl;
+  //cout << "In THcHallCSpectrometer::ReadDatabase()" << endl;
 #endif
 
   const char* detector_name = "hod";
@@ -301,7 +306,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
       
       fMispointing_y = 0.1*(-0.6);
       gHcParms->Define("pmispointing_y","SHMS Y-Mispointing", fMispointing_y);
-      cout << prefix[0] << " From Formula Mispointing_y = " << fMispointing_y << endl;
+      //cout << prefix[0] << " From Formula Mispointing_y = " << fMispointing_y << endl;
     }
     
   }
@@ -320,7 +325,7 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
       else {fMispointing_x = 0.1*(2.37-0.086*50+0.0012*50.*50.);}
       
       gHcParms->Define("hmispointing_x","HMS X-Mispointing", fMispointing_x);
-      cout << prefix[0] << " From Formula Mispointing_x = " << fMispointing_x << endl;
+      //cout << prefix[0] << " From Formula Mispointing_x = " << fMispointing_x << endl;
       
     }
     
@@ -329,14 +334,14 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
       fMispointing_x = 0.1*(-1.26);
       
       gHcParms->Define("pmispointing_x","SHMS X-Mispointing", fMispointing_x);
-      cout << prefix[0] << " From Formula Mispointing_x = " << fMispointing_x << endl;
+      //cout << prefix[0] << " From Formula Mispointing_x = " << fMispointing_x << endl;
       
     }
     
   }
   
   else {
-    cout << prefix[0] << " From Parameter Set Mispointing_x = " << fMispointing_x << endl;
+    //cout << prefix[0] << " From Parameter Set Mispointing_x = " << fMispointing_x << endl;
   }
   //
   
@@ -344,18 +349,18 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   EnforcePruneLimits();
 
 #ifdef WITH_DEBUG
-  cout <<  "\n\n\nhodo planes = " <<  fNPlanes << endl;
-  cout <<  "sel using scin = "    <<  fSelUsingScin << endl;
-  cout <<  "fPruneXp = "          <<  fPruneXp << endl;
-  cout <<  "fPruneYp = "          <<  fPruneYp << endl;
-  cout <<  "fPruneYtar = "        <<  fPruneYtar << endl;
-  cout <<  "fPruneDelta = "       <<  fPruneDelta << endl;
-  cout <<  "fPruneBeta = "        <<  fPruneBeta << endl;
-  cout <<  "fPruneDf = "          <<  fPruneDf << endl;
-  cout <<  "fPruneChiBeta = "     <<  fPruneChiBeta << endl;
-  cout <<  "fPruneFpTime = "      <<  fPruneFpTime << endl;
-  cout <<  "fPruneNPMT = "        <<  fPruneNPMT << endl;
-  cout <<  "sel using prune = "   <<  fSelUsingPrune << endl;
+  //cout <<  "\n\n\nhodo planes = " <<  fNPlanes << endl;
+  //cout <<  "sel using scin = "    <<  fSelUsingScin << endl;
+  //cout <<  "fPruneXp = "          <<  fPruneXp << endl;
+  //cout <<  "fPruneYp = "          <<  fPruneYp << endl;
+  //cout <<  "fPruneYtar = "        <<  fPruneYtar << endl;
+  //cout <<  "fPruneDelta = "       <<  fPruneDelta << endl;
+  //cout <<  "fPruneBeta = "        <<  fPruneBeta << endl;
+  //cout <<  "fPruneDf = "          <<  fPruneDf << endl;
+  //cout <<  "fPruneChiBeta = "     <<  fPruneChiBeta << endl;
+  //cout <<  "fPruneFpTime = "      <<  fPruneFpTime << endl;
+  //cout <<  "fPruneNPMT = "        <<  fPruneNPMT << endl;
+  //cout <<  "sel using prune = "   <<  fSelUsingPrune << endl;
 #endif
   cout <<  "fPartMass = "         <<  fPartMass << endl;
   cout <<  "fPcentral = "         <<  fPcentral << " " <<fPCentralOffset << endl;

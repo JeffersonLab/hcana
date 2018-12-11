@@ -37,7 +37,7 @@ using namespace std;
 // do we need to "close" scalers/EPICS analysis if we reach the event limit?
 
 //_____________________________________________________________________________
-THcAnalyzer::THcAnalyzer()
+THcAnalyzer::THcAnalyzer() : hcana::ConfigLogging<THaAnalyzer>()
 {
 
 }

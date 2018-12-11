@@ -15,7 +15,9 @@
 #include <vector>
 #include <map>
 
-class THcConfigEvtHandler : public THaEvtTypeHandler {
+#include "Logger.h"
+
+class THcConfigEvtHandler : public hcana::ConfigLogging<THaEvtTypeHandler> {
 
 public:
 

@@ -20,7 +20,9 @@
 #include "THaOutput.h"
 #include "THaEpicsEvtHandler.h"
 
-class THcRaster : public THaBeamDet, public THcHitList {
+#include "Logger.h"
+
+class THcRaster : public hcana::ConfigLogging<THaBeamDet>, public THcHitList {
 
  public:
 

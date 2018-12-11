@@ -26,7 +26,7 @@ using namespace std;
 //_____________________________________________________________________________
 THcHodoEff::THcHodoEff (const char *name, const char* description,
 			const char* hodname) :
-  THaPhysicsModule(name, description), fName(hodname), fHod(NULL), fNevt(0)
+  hcana::ConfigLogging<THaPhysicsModule>(name, description), fName(hodname), fHod(NULL), fNevt(0)
 {
 
 }
@@ -128,10 +128,12 @@ THaAnalysisObject::EStatus THcHodoEff::Init( const TDatime& run_time )
   if( THaPhysicsModule::Init( run_time ) != kOK )
     return fStatus;
 
-  cout << "THcHodoEff::Init nplanes=" << fHod->GetNPlanes() << endl;
-  cout << "THcHodoEff::Init Apparatus = " << fHod->GetName() <<
-    " " <<
-    (fHod->GetApparatus())->GetName() << endl;
+  //cout << "THcHodoEff::Init nplanes=" << fHod->GetNPlanes() << endl;
+  //cout << "THcHodoEff::Init Apparatus = " << fHod->GetName() <<
+  //  " " <<
+  //  (fHod->GetApparatus())->GetName() << endl;
+  _logger->info("THcHodoEff::Init nplanes={}", fHod->GetNPlanes());
+  _logger->info("THcHodoEff::Init Apparatus = {} {}", fHod->GetName(), (fHod->GetApparatus())->GetName());
 
   return fStatus = kOK;
 }
@@ -185,7 +187,8 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
   };
   fHodoEff_CalEnergy_Cut=0.050; // set default value
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
-  cout << "\n\nTHcHodoEff::ReadDatabase nplanes=" << fHod->GetNPlanes() << endl;
+  //cout << "\n\nTHcHodoEff::ReadDatabase nplanes=" << fHod->GetNPlanes() << endl;
+  _logger->info("THcHodoEff::ReadDatabase nplanes={}", fHod->GetNPlanes());
   // Setup statistics arrays
   // Better method to put this in?
   // These all need to be cleared in Begin
@@ -202,7 +205,8 @@ Int_t THcHodoEff::ReadDatabase( const TDatime& date )
 
   for(Int_t ip=0;ip<fNPlanes;ip++) {
 
-    cout << "Plane = " << ip + 1 << "    counters = " << fNCounters[ip] << endl;
+    //cout << "Plane = " << ip + 1 << "    counters = " << fNCounters[ip] << endl;
+    _logger->info("Plane = {}   counters = {} ", ip + 1, fNCounters[ip]);
 
     fStatTrkDel[ip].resize(fNCounters[ip]);
     fStatAndHitDel[ip].resize(fNCounters[ip]);

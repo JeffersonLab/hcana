@@ -63,7 +63,7 @@ Int_t  fDebug   = 1;  // Keep this at one while we're working on the code
 ClassImp(THcParmList)
 
 /// Create empty numerical and string parameter lists
-THcParmList::THcParmList() : THaVarList()
+THcParmList::THcParmList() : hcana::ConfigLogging<THaVarList>()
 {
   TextList = new THaTextvars;
 }
@@ -176,7 +176,8 @@ The ENGINE CTP support parameter "blocks" which were marked with
       //      cout << line << endl;
       ifiles[nfiles].open(line.c_str());
       if(ifiles[nfiles].is_open()) {
-	cout << "Opening parameter file: [" << nfiles << "] " << line << endl;
+        _logger->info("Opening parameter file: [{}] {} ", nfiles, line);
+	//cout << "Opening parameter file: [" << nfiles << "] " << line << endl;
 	nfiles++;
       }
       continue;

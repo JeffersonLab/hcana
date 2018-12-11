@@ -31,10 +31,11 @@
 #include <iostream>
 #include <fstream>
 
+#include "Logger.h"
 
 class THaScCalib;
 
-class THcHodoscope : public THaNonTrackingDetector, public THcHitList {
+class THcHodoscope : public hcana::ConfigLogging<THaNonTrackingDetector>, public THcHitList {
 
 public:
   THcHodoscope( const char* name, const char* description = "",

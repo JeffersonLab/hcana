@@ -30,7 +30,7 @@ using namespace std;
 THcCoinTime::THcCoinTime (const char *name, const char* description, const char* hadArmName, 
 			  const char* elecArmName, const char* coinname) :
   
-  THaPhysicsModule(name, description), 
+  hcana::ConfigLogging<THaPhysicsModule>(name, description), 
   fCoinDetName(coinname), 
   fhadArmName(hadArmName),                 //initialize spectro names
   felecArmName(elecArmName),
@@ -80,19 +80,27 @@ THaAnalysisObject::EStatus THcCoinTime::Init( const TDatime& run_time )
 {
   // Initialize THcCoinTime physics module
   
-  cout << "*************************************************" << endl;
-  cout << "Initializing THcCointTime Physics Modue" << endl;
-  cout << "Hadron Arm   -------> " << fhadArmName << endl;
-  cout << "Electron Arm -------> " << felecArmName << endl;
-  cout << "TrigDet  -------> " << fCoinDetName << endl;
-  cout << "**************************************************" << endl;
+  //cout << "*************************************************" << endl;
+  //cout << "Initializing THcCointTime Physics Modue" << endl;
+  //cout << "Hadron Arm   -------> " << fhadArmName << endl;
+  //cout << "Electron Arm -------> " << felecArmName << endl;
+  //cout << "TrigDet  -------> " << fCoinDetName << endl;
+  //cout << "**************************************************" << endl;
+
+  _logger->info("*************************************************");
+  _logger->info("Initializing THcCointTime Physics Modue" );
+  _logger->info("Hadron Arm   -------> {}" , fhadArmName.Data() );
+  _logger->info("Electron Arm -------> {}" , felecArmName.Data() );
+  _logger->info("TrigDet      -------> {}" , fCoinDetName.Data() );
+  _logger->info("**************************************************" );
 
   fStatus = kOK;
 
   fhadSpectro = dynamic_cast<THcHallCSpectrometer*>
     ( FindModule( fhadArmName.Data(), "THcHallCSpectrometer"));
   if( !fhadSpectro ) {
-    cout << "THcCoinTime module  Cannnot find Hadron Arm = " <<  fhadArmName.Data() << endl;
+    //cout << "THcCoinTime module  Cannnot find Hadron Arm = " <<  fhadArmName.Data() << endl;
+    _logger->error("THcCoinTime module  Cannnot find Hadron Arm = {}" ,  fhadArmName.Data());
     fStatus = kInitError;
     return fStatus;
   }
@@ -100,7 +108,8 @@ THaAnalysisObject::EStatus THcCoinTime::Init( const TDatime& run_time )
   felecSpectro = dynamic_cast<THcHallCSpectrometer*>
     ( FindModule( felecArmName.Data(), "THcHallCSpectrometer"));
   if( !felecSpectro ) {
-    cout << "THcCoinTime module  Cannnot find Electron Arm = " << felecArmName.Data() << endl;
+    //cout << "THcCoinTime module  Cannnot find Electron Arm = " << felecArmName.Data() << endl;
+    _logger->error("THcCoinTime module  Cannnot find Electron Arm = {}" , felecArmName.Data());
     fStatus = kInitError;
     return fStatus;
   }
@@ -108,7 +117,8 @@ THaAnalysisObject::EStatus THcCoinTime::Init( const TDatime& run_time )
   fCoinDet = dynamic_cast<THcTrigDet*>
     ( FindModule( fCoinDetName.Data(), "THcTrigDet"));
   if( !fCoinDet ) {
-    cout << "THcCoinTime module  Cannnot find TrigDet = " << fCoinDetName.Data() << endl;
+    //cout << "THcCoinTime module  Cannnot find TrigDet = " << fCoinDetName.Data() << endl;
+    _logger->error("THcCoinTime module  Cannnot find TrigDet = {}", fCoinDetName.Data());
     fStatus = kInitError;
     return fStatus;
   }

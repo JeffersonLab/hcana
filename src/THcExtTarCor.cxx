@@ -23,7 +23,7 @@ using namespace std;
 //_____________________________________________________________________________
 THcExtTarCor::THcExtTarCor( const char* name, const char* description,
 			    const char* spectro, const char* vertex ) :
-  THaExtTarCor(name, description, spectro, vertex)
+  hcana::ConfigLogging<THaExtTarCor>(name, description, spectro, vertex)
 {
   // Normal constructor.
 
@@ -156,9 +156,10 @@ Int_t THcExtTarCor::ReadDatabase( const TDatime& date )
 {
 
 #ifdef WITH_DEBUG
-  cout << "In THcExtTarCor::ReadDatabase()" << endl;
+  //cout << "In THcExtTarCor::ReadDatabase()" << endl;
 #endif
   //
+  _logger->debug("In THcExtTarCor::ReadDatabase()");
 
   // cout << " GetName() " << GetName() << endl;
   return kOK;

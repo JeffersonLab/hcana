@@ -9,7 +9,9 @@
 
 #include "THaAnalyzer.h"
 
-class THcAnalyzer : public THaAnalyzer {
+#include "Logger.h"
+
+class THcAnalyzer : public hcana::ConfigLogging<THaAnalyzer> {
 
 public:
 

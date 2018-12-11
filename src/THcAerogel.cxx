@@ -36,7 +36,7 @@ using namespace std;
 //_____________________________________________________________________________
 THcAerogel::THcAerogel( const char* name, const char* description,
                         THaApparatus* apparatus ) :
-  THaNonTrackingDetector(name,description,apparatus)
+  hcana::ConfigLogging<THaNonTrackingDetector>(name,description,apparatus)
 {
 
   InitArrays();
@@ -45,7 +45,7 @@ THcAerogel::THcAerogel( const char* name, const char* description,
 
 //_____________________________________________________________________________
 THcAerogel::THcAerogel( ) :
-  THaNonTrackingDetector()
+  hcana::ConfigLogging<THaNonTrackingDetector>()
 {
   // Constructor
   frPosAdcPedRaw       = NULL;
@@ -234,8 +234,10 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
 
   Bool_t optional = true ;
 
-  cout << "Created aerogel detector " << GetApparatus()->GetName() << "."
-       << GetName() << " with " << fNelem << " PMT pairs" << endl;
+  _logger->info("Created aerogel detector {}.{} with {} PMT pairs.", GetApparatus()->GetName(),
+                GetName(), fNelem);
+  //cout << "Created aerogel detector " << GetApparatus()->GetName() << "."
+  //     << GetName() << " with " << fNelem << " PMT pairs" << endl;
 
   fPosGain = new Double_t[fNelem];
   fNegGain = new Double_t[fNelem];

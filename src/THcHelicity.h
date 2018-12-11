@@ -11,10 +11,11 @@
 
 #include "THaHelicityDet.h"
 #include "THcHelicityReader.h"
+#include "Logger.h"
 
 class TH1F;
 
-class THcHelicity : public THaHelicityDet, public THcHelicityReader {
+class THcHelicity : public hcana::ConfigLogging<THaHelicityDet>, public THcHelicityReader {
 
 public:
 

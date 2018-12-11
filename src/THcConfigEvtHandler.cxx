@@ -31,11 +31,14 @@
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_color_sinks.h" //support for stdout logging
+#include "spdlog/sinks/basic_file_sink.h" // support for basic file logging
 
 using namespace std;
 
 THcConfigEvtHandler::THcConfigEvtHandler(const char *name, const char* description)
-  : THaEvtTypeHandler(name,description)
+  : hcana::ConfigLogging<THaEvtTypeHandler>(name,description)
 {
 }
 
@@ -59,14 +62,18 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
 
   if ( !IsMyEvent(evdata->GetEvType()) ) return -1;
 
-  if (ldebug) cout << "------------------\n  Event type 125"<<endl;
+  if (ldebug){
+    //cout << "------------------\n  Event type 125"<<endl;
+  }
+  _logger->debug("--- Event type 125 ---");
 
   Int_t evlen = evdata->GetEvLength();
   Int_t ip = 0;
   ip++;
   UInt_t thisword = evdata->GetRawData(ip);
   Int_t roc = thisword & 0xff;
-  cout << "THcConfigEvtHandler: " << roc << endl;
+  _logger->info("THcConfigEvtHandler: {} ", roc);
+  //cout << "THcConfigEvtHandler: " << roc << endl;
   // Should check if this roc has already been seen
   CrateInfo_t *cinfo = new CrateInfo_t;
   cinfo->FADC250.nmodules=0;
@@ -84,12 +91,15 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
     if (thisword == 0xdafadcff) {
       ip++;
       thisword = evdata->GetRawData(ip);
-      cout << "ADC thresholds for slots ";
+      std::string adc_th_string;
+      //cout << "ADC thresholds for slots ";
       while((thisword & 0xfffff000)==0xfadcf000) {
         Int_t slot = thisword&0x1f;
         // Should check if this slot has already been SDC_WIRE_CENTER
         cinfo->FADC250.nmodules++;
-        cout << " " << slot;
+        //cout << " " << slot;
+        adc_th_string += std::string(" ");
+        adc_th_string += std::to_string(slot);
         Int_t *thresholds = new Int_t [16];
         cinfo->FADC250.thresholds.insert(std::make_pair(slot, thresholds));
         for(Int_t i=0;i<16;i++) {
@@ -98,15 +108,18 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
         ip +=18;
         if(ip>=evlen) {
           if(ip>evlen) {
-            cout << endl << "Info event truncated" << endl;
+            //cout << endl << "Info event truncated" << endl;
+            adc_th_string += std::string(" ... truncated ");
           }
           break;
         }
         thisword = evdata->GetRawData(ip);
       }
-      cout << endl;
+      //cout << endl;
+      _logger->info("ADC thresholds for slots {}", adc_th_string);
     } else if((thisword&0xffffff00) == 0xdafadc00) { // FADC250 information
-      cout << "ADC information: Block level " << (thisword&0xff) << endl;
+      //cout << "ADC information: Block level " << (thisword&0xff) << endl;
+      _logger->info("ADC information: Block level {} " , (thisword&0xff));
       cinfo->FADC250.present = 1;
       cinfo->FADC250.blocklevel = thisword&0xff;
       cinfo->FADC250.dac_level = evdata->GetRawData(ip+2);
@@ -122,7 +135,8 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
       cinfo->FADC250.nsat = evdata->GetRawData(ip+12);
       ip += 13;
     } else if (thisword == 0xdedc1190) { // CAEN 1190 information
-      cout << "TDC information" << endl;
+      //cout << "TDC information" << endl;
+      _logger->info("TDC information");
       cinfo->CAEN1190.present = 1;
       cinfo->CAEN1190.resolution = evdata->GetRawData(ip+2);
       cinfo->CAEN1190.timewindow_offset = evdata->GetRawData(ip+3);
@@ -163,7 +177,8 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
     }
   }
 
-  cout << "Making Parms for ROC " << roc << "  Event type " << evdata->GetEvType() << endl;
+  //cout << "Making Parms for ROC " << roc << "  Event type " << evdata->GetEvType() << endl;
+  _logger->info("Making Parms for ROC {}  Event type ", roc, evdata->GetEvType());
   MakeParms(roc);
 
   return 1;
@@ -353,7 +368,7 @@ void THcConfigEvtHandler::AddEventType(Int_t evtype)
 THaAnalysisObject::EStatus THcConfigEvtHandler::Init(const TDatime& date)
 {
 
-  cout << "Howdy !  We are initializing THcConfigEvtHandler !!   name =   "<<fName<<endl;
+  _logger->info("Howdy !  We are initializing THcConfigEvtHandler !!   name = {}",fName.Data());
 
   if(eventtypes.size()==0) {
     eventtypes.push_back(125);  // what events to look for

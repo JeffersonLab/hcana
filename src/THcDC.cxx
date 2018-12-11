@@ -33,13 +33,18 @@ the number of parameters per plane.
 #include <cstdlib>
 #include <iostream>
 
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_color_sinks.h" //support for stdout logging
+#include "spdlog/sinks/basic_file_sink.h" // support for basic file logging
+
+
 using namespace std;
 
 //_____________________________________________________________________________
 THcDC::THcDC(
  const char* name, const char* description,
 				  THaApparatus* apparatus ) :
-  THaTrackingDetector(name,description,apparatus)
+  hcana::ConfigLogging<THaTrackingDetector>(name,description,apparatus)
 {
   // Constructor
 
@@ -86,6 +91,12 @@ THcDC::THcDC(
 
   //The version defaults to 0 (old HMS style). 1 is new HMS style and 2 is SHMS style.
   fVersion = 0;
+
+  //Create and return a shared_ptr to a multithreaded console logger.
+  //_logger = spdlog::get("config");
+  //if(!_logger) {
+  //  _logger = spdlog::stdout_color_mt("config");
+  //}
 }
 
 //_____________________________________________________________________________
@@ -131,14 +142,18 @@ void THcDC::Setup(const char* name, const char* description)
     fHMSStyleChambers = 0;
   }
 
-
-  cout << "Plane Name List: " << planenamelist << endl;
-  cout << "Drift Chambers: " <<  fNPlanes << " planes in " << fNChambers << " chambers" << endl;
+  _logger->info("Plane Name List: {}", planenamelist);
+  _logger->info("Drift Chambers: {} planes in {} chambers", fNPlanes, fNChambers);
+  //cout << "Plane Name List: " << planenamelist << endl;
+  //cout << "Drift Chambers: " <<  fNPlanes << " planes in " << fNChambers << " chambers" << endl;
 
   vector<string> plane_names = vsplit(planenamelist);
 
   if(plane_names.size() != (UInt_t) fNPlanes) {
-    cout << "ERROR: Number of planes " << fNPlanes << " doesn't agree with number of plane names " << plane_names.size() << endl;
+    //cout << "ERROR: Number of planes " << fNPlanes << " doesn't agree with number of plane names " << plane_names.size() << endl;
+    _logger->error("ERROR: Number of planes {} doesn't agree with number of plane names {}",
+                   fNPlanes, plane_names.size());
+
     // Should quit.  Is there an official way to quit?
   }
   fPlaneNames = new char* [fNPlanes];
@@ -177,7 +192,8 @@ void THcDC::Setup(const char* name, const char* description)
     // Should construct a better chamber name
     THcDriftChamber* newchamber = new THcDriftChamber(desc1, desc, i+1, this);
     fChambers.push_back(newchamber);
-    cout << "Created Drift Chamber " << i+1 << ", " << desc1 << endl;
+    //cout << "Created Drift Chamber " << i+1 << ", " << desc1 << endl;
+    _logger->info("Created Drift Chamber {}, {}" , i+1 , desc1);
     newchamber->SetHMSStyleFlag(fHMSStyleChambers); // Tell the chamber its style
   }
   delete [] desc;
@@ -186,7 +202,7 @@ void THcDC::Setup(const char* name, const char* description)
 
 //_____________________________________________________________________________
 THcDC::THcDC( ) :
-  THaTrackingDetector()
+  hcana::ConfigLogging<THaTrackingDetector>()
 {
   // Constructor
 }
@@ -209,9 +225,9 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
 
   // Should probably put this in ReadDatabase as we will know the
   // maximum number of hits after setting up the detector map
-  cout << " DC tdc ref time cut = " << fTDC_RefTimeCut  << endl;
-  InitHitList(fDetMap, "THcRawDCHit", fDetMap->GetTotNumChan()+1,
-	      fTDC_RefTimeCut, 0);
+  _logger->info("DC tdc ref time cut = {} ", fTDC_RefTimeCut);
+  //cout << " DC tdc ref time cut = " << fTDC_RefTimeCut  << endl;
+  InitHitList(fDetMap, "THcRawDCHit", fDetMap->GetTotNumChan()+1, fTDC_RefTimeCut, 0);
 
   CreateMissReportParms(Form("%sdc",fPrefix));
 
@@ -375,11 +391,16 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
    gHcParms->LoadParmValues((DBRequest*)&listOpt,fPrefix);
   if(fNTracksMaxFP <= 0) fNTracksMaxFP = 10;
   // if(fNTracksMaxFP > HNRACKS_MAX) fNTracksMaxFP = NHTRACKS_MAX;
-  cout << "Plane counts:";
+  
+  std::string plane_counts_string;
+  //cout << "Plane counts:";
   for(Int_t i=0;i<fNPlanes;i++) {
-    cout << " " << fNWires[i];
+    //cout << " " << fNWires[i];
+    plane_counts_string += std::string(" ");
+    plane_counts_string += std::to_string(fNWires[i]);
   }
-  cout << endl;
+  //cout << endl;
+  _logger->info("Plane counts: {}", plane_counts_string);
 
   fIsInit = true;
 

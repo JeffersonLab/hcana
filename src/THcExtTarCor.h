@@ -8,10 +8,11 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "THaExtTarCor.h"
+#include "Logger.h"
 
 class THaVertexModule;
 
-class THcExtTarCor : public THaExtTarCor {
+class THcExtTarCor : public hcana::ConfigLogging<THaExtTarCor> {
   
 public:
   THcExtTarCor( const char* name, const char* description,

@@ -15,12 +15,20 @@
 #include "THcDriftChamber.h"
 #include "TMath.h"
 
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_color_sinks.h" //support for stdout logging
+#include "spdlog/sinks/basic_file_sink.h" // support for basic file logging
+
+#include "Logger.h"
+
 #define NUM_FPRAY 4
 
 //class THaScCalib;
 class TClonesArray;
 
-class THcDC : public THaTrackingDetector, public THcHitList {
+class THcDC : public hcana::ConfigLogging<THaTrackingDetector>, public THcHitList {
+//private:
+//  std::shared_ptr<spdlog::logger> _logger;
 
 public:
   THcDC( const char* name, const char* description = "",
