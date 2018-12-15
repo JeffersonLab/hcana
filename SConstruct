@@ -38,7 +38,7 @@ print ("Hall A Main Directory = %s" % baseenv.subst('$HA_DIR'))
 print ("Software Version = %s" % baseenv.subst('$VERSION'))
 ivercode = 65536*int(float(baseenv.subst('$SOVERSION')))+ 256*int(10*(float(baseenv.subst('$SOVERSION'))-int(float(baseenv.subst('$SOVERSION')))))+ int(float(baseenv.subst('$PATCH')))
 baseenv.Append(VERCODE = ivercode)
-baseenv.Append(CPPPATH = ['$HC_SRC','$HA_SRC','$HA_DC'])
+baseenv.Append(CPPPATH = ['$HC_SRC','$HA_SRC','$HA_DC','$HC_SRC/include'])
 
 sys.path.insert(1,baseenv.subst('$HA_DIR'+'/site_scons'))
 import configure
