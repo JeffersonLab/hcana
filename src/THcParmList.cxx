@@ -56,9 +56,16 @@ An instance of THaTextvars is created to hold the string parameters.
 #include <cassert>
 #include <cstdlib>
 #include <stdexcept>
+#include <memory>
 
 using namespace std;
 Int_t  fDebug   = 1;  // Keep this at one while we're working on the code
+
+#if __cplusplus < 201103L
+# define SMART_PTR auto_ptr
+#else
+# define SMART_PTR unique_ptr
+#endif
 
 ClassImp(THcParmList)
 
@@ -261,7 +268,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
       if(line.find_first_not_of("0123456789-,")==string::npos) { // Interpret as runnum range
 	// Interpret line as a list of comma separated run numbers or ranges
 	TString runnums(line.c_str());
-	TObjArray *runnumarr = runnums.Tokenize(",");
+	SMART_PTR<TObjArray> runnumarr( runnums.Tokenize(",") );
 	Int_t nranges=runnumarr->GetLast()+1;
 
 	InRunRange = 0;

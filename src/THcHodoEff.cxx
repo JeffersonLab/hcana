@@ -36,6 +36,24 @@ THcHodoEff::~THcHodoEff()
 {
   // Destructor
 
+  delete [] fPlanes; fPlanes = 0;
+  delete [] fPosZ; fPosZ = 0;
+  delete [] fSpacing; fSpacing = 0;
+  delete [] fCenterFirst; fCenterFirst = 0;
+  delete [] fNCounters; fNCounters = 0;
+  delete [] fHodoSlop; fHodoSlop = 0;
+  delete [] fStatTrkSum; fStatTrkSum = 0;
+  delete [] fStatAndSum; fStatAndSum = 0;
+  delete [] fStatAndEff; fStatAndEff = 0;
+
+  delete [] fHodoPosEffi; fHodoPosEffi = 0;
+  delete [] fHodoNegEffi; fHodoNegEffi = 0;
+  delete [] fHodoOrEffi; fHodoOrEffi = 0;
+  delete [] fHodoAndEffi; fHodoAndEffi = 0;
+  delete [] fStatTrk; fStatTrk = 0;
+
+  delete [] fHitPlane; fHitPlane = 0;
+
   RemoveVariables();
 }
 

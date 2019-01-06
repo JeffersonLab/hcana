@@ -26,7 +26,7 @@ class HCScalerLoc { // Utility class used by THcScalerEvtHandler
 	      UInt_t iki, Int_t iv) :
    name(nm), description(desc), index(idx), islot(s1), ichan(ich),
    ikind(iki), ivar(iv) { };
-  ~HCScalerLoc();
+  ~HCScalerLoc() {}
   TString name, description;
   UInt_t index, islot, ichan, ikind, ivar;
 };

@@ -566,10 +566,13 @@ THcHodoscope::~THcHodoscope()
     RemoveVariables();
   if( fIsInit )
     DeleteArrays();
-  if (fTrackProj) {
-    fTrackProj->Clear();
-    delete fTrackProj; fTrackProj = 0;
+
+  for( int i = 0; i < fNPlanes; ++i ) {
+    delete fPlanes[i];
+    delete [] fPlaneNames[i];
   }
+  delete [] fPlanes;
+  delete [] fPlaneNames;
 }
 
 //_____________________________________________________________________________
@@ -584,6 +587,8 @@ void THcHodoscope::DeleteArrays()
 
   delete [] fxLoScin;             fxLoScin = NULL;
   delete [] fxHiScin;             fxHiScin = NULL;
+  delete [] fyLoScin;             fyLoScin = NULL;
+  delete [] fyHiScin;             fyHiScin = NULL;
   delete [] fHodoSlop;            fHodoSlop = NULL;
 
   delete [] fNPaddle;             fNPaddle = NULL;
@@ -603,11 +608,13 @@ void THcHodoscope::DeleteArrays()
   delete [] fHodoPosInvAdcLinear; fHodoPosInvAdcLinear = NULL;
   delete [] fHodoNegInvAdcLinear; fHodoNegInvAdcLinear = NULL;
   delete [] fHodoPosInvAdcAdc;    fHodoPosInvAdcAdc = NULL;
+  delete [] fHodoNegInvAdcAdc;    fHodoNegInvAdcAdc = NULL;
   delete [] fGoodPlaneTime;       fGoodPlaneTime = NULL;
   delete [] fNPlaneTime;          fNPlaneTime = NULL;
   delete [] fSumPlaneTime;        fSumPlaneTime = NULL;
   delete [] fNScinHits;           fNScinHits = NULL;
   delete [] fTdcOffset;           fTdcOffset = NULL;
+  delete [] fAdcTdcOffset;        fAdcTdcOffset = NULL;
   delete [] fHodoNegAdcTimeWindowMin;    fHodoNegAdcTimeWindowMin = NULL;
   delete [] fHodoNegAdcTimeWindowMax;    fHodoNegAdcTimeWindowMax = NULL;
   delete [] fHodoPosAdcTimeWindowMin;    fHodoPosAdcTimeWindowMin = NULL;
@@ -973,8 +980,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
   if (tracks.GetLast()+1 > 0 ) {
 
     // **MAIN LOOP: Loop over all tracks and get corrected time, tof, beta...
-    Double_t* nPmtHit = new Double_t [ntracks];
-    Double_t* timeAtFP = new Double_t [ntracks];
+    vector<Double_t> nPmtHit(ntracks);
+    vector<Double_t> timeAtFP(ntracks);
     for ( Int_t itrack = 0; itrack < ntracks; itrack++ ) { // Line 133
       nPmtHit[itrack]=0;
       timeAtFP[itrack]=0;

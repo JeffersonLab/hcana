@@ -33,7 +33,30 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
 					    const char* description,
 					    const Int_t planenum,
 					    THaDetectorBase* parent )
-: THaSubDetector(name,description,parent)
+: THaSubDetector(name,description,parent),
+  fParentHitList(0), frPosAdcErrorFlag(0), frNegAdcErrorFlag(0),
+  frPosTDCHits(0), frNegTDCHits(0), frPosADCHits(0), frNegADCHits(0),
+  frPosADCSums(0), frNegADCSums(0), frPosADCPeds(0), frNegADCPeds(0),
+  fHodoHits(0), frPosTdcTimeRaw(0), frPosAdcPedRaw(0),
+  frPosAdcPulseIntRaw(0), frPosAdcPulseAmpRaw(0),
+  frPosAdcPulseTimeRaw(0), frPosTdcTime(0), frPosAdcPed(0),
+  frPosAdcPulseInt(0), frPosAdcPulseAmp(0), frPosAdcPulseTime(0),
+  frNegTdcTimeRaw(0), frNegAdcPedRaw(0), frNegAdcPulseIntRaw(0),
+  frNegAdcPulseAmpRaw(0), frNegAdcPulseTimeRaw(0), frNegTdcTime(0),
+  frNegAdcPed(0), frNegAdcPulseInt(0), frNegAdcPulseAmp(0),
+  frNegAdcPulseTime(0), fPosCenter(0), fHodoPosMinPh(0),
+  fHodoNegMinPh(0), fHodoPosPhcCoeff(0), fHodoNegPhcCoeff(0),
+  fHodoPosTimeOffset(0), fHodoNegTimeOffset(0), fHodoVelLight(0),
+  fHodoPosInvAdcOffset(0), fHodoNegInvAdcOffset(0),
+  fHodoPosAdcTimeWindowMin(0), fHodoPosAdcTimeWindowMax(0),
+  fHodoNegAdcTimeWindowMin(0), fHodoNegAdcTimeWindowMax(0),
+  fHodoPosInvAdcLinear(0), fHodoNegInvAdcLinear(0),
+  fHodoPosInvAdcAdc(0), fHodoNegInvAdcAdc(0), fHodoVelFit(0),
+  fHodoCableFit(0), fHodo_LCoeff(0), fHodoPos_c1(0), fHodoNeg_c1(0),
+  fHodoPos_c2(0), fHodoNeg_c2(0), fHodoSigma(0), fPosPedSum(0),
+  fPosPedSum2(0), fPosPedLimit(0), fPosPedCount(0), fNegPedSum(0),
+  fNegPedSum2(0), fNegPedLimit(0), fNegPedCount(0), fPosPed(0),
+  fPosSig(0), fPosThresh(0), fNegPed(0), fNegSig(0), fNegThresh(0)
 {
   // Normal constructor with name and description
   fHodoHits = new TClonesArray("THcHodoHit",16);
@@ -77,14 +100,14 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   fPlaneNum = planenum;
   fTotPlanes = planenum;
   fNScinHits = 0;
-
-  fPosCenter = NULL;
 }
 
 //______________________________________________________________________________
 THcScintillatorPlane::~THcScintillatorPlane()
 {
   // Destructor
+  if( fIsSetup )
+    RemoveVariables();
   delete  frPosAdcErrorFlag; frPosAdcErrorFlag = NULL;
   delete  frNegAdcErrorFlag; frNegAdcErrorFlag = NULL;
 
@@ -122,7 +145,7 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete frNegAdcPulseAmp;
   delete frNegAdcPulseTime;
 
-  delete [] fPosCenter;
+  delete [] fPosCenter; fPosCenter = 0;
 
   delete [] fHodoPosMinPh; fHodoPosMinPh = NULL;
   delete [] fHodoNegMinPh; fHodoNegMinPh = NULL;
@@ -153,6 +176,18 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete [] fHodoVelLight; fHodoVelLight = NULL;
   delete [] fHodoSigma; fHodoSigma = NULL;
 
+  delete [] fPosPedSum; fPosPedSum = 0;
+  delete [] fPosPedSum2; fPosPedSum2 = 0;
+  delete [] fPosPedLimit; fPosPedLimit = 0;
+  delete [] fPosPedCount; fPosPedCount = 0;
+  delete [] fNegPedSum; fNegPedSum = 0;
+  delete [] fNegPedSum2; fNegPedSum2 = 0;
+  delete [] fNegPedLimit; fNegPedLimit = 0;
+  delete [] fNegPedCount; fNegPedCount = 0;
+  delete [] fPosPed; fPosPed = 0;
+  delete [] fNegPed; fNegPed = 0;
+  delete [] fPosThresh; fPosThresh = 0;
+  delete [] fNegThresh; fNegThresh = 0;
 }
 
 //______________________________________________________________________________

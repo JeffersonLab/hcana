@@ -135,7 +135,7 @@ protected:
   Int_t fEasySpacePoint;	/* This event is an easy space point */
 
   Double_t* stubcoef[4];
-  std::map<int,TMatrixD*> fAA3Inv;
+  std::map<int,TMatrixD> fAA3Inv;
 
   THaDetectorBase* fParent;
 

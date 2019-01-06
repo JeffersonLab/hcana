@@ -36,51 +36,56 @@ using namespace std;
 //_____________________________________________________________________________
 THcAerogel::THcAerogel( const char* name, const char* description,
                         THaApparatus* apparatus ) :
-  THaNonTrackingDetector(name,description,apparatus)
+  THaNonTrackingDetector(name,description,apparatus), fPresentP(0),
+  fAdcPosTimeWindowMin(0), fAdcPosTimeWindowMax(0), fAdcNegTimeWindowMin(0),
+  fAdcNegTimeWindowMax(0), fRegionValue(0), fPosGain(0), fNegGain(0),
+  frPosAdcPedRaw(0), frPosAdcPulseIntRaw(0), frPosAdcPulseAmpRaw(0),
+  frPosAdcPulseTimeRaw(0), frPosAdcPed(0), frPosAdcPulseInt(0),
+  frPosAdcPulseAmp(0), frPosAdcPulseTime(0), frNegAdcPedRaw(0),
+  frNegAdcPulseIntRaw(0), frNegAdcPulseAmpRaw(0), frNegAdcPulseTimeRaw(0),
+  frNegAdcPed(0), frNegAdcPulseInt(0), frNegAdcPulseAmp(0),
+  frNegAdcPulseTime(0), fPosAdcErrorFlag(0),
+  fNegAdcErrorFlag(0), fPosPedSum(0), fPosPedSum2(0), fPosPedLimit(0),
+  fPosPedCount(0), fNegPedSum(0), fNegPedSum2(0), fNegPedLimit(0), fNegPedCount(0),
+  fA_Pos(0), fA_Neg(0), fA_Pos_p(0), fA_Neg_p(0), fT_Pos(0), fT_Neg(0),
+  fPosPed(0), fPosSig(0), fPosThresh(0), fNegPed(0), fNegSig(0),
+  fNegThresh(0), fPosPedMean(0), fNegPedMean(0),
+  fPosTDCHits(0), fNegTDCHits(0), fPosADCHits(0), fNegADCHits(0)
 {
-
-  InitArrays();
-
 }
 
 //_____________________________________________________________________________
 THcAerogel::THcAerogel( ) :
-  THaNonTrackingDetector()
+  THaNonTrackingDetector(),
+  fAdcPosTimeWindowMin(0), fAdcPosTimeWindowMax(0), fAdcNegTimeWindowMin(0),
+  fAdcNegTimeWindowMax(0), fRegionValue(0), fPosGain(0), fNegGain(0),
+  frPosAdcPedRaw(0), frPosAdcPulseIntRaw(0), frPosAdcPulseAmpRaw(0),
+  frPosAdcPulseTimeRaw(0), frPosAdcPed(0), frPosAdcPulseInt(0),
+  frPosAdcPulseAmp(0), frPosAdcPulseTime(0), frNegAdcPedRaw(0),
+  frNegAdcPulseIntRaw(0), frNegAdcPulseAmpRaw(0), frNegAdcPulseTimeRaw(0),
+  frNegAdcPed(0), frNegAdcPulseInt(0), frNegAdcPulseAmp(0),
+  frNegAdcPulseTime(0), fPosAdcErrorFlag(0),
+  fNegAdcErrorFlag(0), fPosPedSum(0), fPosPedSum2(0), fPosPedLimit(0),
+  fPosPedCount(0), fNegPedSum(0), fNegPedSum2(0), fNegPedLimit(0), fNegPedCount(0),
+  fA_Pos(0), fA_Neg(0), fA_Pos_p(0), fA_Neg_p(0), fT_Pos(0), fT_Neg(0),
+  fPosPed(0), fPosSig(0), fPosThresh(0), fNegPed(0), fNegSig(0),
+  fNegThresh(0), fPosPedMean(0), fNegPedMean(0),
+  fPosTDCHits(0), fNegTDCHits(0), fPosADCHits(0), fNegADCHits(0)
 {
-  // Constructor
-  frPosAdcPedRaw       = NULL;
-  frPosAdcPulseIntRaw  = NULL;
-  frPosAdcPulseAmpRaw  = NULL;
-  frPosAdcPulseTimeRaw = NULL;
-  frPosAdcPed          = NULL;
-  frPosAdcPulseInt     = NULL;
-  frPosAdcPulseAmp     = NULL;
-  frPosAdcPulseTime    = NULL;
-  frNegAdcPedRaw       = NULL;
-  frNegAdcPulseIntRaw  = NULL;
-  frNegAdcPulseAmpRaw  = NULL;
-  frNegAdcPulseTimeRaw = NULL;
-  frNegAdcPed          = NULL;
-  frNegAdcPulseInt     = NULL;
-  frNegAdcPulseAmp     = NULL;
-  frNegAdcPulseTime    = NULL;
-  fPosAdcErrorFlag     = NULL;
-  fNegAdcErrorFlag     = NULL;
-
-  // 6 GeV variables
-  fPosTDCHits = NULL;
-  fNegTDCHits = NULL;
-  fPosADCHits = NULL;
-  fNegADCHits = NULL;
-
-  InitArrays();
-
 }
 
 //_____________________________________________________________________________
 THcAerogel::~THcAerogel()
 {
   // Destructor
+  DeleteArrays();
+}
+
+//_____________________________________________________________________________
+void THcAerogel::DeleteArrays()
+{
+  // Delete all dynamically allocated memory
+
   delete frPosAdcPedRaw;       frPosAdcPedRaw       = NULL;
   delete frPosAdcPulseIntRaw;  frPosAdcPulseIntRaw  = NULL;
   delete frPosAdcPulseAmpRaw;  frPosAdcPulseAmpRaw  = NULL;
@@ -100,59 +105,37 @@ THcAerogel::~THcAerogel()
   delete fPosAdcErrorFlag;     fPosAdcErrorFlag     = NULL;
   delete fNegAdcErrorFlag;     fNegAdcErrorFlag     = NULL;
 
+  delete [] fRegionValue;         fRegionValue = 0;
+  delete [] fAdcPosTimeWindowMin; fAdcPosTimeWindowMin = 0;
+  delete [] fAdcPosTimeWindowMax; fAdcPosTimeWindowMax = 0;
+  delete [] fAdcNegTimeWindowMin; fAdcNegTimeWindowMin = 0;
+  delete [] fAdcNegTimeWindowMax; fAdcNegTimeWindowMax = 0;
+
   // 6 GeV variables
   delete fPosTDCHits; fPosTDCHits = NULL;
   delete fNegTDCHits; fNegTDCHits = NULL;
   delete fPosADCHits; fPosADCHits = NULL;
   delete fNegADCHits; fNegADCHits = NULL;
 
-  DeleteArrays();
-
-}
-
-//_____________________________________________________________________________
-void THcAerogel::InitArrays()
-{
-  fPosGain = NULL;
-  fNegGain = NULL;
-
-  // 6 GeV variables
-  fA_Pos       = NULL;
-  fA_Neg       = NULL;
-  fA_Pos_p     = NULL;
-  fA_Neg_p     = NULL;
-  fT_Pos       = NULL;
-  fT_Neg       = NULL;
-  fPosPedLimit = NULL;
-  fNegPedLimit = NULL;
-  fPosPedMean  = NULL;
-  fNegPedMean  = NULL;
-  fPosPedSum   = NULL;
-  fPosPedSum2  = NULL;
-  fPosPedCount = NULL;
-  fNegPedSum   = NULL;
-  fNegPedSum2  = NULL;
-  fNegPedCount = NULL;
-  fPosPed      = NULL;
-  fPosSig      = NULL;
-  fPosThresh   = NULL;
-  fNegPed      = NULL;
-  fNegSig      = NULL;
-  fNegThresh   = NULL;
-}
-//_____________________________________________________________________________
-void THcAerogel::DeleteArrays()
-{
   delete [] fPosGain; fPosGain = NULL;
   delete [] fNegGain; fNegGain = NULL;
 
-  // 6 GeV variables
   delete [] fA_Pos;       fA_Pos       = NULL;
   delete [] fA_Neg;       fA_Neg       = NULL;
   delete [] fA_Pos_p;     fA_Pos_p     = NULL;
   delete [] fA_Neg_p;     fA_Neg_p     = NULL;
   delete [] fT_Pos;       fT_Pos       = NULL;
   delete [] fT_Neg;       fT_Neg       = NULL;
+
+  if (fSixGevData)
+    DeletePedestalArrays();
+}
+
+//_____________________________________________________________________________
+void THcAerogel::DeletePedestalArrays()
+{
+  // Delete all dynamically allocated memory for pedestal processing
+
   delete [] fPosPedLimit; fPosPedLimit = NULL;
   delete [] fNegPedLimit; fNegPedLimit = NULL;
   delete [] fPosPedMean;  fPosPedMean  = NULL;
@@ -232,26 +215,24 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
 
   gHcParms->LoadParmValues((DBRequest*)&listextra, prefix);
 
-  Bool_t optional = true ;
+  Bool_t optional = true;
 
   cout << "Created aerogel detector " << GetApparatus()->GetName() << "."
        << GetName() << " with " << fNelem << " PMT pairs" << endl;
+
+  DeleteArrays(); // avoid memory leak when reinitializing
 
   fPosGain = new Double_t[fNelem];
   fNegGain = new Double_t[fNelem];
 
   // 6 GeV variables
   fTdcOffset   = 0; // Offset to make reference time subtracted times positve
-  fPosPedLimit = new Int_t[fNelem];
-  fNegPedLimit = new Int_t[fNelem];
   fA_Pos       = new Float_t[fNelem];
   fA_Neg       = new Float_t[fNelem];
   fA_Pos_p     = new Float_t[fNelem];
   fA_Neg_p     = new Float_t[fNelem];
   fT_Pos       = new Float_t[fNelem];
   fT_Neg       = new Float_t[fNelem];
-  fPosPedMean  = new Double_t[fNelem];
-  fNegPedMean  = new Double_t[fNelem];
 
   // Normal constructor with name and description
   frPosAdcPedRaw       = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
@@ -273,28 +254,28 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fPosAdcErrorFlag     = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
   fNegAdcErrorFlag     = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
 
-  fNumPosAdcHits         = vector<Int_t>    (fNelem, 0.0);
-  fNumGoodPosAdcHits     = vector<Int_t>    (fNelem, 0.0);
-  fNumNegAdcHits         = vector<Int_t>    (fNelem, 0.0);
-  fNumGoodNegAdcHits     = vector<Int_t>    (fNelem, 0.0);
-  fNumTracksMatched      = vector<Int_t>    (fNelem, 0.0);
-  fNumTracksFired        = vector<Int_t>    (fNelem, 0.0);
-  fPosNpe                = vector<Double_t> (fNelem, 0.0);
-  fNegNpe                = vector<Double_t> (fNelem, 0.0);
-  fGoodPosAdcPed         = vector<Double_t> (fNelem, 0.0);
-  fGoodPosAdcMult         = vector<Double_t> (fNelem, 0.0);
-  fGoodPosAdcPulseInt    = vector<Double_t> (fNelem, 0.0);
-  fGoodPosAdcPulseIntRaw = vector<Double_t> (fNelem, 0.0);
-  fGoodPosAdcPulseAmp    = vector<Double_t> (fNelem, 0.0);
-  fGoodPosAdcPulseTime   = vector<Double_t> (fNelem, 0.0);
-  fGoodPosAdcTdcDiffTime   = vector<Double_t> (fNelem, 0.0);
-  fGoodNegAdcPed         = vector<Double_t> (fNelem, 0.0);
-  fGoodNegAdcMult        = vector<Double_t> (fNelem, 0.0);
-  fGoodNegAdcPulseInt    = vector<Double_t> (fNelem, 0.0);
-  fGoodNegAdcPulseIntRaw = vector<Double_t> (fNelem, 0.0);
-  fGoodNegAdcPulseAmp    = vector<Double_t> (fNelem, 0.0);
-  fGoodNegAdcPulseTime   = vector<Double_t> (fNelem, 0.0);
-  fGoodNegAdcTdcDiffTime   = vector<Double_t> (fNelem, 0.0);
+  fNumPosAdcHits.assign(fNelem, 0);
+  fNumGoodPosAdcHits.assign(fNelem, 0);
+  fNumNegAdcHits.assign(fNelem, 0);
+  fNumGoodNegAdcHits.assign(fNelem, 0);
+  fNumTracksMatched.assign(fNelem, 0);
+  fNumTracksFired.assign(fNelem, 0);
+  fPosNpe.assign(fNelem, 0.0);
+  fNegNpe.assign(fNelem, 0.0);
+  fGoodPosAdcPed.assign(fNelem, 0.0);
+  fGoodPosAdcMult.assign(fNelem, 0.0);
+  fGoodPosAdcPulseInt.assign(fNelem, 0.0);
+  fGoodPosAdcPulseIntRaw.assign(fNelem, 0.0);
+  fGoodPosAdcPulseAmp.assign(fNelem, 0.0);
+  fGoodPosAdcPulseTime.assign(fNelem, 0.0);
+  fGoodPosAdcTdcDiffTime.assign(fNelem, 0.0);
+  fGoodNegAdcPed.assign(fNelem, 0.0);
+  fGoodNegAdcMult.assign(fNelem, 0.0);
+  fGoodNegAdcPulseInt.assign(fNelem, 0.0);
+  fGoodNegAdcPulseIntRaw.assign(fNelem, 0.0);
+  fGoodNegAdcPulseAmp.assign(fNelem, 0.0);
+  fGoodNegAdcPulseTime.assign(fNelem, 0.0);
+  fGoodNegAdcTdcDiffTime.assign(fNelem, 0.0);
 
   // 6 GeV variables
   fPosTDCHits = new TClonesArray("THcSignalHit", fNelem*16);
@@ -302,15 +283,12 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fPosADCHits = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
   fNegADCHits = new TClonesArray("THcSignalHit", fNelem*MaxNumAdcPulse);
 
-  fPosNpeSixGev = vector<Double_t> (fNelem, 0.0);
-  fNegNpeSixGev = vector<Double_t> (fNelem, 0.0);
-
-  // Create arrays to hold pedestal results
-  if (fSixGevData) InitializePedestals();
+  fPosNpeSixGev.assign(fNelem, 0.0);
+  fNegNpeSixGev.assign(fNelem, 0.0);
 
   // Region parameters
   fRegionsValueMax = fNRegions * 8;
-  fRegionValue     = new Double_t[fRegionsValueMax];
+  fRegionValue         = new Double_t[fRegionsValueMax];
 
   fAdcPosTimeWindowMin = new Double_t [fNelem];
   fAdcPosTimeWindowMax = new Double_t [fNelem];
@@ -340,12 +318,7 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_six_gev_data",     &fSixGevData,       kInt,    0, 1},
     {"aero_pos_gain",         fPosGain,           kDouble, (UInt_t) fNelem},
     {"aero_neg_gain",         fNegGain,           kDouble, (UInt_t) fNelem},
-    {"aero_pos_ped_limit",    fPosPedLimit,       kInt,    (UInt_t) fNelem, optional},
-    {"aero_neg_ped_limit",    fNegPedLimit,       kInt,    (UInt_t) fNelem, optional},
-    {"aero_pos_ped_mean",     fPosPedMean,        kDouble, (UInt_t) fNelem, optional},
-    {"aero_neg_ped_mean",     fNegPedMean,        kDouble, (UInt_t) fNelem, optional},
     {"aero_tdc_offset",       &fTdcOffset,        kInt,    0,               optional},
-    {"aero_min_peds",         &fMinPeds,          kInt,    0,               optional},
     {"aero_region",           &fRegionValue[0],   kDouble, (UInt_t) fRegionsValueMax},
     {"aero_adcrefcut",        &fADC_RefTimeCut,   kInt,    0, 1},
     {0}
@@ -365,7 +338,22 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
 
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
 
-  if (fSixGevData) cout << "6 GeV Data Analysis Flag Set To TRUE" << endl;
+  if (fSixGevData) {
+    // Create arrays to hold pedestal results
+    InitializePedestals();
+
+    DBRequest list2[]={
+      {"aero_pos_ped_limit",    fPosPedLimit,       kInt,    (UInt_t) fNelem, optional},
+      {"aero_neg_ped_limit",    fNegPedLimit,       kInt,    (UInt_t) fNelem, optional},
+      {"aero_pos_ped_mean",     fPosPedMean,        kDouble, (UInt_t) fNelem, optional},
+      {"aero_neg_ped_mean",     fNegPedMean,        kDouble, (UInt_t) fNelem, optional},
+      {"aero_min_peds",         &fMinPeds,          kInt,    0,               optional},
+      {0}
+    };
+    gHcParms->LoadParmValues((DBRequest*)&list2, prefix);
+
+    cout << "6 GeV Data Analysis Flag Set To TRUE" << endl;
+  }
 
   fIsInit = true;
 
@@ -700,7 +688,7 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
 {
   Double_t StartTime = 0.0;
   if( fglHod ) StartTime = fglHod->GetStartTime();
-  //cout << " starttime = " << StartTime << endl ;
+  //cout << " starttime = " << StartTime << endl;
     // Loop over the elements in the TClonesArray
     for(Int_t ielem = 0; ielem < frPosAdcPulseInt->GetEntries(); ielem++) {
 
@@ -946,17 +934,20 @@ void THcAerogel::InitializePedestals()
   fNPedestalEvents = 0;
   fMinPeds         = 0;                    // Do not calculate pedestals by default
 
+  DeletePedestalArrays();
+  fPosPedLimit = new Int_t [fNelem];
+  fNegPedLimit = new Int_t [fNelem];
+  fPosPedMean  = new Double_t[fNelem];
+  fNegPedMean  = new Double_t[fNelem];
   fPosPedSum   = new Int_t [fNelem];
   fPosPedSum2  = new Int_t [fNelem];
-  fPosPedLimit = new Int_t [fNelem];
   fPosPedCount = new Int_t [fNelem];
   fNegPedSum   = new Int_t [fNelem];
   fNegPedSum2  = new Int_t [fNelem];
-  fNegPedLimit = new Int_t [fNelem];
   fNegPedCount = new Int_t [fNelem];
   fPosPed      = new Double_t [fNelem];
-  fNegPed      = new Double_t [fNelem];
   fPosThresh   = new Double_t [fNelem];
+  fNegPed      = new Double_t [fNelem];
   fNegThresh   = new Double_t [fNelem];
 
   for(Int_t i = 0;i < fNelem; i++) {
@@ -1052,14 +1043,16 @@ void THcAerogel::Print(const Option_t* opt) const
   THaNonTrackingDetector::Print(opt);
 
   // Print out the pedestals
-  cout << endl;
-  cout << "Aerogel Pedestals" << endl;
-  cout << "No.   Neg    Pos" << endl;
-  for(Int_t i=0; i<fNelem; i++)
-    cout << " " << i << "\t" << fNegPedMean[i] << "\t" << fPosPedMean[i] << endl;
-  cout << endl;
-  cout << " fMinPeds = " << fMinPeds << endl;
-  cout << endl;
+  if (fSixGevData) {
+    cout << endl;
+    cout << "Aerogel Pedestals" << endl;
+    cout << "No.   Neg    Pos" << endl;
+    for(Int_t i=0; i<fNelem; i++)
+      cout << " " << i << "\t" << fNegPedMean[i] << "\t" << fPosPedMean[i] << endl;
+    cout << endl;
+    cout << " fMinPeds = " << fMinPeds << endl;
+    cout << endl;
+  }
 }
 //_____________________________________________________________________________
 Int_t THcAerogel::End(THaRunBase* run)

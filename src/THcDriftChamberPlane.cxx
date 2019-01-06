@@ -33,14 +33,12 @@ THcDriftChamberPlane::THcDriftChamberPlane( const char* name,
 					    const char* description,
 					    const Int_t planenum,
 					    THaDetectorBase* parent )
-  : THaSubDetector(name,description,parent)
+: THaSubDetector(name,description,parent), fTTDConv(0)
 {
   // Normal constructor with name and description
   fHits = new TClonesArray("THcDCHit",100);
   fRawHits = new TClonesArray("THcDCHit",100);
   fWires = new TClonesArray("THcDCWire", 100);
-
-  fTTDConv = NULL;
 
   fPlaneNum = planenum;
 }
@@ -59,6 +57,8 @@ THcDriftChamberPlane::THcDriftChamberPlane() :
 THcDriftChamberPlane::~THcDriftChamberPlane()
 {
   // Destructor
+  delete [] fTzeroWire;
+  delete [] fSigmaWire;
   delete fWires;
   delete fHits;
   delete fRawHits;

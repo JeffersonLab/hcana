@@ -135,6 +135,10 @@ void THcCherenkov::DeleteArrays()
   delete [] fPedCount; fPedCount = NULL;
   delete [] fPed;      fPed      = NULL;
   delete [] fThresh;   fThresh   = NULL;
+
+  delete [] fAdcTimeWindowMin; fAdcTimeWindowMin = 0;
+  delete [] fAdcTimeWindowMax; fAdcTimeWindowMax = 0;
+  delete [] fRegionValue; fRegionValue = 0;
 }
 
 //_____________________________________________________________________________
@@ -166,7 +170,7 @@ THaAnalysisObject::EStatus THcCherenkov::Init( const TDatime& date )
     Warning(Here(here),"Hodoscope \"%s\" not found. ","hod");
   }
 
- fPresentP = 0;
+  fPresentP = 0;
   THaVar* vpresent = gHaVars->Find(Form("%s.present",GetApparatus()->GetName()));
   if(vpresent) {
     fPresentP = (Bool_t *) vpresent->GetValuePointer();

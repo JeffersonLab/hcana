@@ -32,8 +32,6 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   virtual EStatus Init(const TDatime& run_time);
   Int_t           End(THaRunBase* run=0);
 
-  void  InitArrays();
-  void  DeleteArrays();
   Int_t GetIndex(Int_t nRegion, Int_t nValue);
 
   THcAerogel();  // for ROOT I/O
@@ -131,7 +129,7 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   vector<Double_t> fGoodNegAdcPulseIntRaw;
   vector<Double_t> fGoodNegAdcPulseAmp;
   vector<Double_t> fGoodNegAdcPulseTime;
- vector<Double_t> fGoodNegAdcTdcDiffTime;
+  vector<Double_t> fGoodNegAdcTdcDiffTime;
 
   // 6 GeV era variables
   Int_t     fAnalyzePedestals;
@@ -179,8 +177,10 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   vector<Double_t> fNegNpeSixGev;
 
   void Setup(const char* name, const char* description);
+  void  DeleteArrays();
+  void  DeletePedestalArrays();
   virtual void  InitializePedestals( );
- THcHodoscope* fglHod;		// Hodoscope to get start time
+  THcHodoscope* fglHod;		// Hodoscope to get start time
 
   ClassDef(THcAerogel,0)   // Generic aerogel class
 }
