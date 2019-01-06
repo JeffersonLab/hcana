@@ -196,22 +196,23 @@ Int_t THcDriftChamber::ReadDatabase( const TDatime& date )
   for(Int_t ipm1=0;ipm1<fNPlanes+1;ipm1++) { // Loop over missing plane1
     for(Int_t ipm2=ipm1;ipm2<fNPlanes+1;ipm2++) {
       if(ipm1==ipm2 && ipm1<fNPlanes) continue;
-      TMatrixD* AA3 = new TMatrixD(3,3);
+      TMatrixD AA3(3,3);
       for(Int_t i=0;i<3;i++) {
 	for(Int_t j=i;j<3;j++) {
-	  (*AA3)[i][j] = 0.0;
+	  AA3[i][j] = 0.0;
 	  for(Int_t ip=0;ip<fNPlanes;ip++) {
 	    if(ipm1 != ip && ipm2 != ip) {
-	      (*AA3)[i][j] += fStubCoefs[ip][i]*fStubCoefs[ip][j];
+	      AA3[i][j] += fStubCoefs[ip][i]*fStubCoefs[ip][j];
 	    }
 	  }
-	  (*AA3)[j][i] = (*AA3)[i][j];
+	  AA3[j][i] = AA3[i][j];
 	}
       }
       Int_t bitpat = allplanes & ~(1<<ipm1) & ~(1<<ipm2);
       // Should check that it is invertable
       //      if (fhdebugflagpr) cout << bitpat << " Determinant: " << AA3->Determinant() << endl;
-      AA3->Invert();
+      AA3.Invert();
+      fAA3Inv[bitpat].ResizeTo(AA3);
       fAA3Inv[bitpat] = AA3;
     }
   }
@@ -1326,11 +1327,11 @@ Double_t THcDriftChamber::FindStub(Int_t nhits, THcSpacePoint *sp,
 	/fSigma[plane_list[ihit]];
     }
   }
-  //  fAA3Inv[bitpat]->Print();
+  //  fAA3Inv[bitpat].Print();
   //  if (fhdebugflagpr) cout << TT[0] << " " << TT[1] << " " << TT[2] << endl;
-  //  TT->Print();
+  //  TT.Print();
 
-  TT *= *fAA3Inv[bitpat];
+  TT *= fAA3Inv[bitpat];
   // if (fhdebugflagpr) cout << TT[0] << " " << TT[1] << " " << TT[2] << endl;
 
   // Calculate Chi2.  Remember one power of sigma is in fStubCoefs
@@ -1373,14 +1374,12 @@ THcDriftChamber::~THcDriftChamber()
 void THcDriftChamber::DeleteArrays()
 {
   // Delete member arrays. Used by destructor.
-  delete fCosBeta; fCosBeta = NULL;
-  delete fSinBeta; fSinBeta = NULL;
-  delete fTanBeta; fTanBeta = NULL;
-  delete fSigma; fSigma = NULL;
-  delete fPsi0; fPsi0 = NULL;
-  delete fStubCoefs; fStubCoefs = NULL;
-
-  // Need to delete each element of the fAA3Inv map
+  delete [] fCosBeta; fCosBeta = NULL;
+  delete [] fSinBeta; fSinBeta = NULL;
+  delete [] fTanBeta; fTanBeta = NULL;
+  delete [] fSigma; fSigma = NULL;
+  delete [] fPsi0; fPsi0 = NULL;
+  delete [] fStubCoefs; fStubCoefs = NULL;
 
 }
 

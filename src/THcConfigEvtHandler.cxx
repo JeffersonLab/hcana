@@ -41,6 +41,9 @@ THcConfigEvtHandler::THcConfigEvtHandler(const char *name, const char* descripti
 
 THcConfigEvtHandler::~THcConfigEvtHandler()
 {
+  // TODO: remove the parameters we've added to gHcParms
+
+  DeleteCrateInfoMap();
 }
 
 //Float_t THcConfigEvtHandler::GetData(const std::string& tag)
@@ -51,6 +54,26 @@ THcConfigEvtHandler::~THcConfigEvtHandler()
 // return theDataMap[tag];
 //}
 
+void THcConfigEvtHandler::DeleteCrateInfoMap()
+{
+  // Clear the CrateInfoMap, deallocating its elements' dynamic memory
+
+  //TODO: don't manage memory manually, contain the object, use STL vectors
+  typedef std::map<Int_t, CrateInfo_t *> cmap_t;
+  typedef std::map<Int_t, Int_t *> imap_t;
+  for( cmap_t::iterator it = CrateInfoMap.begin();
+       it != CrateInfoMap.end(); ++it ) {
+    CrateInfo_t* cinfo = it->second;
+    if( cinfo ) {
+      for( imap_t::iterator jt = cinfo->FADC250.thresholds.begin();
+	   jt != cinfo->FADC250.thresholds.end(); ++jt ) {
+	delete [] jt->second;
+      }
+      delete cinfo;
+    }
+  }
+  CrateInfoMap.clear();
+}
 
 Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
 {
@@ -73,6 +96,7 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
   cinfo->FADC250.present=0;
   cinfo->CAEN1190.present=0;
   cinfo->TI.present=0;  
+  // FIXME: check if entry for this roc already present in the map
   CrateInfoMap.insert(std::make_pair(roc, cinfo));
   ip++;
   // Three possible blocks of config data
@@ -199,12 +223,13 @@ void THcConfigEvtHandler::MakeParms(Int_t roc)
       while(itt != cinfo->FADC250.thresholds.end()) {
         Int_t slot = itt->first;
 
-	Int_t *threshp = itt->second;
-	Int_t *thresholds = new Int_t[16];
-	for(Int_t ichan=0;ichan<16;ichan++) {
-	  thresholds[ichan] = threshp[ichan];
-	}
-	gHcParms->Define(Form("g%s_adc_thresholds_%d_%d[16]",fName.Data(),roc,slot),"ADC Thresholds",*thresholds);
+	// this memory would leak
+//	Int_t *thresholds = new Int_t[16];
+//	memcpy(thresholds,itt->second,16*sizeof(Int_t));
+//	gHcParms->Define(Form("g%s_adc_thresholds_%d_%d[16]",fName.Data(),roc,slot),"ADC Thresholds",*thresholds);
+	// Define the variable directly on the CrateInfo_t that resides in CrateInfoMap where it will stay
+	// until the end of the life of this object
+	gHcParms->Define(Form("g%s_adc_thresholds_%d_%d[16]",fName.Data(),roc,slot),"ADC Thresholds",*itt->second);
 
 	Int_t mode = cinfo->FADC250.mode;
 	gHcParms->Define(Form("g%s_adc_mode_%d_%d",fName.Data(),roc,slot),"ADC Mode",mode);
@@ -359,7 +384,7 @@ THaAnalysisObject::EStatus THcConfigEvtHandler::Init(const TDatime& date)
     eventtypes.push_back(125);  // what events to look for
   }
 
-  CrateInfoMap.clear();
+  DeleteCrateInfoMap();
 
   fStatus = kOK;
   return kOK;

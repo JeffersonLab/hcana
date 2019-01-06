@@ -302,9 +302,6 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
   delete [] fSigma;  fSigma = new Double_t [fNPlanes];
 
   Bool_t optional = true;
-  fReadoutLR = new Int_t[fNPlanes];
-  fReadoutTB = new Int_t[fNPlanes];
-
 
   DBRequest list[]={
     {"dc_tdc_time_per_channel",&fNSperChan, kDouble},
@@ -484,6 +481,15 @@ void THcDC::DeleteArrays()
   delete [] fNChamHits; fNChamHits = NULL;
   delete [] fPlaneEvents; fPlaneEvents = NULL;
 
+  for( Int_t i = 0; i<fNPlanes; ++i )
+    delete [] fPlaneNames[i];
+  delete [] fPlaneNames;
+
+  delete [] fPlaneCoeffs; fPlaneCoeffs = 0;
+  delete [] fResiduals; fResiduals = 0;
+  delete [] fResidualsExclPlane; fResidualsExclPlane = 0;
+  delete [] fWire_hit_did; fWire_hit_did = 0;
+  delete [] fWire_hit_should; fWire_hit_should = 0;
 }
 
 //_____________________________________________________________________________

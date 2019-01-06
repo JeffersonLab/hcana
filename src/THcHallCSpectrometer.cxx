@@ -762,8 +762,8 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
   if ( fNtracks > 0 ) {
     chi2Min   = 10000000000.0;
     fGoodTrack = 0;
-    Bool_t* keep      = new Bool_t [fNtracks];
-    Int_t* reject    = new Int_t  [fNtracks];
+    vector<bool> keep(fNtracks);
+    vector<Int_t> reject(fNtracks);
 
     THaTrack *testTracks[fNtracks];
 
@@ -772,7 +772,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
       keep[ptrack] = kTRUE;
       reject[ptrack] = 0;
       testTracks[ptrack] = static_cast<THaTrack*>( fTracks->At(ptrack) );
-      if (!testTracks[ptrack]) {delete[] keep; delete[] reject; return -1;}
+      if (!testTracks[ptrack]) return -1;
     }
 
     // ! Prune on xptar
@@ -786,7 +786,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
       for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( TMath::Abs( testTracks[ptrack]->GetTTheta() ) >= fPruneXp ){
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 1;
+	  reject[ptrack] += 1;
 	}
       }
     }
@@ -802,7 +802,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
       for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( TMath::Abs( testTracks[ptrack]->GetTPhi() ) >= fPruneYp ){
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 2;
+	  reject[ptrack] += 2;
 
 	}
       }
@@ -819,7 +819,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
       for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( TMath::Abs( testTracks[ptrack]->GetTY() ) >= fPruneYtar ){
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 10;
+	  reject[ptrack] += 10;
 	}
       }
     }
@@ -835,7 +835,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
       for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( TMath::Abs( testTracks[ptrack]->GetDp() ) >= fPruneDelta ){
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 20;
+	  reject[ptrack] += 20;
 	}
       }
     }
@@ -855,7 +855,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 	Double_t betaP = p / TMath::Sqrt( p * p + fPartMass * fPartMass );
 	if ( TMath::Abs( testTracks[ptrack]->GetBeta() - betaP ) >= fPruneBeta ) {
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 100;
+	  reject[ptrack] += 100;
 	}
       }
     }
@@ -871,7 +871,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
       for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( testTracks[ptrack]->GetNDoF() < fPruneDf ){
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 200;
+	  reject[ptrack] += 200;
 	}
       }
     }
@@ -887,7 +887,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
       for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( testTracks[ptrack]->GetNPMT() < fPruneNPMT ){
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 100000;
+	  reject[ptrack] += 100000;
 	}
       }
     }
@@ -905,7 +905,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
 	if ( ( testTracks[ptrack]->GetBetaChi2() >= fPruneChiBeta ) ||
 	     ( testTracks[ptrack]->GetBetaChi2() <= 0.01          ) ){
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 1000;
+	  reject[ptrack] += 1000;
 	}
       }
     }
@@ -922,7 +922,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
       for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( TMath::Abs( testTracks[ptrack]->GetFPTime() - fHodo->GetStartTimeCenter() ) >= fPruneFpTime ) {
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 2000;
+	  reject[ptrack] += 2000;
 	}
       }
     }
@@ -938,7 +938,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
       for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( testTracks[ptrack]->GetGoodPlane4() != 1 ) {
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 10000;
+	  reject[ptrack] += 10000;
 	}
       }
     }
@@ -954,7 +954,7 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
       for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
 	if ( testTracks[ptrack]->GetGoodPlane3() != 1 ) {
 	  keep[ptrack] = kFALSE;
-	  reject[ptrack] = reject[ptrack] + 20000;
+	  reject[ptrack] += 20000;
 	}
       }
     }

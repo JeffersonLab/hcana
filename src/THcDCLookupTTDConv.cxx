@@ -5,7 +5,8 @@
 
 */
 #include "THcDCLookupTTDConv.h"
-
+#include <cstring>
+#include <cassert>
 ClassImp(THcDCLookupTTDConv)
 
 
@@ -18,18 +19,17 @@ fT0(T0), fMaxDriftDistance(MaxDriftDistance), fBinSize(BinSize),
 {
   //Normal constructor
 
+  assert( fNumBins > 0 );
   fTable = new Double_t[fNumBins];
-  for(Int_t i=0;i<fNumBins;i++) {
-    fTable[i] = Table[i];
-  }
-
+  memcpy( fTable, Table, fNumBins*sizeof(Double_t) );
 }
 
 //______________________________________________________________________________
 THcDCLookupTTDConv::~THcDCLookupTTDConv()
 {
-  // Destructor. Remove variables from global list.
+  // Destructor
 
+  delete [] fTable;
 }
 
 //______________________________________________________________________________

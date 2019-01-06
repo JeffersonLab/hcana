@@ -20,12 +20,13 @@
 #include "THaTrackProj.h"
 #include "THcCherenkov.h"         //for efficiency calculations
 #include "THcHallCSpectrometer.h"
+#include "Helper.h"
 
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-
+#include <cassert>
 #include <fstream>
 
 using namespace std;
@@ -61,11 +62,15 @@ THcShowerArray::~THcShowerArray()
 {
   // Destructor
 
+  Clear(); // deletes allocations in fClusterList
   for (UInt_t i=0; i<fNRows; i++) {
     delete [] fXPos[i];
     delete [] fYPos[i];
     delete [] fZPos[i];
   }
+  delete [] fXPos; fXPos = 0;
+  delete [] fYPos; fYPos = 0;
+  delete [] fZPos; fZPos = 0;
 
   delete [] fPedLimit;
   delete [] fGain;
@@ -95,6 +100,11 @@ THcShowerArray::~THcShowerArray()
 
   //delete [] fE;
   delete [] fBlock_ClusterID;
+
+  delete fClusterList; fClusterList = 0;
+
+  delete [] fAdcTimeWindowMin; fAdcTimeWindowMin = 0;
+  delete [] fAdcTimeWindowMax; fAdcTimeWindowMax = 0;
 }
 
 //_____________________________________________________________________________
@@ -479,8 +489,8 @@ void THcShowerArray::Clear( Option_t* )
 
   for (THcShowerClusterListIt i=fClusterList->begin(); i!=fClusterList->end();
        ++i) {
+    Podd::DeleteContainer(**i);
     delete *i;
-    *i = 0;
   }
   fClusterList->clear();
 
@@ -570,6 +580,7 @@ Int_t THcShowerArray::CoarseProcess( TClonesArray& tracks )
   // Cluster hits and fill list of clusters.
 
   static_cast<THcShower*>(fParent)->ClusterHits(HitSet, fClusterList);
+  assert( HitSet.empty() );  // else bug in ClusterHits()
 
   fNclust = (*fClusterList).size();         //number of clusters
 

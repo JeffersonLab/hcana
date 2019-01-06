@@ -33,7 +33,8 @@ THcHitList::THcHitList() : fMap(0), fTISlot(0), fDisableSlipCorrection(kFALSE)
 
 THcHitList::~THcHitList() {
   /// Destructor
-  delete fSignalTypes;
+  delete fRawHitList;
+  delete [] fSignalTypes;
 }
 /**
 
