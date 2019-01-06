@@ -415,6 +415,11 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   //      << " number of photo electrons = " << fNCerNPE
   //      << endl;
 
+  //Set scin Velocity/Cable to default
+  for (UInt_t i=0; i<fMaxHodoScin; i++) {
+    fHodoVelLight[i] = 15.0;
+  }
+
   if (fTofUsingInvAdc) {
     DBRequest list2[]={
       {"hodo_vel_light",                   &fHodoVelLight[0],       kDouble,  fMaxHodoScin, 1},
@@ -426,13 +431,6 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
       {"hodo_neg_invadc_adc",&fHodoNegInvAdcAdc[0],kDouble,fMaxHodoScin},
       {0}
     };
-    
-       for (UInt_t i=0; i<fMaxHodoScin; i++)                                                                    
-       {  
-	 //Set scin Velocity/Cable to default
-	 fHodoVelLight[i] = 15.0;
-	 
-       }
     
     gHcParms->LoadParmValues((DBRequest*)&list2,prefix);
   };
