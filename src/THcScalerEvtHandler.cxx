@@ -555,7 +555,7 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
       UInt_t scaldata = scalers[idx]->GetData(ichan);
       if ( scal_current > fbcm_Current_Threshold) {
 	UInt_t diff;
-	if(nscal > 0 && scaldata < scal_prev_read[nscal-1]) {
+	if(scaldata < dvars_prev_read[ivar]) {
 	  diff = (kMaxUInt-(dvars_prev_read[ivar] - 1)) + scaldata;
 	} else {
 	  diff = scaldata - dvars_prev_read[ivar];
