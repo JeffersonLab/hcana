@@ -56,6 +56,7 @@ An instance of THaTextvars is created to hold the string parameters.
 #include <cassert>
 #include <cstdlib>
 #include <stdexcept>
+#include <memory>
 
 using namespace std;
 Int_t  fDebug   = 1;  // Keep this at one while we're working on the code
