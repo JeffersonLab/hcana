@@ -42,6 +42,7 @@ hodoscope array, not just one plane.
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <cassert>
 
 using namespace std;
 using std::vector;
@@ -632,8 +633,7 @@ void THcHodoscope::DeleteArrays()
 }
 
 //_____________________________________________________________________________
-inline
-void THcHodoscope::ClearEvent()
+void THcHodoscope::Clear( Option_t* opt )
 {
   /*! \brief Clears variables
    *
@@ -652,13 +652,15 @@ void THcHodoscope::ClearEvent()
   fGoodStartTime = kFALSE;
   fGoodScinHits = 0;
  
-  for(Int_t ip=0;ip<fNPlanes;ip++) {
-    fPlanes[ip]->Clear();
-    fFPTime[ip]=0.;
-    fPlaneCenter[ip]=0.;
-    fPlaneSpacing[ip]=0.;
-    for(UInt_t iPaddle=0;iPaddle<fNPaddle[ip]; ++iPaddle) {
-      fScinHitPaddle[ip][iPaddle]=0;
+  if( *opt != 'I' ) {
+    for(Int_t ip=0;ip<fNPlanes;ip++) {
+      fPlanes[ip]->Clear();
+      fFPTime[ip]=0.;
+      fPlaneCenter[ip]=0.;
+      fPlaneSpacing[ip]=0.;
+      for(UInt_t iPaddle=0;iPaddle<fNPaddle[ip]; ++iPaddle) {
+	fScinHitPaddle[ip][iPaddle]=0;
+      }
     }
   }
   fdEdX.clear();
@@ -668,6 +670,7 @@ void THcHodoscope::ClearEvent()
   fClustPos.clear();
   fThreeScin.clear();
   fGoodScinHitsX.clear();
+  fGoodFlags.clear();
 }
 
 //_____________________________________________________________________________
@@ -675,7 +678,6 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 {
   /*! \brief Decodes raw data and processes raw data into hits for each instance of  THcScintillatorPlane
    *
-   *  - Calls THcHodoscope::ClearEvent
    *  - Reads raw data using THcHitList::DecodeToHitList
    *  - If one wants to subtract pedestals (assumed to be a set of data at beginning of run)
    *    + Must define "Pedestal_event" cut in the cuts definition file
@@ -686,7 +688,6 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
    *
    *
    */
-  ClearEvent();
   // Get the Hall C style hitlist (fRawHitList) for this event
   Bool_t present = kTRUE;	// Suppress reference time warnings
   if(fPresentP) {		// if this spectrometer not part of trigger
@@ -977,11 +978,13 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 
   //  fDumpOut << " ntrack =  " << ntracks  << endl;
 
-  if (tracks.GetLast()+1 > 0 ) {
+  if (ntracks > 0 ) {
 
     // **MAIN LOOP: Loop over all tracks and get corrected time, tof, beta...
     vector<Double_t> nPmtHit(ntracks);
     vector<Double_t> timeAtFP(ntracks);
+    fdEdX.reserve(ntracks);
+    fGoodFlags.reserve(ntracks);
     for ( Int_t itrack = 0; itrack < ntracks; itrack++ ) { // Line 133
       nPmtHit[itrack]=0;
       timeAtFP[itrack]=0;
@@ -996,10 +999,15 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	fSumPlaneTime[ip] = 0.;
       }
       std::vector<Double_t> dedx_temp;
-      fdEdX.push_back(dedx_temp); // Create array of dedx per hit
       std::vector<std::vector<GoodFlags> > goodflagstmp1;
+      goodflagstmp1.reserve(fNumPlanesBetaCalc);
+#if __cplusplus >= 201103L
+      fdEdX.push_back(std::move(dedx_temp)); // Create array of dedx per hit
+      fGoodFlags.push_back(std::move(goodflagstmp1));
+#else
+      fdEdX.push_back(dedx_temp); // Create array of dedx per hit
       fGoodFlags.push_back(goodflagstmp1);
-
+#endif
       Int_t nFPTime = 0;
       Double_t betaChiSq = -3;
       Double_t beta = 0;
@@ -1030,8 +1038,12 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
       for(Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ) {
 
 	std::vector<GoodFlags> goodflagstmp2;
+	goodflagstmp2.reserve(fNScinHits[ip]);
+#if __cplusplus >= 201103L
+	fGoodFlags[itrack].push_back(std::move(goodflagstmp2));
+#else
 	fGoodFlags[itrack].push_back(goodflagstmp2);
-
+#endif
 	fNScinHits[ip] = fPlanes[ip]->GetNScinHits();
 	TClonesArray* hodoHits = fPlanes[ip]->GetHits();
 
@@ -1170,16 +1182,20 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
       }
 
       //---------------------------------------------------------------------------------------------
-      // ---------------------- Scond loop over scint. hits in a plane ------------------------------
+      // ---------------------- Second loop over scint. hits in a plane -----------------------------
       //---------------------------------------------------------------------------------------------
+ 
+      fdEdX[itrack].reserve(nhits);
+      fTOFCalc.reserve(nhits);
       for(Int_t ih=0; ih < nhits; ih++) {
 	THcHodoHit *hit = fTOFPInfo[ih].hit;
 	Int_t iphit = fTOFPInfo[ih].hitNumInPlane;
 	Int_t ip = fTOFPInfo[ih].planeIndex;
 	//         fDumpOut << " looping over hits = " << ih << " plane = " << ip+1 << endl;
-	GoodFlags flags;
 	// Flags are used by THcHodoEff
-	fGoodFlags[itrack][ip].push_back(flags);
+	fGoodFlags[itrack][ip].reserve(nhits);
+	fGoodFlags[itrack][ip].push_back(GoodFlags());
+	assert( iphit >= 0 && (size_t)iphit < fGoodFlags[itrack][ip].size() );
 	fGoodFlags[itrack][ip][iphit].onTrack = kFALSE;
 	fGoodFlags[itrack][ip][iphit].goodScinTime = kFALSE;
 	fGoodFlags[itrack][ip][iphit].goodTdcNeg = kFALSE;
@@ -1187,6 +1203,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 
 	fTOFCalc.push_back(TOFCalc());
 	// Do we set back to false for each track, or just once per event?
+	assert( ih >= 0 && (size_t)ih < fTOFCalc.size() );
 	fTOFCalc[ih].good_scin_time = kFALSE;
 	// These need a track index too to calculate efficiencies
 	fTOFCalc[ih].good_tdc_pos = kFALSE;
@@ -1285,6 +1302,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	    }
 
 	    fdEdX[itrack].push_back(0.0);
+	    assert( fNScinHit[itrack] > 0 && (size_t)fNScinHit[itrack] < fdEdX[itrack].size()+1 );
 
 	    // --------------------------------------------------------------------------------------------
 	    if ( fTOFCalc[ih].good_tdc_pos ){
