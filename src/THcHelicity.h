@@ -49,13 +49,13 @@ protected:
   Int_t fFirstCycle;
   Double_t fFreq;
 
-  ULong64_t fTIPeriod;		// Reversal period in TI time units
+  Double_t fTIPeriod;		// Reversal period in TI time units
 
   Bool_t fFirstEvProcessed;
   Int_t fLastReportedHelicity;
-  ULong64_t fFirstEvTime;
-  ULong64_t fLastEvTime;
-  ULong64_t fLastMPSTime;
+  Long64_t fFirstEvTime;
+  Long64_t fLastEvTime;
+  Long64_t fLastMPSTime;
   Int_t fReportedHelicity;
   Int_t fMPS;
   Int_t fPredictedHelicity;
