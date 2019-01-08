@@ -32,7 +32,6 @@ THcHelicity::THcHelicity( const char* name, const char* description,
   //  for( Int_t i = 0; i < NHIST; ++i )
   //    fHisto[i] = 0;
   //  memset(fHbits, 0, sizeof(fHbits));
-
 }
 
 //_____________________________________________________________________________
@@ -63,6 +62,8 @@ THaAnalysisObject::EStatus THcHelicity::Init(const TDatime& date) {
   fFirstEvProcessed = kFALSE;
   fActualHelicity = kUnknown;
   fPredictedHelicity = kUnknown;
+  fLastMPSTime = 0;
+  fFoundMPS = kFALSE;
 
   // Call initializer for base class.
   // This also calls `ReadDatabase` and `DefineVariables`.
@@ -255,25 +256,32 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
     fActualHelicity = fIsMPS?kUnknown:fReportedHelicity;
     return 0;
   }
+  Long64_t lastlastmpstime = fLastMPSTime;
   if(fFirstEvProcessed) {	// Normal processing
     Int_t missed = 0;
     //    Double_t elapsed_time = (fTITime - fFirstEvTime)/250000000.0;
     if(fIsMPS) {
-      fFoundMPS = kTRUE;
-      Int_t missed = TMath::Nint(floor((fTITime-fLastMPSTime)/fTIPeriod));
-      //      cout << fTITime/250000000.0 << " " << fNCycle << " MPS " << fReportedHelicity <<endl;
-      if(missed <= 1) {
+      if(fFoundMPS) {
+	missed = TMath::Nint(fTITime/fTIPeriod-fLastMPSTime/fTIPeriod);
+	if(missed < 1) { // was <=1
+	  fLastMPSTime = (fTITime+fLastMPSTime+missed*fTIPeriod)/2;
+	  fIsNewCycle = kTRUE;
+	  fActualHelicity = kUnknown;
+	  fPredictedHelicity = kUnknown;
+	} else {
+	  fLastMPSTime = (fLastMPSTime + fTITime - missed*fTIPeriod)/2;
+	}
+	// If there is a skip, pass it off to next non MPS event
+	// Need to also check here for missed MPS's
+	//      cout << "Found MPS" << endl;
+	// check for Nint((time-last)/period) > 1
+      } else {
+	fFoundMPS = kTRUE;
 	fLastMPSTime = fTITime;
-	fIsNewCycle = kTRUE;
-	fActualHelicity = kUnknown;
-	fPredictedHelicity = kUnknown;
-      } // If there is a skip, pass it off to next non MPS event
-      // Need to also check here for missed MPS's
-      //      cout << "Found MPS" << endl;
-      // check for Nint((time-last)/period) > 1
+      }
     } else if (fFoundMPS) {	//
       if(fTITime - fLastMPSTime > fTIPeriod) { // We missed MPS periods
-	Int_t missed = TMath::Nint(floor((fTITime-fLastMPSTime)/fTIPeriod));
+	missed = TMath::Nint(floor((fTITime-fLastMPSTime)/fTIPeriod));
 	if(missed > 1) {
 	  //	  cout << "Missed " << missed << " MPSes" << endl;
 	  Int_t newNCycle = fNCycle + missed -1; // How many cycles really missed
@@ -282,6 +290,14 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	    fRingSeed_reported = RanBit30(fRingSeed_reported);
 	    fRingSeed_actual = RanBit30(fRingSeed_actual);
 	  }
+	  int quartetphase = (newNCycle-fFirstCycle)%4;
+	  //	  cout << "  " << fNCycle << " " << newNCycle << " " << fFirstCycle << " " << quartets_missed << " " << quartetphase << endl;
+	  fQuartetStartHelicity = (fRingSeed_actual&1)?kPlus:kMinus;
+	  fQuartetStartPredictedHelicity = (fRingSeed_reported&1)?kPlus:kMinus;
+	  fActualHelicity = (quartetphase==0||quartetphase==3)?
+	    fQuartetStartHelicity:-fQuartetStartHelicity;
+	  fPredictedHelicity = (quartetphase==0||quartetphase==3)?
+	    fQuartetStartPredictedHelicity:-fQuartetStartPredictedHelicity;
 	  //	  cout << "Cycles " << fNCycle << " " << newNCycle << " " << fFirstCycle 
 	  //	       << " skipped " << quartets_missed << " quartets" << endl;
 	  fNCycle = newNCycle;
@@ -290,13 +306,9 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	  // But only do this if we are calibrated.
 	  if(fNBits >= fMAXBIT) {
 	    if (((fNCycle - fFirstCycle)%2)==1) {
-	      //	    fQuartet[2] = fQuartet[3] = -fQuartet[0];
-	      //	    fQuartet[1] = fQuartet[0];
 	      fQuartet[0] = fReportedHelicity;
 	      fQuartet[1] = fQuartet[2] = -fQuartet[0];
 	    } else {
-	      //	    fQuartet[1] = fQuartet[2] = -fQuartet[0];
-	      //	    fQuartet[3] = fQuartet[0];
 	      fQuartet[0] = fQuartet[1] = -fReportedHelicity;
 	      fQuartet[2] = -fQuartet[1];
 	    }
@@ -365,7 +377,10 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
     fIsNewCycle = kFALSE;
     fNBits = 0;
   }
-
+  //  cout << setprecision(9) << "HEL " << fTITime/250000000.0 << " " << fNCycle << "(" << (fNCycle-fFirstCycle)%4 << "): "
+  //       << fMPS << " " << fReportedHelicity << " "
+  //       << fPredictedHelicity << " " << fActualHelicity << " " << lastlastmpstime/250000000.0 << endl;
+  // bitset<32>(v)
   return 0;
 }
 
@@ -397,6 +412,7 @@ void THcHelicity::LoadHelicity(Int_t reportedhelicity, Int_t cyclecount, Int_t m
   //  static const char* const here = "THcHelicity::LoadHelicity";
   int quartetphase = (cyclecount-fFirstCycle)%4;
   fnQrt = quartetphase;
+
   if(missedcycles > 1) {	// If we missed windows
     if(fNBits< fMAXBIT) {	// and we haven't gotten the seed, start over
       fNBits = 0;
@@ -445,6 +461,7 @@ void THcHelicity::LoadHelicity(Int_t reportedhelicity, Int_t cyclecount, Int_t m
       if(fReportedHelicity != fPredictedHelicity) {
 	cout << "Helicity prediction failed " << fReportedHelicity << " "
 	     << fPredictedHelicity << " " << fActualHelicity << endl;
+	cout << hex << fRingSeed_reported << " " << fRingSeed_actual << dec << endl;
 	fNBits = 0;		// Need to reaquire seed
 	fActualHelicity = kUnknown;
 	fPredictedHelicity = kUnknown;
