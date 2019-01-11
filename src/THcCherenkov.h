@@ -104,6 +104,8 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Double_t* fPedMean; 	  /* Can be supplied in parameters and then */
   Double_t* fPed;
   Double_t* fThresh;
+  Double_t* fAdcPulseAmpTest;
+  Int_t*    fAdcGoodElem;
 
   // 12 Gev FADC variables
   TClonesArray* frAdcPedRaw;
