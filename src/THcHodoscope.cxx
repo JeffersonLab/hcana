@@ -1524,21 +1524,30 @@ void THcHodoscope::TrackEffTest(void)
     }
   }
   //
-  Bool_t inside_bound[4]={kFALSE,kFALSE,kFALSE,kFALSE};
+  Bool_t inside_bound[4][10];
   for(Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ) {	 
     for(Int_t ic = 0; ic <fNClust[ip] ; ic++ ) {
       fClustPos[ip][ic]=fClustPos[ip][ic]/fClustSize[ip][ic];
-      inside_bound[ip] = fClustPos[ip][ic]>=PadPosLo[ip] &&  fClustPos[ip][ic]<=PadPosHi[ip];
-      //cout << "plane = " << ip+1 << " Cluster = " << ic+1 << " size = " << fClustSize[ip][ic]<< " pos = " << fClustPos[ip][ic] << " inside = " << inside_bound[ip] << " lo = " << PadPosLo[ip]<< " hi = " << PadPosHi[ip]<< endl;
+      inside_bound[ip][ic] = fClustPos[ip][ic]>=PadPosLo[ip] &&  fClustPos[ip][ic]<=PadPosHi[ip];
+      //cout << "plane = " << ip+1 << " Cluster = " << ic+1 << " size = " << fClustSize[ip][ic]<< " pos = " << fClustPos[ip][ic] << " inside = " << inside_bound[ip][ic] << " lo = " << PadPosLo[ip]<< " hi = " << PadPosHi[ip]<< endl;
     }
   }
   //
-  Int_t good_for_track_test[4]={0,0,0,0};
-  Int_t sum_good_track_test=0;
+  Int_t good_for_track_test[4][10];
+  Int_t sum_good_track_test[4]={0,0,0,0};
+  Int_t num_good_plane_hit=0;
   for(Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ) {
-    if (fNClust[ip]==1 && inside_bound[ip] && fClustSize[ip][0]<=2) good_for_track_test[ip]=1;
+    for(Int_t ic = 0; ic <fNClust[ip] ; ic++ ) {
+      if (inside_bound[ip][ic] && fClustSize[ip][ic]<=2) {
+          good_for_track_test[ip][ic]=1;
+	  sum_good_track_test[ip]++;
+	  if (sum_good_track_test[ip]==1) num_good_plane_hit++;
+      } else {
+           good_for_track_test[ip][ic]=0;
+     }
     //cout << " good for track = " << good_for_track_test[ip] << endl;
-    sum_good_track_test+=good_for_track_test[ip];
+    //sum_good_track_test+=good_for_track_test[ip];
+    }
   }	 
   //
   Double_t trackeff_scint_ydiff_max= 10. ;
@@ -1546,31 +1555,53 @@ void THcHodoscope::TrackEffTest(void)
   Bool_t xdiffTest=kFALSE;
   Bool_t ydiffTest=kFALSE;
   fGoodScinHits = 0;
-  if (fTrackEffTestNScinPlanes == 4) {
-    if (fTrackEffTestNScinPlanes==sum_good_track_test) {
-      xdiffTest= TMath::Abs(fClustPos[0][0]-fClustPos[2][0])<trackeff_scint_xdiff_max;
-      ydiffTest= TMath::Abs(fClustPos[1][0]-fClustPos[3][0])<trackeff_scint_ydiff_max;
-      if (xdiffTest && ydiffTest) fGoodScinHits = 1;
+  if (fTrackEffTestNScinPlanes == 4 || (fTrackEffTestNScinPlanes == 3 && num_good_plane_hit==4)) {
+    
+    // check for matching clusters in the X planes assumed to be planes 0 and 2
+    for(Int_t ic0 = 0; ic0 <fNClust[0] ; ic0++ ) {
+    for(Int_t ic2 = 0; ic2 <fNClust[2] ; ic2++ ) {
+      if (good_for_track_test[0][ic0] && good_for_track_test[2][ic2]) {
+          xdiffTest= TMath::Abs(fClustPos[0][ic0]-fClustPos[2][ic2])<trackeff_scint_xdiff_max;
+      }
     }
+    }
+    // check for matching clusters in the Y planes assumed to be planes 1 and 3
+    for(Int_t ic1 = 0; ic1 <fNClust[1] ; ic1++ ) {
+    for(Int_t ic3 = 0; ic3 <fNClust[3] ; ic3++ ) {
+       if (good_for_track_test[1][ic1] && good_for_track_test[3][ic3]) {
+           ydiffTest= TMath::Abs(fClustPos[1][ic1]-fClustPos[3][ic3])<trackeff_scint_ydiff_max;
+       }
+    }
+    }
+    if (xdiffTest && ydiffTest) fGoodScinHits = 1;
   }
   //
-  if (fTrackEffTestNScinPlanes == 3) {
-    if (fTrackEffTestNScinPlanes==sum_good_track_test) {
-      if(good_for_track_test[0]==1&&good_for_track_test[2]==1) {
-	xdiffTest= TMath::Abs(fClustPos[0][0]-fClustPos[2][0])<trackeff_scint_xdiff_max;
-	ydiffTest=kTRUE;
-      }
-      if (good_for_track_test[1]==1&&good_for_track_test[3]==1) {
-	xdiffTest=kTRUE;
-	ydiffTest= TMath::Abs(fClustPos[1][0]-fClustPos[3][0])<trackeff_scint_ydiff_max;
-      }
-      if (xdiffTest && ydiffTest) fGoodScinHits = 1;
+  if (fTrackEffTestNScinPlanes == 3 && num_good_plane_hit==3) {
+    xdiffTest=kFALSE;
+    ydiffTest=kFALSE;
+    // Check if two X planes hit
+    if (sum_good_track_test[0]>0&&sum_good_track_test[2]>0) {
+       for(Int_t ic0 = 0; ic0 <fNClust[0] ; ic0++ ) {
+       for(Int_t ic2 = 0; ic2 <fNClust[2] ; ic2++ ) {
+         if (good_for_track_test[0][ic0] && good_for_track_test[2][ic2]) {
+          xdiffTest= TMath::Abs(fClustPos[0][ic0]-fClustPos[2][ic2])<trackeff_scint_xdiff_max;
+         }
+       }
+       }
+      ydiffTest = kTRUE;
     }
-    if (sum_good_track_test==4) {
-      xdiffTest= TMath::Abs(fClustPos[0][0]-fClustPos[2][0])<trackeff_scint_xdiff_max;
-      ydiffTest= TMath::Abs(fClustPos[1][0]-fClustPos[3][0])<trackeff_scint_ydiff_max;
-      if (xdiffTest && ydiffTest) fGoodScinHits = 1;
+    // Check if two Y planes hit
+    if ((sum_good_track_test[1]>0||sum_good_track_test[3]>0)) {
+    for(Int_t ic1 = 0; ic1 <fNClust[1] ; ic1++ ) {
+    for(Int_t ic3 = 0; ic3 <fNClust[3] ; ic3++ ) {
+       if (good_for_track_test[1][ic1] && good_for_track_test[3][ic3]) {
+           ydiffTest= TMath::Abs(fClustPos[1][ic1]-fClustPos[3][ic3])<trackeff_scint_ydiff_max;
+       }
     }
+      xdiffTest = kTRUE;
+    }
+    }  
+     if (xdiffTest && ydiffTest) fGoodScinHits = 1;
   }
   //       
   //	cout << " good scin = " << fGoodScinHits << " " << sum_good_track_test << " " << xdiffTest  << " " << ydiffTest<< endl;
