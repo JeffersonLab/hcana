@@ -1480,6 +1480,8 @@ void THcHodoscope::TrackEffTest(void)
   PadHigh[1]=fyHiScin[0];
   PadHigh[3]=fyHiScin[1];
   //
+  Bool_t efftest_debug = kFALSE;
+  if (efftest_debug) cout << " spec = " << GetApparatus()->GetName()[0] << endl;
   Double_t PadPosLo[4];
   Double_t PadPosHi[4];
   for (Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ){
@@ -1512,15 +1514,16 @@ void THcHodoscope::TrackEffTest(void)
 	if ( padnum==prev_padnum+1 ) {
 	  fClustSize[ip][fNClust[ip]-1]=fClustSize[ip][fNClust[ip]-1]+1;
 	  fClustPos[ip][fNClust[ip]-1]=fClustPos[ip][fNClust[ip]-1]+fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset();
-	  //  cout << "Add to cluster  pl = " << ip+1 << " hit = " << iphit << " pad = " << padnum << " clus =  " << fNClust[ip] << " cl size = " << fClustSize[ip][fNClust[ip]-1] << " pos " << fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset() << endl;
+	   if (efftest_debug) cout << "Add to cluster  pl = " << ip+1 << " hit = " << iphit << " pad = " << padnum << " clus =  " << fNClust[ip] << " cl size = " << fClustSize[ip][fNClust[ip]-1] << " pos " << fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset() << endl;
 	} else {
 	  if (fNClust[ip]<MaxNClus) fNClust[ip]++;
 	  fClustSize[ip][fNClust[ip]-1]=1;
 	  fClustPos[ip][fNClust[ip]-1]=fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset();
-	  //  cout << " New clus pl = " << ip+1 << " hit = " << iphit << " pad = " << padnum << " clus = " << fNClust[ip] << " cl size = " << fClustSize[ip][fNClust[ip]] << " pos " << fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset() << endl;
+	   if (efftest_debug) cout << " New clus pl = " << ip+1 << " hit = " << iphit << " pad = " << padnum << " clus = " << fNClust[ip] << " cl size = " << fClustSize[ip][fNClust[ip]-1] << " pos " << fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset() << endl;
 	}
 	prev_padnum=padnum;
       }
+      if (!(hit->GetTwoGoodTimes()) && efftest_debug)  cout << "no two good times  plane = " << ip+1 << " hit = " << iphit << endl;
     }
   }
   //
@@ -1529,7 +1532,7 @@ void THcHodoscope::TrackEffTest(void)
     for(Int_t ic = 0; ic <fNClust[ip] ; ic++ ) {
       fClustPos[ip][ic]=fClustPos[ip][ic]/fClustSize[ip][ic];
       inside_bound[ip][ic] = fClustPos[ip][ic]>=PadPosLo[ip] &&  fClustPos[ip][ic]<=PadPosHi[ip];
-      //cout << "plane = " << ip+1 << " Cluster = " << ic+1 << " size = " << fClustSize[ip][ic]<< " pos = " << fClustPos[ip][ic] << " inside = " << inside_bound[ip][ic] << " lo = " << PadPosLo[ip]<< " hi = " << PadPosHi[ip]<< endl;
+      if (efftest_debug) cout << "plane = " << ip+1 << " Cluster = " << ic+1 << " size = " << fClustSize[ip][ic]<< " pos = " << fClustPos[ip][ic] << " inside = " << inside_bound[ip][ic] << " lo = " << PadPosLo[ip]<< " hi = " << PadPosHi[ip]<< endl;
     }
   }
   //
@@ -1545,17 +1548,19 @@ void THcHodoscope::TrackEffTest(void)
       } else {
            good_for_track_test[ip][ic]=0;
      }
-    //cout << " good for track = " << good_for_track_test[ip] << endl;
-    //sum_good_track_test+=good_for_track_test[ip];
+      if (efftest_debug) cout << " ip " << ip+1 << " clus = " << ic << " good for track = " << good_for_track_test[ip][ic] << endl;
     }
+    if (efftest_debug) cout << " ip = " << ip+1 << "  sum_good_track_test = " << sum_good_track_test[ip] << endl;
   }	 
+  if (efftest_debug) cout << " number of planes hits = " << num_good_plane_hit << endl;
   //
   Double_t trackeff_scint_ydiff_max= 10. ;
   Double_t trackeff_scint_xdiff_max= 10. ;
   Bool_t xdiffTest=kFALSE;
   Bool_t ydiffTest=kFALSE;
   fGoodScinHits = 0;
-  if (fTrackEffTestNScinPlanes == 4 || (fTrackEffTestNScinPlanes == 3 && num_good_plane_hit==4)) {
+  if (efftest_debug) cout << " fTrackEffTestNScinPlanes = " << fTrackEffTestNScinPlanes << endl;
+  if ( (fTrackEffTestNScinPlanes == 4 || fTrackEffTestNScinPlanes == 3) && num_good_plane_hit==4) {
     
     // check for matching clusters in the X planes assumed to be planes 0 and 2
     for(Int_t ic0 = 0; ic0 <fNClust[0] ; ic0++ ) {
@@ -1574,6 +1579,7 @@ void THcHodoscope::TrackEffTest(void)
     }
     }
     if (xdiffTest && ydiffTest) fGoodScinHits = 1;
+    if (efftest_debug) cout << " 4 good planes  xdiff = " << xdiffTest << " ydiff = " <<  ydiffTest << endl;
   }
   //
   if (fTrackEffTestNScinPlanes == 3 && num_good_plane_hit==3) {
@@ -1602,10 +1608,9 @@ void THcHodoscope::TrackEffTest(void)
     }
     }  
      if (xdiffTest && ydiffTest) fGoodScinHits = 1;
+    if (efftest_debug) cout << " 3 good planes  xdiff = " << xdiffTest << " ydiff = " <<  ydiffTest << endl;
   }
-  //       
-  //	cout << " good scin = " << fGoodScinHits << " " << sum_good_track_test << " " << xdiffTest  << " " << ydiffTest<< endl;
-  //cout << " ************" << endl;
+  if (efftest_debug) cout << " ************" << endl;
   //
 }
 //
