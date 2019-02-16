@@ -170,6 +170,10 @@ Int_t THcCoinTime::DefineVariables( EMode mode )
     
     {"CoinTime_RAW_ROC1",    "ROC1 RAW Coincidence Time",  "fROC1_RAW_CoinTime"},
     {"CoinTime_RAW_ROC2",    "ROC2 RAW Coincidence Time",  "fROC2_RAW_CoinTime"},
+    {"DeltaSHMSPathLength","DeltaSHMSpathLength (cm)","DeltaSHMSpathLength"},
+    {"DeltaHMSPathLength", "DeltaHMSpathLength (cm)","DeltaHMSpathLength"},
+    {"had_coinCorr_Positron",    "",  "had_coinCorr_Positron"},
+    {"elec_coinCorr",    "",  "elec_coinCorr"},
     { 0 }
   };
 
@@ -206,6 +210,8 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
   //Gather relevant variables for Coincidence time calculation
   lightSpeed = 29.9792; // in cm/ns
 
+  elec_coinCorr=kBig;
+  had_coinCorr_Positron=kBig;
   //Particle Masses (HardCoded)
   elecMass =  0.510998/1000.0; // electron mass in GeV/c^2
   positronMass =  0.510998/1000.0;
@@ -230,6 +236,8 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
       Double_t SHMS_FPtime = theSHMSTrack->GetFPTime();    
       
       //HMS arm
+      Double_t hms_xptar = theHMSTrack->GetTTheta();           
+      Double_t hms_dP = theHMSTrack->GetDp();            
       Double_t hms_xfp = theHMSTrack->GetX();           
       Double_t hms_xpfp = theHMSTrack->GetTheta();      
       Double_t hms_ypfp = theHMSTrack->GetPhi();        
@@ -241,8 +249,10 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
       pTRIG1_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(2);//SHMS
       pTRIG4_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(3);//HMS
 
-	  DeltaSHMSpathLength = -0.11*atan2(shms_xptar,1)*1000 - 0.057*shms_dP;
-	  DeltaHMSpathLength = 12.462*hms_xpfp + 0.1138*hms_xpfp*hms_xfp - 0.0154*hms_xfp - 72.292*hms_xpfp*hms_xpfp - 0.0000544*hms_xfp*had_xfp - 116.52*hms_ypfp*hms_ypfp;
+      DeltaSHMSpathLength = .11*shms_xptar*1000 +0.057*shms_dP/100.;
+      DeltaHMSpathLength = -1.0*(12.462*hms_xpfp + 0.1138*hms_xpfp*hms_xfp - 0.0154*hms_xfp - 72.292*hms_xpfp*hms_xpfp - 0.0000544*hms_xfp*had_xfp - 116.52*hms_ypfp*hms_ypfp);
+      DeltaHMSpathLength = (.12*hms_xptar*1000 +0.17*hms_dP/100.);
+
           // default assume SHMS is electron arm
 	  Double_t ElecPathLength=SHMScentralPathLen +  DeltaSHMSpathLength;
 	  Double_t HadPathLength=HMScentralPathLen +  DeltaHMSpathLength;
@@ -256,7 +266,6 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
              had_P = theSHMSTrack->GetP();              //hadron golden track arm momentum
              sign=1;
 	  }
-
 	  //beta calculations beta = v/c = p/E
 	  elecArm_BetaCalc = elec_P / sqrt(elec_P*elec_P + elecMass*elecMass);
 	  hadArm_BetaCalc_proton = had_P / sqrt(had_P*had_P + protonMass*protonMass);
@@ -292,9 +301,10 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 	  fROC2_ePiCoinTime = fROC2_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Pion) - eHad_CT_Offset;
 
 	  //POSITRON
-	  fROC1_ePosCoinTime = fROC1_RAW_CoinTime + sign*( elec_coinCorr + had_coinCorr_Positron) - eHad_CT_Offset ;	  
-	  fROC2_ePosCoinTime = fROC2_RAW_CoinTime + sign*( elec_coinCorr + had_coinCorr_Positron) - eHad_CT_Offset;
+	  fROC1_ePosCoinTime = fROC1_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset ;	  
+	  fROC2_ePosCoinTime = fROC2_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset;
 
+         
    
   
   
