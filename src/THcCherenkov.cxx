@@ -215,6 +215,8 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   // Region parameters
   fRegionsValueMax = fNRegions * 8;
   fRegionValue     = new Double_t[fRegionsValueMax];
+  fAdcGoodElem = new Int_t[fNelem];
+  fAdcPulseAmpTest = new Double_t[fNelem];
 
   DBRequest list[]={
     {"_ped_limit",        fPedLimit,          kInt,     (UInt_t) fNelem, optional},
@@ -440,28 +442,38 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
 {
   Double_t StartTime = 0.0;
   if( fglHod ) StartTime = fglHod->GetStartTime();
-
-  // Loop over the elements in the TClonesArray
+  for(Int_t ipmt = 0; ipmt < fNelem; ipmt++) {
+    fAdcPulseAmpTest[ipmt] = -1000.;
+    fAdcGoodElem[ipmt]=-1;
+   }
+   //
   for(Int_t ielem = 0; ielem < frAdcPulseInt->GetEntries(); ielem++) {
-
     Int_t    npmt         = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
+    Double_t pulseTime    = ((THcSignalHit*) frAdcPulseTime->ConstructedAt(ielem))->GetData();
+    Double_t pulseAmp     = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
+   Double_t adctdcdiffTime = StartTime-pulseTime;
+     Bool_t   errorFlag    = ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(ielem))->GetData();
+    Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin[npmt] && adctdcdiffTime < fAdcTimeWindowMax[npmt];
+    if (!errorFlag)
+      {
+	fGoodAdcMult.at(npmt) += 1;
+      }
+    if (!errorFlag && pulseTimeCut && pulseAmp > fAdcPulseAmpTest[npmt]) {
+       fAdcGoodElem[npmt]=ielem;
+       fAdcPulseAmpTest[npmt] = pulseAmp;
+    }
+  }
+  // Loop over the npmt
+  for(Int_t npmt = 0; npmt < fNelem; npmt++) {
+    Int_t ielem = fAdcGoodElem[npmt];
+    if (ielem != -1) {
     Double_t pulsePed     = ((THcSignalHit*) frAdcPed->ConstructedAt(ielem))->GetData();
     Double_t pulseInt     = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetData();
     Double_t pulseIntRaw  = ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
     Double_t pulseAmp     = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
     Double_t pulseTime    = ((THcSignalHit*) frAdcPulseTime->ConstructedAt(ielem))->GetData();
    Double_t adctdcdiffTime = StartTime-pulseTime;
-     Bool_t   errorFlag    = ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(ielem))->GetData();
-    Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin[npmt] && adctdcdiffTime < fAdcTimeWindowMax[npmt];
-
-    
-    if (!errorFlag)
-      {
-	fGoodAdcMult.at(npmt) += 1;
-      }
-
     // By default, the last hit within the timing cut will be considered "good"
-    if (!errorFlag && pulseTimeCut) {
       fGoodAdcPed.at(npmt)         = pulsePed;
       fGoodAdcHitUsed.at(npmt)         = ielem+1;
       fGoodAdcPulseInt.at(npmt)    = pulseInt;
