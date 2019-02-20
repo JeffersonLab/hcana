@@ -276,7 +276,7 @@ void THcRawAdcHit::SetDataTimePedestalPeak(
 ) {
   if (fNPulses >= fMaxNPulses) {
     throw std::out_of_range(
-      "`THcRawAdcHit::SetData`: too many pulses!"
+      "`THcRawAdcHit::SetDataTimePedestalPeak`: too many pulses!"
     );
   }
   fPulseInt[fNPulses] = data;
