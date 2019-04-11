@@ -94,6 +94,9 @@ protected:
   Double_t fErrorCode;
  
   Int_t fEvtype; // Current CODA event type
+  Int_t fLastActualHelicity;
+  Int_t fEvNumCheck;
+  Bool_t fDisabled;
  
   static const Int_t NHIST = 2;
   TH1F* fHisto[NHIST];  

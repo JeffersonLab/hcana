@@ -73,6 +73,9 @@ THaAnalysisObject::EStatus THcHelicity::Init(const TDatime& date) {
     return fStatus;
   }
 
+  fEvNumCheck = 0;
+  fDisabled = kFALSE;
+
   fStatus = kOK;
   return fStatus;
 }
@@ -139,6 +142,9 @@ Int_t THcHelicity::ReadDatabase( const TDatime& date )
   } else {
     // Initialize mode to find quartets and then seed
   }
+
+  cout << "Helicity decoder initialized with frequency of " << fFreq
+       << " Hz and reporting delay of " << fHelDelay << " cycles." << endl;
 
   return kOK;
 }
@@ -256,11 +262,32 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
     fActualHelicity = fIsMPS?kUnknown:fReportedHelicity;
     return 0;
   }
-  Long64_t lastlastmpstime = fLastMPSTime;
+
+  if(fDisabled) {
+    fActualHelicity = kUnknown;
+    return 0;
+  }
+
+  fEvNumCheck++;
+  Int_t evnum = evdata.GetEvNum();
+  if(fEvNumCheck!=evnum) {
+    cout << "THcHelicity: Missed " << evnum-fEvNumCheck << " events at event " << evnum << endl;
+    cout << "             Disabling helicity decoding for rest of run." << endl;
+    cout << "             Make sure \"RawDecode_master in cuts file accepts all physics events." <<endl;
+    fDisabled = kTRUE;
+    fActualHelicity = kUnknown;
+    return 0;
+  }
+
+  fActualHelicity = -10.0;
   if(fFirstEvProcessed) {	// Normal processing
+    //    cout << evnum << " " << fNCycle << " " << fIsMPS << " " << fFoundMPS << " " << fTITime << " "
+    //	 << fLastMPSTime << " " << fNBits << endl;
     Int_t missed = 0;
     //    Double_t elapsed_time = (fTITime - fFirstEvTime)/250000000.0;
     if(fIsMPS) {
+      fActualHelicity = kUnknown;
+      fPredictedHelicity = kUnknown;
       if(fFoundMPS) {
 	missed = TMath::Nint(fTITime/fTIPeriod-fLastMPSTime/fTIPeriod);
 	if(missed < 1) { // was <=1
@@ -292,12 +319,6 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	  }
 	  int quartetphase = (newNCycle-fFirstCycle)%4;
 	  //	  cout << "  " << fNCycle << " " << newNCycle << " " << fFirstCycle << " " << quartets_missed << " " << quartetphase << endl;
-	  fQuartetStartHelicity = (fRingSeed_actual&1)?kPlus:kMinus;
-	  fQuartetStartPredictedHelicity = (fRingSeed_reported&1)?kPlus:kMinus;
-	  fActualHelicity = (quartetphase==0||quartetphase==3)?
-	    fQuartetStartHelicity:-fQuartetStartHelicity;
-	  fPredictedHelicity = (quartetphase==0||quartetphase==3)?
-	    fQuartetStartPredictedHelicity:-fQuartetStartPredictedHelicity;
 	  //	  cout << "Cycles " << fNCycle << " " << newNCycle << " " << fFirstCycle 
 	  //	       << " skipped " << quartets_missed << " quartets" << endl;
 	  fNCycle = newNCycle;
@@ -305,6 +326,13 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	  // reported helicity.  So we don't fail quartet testing.
 	  // But only do this if we are calibrated.
 	  if(fNBits >= fMAXBIT) {
+	    fQuartetStartHelicity = (fRingSeed_actual&1)?kPlus:kMinus;
+	    fQuartetStartPredictedHelicity = (fRingSeed_reported&1)?kPlus:kMinus;
+	    fActualHelicity = (quartetphase==0||quartetphase==3)?
+	      fQuartetStartHelicity:-fQuartetStartHelicity;
+	    fPredictedHelicity = (quartetphase==0||quartetphase==3)?
+	      fQuartetStartPredictedHelicity:-fQuartetStartPredictedHelicity;
+
 	    if (((fNCycle - fFirstCycle)%2)==1) {
 	      fQuartet[0] = fReportedHelicity;
 	      fQuartet[1] = fQuartet[2] = -fQuartet[0];
@@ -313,6 +341,7 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	      fQuartet[2] = -fQuartet[1];
 	    }
 	  } else {
+	    fActualHelicity = kUnknown;
 	    fQuartet[0] = fReportedHelicity;
 	    fQuartet[1] = 0;
 	  }
@@ -320,6 +349,18 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	fLastMPSTime += missed*fTIPeriod;
 	fIsNewCycle = kTRUE;
 	fLastReportedHelicity = fReportedHelicity;
+      } else {			// No missed periods.  Get helicities from rings
+	if(fNBits>=fMAXBIT) {
+	  int quartetphase = (fNCycle-fFirstCycle)%4;
+	  fQuartetStartHelicity = (fRingSeed_actual&1)?kPlus:kMinus;
+	  fQuartetStartPredictedHelicity = (fRingSeed_reported&1)?kPlus:kMinus;
+	  fActualHelicity = (quartetphase==0||quartetphase==3)?
+	    fQuartetStartHelicity:-fQuartetStartHelicity;
+	  fPredictedHelicity = (quartetphase==0||quartetphase==3)?
+	  fQuartetStartPredictedHelicity:-fQuartetStartPredictedHelicity;
+	} else {
+	  fActualHelicity = 0;
+	}
       }
       if(fIsNewCycle) {
 	fQuartet[3]=fQuartet[2]; fQuartet[2]=fQuartet[1]; fQuartet[1]=fQuartet[0];
@@ -361,6 +402,8 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	//	     << fPredictedHelicity << " " << fActualHelicity << endl;
       }
       // Ignore until a MPS Is found
+    } else {			// No MPS found yet
+      fActualHelicity = kUnknown;
     }
   } else {
     cout << "Initializing" << endl;
@@ -377,10 +420,17 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
     fIsNewCycle = kFALSE;
     fNBits = 0;
   }
-  //  cout << setprecision(9) << "HEL " << fTITime/250000000.0 << " " << fNCycle << "(" << (fNCycle-fFirstCycle)%4 << "): "
-  //       << fMPS << " " << fReportedHelicity << " "
-  //       << fPredictedHelicity << " " << fActualHelicity << " " << lastlastmpstime/250000000.0 << endl;
-  // bitset<32>(v)
+
+  // Some sanity checks
+  if(fActualHelicity < -5) {
+    cout << "Actual Helicity never got defined" << endl;
+  }
+  if(fNBits < fMAXBIT) {
+    if(fActualHelicity == -1 || fActualHelicity == 1) {
+      cout << "Helicity of " << fActualHelicity << " reported prematurely at cycle " << fNCycle << endl;
+    }
+  }
+  fLastActualHelicity = fActualHelicity;
   return 0;
 }
 
