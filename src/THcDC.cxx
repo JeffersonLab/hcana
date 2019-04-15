@@ -736,11 +736,11 @@ void THcDC::LinkStubs()
   std::vector<THcSpacePoint*> fSp;
   fNSp=0;
   fSp.clear();
-  fSp.reserve(10);
+  fSp.reserve(100);
   fNDCTracks=0;		// Number of Focal Plane tracks found
   fDCTracks->Delete();
   // Make a vector of pointers to the SpacePoints
-  if (fChambers[0]->GetNSpacePoints()+fChambers[1]->GetNSpacePoints()>10) return;
+  //if (fChambers[0]->GetNSpacePoints()+fChambers[1]->GetNSpacePoints()>10) return;
 
   for(UInt_t ich=0;ich<fNChambers;ich++) {
     Int_t nchamber=fChambers[ich]->GetChamberNum();
@@ -750,7 +750,8 @@ void THcDC::LinkStubs()
       fSp[fNSp]->fNChamber = nchamber;
       fSp[fNSp]->fNChamber_spnum = isp;
       fNSp++;
-      if (fNSp>10) break;
+      if (ich==0 && fNSp>50) break;
+      if (fNSp>100) break;
     }
   }
   Double_t stubminx = 999999;
@@ -817,7 +818,7 @@ void THcDC::LinkStubs()
 		fStubTest = 1;
 		//stubtest=1;  Used in h_track_tests.f
 		// Make a new track if there are not to many
-		if(fNDCTracks < MAXTRACKS) {
+		if(fNDCTracks < fNTracksMaxFP) {
 		  sptracks=0; // Number of tracks with this seed
 		  stub_tracks[sptracks++] = fNDCTracks;
 		  THcDCTrack *theDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
