@@ -83,19 +83,29 @@ public:
 
   Double_t fROC1_RAW_CoinTime;
   Double_t fROC2_RAW_CoinTime;
+  Double_t fTRIG1_RAW_CoinTime;
+  Double_t fTRIG4_RAW_CoinTime;
   
   
   Double_t fROC1_epCoinTime;
   Double_t fROC2_epCoinTime;
+  Double_t fTRIG1_epCoinTime;
+  Double_t fTRIG4_epCoinTime;
 
   Double_t fROC1_eKCoinTime;
   Double_t fROC2_eKCoinTime;
- 
+  Double_t fTRIG1_eKCoinTime;
+  Double_t fTRIG4_eKCoinTime;
+
   Double_t fROC1_ePiCoinTime;
   Double_t fROC2_ePiCoinTime;
+  Double_t fTRIG1_ePiCoinTime;
+  Double_t fTRIG4_ePiCoinTime;
  
   Double_t fROC1_ePosCoinTime;   //electron-positron coin time 
   Double_t fROC2_ePosCoinTime;
+  Double_t fTRIG1_ePosCoinTime;   //electron-positron coin time 
+  Double_t fTRIG4_ePosCoinTime;
   
   Double_t elec_coinCorr;
   Double_t elecArm_BetaCalc;
