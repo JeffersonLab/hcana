@@ -10,6 +10,7 @@ hodoscope array, not just one plane.
 */
 
 #include "THcSignalHit.h"
+#include "THcScintPlaneCluster.h"
 #include "THcShower.h"
 #include "THcCherenkov.h"
 #include "THcHallCSpectrometer.h"
@@ -229,6 +230,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   prefix[1]='\0';
   strcpy(parname,prefix);
   strcat(parname,"scin_");
+  //
+  //
   //  Int_t plen=strlen(parname);
   // cout << " readdatabse hodo fnplanes = " << fNPlanes << endl;
 
@@ -335,6 +338,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"yloscin",                          &fyLoScin[0],            kInt,     (UInt_t) fNHodoscopes},
     {"yhiscin",                          &fyHiScin[0],            kInt,     (UInt_t) fNHodoscopes},
     {"track_eff_test_num_scin_planes",   &fTrackEffTestNScinPlanes,                 kInt},
+    {"trackeff_scint_ydiff_max",     &trackeff_scint_ydiff_max,        kDouble,         0,  1},
+    {"trackeff_scint_xdiff_max",     &trackeff_scint_xdiff_max,        kDouble,         0,  1},
     {"cer_npe",                          &fNCerNPE,               kDouble,         0,  1},
     {"normalized_energy_tot",            &fNormETot,              kDouble,         0,  1},
     {"hodo_slop",                        fHodoSlop,               kDouble,  (UInt_t) fNPlanes},
@@ -356,7 +361,8 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
   };
 
   // Defaults if not defined in parameter file
-
+  trackeff_scint_ydiff_max=20.;
+  trackeff_scint_xdiff_max=20.;
   for(UInt_t ip=0;ip<fMaxHodoScin;ip++) {
     fHodoPosAdcTimeWindowMin[ip] = -1000.;
     fHodoPosAdcTimeWindowMax[ip] = 1000.;
@@ -520,6 +526,15 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     fTofTolerance= 3.0;
     cout << "*** USING DEFAULT 3 NSEC WINDOW FOR FP NO_TRACK CALCULATIONS!! ***\n";
   }
+  //
+  fRatio_xpfp_to_xfp=0.00;
+  TString SHMS="p";
+  TString HMS="h";
+  TString test=prefix[0];
+  if (test==SHMS ) fRatio_xpfp_to_xfp=0.0018; // SHMS 
+  if (test == HMS ) fRatio_xpfp_to_xfp=0.0011; // HMS 
+  cout << " fRatio_xpfp_to_xfp= " << fRatio_xpfp_to_xfp << endl;
+  //
   fIsInit = true;
   return kOK;
 }
@@ -1093,12 +1108,13 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 
 	  // Index to access the 2d arrays of paddle/scintillator properties
 	  Int_t fPIndex = GetScinIndex(ip,paddle);
+          Double_t betatrack = theTrack->GetP()/TMath::Sqrt(theTrack->GetP()*theTrack->GetP()+fPartMass*fPartMass);
           
 	  if ( TMath::Abs( scinCenter - scinTrnsCoord ) <
 	       ( fPlanes[ip]->GetSize() * 0.5 + fPlanes[ip]->GetHodoSlop() ) ){ // Line 293
 
 	    fTOFPInfo[ihhit].onTrack = kTRUE;
-	    Double_t zcor = zposition/(29.979*fBetaNominal)*
+	    Double_t zcor = zposition/(29.979*betatrack)*
 	      TMath::Sqrt(1. + theTrack->GetTheta()*theTrack->GetTheta()
 			  + theTrack->GetPhi()*theTrack->GetPhi());
 	    fTOFPInfo[ihhit].zcor = zcor;
@@ -1480,6 +1496,8 @@ void THcHodoscope::TrackEffTest(void)
   PadHigh[1]=fyHiScin[0];
   PadHigh[3]=fyHiScin[1];
   //
+  Bool_t efftest_debug = kFALSE;
+  if (efftest_debug) cout << " spec = " << GetApparatus()->GetName()[0] << endl;
   Double_t PadPosLo[4];
   Double_t PadPosHi[4];
   for (Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ){
@@ -1511,70 +1529,112 @@ void THcHodoscope::TrackEffTest(void)
       if ( hit->GetTwoGoodTimes() ) {
 	if ( padnum==prev_padnum+1 ) {
 	  fClustSize[ip][fNClust[ip]-1]=fClustSize[ip][fNClust[ip]-1]+1;
-	  fClustPos[ip][fNClust[ip]-1]=fClustPos[ip][fNClust[ip]-1]+fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset();
-	  //  cout << "Add to cluster  pl = " << ip+1 << " hit = " << iphit << " pad = " << padnum << " clus =  " << fNClust[ip] << " cl size = " << fClustSize[ip][fNClust[ip]-1] << " pos " << fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset() << endl;
+	  fClustPos[ip][fNClust[ip]-1]+=fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset();
+	   if (efftest_debug) cout << "Add to cluster  pl = " << ip+1 << " hit = " << iphit << " pad = " << padnum << " clus =  " << fNClust[ip] << " cl size = " << fClustSize[ip][fNClust[ip]-1] << " pos " << fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset() << endl;
 	} else {
 	  if (fNClust[ip]<MaxNClus) fNClust[ip]++;
 	  fClustSize[ip][fNClust[ip]-1]=1;
 	  fClustPos[ip][fNClust[ip]-1]=fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset();
-	  //  cout << " New clus pl = " << ip+1 << " hit = " << iphit << " pad = " << padnum << " clus = " << fNClust[ip] << " cl size = " << fClustSize[ip][fNClust[ip]] << " pos " << fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset() << endl;
+	   if (efftest_debug) cout << " New clus pl = " << ip+1 << " hit = " << iphit << " pad = " << padnum << " clus = " << fNClust[ip] << " cl size = " << fClustSize[ip][fNClust[ip]-1] << " pos " << fPlanes[ip]->GetPosCenter(padnum-1)+ fPlanes[ip]->GetPosOffset() << endl;
 	}
 	prev_padnum=padnum;
       }
+      if (!(hit->GetTwoGoodTimes()) && efftest_debug)  cout << "no two good times  plane = " << ip+1 << " hit = " << iphit << endl;
     }
   }
   //
-  Bool_t inside_bound[4]={kFALSE,kFALSE,kFALSE,kFALSE};
+  Bool_t inside_bound[4][MaxNClus];
   for(Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ) {	 
+    fPlanes[ip]->SetNumberClusters(fNClust[ip]);
     for(Int_t ic = 0; ic <fNClust[ip] ; ic++ ) {
       fClustPos[ip][ic]=fClustPos[ip][ic]/fClustSize[ip][ic];
-      inside_bound[ip] = fClustPos[ip][ic]>=PadPosLo[ip] &&  fClustPos[ip][ic]<=PadPosHi[ip];
-      //cout << "plane = " << ip+1 << " Cluster = " << ic+1 << " size = " << fClustSize[ip][ic]<< " pos = " << fClustPos[ip][ic] << " inside = " << inside_bound[ip] << " lo = " << PadPosLo[ip]<< " hi = " << PadPosHi[ip]<< endl;
+      fPlanes[ip]->SetCluster(ic,fClustPos[ip][ic]);
+      fPlanes[ip]->SetClusterSize(ic,fClustSize[ip][ic]);
+     inside_bound[ip][ic] = fClustPos[ip][ic]>=PadPosLo[ip] &&  fClustPos[ip][ic]<=PadPosHi[ip];
+      if (efftest_debug) cout << "plane = " << ip+1 << " Cluster = " << ic+1 << " size = " << fClustSize[ip][ic]<< " pos = " << fClustPos[ip][ic] << " inside = " << inside_bound[ip][ic] << " lo = " << PadPosLo[ip]<< " hi = " << PadPosHi[ip]<< endl;
     }
   }
   //
-  Int_t good_for_track_test[4]={0,0,0,0};
-  Int_t sum_good_track_test=0;
+  Int_t MaxClusterSize=3;
+  Int_t good_for_track_test[4][MaxNClus];
+  Int_t sum_good_track_test[4]={0,0,0,0};
+  Int_t num_good_plane_hit=0;
   for(Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ) {
-    if (fNClust[ip]==1 && inside_bound[ip] && fClustSize[ip][0]<=2) good_for_track_test[ip]=1;
-    //cout << " good for track = " << good_for_track_test[ip] << endl;
-    sum_good_track_test+=good_for_track_test[ip];
+    for(Int_t ic = 0; ic <fNClust[ip] ; ic++ ) {
+      if (inside_bound[ip][ic] && fClustSize[ip][ic]<=MaxClusterSize) {
+         fPlanes[ip]->SetClusterFlag(ic,1.);
+         good_for_track_test[ip][ic]=1;
+	  sum_good_track_test[ip]++;
+	  if (sum_good_track_test[ip]==1) num_good_plane_hit++;
+      } else {
+           good_for_track_test[ip][ic]=0;
+     }
+      if (efftest_debug) cout << " ip " << ip+1 << " clus = " << ic << " good for track = " << good_for_track_test[ip][ic] << endl;
+    }
+    if (efftest_debug) cout << " ip = " << ip+1 << "  sum_good_track_test = " << sum_good_track_test[ip] << endl;
   }	 
+  if (efftest_debug) cout << " number of planes hits = " << num_good_plane_hit << endl;
   //
-  Double_t trackeff_scint_ydiff_max= 10. ;
-  Double_t trackeff_scint_xdiff_max= 10. ;
   Bool_t xdiffTest=kFALSE;
   Bool_t ydiffTest=kFALSE;
   fGoodScinHits = 0;
-  if (fTrackEffTestNScinPlanes == 4) {
-    if (fTrackEffTestNScinPlanes==sum_good_track_test) {
-      xdiffTest= TMath::Abs(fClustPos[0][0]-fClustPos[2][0])<trackeff_scint_xdiff_max;
-      ydiffTest= TMath::Abs(fClustPos[1][0]-fClustPos[3][0])<trackeff_scint_ydiff_max;
-      if (xdiffTest && ydiffTest) fGoodScinHits = 1;
+  if (efftest_debug) cout << " fTrackEffTestNScinPlanes = " << fTrackEffTestNScinPlanes << endl;
+  if ( (fTrackEffTestNScinPlanes == 4 || fTrackEffTestNScinPlanes == 3) && num_good_plane_hit==4) {
+    
+    // check for matching clusters in the X planes assumed to be planes 0 and 2
+    for(Int_t ic0 = 0; ic0 <fNClust[0] ; ic0++ ) {
+    for(Int_t ic2 = 0; ic2 <fNClust[2] ; ic2++ ) {
+      if (good_for_track_test[0][ic0] && good_for_track_test[2][ic2]) {
+           Double_t x1_proj = fClustPos[0][ic0]*(1+fRatio_xpfp_to_xfp*(fPlanes[2]->GetZpos()-fPlanes[0]->GetZpos())); // project X1 to X2 Z position
+           xdiffTest= TMath::Abs(x1_proj-fClustPos[2][ic2])<trackeff_scint_xdiff_max;
+          if (xdiffTest) fPlanes[0]->SetClusterUsedFlag(ic0,1.);
+          if (xdiffTest) fPlanes[2]->SetClusterUsedFlag(ic2,1.);
+      }
     }
+    }
+    // check for matching clusters in the Y planes assumed to be planes 1 and 3
+    for(Int_t ic1 = 0; ic1 <fNClust[1] ; ic1++ ) {
+    for(Int_t ic3 = 0; ic3 <fNClust[3] ; ic3++ ) {
+       if (good_for_track_test[1][ic1] && good_for_track_test[3][ic3]) {
+           ydiffTest= TMath::Abs(fClustPos[1][ic1]-fClustPos[3][ic3])<trackeff_scint_ydiff_max;
+          if (ydiffTest) fPlanes[1]->SetClusterUsedFlag(ic1,1.);
+          if (ydiffTest) fPlanes[3]->SetClusterUsedFlag(ic3,1.);
+       }
+    }
+    }
+    if (xdiffTest && ydiffTest) fGoodScinHits = 1;
+    if (efftest_debug) cout << " 4 good planes  xdiff = " << xdiffTest << " ydiff = " <<  ydiffTest << endl;
   }
   //
-  if (fTrackEffTestNScinPlanes == 3) {
-    if (fTrackEffTestNScinPlanes==sum_good_track_test) {
-      if(good_for_track_test[0]==1&&good_for_track_test[2]==1) {
-	xdiffTest= TMath::Abs(fClustPos[0][0]-fClustPos[2][0])<trackeff_scint_xdiff_max;
-	ydiffTest=kTRUE;
-      }
-      if (good_for_track_test[1]==1&&good_for_track_test[3]==1) {
-	xdiffTest=kTRUE;
-	ydiffTest= TMath::Abs(fClustPos[1][0]-fClustPos[3][0])<trackeff_scint_ydiff_max;
-      }
-      if (xdiffTest && ydiffTest) fGoodScinHits = 1;
+  if (fTrackEffTestNScinPlanes == 3 && num_good_plane_hit==3) {
+    xdiffTest=kFALSE;
+    ydiffTest=kFALSE;
+    // Check if two X planes hit
+    if (sum_good_track_test[0]>0&&sum_good_track_test[2]>0) {
+       for(Int_t ic0 = 0; ic0 <fNClust[0] ; ic0++ ) {
+       for(Int_t ic2 = 0; ic2 <fNClust[2] ; ic2++ ) {
+         if (good_for_track_test[0][ic0] && good_for_track_test[2][ic2]) {
+          xdiffTest= TMath::Abs(fClustPos[0][ic0]-fClustPos[2][ic2])<trackeff_scint_xdiff_max;
+         }
+       }
+       }
+      ydiffTest = kTRUE;
     }
-    if (sum_good_track_test==4) {
-      xdiffTest= TMath::Abs(fClustPos[0][0]-fClustPos[2][0])<trackeff_scint_xdiff_max;
-      ydiffTest= TMath::Abs(fClustPos[1][0]-fClustPos[3][0])<trackeff_scint_ydiff_max;
-      if (xdiffTest && ydiffTest) fGoodScinHits = 1;
+    // Check if two Y planes hit
+    if ((sum_good_track_test[1]>0||sum_good_track_test[3]>0)) {
+    for(Int_t ic1 = 0; ic1 <fNClust[1] ; ic1++ ) {
+    for(Int_t ic3 = 0; ic3 <fNClust[3] ; ic3++ ) {
+       if (good_for_track_test[1][ic1] && good_for_track_test[3][ic3]) {
+           ydiffTest= TMath::Abs(fClustPos[1][ic1]-fClustPos[3][ic3])<trackeff_scint_ydiff_max;
+       }
     }
+      xdiffTest = kTRUE;
+    }
+    }  
+     if (xdiffTest && ydiffTest) fGoodScinHits = 1;
+    if (efftest_debug) cout << " 3 good planes  xdiff = " << xdiffTest << " ydiff = " <<  ydiffTest << endl;
   }
-  //       
-  //	cout << " good scin = " << fGoodScinHits << " " << sum_good_track_test << " " << xdiffTest  << " " << ydiffTest<< endl;
-  //cout << " ************" << endl;
+  if (efftest_debug) cout << " ************" << endl;
   //
 }
 //
