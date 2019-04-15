@@ -8,6 +8,7 @@ The THcHodoscope class instatiates one of these objects per plane.
 */
 #include "TMath.h"
 #include "THcScintillatorPlane.h"
+#include "THcScintPlaneCluster.h"
 #include "TClonesArray.h"
 #include "THcSignalHit.h"
 #include "THcHodoHit.h"
@@ -34,7 +35,7 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
 					    const Int_t planenum,
 					    THaDetectorBase* parent )
 : THaSubDetector(name,description,parent),
-  fParentHitList(0), frPosAdcErrorFlag(0), frNegAdcErrorFlag(0),
+  fParentHitList(0), fCluster(0),frPosAdcErrorFlag(0), frNegAdcErrorFlag(0),
   frPosTDCHits(0), frNegTDCHits(0), frPosADCHits(0), frNegADCHits(0),
   frPosADCSums(0), frNegADCSums(0), frPosADCPeds(0), frNegADCPeds(0),
   fHodoHits(0), frPosTdcTimeRaw(0), frPosAdcPedRaw(0),
@@ -60,6 +61,8 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
 {
   // Normal constructor with name and description
   fHodoHits = new TClonesArray("THcHodoHit",16);
+
+  fCluster = new TClonesArray("THcScintPlaneCluster", 10);
 
   frPosAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
   frNegAdcErrorFlag = new TClonesArray("THcSignalHit", 16);
@@ -97,6 +100,7 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   frNegAdcPulseAmp  = new TClonesArray("THcSignalHit", 16);
   frNegAdcPulseTime = new TClonesArray("THcSignalHit", 16);
 
+
   fPlaneNum = planenum;
   fTotPlanes = planenum;
   fNScinHits = 0;
@@ -110,6 +114,8 @@ THcScintillatorPlane::~THcScintillatorPlane()
     RemoveVariables();
   delete  frPosAdcErrorFlag; frPosAdcErrorFlag = NULL;
   delete  frNegAdcErrorFlag; frNegAdcErrorFlag = NULL;
+
+  delete  fCluster; fCluster = NULL;
 
   delete fHodoHits;
   delete frPosTDCHits;
@@ -384,6 +390,7 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   // Create arrays to hold results here
   InitializePedestals();
 
+
   fNumGoodPosAdcHits     = vector<Int_t> (fNelem, 0.0);
   fNumGoodNegAdcHits     = vector<Int_t> (fNelem, 0.0);
   fNumGoodPosTdcHits     = vector<Int_t> (fNelem, 0.0);
@@ -526,7 +533,12 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     {"DiffDisTrackCorr",   "TW Corrected Dist Difference between track and scintillator position (cm)", "fGoodDiffDistTrack"},
     {"TrackXPos",   "Track X position at plane (cm)", "fTrackXPosition"},
     {"TrackYPos",   "Track Y position at plane (cm)", "fTrackYPosition"},
-    //{"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
+    {"NumClus",   "Number of clusters", "fNumberClusters"},
+    {"Clus.Pos",   "Position of each paddle clusters", "fCluster.THcScintPlaneCluster.GetClusterPosition()"},
+    {"Clus.Size",   "Size of each paddle clusters", "fCluster.THcScintPlaneCluster.GetClusterSize()"},
+    {"Clus.Flag",   "Flag of each paddle clusters", "fCluster.THcScintPlaneCluster.GetClusterFlag()"},
+    {"Clus.UsedFlag",   "USed Flag of each paddle clusters", "fCluster.THcScintPlaneCluster.GetClusterUsedFlag()"},
+   //{"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
     { 0 }
   };
 
@@ -542,6 +554,8 @@ void THcScintillatorPlane::Clear( Option_t* )
    */
   //cout << " Calling THcScintillatorPlane::Clear " << GetName() << endl;
   // Clears the hit lists
+  fCluster->Clear();
+
   frPosAdcErrorFlag->Clear();
   frNegAdcErrorFlag->Clear();
 
@@ -574,6 +588,7 @@ void THcScintillatorPlane::Clear( Option_t* )
   frNegAdcPulseInt->Clear();
   frNegAdcPulseAmp->Clear();
   frNegAdcPulseTime->Clear();
+
 
   //Clear occupancies
   for (UInt_t ielem = 0; ielem < fNumGoodPosAdcHits.size(); ielem++)
@@ -629,6 +644,7 @@ void THcScintillatorPlane::Clear( Option_t* )
   fHitDistance = kBig;
   fTrackXPosition = kBig;
   fTrackYPosition = kBig;
+  fNumberClusters=0;
 }
 
 //_____________________________________________________________________________
@@ -724,7 +740,6 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frNegAdcPulseInt->Clear();
   frNegAdcPulseAmp->Clear();
   frNegAdcPulseTime->Clear();
-
   //stripped
   fNScinHits=0;
 
@@ -1030,7 +1045,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       }
 
       // Do corrections if valid TDC on both ends of bar
-      if(btdcraw_pos && btdcraw_neg && badcraw_pos && badcraw_neg) {
+      if( (btdcraw_pos && btdcraw_neg) && (badcraw_pos && badcraw_neg) ) {
 	// Do the pulse height correction to the time.  (Position dependent corrections later)
 	Double_t timec_pos, timec_neg;
 	if(fTofUsingInvAdc) {

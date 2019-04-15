@@ -148,7 +148,7 @@ protected:
 
   TH1F *hTime;
   // Calibration
-
+  Double_t fRatio_xpfp_to_xfp;
   // Per-event data
   Bool_t fSHMS;
   Bool_t fGoodStartTime;
