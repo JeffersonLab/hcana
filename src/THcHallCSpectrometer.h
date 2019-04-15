@@ -86,6 +86,7 @@ protected:
   Double_t     fPruneFpTime;
   Double_t     fPruneNPMT;
   Double_t     fSatCorr;
+  Double_t     fPruneSelect;
 
   Int_t        fGoodTrack;
   Int_t        fSelUsingScin;
