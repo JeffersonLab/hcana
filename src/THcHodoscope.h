@@ -148,7 +148,9 @@ protected:
 
   TH1F *hTime;
   // Calibration
-
+  Double_t fRatio_xpfp_to_xfp;
+  Double_t trackeff_scint_ydiff_max ;
+  Double_t trackeff_scint_xdiff_max ;
   // Per-event data
   Bool_t fSHMS;
   Bool_t fGoodStartTime;
