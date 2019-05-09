@@ -657,7 +657,11 @@ Int_t THcParmList::ReadArray(const char* attrC, T* array, Int_t size)
   }
   Int_t sz = var->GetLen();
   const void *vp = var->GetValuePointer();
-  if(size != sz) {
+  if(size > sz) {
+    cout << "*** ERROR: requested " << size << " elements of " << attrC <<
+      " which has only " << sz << " elements" << endl;
+    exit(EXIT_FAILURE);
+  } else if(size < sz) {
     cout << "*** WARNING: requested " << size << " elements of " << attrC <<
       " which has length " << sz << endl;
   }
