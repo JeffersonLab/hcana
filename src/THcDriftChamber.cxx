@@ -1194,7 +1194,7 @@ void THcDriftChamber::LeftRight()
 	  iswhit <<= 1;
 	}
       }
-      if (nplaneshit >= fNPlanes-1) {
+      if ( (nplaneshit >= fNPlanes-1) || (nplaneshit >= fNPlanes-2 && !fHMSStyleChambers)) {
 	Double_t chi2;
 	chi2 = FindStub(nhits, sp,plane_list, bitpat, plusminus, stub);
 	if (fdebugstubchisq) cout << " pmloop = " << pmloop << " chi2 = " << chi2 << endl;
