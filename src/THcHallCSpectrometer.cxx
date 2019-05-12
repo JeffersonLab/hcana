@@ -563,11 +563,15 @@ Int_t THcHallCSpectrometer::TrackCalc()
 {
   if( fNtracks > 0 ) {
     Int_t hit_gold_track=0; // find track with index =0 which is best track
+    Int_t hit_dc_track=1; // 
     for (Int_t itrack = 0; itrack < fNtracks; itrack++ ){
       THaTrack* aTrack = static_cast<THaTrack*>( fTracks->At(itrack) );
-      if (aTrack->GetIndex()==0) hit_gold_track=itrack;  
+      if (aTrack->GetIndex()==0) {
+	hit_gold_track=itrack;
+        hit_dc_track = aTrack->GetTrkNum();
+      }  
     }
-    fDC->SetFocalPlaneBestTrack(hit_gold_track);
+    fDC->SetFocalPlaneBestTrack(hit_dc_track-1);
     fGoldenTrack = static_cast<THaTrack*>( fTracks->At(hit_gold_track) );
     fTrkIfo      = *fGoldenTrack;
     fTrk         = fGoldenTrack;
