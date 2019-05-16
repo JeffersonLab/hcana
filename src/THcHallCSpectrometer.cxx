@@ -1115,10 +1115,10 @@ Bool_t THcHallCSpectrometer::InsideDipoleExitWindow(Double_t x_fp, Double_t xp_f
 //
 void THcHallCSpectrometer::SetSHMSDipoleExitWindow() {
     fDipoleExitWindowZpos=-307.;
-    const int numcirpt=12;
+    static const int numcirpt=12;
     Double_t angstep=180./numcirpt;
     Double_t ang;
-    const int numpt=2*numcirpt+4;
+    static const int numpt=2*numcirpt+4;
     Double_t test_offset = 2.;
     Double_t crad=23.81; // radius of semicircle
     Double_t voffset= crad-26.035+test_offset;
@@ -1158,7 +1158,7 @@ void THcHallCSpectrometer::SetHMSDipoleExitWindow() {
     fDipoleExitWindowZpos=-147.48;
     Double_t xpipe_offset = 2.8;
     Double_t ypipe_offset = 0.0;
-    const Int_t nctot=20;
+    static const Int_t nctot=20;
     Double_t angstep=TMath::Pi()*2/nctot;
     Double_t ang;
     Double_t pipe_rad=46.507;
