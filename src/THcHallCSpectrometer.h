@@ -24,6 +24,7 @@
 #include "THcDriftChamberPlane.h"
 #include "THcDriftChamber.h"
 #include "TMath.h"
+#include "TCutG.h"
 
 #include "THaSubDetector.h"
 #include "TClonesArray.h"
@@ -68,13 +69,19 @@ public:
   virtual Int_t GetNumTypes() { return eventtypes.size(); };
   virtual Bool_t IsPresent() {return fPresent;};
 
+  Bool_t InsideDipoleExitWindow(Double_t x_fp, Double_t xp_fp, Double_t y_fp, Double_t yp_fp);
 
 protected:
   void InitializeReconstruction();
 
-  //  Bool_t*      fKeep;
+  void SetSHMSDipoleExitWindow();
+  void SetHMSDipoleExitWindow();
+  TCutG *fDipoleExitWindowCutG;
+  Double_t fDipoleExitWindowZpos;
+ //  Bool_t*      fKeep;
   //  Int_t*       fReject;
 
+  Double_t     fPruneDipoleExit;
   Double_t     fPartMass;
   Double_t     fPruneXp;
   Double_t     fPruneYp;

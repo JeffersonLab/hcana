@@ -275,10 +275,12 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
     {"prune_chibeta",         &fPruneChiBeta,          kDouble,         0,  1},
     {"prune_npmt",            &fPruneNPMT,           kDouble,         0,  1},
     {"prune_fptime",          &fPruneFpTime,             kDouble,         0,  1},
+    {"prune_DipoleExit",          &fPruneDipoleExit,             kDouble,         0,  1},
     {0}
   };
 
   // Default values
+  fPruneDipoleExit=0;
   fSelUsingScin = 0;
   fSelUsingPrune = 0;
   fPruneXp = .2;
@@ -295,6 +297,8 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   fMispointing_x=999.;
   fMispointing_y=999.;
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
+  if (prefix[0]=='h') SetHMSDipoleExitWindow();
+  if (prefix[0]=='p') SetSHMSDipoleExitWindow();
  
   //  mispointing in transport system y is horizontal and +x is vertical down
   if (fMispointing_y == 999.) {
@@ -862,6 +866,32 @@ Int_t THcHallCSpectrometer::BestTrackUsingPrune()
     PruneSelect++;
     if (nGood==1 && fPruneSelect ==0 && fNtracks>1) fPruneSelect=PruneSelect;
 
+   // !     Prune on dipole exit
+    nGood = 0;
+    for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
+      Double_t xfp=testTracks[ptrack]->GetX();
+      Double_t yfp=testTracks[ptrack]->GetY();
+      Double_t xpfp=testTracks[ptrack]->GetTheta();
+       Double_t ypfp=testTracks[ptrack]->GetPhi();
+       if ( fPruneDipoleExit==1 && InsideDipoleExitWindow(xfp,xpfp,yfp,ypfp) && ( keep[ptrack] ) ){
+	nGood ++;
+      }
+    }
+    if (nGood > 0 ) {
+      for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
+      Double_t xfp=testTracks[ptrack]->GetX();
+      Double_t yfp=testTracks[ptrack]->GetY();
+      Double_t xpfp=testTracks[ptrack]->GetTheta();
+       Double_t ypfp=testTracks[ptrack]->GetPhi();
+	if (!InsideDipoleExitWindow(xfp,xpfp,yfp,ypfp)  ){
+	  keep[ptrack] = kFALSE;
+	  reject[ptrack] += 30;
+	}
+      }
+    }
+    PruneSelect++;
+    if (nGood==1 && fPruneSelect ==0 && fNtracks>1) fPruneSelect=PruneSelect;
+
     // !     Prune on beta
     nGood = 0;
     for (Int_t ptrack = 0; ptrack < fNtracks; ptrack++ ){
@@ -1073,6 +1103,75 @@ Bool_t THcHallCSpectrometer::IsMyEvent(Int_t evtype) const
   }
 
   return kFALSE;
+}
+//
+Bool_t THcHallCSpectrometer::InsideDipoleExitWindow(Double_t x_fp, Double_t xp_fp, Double_t y_fp, Double_t yp_fp) {
+  Bool_t inside=kTRUE;
+  Double_t xdip = x_fp + xp_fp*fDipoleExitWindowZpos;
+  Double_t ydip = y_fp + yp_fp*fDipoleExitWindowZpos;
+  inside = fDipoleExitWindowCutG->IsInside(xdip,ydip);
+  return inside;
+}
+//
+void THcHallCSpectrometer::SetSHMSDipoleExitWindow() {
+    fDipoleExitWindowZpos=-307.;
+    const int numcirpt=12;
+    Double_t angstep=180./numcirpt;
+    Double_t ang;
+    const int numpt=2*numcirpt+4;
+    Double_t test_offset = 2.;
+    Double_t crad=23.81; // radius of semicircle
+    Double_t voffset= crad-26.035+test_offset;
+    Double_t hwid=11.549/2.;
+    Double_t xwin[numpt]; // vertical
+    Double_t ywin[numpt]; // horizontal
+    Int_t ctpt=0;
+    xwin[ctpt]= crad+voffset ;
+    ywin[ctpt]= hwid;
+    xwin[numpt-1]= crad+voffset ;
+    ywin[numpt-1]= hwid;
+    for (int i=0 ; i < numcirpt ; i++) {
+    ctpt++;
+    ang = (90.-(i+1)*angstep)*(3.14159/180.);
+    xwin[ctpt]= crad*TMath::Sin(ang)+voffset ;
+    ywin[ctpt]= hwid+crad*TMath::Cos(ang);
+    }
+    ctpt++;
+    xwin[ctpt]= -crad+voffset ;
+    ywin[ctpt]= hwid;
+    ctpt++;
+    xwin[ctpt]= -crad+voffset ;
+    ywin[ctpt]= -hwid;
+     for (int i=0 ; i < numcirpt ; i++) {
+    ctpt++;
+    ang = (-90.+(i+1)*angstep)*(3.14159/180.);
+    xwin[ctpt]= crad*TMath::Sin(ang)+voffset ;
+    ywin[ctpt]= -hwid-crad*TMath::Cos(ang);
+    }
+    for (Int_t nn=0;nn<numpt;nn++) {
+       cout << " shms " << nn << " " << xwin[nn] << " " << ywin[nn] << endl; 
+    }
+    fDipoleExitWindowCutG = new TCutG("shms_exit_win",numpt,xwin,ywin);
+ }
+//
+void THcHallCSpectrometer::SetHMSDipoleExitWindow() {
+    fDipoleExitWindowZpos=-147.48;
+    Double_t xpipe_offset = 2.8;
+    Double_t ypipe_offset = 0.0;
+    const Int_t nctot=20;
+    Double_t angstep=TMath::Pi()*2/nctot;
+    Double_t ang;
+    Double_t pipe_rad=46.507;
+    Double_t xwin[nctot]; // vertical
+    Double_t ywin[nctot]; // horizontal
+    for (Int_t np=0;np<nctot;np++) {
+      ang=np*angstep;
+     xwin[np]= pipe_rad*TMath::Sin(ang)+xpipe_offset ;
+     ywin[np]= pipe_rad*TMath::Cos(ang)+ypipe_offset;
+     //      cout << " hms " << np << " " << xwin[np] << " " << ywin[np] << endl; 
+   }
+    fDipoleExitWindowCutG = new TCutG("hms_exit_win",nctot,xwin,ywin);
+
 }
 
 //_____________________________________________________________________________
