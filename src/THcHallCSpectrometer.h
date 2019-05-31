@@ -68,13 +68,19 @@ public:
   virtual Int_t GetNumTypes() { return eventtypes.size(); };
   virtual Bool_t IsPresent() {return fPresent;};
 
+  Bool_t InsideDipoleExitWindow(Double_t x_fp, Double_t xp_fp, Double_t y_fp, Double_t yp_fp);
 
 protected:
   void InitializeReconstruction();
 
-  //  Bool_t*      fKeep;
+  Bool_t SHMSDipoleExitWindow(Double_t x_dip, Double_t y_dip);
+  Bool_t HMSDipoleExitWindow(Double_t x_dip, Double_t y_dip);
+  Bool_t fUseSHMSDipoleExitWindow;
+  Bool_t fUseHMSDipoleExitWindow;
+ //  Bool_t*      fKeep;
   //  Int_t*       fReject;
 
+  Double_t     fPruneDipoleExit;
   Double_t     fPartMass;
   Double_t     fPruneXp;
   Double_t     fPruneYp;

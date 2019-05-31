@@ -27,6 +27,7 @@ the number of parameters per plane.
 #include "TMath.h"
 #include "TVectorD.h"
 #include "THaApparatus.h"
+#include "THcHallCSpectrometer.h"
 
 #include <cstring>
 #include <cstdio>
@@ -413,6 +414,7 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "chisq", "chisq/dof (golden track) ", "fChisq_best"},
     { "sp1_id", " (golden track) ", "fSp1_ID_best"},
     { "sp2_id", " (golden track) ", "fSp2_ID_best"},
+    { "InsideDipoleExit", " ","fInSideDipoleExit_best"},
     { "gtrack_nsp", " Number of space points in golden track ", "fNsp_best"},
     { "residual", "Residuals", "fResiduals"},
     { "residualExclPlane", "Residuals", "fResidualsExclPlane"},
@@ -507,6 +509,7 @@ void THcDC::ClearEvent()
   fYp_fp_best=-10000.;
   fChisq_best=kBig;
   fNsp_best=0;
+  fInSideDipoleExit_best = kTRUE;
   for(UInt_t i=0;i<fNChambers;i++) {
     fChambers[i]->Clear();
   }
@@ -648,6 +651,8 @@ void THcDC::SetFocalPlaneBestTrack(Int_t golden_track_index)
       fY_fp_best=tr1->GetY();
       fXp_fp_best=tr1->GetXP();
       fYp_fp_best=tr1->GetYP();
+      THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+      fInSideDipoleExit_best = app->InsideDipoleExitWindow(fX_fp_best, fXp_fp_best ,fY_fp_best,fYp_fp_best);
       fSp1_ID_best=tr1->GetSp1_ID();
       fSp2_ID_best=tr1->GetSp2_ID();
       fChisq_best=tr1->GetChisq();

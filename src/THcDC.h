@@ -176,6 +176,7 @@ protected:
   Double_t fChisq_best;
   Int_t fSp1_ID_best;
   Int_t fSp2_ID_best;
+  Bool_t fInSideDipoleExit_best;
  // For accumulating statitics for efficiencies
   Int_t fTotEvents;
   Int_t* fNChamHits;
