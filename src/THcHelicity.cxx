@@ -1,10 +1,8 @@
-//*-- Author :    Julie Roche, November 2010
-// this is a modified version of THaGOHelicity.C
 ////////////////////////////////////////////////////////////////////////
 //
 // THcHelicity
 //
-// Helicity of the beam from QWEAK electronics in delayed mode
+// Helicity of the beam in delayed mode using quartets
 //    +1 = plus,  -1 = minus,  0 = unknown
 //
 // Also supports in-time mode with delay = 0
@@ -17,9 +15,11 @@
 #include "THaEvData.h"
 #include "THcGlobals.h"
 #include "THcParmList.h"
+#include "THcHelicityScaler.h"
 #include "TH1F.h"
 #include "TMath.h"
 #include <iostream>
+#include <bitset>
 
 using namespace std;
 
@@ -75,6 +75,21 @@ THaAnalysisObject::EStatus THcHelicity::Init(const TDatime& date) {
 
   fEvNumCheck = 0;
   fDisabled = kFALSE;
+
+  fLastHelpCycle=-1;
+  fQuadPattern[0] = fQuadPattern[1] = fQuadPattern[2] = fQuadPattern[3] = 0;
+  fQuadPattern[4] = fQuadPattern[5] = fQuadPattern[6] = fQuadPattern[7] = 0;
+  fHelperHistory=0;
+  fHelperQuartetHistory=0;
+  fScalerSeed=0;
+  fNBits = 0;
+  lastispos = 0;
+  fLastReportedHelicity = kUnknown;
+  fFixFirstCycle = kFALSE;
+  fHaveQRT = kFALSE;
+  fNQRTProblems = 0;
+  fPeriodCheck = 0.0;
+  fCycle = 0.0;
 
   fStatus = kOK;
   return fStatus;
@@ -175,6 +190,9 @@ Int_t THcHelicity::DefineVariables( EMode mode )
     { "helrep",   "reported helicity for event",           "fReportedHelicity" },
     { "helpred",  "predicted reported helicity for event", "fPredictedHelicity" },
     { "mps", "In MPS blanking period", "fMPS"},
+    { "pcheck", "Period check", "fPeriodCheck"},
+    { "cycle", "Helicity Cycle", "fCycle"},
+    { "qrt", "Last cycle of quartet", "fQrt"},
     { 0 }
   };
   cout << "Calling THcHelicity DefineVarsFromList" << endl;
@@ -242,6 +260,12 @@ void THcHelicity::Clear( Option_t* opt )
 
   return;
 }
+//_____________________________________________________________________________
+void THcHelicity::SetHelicityScaler( THcHelicityScaler *f )
+{
+    fglHelicityScaler = f;
+    fHelicityHistory = fglHelicityScaler->GetHelicityHistoryP();
+}
 
 //_____________________________________________________________________________
 Int_t THcHelicity::Decode( const THaEvData& evdata )
@@ -249,6 +273,7 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 
   // Decode Helicity data.
   // Return 1 if helicity was assigned, 0 if not, <0 if error.
+  evnum = evdata.GetEvNum();
 
   Int_t err = ReadData( evdata ); // from THcHelicityReader class
   if( err ) {
@@ -258,6 +283,22 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 
   fReportedHelicity = (fIsHelp?(fIsHelm?kUnknown:kPlus):(fIsHelm?kMinus:kUnknown));
   fMPS = fIsMPS?1:0;
+  fQrt = fIsQrt?1:0;		// Last of quartet
+
+  if(fglHelicityScaler) {
+    Int_t nhelev = fglHelicityScaler->GetNevents();
+    Int_t ncycles = fglHelicityScaler->GetNcycles();
+    if(nhelev >0) {
+      for(Int_t i=0;i<nhelev;i++) {
+	fScaleQuartet = (fHelicityHistory[i] & 2)!=0;
+	Int_t ispos = fHelicityHistory[i]&1;
+	if(fScaleQuartet) {
+	  fScalerSeed = ((fScalerSeed<<1) | ispos) & 0x3FFFFFFF;
+	}
+      }
+    }
+  }
+  
   if(fHelDelay == 0) {		// If no delay actual=reported (but zero if in MPS)
     fActualHelicity = fIsMPS?kUnknown:fReportedHelicity;
     return 0;
@@ -286,6 +327,8 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
     Int_t missed = 0;
     //    Double_t elapsed_time = (fTITime - fFirstEvTime)/250000000.0;
     if(fIsMPS) {
+      fPeriodCheck = fmod(fTITime/fTIPeriod,1.0);
+      fCycle = (fTITime/fTIPeriod);
       fActualHelicity = kUnknown;
       fPredictedHelicity = kUnknown;
       if(fFoundMPS) {
@@ -313,10 +356,6 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	  //	  cout << "Missed " << missed << " MPSes" << endl;
 	  Int_t newNCycle = fNCycle + missed -1; // How many cycles really missed
 	  Int_t quartets_missed = (newNCycle-fFirstCycle)/4 - (fNCycle-fFirstCycle)/4;
-	  for(Int_t i=0;i<quartets_missed;i++) { // Advance the seeds.
-	    fRingSeed_reported = RanBit30(fRingSeed_reported);
-	    fRingSeed_actual = RanBit30(fRingSeed_actual);
-	  }
 	  int quartetphase = (newNCycle-fFirstCycle)%4;
 	  //	  cout << "  " << fNCycle << " " << newNCycle << " " << fFirstCycle << " " << quartets_missed << " " << quartetphase << endl;
 	  //	  cout << "Cycles " << fNCycle << " " << newNCycle << " " << fFirstCycle 
@@ -326,6 +365,13 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	  // reported helicity.  So we don't fail quartet testing.
 	  // But only do this if we are calibrated.
 	  if(fNBits >= fMAXBIT) {
+
+	    for(Int_t i=0;i<quartets_missed;i++) { // Advance the seeds.
+	      //	      cout << "Advancing seed A " << fNBits << endl;
+	      fRingSeed_reported = RanBit30(fRingSeed_reported);
+	      fRingSeed_actual = RanBit30(fRingSeed_actual);
+	    }
+
 	    fQuartetStartHelicity = (fRingSeed_actual&1)?kPlus:kMinus;
 	    fQuartetStartPredictedHelicity = (fRingSeed_reported&1)?kPlus:kMinus;
 	    fActualHelicity = (quartetphase==0||quartetphase==3)?
@@ -363,37 +409,99 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	}
       }
       if(fIsNewCycle) {
+	//	cout << "Scaler Seed " << bitset<32>(fScalerSeed) << endl;
+	//Int_t predictedScalerSeed = RanBit30(fScalerSeed);
+	//	cout << "Predct Seed " << bitset<32>(predictedScalerSeed) << endl;
+	//cout << "Event Seed  " << bitset<32>(fRingSeed_reported) << endl;
+	  
 	fQuartet[3]=fQuartet[2]; fQuartet[2]=fQuartet[1]; fQuartet[1]=fQuartet[0];
 	fQuartet[0]=fReportedHelicity;
 	fNCycle++;
-	if((fNCycle-fFirstCycle)%4 == 3) {// Test if last in a quartet
-	  if((abs(fQuartet[0]+fQuartet[3]-fQuartet[1]-fQuartet[2])==4)) {
-	    if(!fFoundQuartet) {
-	      //	      fFirstCycle = fNCycle - 3;
-	      cout << "Quartet potentially found, starting at cycle " << fFirstCycle
-		   << " - event " << evdata.GetEvNum() << endl;
-	      fFoundQuartet = kTRUE;
+	//	cout << "XX: " << fNCycle << " " <<  fReportedHelicity << " " << fIsQrt <<endl;
+
+	if(fIsQrt) {		// 
+	  fNLastQuartet = fNQuartet;
+	  fNQuartet = (fNCycle-fFirstCycle)/4;
+	  if(fHaveQRT) {	// Should already have phase set
+	    if((fNCycle-fFirstCycle)%4 != 0) {// Test if first in a quartet
+	      fNQRTProblems++;
+	      if(fNQRTProblems > 10) {
+		cout << "QRT Problem resetting" << endl;
+		fHaveQRT = kFALSE;
+		fFoundQuartet = kFALSE;
+		fNQRTProblems = 0;
+	      } else {
+		cout << "Ignored " << fNQRTProblems << " problems" << endl;
+	      }
+	    } else {
+	      fNQRTProblems = 0;
 	    }
-	  } else {
-	    if(fNCycle - fFirstCycle > 4) { // Not at start of run.  Reset
-	      cout << "Lost quartet sync at cycle " << fNCycle << " - event "
-		   << evdata.GetEvNum() << endl;
-	      cout << fQuartet[0] << " "  << fQuartet[1] << " "  << fQuartet[2] << " "
-		   << fQuartet[3] << endl;
-	      
-	      fFirstCycle += 4*((fNCycle-fFirstCycle)/4); // Update, but don't change phase
-	    }
-	    fFoundQuartet = kFALSE;
+	  }
+	  if(!fHaveQRT) {
+	    fHaveQRT = kTRUE;
+	    fFoundQuartet = kTRUE;
+	    
+	    fFirstCycle = fNCycle; //
+	    fNQuartet = (fNCycle-fFirstCycle)/4;
+	    fNLastQuartet = fNQuartet - 1; // Make sure LoadHelicity uses
 	    fNBits = 0;
-	    cout << "Searching for first of a quartet at cycle " << " " << fFirstCycle
-		 << " - event " << evdata.GetEvNum() << endl;
-	    cout << fQuartet[0] << " "  << fQuartet[1] << " "  << fQuartet[2] << " "
-		 << fQuartet[3] << endl;
-	    fFirstCycle++;
+	    fNQRTProblems = 0;
+	    cout << "Phase found from QRT signal" << endl;
+	    cout << "fFirstcycle = " << fFirstCycle << endl;
+	  }
+	} else {
+	  if(fHaveQRT) {	// Using qrt signal.
+	    fNLastQuartet = fNQuartet;
+	    fNQuartet = (fNCycle-fFirstCycle)/4;
+	    if((fNCycle-fFirstCycle)%4 == 0) { // Shouldn't happen
+	      fNQRTProblems++;
+	      if(fNQRTProblems > 10) {
+		cout << "Shouldn't happen, cycle=" << fNCycle << "/" << fFirstCycle << endl;
+		fHaveQRT = kFALSE; // False until a new QRT seen
+		fNBits = 0;		       // Reset
+		fNLastQuartet = fNQuartet; // Make sure LoadHelicity does not use
+	      } else {
+		cout << "Ignored " << fNQRTProblems << " problems" << endl;
+	      }
+	    }
+	  } else { 		// Presumable pre qrt signal data
+	    if((fNCycle-fFirstCycle)%4 == 3) {// Test if last in a quartet
+	      if((abs(fQuartet[0]+fQuartet[3]-fQuartet[1]-fQuartet[2])==4)) {
+		if(!fFoundQuartet) {
+		  //	      fFirstCycle = fNCycle - 3;
+		  cout << "Quartet potentially found, starting at cycle " << fFirstCycle
+		       << endl;
+		  fNQuartet = (fNCycle-fFirstCycle)/4;
+		  fNLastQuartet = fNQuartet - 1; // Make sure LoadHelicity uses
+		  fFoundQuartet = kTRUE;
+		}
+	      } else {
+		if(fNCycle - fFirstCycle > 4) { // Not at start of run.  Reset
+		  cout << "Lost quartet sync at cycle " << fNCycle << endl;
+		  cout << fQuartet[0] << " "  << fQuartet[1] << " "  << fQuartet[2] << " "
+		       << fQuartet[3] << endl;
+		  fFirstCycle += 4*((fNCycle-fFirstCycle)/4); // Update, but don't change phase
+		}
+		fFoundQuartet = kFALSE;
+		fNBits = 0;
+		cout << "Searching for first of a quartet at cycle " << " " << fFirstCycle
+		     << endl;
+		cout << fQuartet[0] << " "  << fQuartet[1] << " "  << fQuartet[2] << " "
+		     << fQuartet[3] << endl;
+		fFirstCycle++;
+	      }
+	    } else {
+	      fNLastQuartet = fNQuartet;
+	      fNQuartet = (fNCycle-fFirstCycle)/4;
+	    }
 	  }
 	}
 	// Load the actual helicity.  Calibrate if not calibrated.
 	fActualHelicity = kUnknown;
+	// Here if we know we missed some earlier in the quartet, we need
+	// to make sure we get here and call LoadHelicity for the missing
+	// Cycles, reducing the missed count for each extra loadhelicity
+	// call that we make.
 	LoadHelicity(fReportedHelicity, fNCycle, missed);
 	fLastReportedHelicity = fReportedHelicity;
 	fIsNewCycle = kFALSE;
@@ -433,7 +541,6 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
   fLastActualHelicity = fActualHelicity;
   return 0;
 }
-
 //_____________________________________________________________________________
 Int_t THcHelicity::End( THaRunBase* )
 {
@@ -463,47 +570,66 @@ void THcHelicity::LoadHelicity(Int_t reportedhelicity, Int_t cyclecount, Int_t m
   int quartetphase = (cyclecount-fFirstCycle)%4;
   fnQrt = quartetphase;
 
-  if(missedcycles > 1) {	// If we missed windows
-    if(fNBits< fMAXBIT) {	// and we haven't gotten the seed, start over
-      fNBits = 0;
-      return;
+  //  if(!fFixFirstCycle) {
+    if(fNQuartet - fNLastQuartet > 1) {	// If we missed a quartet
+      if(fNBits< fMAXBIT) {	// and we haven't gotten the seed, start over
+	cout << "fNBits = 0, missedcycles=" << missedcycles <<
+	  "    " << fNLastQuartet << " " << fNQuartet << endl;
+	fNBits = 0;
+	return;
+      }
     }
-  }
+    //  }
   if(!fFoundQuartet) {		// Wait until we have found quad phase before starting
     return;			// to calibrate
   }
-  if(quartetphase == 0) { // Start of a quad
-    if(fNBits < fMAXBIT) {
+  // LoadHelicity is called first event of each cycle.
+  // But only do it's thing if it is first cycle of quartet.
+  // Need to instead have it do it's thing on the first event of a quartet.
+  // But only for seed building.  Current logic is OK once seed is found.
+  if(fNBits < fMAXBIT) {
+    if(fNQuartet != fNLastQuartet) {
+      // Sanity check fNQuartet == fNLastQuartet+1
       if(fNBits == 0) {
 	cout << "Start calibrating at cycle " << cyclecount << endl;
 	fRingSeed_reported = 0;
       }
-      if(fReportedHelicity == kPlus) {
+      // Do phase stuff right here
+      if((fReportedHelicity == kPlus && (quartetphase==0 || quartetphase == 3))
+	 || (fReportedHelicity == kMinus && (quartetphase==1 || quartetphase == 2))) {
 	fRingSeed_reported = ((fRingSeed_reported<<1) | 1) & 0x3FFFFFFF;
+	//	cout << "                 " << fNQuartet << " 1" << endl;
       } else {
 	fRingSeed_reported = (fRingSeed_reported<<1) & 0x3FFFFFFF;
+	//	cout << "                 " << fNQuartet << " 0" << endl;
       }
       fNBits++;
       if(fReportedHelicity == kUnknown) {
 	fNBits = 0;
 	fRingSeed_reported = 0;
       } else if (fNBits==fMAXBIT) {
-	cout << "Seed Found " << hex << fRingSeed_reported << dec << " at cycle " << cyclecount << " with first cycle " << fFirstCycle << endl;
+	cout <<   "Seed Found  " << bitset<32>(fRingSeed_reported) << " at cycle " << cyclecount << " with first cycle " << fFirstCycle << endl;
+	if(fglHelicityScaler) {
+	  cout << "Scaler Seed " << bitset<32>(fScalerSeed) << endl;
+	}
 	Int_t backseed = GetSeed30(fRingSeed_reported);
 	cout << "Seed at cycle " << fFirstCycle << " should be " << hex << backseed << dec << endl;
-      }
-      fActualHelicity = kUnknown;
-    } else if (fNBits >= fMAXBIT) {
-      fRingSeed_reported = RanBit30(fRingSeed_reported);
-      if(fNBits==fMAXBIT) {
+	// Create the "actual seed"
 	fRingSeed_actual = fRingSeed_reported;
 	for(Int_t i=0;i<fHelDelay/4; i++) {
 	  fRingSeed_actual = RanBit30(fRingSeed_actual);
 	}
-	fNBits++;
-      } else {
-	fRingSeed_actual = RanBit30(fRingSeed_actual);
       }
+      fActualHelicity = kUnknown;
+    } // Need to change this to build seed even when not at start of quartet
+  } else {
+    if(quartetphase == 0) {
+      // If quartetphase !=, the seeds will alread have been advanced
+      // except that we won't have made the initial 
+      //      cout << "Advancing seed B " << fNBits << endl;
+      fRingSeed_reported = RanBit30(fRingSeed_reported); 
+      fRingSeed_actual = RanBit30(fRingSeed_actual);
+
       fActualHelicity = (fRingSeed_actual&1)?kPlus:kMinus;
       fPredictedHelicity = (fRingSeed_reported&1)?kPlus:kMinus;
       //      if(fTITime/250000000.0 > 380.0) cout << fTITime/250000000.0 << " " << fNCycle << " " << hex <<
@@ -511,21 +637,18 @@ void THcHelicity::LoadHelicity(Int_t reportedhelicity, Int_t cyclecount, Int_t m
       if(fReportedHelicity != fPredictedHelicity) {
 	cout << "Helicity prediction failed " << fReportedHelicity << " "
 	     << fPredictedHelicity << " " << fActualHelicity << endl;
-	cout << hex << fRingSeed_reported << " " << fRingSeed_actual << dec << endl;
+	cout << bitset<32>(fRingSeed_reported) << " " << bitset<32>(fRingSeed_actual) << endl;
 	fNBits = 0;		// Need to reaquire seed
 	fActualHelicity = kUnknown;
 	fPredictedHelicity = kUnknown;
       }
+      fQuartetStartHelicity = fActualHelicity;
+      fQuartetStartPredictedHelicity = fPredictedHelicity;
     }
-    fQuartetStartHelicity = fActualHelicity;
-    fQuartetStartPredictedHelicity = fPredictedHelicity;
-  } else { 			// Not the beginning of a quad
-    if(fNBits>=fMAXBIT) {
-      fActualHelicity = (quartetphase==0||quartetphase==3)?
-	fQuartetStartHelicity:-fQuartetStartHelicity;
-      fPredictedHelicity = (quartetphase==0||quartetphase==3)?
-	fQuartetStartPredictedHelicity:-fQuartetStartPredictedHelicity;
-    }
+    fActualHelicity = (quartetphase==0||quartetphase==3)?
+      fQuartetStartHelicity:-fQuartetStartHelicity;
+    fPredictedHelicity = (quartetphase==0||quartetphase==3)?
+      fQuartetStartPredictedHelicity:-fQuartetStartPredictedHelicity;
   }
   return;
 }

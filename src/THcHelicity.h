@@ -13,6 +13,7 @@
 #include "THcHelicityReader.h"
 
 class TH1F;
+class THcHelicityScaler;
 
 class THcHelicity : public THaHelicityDet, public THcHelicityReader {
 
@@ -31,7 +32,7 @@ public:
   virtual Int_t  Decode( const THaEvData& evdata );
   virtual Int_t  End( THaRunBase* r=0 );
   virtual void   SetDebug( Int_t level );
-  virtual Bool_t HelicityValid() const { return fValidHel; }
+  virtual void SetHelicityScaler(THcHelicityScaler *f);
 
   void PrintEvent(Int_t evtnum);
 
@@ -47,9 +48,13 @@ protected:
   // Fixed Parameters
   Int_t fRingSeed_reported_initial;
   Int_t fFirstCycle;
+  Bool_t fFixFirstCycle;
   Double_t fFreq;
 
   Double_t fTIPeriod;		// Reversal period in TI time units
+
+  Double_t fPeriodCheck;
+  Double_t fCycle;
 
   Bool_t fFirstEvProcessed;
   Int_t fLastReportedHelicity;
@@ -66,9 +71,13 @@ protected:
   Bool_t fFoundQuartet;		// True if quartet phase probably found.
   Bool_t fIsNewCycle;
   Int_t fNCycle;		// Count of # of helicity cycles
+  Int_t fNQuartet;		// Quartet count
+  Int_t fNLastQuartet;
   Int_t fQuartet[4];		// For finding and checking quartet pattern
   Int_t fNBits;
   Int_t fnQrt;			// Position in quartet
+  Bool_t fHaveQRT;		// QRT signal exists
+  Int_t fNQRTProblems;
 
   Int_t fRingSeed_reported;
   Int_t fRingSeed_actual;
@@ -85,11 +94,7 @@ protected:
 
 
   Int_t fQrt;
-  Int_t fTSettle;
-  Bool_t fValidHel;
 
-  Int_t fHelicityLastTIR;
-  Int_t fPatternLastTIR;
   void SetErrorCode(Int_t error);
   Double_t fErrorCode;
  
@@ -103,6 +108,20 @@ protected:
 
   virtual Int_t DefineVariables( EMode mode = kDefine );
   virtual Int_t ReadDatabase( const TDatime& date );
+
+  THcHelicityScaler *fglHelicityScaler;
+  Int_t* fHelicityHistory;
+  Int_t fLastHelpCycle;
+  Int_t fScaleQuartet;
+  Int_t fQuadPattern[8];
+  Int_t fHelperHistory;
+  Int_t fHelperQuartetHistory;
+  Int_t fScalerSeed;
+  Int_t lastispos;
+  Int_t evnum;
+  Int_t fThisScaleHel;
+  Int_t fLastScaleHel;
+  Int_t fLastLastScaleHel;
 
   ClassDef(THcHelicity,0)   // Beam helicity from QWEAK electronics in delayed mode
 
