@@ -56,10 +56,12 @@ Int_t THcHelicityReader::ReadDatabase( const char* /*dbfilename*/,
 
   // Eventually get these from the parameter file
 
+  // SHMS settings see https://logbooks.jlab.org/entry/3614445
+  cout << "THcHelicityReader: Helicity information from ROC 2 (SHMS)" << endl;
   SetROCinfo(kHel,2,14,9);
   SetROCinfo(kHelm,2,14,8);
   SetROCinfo(kMPS,2,14,10);
-  SetROCinfo(kQrt,2,14,7);
+  SetROCinfo(kQrt,2,14,7);	// Starting about run 5818
   SetROCinfo(kTime,2,21,2);
   
   fADCThreshold = 8000;
@@ -115,6 +117,17 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   if( !fHaveROCs ) {
     ::Error( here, "ROC data (detector map) not properly set up." );
     return -1;
+  }
+
+  // Check if ROC info is correct
+  if(!evdata.GetModule(fROCinfo[kTime].roc, fROCinfo[kTime].slot)) {
+    cout << "THcHelicityReader: ROC 2 not found" << endl;
+    cout << "Changing to ROC 1 (HMS)" << endl;
+    SetROCinfo(kHel,1,18,9);
+    SetROCinfo(kHelm,1,18,8);
+    SetROCinfo(kMPS,1,18,10);
+    SetROCinfo(kQrt,1,18,7);
+    SetROCinfo(kTime,1,21,2);
   }
 
   // Get the TI Data
@@ -182,8 +195,9 @@ Int_t THcHelicityReader::SetROCinfo( EROC which, Int_t roc,
   fROCinfo[which].slot = slot;
   fROCinfo[which].index  = index;
 
-  cout << "SetROCInfo: " << which << " " << fROCinfo[kHel].roc << " " << fROCinfo[kTime].roc << endl;
-  fHaveROCs = ( fROCinfo[kHel].roc > 0 && fROCinfo[kTime].roc > 0 );
+  cout << "SetROCInfo: " << which << " " << fROCinfo[which].roc << " " << fROCinfo[which].slot <<
+    " " << fROCinfo[which].index << endl;
+  fHaveROCs = (fROCinfo[kHel].roc > 0 && fROCinfo[kTime].roc > 0 && fROCinfo[kMPS].roc);
   
   return 0;
 }
