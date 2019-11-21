@@ -255,7 +255,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
       UInt_t good_hit=999;
           for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
 	    Int_t TestTime=rawAdcHit.GetPulseTimeRaw(thit);
-	    if (TestTime>fAdcTimeWindowMin[cnt]&&TestTime<fAdcTimeWindowMax[cnt]&&good_hit==999) {
+	    if (TestTime>=fAdcTimeWindowMin[cnt]&&TestTime<=fAdcTimeWindowMax[cnt]&&good_hit==999) {
 	      good_hit=thit;
 	    }
 	  }
@@ -276,7 +276,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
       UInt_t good_hit=999;
            for (UInt_t thit=0; thit<rawTdcHit.GetNHits(); ++thit) {
 	    Int_t TestTime= rawTdcHit.GetTimeRaw(thit);
-	    if (TestTime>fTdcTimeWindowMin[cnt]&&TestTime<fTdcTimeWindowMax[cnt]&&good_hit==999) {
+	    if (TestTime>=fTdcTimeWindowMin[cnt]&&TestTime<=fTdcTimeWindowMax[cnt]&&good_hit==999) {
 	      good_hit=thit;
 	    }
 	   }
@@ -334,11 +334,11 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   fTdcTimeWindowMax = new Double_t [fNumTdc];
   for(Int_t ip=0;ip<fNumAdc;ip++) { // Set a large default window
     fAdcTimeWindowMin[ip]=0;
-    fAdcTimeWindowMax[ip]=10000;
+    fAdcTimeWindowMax[ip]=100000;
   }
   for(Int_t ip=0;ip<fNumTdc;ip++) { // Set a large default window
     fTdcTimeWindowMin[ip]=0;
-    fTdcTimeWindowMax[ip]=10000;
+    fTdcTimeWindowMax[ip]=100000;
   }
   DBRequest list2[]={
     {"_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble,     (UInt_t) fNumAdc, 1},
