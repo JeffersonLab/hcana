@@ -894,7 +894,7 @@ void THcShowerArray::FillADC_DynamicPedestal()
       fTotNumAdcHits++;
       fGoodAdcPulseIntRaw.at(npad) = pulseIntRaw;
 
-      if(fGoodAdcPulseIntRaw.at(npad) >  fThresh[npad]) {
+      if(fGoodAdcPulseIntRaw.at(npad) >  fThresh[npad] && fGoodAdcPulseInt.at(npad)==0) {
        fTotNumGoodAdcHits++;
        fGoodAdcPulseInt.at(npad) = pulseInt;
        fE.at(npad) = fGoodAdcPulseInt.at(npad)*fGain[npad];
