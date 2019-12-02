@@ -294,6 +294,27 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	Int_t ispos = fHelicityHistory[i]&1;
 	if(fScaleQuartet) {
 	  fScalerSeed = ((fScalerSeed<<1) | ispos) & 0x3FFFFFFF;
+	  if(fNBits >= fMAXBIT) {
+	    Int_t seedscan = fScalerSeed;
+	    Int_t nbehind;
+	    for(nbehind=0;nbehind<4;nbehind++) {
+	      if(seedscan == fRingSeed_reported) {
+		if(nbehind>1) {
+		  cout << "Scaler seed behind " << nbehind
+		       << " quartets" << endl;
+		  cout << "Ev seed     " << bitset<32>(fRingSeed_reported) <<endl;
+		  cout << "Scaler Seed " << bitset<32>(fScalerSeed) << endl;
+		}
+		break;
+	      }
+	      seedscan = RanBit30(seedscan);
+	    }
+	    if(nbehind>4) {
+	      cout << "Scaler seed does not match" << endl;
+	      cout << "Ev seed     " << bitset<32>(fRingSeed_reported) <<endl;
+	      cout << "Scaler Seed " << bitset<32>(fScalerSeed) << endl;
+	    }
+	  }
 	}
       }
     }
@@ -510,6 +531,7 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	//	     << fPredictedHelicity << " " << fActualHelicity << endl;
       }
       // Ignore until a MPS Is found
+
     } else {			// No MPS found yet
       fActualHelicity = kUnknown;
     }
@@ -608,7 +630,7 @@ void THcHelicity::LoadHelicity(Int_t reportedhelicity, Int_t cyclecount, Int_t m
 	fNBits = 0;
 	fRingSeed_reported = 0;
       } else if (fNBits==fMAXBIT) {
-	cout <<   "Seed Found  " << bitset<32>(fRingSeed_reported) << " at cycle " << cyclecount << " with first cycle " << fFirstCycle << endl;
+	cout <<   "Seed Found    " << bitset<32>(fRingSeed_reported) << " at cycle " << cyclecount << " with first cycle " << fFirstCycle << endl;
 	if(fglHelicityScaler) {
 	  cout << "Scaler Seed " << bitset<32>(fScalerSeed) << endl;
 	}
@@ -619,6 +641,8 @@ void THcHelicity::LoadHelicity(Int_t reportedhelicity, Int_t cyclecount, Int_t m
 	for(Int_t i=0;i<fHelDelay/4; i++) {
 	  fRingSeed_actual = RanBit30(fRingSeed_actual);
 	}
+	fQuartetStartHelicity = (fRingSeed_actual&1)?kPlus:kMinus;
+	fQuartetStartPredictedHelicity = (fRingSeed_reported&1)?kPlus:kMinus;
       }
       fActualHelicity = kUnknown;
     } // Need to change this to build seed even when not at start of quartet
