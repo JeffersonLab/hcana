@@ -91,6 +91,9 @@ THaAnalysisObject::EStatus THcHelicity::Init(const TDatime& date) {
   fPeriodCheck = 0.0;
   fCycle = 0.0;
 
+  fglHelicityScaler = 0;
+  fHelicityHistory = 0;
+
   fStatus = kOK;
   return fStatus;
 }
