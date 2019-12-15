@@ -120,6 +120,7 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   }
 
   // Check if ROC info is correct
+
   if(!evdata.GetModule(fROCinfo[kTime].roc, fROCinfo[kTime].slot)) {
     cout << "THcHelicityReader: ROC 2 not found" << endl;
     cout << "Changing to ROC 1 (HMS)" << endl;
@@ -136,6 +137,19 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   UInt_t titime = (UInt_t) evdata.GetData(fROCinfo[kTime].roc,
 					  fROCinfo[kTime].slot,
 					  fROCinfo[kTime].index, 0);
+  // Check again if ROC info is correct
+  if(titime == 0 && fTITime_last==0) {
+    cout << "THcHelicityReader: ROC 2 not found" << endl;
+    cout << "Changing to ROC 1 (HMS)" << endl;
+    SetROCinfo(kHel,1,18,9);
+    SetROCinfo(kHelm,1,18,8);
+    SetROCinfo(kMPS,1,18,10);
+    SetROCinfo(kQrt,1,18,7);
+    SetROCinfo(kTime,1,21,2);
+    titime = (UInt_t) evdata.GetData(fROCinfo[kTime].roc,
+					  fROCinfo[kTime].slot,
+					  fROCinfo[kTime].index, 0);
+  }     
   //cout << fTITime_last << " " << titime << endl;
   if(titime < fTITime_last) {
     fTITime_rollovers++;
