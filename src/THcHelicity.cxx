@@ -126,7 +126,7 @@ Int_t THcHelicity::ReadDatabase( const TDatime& date )
   fRingSeed_reported_initial = 0; // Initial see that should predict reported
                                 // helicity of first quartet.
   fFirstCycle = -1; // First Cycle that starts a quad (0 to 3)
-#  fFreq = 29.5596;
+  //  fFreq = 29.5596;
   fFreq = 120.0007547169;
   fHelDelay=8;
 
