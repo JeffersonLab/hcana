@@ -289,6 +289,7 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
   fMPS = fIsMPS?1:0;
   fQrt = fIsQrt?1:0;		// Last of quartet
 
+#if 0
   if(fglHelicityScaler) {
     Int_t nhelev = fglHelicityScaler->GetNevents();
     Int_t ncycles = fglHelicityScaler->GetNcycles();
@@ -323,6 +324,7 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
       }
     }
   }
+#endif
   
   if(fHelDelay == 0) {		// If no delay actual=reported (but zero if in MPS)
     fActualHelicity = fIsMPS?kUnknown:fReportedHelicity;
