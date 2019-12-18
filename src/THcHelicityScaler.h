@@ -24,64 +24,77 @@ class THcHelicityScaler : public THaEvtTypeHandler {
 
 public:
 
-   THcHelicityScaler(const char*, const char*);
-   virtual ~THcHelicityScaler();
+  THcHelicityScaler(const char*, const char*);
+  virtual ~THcHelicityScaler();
 
-   Int_t Analyze(THaEvData *evdata);
-   Int_t AnalyzeBuffer(UInt_t *rdata, Bool_t onlysync);
-   Int_t AnalyzeHelicityScaler(UInt_t *p);
+  Int_t Analyze(THaEvData *evdata);
+  Int_t AnalyzeBuffer(UInt_t *rdata);
+  Int_t AnalyzeHelicityScaler(UInt_t *p);
 	
-   virtual EStatus Init( const TDatime& run_time);
-   virtual Int_t   ReadDatabase(const TDatime& date );
-   virtual Int_t End( THaRunBase* r=0 );
+  virtual EStatus Init( const TDatime& run_time);
+  virtual Int_t   ReadDatabase(const TDatime& date );
+  virtual Int_t End( THaRunBase* r=0 );
 
-   virtual void SetUseFirstEvent(Bool_t b = kFALSE) {fUseFirstEvent = b;}
-   virtual void SetDelayedType(int evtype);
-   virtual void SetROC(Int_t roc) {fROC=roc;}
-   virtual void SetBankID(Int_t bankid) {fBankID=bankid;}
-   virtual void SetHelicityDetector(THcHelicity *f) {fglHelicityDetector = f;}
-   virtual Int_t GetNevents() { return fNevents;}
-   virtual Int_t GetNcycles() { return fNcycles;}
-   virtual Int_t GetEvNum() { return evNumber;}
-   virtual Int_t* GetHelicityHistoryP() {return fHelicityHistory;}
+  virtual void SetUseFirstEvent(Bool_t b = kFALSE) {fUseFirstEvent = b;}
+  virtual void SetDelayedType(int evtype);
+  virtual void SetROC(Int_t roc) {fROC=roc;}
+  virtual void SetBankID(Int_t bankid) {fBankID=bankid;}
+  virtual void SetNScalerChannels(Int_t n) {fNScalerChannels = n;}
+  virtual Int_t GetNevents() { return fNTrigsInBuf;}
+  virtual Int_t GetNcycles() { return fNTriggers;}
+  virtual Int_t GetEvNum() { return evNumber;}
+  virtual Int_t* GetHelicityHistoryP() {return fHelicityHistory;}
+  virtual Int_t GetReportedSeed() {return fRingSeed_reported;}
+  virtual Int_t GetReportedActual() {return fRingSeed_actual;}
+  virtual Bool_t IsSeedGood() {return fNBits>=30;}
 
 private:
 
-   static size_t FindNoCase(const std::string& sdata, const std::string& skey);
+  Int_t RanBit30(Int_t ranseed);
+  void MakeParms();
 
-   Int_t fNumBCMs;
-   Double_t *fBCM_Gain;
-   Double_t *fBCM_Offset;
-   Double_t *fBCM_delta_charge;
-   
-   Int_t fROC;
-   UInt_t fBankID;
-   // Helicity Scaler variables
-   Int_t fNevents;		/* # of helicity scaler reads in last event */
-   Int_t fNcycles;
-   Int_t fHelicityHistory[200];
-   //
-   Bool_t fUseFirstEvent;
-   Bool_t fOnlySyncEvents;
-   Bool_t fOnlyBanks;
-   Int_t fDelayedType;
-   Int_t fClockChan;
-   UInt_t fLastClock;
-   Int_t fClockOverflows;
+  UInt_t fBankID;
+  // Helicity Scaler variables
+  Int_t fNTrigsInBuf;		/* # of helicity scaler reads in last event */
+  Int_t fNTriggers;
+  Int_t fFirstCycle;
+  Int_t fHelicityHistory[200];
+  //
+  Bool_t fUseFirstEvent;
+  Int_t fDelayedType;
 
-   std::vector<UInt_t*> fDelayedEvents;
-   std::set<UInt_t> fRocSet;
+  Int_t fRingSeed_reported;
+  Int_t fRingSeed_actual;
+  Int_t fNBits;
 
-   THcHelicityScaler(const THcHelicityScaler& fh);
-   THcHelicityScaler& operator=(const THcHelicityScaler& fh);
+  Int_t fNTriggersPlus;
+  Int_t fNTriggersMinus;
+  Double_t* fHScalers[2];
+  Int_t fGateCount[2];
+  Double_t *fScalerSums;
+  Double_t *fAsymmetry;
+  Double_t *fAsymmetryError;
+  Double_t *fCharge;
+  Double_t *fChargeAsymmetry;
+  Double_t fTime;
+  Double_t fTimeAsymmetry;
+  Double_t fTriggerAsymmetry;
 
-   UInt_t evcount;
-   Double_t evcountR;
-   UInt_t evNumber;
-   Int_t ifound;
-   THcHelicity *fglHelicityDetector;
+  std::vector<UInt_t*> fDelayedEvents;
+  Int_t fROC;
+  Int_t fNScalerChannels;	// Number of scaler channels/event
 
-   ClassDef(THcHelicityScaler,0)  // Scaler Event handler
+  Int_t fNumBCMs;
+  Double_t *fBCM_Gain;
+  Double_t *fBCM_Offset;
+  std::vector <std::string> fBCM_Name;
+
+  THcHelicityScaler(const THcHelicityScaler& fh);
+  THcHelicityScaler& operator=(const THcHelicityScaler& fh);
+
+  UInt_t evNumber;
+
+  ClassDef(THcHelicityScaler,0)  // Scaler Event handler
 
 };
 
