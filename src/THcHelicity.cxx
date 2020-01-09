@@ -32,6 +32,8 @@ THcHelicity::THcHelicity( const char* name, const char* description,
   //  for( Int_t i = 0; i < NHIST; ++i )
   //    fHisto[i] = 0;
   //  memset(fHbits, 0, sizeof(fHbits));
+  fglHelicityScaler = 0;
+  fHelicityHistory = 0;
 }
 
 //_____________________________________________________________________________
@@ -89,10 +91,9 @@ THaAnalysisObject::EStatus THcHelicity::Init(const TDatime& date) {
   fHaveQRT = kFALSE;
   fNQRTProblems = 0;
   fPeriodCheck = 0.0;
+  fPeriodCheckOffset = 0.0;
   fCycle = 0.0;
-
-  fglHelicityScaler = 0;
-  fHelicityHistory = 0;
+  fRecommendedFreq = -1.0;
 
   fStatus = kOK;
   return fStatus;
@@ -126,6 +127,8 @@ Int_t THcHelicity::ReadDatabase( const TDatime& date )
   fRingSeed_reported_initial = 0; // Initial see that should predict reported
                                 // helicity of first quartet.
   fFirstCycle = -1; // First Cycle that starts a quad (0 to 3)
+  fNLastQuartet = -1;
+  fNQuartet = 0;
   //  fFreq = 29.5596;
   fFreq = 120.0007547169;
   fHelDelay=8;
@@ -299,7 +302,7 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	Int_t ispos = fHelicityHistory[i]&1;
 	if(fScaleQuartet) {
 	  fScalerSeed = ((fScalerSeed<<1) | ispos) & 0x3FFFFFFF;
-	  if(fNBits >= fMAXBIT) {
+	  if(fNBits >= fMAXBIT+0) {
 	    Int_t seedscan = fScalerSeed;
 	    Int_t nbehind;
 	    for(nbehind=0;nbehind<4;nbehind++) {
@@ -354,11 +357,17 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
     Int_t missed = 0;
     //    Double_t elapsed_time = (fTITime - fFirstEvTime)/250000000.0;
     if(fIsMPS) {
-      fPeriodCheck = fmod(fTITime/fTIPeriod,1.0);
+      fPeriodCheck = fmod(fTITime/(250000000.0/fFreq)-fPeriodCheckOffset,1.0);
+
       fCycle = (fTITime/fTIPeriod);
       fActualHelicity = kUnknown;
       fPredictedHelicity = kUnknown;
       if(fFoundMPS) {
+	if(fRecommendedFreq < 0.0) {
+	  if(TMath::Abs(fPeriodCheck-0.5) > 0.25) {
+	    fRecommendedFreq = fFreq*(1-(fPeriodCheck-0.5)/fCycle);
+	  }
+	}
 	missed = TMath::Nint(fTITime/fTIPeriod-fLastMPSTime/fTIPeriod);
 	if(missed < 1) { // was <=1
 	  fLastMPSTime = (fTITime+fLastMPSTime+missed*fTIPeriod)/2;
@@ -375,6 +384,7 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
       } else {
 	fFoundMPS = kTRUE;
 	fLastMPSTime = fTITime;
+	fPeriodCheckOffset = (fPeriodCheck-.5);
       }
     } else if (fFoundMPS) {	//
       if(fTITime - fLastMPSTime > fTIPeriod) { // We missed MPS periods
@@ -391,7 +401,7 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	  // Need to reset fQuartet to reflect where we are based on the current
 	  // reported helicity.  So we don't fail quartet testing.
 	  // But only do this if we are calibrated.
-	  if(fNBits >= fMAXBIT) {
+	  if(fNBits >= fMAXBIT+0) {
 
 	    for(Int_t i=0;i<quartets_missed;i++) { // Advance the seeds.
 	      //	      cout << "Advancing seed A " << fNBits << endl;
@@ -423,7 +433,7 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 	fIsNewCycle = kTRUE;
 	fLastReportedHelicity = fReportedHelicity;
       } else {			// No missed periods.  Get helicities from rings
-	if(fNBits>=fMAXBIT) {
+	if(fNBits>=fMAXBIT+0) {
 	  int quartetphase = (fNCycle-fFirstCycle)%4;
 	  fQuartetStartHelicity = (fRingSeed_actual&1)?kPlus:kMinus;
 	  fQuartetStartPredictedHelicity = (fRingSeed_reported&1)?kPlus:kMinus;
@@ -561,7 +571,7 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
   if(fActualHelicity < -5) {
     cout << "Actual Helicity never got defined" << endl;
   }
-  if(fNBits < fMAXBIT) {
+  if(fNBits < fMAXBIT+0) {
     if(fActualHelicity == -1 || fActualHelicity == 1) {
       cout << "Helicity of " << fActualHelicity << " reported prematurely at cycle " << fNCycle << endl;
     }
@@ -577,6 +587,21 @@ Int_t THcHelicity::End( THaRunBase* )
 
   //  for( Int_t i = 0; i < NHIST; ++i )
   //    fHisto[i]->Write();
+
+  if(fRecommendedFreq < 0.0) {
+    fRecommendedFreq = fFreq*(1-(fPeriodCheck-0.5)/fCycle);
+  }
+  if(TMath::Abs(1-fRecommendedFreq/fFreq) >= 0.5e-6) {
+    cout << "------------- HELICITY DECODING ----------------------" << endl;
+    cout << "Actual helicity reversal frequency differs from \"helicity_freq\" value" << endl;
+    cout << "If there are helicity decoding errors beyond the start of the run, " << endl;
+    streamsize ss = cout.precision();
+    cout.precision(10);
+    cout << "try replacing helicity_freq value of " << fFreq << " with " << fRecommendedFreq << endl;
+    cout << "If that still gives helicity errors, try " << 0.9999999*fRecommendedFreq << endl;
+    cout.precision(ss);
+    cout << "------------------------------------------------------" << endl;
+  }
 
   return 0;
 }
@@ -600,7 +625,7 @@ void THcHelicity::LoadHelicity(Int_t reportedhelicity, Int_t cyclecount, Int_t m
 
   //  if(!fFixFirstCycle) {
     if(fNQuartet - fNLastQuartet > 1) {	// If we missed a quartet
-      if(fNBits< fMAXBIT) {	// and we haven't gotten the seed, start over
+      if(fNBits< fMAXBIT+0) {	// and we haven't gotten the seed, start over
 	cout << "fNBits = 0, missedcycles=" << missedcycles <<
 	  "    " << fNLastQuartet << " " << fNQuartet << endl;
 	fNBits = 0;
@@ -615,7 +640,7 @@ void THcHelicity::LoadHelicity(Int_t reportedhelicity, Int_t cyclecount, Int_t m
   // But only do it's thing if it is first cycle of quartet.
   // Need to instead have it do it's thing on the first event of a quartet.
   // But only for seed building.  Current logic is OK once seed is found.
-  if(fNBits < fMAXBIT) {
+  if(fNBits < fMAXBIT+0) {
     if(fNQuartet != fNLastQuartet) {
       // Sanity check fNQuartet == fNLastQuartet+1
       if(fNBits == 0) {
@@ -635,10 +660,10 @@ void THcHelicity::LoadHelicity(Int_t reportedhelicity, Int_t cyclecount, Int_t m
       if(fReportedHelicity == kUnknown) {
 	fNBits = 0;
 	fRingSeed_reported = 0;
-      } else if (fNBits==fMAXBIT) {
-	cout <<   "Seed Found    " << bitset<32>(fRingSeed_reported) << " at cycle " << cyclecount << " with first cycle " << fFirstCycle << endl;
+      } else if (fNBits==fMAXBIT+0) {
+	cout <<   " Seed Found   " << bitset<32>(fRingSeed_reported) << " at cycle " << cyclecount << " with first cycle " << fFirstCycle << endl;
 	if(fglHelicityScaler) {
-	  cout << "Scaler Seed " << bitset<32>(fScalerSeed) << endl;
+	  cout << "Scaler Seed  " << bitset<32>(fglHelicityScaler->GetReportedSeed()) << endl;
 	}
 	Int_t backseed = GetSeed30(fRingSeed_reported);
 	cout << "Seed at cycle " << fFirstCycle << " should be " << hex << backseed << dec << endl;
@@ -649,7 +674,23 @@ void THcHelicity::LoadHelicity(Int_t reportedhelicity, Int_t cyclecount, Int_t m
 	}
 	fQuartetStartHelicity = (fRingSeed_actual&1)?kPlus:kMinus;
 	fQuartetStartPredictedHelicity = (fRingSeed_reported&1)?kPlus:kMinus;
-      }
+      } else if (fglHelicityScaler && fNBits>2) {			// Try the scalers
+	if(fglHelicityScaler->IsSeedGood()) {
+	  Int_t scalerseed = fglHelicityScaler->GetReportedSeed();
+	  fRingSeed_reported = RanBit30(scalerseed);
+	  cout << " -- Getting seed from scalers -- " << endl;
+	  cout <<   " Seed Found   " << bitset<32>(fRingSeed_reported) << " at cycle " << cyclecount << " with first cycle " << fFirstCycle << endl;
+	  cout << "Scaler Seed  " << bitset<32>(scalerseed) << endl;
+	  // Create the "actual seed"
+	  fRingSeed_actual = fRingSeed_reported;
+	  for(Int_t i=0;i<fHelDelay/4; i++) {
+	    fRingSeed_actual = RanBit30(fRingSeed_actual);
+	  }
+	  fQuartetStartHelicity = (fRingSeed_actual&1)?kPlus:kMinus;
+	  fQuartetStartPredictedHelicity = (fRingSeed_reported&1)?kPlus:kMinus;
+	  fNBits = fMAXBIT+0;
+	}
+      } 
       fActualHelicity = kUnknown;
     } // Need to change this to build seed even when not at start of quartet
   } else {
