@@ -50,10 +50,12 @@ protected:
   Int_t fFirstCycle;
   Bool_t fFixFirstCycle;
   Double_t fFreq;
+  Double_t fRecommendedFreq;
 
   Double_t fTIPeriod;		// Reversal period in TI time units
 
   Double_t fPeriodCheck;
+  Double_t fPeriodCheckOffset;
   Double_t fCycle;
 
   Bool_t fFirstEvProcessed;
