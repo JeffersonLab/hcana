@@ -76,7 +76,7 @@ static const UInt_t defaultDT = 4;
 
 THcScalerEvtHandler::THcScalerEvtHandler(const char *name, const char* description)
   : THaEvtTypeHandler(name,description),
-    fBCM_Gain(0), fBCM_Offset(0), fBCM_delta_charge(0),
+    fBCM_Gain(0), fBCM_Offset(0), fBCM_SatOffset(0), fBCM_SatQuadratic(0), fBCM_delta_charge(0),
     evcount(0), evcountR(0.0), ifound(0), fNormIdx(-1),
     fNormSlot(-1),
     dvars(0),dvars_prev_read(0), dvarsFirst(0), fScalerTree(0), fUseFirstEvent(kTRUE),
@@ -104,6 +104,8 @@ THcScalerEvtHandler::~THcScalerEvtHandler()
   delete [] dvarsFirst;
   delete [] fBCM_Gain;
   delete [] fBCM_Offset;
+  delete [] fBCM_SatOffset;
+  delete [] fBCM_SatQuadratic;
   delete [] fBCM_delta_charge;
 
   for( vector<UInt_t*>::iterator it = fDelayedEvents.begin();
@@ -152,11 +154,15 @@ Int_t THcScalerEvtHandler::ReadDatabase(const TDatime& date )
   if(fNumBCMs > 0) {
     fBCM_Gain = new Double_t[fNumBCMs];
     fBCM_Offset = new Double_t[fNumBCMs];
+    fBCM_SatOffset = new Double_t[fNumBCMs];
+    fBCM_SatQuadratic = new Double_t[fNumBCMs];
     fBCM_delta_charge= new Double_t[fNumBCMs];
     string bcm_namelist;
     DBRequest list2[]={
       {"BCM_Gain",      fBCM_Gain,         kDouble, (UInt_t) fNumBCMs},
       {"BCM_Offset",     fBCM_Offset,       kDouble,(UInt_t) fNumBCMs},
+      {"BCM_SatQuadratic",     fBCM_SatQuadratic,       kDouble,(UInt_t) fNumBCMs,1},
+      {"BCM_SatOffset",     fBCM_SatOffset,       kDouble,(UInt_t) fNumBCMs,1},
       {"BCM_Names",     &bcm_namelist,       kString},
       {"BCM_Current_threshold",     &fbcm_Current_Threshold,       kDouble,0, 1},
       {"BCM_Current_threshold_index",     &fbcm_Current_Threshold_Index,       kInt,0,1},
@@ -164,6 +170,10 @@ Int_t THcScalerEvtHandler::ReadDatabase(const TDatime& date )
     };
     fbcm_Current_Threshold = 0.0;
     fbcm_Current_Threshold_Index = 0;
+    for(Int_t i=0;i<fNumBCMs;i++) {
+      fBCM_SatOffset[i]=0.;
+      fBCM_SatQuadratic[i]=0.;
+    }
     gHcParms->LoadParmValues((DBRequest*)&list2, prefix);
     vector<string> bcm_names = vsplit(bcm_namelist);
     for(Int_t i=0;i<fNumBCMs;i++) {
@@ -412,12 +422,17 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 	      }
 	    if (scalerloc[ivar]->ikind == ICURRENT) {
               dvars[ivar]=0.;
-		if (bcm_ind != -1) dvars[ivar]=((scalers[idx]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+	      if (bcm_ind != -1) {
+                 dvars[ivar]=((scalers[idx]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		 dvars[ivar]=dvars[ivar]+fBCM_SatOffset[bcm_ind]*TMath::Max(dvars[ivar]-fBCM_SatOffset[i],0.0);
+	      }
          	if (bcm_ind == fbcm_Current_Threshold_Index) scal_current= dvars[ivar];
 	    }
 	    if (scalerloc[ivar]->ikind == ICHARGE) {
 	      if (bcm_ind != -1) {
-		fBCM_delta_charge[bcm_ind]=fDeltaTime*((scalers[idx]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		Double_t cur_temp=((scalers[idx]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		cur_temp=cur_temp+fBCM_SatQuadratic[bcm_ind]*TMath::Power(TMath::Max(cur_temp-fBCM_SatOffset[bcm_ind],0.0),2.0);
+		fBCM_delta_charge[bcm_ind]=fDeltaTime*cur_temp;
 		dvars[ivar]+=fBCM_delta_charge[bcm_ind];
 	      }
 	    }
@@ -452,12 +467,17 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 		}
 	    if (scalerloc[ivar]->ikind == ICURRENT) {
 	        dvarsFirst[ivar]=0.0;
-                if (bcm_ind != -1) dvarsFirst[ivar]=((scalers[idx]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+                if (bcm_ind != -1) {
+                 dvarsFirst[ivar]=((scalers[idx]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		 dvarsFirst[ivar]=dvarsFirst[ivar]+fBCM_SatQuadratic[bcm_ind]*TMath::Power(TMath::Max(dvars[ivar]-fBCM_SatOffset[i],0.0),2.);
+		}
          	if (bcm_ind == fbcm_Current_Threshold_Index) scal_current= dvarsFirst[ivar];
 	    }
 	    if (scalerloc[ivar]->ikind == ICHARGE) {
 	      if (bcm_ind != -1) {
-		fBCM_delta_charge[bcm_ind]=fDeltaTime*((scalers[idx]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		Double_t cur_temp=((scalers[idx]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		cur_temp=cur_temp+fBCM_SatQuadratic[bcm_ind]*TMath::Power(TMath::Max(cur_temp-fBCM_SatOffset[bcm_ind],0.0),2.);
+		fBCM_delta_charge[bcm_ind]=fDeltaTime*cur_temp;
                dvarsFirst[ivar]+=fBCM_delta_charge[bcm_ind];
 	      }
 	    }
@@ -519,7 +539,12 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 		  diff = scaldata - scal_prev_read[nscal-1];
 		}
 		dvars[ivar]=0.;
- 		if (fDeltaTime>0) dvars[ivar]=(diff/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+ 		if (fDeltaTime>0) {
+		Double_t cur_temp=(diff/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		cur_temp=cur_temp+fBCM_SatQuadratic[bcm_ind]*TMath::Power(TMath::Max(cur_temp-fBCM_SatOffset[bcm_ind],0.0),2.);
+		  
+		dvars[ivar]=cur_temp;
+		}
 	      }
 	      if (bcm_ind == fbcm_Current_Threshold_Index) scal_current= dvars[ivar];
 	    }
@@ -533,7 +558,11 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 		  diff = scaldata - scal_prev_read[nscal-1];
 		}
 		fBCM_delta_charge[bcm_ind]=0;
-		if (fDeltaTime>0)  fBCM_delta_charge[bcm_ind]=fDeltaTime*(diff/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		if (fDeltaTime>0)  {
+		  Double_t cur_temp=(diff/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		  cur_temp=cur_temp+fBCM_SatQuadratic[bcm_ind]*TMath::Power(TMath::Max(cur_temp-fBCM_SatOffset[bcm_ind],0.0),2.);
+		fBCM_delta_charge[bcm_ind]=fDeltaTime*cur_temp;
+		}
                  dvars[ivar]+=fBCM_delta_charge[bcm_ind];
 	      }
 	    }
