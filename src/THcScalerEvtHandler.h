@@ -59,6 +59,8 @@ private:
    Int_t fNumBCMs;
    Double_t *fBCM_Gain;
    Double_t *fBCM_Offset;
+   Double_t *fBCM_SatOffset;
+   Double_t *fBCM_SatQuadratic;
    Double_t *fBCM_delta_charge;
    Double_t fTotalTime;
    Double_t fDeltaTime;
