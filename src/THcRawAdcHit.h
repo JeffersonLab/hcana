@@ -21,6 +21,7 @@ class THcRawAdcHit : public TObject {
 
     Int_t GetRawData(UInt_t iPulse=0) const;
     Double_t GetF250_PeakPedestalRatio() {return fPeakPedestalRatio;};
+    Int_t GetF250_NPedestalSamples() {return fNPedestalSamples;};
 
     Double_t GetAverage(UInt_t iSampleLow, UInt_t iSampleHigh) const;
     Int_t GetIntegral(UInt_t iSampleLow, UInt_t iSampleHigh) const;
