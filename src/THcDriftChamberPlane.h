@@ -84,6 +84,8 @@ protected:
   TClonesArray* fHits;
   TClonesArray* fRawHits;
   TClonesArray* fWires;
+ 
+  Double_t fTdcRefTime;
 
   Int_t fVersion;
   Int_t fWireOrder;
