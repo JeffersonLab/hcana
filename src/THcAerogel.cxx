@@ -38,7 +38,8 @@ THcAerogel::THcAerogel( const char* name, const char* description,
                         THaApparatus* apparatus ) :
   THaNonTrackingDetector(name,description,apparatus), fPresentP(0),
   fAdcPosTimeWindowMin(0), fAdcPosTimeWindowMax(0), fAdcNegTimeWindowMin(0),
-  fAdcNegTimeWindowMax(0), fRegionValue(0), fPosGain(0), fNegGain(0),
+  fAdcNegTimeWindowMax(0),fPedNegDefault(0),fPedPosDefault(0),
+  fRegionValue(0), fPosGain(0), fNegGain(0),
   frPosAdcPedRaw(0), frPosAdcPulseIntRaw(0), frPosAdcPulseAmpRaw(0),
   frPosAdcPulseTimeRaw(0), frPosAdcPed(0), frPosAdcPulseInt(0),
   frPosAdcPulseAmp(0), frPosAdcPulseTime(0), frNegAdcPedRaw(0),
@@ -58,7 +59,8 @@ THcAerogel::THcAerogel( const char* name, const char* description,
 THcAerogel::THcAerogel( ) :
   THaNonTrackingDetector(),
   fAdcPosTimeWindowMin(0), fAdcPosTimeWindowMax(0), fAdcNegTimeWindowMin(0),
-  fAdcNegTimeWindowMax(0), fRegionValue(0), fPosGain(0), fNegGain(0),
+  fAdcNegTimeWindowMax(0), 
+  fPedNegDefault(0),fPedPosDefault(0),fRegionValue(0), fPosGain(0), fNegGain(0),
   frPosAdcPedRaw(0), frPosAdcPulseIntRaw(0), frPosAdcPulseAmpRaw(0),
   frPosAdcPulseTimeRaw(0), frPosAdcPed(0), frPosAdcPulseInt(0),
   frPosAdcPulseAmp(0), frPosAdcPulseTime(0), frNegAdcPedRaw(0),
@@ -110,6 +112,8 @@ void THcAerogel::DeleteArrays()
   delete [] fAdcPosTimeWindowMax; fAdcPosTimeWindowMax = 0;
   delete [] fAdcNegTimeWindowMin; fAdcNegTimeWindowMin = 0;
   delete [] fAdcNegTimeWindowMax; fAdcNegTimeWindowMax = 0;
+  delete [] fPedNegDefault; fPedNegDefault = 0;
+  delete [] fPedPosDefault; fPedPosDefault = 0;
 
   // 6 GeV variables
   delete fPosTDCHits; fPosTDCHits = NULL;
@@ -294,6 +298,8 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
   fAdcPosTimeWindowMax = new Double_t [fNelem];
   fAdcNegTimeWindowMin = new Double_t [fNelem];
   fAdcNegTimeWindowMax = new Double_t [fNelem];
+  fPedNegDefault = new Int_t [fNelem];
+  fPedPosDefault = new Int_t [fNelem];
 
   DBRequest list[]={
     {"aero_num_regions",      &fNRegions,         kInt},
@@ -313,6 +319,8 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
     {"aero_adcPosTimeWindowMax", fAdcPosTimeWindowMax, kDouble, static_cast<UInt_t>(fNelem), 1},
     {"aero_adcNegTimeWindowMin", fAdcNegTimeWindowMin, kDouble, static_cast<UInt_t>(fNelem), 1},
     {"aero_adcNegTimeWindowMax", fAdcNegTimeWindowMax, kDouble, static_cast<UInt_t>(fNelem), 1},
+    {"aero_PedNegDefault", fPedNegDefault, kInt, static_cast<UInt_t>(fNelem), 1},
+    {"aero_PedPosDefault", fPedPosDefault, kInt, static_cast<UInt_t>(fNelem), 1},
     {"aero_adc_tdc_offset",   &fAdcTdcOffset,     kDouble, 0, 1},
     {"aero_debug_adc",        &fDebugAdc,         kInt,    0, 1},
     {"aero_six_gev_data",     &fSixGevData,       kInt,    0, 1},
@@ -329,6 +337,8 @@ Int_t THcAerogel::ReadDatabase( const TDatime& date )
    fAdcNegTimeWindowMin[ip] = -1000.;
    fAdcPosTimeWindowMax[ip] = 1000.;
    fAdcNegTimeWindowMax[ip] = 1000.;
+   fPedNegDefault[ip] = 0.;
+   fPedPosDefault[ip] = 0.;
   }
 
   fSixGevData = 0; // Set 6 GeV data parameter to false unless set in parameter file
@@ -644,6 +654,21 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
 
       if (rawPosAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(npmt, 0);
       if (rawPosAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(npmt, 1);
+ 
+     if (rawPosAdcHit.GetPulseAmpRaw(thit) <= 0) {
+	Double_t PeakPedRatio= rawPosAdcHit.GetF250_PeakPedestalRatio();
+	Int_t NPedSamples= rawPosAdcHit.GetF250_NPedestalSamples();
+	Double_t AdcToC =  rawPosAdcHit.GetAdcTopC();
+	Double_t AdcToV =  rawPosAdcHit.GetAdcTomV();
+	if (fPedPosDefault[npmt-1] !=0) {
+	  Double_t tPulseInt = AdcToC*(rawPosAdcHit.GetPulseIntRaw(thit) - fPedPosDefault[npmt-1]*PeakPedRatio);
+	  ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(nrPosAdcHits))->Set(npmt, tPulseInt);
+          ((THcSignalHit*) frPosAdcPedRaw->ConstructedAt(nrPosAdcHits))->Set(npmt, fPedPosDefault[npmt-1]);
+          ((THcSignalHit*) frPosAdcPed->ConstructedAt(nrPosAdcHits))->Set(npmt, float(fPedPosDefault[npmt-1])/float(NPedSamples)*AdcToV);
+	  
+	}
+	((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(nrPosAdcHits))->Set(npmt, 0.);	
+      }
 
       ++nrPosAdcHits;
       fTotNumAdcHits++;
@@ -666,6 +691,21 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
 
       if (rawNegAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(npmt, 0);
       if (rawNegAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(npmt, 1);
+
+     if (rawNegAdcHit.GetPulseAmpRaw(thit) <= 0) {
+	Double_t PeakPedRatio= rawNegAdcHit.GetF250_PeakPedestalRatio();
+	Int_t NPedSamples= rawNegAdcHit.GetF250_NPedestalSamples();
+	Double_t AdcToC =  rawNegAdcHit.GetAdcTopC();
+	Double_t AdcToV =  rawNegAdcHit.GetAdcTomV();
+	if (fPedNegDefault[npmt-1] !=0) {
+	  Double_t tPulseInt = AdcToC*(rawNegAdcHit.GetPulseIntRaw(thit) - fPedNegDefault[npmt-1]*PeakPedRatio);
+	  ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(nrNegAdcHits))->Set(npmt, tPulseInt);
+          ((THcSignalHit*) frNegAdcPedRaw->ConstructedAt(nrNegAdcHits))->Set(npmt, fPedNegDefault[npmt-1]);
+          ((THcSignalHit*) frNegAdcPed->ConstructedAt(nrNegAdcHits))->Set(npmt, float(fPedNegDefault[npmt-1])/float(NPedSamples)*AdcToV);
+	  
+	}
+	((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(nrNegAdcHits))->Set(npmt, 0.);	
+      }
 
       ++nrNegAdcHits;
       fTotNumAdcHits++;
@@ -699,17 +739,12 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       Double_t pulseAmp     = ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(ielem))->GetData();
       Double_t pulseTime    = ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(ielem))->GetData();
       Double_t adctdcdiffTime = StartTime-pulseTime;
-      Bool_t   errorFlag    = ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(ielem))->GetData();
       ////      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
       Bool_t   pulseTimeCut = adctdcdiffTime > fAdcPosTimeWindowMin[npmt] && adctdcdiffTime < fAdcPosTimeWindowMax[npmt];
 
       // By default, the last hit within the timing cut will be considered "good"
-     if (!errorFlag)
-      {
 	fGoodPosAdcMult.at(npmt) += 1;
-      }
-
-     if (!errorFlag && pulseTimeCut) {
+     if (pulseTimeCut) {
     	fGoodPosAdcPed.at(npmt)         = pulsePed;
  	//	cout << " out = " << npmt << " " <<   frPosAdcPulseInt->GetEntries() << " " <<fGoodPosAdcMult.at(npmt); 
     	fGoodPosAdcPulseInt.at(npmt)    = pulseInt;
@@ -737,16 +772,12 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       Double_t pulseAmp     = ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(ielem))->GetData();
       Double_t pulseTime    = ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(ielem))->GetData();
       Double_t adctdcdiffTime = StartTime-pulseTime;
-      Bool_t   errorFlag    = ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(ielem))->GetData();
       ////      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
       Bool_t   pulseTimeCut = adctdcdiffTime > fAdcNegTimeWindowMin[npmt] && adctdcdiffTime < fAdcNegTimeWindowMax[npmt];
-      if (!errorFlag)
-      {
 	fGoodNegAdcMult.at(npmt) += 1;
-      }
  
       // By default, the last hit within the timing cut will be considered "good"
-      if (!errorFlag && pulseTimeCut) {
+      if (pulseTimeCut) {
     	fGoodNegAdcPed.at(npmt)         = pulsePed;
     	fGoodNegAdcPulseIntRaw.at(npmt) = pulseIntRaw;
     	fGoodNegAdcPulseAmp.at(npmt)    = pulseAmp;

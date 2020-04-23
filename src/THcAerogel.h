@@ -70,6 +70,8 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   Double_t  *fAdcPosTimeWindowMax;
   Double_t  *fAdcNegTimeWindowMin;
   Double_t  *fAdcNegTimeWindowMax;
+  Int_t*  fPedNegDefault;
+  Int_t*  fPedPosDefault;
 
   Double_t  fAdcTdcOffset;
   Double_t  *fRegionValue;
