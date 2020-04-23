@@ -65,6 +65,14 @@ void THcCoinTime::Clear( Option_t* opt )
   fROC2_ePosCoinTime=kBig;
   fROC1_RAW_CoinTime=kBig;
   fROC2_RAW_CoinTime=kBig;
+  fTRIG1_ePosCoinTime=kBig;
+  fTRIG4_ePosCoinTime=kBig;
+  fTRIG1_ePiCoinTime=kBig;
+  fTRIG4_ePiCoinTime=kBig;
+  fTRIG1_eKCoinTime=kBig;
+  fTRIG4_eKCoinTime=kBig;
+  fTRIG1_epCoinTime=kBig;
+  fTRIG4_epCoinTime=kBig;
 }
 
 //_____________________________________________________________________________
@@ -252,6 +260,8 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
       Double_t hms_xpfp = theHMSTrack->GetTheta();      
       Double_t hms_ypfp = theHMSTrack->GetPhi();        
       Double_t HMS_FPtime = theHMSTrack->GetFPTime();    
+      
+      if (SHMS_FPtime==-2000 || HMS_FPtime==-2000)  return 1;
       
       //Get raw TDC Times for HMS/SHMS (3/4 trigger)
       pTRIG1_TdcTime_ROC1 = fCoinDet->Get_CT_Trigtime(0);  //SHMS
