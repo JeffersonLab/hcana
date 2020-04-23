@@ -211,7 +211,8 @@ void THcTrigDet::Clear(Option_t* opt) {
   THaAnalysisObject::Clear(opt);
 
   // Reset all data.
-  for (int i=0; i<fNumAdc; ++i) {
+  fTdcRefTime = kBig;
+ for (int i=0; i<fNumAdc; ++i) {
     fAdcPedRaw[i] = 0;
     fAdcPulseIntRaw[i] = 0;
     fAdcPulseAmpRaw[i] = 0;
@@ -272,7 +273,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
     }
     else if (hit->fPlane == 2) {
       THcRawTdcHit rawTdcHit = hit->GetRawTdcHit();
-
+    if (rawTdcHit.GetNHits() >0 && rawTdcHit.HasRefTime() && fTdcRefTime == kBig) fTdcRefTime=rawTdcHit.GetRefTime() ;
       UInt_t good_hit=999;
            for (UInt_t thit=0; thit<rawTdcHit.GetNHits(); ++thit) {
 	    Int_t TestTime= rawTdcHit.GetTimeRaw(thit);
@@ -397,7 +398,16 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   std::vector<TString> adcPulseIntTitle(fNumAdc), adcPulseIntVar(fNumAdc);
   std::vector<TString> adcPulseAmpTitle(fNumAdc), adcPulseAmpVar(fNumAdc);
   std::vector<TString> adcMultiplicityTitle(fNumAdc), adcMultiplicityVar(fNumAdc);
-
+  
+  TString RefTimeTitle= "TdcRefTime";
+   TString RefTimeVar= "fTdcRefTime";
+   RVarDef entryRefTime {
+      RefTimeTitle.Data(),
+      RefTimeTitle.Data(),
+      RefTimeVar.Data()
+    };
+     vars.push_back(entryRefTime);
+ 
   for (int i=0; i<fNumAdc; ++i) {
     adcPedRawTitle.at(i) = fAdcNames.at(i) + "_adcPedRaw";
     adcPedRawVar.at(i) = TString::Format("fAdcPedRaw[%d]", i);
