@@ -63,6 +63,8 @@ class THcScintillatorPlane : public THaSubDetector {
   void SetFpTime(Double_t f) {fFptime=f;};
   void SetNGoodHits(Int_t ng) {fNGoodHits=ng;};
   void SetHitDistance(Double_t f) {fHitDistance=f;}; // Distance between track and hit paddle
+  void SetScinYPos(Double_t f) {fScinYPos=f;}; // Scint Average Y position at plane (cm)
+  void SetScinXPos(Double_t f) {fScinXPos=f;}; // Scint Average X position at plane (cm)
   void SetTrackXPosition(Double_t f) {fTrackXPosition=f;}; // Distance track X position at plane
   void SetTrackYPosition(Double_t f) {fTrackYPosition=f;}; // Distance track Y position at plane
   void SetNumberClusters(Int_t nclus) {fNumberClusters=nclus;}; // number of paddle 
@@ -179,7 +181,13 @@ class THcScintillatorPlane : public THaSubDetector {
   vector<Double_t>  fGoodDiffDistTrack;
 
   Int_t fDebugAdc;
+  Double_t fPosTdcRefTime;
+  Double_t fPosAdcRefTime;
+  Double_t fNegTdcRefTime;
+  Double_t fNegAdcRefTime;
   Double_t fHitDistance;
+  Double_t fScinXPos;
+  Double_t fScinYPos;
   Double_t fTrackXPosition;
   Double_t fTrackYPosition;
   Int_t fCosmicFlag; //
@@ -270,7 +278,10 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t *fNegPed;
   Double_t *fNegSig;
   Double_t *fNegThresh;
-
+  //
+   Int_t        fEventType;
+  Int_t        fEventNum;
+ 
   //
   Int_t fNScinGoodHits; // number of hits for which both ends of the paddle fired in time!
   Double_t fpTime; // the original code only has one fpTime per plane!

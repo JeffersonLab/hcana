@@ -34,6 +34,7 @@ public:
   Double_t GetNegADCpeak() const { return fNegADC_Peak; }
   Double_t GetPosADCtime() const { return fPosADC_Time; }
   Double_t GetNegADCtime() const { return fNegADC_Time; }
+  Double_t GetCalcPosition() const { return fCalcPosition; }
   Int_t GetPosTDC() const { return fPosTDC; }
   Int_t GetNegTDC() const { return fNegTDC; }
   Double_t GetPosCorrectedTime() const { return fPosCorrectedTime;}
@@ -46,8 +47,9 @@ public:
   Int_t GetPaddleNumber() const { return fPaddleNumber; }
   Double_t GetPaddleCenter() const { return fPaddleCenter; }
 
-  void SetCorrectedTimes(Double_t pos, Double_t neg, Double_t) {
+  void SetCorrectedTimes(Double_t pos, Double_t neg) {
     fPosCorrectedTime = pos; fNegCorrectedTime = neg;
+    fHasCorrectedTimes = kFALSE;
   }
   void SetCorrectedTimes(Double_t pos, Double_t neg,
 			 Double_t postof, Double_t negtof,
@@ -75,6 +77,9 @@ public:
   void  SetNegADCtime( Double_t ptime) {
       fNegADC_Time =ptime;
  }
+  void  SetCalcPosition( Double_t calcpos) {
+      fCalcPosition =calcpos;
+ }
 protected:
   static const Double_t kBig;  //!
 
@@ -86,6 +91,7 @@ protected:
   Double_t fNegADC_Peak;		// ADC peak amplitude
   Double_t fPosADC_Time;		// ADC time
   Double_t fNegADC_Time;		// ADC time
+  Double_t fCalcPosition;		// Position along paddle calculated by time diff
   Int_t fPaddleNumber;
 
   Double_t fPosCorrectedTime;	// Pulse height corrected time
