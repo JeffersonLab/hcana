@@ -82,6 +82,7 @@ class THcTrigDet : public THaDetector, public THcHitList {
 
     Int_t fTdcMultiplicity[fMaxTdcChannels];
     Int_t fAdcMultiplicity[fMaxAdcChannels];
+    Double_t fTdcRefTime;
 
     TString fSpectName;
     std::vector<Int_t> eventtypes;
