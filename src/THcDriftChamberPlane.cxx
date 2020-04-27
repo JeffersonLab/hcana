@@ -394,6 +394,7 @@ Int_t THcDriftChamberPlane::SubtractStartTime()
 {
   Double_t StartTime = 0.0;
   if( fglHod ) StartTime = fglHod->GetStartTime();
+  if (StartTime == -1000) StartTime = 0.0;
   for(Int_t ihit=0;ihit<GetNHits();ihit++) { 
     THcDCHit *thishit = (THcDCHit*) fHits->At(ihit);
     Double_t temptime= thishit->GetTime()-StartTime;
