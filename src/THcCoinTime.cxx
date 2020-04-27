@@ -262,6 +262,7 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
       Double_t HMS_FPtime = theHMSTrack->GetFPTime();    
       
       if (SHMS_FPtime==-2000 || HMS_FPtime==-2000)  return 1;
+      if (SHMS_FPtime==-1000 || HMS_FPtime==-1000)  return 1;
       
       //Get raw TDC Times for HMS/SHMS (3/4 trigger)
       pTRIG1_TdcTime_ROC1 = fCoinDet->Get_CT_Trigtime(0);  //SHMS
