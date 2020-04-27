@@ -472,7 +472,7 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
   Double_t StartTime = 0.0;
   if( fglHod ) StartTime = fglHod->GetStartTime();
    Double_t OffsetTime = 0.0;
-   // if( fglHod ) OffsetTime = fglHod->GetOffsetTime();
+   if( fglHod ) OffsetTime = fglHod->GetOffsetTime();
  for(Int_t ipmt = 0; ipmt < fNelem; ipmt++) {
     fAdcPulseAmpTest[ipmt] = -1000.;
     fAdcGoodElem[ipmt]=-1;
@@ -483,7 +483,7 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
     Double_t pulseTime    = ((THcSignalHit*) frAdcPulseTime->ConstructedAt(ielem))->GetData();
     Double_t pulseAmp     = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
     Bool_t   errorFlag    = ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(ielem))->GetData();
-    Double_t adctdcdiffTime = StartTime-pulseTime-OffsetTime;
+    Double_t adctdcdiffTime = StartTime-pulseTime+OffsetTime;
     Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin[npmt] && adctdcdiffTime < fAdcTimeWindowMax[npmt];
  	fGoodAdcMult.at(npmt) += 1;
 	if (!errorFlag) {
@@ -504,7 +504,7 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
     Double_t pulseIntRaw  = ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
     Double_t pulseAmp     = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
     Double_t pulseTime    = ((THcSignalHit*) frAdcPulseTime->ConstructedAt(ielem))->GetData();
-    Double_t adctdcdiffTime = StartTime-pulseTime-OffsetTime;
+    Double_t adctdcdiffTime = StartTime-pulseTime+OffsetTime;
       fGoodAdcPed.at(npmt)         = pulsePed;
       fGoodAdcHitUsed.at(npmt)         = ielem+1;
       fGoodAdcPulseInt.at(npmt)    = pulseInt;

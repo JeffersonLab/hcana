@@ -728,6 +728,8 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
 {
   Double_t StartTime = 0.0;
   if( fglHod ) StartTime = fglHod->GetStartTime();
+   Double_t OffsetTime = 0.0;
+   if( fglHod ) OffsetTime = fglHod->GetOffsetTime();
   //cout << " starttime = " << StartTime << endl;
     // Loop over the elements in the TClonesArray
     for(Int_t ielem = 0; ielem < frPosAdcPulseInt->GetEntries(); ielem++) {
@@ -738,7 +740,7 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       Double_t pulseIntRaw  = ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
       Double_t pulseAmp     = ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(ielem))->GetData();
       Double_t pulseTime    = ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(ielem))->GetData();
-      Double_t adctdcdiffTime = StartTime-pulseTime;
+      Double_t adctdcdiffTime = StartTime-pulseTime+OffsetTime;
       ////      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
       Bool_t   pulseTimeCut = adctdcdiffTime > fAdcPosTimeWindowMin[npmt] && adctdcdiffTime < fAdcPosTimeWindowMax[npmt];
 
@@ -771,7 +773,7 @@ Int_t THcAerogel::CoarseProcess( TClonesArray&  ) //tracks
       Double_t pulseIntRaw  = ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
       Double_t pulseAmp     = ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(ielem))->GetData();
       Double_t pulseTime    = ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(ielem))->GetData();
-      Double_t adctdcdiffTime = StartTime-pulseTime;
+      Double_t adctdcdiffTime = StartTime-pulseTime+OffsetTime;
       ////      Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin && adctdcdiffTime < fAdcTimeWindowMax;
       Bool_t   pulseTimeCut = adctdcdiffTime > fAdcNegTimeWindowMin[npmt] && adctdcdiffTime < fAdcNegTimeWindowMax[npmt];
 	fGoodNegAdcMult.at(npmt) += 1;
