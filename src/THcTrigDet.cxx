@@ -275,12 +275,19 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
       THcRawTdcHit rawTdcHit = hit->GetRawTdcHit();
     if (rawTdcHit.GetNHits() >0 && rawTdcHit.HasRefTime() && fTdcRefTime == kBig) fTdcRefTime=rawTdcHit.GetRefTime() ;
       UInt_t good_hit=999;
+      UInt_t closest_hit=999;
+      Int_t TimeDiff=1000000;
            for (UInt_t thit=0; thit<rawTdcHit.GetNHits(); ++thit) {
 	    Int_t TestTime= rawTdcHit.GetTimeRaw(thit);
+	    if (abs(TestTime-fTdcTimeWindowMin[cnt]) < TimeDiff) {
+	      closest_hit=thit;
+	      TimeDiff=abs(TestTime-fTdcTimeWindowMin[cnt]);
+	    }
 	    if (TestTime>=fTdcTimeWindowMin[cnt]&&TestTime<=fTdcTimeWindowMax[cnt]&&good_hit==999) {
 	      good_hit=thit;
 	    }
 	   }
+	   if (good_hit == 999 and closest_hit != 999) good_hit=closest_hit;
 	 if (good_hit<rawTdcHit.GetNHits()) {
       fTdcTimeRaw[cnt] = rawTdcHit.GetTimeRaw(good_hit);
       fTdcTime[cnt] = rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset;
