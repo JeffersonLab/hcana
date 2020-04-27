@@ -36,6 +36,7 @@ THcShower::THcShower( const char* name, const char* description,
   THaNonTrackingDetector(name,description,apparatus),
   fPosAdcTimeWindowMin(0), fNegAdcTimeWindowMin(0),
   fPosAdcTimeWindowMax(0), fNegAdcTimeWindowMax(0),
+  fPedPosDefault(0),fPedNegDefault(0),
   fShPosPedLimit(0), fShNegPedLimit(0), fPosGain(0), fNegGain(0),
   fClusterList(0), fLayerNames(0), fLayerZPos(0), BlockThick(0),
   fNBlocks(0), fXPos(0), fYPos(0), fZPos(0), fPlanes(0), fArray(0)
@@ -53,6 +54,7 @@ THcShower::THcShower( ) :
   THaNonTrackingDetector(),
   fPosAdcTimeWindowMin(0), fNegAdcTimeWindowMin(0),
   fPosAdcTimeWindowMax(0), fNegAdcTimeWindowMax(0),
+  fPedPosDefault(0),fPedNegDefault(0),
   fShPosPedLimit(0), fShNegPedLimit(0), fPosGain(0), fNegGain(0),
   fClusterList(0), fLayerNames(0), fLayerZPos(0), BlockThick(0),
   fNBlocks(0), fXPos(0), fYPos(0), fZPos(0), fPlanes(0), fArray(0)
@@ -388,6 +390,8 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
   fNegAdcTimeWindowMin = new Double_t [fNTotBlocks];
   fPosAdcTimeWindowMax = new Double_t [fNTotBlocks];
   fNegAdcTimeWindowMax = new Double_t [fNTotBlocks];
+  fPedPosDefault = new Int_t [fNTotBlocks];
+  fPedNegDefault = new Int_t [fNTotBlocks];
 
   DBRequest list[]={
     {"cal_pos_cal_const", hcal_pos_cal_const, kDouble, fNTotBlocks},
@@ -400,6 +404,8 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     {"cal_neg_AdcTimeWindowMin", fNegAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNTotBlocks),1},
     {"cal_pos_AdcTimeWindowMax", fPosAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNTotBlocks),1},
     {"cal_neg_AdcTimeWindowMax", fNegAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNTotBlocks),1},
+    {"cal_PedNegDefault", fPedNegDefault, kInt, static_cast<UInt_t>(fNTotBlocks),1},
+    {"cal_PedPosDefault", fPedNegDefault, kInt, static_cast<UInt_t>(fNTotBlocks),1},
     {"cal_min_peds", &fShMinPeds, kInt,0,1},
     {0}
   };
@@ -410,6 +416,8 @@ Int_t THcShower::ReadDatabase( const TDatime& date )
     fNegAdcTimeWindowMin[ip] = -1000.;
     fPosAdcTimeWindowMax[ip] = 1000.;
     fNegAdcTimeWindowMax[ip] = 1000.;
+    fPedNegDefault[ip] = 0;
+    fPedPosDefault[ip] = 0;
    }
 
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
@@ -617,6 +625,8 @@ void THcShower::DeleteArrays()
   delete [] fNegAdcTimeWindowMin; fNegAdcTimeWindowMin = 0;
   delete [] fPosAdcTimeWindowMax; fPosAdcTimeWindowMax = 0;
   delete [] fNegAdcTimeWindowMax; fNegAdcTimeWindowMax = 0;
+  delete [] fPedNegDefault; fPedNegDefault = 0;
+  delete [] fPedPosDefault; fPedPosDefault = 0;
   delete [] fShPosPedLimit; fShPosPedLimit = 0;
   delete [] fShNegPedLimit; fShNegPedLimit = 0;
   delete [] fPosGain; fPosGain = 0;

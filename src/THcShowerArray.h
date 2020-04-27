@@ -148,6 +148,7 @@ protected:
   static const Int_t kADCSampIntDynPed=3;
   Double_t *fAdcTimeWindowMin ;
   Double_t *fAdcTimeWindowMax ;
+  Int_t *fPedDefault ;
   Double_t fAdcThreshold ;
   Double_t fAdcTdcOffset;
 

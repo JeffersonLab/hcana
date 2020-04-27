@@ -105,6 +105,7 @@ THcShowerArray::~THcShowerArray()
 
   delete [] fAdcTimeWindowMin; fAdcTimeWindowMin = 0;
   delete [] fAdcTimeWindowMax; fAdcTimeWindowMax = 0;
+  delete [] fPedDefault; fPedDefault = 0;
 }
 
 //_____________________________________________________________________________
@@ -280,6 +281,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
 
   fAdcTimeWindowMin = new Double_t [fNelem];
   fAdcTimeWindowMax = new Double_t [fNelem];
+  fPedDefault = new Int_t [fNelem];
 
   DBRequest list1[]={
     {"cal_arr_ped_limit", fPedLimit, kInt, static_cast<UInt_t>(fNelem),1},
@@ -287,12 +289,14 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     {"cal_arr_gain_cor",  cal_arr_gain_cor,  kDouble, static_cast<UInt_t>(fNelem)},
     {"cal_arr_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNelem),1},
     {"cal_arr_AdcTimeWindowMax", fAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNelem),1},
+    {"cal_arr_PedDefault", fPedDefault, kInt, static_cast<UInt_t>(fNelem),1},
     {0}
   };
 
    for(Int_t ip=0;ip<fNelem;ip++) {
     fAdcTimeWindowMin[ip] = -1000.;
     fAdcTimeWindowMax[ip] = 1000.;
+    fPedDefault[ip] = 0;
    }
 
   gHcParms->LoadParmValues((DBRequest*)&list1, prefix);
@@ -873,6 +877,8 @@ void THcShowerArray::FillADC_DynamicPedestal()
 {
   Double_t StartTime = 0.0;
   if( fglHod ) StartTime = fglHod->GetStartTime();
+   Double_t OffsetTime = 0.0;
+   if( fglHod ) OffsetTime = fglHod->GetOffsetTime();
   for (Int_t ielem=0;ielem<frAdcPulseInt->GetEntries();ielem++) {
     
     Int_t npad           = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
@@ -881,15 +887,10 @@ void THcShowerArray::FillADC_DynamicPedestal()
     Double_t pulseInt    = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetData();
     Double_t pulseAmp    = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
     Double_t pulseTime   = ((THcSignalHit*) frAdcPulseTime->ConstructedAt(ielem))->GetData();
-    Double_t adctdcdiffTime = StartTime-pulseTime;
-    Bool_t errorflag     = ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(ielem))->GetData();
+    Double_t adctdcdiffTime = StartTime-pulseTime+OffsetTime;
     Bool_t pulseTimeCut  = (adctdcdiffTime > fAdcTimeWindowMin[npad]) &&  (adctdcdiffTime < fAdcTimeWindowMax[npad]);
-
-    if (!errorflag)
-      {
 	fGoodAdcMult.at(npad) += 1;
-      }
-    if (!errorflag && pulseTimeCut) {
+    if (pulseTimeCut) {
       
       fTotNumAdcHits++;
       fGoodAdcPulseIntRaw.at(npad) = pulseIntRaw;
@@ -982,6 +983,24 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       } else {
 	((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum,1);
       }
+
+      if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) {
+	Double_t PeakPedRatio= rawAdcHit.GetF250_PeakPedestalRatio();
+	Int_t NPedSamples= rawAdcHit.GetF250_NPedestalSamples();
+	Double_t AdcToC =  rawAdcHit.GetAdcTopC();
+	Double_t AdcToV =  rawAdcHit.GetAdcTomV();
+	if (fPedDefault[padnum-1] !=0) {
+	  Double_t tPulseInt = AdcToC*(rawAdcHit.GetPulseIntRaw(thit) - fPedDefault[padnum-1]*PeakPedRatio);
+	  ((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(padnum, tPulseInt);
+          ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, fPedDefault[padnum-1]);
+          ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, float(fPedDefault[padnum-1])/float(NPedSamples)*AdcToV);
+	  
+	}
+	((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, 0.);
+	
+      }
+
+
       ++nrAdcHits;
     }
     ihit++;
