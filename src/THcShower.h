@@ -71,6 +71,17 @@ public:
     return ( Side == 0 ? fPosGain[nelem] : fNegGain[nelem]);
   }
 
+  Double_t GetPedDefault(Int_t NBlock, Int_t NLayer, Int_t Side) {
+    if (Side!=0&&Side!=1) {
+      cout << "*** Wrong Side in GetPedDefault:" << Side << " ***" << endl;
+      return -1;
+    }
+    Int_t nelem = 0;
+    for (Int_t i=0; i<NLayer; i++) nelem += fNBlocks[i];
+    nelem += NBlock;
+    return ( Side == 0 ? fPedPosDefault[nelem] : fPedNegDefault[nelem] );
+  }
+
   Double_t GetWindowMin(Int_t NBlock, Int_t NLayer, Int_t Side) {
     if (Side!=0&&Side!=1) {
       cout << "*** Wrong Side in GetWindowMin:" << Side << " ***" << endl;
@@ -187,7 +198,9 @@ protected:
   Double_t* fNegAdcTimeWindowMin;
   Double_t* fPosAdcTimeWindowMax;
   Double_t* fNegAdcTimeWindowMax;
-  Double_t fAdcTdcOffset;
+  Int_t* fPedPosDefault;
+  Int_t* fPedNegDefault;
+ Double_t fAdcTdcOffset;
 
   Int_t fAnalyzePedestals;   // Flag for pedestal analysis.
 
