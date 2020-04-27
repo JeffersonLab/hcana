@@ -1119,9 +1119,12 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       }
 
+
       // Do corrections if valid TDC on both ends of bar
       if( (btdcraw_pos && btdcraw_neg) && (badcraw_pos && badcraw_neg) ) {
 	// Do the pulse height correction to the time.  (Position dependent corrections later)
+        Double_t adc_timec_pos= adctime_pos;
+        Double_t adc_timec_neg= adctime_neg;
 	Double_t timec_pos, timec_neg;
 	if(fTofUsingInvAdc) {
 	  timec_pos = tdc_pos*fScinTdcToTime
@@ -1133,6 +1136,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	} else {		// FADC style
 	  timec_pos =  tdc_pos*fScinTdcToTime -tw_corr_pos + fHodo_LCoeff[index];
 	  timec_neg =  tdc_neg*fScinTdcToTime -tw_corr_neg- 2*fHodoCableFit[index] + fHodo_LCoeff[index];
+	  adc_timec_pos =  adc_timec_pos -tw_corr_pos + fHodo_LCoeff[index];
+	  adc_timec_neg =  adc_timec_neg -tw_corr_neg- 2*fHodoCableFit[index] + fHodo_LCoeff[index];
 	}
 
  	Double_t TWCorrDiff = fGoodNegTdcTimeWalkCorr.at(padnum-1) - 2*fHodoCableFit[index] - fGoodPosTdcTimeWalkCorr.at(padnum-1); 
@@ -1151,6 +1156,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	hit_position=TMath::Min(hit_position,fPosLeft);
 	hit_position=TMath::Max(hit_position,fPosRight);
 	Double_t scin_corrected_time, postime, negtime;
+	  Double_t adc_postime=adc_timec_pos;
+	  Double_t adc_negtime=adc_timec_neg;	  
 	if(fTofUsingInvAdc) {
 	  timec_pos -= (fPosLeft-hit_position)/
 	    fHodoPosInvAdcLinear[index];
@@ -1165,15 +1172,20 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	    negtime = timec_neg - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	  }
 	} else {
-	  scin_corrected_time = 0.5*(timec_neg+timec_pos);  // add constants for each paddle, 25ns, 25 + zpos, . . . //remove propagation time
+	  scin_corrected_time = 0.5*(timec_neg+timec_pos);  
 	  timec_pos= scin_corrected_time;    
-	  timec_neg= scin_corrected_time;	 
+	  timec_neg= scin_corrected_time;
+	  Double_t adc_time_corrected = 0.5*(adc_timec_pos+adc_timec_neg);
 	  if (fCosmicFlag) {
 	    postime = timec_pos + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	    negtime = timec_neg + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	    adc_postime = adc_time_corrected + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	    adc_negtime = adc_time_corrected + (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	  } else {
 	    postime = timec_pos - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	    negtime = timec_neg - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	    adc_postime = adc_time_corrected - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
+	    adc_negtime = adc_time_corrected - (fZpos+(index%2)*fDzpos)/(29.979*fBetaNominal);
 	  }
 	}
         ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPaddleCenter(fPosCenter[index]);
@@ -1182,8 +1194,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 								     scin_corrected_time);
 	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCpeak(adcamp_pos); 
 	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCpeak(adcamp_neg); 
-	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCtime(adctime_pos); 
-	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCtime(adctime_neg); 
+	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetPosADCCorrtime(adc_postime); 
+	((THcHodoHit*) fHodoHits->At(fNScinHits))->SetNegADCCorrtime(adc_negtime); 
         ((THcHodoHit*) fHodoHits->At(fNScinHits))->SetCalcPosition(fHitDistCorr); // 
 
 	fGoodPosTdcTimeCorr.at(padnum-1) = timec_pos;

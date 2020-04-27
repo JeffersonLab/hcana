@@ -676,6 +676,7 @@ void THcHodoscope::Clear( Option_t* opt )
   fBetaNoTrk = 0.0;
   fBetaNoTrkChiSq = 0.0;
   fStartTime  = -1000.;
+  fADCStartTime  = -1000.;
   fOffsetTime  = kBig;
   fFPTimeAll= -1000.;
   fGoodStartTime = kFALSE;
@@ -755,7 +756,7 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
 
   // Let each plane get its hits
   Int_t nexthit = 0;
-  THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+  //THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
   // cout << " event number = " << fEventNum << " Evtyp = " << fEventType<< " spec = " << app->GetName() << endl;
   fNfptimes=0;
   Int_t thits = 0;
@@ -771,33 +772,6 @@ Int_t THcHodoscope::Decode( const THaEvData& evdata )
     thits+=fPlanes[ip]->GetNScinHits();
   }
    //
-   if (thits>0 ) {
-   Double_t ave_AdcTdcDiffTime=0;
-   Double_t num_AdcTdcDiffTime=0;
-  for(Int_t ip=0;ip<fNPlanes;ip++) {
-    Int_t nphits=fPlanes[ip]->GetNScinHits();
-    TClonesArray* hodoHits = fPlanes[ip]->GetHits();
-    for(Int_t i=0;i<nphits;i++) {
-      THcHodoHit *hit = (THcHodoHit*)hodoHits->At(i);
-     if(hit->GetHasCorrectedTimes()) {
-	Double_t posADCtime=hit->GetPosADCtime();
-	Double_t negADCtime=hit->GetNegADCtime();
-	Double_t posTDCtime=hit->GetPosTDC()*fScinTdcToTime;
-	Double_t negTDCtime=hit->GetNegTDC()*fScinTdcToTime;
-	if (posADCtime>0 && posTDCtime>0) {
-	  ave_AdcTdcDiffTime+=posTDCtime-posADCtime;
-	  num_AdcTdcDiffTime++;
-	}
-	if (negADCtime>0 && negTDCtime>0) {
-	  ave_AdcTdcDiffTime+=negTDCtime-negADCtime;
-	  num_AdcTdcDiffTime++;
-	}
-    }
-  }
-  }
-  if (num_AdcTdcDiffTime>0) ave_AdcTdcDiffTime = ave_AdcTdcDiffTime/num_AdcTdcDiffTime;
-  if (num_AdcTdcDiffTime>0) fOffsetTime =  ave_AdcTdcDiffTime;
-   }
   //
   fStartTime=-1000;
   if (thits>0 ) EstimateFocalPlaneTime();
@@ -955,6 +929,7 @@ void THcHodoscope::EstimateFocalPlaneTime()
   Int_t nscinhits=0;		// Total # hits with at least one good tdc
   hTime->Reset();
   //
+  //
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     Int_t nphits=fPlanes[ip]->GetNScinHits();
     nscinhits += nphits;
@@ -966,20 +941,51 @@ void THcHodoscope::EstimateFocalPlaneTime()
 	Double_t negtime=hit->GetNegTOFCorrectedTime();
 	hTime->Fill(postime);
 	hTime->Fill(negtime);
+	}
       }
     }
-  }
   //
   Double_t TimePeak=DetermineTimePeak(1);
+  hTime->Reset();
+  //
+  Double_t AdcTdcDiffTimeSum=0;
+  Double_t NAdcTdcDiffTimeSum=0;
+  //
+  for(Int_t ip=0;ip<fNPlanes;ip++) {
+    Int_t nphits=fPlanes[ip]->GetNScinHits();
+    nscinhits += nphits;
+    TClonesArray* hodoHits = fPlanes[ip]->GetHits();
+    for(Int_t i=0;i<nphits;i++) {
+      THcHodoHit *hit = (THcHodoHit*)hodoHits->At(i);
+      if(hit->GetHasCorrectedTimes()) {
+	NAdcTdcDiffTimeSum++;
+	AdcTdcDiffTimeSum+=(hit->GetPosADCtime()-hit->GetPosTDC()*fScinTdcToTime);
+	NAdcTdcDiffTimeSum++;
+	AdcTdcDiffTimeSum+=(hit->GetNegADCtime()-hit->GetNegTDC()*fScinTdcToTime);
+	Double_t postime=hit->GetPosADCCorrtime();
+	Double_t negtime=hit->GetNegADCCorrtime();
+	hTime->Fill(postime);
+	hTime->Fill(negtime);
+	}
+      }
+    }
+  if (NAdcTdcDiffTimeSum>0) AdcTdcDiffTimeSum=AdcTdcDiffTimeSum/NAdcTdcDiffTimeSum;
+  //
+  Double_t AdcTimePeak=DetermineTimePeak(3);
   //
   ihit = 0;
   Double_t fpTimeSum = 0.0;
+  Double_t adcfpTimeSum = 0.0;
+  Double_t adcNfptimes=0;
   fNfptimes=0;
   Int_t  Ngood_hits_plane=0;
+  Int_t  Ngood_adchits_plane=0;
   Double_t Plane_fptime_sum=0.0;
+ Double_t Plane_adcfptime_sum=0.0;
   Bool_t goodplanetime[fNPlanes];
   Bool_t twogoodtimes[nscinhits];
   Int_t NumPlanesGoodHit=0;
+  Int_t NumPlanesGoodAdcHit=0;
   if (TimePeak>0) {
   for(Int_t ip=0;ip<fNumPlanesBetaCalc;ip++) {
     goodplanetime[ip] = kFALSE;
@@ -993,6 +999,8 @@ void THcHodoscope::EstimateFocalPlaneTime()
       if(hit->GetHasCorrectedTimes()) {
 	Double_t postime=hit->GetPosTOFCorrectedTime();
 	Double_t negtime=hit->GetNegTOFCorrectedTime();
+	Double_t adcpostime=hit->GetPosADCtime();
+	Double_t adcnegtime=hit->GetNegADCtime();
 	if ((postime>(TimePeak-fTofTolerance)) && (postime<(TimePeak+fTofTolerance)) &&
 	    (negtime>(TimePeak-fTofTolerance)) && (negtime<(TimePeak+fTofTolerance)) ) {
 	  hit->SetTwoGoodTimes(kTRUE);
@@ -1016,10 +1024,31 @@ void THcHodoscope::EstimateFocalPlaneTime()
 	} else {
 	  hit->SetTwoGoodTimes(kFALSE);
 	}
+	//
+	if ((adcpostime>(AdcTimePeak-fTofTolerance)) && (adcpostime<(AdcTimePeak+fTofTolerance)) &&
+	    (adcnegtime>(AdcTimePeak-fTofTolerance)) && (adcnegtime<(AdcTimePeak+fTofTolerance)) ) {
+	  Int_t index=hit->GetPaddleNumber()-1;	 //
+	  Double_t fptime;
+	  if(fCosmicFlag==1) {
+	    fptime = hit->GetScinCorrectedTime()
+	      + (fPlanes[ip]->GetZpos()+(index%2)*fPlanes[ip]->GetDzpos())
+	      / (29.979 * fBetaNominal);
+	  }else{
+	    fptime = hit->GetScinCorrectedTime()
+	      - (fPlanes[ip]->GetZpos()+(index%2)*fPlanes[ip]->GetDzpos())
+	      / (29.979 * fBetaNominal);
+	  }
+          Ngood_adchits_plane++;
+	  Plane_adcfptime_sum+=fptime;
+	  adcfpTimeSum += fptime;
+	  adcNfptimes++;
+	}
+	//
       }
       ihit++;
     }
     if (Ngood_hits_plane>0)  NumPlanesGoodHit++;
+    if (Ngood_adchits_plane>0)  NumPlanesGoodAdcHit++;
     if (Ngood_hits_plane>0) fPlanes[ip]->SetFpTime(Plane_fptime_sum/float(Ngood_hits_plane));
     fPlanes[ip]->SetNGoodHits(Ngood_hits_plane);
   }
@@ -1029,10 +1058,17 @@ void THcHodoscope::EstimateFocalPlaneTime()
     fStartTime = fpTimeSum/fNfptimes;
     fGoodStartTime=kTRUE;
     fFPTimeAll = fStartTime ;
+    fOffsetTime=0;
+    if(NumPlanesGoodAdcHit>=3)  {
+      fADCStartTime = adcfpTimeSum/adcNfptimes-fStartTime;
+    }
+     fOffsetTime =AdcTdcDiffTimeSum;
   } else {
     fStartTime = fStartTimeCenter;
+    fADCStartTime = fStartTimeCenter;
     fGoodStartTime=kFALSE;
     fFPTimeAll = fStartTime ;
+    fOffsetTime=AdcTdcDiffTimeSum;
   }
     //
    //
