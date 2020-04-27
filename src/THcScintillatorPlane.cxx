@@ -951,7 +951,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
        	Double_t pulseAmp     = rawNegAdcHit.GetPulseAmp(ielem);
 	Double_t pulseTime    = rawNegAdcHit.GetPulseTime(ielem)+fAdcTdcOffset;
         Double_t TdcAdcTimeDiff = tdc_neg*fScinTdcToTime-pulseTime;
-        if (rawNegAdcHit.GetPulseAmpRaw(ielem) <= 0)pulseAmp= fTdc_Thrs;
+        if (rawNegAdcHit.GetPulseAmpRaw(ielem) <= 0)pulseAmp= 200.;
 	Bool_t   pulseTimeCut =( TdcAdcTimeDiff > fHodoNegAdcTimeWindowMin[index]) &&  (TdcAdcTimeDiff < fHodoNegAdcTimeWindowMax[index]);
 	if (pulseTimeCut &&  pulseAmp>max_adcamp_test) {
 	  good_ielem_negadc = ielem;
@@ -976,7 +976,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	  adchitused_neg = good_ielem_negadc+1;
 	  adcint_neg = rawNegAdcHit.GetPulseInt(good_ielem_negadc);
 	  adcamp_neg = rawNegAdcHit.GetPulseAmp(good_ielem_negadc);
-	  if (rawNegAdcHit.GetPulseAmpRaw(good_ielem_negadc) <= 0) adcamp_neg= fTdc_Thrs;
+	  if (rawNegAdcHit.GetPulseAmpRaw(good_ielem_negadc) <= 0) adcamp_neg= 200.;
 	  adctime_neg = rawNegAdcHit.GetPulseTime(good_ielem_negadc)+fAdcTdcOffset;
 	  badcraw_neg = kTRUE;
 	  adctdcdifftime_neg=tdc_neg*fScinTdcToTime-adctime_neg;
@@ -992,7 +992,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	Double_t pulseTime    = rawPosAdcHit.GetPulseTime(ielem)+fAdcTdcOffset;
         Double_t TdcAdcTimeDiff = tdc_pos*fScinTdcToTime-pulseTime;
 	Bool_t   pulseTimeCut =( TdcAdcTimeDiff > fHodoPosAdcTimeWindowMin[index]) &&  (TdcAdcTimeDiff < fHodoPosAdcTimeWindowMax[index]);
-       if (rawPosAdcHit.GetPulseAmpRaw(ielem) <= 0)pulseAmp= fTdc_Thrs;
+       if (rawPosAdcHit.GetPulseAmpRaw(ielem) <= 0)pulseAmp= 200.;
 	if (pulseTimeCut && pulseAmp>max_adcamp_test) {
 	  good_ielem_posadc = ielem;
 	  max_adcamp_test=pulseAmp;
@@ -1011,7 +1011,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	  adchitused_pos = good_ielem_posadc+1;
 	  adcint_pos = rawPosAdcHit.GetPulseInt(good_ielem_posadc);
 	  adcamp_pos = rawPosAdcHit.GetPulseAmp(good_ielem_posadc);
-	  if (rawPosAdcHit.GetPulseAmpRaw(good_ielem_posadc) <= 0) adcamp_pos= fTdc_Thrs;
+	  if (rawPosAdcHit.GetPulseAmpRaw(good_ielem_posadc) <= 0) adcamp_pos= 200.;
 	  adctime_pos = rawPosAdcHit.GetPulseTime(good_ielem_posadc)+fAdcTdcOffset;
 	  badcraw_pos = kTRUE;
 	  adctdcdifftime_pos=tdc_pos*fScinTdcToTime-adctime_pos;
