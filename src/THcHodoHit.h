@@ -34,6 +34,8 @@ public:
   Double_t GetNegADCpeak() const { return fNegADC_Peak; }
   Double_t GetPosADCtime() const { return fPosADC_Time; }
   Double_t GetNegADCtime() const { return fNegADC_Time; }
+  Double_t GetPosADCCorrtime() const { return fPosADC_CorrTime; }
+  Double_t GetNegADCCorrtime() const { return fNegADC_CorrTime; }
   Double_t GetCalcPosition() const { return fCalcPosition; }
   Int_t GetPosTDC() const { return fPosTDC; }
   Int_t GetNegTDC() const { return fNegTDC; }
@@ -77,6 +79,12 @@ public:
   void  SetNegADCtime( Double_t ptime) {
       fNegADC_Time =ptime;
  }
+  void  SetPosADCCorrtime( Double_t ptime) {
+      fPosADC_CorrTime =ptime;
+ }
+  void  SetNegADCCorrtime( Double_t ptime) {
+      fNegADC_CorrTime =ptime;
+ }
   void  SetCalcPosition( Double_t calcpos) {
       fCalcPosition =calcpos;
  }
@@ -91,6 +99,8 @@ protected:
   Double_t fNegADC_Peak;		// ADC peak amplitude
   Double_t fPosADC_Time;		// ADC time
   Double_t fNegADC_Time;		// ADC time
+  Double_t fPosADC_CorrTime;		// ADC time
+  Double_t fNegADC_CorrTime;		// ADC time
   Double_t fCalcPosition;		// Position along paddle calculated by time diff
   Int_t fPaddleNumber;
 

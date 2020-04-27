@@ -158,6 +158,7 @@ protected:
   Bool_t fSHMS;
   Bool_t fGoodStartTime;
   Double_t fStartTime;
+  Double_t fADCStartTime;
   Double_t fOffsetTime;
   Double_t fFPTimeAll;
   Int_t fNfptimes;
