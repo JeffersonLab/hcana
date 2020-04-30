@@ -999,8 +999,8 @@ void THcHodoscope::EstimateFocalPlaneTime()
       if(hit->GetHasCorrectedTimes()) {
 	Double_t postime=hit->GetPosTOFCorrectedTime();
 	Double_t negtime=hit->GetNegTOFCorrectedTime();
-	Double_t adcpostime=hit->GetPosADCtime();
-	Double_t adcnegtime=hit->GetNegADCtime();
+	Double_t adcpostime=hit->GetPosADCCorrtime();
+	Double_t adcnegtime=hit->GetNegADCCorrtime();
 	if ((postime>(TimePeak-fTofTolerance)) && (postime<(TimePeak+fTofTolerance)) &&
 	    (negtime>(TimePeak-fTofTolerance)) && (negtime<(TimePeak+fTofTolerance)) ) {
 	  hit->SetTwoGoodTimes(kTRUE);
@@ -1650,8 +1650,10 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 
       Double_t FPTimeSum=0.0;
       Int_t nFPTimeSum=0;
+      Int_t nGoodPlanesHit=0;
       for (Int_t ip = 0; ip < fNumPlanesBetaCalc; ip++ ){
 	if ( fNPlaneTime[ip] != 0 ){
+	  nGoodPlanesHit++;
 	  fFPTime[ip] = ( fSumPlaneTime[ip] / fNPlaneTime[ip] );
 	  FPTimeSum += fSumPlaneTime[ip];
 	  nFPTimeSum += fNPlaneTime[ip];
@@ -1660,8 +1662,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	}
       }
       Double_t fptime=-2000;
-      if (fGoodStartTime) fptime=fStartTime;
-      if (nFPTimeSum>2) fptime = FPTimeSum/nFPTimeSum;
+      fptime=fStartTime;
+      if (nGoodPlanesHit>=3) fptime = FPTimeSum/nFPTimeSum;
       fFPTimeAll = fptime;
       Double_t dedx=0.0;
       for(UInt_t ih=0;ih<fTOFCalc.size();ih++) {
