@@ -189,6 +189,7 @@ protected:
   Double_t fScinTdcMin, fScinTdcMax; // min and max TDC values
   char** fPlaneNames;
   UInt_t* fNPaddle;		// Number of paddles per plane
+  Int_t fTrackBetaIncludeSinglePmtHits;
 
   Double_t *fHodoNegAdcTimeWindowMin;    
   Double_t *fHodoNegAdcTimeWindowMax;
