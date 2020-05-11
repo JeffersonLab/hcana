@@ -239,8 +239,7 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
 
   fBetaNoTrk = 0.;
   fBetaNoTrkChiSq = 0.;
-
-  fNPaddle = new UInt_t [fNPlanes];
+ fNPaddle = new UInt_t [fNPlanes];
   fFPTime = new Double_t [fNPlanes];
   fPlaneCenter = new Double_t[fNPlanes];
   fPlaneSpacing = new Double_t[fNPlanes];
@@ -359,11 +358,13 @@ Int_t THcHodoscope::ReadDatabase( const TDatime& date )
     {"TOFCalib_beta_lo",                &fTOFCalib_beta_lo,               kDouble,    0, 1},
     {"TOFCalib_beta_hi",                &fTOFCalib_beta_hi,               kDouble,    0, 1},
     {"dumptof_filename",                 &fTOFDumpFile,           kString, 0, 1},
+    {"TrackBetaIncludeSinglePmtHits",                 &fTrackBetaIncludeSinglePmtHits,           kInt, 0, 1},
     {0}
   };
 
   // Defaults if not defined in parameter file
-  trackeff_scint_ydiff_max=20.;
+  fTrackBetaIncludeSinglePmtHits=0; // do not use paddles with only one hit in the TRack Beta calculation set ==1 to include
+   trackeff_scint_ydiff_max=20.;
   trackeff_scint_xdiff_max=20.;
   for(UInt_t ip=0;ip<fMaxHodoScin;ip++) {
     fHodoPosAdcTimeWindowMin[ip] = -1000.;
@@ -1074,7 +1075,7 @@ void THcHodoscope::EstimateFocalPlaneTime()
    //
   hTime->Reset();
   //
-  if((goodplanetime[0]||goodplanetime[1]) &&(goodplanetime[2]||goodplanetime[3])) {
+  if(fGoodStartTime && (goodplanetime[0]||goodplanetime[1]) &&(goodplanetime[2]||goodplanetime[3])) {
 
     Double_t sumW = 0.;
     Double_t sumT = 0.;
@@ -1175,6 +1176,8 @@ void THcHodoscope::EstimateFocalPlaneTime()
     if ((fNumPlanesBetaCalc==3)&&goodplanetime[0]&&goodplanetime[1]&&goodplanetime[2]&&fPlanes[0]->GetNGoodHits()==1&&fPlanes[1]->GetNGoodHits()==1&&fPlanes[2]->GetNGoodHits()==1) fGoodEventTOFCalib=kTRUE;
     //
     //
+  } else {
+    fBetaNoTrkChiSq = -10.;  // Flag if does not try to find beta  
   }
 }
 
@@ -1334,7 +1337,8 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
               hTime->Fill(timen);
 	    } else {
 	    //
-	    if(tdc_pos >=fScinTdcMin && tdc_pos <= fScinTdcMax ) {
+	      if (fTrackBetaIncludeSinglePmtHits==1) {
+	      if(tdc_pos >=fScinTdcMin && tdc_pos <= fScinTdcMax ) {
 	      Double_t adc_pos = hit->GetPosADC();
 	      Double_t adcamp_pos = hit->GetPosADCpeak();
 	      Double_t pathp = fPlanes[ip]->GetPosLeft() - scinLongCoord;
@@ -1381,6 +1385,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	      fTOFPInfo[ihhit].time_neg = timen;
               hTime->Fill(timen);
 	    }
+	      } // new fTrackBetaIncludeSinglePmtHits
 	    } // matches else
 	  } // condition for cenetr on a paddle
 	  ihhit++;
