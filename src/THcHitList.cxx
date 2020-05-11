@@ -259,10 +259,12 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	fRefIndexMaps[i].hashit = kFALSE;
 	Bool_t goodreftime=kFALSE;
 	Int_t reftime = 0;
+	Int_t prevtime = 0;
 	for(Int_t ihit=0; ihit<nrefhits; ihit++) {
 	  reftime = evdata.GetData(Decoder::kPulseTime,fRefIndexMaps[i].crate,
 				   fRefIndexMaps[i].slot, fRefIndexMaps[i].channel,ihit);
 	  reftime += 64*timeshift;
+	  if (ihit != (nrefhits-1)) prevtime = reftime;
 	  if(reftime >= fADC_RefTimeCut) {
 	    goodreftime = kTRUE;
 	    break;
@@ -270,6 +272,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	}
 	if(goodreftime || (nrefhits>0 && fADC_RefTimeBest)) {
 	  fRefIndexMaps[i].reftime = reftime;
+	  fRefIndexMaps[i].refdifftime = reftime-prevtime;
 	  fRefIndexMaps[i].hashit = kTRUE;
 	}
       } else {			// Assume this is a TDC
@@ -281,9 +284,11 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	// then fTDC_RefTimeCut
 	Bool_t goodreftime=kFALSE;
 	Int_t reftime = 0;
+	Int_t prevtime = 0;
 	for(Int_t ihit=0; ihit<nrefhits; ihit++) {
 	  reftime = evdata.GetData(fRefIndexMaps[i].crate,fRefIndexMaps[i].slot,
 				   fRefIndexMaps[i].channel,ihit);
+	  if( ihit != (nrefhits-1))prevtime=reftime;
 	  if(reftime >= fTDC_RefTimeCut) {
 	    goodreftime = kTRUE;
 	    break;
@@ -291,6 +296,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	}
 	if(goodreftime || (nrefhits>0 && fTDC_RefTimeBest)) {
 	    fRefIndexMaps[i].reftime = reftime;
+	    fRefIndexMaps[i].refdifftime = reftime-prevtime;
 	    fRefIndexMaps[i].hashit = kTRUE;
 	}
       }
@@ -354,8 +360,10 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	  Int_t nrefhits = evdata.GetNumHits(d->crate,d->slot,d->refchan);
 	  Bool_t goodreftime=kFALSE;
 	  Int_t reftime=0;
+	  Int_t prevtime=0;
 	  for(Int_t ihit=0; ihit<nrefhits; ihit++) {
 	    reftime = evdata.GetData(d->crate, d->slot, d->refchan, ihit);
+	    if (ihit != (nrefhits-1))prevtime = reftime;
 	    if(reftime >= fTDC_RefTimeCut) {
 	      goodreftime = kTRUE;
 	      break;
@@ -365,6 +373,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	  // hits make the RefTimeCut
 	  if(goodreftime || (nrefhits>0 && fTDC_RefTimeBest)) {
 	    rawhit->SetReference(signal, reftime);
+	    rawhit->SetReferenceDiff(signal, prevtime);
 	  } else if (!suppresswarnings) {
 	    cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
 	      " missing for (" << d->crate << ", " << d->slot <<
@@ -375,6 +384,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	  if(d->refindex >=0 && d->refindex < fNRefIndex) {
 	    if(fRefIndexMaps[d->refindex].hashit) {
 	      rawhit->SetReference(signal, fRefIndexMaps[d->refindex].reftime);
+	      rawhit->SetReferenceDiff(signal, fRefIndexMaps[d->refindex].refdifftime);
 	    } else {
 	      if(!suppresswarnings) {
 		cout << "HitList(event=" << evdata.GetEvNum() << "): refindex " << d->refindex <<
@@ -437,6 +447,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 					       d->crate, d->slot, d->refchan);
 	  Bool_t goodreftime=kFALSE;
 	  Int_t reftime = 0;
+	  Int_t prevtime = 0;
 	  timeshift=0;
 	  if(fTISlot>0) {		// Get the trigger time for this module
 	    if(fTrigTimeShiftMap.find(d->slot)
@@ -451,6 +462,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	  for(Int_t ihit=0; ihit<nrefhits; ihit++) {
 	    reftime = evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, d->refchan, ihit);
 	    reftime += 64*timeshift;
+	     if (ihit != (nrefhits-1)) prevtime=reftime;
 	    if(reftime >= fADC_RefTimeCut) {
 	      goodreftime=kTRUE;
 	      break;
@@ -460,6 +472,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	  // hits make the RefTimeCut
 	  if(goodreftime || (nrefhits>0 && fADC_RefTimeBest)) {
 	    rawhit->SetReference(signal, reftime);
+	    rawhit->SetReferenceDiff(signal, reftime-prevtime);
 	  } else if (!suppresswarnings) {
 #ifndef SUPPRESSMISSINGADCREFTIMEMESSAGES
 	    cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
@@ -472,6 +485,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	  if(d->refindex >=0 && d->refindex < fNRefIndex) {
 	    if(fRefIndexMaps[d->refindex].hashit) {
 	      rawhit->SetReference(signal, fRefIndexMaps[d->refindex].reftime);
+	      rawhit->SetReferenceDiff(signal, fRefIndexMaps[d->refindex].refdifftime);
 	    } else {
 	      if(!suppresswarnings) {
 #ifndef SUPPRESSMISSINGADCREFTIMEMESSAGES

@@ -95,6 +95,7 @@ THcRawTdcHit& THcRawTdcHit::operator=(const THcRawTdcHit& right) {
       fTime[iHit] = right.fTime[iHit];
     }
     fRefTime = right.fRefTime;
+    fRefDiffTime = right.fRefDiffTime;
     fHasRefTime = right.fHasRefTime;
     fNHits = right.fNHits;
   }
@@ -113,6 +114,7 @@ void THcRawTdcHit::Clear(Option_t* opt) {
     fTime[iHit] = 0;
   }
   fRefTime = 0;
+  fRefDiffTime = 0;
   fHasRefTime = kFALSE;
   fNHits = 0;
 }
@@ -136,6 +138,10 @@ void THcRawTdcHit::SetTime(Int_t time) {
 void THcRawTdcHit::SetRefTime(Int_t refTime) {
   fRefTime = refTime;
   fHasRefTime = kTRUE;
+}
+
+void THcRawTdcHit::SetRefDiffTime(Int_t refDiffTime) {
+  fRefDiffTime = refDiffTime;
 }
 
 
@@ -172,6 +178,18 @@ Int_t THcRawTdcHit::GetRefTime() const {
   else {
     TString msg = TString::Format(
       "`THcRawTdcHit::GetRefTime`: Reference time not available!"
+    );
+    throw std::runtime_error(msg.Data());
+  }
+}
+
+Int_t THcRawTdcHit::GetRefDiffTime() const {
+  if (fHasRefTime) {
+    return fRefDiffTime;
+  }
+  else {
+    TString msg = TString::Format(
+      "`THcRawTdcHit::GetRefDiffTime`: Reference time not available!"
     );
     throw std::runtime_error(msg.Data());
   }

@@ -59,6 +59,17 @@ void THcRawDCHit::SetReference(Int_t signal, Int_t reference) {
   }
 }
 
+void THcRawDCHit::SetReferenceDiff(Int_t signal, Int_t reference) {
+  if (signal == 0) {
+    fTdcHit.SetRefDiffTime(reference);
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawDCHit::SetReference`: only signal `0` available!"
+    );
+  }
+}
+
 
 Int_t THcRawDCHit::GetData(Int_t signal) {
   if (signal == 0) {
@@ -87,6 +98,17 @@ Int_t THcRawDCHit::GetRawData(Int_t signal) {
 Int_t THcRawDCHit::GetReference(Int_t signal) {
   if (signal == 0) {
     return fTdcHit.GetRefTime();
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawDCHit::GetReference`: only signal `0` available!"
+    );
+  }
+}
+
+Int_t THcRawDCHit::GetReferenceDiff(Int_t signal) {
+  if (signal == 0) {
+    return fTdcHit.GetRefDiffTime();
   }
   else {
     throw std::out_of_range(

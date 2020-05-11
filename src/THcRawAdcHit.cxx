@@ -261,6 +261,10 @@ void THcRawAdcHit::SetRefTime(Int_t refTime) {
   fHasRefTime = kTRUE;
 }
 
+void THcRawAdcHit::SetRefDiffTime(Int_t refDiffTime) {
+  fRefDiffTime = refDiffTime;
+}
+
 void THcRawAdcHit::SetSample(Int_t data) {
   if (fNSamples >= fMaxNSamples) {
     throw std::out_of_range(
@@ -498,6 +502,17 @@ Int_t THcRawAdcHit::GetRefTime() const {
   }
 }
 
+Int_t THcRawAdcHit::GetRefDiffTime() const {
+  if (fHasRefTime) {
+    return fRefDiffTime;
+  }
+  else {
+    TString msg = TString::Format(
+      "`THcRawAdcHit::GetRefTime`: Reference time not available!"
+    );
+    throw std::runtime_error(msg.Data());
+  }
+}
 
 Bool_t THcRawAdcHit::HasRefTime() const {
   return fHasRefTime;

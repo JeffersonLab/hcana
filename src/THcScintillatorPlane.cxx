@@ -544,6 +544,10 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     {"NegTdcRefTime",   "Reference time of Neg TDC", "fNegTdcRefTime"},
     {"PosAdcRefTime",   "Reference time of Pos ADC", "fPosAdcRefTime"},
     {"NegAdcRefTime",   "Reference time of Neg aDC", "fNegAdcRefTime"},
+    {"PosTdcRefDiffTime",   "Reference Diff time of Pos TDC", "fPosTdcRefDiffTime"},
+    {"NegTdcRefDiffTime",   "Reference Diff time of Neg TDC", "fNegTdcRefDiffTime"},
+    {"PosAdcRefDiffTime",   "Reference Diff time of Pos ADC", "fPosAdcRefDiffTime"},
+    {"NegAdcRefDiffTime",   "Reference Diff time of Neg aDC", "fNegAdcRefDiffTime"},
    //{"ngoodhits", "Number of paddle hits (passed tof tolerance and used to determine the focal plane time )",           "GetNGoodHits() "},
     { 0 }
   };
@@ -657,6 +661,10 @@ void THcScintillatorPlane::Clear( Option_t* )
   fPosAdcRefTime = kBig;
   fNegTdcRefTime = kBig;
   fNegAdcRefTime = kBig;
+  fPosTdcRefDiffTime = kBig;
+  fPosAdcRefDiffTime = kBig;
+  fNegTdcRefDiffTime = kBig;
+  fNegAdcRefDiffTime = kBig;
 }
 
 //_____________________________________________________________________________
@@ -715,6 +723,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   fPosAdcRefTime = kBig;
   fNegTdcRefTime = kBig;
   fNegAdcRefTime = kBig;
+  fPosTdcRefDiffTime = kBig;
+  fPosAdcRefDiffTime = kBig;
+  fNegTdcRefDiffTime = kBig;
+  fNegAdcRefDiffTime = kBig;
   Int_t nrPosTDCHits=0;
   Int_t nrNegTDCHits=0;
   Int_t nrPosADCHits=0;
@@ -802,7 +814,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     THcRawTdcHit& rawPosTdcHit = hit->GetRawTdcHitPos();
     if (rawPosTdcHit.GetNHits() >0 && rawPosTdcHit.HasRefTime()) {
-    if (fPosTdcRefTime == kBig) fPosTdcRefTime=rawPosTdcHit.GetRefTime() ;
+      if (fPosTdcRefTime == kBig)  {
+	fPosTdcRefTime=rawPosTdcHit.GetRefTime() ;
+	fPosTdcRefDiffTime=rawPosTdcHit.GetRefDiffTime() ;
+      }
     if (fPosTdcRefTime != rawPosTdcHit.GetRefTime()) {
       cout <<  "THcScintillatorPlane: " << GetName() << " reftime problem at paddle num = " << padnum << " TDC pos hits = " << rawPosTdcHit.GetNHits() << endl;
         problem_flag=kTRUE;
@@ -817,7 +832,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
     THcRawTdcHit& rawNegTdcHit = hit->GetRawTdcHitNeg();
     if (rawNegTdcHit.GetNHits() >0 && rawNegTdcHit.HasRefTime()) {
-    if (fNegTdcRefTime == kBig) fNegTdcRefTime=rawNegTdcHit.GetRefTime() ;
+      if (fNegTdcRefTime == kBig) {
+	fNegTdcRefTime=rawNegTdcHit.GetRefTime() ;
+	fNegTdcRefDiffTime=rawNegTdcHit.GetRefDiffTime() ;
+      }
     if (fNegTdcRefTime != rawNegTdcHit.GetRefTime()) {
         cout <<  "THcScintillatorPlane: " << GetName()<< " Neg TDC reftime problem at paddle num = " << padnum << " TDC neg hits = " << rawNegTdcHit.GetNHits() << endl;
         problem_flag=kTRUE;
@@ -833,7 +851,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
     THcRawAdcHit& rawPosAdcHit = hit->GetRawAdcHitPos();
     if (rawPosAdcHit.GetNPulses() >0 && rawPosAdcHit.HasRefTime()) {
-    if (fPosAdcRefTime == kBig  ) fPosAdcRefTime=rawPosAdcHit.GetRefTime() ;
+      if (fPosAdcRefTime == kBig  ) {
+	fPosAdcRefTime=rawPosAdcHit.GetRefTime() ;
+	fPosAdcRefDiffTime=rawPosAdcHit.GetRefDiffTime() ;
+      }
     if (fPosAdcRefTime != rawPosAdcHit.GetRefTime()) {
       cout <<  "THcScintillatorPlane: " << GetName()<< " Pos ADC reftime problem at paddle num = " << padnum << " ADC pos hits = " << rawPosAdcHit.GetNPulses() << endl;
         problem_flag=kTRUE;
@@ -863,7 +884,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     }
     THcRawAdcHit& rawNegAdcHit = hit->GetRawAdcHitNeg();
     if (rawNegAdcHit.GetNPulses()>0 && rawNegAdcHit.HasRefTime()) {
-    if (fNegAdcRefTime == kBig) fNegAdcRefTime=rawNegAdcHit.GetRefTime() ;
+      if (fNegAdcRefTime == kBig) {
+	fNegAdcRefTime=rawNegAdcHit.GetRefTime() ;
+	fNegAdcRefDiffTime=rawNegAdcHit.GetRefDiffTime() ;
+      }
     if (fNegAdcRefTime != rawNegAdcHit.GetRefTime()) {
       cout <<  "THcScintillatorPlane: " << GetName()<< " Neg ADC reftime problem at paddle num = " << padnum << " TDC pos hits = " << rawNegAdcHit.GetNPulses() << endl;
         problem_flag=kTRUE;

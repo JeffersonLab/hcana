@@ -14,10 +14,12 @@ class THcRawTdcHit : public TObject {
 
     void SetTime(Int_t time);
     void SetRefTime(Int_t refTime);
+    void SetRefDiffTime(Int_t refDiffTime);
 
     Int_t GetTimeRaw(UInt_t iHit=0) const;
     Int_t GetTime(UInt_t iHit=0) const;
     Int_t GetRefTime() const;
+    Int_t GetRefDiffTime() const;
 
     Bool_t HasRefTime() const;
 
@@ -30,6 +32,7 @@ class THcRawTdcHit : public TObject {
 
     Int_t fTime[fMaxNHits];
     Int_t fRefTime;
+    Int_t fRefDiffTime;
 
     Bool_t fHasRefTime;
     UInt_t fNHits;

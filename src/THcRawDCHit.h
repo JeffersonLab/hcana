@@ -18,10 +18,12 @@ class THcRawDCHit : public THcRawHit {
 
     virtual void SetData(Int_t signal, Int_t data);
     virtual void SetReference(Int_t signal, Int_t reference);
+    virtual void SetReferenceDiff(Int_t signal, Int_t reference);
 
     virtual Int_t GetData(Int_t signal);
     virtual Int_t GetRawData(Int_t signal);
     virtual Int_t GetReference(Int_t signal);
+    virtual Int_t GetReferenceDiff(Int_t signal);
     virtual ESignalType GetSignalType(Int_t signal);
     virtual Int_t GetNSignals();
 

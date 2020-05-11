@@ -22,6 +22,7 @@ class THcRawShowerHit : public THcRawHit {
       Int_t signal, Int_t data, Int_t time, Int_t pedestal, Int_t peak
     );
     virtual void SetReference(Int_t signal, Int_t reference);
+    virtual void SetReferenceDiff(Int_t signal, Int_t reference);
 
     virtual Int_t GetData(Int_t signal);
     virtual Int_t GetRawData(Int_t signal);
