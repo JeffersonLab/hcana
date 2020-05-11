@@ -62,6 +62,7 @@ protected:
     Int_t slot;
     Int_t channel;
     Int_t reftime;
+    Int_t refdifftime;
   };
   std::vector<RefIndexMap> fRefIndexMaps;
   // Should this be a sparse list instead in case user

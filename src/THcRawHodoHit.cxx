@@ -105,6 +105,18 @@ void THcRawHodoHit::SetReference(Int_t signal, Int_t reference) {
   }
 }
 
+void THcRawHodoHit::SetReferenceDiff(Int_t signal, Int_t referenceDiff) {
+  if (signal < fNAdcSignals) {
+    fAdcHits[signal].SetRefDiffTime(referenceDiff);
+  } else if (signal < fNAdcSignals+fNTdcSignals) {
+    fTdcHits[signal-fNAdcSignals].SetRefDiffTime(referenceDiff);
+  } else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::SetReference`: only signals `2` and `3` available!"
+    );
+  }
+}
+
 
 Int_t THcRawHodoHit::GetData(Int_t signal) {
   if (0 <= signal && signal < fNAdcSignals) {
@@ -139,6 +151,17 @@ Int_t THcRawHodoHit::GetRawData(Int_t signal) {
 Int_t THcRawHodoHit::GetReference(Int_t signal) {
   if (fNAdcSignals <= signal && signal < fNAdcSignals+fNTdcSignals) {
     return fTdcHits[signal-fNAdcSignals].GetRefTime();
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::GetReference`: only signals `2` and `3` available!"
+    );
+  }
+}
+
+Int_t THcRawHodoHit::GetReferenceDiff(Int_t signal) {
+  if (fNAdcSignals <= signal && signal < fNAdcSignals+fNTdcSignals) {
+    return fTdcHits[signal-fNAdcSignals].GetRefDiffTime();
   }
   else {
     throw std::out_of_range(

@@ -39,6 +39,7 @@ public:
   virtual Int_t GetNSignals() { return 1;}
 
   virtual void SetReference(Int_t signal, Int_t reference) {};
+  virtual void SetReferenceDiff(Int_t signal, Int_t reference) {};
   virtual Bool_t HasReference(Int_t signal) {return kFALSE;};
   virtual Int_t GetReference(Int_t signal) {return 0;};
 

@@ -185,6 +185,10 @@ class THcScintillatorPlane : public THaSubDetector {
   Double_t fPosAdcRefTime;
   Double_t fNegTdcRefTime;
   Double_t fNegAdcRefTime;
+  Double_t fPosTdcRefDiffTime;
+  Double_t fPosAdcRefDiffTime;
+  Double_t fNegTdcRefDiffTime;
+  Double_t fNegAdcRefDiffTime;
   Double_t fHitDistance;
   Double_t fScinXPos;
   Double_t fScinYPos;

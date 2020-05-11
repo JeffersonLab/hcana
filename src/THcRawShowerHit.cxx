@@ -92,6 +92,16 @@ void THcRawShowerHit::SetReference(Int_t signal, Int_t reference) {
   }
 }
 
+void THcRawShowerHit::SetReferenceDiff(Int_t signal, Int_t reference) {
+  if (signal < fNAdcSignals) {
+    fAdcHits[signal].SetRefDiffTime(reference);
+  } else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::SetReference`: only signals `2` and `3` available!"
+    );
+  }
+}
+
 
 Int_t THcRawShowerHit::GetData(Int_t signal) {
   if (0 <= signal && signal < fNAdcSignals) {
