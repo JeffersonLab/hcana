@@ -137,6 +137,10 @@ Int_t THcHallCSpectrometer::DefineVariables( EMode mode )
   fIsSetup = ( mode == kDefine );
   RVarDef vars[] = {
     { "tr.betachisq", "Chi2 of beta", "fTracks.THaTrack.GetBetaChi2()"},
+    { "tr.GoodPlane4", "Flag for track hitting hodo plane 4", "fTracks.THaTrack.GetGoodPlane4()"},
+    { "tr.GoodPlane3", "Flag for track hitting hodo plane 3", "fTracks.THaTrack.GetGoodPlane3()"},
+    { "tr.fptime", "Track hodo focal plane time", "fTracks.THaTrack.GetFPTime()"},
+    { "tr.npmt", "Track number of hodo PMTs hit", "fTracks.THaTrack.GetNPMT()"},
     { "tr.PruneSelect", "Prune Select ID", "fPruneSelect"},
     { "present", "Trigger Type includes this spectrometer", "fPresent"},
     { 0 }
