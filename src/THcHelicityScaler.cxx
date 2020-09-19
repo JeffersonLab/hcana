@@ -57,6 +57,10 @@ THcHelicityScaler::THcHelicityScaler(const char *name, const char* description)
     fDelayedType(-1),
     fBCM_Gain(0), fBCM_Offset(0)
 {
+  /*
+    C.Y. Sep 19, 2020: The constructor needs to be updated to initialize the necessary variables to write the helicity to a scaler tree.
+   */
+
   fROC=-1;
   fNScalerChannels = 32;
 
@@ -72,6 +76,11 @@ THcHelicityScaler::THcHelicityScaler(const char *name, const char* description)
 
 THcHelicityScaler::~THcHelicityScaler()
 {
+
+    /*
+    C.Y. Sep 19, 2020: The destructor needs to be updated to delete the pointer variables that were initialized in the constructor..
+   */
+  
   delete [] fBCM_Gain;
   delete [] fBCM_Offset;
 
@@ -162,12 +171,22 @@ Int_t THcHelicityScaler::End( THaRunBase* )
     fTriggerAsymmetry = 0.0;
   }
   cout << " ----------------------------- " << endl;
+
+  /*
+    C.Y. Sep 19, 2020 : This method needs to be updated to add/write the delayed events to the Scaler Tree. See End() method 
+   */
+  
   return 0;
 }
 
 
 Int_t THcHelicityScaler::ReadDatabase(const TDatime& date )
 {
+
+  /*
+    C.Y. Sep 19, 2020 : This method needs to be updated to include additional BCM parameters. See ReadDatabase() in THcScalerEvtHandler.cxx
+   */
+  
   char prefix[2];
   prefix[0]='g'; prefix[1]='\0';
 
@@ -190,6 +209,9 @@ Int_t THcHelicityScaler::ReadDatabase(const TDatime& date )
     gHcParms->LoadParmValues((DBRequest*)&list2, prefix);
     fBCM_Name = vsplit(bcm_namelist);
   }
+
+
+  
   
   return kOK;
 }
@@ -234,6 +256,11 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
     return ret;
   }
 
+  /*
+    C.Y. Sep 19, 2020 : Here goes the code to create a Helicity Scaler TTree, add the variables obtained in AnalyzeBuffer(), and Fill the tree.
+    (See Analyze() method in THcScalerEvtHandler.cxx)
+   */
+  
 }
 Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 {
@@ -304,12 +331,46 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 	  }
 	}
       }
-
+    
+      //C.Y. Sep 19, 2020 : Here is some tricky business : We need to look for normalization scaler modules (the scaler with the clock) 
+      /*  //This was copied directly from THcScalerEvtHandler.cxx, and it is where the clock scaler is decoded. The scalers[idx] 
+          //represents vector with components -->  scalers.push_back(new Scaler3801(icrate, islot));  Will Ask Steve Wood for advice
+      if(fNormIdx >= 0) {
+	UInt_t *psave = p;
+	while(p < pnext) {
+	  if(scalers[fNormIdx]->IsSlot(*p)) {
+	    scalers[fNormIdx]->Decode(p);
+	    ifound = 1;
+	    break;
+	  }
+	  p += scalers[fNormIdx]->GetNumChan() + 1;
+	}
+	p = psave;
+      }
+      */
+      
       while(p < pnext) {
 	Int_t nskip = 0;
 	if(fDebugFile) {
 	  *fDebugFile << "Scaler Header: " << hex << *p << dec;
 	}
+
+	//C.Y. Sep 19, 2020 :: Here we would need to loop over scalers vector and decode the other scalers (ONLY helicity scalers)
+	/*  //This part of the code was copied from THcScalerEvtHandler.cxx
+	for(size_t j=0; j<scalers.size(); j++) {
+	  if(scalers[j]->IsSlot(*p)) {
+	    nskip = scalers[j]->GetNumChan() + 1;
+	    if((Int_t) j != fNormIdx) {
+	      if(fDebugFile) {
+		*fDebugFile << " found (" << j << ")  skip " << nskip << endl;
+	      }
+	      scalers[j]->Decode(p);
+	      ifound = 1;
+	    }
+	    break;
+	  }
+	}
+	*/
 	if(nskip == 0) {
 	  if(fDebugFile) {
 	    *fDebugFile << endl;
@@ -332,8 +393,13 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 
   if (!ifound) return 0;
 
-  return 1;
 
+  //C.Y. Sep 19, 2020 : Here goes the code to write the helicity raw data to a variable, and to map the variable to the scaler location
+  //( See AnalyzeBuffer() method in THcScalerEvtHandler.cxx )
+
+  
+  
+  return 1;
  	
 }
 
@@ -475,6 +541,7 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
   fScalerSums = new Double_t[fNScalerChannels];
   fAsymmetry = new Double_t[fNScalerChannels];
   fAsymmetryError = new Double_t[fNScalerChannels];
+
   for(Int_t i=0;i<fNScalerChannels;i++) {
     fHScalers[0][i] = 0.0;
     fHScalers[1][i] = 0.0;
@@ -491,6 +558,17 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
 
   MakeParms();
 
+
+  
+  /*C.Y. Sep 19, 2020 : Here goes the code to parse the scaler map file ( db_P(H)Scalevt.dat ) and extract the crate/slot/channel information
+  and generate scaler names that will eventually be written to a TTree ( See Init() method in THcScalerEvtHandler.cxx )
+
+  The problem here is that there are two helicity states per channel, so how do we actually write both to a single leaf variable?
+  I would think the answer is to create a second variable and change the suffix name to "negHel", using AddVars(). This way, we can
+  probably have scalers_posHel, and scalers_negHel vectors, and only the variable name would be different.
+
+  */
+  
   return kOK;
 }
 
