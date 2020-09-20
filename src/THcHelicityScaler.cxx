@@ -173,7 +173,7 @@ Int_t THcHelicityScaler::End( THaRunBase* )
   cout << " ----------------------------- " << endl;
 
   /*
-    C.Y. Sep 19, 2020 : This method needs to be updated to add/write the delayed events to the Scaler Tree. See End() method 
+    C.Y. Sep 19, 2020 : This method needs to be updated to add/write the delayed events to the Scaler Tree. See End() method in THcScalerEvtHandler.cxx
    */
   
   return 0;

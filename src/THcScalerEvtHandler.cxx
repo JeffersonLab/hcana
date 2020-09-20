@@ -680,14 +680,20 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
       pos1 = FindNoCase(dbline[0],svariable);
       if (pos1 != minus1 && dbline.size()>4) {
 	string sdesc = "";
-	for (size_t j=5; j<dbline.size(); j++) sdesc = sdesc+" "+dbline[j];
+	//C.Y. Sep 20, 2020 : in original scaler map channel description started at dbline[5]
+	//for (size_t j=5; j<dbline.size(); j++) sdesc = sdesc+" "+dbline[j];
+	//C.Y. Sep 20, 2020 : in new scaler map, channel description started at dbline[6], since dbline[5] specified the helicity state of the channel
+	for (size_t j=6; j<dbline.size(); j++) sdesc = sdesc+" "+dbline[j];  
 	UInt_t islot = atoi(dbline[1].c_str());
 	UInt_t ichan = atoi(dbline[2].c_str());
 	UInt_t ikind = atoi(dbline[3].c_str());
+	//read in the helicity state of the scaler channel (assumes the new scaler map is being used, which specifies the helicity state)
+	Int_t  ihel = atoi(dbline[5].c_str());   //ihel = 0 (no helicity), ihel = 1(+helicity), ihel = -1(- helicity)
 	if (fDebugFile)
-	  *fDebugFile << "add var "<<dbline[1]<<"   desc = "<<sdesc<<"    islot= "<<islot<<"  "<<ichan<<"  "<<ikind<<endl;
+	  *fDebugFile << "add var "<<dbline[1]<<"   desc = "<<sdesc<<"    islot= "<<islot<<"  "<<ichan<<"  "<<ikind<< "   "<<ihel << endl;
 	TString tsname(dbline[4].c_str());
 	TString tsdesc(sdesc.c_str());
+	if (ihel != 0 || tsdesc==" Empty") continue; //do not add scaler variable to tree if helicity is non-zero (helicity channels will be added in THcHelicityScaler.cxx) : also, ignore empty channels
 	AddVars(tsname,tsdesc,islot,ichan,ikind);
 	// add extra scaler which is cut on the current
 	if (ikind == ICOUNT ||ikind == ITIME ||ikind == ICHARGE  ) {
