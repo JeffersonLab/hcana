@@ -479,12 +479,39 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   }
 
   if(actualhelicity!=0) {
-    Int_t hindex = (actualhelicity>0)?0:1;
+
+    //C.Y. 11/24/2020  if-else notation--> expression 1 ? expression 2 : 3
+    //This means: expression 1 is a condition which is evaluated, if the condition is true (non-zero)
+    //then the control is transferred to expression 2, otherwise, the control passes to expression 3.
+    //--> if (actualhelicity>0) {hindex = 0;} else {hindex = 1;}
+    //from the if-else statement: hindex=0 is for pos helicity, hindex=1 is for neg helicity
+    Int_t hindex = (actualhelicity>0)?0:1;  
+
+    //C.Y. 11/24/2020  increment the counter for either '+' or '-' helicity states
     (actualhelicity>0)?(fNTriggersPlus++):(fNTriggersMinus++);
+
+    //C.Y. 11/24/2020  Loop over all 32 scaler channels for a specific helicity scaler module (SIS 3801)
     for(Int_t i=0;i<fNScalerChannels;i++) {
-      Int_t count = p[i]&0xFFFFFF; // Bottom 24 bits
+
+      //C.Y. 11/24/2020 the count expression below gets the scaler raw helicity information for the ith channel
+      Int_t count = p[i]&0xFFFFFF; // Bottom 24 bits  equivalent of scalers->Decode()
+      
+      //for every +/- pair event (catch), write to tree
+      //Here is where the important information from scalers gets passed to the scalerloc
+      //--> before 10/24/2018, were useless helicity scalers, 2 separate scalers do not help
+      //--> with a single helicity scaler (for each ROC), for each event you determine whether
+      //is + or - helicity or undefined (MPS)
+      //--> Steve will look into this.  I will also look into this. 
+
+      //Increment either the '+' (hindex=0) or '-' (hindex=1) helicity counts for each [i] scaler channel channel of a given module
+      //Currently, we have a single helicity scaler module for each spectrometer arm.  Each module has copies of the other module
+      //as well as its own helicity scaler values spanning over the 32 channels
       fHScalers[hindex][i] += count;
       fScalerSums[i] += count;
+
+      //C.Y. 11/24/2020 : The helicity scaler information for each channel is stored in fHSCalers[hindex][i], for positive (hindex=0) and
+      //negative (hindex=1) helicity states, so this variable is extremely important for writing the information to the helicity scaler tree. 
+      //There is one channel reserved for the 1 MHz clock time.
     }
   }
   return(0);
