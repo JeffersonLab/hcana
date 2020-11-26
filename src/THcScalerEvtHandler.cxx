@@ -67,10 +67,10 @@ using namespace Decoder;
 
 static const UInt_t ICOUNT    = 1;
 static const UInt_t IRATE     = 2;
-static const UInt_t ICURRENT = 3;
+static const UInt_t ICURRENT  = 3;
 static const UInt_t ICHARGE   = 4;
-static const UInt_t ITIME   = 5;
-static const UInt_t ICUT = 6;
+static const UInt_t ITIME     = 5;
+static const UInt_t ICUT      = 6;
 static const UInt_t MAXCHAN   = 32;
 static const UInt_t defaultDT = 4;
 

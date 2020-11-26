@@ -54,7 +54,6 @@ THcHelicityScaler::THcHelicityScaler(const char *name, const char* description)
   : THaEvtTypeHandler(name,description),
     fBankID(9801),
     fUseFirstEvent(kTRUE),
-    fDelayedType(-1),
     fBCM_Gain(0), fBCM_Offset(0), fBCM_SatOffset(0), fBCM_SatQuadratic(0), fBCM_delta_charge(0),
     evcount(0), evcountR(0.0), ifound(0), fNormIdx(-1),
     fNormSlot(-1),
@@ -89,9 +88,21 @@ THcHelicityScaler::THcHelicityScaler(const char *name, const char* description)
 THcHelicityScaler::~THcHelicityScaler()
 {
 
-    /*
-    C.Y. Sep 19, 2020: The destructor needs to be updated to delete the pointer variables that were initialized in the constructor..
-   */
+  
+  //C.Y. Nov 26, 2020: The destructor has be updated to delete the pointer variables that were initialized in the constructor..
+  //---------------------------------------
+   if (!TROOT::Initialized()) {
+    delete fScalerTree;
+  }
+  Podd::DeleteContainer(scalers);
+  Podd::DeleteContainer(scalerloc);
+  delete [] dvars_prev_read;
+  delete [] dvars;
+  delete [] dvarsFirst;
+  delete [] fBCM_SatOffset;
+  delete [] fBCM_SatQuadratic;
+  delete [] fBCM_delta_charge;
+  //--------------------------------------
   
   delete [] fBCM_Gain;
   delete [] fBCM_Offset;
