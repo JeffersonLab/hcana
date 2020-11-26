@@ -43,10 +43,10 @@ using namespace Decoder;
 
 static const UInt_t ICOUNT    = 1;
 static const UInt_t IRATE     = 2;
-static const UInt_t ICURRENT = 3;
+static const UInt_t ICURRENT  = 3;
 static const UInt_t ICHARGE   = 4;
-static const UInt_t ITIME   = 5;
-static const UInt_t ICUT = 6;
+static const UInt_t ITIME     = 5;
+static const UInt_t ICUT      = 6;
 static const UInt_t MAXCHAN   = 32;
 static const UInt_t defaultDT = 4;
 
@@ -206,35 +206,54 @@ Int_t THcHelicityScaler::End( THaRunBase* )
 Int_t THcHelicityScaler::ReadDatabase(const TDatime& date )
 {
 
-  /*
-    C.Y. Sep 19, 2020 : This method needs to be updated to include additional BCM parameters. See ReadDatabase() in THcScalerEvtHandler.cxx
-   */
+  
+  //C.Y. Nov 26, 2020 : This method has been updated to include additional BCM parameters. See ReadDatabase() in THcScalerEvtHandler.cxx
   
   char prefix[2];
-  prefix[0]='g'; prefix[1]='\0';
-
+  prefix[0]='g';
+  prefix[1]='\0';
   fNumBCMs = 0;
-  string bcm_namelist;
   DBRequest list[]={
-		    {"NumBCMs",&fNumBCMs, kInt, 0, 1},
-		    {"BCM_Names",     &bcm_namelist,       kString},
-		    {0}
+    {"NumBCMs",&fNumBCMs, kInt, 0, 1},
+    {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
+
   if(fNumBCMs > 0) {
     fBCM_Gain = new Double_t[fNumBCMs];
     fBCM_Offset = new Double_t[fNumBCMs];
-    DBRequest list2[]={
-      {"BCM_Gain",      fBCM_Gain,         kDouble, (UInt_t) fNumBCMs},
-      {"BCM_Offset",     fBCM_Offset,       kDouble,(UInt_t) fNumBCMs},
-      {0}
-    };
-    gHcParms->LoadParmValues((DBRequest*)&list2, prefix);
-    fBCM_Name = vsplit(bcm_namelist);
+    fBCM_SatOffset = new Double_t[fNumBCMs];
+    fBCM_SatQuadratic = new Double_t[fNumBCMs];
+    fBCM_delta_charge= new Double_t[fNumBCMs];
+    
+  string bcm_namelist;
+  DBRequest list[]={
+    {"BCM_Gain",      fBCM_Gain,         kDouble, (UInt_t) fNumBCMs},
+    {"BCM_Offset",     fBCM_Offset,       kDouble,(UInt_t) fNumBCMs},
+    {"BCM_SatQuadratic",     fBCM_SatQuadratic,       kDouble,(UInt_t) fNumBCMs,1},
+    {"BCM_SatOffset",     fBCM_SatOffset,       kDouble,(UInt_t) fNumBCMs,1},
+    {"BCM_Names",     &bcm_namelist,       kString},
+    {"BCM_Current_threshold",     &fbcm_Current_Threshold,       kDouble,0, 1},
+    {"BCM_Current_threshold_index",     &fbcm_Current_Threshold_Index,       kInt,0,1},
+    {0}
+  };
+
+  fbcm_Current_Threshold = 0.0;
+  fbcm_Current_Threshold_Index = 0;
+  for(Int_t i=0;i<fNumBCMs;i++) {
+    fBCM_SatOffset[i]=0.;
+    fBCM_SatQuadratic[i]=0.;
   }
-
-
-  
+  gHcParms->LoadParmValues((DBRequest*)&list2, prefix);
+  vector<string> bcm_names = vsplit(bcm_namelist);
+  for(Int_t i=0;i<fNumBCMs;i++) {
+    fBCM_Name.push_back(bcm_names[i]+".scal");
+    fBCM_delta_charge[i]=0.;
+  }
+  }
+  fTotalTime=0.;
+  fPrevTotalTime=0.;
+  fDeltaTime=-1.;
   
   return kOK;
 }
@@ -501,6 +520,23 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
     fRingSeed_actual = 0;
   }
 
+  //C.Y. 11/26/2020  The block of code below is used to extract the helicity information from each
+  //channel of the helicity scaler onto a variable to be stored in the scaler tree. For each channel,
+  //each helicity state (+, -, or MPS (undefined)) is stored in a single varibale. Each helicity state
+  //will be tagged separately later on.
+
+  //C.Y. 11/26/2020  Loop over all 32 scaler channels for a specific helicity scaler module (SIS 3801)
+    for(Int_t i=0;i<fNScalerChannels;i++) {
+
+      //C.Y. 11/26/2020 the count expression below gets the scaler raw helicity information (+, -, or MPS helicity states) for the ith channel
+      Int_t count = p[i]&0xFFFFFF; // Bottom 24 bits  equivalent of scalers->Decode()
+
+      fScalerChan[i] = count;        //pass the helicity raw information to each helicity scaler channel array element
+    }
+
+
+  //C.Y. 11/26/2020  The block of code below is used to get a cumulative sum of +/- helicity used
+  //for calculation of beam charge asymmetry
   if(actualhelicity!=0) {
 
     //C.Y. 11/24/2020  if-else notation--> expression 1 ? expression 2 : 3
@@ -518,23 +554,11 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 
       //C.Y. 11/24/2020 the count expression below gets the scaler raw helicity information for the ith channel
       Int_t count = p[i]&0xFFFFFF; // Bottom 24 bits  equivalent of scalers->Decode()
-      
-      //for every +/- pair event (catch), write to tree
-      //Here is where the important information from scalers gets passed to the scalerloc
-      //--> before 10/24/2018, were useless helicity scalers, 2 separate scalers do not help
-      //--> with a single helicity scaler (for each ROC), for each event you determine whether
-      //is + or - helicity or undefined (MPS)
-      //--> Steve will look into this.  I will also look into this. 
 
       //Increment either the '+' (hindex=0) or '-' (hindex=1) helicity counts for each [i] scaler channel channel of a given module
-      //Currently, we have a single helicity scaler module for each spectrometer arm.  Each module has copies of the other module
-      //as well as its own helicity scaler values spanning over the 32 channels
       fHScalers[hindex][i] += count;
       fScalerSums[i] += count;
 
-      //C.Y. 11/24/2020 : The helicity scaler information for each channel is stored in fHSCalers[hindex][i], for positive (hindex=0) and
-      //negative (hindex=1) helicity states, so this variable is extremely important for writing the information to the helicity scaler tree. 
-      //There is one channel reserved for the 1 MHz clock time.
     }
   }
   return(0);
@@ -560,9 +584,12 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
 {
   
   ReadDatabase(date);
-
+  const int LEN = 200;
+  char cbuf[LEN];
+  
   fStatus = kOK;
-
+  fNormIdx = -1;
+ 
   for( vector<UInt_t*>::iterator it = fDelayedEvents.begin();
        it != fDelayedEvents.end(); ++it )
     delete [] *it;
@@ -579,6 +606,11 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
     fROC = 8;			// Default to SHMS crate
   }
 
+
+  //C.Y. 11/26/2020 : Read In and Parse the helicity scaler map file 
+  
+
+  //------Initialize Helicity Variables / Arrays-----
   fNTriggers = 0;
   fNTrigsInBuf = 0;
   fFirstCycle = -100;
@@ -589,6 +621,7 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
   fHScalers[0] = new Double_t[fNScalerChannels];
   fHScalers[1] = new Double_t[fNScalerChannels];
   fScalerSums = new Double_t[fNScalerChannels];
+  fScalerChan = new Double_t[fNScalerChannels]; //C.Y. 11/26/2020 : added array to store helicity information per channel 
   fAsymmetry = new Double_t[fNScalerChannels];
   fAsymmetryError = new Double_t[fNScalerChannels];
 
@@ -596,6 +629,7 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
     fHScalers[0][i] = 0.0;
     fHScalers[1][i] = 0.0;
     fScalerSums[0] = 0.0;
+    fScalerChan[0] = 0.0;
     fAsymmetry[0] = 0.0;
     fAsymmetryError[0] = 0.0;
   }

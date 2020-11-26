@@ -92,6 +92,11 @@ private:
   Double_t fTimeAsymmetry;
   Double_t fTriggerAsymmetry;
 
+  //----C.Y. Nov 26, 2020----
+  Double_t *fScalerChan;
+
+  //-------------------------
+  
   std::vector<UInt_t*> fDelayedEvents;
   Int_t fROC;
   Int_t fNScalerChannels;	// Number of scaler channels/event
