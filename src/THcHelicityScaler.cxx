@@ -94,7 +94,7 @@ THcHelicityScaler::~THcHelicityScaler()
    if (!TROOT::Initialized()) {
     delete fScalerTree;
   }
-  Podd::DeleteContainer(scalers);
+   //Podd::DeleteContainer(scalers);
   Podd::DeleteContainer(scalerloc);
   delete [] dvars_prev_read;
   delete [] dvars;
@@ -227,7 +227,7 @@ Int_t THcHelicityScaler::ReadDatabase(const TDatime& date )
     fBCM_delta_charge= new Double_t[fNumBCMs];
     
   string bcm_namelist;
-  DBRequest list[]={
+  DBRequest list2[]={
     {"BCM_Gain",      fBCM_Gain,         kDouble, (UInt_t) fNumBCMs},
     {"BCM_Offset",     fBCM_Offset,       kDouble,(UInt_t) fNumBCMs},
     {"BCM_SatQuadratic",     fBCM_SatQuadratic,       kDouble,(UInt_t) fNumBCMs,1},
@@ -607,9 +607,84 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
   }
 
 
-  //C.Y. 11/26/2020 : Read In and Parse the helicity scaler map file 
-  
+  //C.Y. 11/26/2020 : Read In and Parse the variables in the helicity scaler map file 
+  TString dfile;
+  dfile = fName + "scaler.txt";
 
+  TString sname0 = "Scalevt";
+  TString sname;
+  sname = "hel"+fName+sname0;   //This should be: 'helPScalevt' or 'helHScalevt'
+
+  //Open helicity scaler .dat map file 
+  FILE *fi = OpenFile(sname.Data(), date);
+  if ( !fi ) {
+    cout << "Cannot find db file for "<<fName<<" scaler event handler"<<endl;
+    return kFileError;
+  }
+
+  size_t minus1 = -1;
+  size_t pos1;
+  string scomment = "#";
+  string svariable = "variable";
+  string smap = "map";
+  vector<string> dbline;
+  
+  while( fgets(cbuf, LEN, fi) != NULL) {
+    std::string sin(cbuf);
+    std::string sinput(sin.substr(0,sin.find_first_of("#")));
+    if (fDebugFile) *fDebugFile << "string input "<<sinput<<endl;
+    dbline = vsplit(sinput);
+    if (dbline.size() > 0) {
+      pos1 = FindNoCase(dbline[0],scomment);
+      if (pos1 != minus1) continue;
+      pos1 = FindNoCase(dbline[0],svariable);
+
+      if (pos1 != minus1 && dbline.size()>4) {
+	string sdesc = "";
+	for (size_t j=5; j<dbline.size(); j++) sdesc = sdesc+" "+dbline[j];
+	UInt_t islot = atoi(dbline[1].c_str());
+	UInt_t ichan = atoi(dbline[2].c_str());
+	UInt_t ikind = atoi(dbline[3].c_str());
+	if (fDebugFile)
+	  *fDebugFile << "add var "<<dbline[1]<<"   desc = "<<sdesc<<"    islot= "<<islot<<"  "<<ichan<<"  "<<ikind<<endl;
+	TString tsname(dbline[4].c_str());
+	TString tsdesc(sdesc.c_str());
+	AddVars(tsname,tsdesc,islot,ichan,ikind);
+	// add extra scaler which is cut on the current
+	if (ikind == ICOUNT ||ikind == ITIME ||ikind == ICHARGE  ) {
+	  tsname=tsname+"Cut";
+	  AddVars(tsname,tsdesc,islot,ichan,ICUT+ikind);
+	  }
+      }
+      
+      pos1 = FindNoCase(dbline[0],smap);
+      if (fDebugFile) *fDebugFile << "map ? "<<dbline[0]<<"  "<<smap<<"   "<<pos1<<"   "<<dbline.size()<<endl;
+      if (pos1 != minus1 && dbline.size()>6) {
+	Int_t imodel, icrate, islot, inorm;
+	UInt_t header, mask;
+	char cdum[20];
+	sscanf(sinput.c_str(),"%s %d %d %d %x %x %d \n",cdum,&imodel,&icrate,&islot, &header, &mask, &inorm);
+	if ((fNormSlot >= 0) && (fNormSlot != inorm)) cout << "THcScalerEvtHandler::WARN:  contradictory norm slot  "<<fNormSlot<<"   "<<inorm<<endl;
+	fNormSlot = inorm;  // slot number used for normalization.  This variable is not used but is checked.
+	Int_t clkchan = -1;
+	Double_t clkfreq = 1;
+	if (dbline.size()>8) {
+	  clkchan = atoi(dbline[7].c_str());
+	  clkfreq = 1.0*atoi(dbline[8].c_str());
+	  fClockChan=clkchan;
+	  fClockFreq=clkfreq;
+	}
+	if (fDebugFile) {
+	  *fDebugFile << "map line "<<dec<<imodel<<"  "<<icrate<<"  "<<islot<<endl;
+	  *fDebugFile <<"   header  0x"<<hex<<header<<"  0x"<<mask<<dec<<"  "<<inorm<<"  "<<clkchan<<"  "<<clkfreq<<endl;
+	}
+
+      }
+    }
+    
+  } //end while loop
+  
+  
   //------Initialize Helicity Variables / Arrays-----
   fNTriggers = 0;
   fNTrigsInBuf = 0;
