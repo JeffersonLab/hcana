@@ -55,12 +55,24 @@ THcHelicityScaler::THcHelicityScaler(const char *name, const char* description)
     fBankID(9801),
     fUseFirstEvent(kTRUE),
     fDelayedType(-1),
-    fBCM_Gain(0), fBCM_Offset(0)
+    fBCM_Gain(0), fBCM_Offset(0), fBCM_SatOffset(0), fBCM_SatQuadratic(0), fBCM_delta_charge(0),
+    evcount(0), evcountR(0.0), ifound(0), fNormIdx(-1),
+    fNormSlot(-1),
+    dvars(0),dvars_prev_read(0), dvarsFirst(0), fScalerTree(0),
+    fOnlySyncEvents(kFALSE), fOnlyBanks(kFALSE), fDelayedType(-1),
+    fClockChan(-1), fLastClock(0), fClockOverflows(0)
 {
-  /*
-    C.Y. Sep 19, 2020: The constructor needs to be updated to initialize the necessary variables to write the helicity to a scaler tree.
-   */
 
+  //-----C.Y. Sep 19, 2020: The constructor has been updated to initialize-----
+  //the necessary variables to write the helicity to a scaler tree.
+
+  fRocSet.clear();
+  fModuleSet.clear();
+  scal_prev_read.clear();
+  scal_present_read.clear();
+  scal_overflows.clear();   
+  //---------------------------------------------------------------------------
+  
   fROC=-1;
   fNScalerChannels = 32;
 
@@ -332,7 +344,7 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 	}
       }
     
-      //C.Y. Sep 19, 2020 : Here is some tricky business : We need to look for normalization scaler modules (the scaler with the clock) 
+      //C.Y. Sep 19, 2020 : We need to look for normalization scaler modules (the scaler with the clock) 
       /*  //This was copied directly from THcScalerEvtHandler.cxx, and it is where the clock scaler is decoded. The scalers[idx] 
           //represents vector with components -->  scalers.push_back(new Scaler3801(icrate, islot));  Will Ask Steve Wood for advice
       if(fNormIdx >= 0) {
@@ -631,5 +643,66 @@ void THcHelicityScaler::MakeParms()
   gHcParms->Define(Form("g%s_hscaler_trigger_asy",fName.Data()),
 		   "Helicity Trigger Asymmetry",fTriggerAsymmetry);
 }
+
+//--------------------C.Y. Sep 20, 2020 : Added Utility Functions--------------------
+
+void THcHelicityScaler::AddVars(TString name, TString desc, UInt_t islot,
+				  UInt_t ichan, UInt_t ikind)
+{
+  // need to add fName here to make it a unique variable.  (Left vs Right HRS, for example)
+  TString name1 = fName + name;
+  TString desc1 = fName + desc;
+  // We don't yet know the correspondence between index of scalers[] and slots.
+  // Will put that in later.
+  scalerloc.push_back( new HCScalerLoc(name1, desc1, 0, islot, ichan, ikind,
+				       scalerloc.size()) );
+}
+
+void THcHelicityScaler::DefVars()
+{
+  // called after AddVars has finished being called.
+  Nvars = scalerloc.size();
+  if (Nvars == 0) return;
+  dvars_prev_read = new UInt_t[Nvars];  // dvars_prev_read is a member of this class
+  dvars = new Double_t[Nvars];  // dvars is a member of this class
+  dvarsFirst = new Double_t[Nvars];  // dvarsFirst is a member of this class
+  memset(dvars, 0, Nvars*sizeof(Double_t));
+  memset(dvars_prev_read, 0, Nvars*sizeof(UInt_t));
+  memset(dvarsFirst, 0, Nvars*sizeof(Double_t));
+  if (gHaVars) {
+    if(fDebugFile) *fDebugFile << "THcScalerEVtHandler:: Have gHaVars "<<gHaVars<<endl;
+  } else {
+    cout << "No gHaVars ?!  Well, that's a problem !!"<<endl;
+    return;
+  }
+  if(fDebugFile) *fDebugFile << "THcScalerEvtHandler:: scalerloc size "<<scalerloc.size()<<endl;
+  const Int_t* count = 0;
+  for (size_t i = 0; i < scalerloc.size(); i++) {
+    gHaVars->DefineByType(scalerloc[i]->name.Data(), scalerloc[i]->description.Data(),
+			  &dvars[i], kDouble, count);
+    //gHaVars->DefineByType(scalerloc[i]->name.Data(), scalerloc[i]->description.Data(),
+    //			  &dvarsFirst[i], kDouble, count);
+  }
+}
+
+size_t THcHelicityScaler::FindNoCase(const string& sdata, const string& skey)
+{
+  // Find iterator of word "sdata" where "skey" starts.  Case insensitive.
+  string sdatalc, skeylc;
+  sdatalc = "";  skeylc = "";
+  for (string::const_iterator p =
+	 sdata.begin(); p != sdata.end(); ++p) {
+    sdatalc += tolower(*p);
+  }
+  for (string::const_iterator p =
+	 skey.begin(); p != skey.end(); ++p) {
+    skeylc += tolower(*p);
+  }
+  if (sdatalc.find(skeylc,0) == string::npos) return -1;
+  return sdatalc.find(skeylc,0);
+};
+
+//---------------------------------------------------------------------------------
+
 
 ClassImp(THcHelicityScaler)

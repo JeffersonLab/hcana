@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////////
 
 #include "THaEvtTypeHandler.h"
+#include "THcScalerEvtHandler.h"
 #include "Decoder.h"
 #include <string>
 #include <vector>
@@ -18,7 +19,9 @@
 #include "TString.h"
 #include <cstring>
 
+
 class THcHelicity;
+class HCScalerLoc;
 
 class THcHelicityScaler : public THaEvtTypeHandler {
 
@@ -50,6 +53,15 @@ public:
 
 private:
 
+  //------------C.Y. Sep 20, 2020 :: Added Utility Function Prototypes----------------
+  void AddVars(TString name, TString desc, UInt_t iscal, UInt_t ichan, UInt_t ikind);
+  void DefVars();
+  static size_t FindNoCase(const std::string& sdata, const std::string& skey);
+  
+  std::vector<Decoder::GenScaler*> scalers;
+  std::vector<HCScalerLoc*> scalerloc;
+  //----------------------------------------------------------------------------------
+  
   Int_t RanBit30(Int_t ranseed);
   void MakeParms();
 
@@ -87,12 +99,44 @@ private:
   Int_t fNumBCMs;
   Double_t *fBCM_Gain;
   Double_t *fBCM_Offset;
+  //---C.Y. Sep 2020 : Added additional BCM-related variables--
+  Double_t *fBCM_SatOffset;
+  Double_t *fBCM_SatQuadratic;
+  Double_t *fBCM_delta_charge;
+  Double_t fTotalTime;
+  Double_t fDeltaTime;
+  Double_t fPrevTotalTime;
+  Double_t fbcm_Current_Threshold;
+  Double_t fClockFreq;
+  Int_t fbcm_Current_Threshold_Index;
   std::vector <std::string> fBCM_Name;
 
+  //----C.Y. Sep 20, 2020 : Added additional variables-----
+  // (required by utility functions and scaler tree output)
+  UInt_t evcount;
+  Double_t evcountR;
+  UInt_t evNumber;
+  Double_t evNumberR;
+  Int_t Nvars, ifound, fNormIdx, fNormSlot, nscalers;
+  Double_t *dvars;
+  UInt_t *dvars_prev_read;
+  std::vector<UInt_t> scal_prev_read;
+  std::vector<UInt_t> scal_present_read;
+  std::vector<UInt_t> scal_overflows;
+  Double_t *dvarsFirst;
+  TTree *fScalerTree;
+  Bool_t fOnlySyncEvents;
+  Bool_t fOnlyBanks;
+  Int_t fClockChan;
+  UInt_t fLastClock;
+  Int_t fClockOverflows;
+  std::set<UInt_t> fRocSet;
+  std::set<UInt_t> fModuleSet;
+  //--------------------------------------------------------
+  
   THcHelicityScaler(const THcHelicityScaler& fh);
   THcHelicityScaler& operator=(const THcHelicityScaler& fh);
 
-  UInt_t evNumber;
 
   ClassDef(THcHelicityScaler,0)  // Scaler Event handler
 
