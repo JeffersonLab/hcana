@@ -118,19 +118,26 @@ THcHelicityScaler::~THcHelicityScaler()
 Int_t THcHelicityScaler::End( THaRunBase* )
 {
   // Process any delayed events in order received
-
+  
+  //C.Y. Nov 26, 2020 : This method has been updated to add/write the delayed events to the Scaler Tree. See End() method in THcScalerEvtHandler.cxx
+  
   cout << "THcHelicityScaler::End Analyzing " << fDelayedEvents.size() << " delayed helicity scaler events" << endl;
     for(std::vector<UInt_t*>::iterator it = fDelayedEvents.begin();
       it != fDelayedEvents.end(); ++it) {
     UInt_t* rdata = *it;
     AnalyzeBuffer(rdata);
   }
-
+  if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
+    evNumberR = -1;
+  if (fScalerTree) fScalerTree->Fill();
+  
   for( vector<UInt_t*>::iterator it = fDelayedEvents.begin();
        it != fDelayedEvents.end(); ++it )
     delete [] *it;
   fDelayedEvents.clear();
 
+  if (fScalerTree) fScalerTree->Write();
+ 
   //  cout << " -- Helicity Scalers -- " << endl;
   for(Int_t i=0;i<fNScalerChannels;i++) {
     if(fScalerSums[i]>0.5) {
@@ -197,9 +204,7 @@ Int_t THcHelicityScaler::End( THaRunBase* )
   }
   cout << " ----------------------------- " << endl;
 
-  /*
-    C.Y. Sep 19, 2020 : This method needs to be updated to add/write the delayed events to the Scaler Tree. See End() method in THcScalerEvtHandler.cxx
-   */
+
   
   return 0;
 }
