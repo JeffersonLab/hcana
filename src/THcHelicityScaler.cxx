@@ -127,9 +127,9 @@ Int_t THcHelicityScaler::End( THaRunBase* )
     UInt_t* rdata = *it;
     AnalyzeBuffer(rdata);
   }
-  if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
+  if (fDebugFile) *fDebugFile << "scaler tree ptr 2 "<<fScalerTree<<endl;
     evNumberR = -1;
-  if (fScalerTree) fScalerTree->Fill();
+    //if (fScalerTree) fScalerTree->Fill();
   
   for( vector<UInt_t*>::iterator it = fDelayedEvents.begin();
        it != fDelayedEvents.end(); ++it )
@@ -346,7 +346,7 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
     evNumberR = evNumber;
     Int_t ret;
     if((ret=AnalyzeBuffer(rdata))) {
-      if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
+      if (fDebugFile) *fDebugFile << "scaler tree ptr 1 "<<fScalerTree<<endl;
       if (fScalerTree) fScalerTree->Fill();
     }
     return ret;
@@ -454,6 +454,128 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 
   if (!ifound) return 0;
 
+  
+  return 1;
+ 	
+}
+
+Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
+{
+  Int_t hbits = (p[0]>>30) & 0x3; // quartet and helcity bits in scaler word
+  Bool_t isquartet = (hbits&2) != 0;
+  Int_t ispos = hbits&1;
+  Int_t actualhelicity = 0;
+  fHelicityHistory[fNTrigsInBuf] = hbits;
+  fNTrigsInBuf++;
+  fNTriggers++;
+
+  Int_t quartetphase = (fNTriggers-fFirstCycle)%4;
+  if(fFirstCycle >= -10) {
+    if(quartetphase == 0) {
+      Int_t predicted = RanBit30(fRingSeed_reported);
+      fRingSeed_reported = ((fRingSeed_reported<<1) | ispos) & 0x3FFFFFFF;
+      // Check if ringseed_predicted agrees with reported if(fNBits>=30)
+      if(fNBits >= 30 && predicted != fRingSeed_reported) {
+	cout << "THcHelicityScaler: Helicity Prediction Failed" << endl;
+	cout << "Reported  " << bitset<32>(fRingSeed_reported) << endl;
+	cout << "Predicted " << bitset<32>(predicted) << endl;
+      }
+      fNBits++;
+      if(fNBits==30) {
+	cout << "THcHelicityScaler: A " << bitset<32>(fRingSeed_reported) <<
+	  " found at cycle " << fNTriggers << endl;
+      }
+    } else if (quartetphase == 3) {
+      if(!isquartet) {
+	cout << "THcHelicityScaler: Quartet bit expected but not set (" <<
+	  fNTriggers << ")" << endl;
+	fNBits = 0;
+	fRingSeed_reported = 0;
+	fRingSeed_actual = 0;
+	fFirstCycle = -100;
+      }
+    }
+  } else { 			// First cycle not yet identified
+    if(isquartet) { // Helicity and quartet signal for next set of scalers
+      fFirstCycle = fNTriggers - 3;
+      quartetphase = (fNTriggers-fFirstCycle)%4;
+      //// Helicity at start of quartet is same as last of quartet, so we can start filling the seed
+      fRingSeed_reported = ((fRingSeed_reported<<1) | ispos) & 0x3FFFFFFF;
+      fNBits++;
+      if(fNBits==30) {
+	cout << "THcHelicityScaler: B " << bitset<32>(fRingSeed_reported) <<
+	  " found at cycle " << fNTriggers << endl;
+      }
+    }
+  }
+
+  if(fNBits>=30) {
+    fRingSeed_actual = RanBit30(fRingSeed_reported);
+    fRingSeed_actual = RanBit30(fRingSeed_actual);
+
+#define DELAY9
+#ifdef DELAY9
+    if(quartetphase == 3) {
+      fRingSeed_actual = RanBit30(fRingSeed_actual);
+      actualhelicity = (fRingSeed_actual&1)?+1:-1;
+    } else {
+      actualhelicity = (fRingSeed_actual&1)?+1:-1;
+      if(quartetphase == 0 || quartetphase == 1) {
+	actualhelicity = -actualhelicity;
+      }
+    }
+#else
+    actualhelicity = (fRingSeed_actual&1)?+1:-1;
+    if(quartetphase == 1 || quartetphase == 2) {
+      actualhelicity = -actualhelicity;
+    }
+#endif
+  } else {
+    fRingSeed_actual = 0;
+  }
+
+  //C.Y. 11/26/2020  The block of code below is used to extract the helicity information from each
+  //channel of the helicity scaler onto a variable to be stored in the scaler tree. For each channel,
+  //each helicity state (+, -, or MPS (undefined)) is stored in a single varibale. Each helicity state
+  //will be tagged separately later on.
+
+  //C.Y. 11/26/2020  Loop over all 32 scaler channels for a specific helicity scaler module (SIS 3801)
+    for(Int_t i=0;i<fNScalerChannels;i++) {
+
+      //C.Y. 11/26/2020 the count expression below gets the scaler raw helicity information (+, -, or MPS helicity states) for the ith channel
+      Int_t count = p[i]&0xFFFFFF; // Bottom 24 bits  equivalent of scalers->Decode()
+
+      fScalerChan[i] = count;        //pass the helicity raw information to each helicity scaler channel array element
+    }
+
+
+  //C.Y. 11/26/2020  The block of code below is used to get a cumulative sum of +/- helicity used
+  //for calculation of beam charge asymmetry
+  if(actualhelicity!=0) {
+
+    //C.Y. 11/24/2020  if-else notation--> expression 1 ? expression 2 : 3
+    //This means: expression 1 is a condition which is evaluated, if the condition is true (non-zero)
+    //then the control is transferred to expression 2, otherwise, the control passes to expression 3.
+    //--> if (actualhelicity>0) {hindex = 0;} else {hindex = 1;}
+    //from the if-else statement: hindex=0 is for pos helicity, hindex=1 is for neg helicity
+    Int_t hindex = (actualhelicity>0)?0:1;  
+
+    //C.Y. 11/24/2020  increment the counter for either '+' or '-' helicity states
+    (actualhelicity>0)?(fNTriggersPlus++):(fNTriggersMinus++);
+
+    //C.Y. 11/24/2020  Loop over all 32 scaler channels for a specific helicity scaler module (SIS 3801)
+    for(Int_t i=0;i<fNScalerChannels;i++) {
+
+      //C.Y. 11/24/2020 the count expression below gets the scaler raw helicity information for the ith channel
+      Int_t count = p[i]&0xFFFFFF; // Bottom 24 bits  equivalent of scalers->Decode()
+
+      //Increment either the '+' (hindex=0) or '-' (hindex=1) helicity counts for each [i] scaler channel channel of a given module
+      fHScalers[hindex][i] += count;
+      fScalerSums[i] += count;
+    }
+  }
+
+
   //Sets the helicity scaler clock to define the time
   Double_t scal_current=0;
   UInt_t thisClock = scalers[fNormIdx]->GetData(fClockChan);
@@ -470,7 +592,7 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
   }
   fPrevTotalTime=fTotalTime;
   
-  //C.Y. Sep 19, 2020 : Here goes the code to write the helicity raw data to a variable
+  //C.Y. Nov 27, 2020 : Here goes the code to write the helicity raw data to a variable
   //and to map the variable to the scaler location //( See THcScalerEvtHandler::AnalyzeBuffer() )
 
   Int_t nscal=0;
@@ -715,131 +837,6 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
   //  
   for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
   
-  
-  
-  return 1;
- 	
-}
-
-Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
-{
-  Int_t hbits = (p[0]>>30) & 0x3; // quartet and helcity bits in scaler word
-  Bool_t isquartet = (hbits&2) != 0;
-  Int_t ispos = hbits&1;
-  Int_t actualhelicity = 0;
-  fHelicityHistory[fNTrigsInBuf] = hbits;
-  fNTrigsInBuf++;
-  fNTriggers++;
-
-  Int_t quartetphase = (fNTriggers-fFirstCycle)%4;
-  if(fFirstCycle >= -10) {
-    if(quartetphase == 0) {
-      Int_t predicted = RanBit30(fRingSeed_reported);
-      fRingSeed_reported = ((fRingSeed_reported<<1) | ispos) & 0x3FFFFFFF;
-      // Check if ringseed_predicted agrees with reported if(fNBits>=30)
-      if(fNBits >= 30 && predicted != fRingSeed_reported) {
-	cout << "THcHelicityScaler: Helicity Prediction Failed" << endl;
-	cout << "Reported  " << bitset<32>(fRingSeed_reported) << endl;
-	cout << "Predicted " << bitset<32>(predicted) << endl;
-      }
-      fNBits++;
-      if(fNBits==30) {
-	cout << "THcHelicityScaler: A " << bitset<32>(fRingSeed_reported) <<
-	  " found at cycle " << fNTriggers << endl;
-      }
-    } else if (quartetphase == 3) {
-      if(!isquartet) {
-	cout << "THcHelicityScaler: Quartet bit expected but not set (" <<
-	  fNTriggers << ")" << endl;
-	fNBits = 0;
-	fRingSeed_reported = 0;
-	fRingSeed_actual = 0;
-	fFirstCycle = -100;
-      }
-    }
-  } else { 			// First cycle not yet identified
-    if(isquartet) { // Helicity and quartet signal for next set of scalers
-      fFirstCycle = fNTriggers - 3;
-      quartetphase = (fNTriggers-fFirstCycle)%4;
-      //// Helicity at start of quartet is same as last of quartet, so we can start filling the seed
-      fRingSeed_reported = ((fRingSeed_reported<<1) | ispos) & 0x3FFFFFFF;
-      fNBits++;
-      if(fNBits==30) {
-	cout << "THcHelicityScaler: B " << bitset<32>(fRingSeed_reported) <<
-	  " found at cycle " << fNTriggers << endl;
-      }
-    }
-  }
-
-  if(fNBits>=30) {
-    fRingSeed_actual = RanBit30(fRingSeed_reported);
-    fRingSeed_actual = RanBit30(fRingSeed_actual);
-
-#define DELAY9
-#ifdef DELAY9
-    if(quartetphase == 3) {
-      fRingSeed_actual = RanBit30(fRingSeed_actual);
-      actualhelicity = (fRingSeed_actual&1)?+1:-1;
-    } else {
-      actualhelicity = (fRingSeed_actual&1)?+1:-1;
-      if(quartetphase == 0 || quartetphase == 1) {
-	actualhelicity = -actualhelicity;
-      }
-    }
-#else
-    actualhelicity = (fRingSeed_actual&1)?+1:-1;
-    if(quartetphase == 1 || quartetphase == 2) {
-      actualhelicity = -actualhelicity;
-    }
-#endif
-  } else {
-    fRingSeed_actual = 0;
-  }
-
-  //C.Y. 11/26/2020  The block of code below is used to extract the helicity information from each
-  //channel of the helicity scaler onto a variable to be stored in the scaler tree. For each channel,
-  //each helicity state (+, -, or MPS (undefined)) is stored in a single varibale. Each helicity state
-  //will be tagged separately later on.
-
-  //C.Y. 11/26/2020  Loop over all 32 scaler channels for a specific helicity scaler module (SIS 3801)
-    for(Int_t i=0;i<fNScalerChannels;i++) {
-
-      //C.Y. 11/26/2020 the count expression below gets the scaler raw helicity information (+, -, or MPS helicity states) for the ith channel
-      Int_t count = p[i]&0xFFFFFF; // Bottom 24 bits  equivalent of scalers->Decode()
-
-      fScalerChan[i] = count;        //pass the helicity raw information to each helicity scaler channel array element
-    }
-
-
-    
-
-
-  //C.Y. 11/26/2020  The block of code below is used to get a cumulative sum of +/- helicity used
-  //for calculation of beam charge asymmetry
-  if(actualhelicity!=0) {
-
-    //C.Y. 11/24/2020  if-else notation--> expression 1 ? expression 2 : 3
-    //This means: expression 1 is a condition which is evaluated, if the condition is true (non-zero)
-    //then the control is transferred to expression 2, otherwise, the control passes to expression 3.
-    //--> if (actualhelicity>0) {hindex = 0;} else {hindex = 1;}
-    //from the if-else statement: hindex=0 is for pos helicity, hindex=1 is for neg helicity
-    Int_t hindex = (actualhelicity>0)?0:1;  
-
-    //C.Y. 11/24/2020  increment the counter for either '+' or '-' helicity states
-    (actualhelicity>0)?(fNTriggersPlus++):(fNTriggersMinus++);
-
-    //C.Y. 11/24/2020  Loop over all 32 scaler channels for a specific helicity scaler module (SIS 3801)
-    for(Int_t i=0;i<fNScalerChannels;i++) {
-
-      //C.Y. 11/24/2020 the count expression below gets the scaler raw helicity information for the ith channel
-      Int_t count = p[i]&0xFFFFFF; // Bottom 24 bits  equivalent of scalers->Decode()
-
-      //Increment either the '+' (hindex=0) or '-' (hindex=1) helicity counts for each [i] scaler channel channel of a given module
-      fHScalers[hindex][i] += count;
-      fScalerSums[i] += count;
-
-    }
-  }
   return(0);
 }
 //_____________________________________________________________________________
