@@ -58,7 +58,7 @@ private:
   void DefVars();
   static size_t FindNoCase(const std::string& sdata, const std::string& skey);
   
-  //std::vector<Decoder::GenScaler*> scalers;
+  std::vector<Decoder::GenScaler*> scalers;
   std::vector<HCScalerLoc*> scalerloc;
   //----------------------------------------------------------------------------------
   

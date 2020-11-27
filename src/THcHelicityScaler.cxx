@@ -91,10 +91,10 @@ THcHelicityScaler::~THcHelicityScaler()
   
   //C.Y. Nov 26, 2020: The destructor has be updated to delete the pointer variables that were initialized in the constructor..
   //---------------------------------------
-   if (!TROOT::Initialized()) {
+  if (!TROOT::Initialized()) {
     delete fScalerTree;
   }
-   //Podd::DeleteContainer(scalers);
+  Podd::DeleteContainer(scalers);
   Podd::DeleteContainer(scalerloc);
   delete [] dvars_prev_read;
   delete [] dvars;
@@ -368,28 +368,13 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 	  // Save helcitiy and quad info for THcHelicity
 	  for (Int_t iev = 0; iev < nevents; iev++) {  // find number of helicity events in each bank
 	    Int_t index = fNScalerChannels*iev+1;
-	    AnalyzeHelicityScaler(p+index);
+
+	    //C.Y. 11/26/2020 This methods extracts the raw helicity information and writes to arrays
+	    AnalyzeHelicityScaler(p+index); 
 	    //	    cout << "H: " << evNumber << endl;
 	  }
 	}
       }
-    
-      //C.Y. Sep 19, 2020 : We need to look for normalization scaler modules (the scaler with the clock) 
-      /*  //This was copied directly from THcScalerEvtHandler.cxx, and it is where the clock scaler is decoded. The scalers[idx] 
-          //represents vector with components -->  scalers.push_back(new Scaler3801(icrate, islot));  Will Ask Steve Wood for advice
-      if(fNormIdx >= 0) {
-	UInt_t *psave = p;
-	while(p < pnext) {
-	  if(scalers[fNormIdx]->IsSlot(*p)) {
-	    scalers[fNormIdx]->Decode(p);
-	    ifound = 1;
-	    break;
-	  }
-	  p += scalers[fNormIdx]->GetNumChan() + 1;
-	}
-	p = psave;
-      }
-      */
       
       while(p < pnext) {
 	Int_t nskip = 0;
@@ -397,22 +382,6 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 	  *fDebugFile << "Scaler Header: " << hex << *p << dec;
 	}
 
-	//C.Y. Sep 19, 2020 :: Here we would need to loop over scalers vector and decode the other scalers (ONLY helicity scalers)
-	/*  //This part of the code was copied from THcScalerEvtHandler.cxx
-	for(size_t j=0; j<scalers.size(); j++) {
-	  if(scalers[j]->IsSlot(*p)) {
-	    nskip = scalers[j]->GetNumChan() + 1;
-	    if((Int_t) j != fNormIdx) {
-	      if(fDebugFile) {
-		*fDebugFile << " found (" << j << ")  skip " << nskip << endl;
-	      }
-	      scalers[j]->Decode(p);
-	      ifound = 1;
-	    }
-	    break;
-	  }
-	}
-	*/
 	if(nskip == 0) {
 	  if(fDebugFile) {
 	    *fDebugFile << endl;
@@ -435,10 +404,267 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 
   if (!ifound) return 0;
 
+  //Sets the helicity scaler clock to define the time
+  Double_t scal_current=0;
+  UInt_t thisClock = scalers[fNormIdx]->GetData(fClockChan);
+  if(thisClock < fLastClock) {	// Count clock scaler wrap arounds
+    fClockOverflows++;
+  }
+  fTotalTime = (thisClock+(((Double_t) fClockOverflows)*kMaxUInt+fClockOverflows))/fClockFreq;
+  fLastClock = thisClock;
+  fDeltaTime= fTotalTime - fPrevTotalTime;
+  if (fDeltaTime==0) {
+    cout << " *******************   Severe Warning ****************************" << endl;
+    cout << " In THcScalerEvtHandler have found fDeltaTime is zero !!   " << endl;
+      cout << " ******************* Alert DAQ experts ****************************" << endl;
+  }
+  fPrevTotalTime=fTotalTime;
+  
+  //C.Y. Sep 19, 2020 : Here goes the code to write the helicity raw data to a variable
+  //and to map the variable to the scaler location //( See THcScalerEvtHandler::AnalyzeBuffer() )
 
-  //C.Y. Sep 19, 2020 : Here goes the code to write the helicity raw data to a variable, and to map the variable to the scaler location
-  //( See AnalyzeBuffer() method in THcScalerEvtHandler.cxx )
+  Int_t nscal=0;
+  for (size_t i = 0; i < scalerloc.size(); i++)  {
+    size_t ivar = scalerloc[i]->ivar;
+    size_t idx = scalerloc[i]->index;
+    size_t ichan = scalerloc[i]->ichan;
+    if (evcount==0) {
+      if (fDebugFile) *fDebugFile << "Debug dvarsFirst "<<i<<"   "<<ivar<<"  "<<idx<<"  "<<ichan<<endl;
+      if ((ivar < scalerloc.size()) &&
+	  (idx < scalers.size()) &&
+	  (ichan < MAXCHAN)){
+	if(fUseFirstEvent){
+	  if (scalerloc[ivar]->ikind == ICOUNT){
+	    UInt_t scaldata = fScalerChan[ichan];   //Pass the helicity information per channel to scaldata
+	    dvars[ivar] = scaldata;
+	    scal_present_read.push_back(scaldata);
+	    scal_prev_read.push_back(0);
+	    scal_overflows.push_back(0);
+	    dvarsFirst[ivar] = 0.0;
+	  }
+	  if (scalerloc[ivar]->ikind == ITIME){
+	    dvars[ivar] =fTotalTime;
+	    dvarsFirst[ivar] = 0;
+	  }
+	  if (scalerloc[ivar]->ikind == IRATE) {
+	    dvars[ivar] = (fScalerChan[ichan])/fDeltaTime;
+	    dvarsFirst[ivar] = dvars[ivar];            
+	    //printf("%s %f\n",scalerloc[ivar]->name.Data(),scalers[idx]->GetRate(ichan)); //checks
+	  }
+	  if(scalerloc[ivar]->ikind == ICURRENT || scalerloc[ivar]->ikind == ICHARGE){
+	    Int_t bcm_ind=-1;
+	    for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
+	      {		
+		size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
+		if (match!=string::npos)
+		  {
+		    bcm_ind=itemp;
+		  }
+	      }
+	    if (scalerloc[ivar]->ikind == ICURRENT) {
+              dvars[ivar]=0.;
+	      if (bcm_ind != -1) {
+                 dvars[ivar]=((fScalerChan[ichan])/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		 dvars[ivar]=dvars[ivar]+fBCM_SatOffset[bcm_ind]*TMath::Max(dvars[ivar]-fBCM_SatOffset[i],0.0);
+	      }
+         	if (bcm_ind == fbcm_Current_Threshold_Index) scal_current= dvars[ivar];
+	    }
+	    if (scalerloc[ivar]->ikind == ICHARGE) {
+	      if (bcm_ind != -1) {
+		Double_t cur_temp=((fScalerChan[ichan])/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		cur_temp=cur_temp+fBCM_SatQuadratic[bcm_ind]*TMath::Power(TMath::Max(cur_temp-fBCM_SatOffset[bcm_ind],0.0),2.0);
+		fBCM_delta_charge[bcm_ind]=fDeltaTime*cur_temp;
+		dvars[ivar]+=fBCM_delta_charge[bcm_ind];
+	      }
+	    }
+	    //	    printf("1st event %i index %i fBCMname %s scalerloc %s offset %f gain %f computed %f\n",evcount, bcm_ind, fBCM_Name[bcm_ind],scalerloc[ivar]->name.Data(),fBCM_Offset[bcm_ind],fBCM_Gain[bcm_ind],dvars[ivar]);
+	  }
+	  
+	  if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
+	  
+	} else { //ifnotusefirstevent
+	  if (scalerloc[ivar]->ikind == ICOUNT) {
+              dvarsFirst[ivar] = fScalerChan[ichan];  //Pass the helicity information per channel to dvarsFirst
+              scal_present_read.push_back(dvarsFirst[ivar]);
+              scal_prev_read.push_back(0);
+	  }
+	  if (scalerloc[ivar]->ikind == ITIME){
+	    dvarsFirst[ivar] = fTotalTime;
+	  }
+	  if (scalerloc[ivar]->ikind == IRATE)  {
+	    dvarsFirst[ivar] = (fScalerChan[ichan])/fDeltaTime;
+ 	    //printf("%s %f\n",scalerloc[ivar]->name.Data(),scalers[idx]->GetRate(ichan)); //checks
+	  }
+	  if(scalerloc[ivar]->ikind == ICURRENT || scalerloc[ivar]->ikind == ICHARGE)
+	    {
+	      Int_t bcm_ind=-1;
+	      for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
+		{		
+		  size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
+		  if (match!=string::npos)
+		    {
+		      bcm_ind=itemp;
+		    }
+		}
+	    if (scalerloc[ivar]->ikind == ICURRENT) {
+	        dvarsFirst[ivar]=0.0;
+                if (bcm_ind != -1) {
+                 dvarsFirst[ivar]=((fScalerChan[ichan])/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		 dvarsFirst[ivar]=dvarsFirst[ivar]+fBCM_SatQuadratic[bcm_ind]*TMath::Power(TMath::Max(dvars[ivar]-fBCM_SatOffset[i],0.0),2.);
+		}
+         	if (bcm_ind == fbcm_Current_Threshold_Index) scal_current= dvarsFirst[ivar];
+	    }
+	    if (scalerloc[ivar]->ikind == ICHARGE) {
+	      if (bcm_ind != -1) {
+		Double_t cur_temp=((fScalerChan[ichan])/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		cur_temp=cur_temp+fBCM_SatQuadratic[bcm_ind]*TMath::Power(TMath::Max(cur_temp-fBCM_SatOffset[bcm_ind],0.0),2.);
+		fBCM_delta_charge[bcm_ind]=fDeltaTime*cur_temp;
+               dvarsFirst[ivar]+=fBCM_delta_charge[bcm_ind];
+	      }
+	    }
+	    }
+	  if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
+	}
+      }
+      else {
+	cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<idx<<"  "<<ichan<<endl;
+      }
+    }else{ // evcount != 0
+      if (fDebugFile) *fDebugFile << "Debug dvars "<<i<<"   "<<ivar<<"  "<<idx<<"  "<<ichan<<endl;
+      if ((ivar < scalerloc.size()) &&
+	  (idx < scalers.size()) &&
+	  (ichan < MAXCHAN)) {
+	if (scalerloc[ivar]->ikind == ICOUNT) {
+	    UInt_t scaldata = fScalerChan[ichan];
+	    if(scaldata < scal_prev_read[nscal]) {
+	      scal_overflows[nscal]++;
+	    }
+            dvars[ivar] = scaldata + (1+((Double_t)kMaxUInt))*scal_overflows[nscal]
+	      -dvarsFirst[ivar];
+            scal_present_read[nscal]=scaldata;
+	    nscal++;
+	}
+	if (scalerloc[ivar]->ikind == ITIME) {
+	  dvars[ivar] = fTotalTime;
+	}
+	if (scalerloc[ivar]->ikind == IRATE) {
+	  UInt_t scaldata = fScalerChan[ichan];
+	  UInt_t diff;
+	  if(scaldata < scal_prev_read[nscal-1]) {
+	    diff = (kMaxUInt-(scal_prev_read[nscal-1] - 1)) + scaldata;
+	  } else {
+	    diff = scaldata - scal_prev_read[nscal-1];
+	  }
+	  dvars[ivar] =  diff/fDeltaTime;
+	  // printf("%s %f\n",scalerloc[ivar]->name.Data(),scalers[idx]->GetRate(ichan));//checks
+	}
+	if(scalerloc[ivar]->ikind == ICURRENT || scalerloc[ivar]->ikind == ICHARGE)
+	  {
+	    Int_t bcm_ind=-1;
+	    for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
+	      {		
+		size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
+		if (match!=string::npos)
+		  {
+		    bcm_ind=itemp;
+		  }
+	      }
+	    if (scalerloc[ivar]->ikind == ICURRENT) {
+              dvars[ivar]=0;
+	      if (bcm_ind != -1) {
+		UInt_t scaldata = fScalerChan[ichan];
+		UInt_t diff;
+		if(scaldata < scal_prev_read[nscal-1]) {
+		  diff = (kMaxUInt-(scal_prev_read[nscal-1] - 1)) + scaldata;
+		} else {
+		  diff = scaldata - scal_prev_read[nscal-1];
+		}
+		dvars[ivar]=0.;
+ 		if (fDeltaTime>0) {
+		Double_t cur_temp=(diff/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		cur_temp=cur_temp+fBCM_SatQuadratic[bcm_ind]*TMath::Power(TMath::Max(cur_temp-fBCM_SatOffset[bcm_ind],0.0),2.);
+		  
+		dvars[ivar]=cur_temp;
+		}
+	      }
+	      if (bcm_ind == fbcm_Current_Threshold_Index) scal_current= dvars[ivar];
+	    }
+	    if (scalerloc[ivar]->ikind == ICHARGE) {
+	      if (bcm_ind != -1) {
+		UInt_t scaldata = fScalerChan[ichan];
+		UInt_t diff;
+		if(scaldata < scal_prev_read[nscal-1]) {
+		  diff = (kMaxUInt-(scal_prev_read[nscal-1] - 1)) + scaldata;
+		} else {
+		  diff = scaldata - scal_prev_read[nscal-1];
+		}
+		fBCM_delta_charge[bcm_ind]=0;
+		if (fDeltaTime>0)  {
+		  Double_t cur_temp=(diff/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
+		  cur_temp=cur_temp+fBCM_SatQuadratic[bcm_ind]*TMath::Power(TMath::Max(cur_temp-fBCM_SatOffset[bcm_ind],0.0),2.);
+		fBCM_delta_charge[bcm_ind]=fDeltaTime*cur_temp;
+		}
+                 dvars[ivar]+=fBCM_delta_charge[bcm_ind];
+	      }
+	    }
+	    //	    printf("event %i index %i fBCMname %s scalerloc %s offset %f gain %f computed %f\n",evcount, bcm_ind, fBCM_Name[bcm_ind],scalerloc[ivar]->name.Data(),fBCM_Offset[bcm_ind],fBCM_Gain[bcm_ind],dvars[ivar]);
+	  }
+	if (fDebugFile) *fDebugFile << "   dvars  "<<scalerloc[ivar]->ikind<<"  "<<dvars[ivar]<<endl;
+      } else {
+	cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<idx<<"  "<<ichan<<endl;
+      }
+    }
+    
+  }
 
+  //----
+
+  for (size_t i = 0; i < scalerloc.size(); i++)  {
+    size_t ivar = scalerloc[i]->ivar;
+    size_t idx = scalerloc[i]->index;
+    size_t ichan = scalerloc[i]->ichan;
+    if (scalerloc[ivar]->ikind == ICUT+ICOUNT){
+      UInt_t scaldata = fScalerChan[ichan];
+      if ( scal_current > fbcm_Current_Threshold) {
+	UInt_t diff;
+	if(scaldata < dvars_prev_read[ivar]) {
+	  diff = (kMaxUInt-(dvars_prev_read[ivar] - 1)) + scaldata;
+	} else {
+	  diff = scaldata - dvars_prev_read[ivar];
+	}
+	dvars[ivar] += diff;
+      } 
+      dvars_prev_read[ivar] = scaldata;
+    }
+    if (scalerloc[ivar]->ikind == ICUT+ICHARGE){
+      Int_t bcm_ind=-1;
+      for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
+	{		
+	  size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
+	  if (match!=string::npos)
+	    {
+	      bcm_ind=itemp;
+	    }
+	}
+      if ( scal_current > fbcm_Current_Threshold && bcm_ind != -1) {
+	dvars[ivar] += fBCM_delta_charge[bcm_ind];
+      } 
+    }
+    if (scalerloc[ivar]->ikind == ICUT+ITIME){
+      if ( scal_current > fbcm_Current_Threshold) {
+	dvars[ivar] += fDeltaTime;
+      } 
+    }
+  }
+  
+  //
+  evcount = evcount + 1;
+  evcountR = evcount;
+  //
+  for (size_t j=0; j<scal_prev_read.size(); j++) scal_prev_read[j]=scal_present_read[j];
+  //  
+  for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
+  
   
   
   return 1;
@@ -533,6 +759,9 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 
       fScalerChan[i] = count;        //pass the helicity raw information to each helicity scaler channel array element
     }
+
+
+    
 
 
   //C.Y. 11/26/2020  The block of code below is used to get a cumulative sum of +/- helicity used
@@ -678,12 +907,77 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
 	  *fDebugFile << "map line "<<dec<<imodel<<"  "<<icrate<<"  "<<islot<<endl;
 	  *fDebugFile <<"   header  0x"<<hex<<header<<"  0x"<<mask<<dec<<"  "<<inorm<<"  "<<clkchan<<"  "<<clkfreq<<endl;
 	}
+	
+	switch (imodel) {
+	case 3801:   //Hall C Helicity Scalers (SIS 3801)
+	  scalers.push_back(new Scaler3801(icrate, islot));
+	  if(!fOnlyBanks) fRocSet.insert(icrate);
+	  fModuleSet.insert(imodel);
+	  break;
+	}
 
+	if (scalers.size() > 0) {
+	  UInt_t idx = scalers.size()-1;
+	  // Headers must be unique over whole event, not
+	  // just within a ROC
+	  scalers[idx]->SetHeader(header, mask);
+	  // The normalization slot has the clock in it, so we automatically recognize it.
+	  // fNormIdx is the index in scaler[] and 
+	  // fNormSlot is the slot#, checked for consistency
+	  if (clkchan >= 0) {
+	    scalers[idx]->SetClock(defaultDT, clkchan, clkfreq);
+	    cout << "Setting scaler clock ... channel = "<<clkchan<<" ... freq = "<<clkfreq<<endl;
+	    if (fDebugFile) *fDebugFile <<"Setting scaler clock ... channel = "<<clkchan<<" ... freq = "<<clkfreq<<endl;
+	    fNormIdx = idx;
+	    if (islot != fNormSlot) cout << "THcScalerEvtHandler:: WARN: contradictory norm slot ! "<<islot<<endl;  
+	    
+	  }
+	}	
+	
       }
     }
     
   } //end while loop
+
+  // can't compare UInt_t to Int_t (compiler warning), so do this
+  nscalers=0;
+  for (size_t i=0; i<scalers.size(); i++) nscalers++;
+  // need to do LoadNormScaler after scalers created and if fNormIdx found
+  if (fDebugFile) *fDebugFile <<"fNormIdx = "<<fNormIdx<<endl;
+  if ((fNormIdx >= 0) && fNormIdx < nscalers) {
+    for (Int_t i = 0; i < nscalers; i++) {
+      if (i==fNormIdx) continue;
+      scalers[i]->LoadNormScaler(scalers[fNormIdx]);
+    }
+  }
+
+  //Called after AddVars() has been called
+  DefVars();
   
+  // Verify that the slots are not defined twice
+  for (UInt_t i1=0; i1 < scalers.size()-1; i1++) {
+    for (UInt_t i2=i1+1; i2 < scalers.size(); i2++) {
+      if (scalers[i1]->GetSlot()==scalers[i2]->GetSlot())
+	cout << "THcScalerEvtHandler:: WARN:  same slot defined twice"<<endl;
+    }
+  }
+  // Identify indices of scalers[] vector to variables.
+  for (UInt_t i=0; i < scalers.size(); i++) {
+    for (UInt_t j = 0; j < scalerloc.size(); j++) {
+      if (scalerloc[j]->islot==static_cast<UInt_t>(scalers[i]->GetSlot()))
+	scalerloc[j]->index = i;
+    }
+  }
+  
+  if(fDebugFile) *fDebugFile << "THcScalerEvtHandler:: Name of scaler bank "<<fName<<endl;
+  for (size_t i=0; i<scalers.size(); i++) {
+    if(fDebugFile) {
+      *fDebugFile << "Scaler  #  "<<i<<endl;
+      scalers[i]->SetDebugFile(fDebugFile);
+      scalers[i]->DebugPrint(fDebugFile);
+    }
+  }
+
   
   //------Initialize Helicity Variables / Arrays-----
   fNTriggers = 0;
