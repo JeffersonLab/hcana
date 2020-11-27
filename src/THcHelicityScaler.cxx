@@ -16,6 +16,8 @@
 
 //#include "THaEvtTypeHandler.h"
 #include "THcHelicityScaler.h"
+#include "GenScaler.h"
+#include "Scaler3801.h"
 #include "THaCodaData.h"
 #include "THaEvData.h"
 #include "THcGlobals.h"
@@ -271,7 +273,11 @@ void THcHelicityScaler::SetDelayedType(int evtype) {
   
 Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
 {
-
+  
+  //THcScalerEvtHandler::Analyze() uses this flag (which is forced to be 1),
+  //but as to why, it is beyond me. For consistency, I have also used it here.
+  Int_t lfirst=1;  
+   
   if ( !IsMyEvent(evdata->GetEvType()) ) return -1;
 
   if (fDebugFile) {
@@ -280,10 +286,51 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
     EvDump(evdata);
   }
 
+  //C.Y. Nov 26, 2020 : Here goes the code to create a Helicity Scaler TTree, add the variables obtained in AnalyzeBuffer(), and Fill the tree.
+  //(See Analyze() method in THcScalerEvtHandler.cxx)
+  
+  if (lfirst && !fScalerTree) {
+
+    lfirst = 0; // Can't do this in Init for some reason
+
+    //Assign a name to the helicity scaler tree
+    TString sname1 = "TSHel";
+    TString sname2 = sname1 + fName;
+    TString sname3 = fName + "  Scaler Data";
+
+    if (fDebugFile) {
+      *fDebugFile << "\nAnalyze 1st time for fName = "<<fName<<endl;
+      *fDebugFile << sname2 << "      " <<sname3<<endl;
+    }
+
+    fScalerTree = new TTree(sname2.Data(),sname3.Data());
+    fScalerTree->SetAutoSave(200000000);
+
+    TString name, tinfo;
+
+    name = "evcount";
+    tinfo = name + "/D";
+    fScalerTree->Branch(name.Data(), &evcountR, tinfo.Data(), 4000);
+ 
+   name = "evNumber";
+    tinfo = name + "/D";
+    fScalerTree->Branch(name.Data(), &evNumberR, tinfo.Data(), 4000);
+
+    for (size_t i = 0; i < scalerloc.size(); i++) {
+      name = scalerloc[i]->name;
+      tinfo = name + "/D";
+      fScalerTree->Branch(name.Data(), &dvars[i], tinfo.Data(), 4000);
+    }
+
+  }  
+  
+
+  
   UInt_t *rdata = (UInt_t*) evdata->GetRawDataBuffer();
   
   if(evdata->GetEvType() == fDelayedType) { // Save this event for processing later
     Int_t evlen = evdata->GetEvLength();
+
     UInt_t *datacopy = new UInt_t[evlen];
     fDelayedEvents.push_back(datacopy);
     memcpy(datacopy,rdata,evlen*sizeof(UInt_t));
@@ -291,17 +338,15 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
   } else { 			// A normal event
     if (fDebugFile) *fDebugFile<<"\n\nTHcHelicityScaler :: Debugging event type "<<dec<<evdata->GetEvType()<< " event num = " << evdata->GetEvNum() << endl<<endl;
     evNumber=evdata->GetEvNum();
+    evNumberR = evNumber;
     Int_t ret;
     if((ret=AnalyzeBuffer(rdata))) {
-      //
+      if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
+      if (fScalerTree) fScalerTree->Fill();
     }
     return ret;
   }
 
-  /*
-    C.Y. Sep 19, 2020 : Here goes the code to create a Helicity Scaler TTree, add the variables obtained in AnalyzeBuffer(), and Fill the tree.
-    (See Analyze() method in THcScalerEvtHandler.cxx)
-   */
   
 }
 Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
@@ -1011,16 +1056,6 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
 
   MakeParms();
 
-
-  
-  /*C.Y. Sep 19, 2020 : Here goes the code to parse the scaler map file ( db_P(H)Scalevt.dat ) and extract the crate/slot/channel information
-  and generate scaler names that will eventually be written to a TTree ( See Init() method in THcScalerEvtHandler.cxx )
-
-  The problem here is that there are two helicity states per channel, so how do we actually write both to a single leaf variable?
-  I would think the answer is to create a second variable and change the suffix name to "negHel", using AddVars(). This way, we can
-  probably have scalers_posHel, and scalers_negHel vectors, and only the variable name would be different.
-
-  */
   
   return kOK;
 }
