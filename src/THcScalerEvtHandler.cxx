@@ -83,6 +83,7 @@ THcScalerEvtHandler::THcScalerEvtHandler(const char *name, const char* descripti
     fOnlySyncEvents(kFALSE), fOnlyBanks(kFALSE), fDelayedType(-1),
     fClockChan(-1), fLastClock(0), fClockOverflows(0)
 {
+  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcScalerEvtHandler::Constructor() "<<endl;  
   fRocSet.clear();
   fModuleSet.clear();
   scal_prev_read.clear();
@@ -92,6 +93,7 @@ THcScalerEvtHandler::THcScalerEvtHandler(const char *name, const char* descripti
 
 THcScalerEvtHandler::~THcScalerEvtHandler()
 {
+  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcScalerEvtHandler::Destructor() "<<endl; 
   // The tree object is owned by ROOT since it gets associated wth the output
   // file, so DO NOT delete it here. 
   if (!TROOT::Initialized()) {
@@ -116,6 +118,7 @@ THcScalerEvtHandler::~THcScalerEvtHandler()
 
 Int_t THcScalerEvtHandler::End( THaRunBase* )
 {
+  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcScalerEvtHandler::End() "<<endl; 
   // Process any delayed events in order received
 
   cout << "THcScalerEvtHandler::End Analyzing " << fDelayedEvents.size() << " delayed scaler events" << endl;
@@ -140,6 +143,7 @@ Int_t THcScalerEvtHandler::End( THaRunBase* )
 
 Int_t THcScalerEvtHandler::ReadDatabase(const TDatime& date )
 {
+  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcScalerEvtHandler::ReadDatabase() "<<endl; 
   char prefix[2];
   prefix[0]='g';
   prefix[1]='\0';
@@ -189,6 +193,8 @@ Int_t THcScalerEvtHandler::ReadDatabase(const TDatime& date )
   return kOK;
 }
 void THcScalerEvtHandler::SetDelayedType(int evtype) {
+ 
+  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcScalerEvtHandler::SetDelayedType() "<<endl; 
   /**
    * \brief Delay analysis of this event type to end.
    *
@@ -202,6 +208,8 @@ void THcScalerEvtHandler::SetDelayedType(int evtype) {
   
 Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 {
+  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcScalerEvtHandler::Analyze() "<<endl; 
+
   Int_t lfirst=1;
 
   if ( !IsMyEvent(evdata->GetEvType()) ) return -1;
@@ -262,7 +270,7 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     evNumberR = evNumber;
     Int_t ret;
     if((ret=AnalyzeBuffer(rdata,fOnlySyncEvents))) {
-      if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
+      if (fDebugFile) *fDebugFile << "scaler tree ptr 1 "<<fScalerTree<<endl;
       if (fScalerTree) fScalerTree->Fill();
     }
     return ret;
@@ -272,6 +280,8 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 }
 Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 {
+
+  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcScalerEvtHandler::AnalyzeBuffer() "<<endl; 
 
   // Parse the data, load local data arrays.
   UInt_t *p = (UInt_t*) rdata;
@@ -627,6 +637,7 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 
 THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
 {
+  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcScalerEvtHandler::Init() "<<endl; 
   //
   ReadDatabase(date);
   const int LEN = 200;
@@ -861,6 +872,7 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
 void THcScalerEvtHandler::AddVars(TString name, TString desc, UInt_t islot,
 				  UInt_t ichan, UInt_t ikind)
 {
+  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcScalerEvtHandler::AddVars() "<<endl; 
   // need to add fName here to make it a unique variable.  (Left vs Right HRS, for example)
   TString name1 = fName + name;
   TString desc1 = fName + desc;
@@ -872,6 +884,7 @@ void THcScalerEvtHandler::AddVars(TString name, TString desc, UInt_t islot,
 
 void THcScalerEvtHandler::DefVars()
 {
+  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcScalerEvtHandler::DefVars() "<<endl; 
   // called after AddVars has finished being called.
   Nvars = scalerloc.size();
   if (Nvars == 0) return;
