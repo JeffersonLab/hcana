@@ -5,11 +5,11 @@
 
 ~~~
 ~~~
-     THcHelcityScaler *hhelscaler = new THcHelicityScaler("H","HC helicity scalers");
-     // hscaler->SetDebugFile("HHelScaler.txt");
-     hhelscaler->SetROC(8);   // 5 for HMS defaults to 8 for SHMS
-     hhelscaler->SetBankID(0x9801); // Will default to this
-     gHaEvtHandlers->Add (hhelscaler);
+     THcHelcityScaler *phelscaler = new THcHelicityScaler("P","HC helicity scalers");
+     phelscaler->SetDebugFile("PHelScaler.txt");
+     phelscaler->SetROC(8);   // 5 for HMS defaults to 8 for SHMS
+     phelscaler->SetBankID(9801); // Will default to this
+     gHaEvtHandlers->Add (phelscaler);
 ~~~
 \author  
 */
@@ -60,7 +60,7 @@ THcHelicityScaler::THcHelicityScaler(const char *name, const char* description)
     evcount(0), evcountR(0.0), ifound(0), fNormIdx(-1),
     fNormSlot(-1),
     dvars(0),dvars_prev_read(0), dvarsFirst(0), fScalerTree(0),
-    fOnlySyncEvents(kFALSE), fOnlyBanks(kFALSE), fDelayedType(-1),
+    fOnlyBanks(kFALSE), fDelayedType(-1),
     fClockChan(-1), fLastClock(0), fClockOverflows(0)
 {
   if (fDebugFile) *fDebugFile << "C.Y. | Calling THcHelicityScaler::Constructor() "<<endl; 
@@ -117,7 +117,7 @@ THcHelicityScaler::~THcHelicityScaler()
 
 Int_t THcHelicityScaler::End( THaRunBase* )
 {
-  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcHelicityScaler::End() "<<endl;  
+  if (fDebugFile) *fDebugFile << "======C.Y. | Calling THcHelicityScaler::End() ======="<<endl;  
 
   // Process any delayed events in order received
   
@@ -206,17 +206,18 @@ Int_t THcHelicityScaler::End( THaRunBase* )
     fTriggerAsymmetry = 0.0;
   }
   cout << " ----------------------------- " << endl;
-
-
   
+  
+  if (fDebugFile) *fDebugFile << "======C.Y. |End  Calling THcHelicityScaler::End() ======="<<endl;  
+
   return 0;
 }
 
 
 Int_t THcHelicityScaler::ReadDatabase(const TDatime& date )
 {
-
-  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcHelicityScaler::ReadDatabase() "<<endl;   
+  
+  if (fDebugFile) *fDebugFile << "====== C.Y. | Calling THcHelicityScaler::ReadDatabase() ======"<<endl;   
   
   //C.Y. Nov 26, 2020 : This method has been updated to include additional BCM parameters. See ReadDatabase() in THcScalerEvtHandler.cxx
   
@@ -229,7 +230,7 @@ Int_t THcHelicityScaler::ReadDatabase(const TDatime& date )
     {0}
   };
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
-
+  
   if(fNumBCMs > 0) {
     fBCM_Gain = new Double_t[fNumBCMs];
     fBCM_Offset = new Double_t[fNumBCMs];
@@ -237,35 +238,38 @@ Int_t THcHelicityScaler::ReadDatabase(const TDatime& date )
     fBCM_SatQuadratic = new Double_t[fNumBCMs];
     fBCM_delta_charge= new Double_t[fNumBCMs];
     
-  string bcm_namelist;
-  DBRequest list2[]={
-    {"BCM_Gain",      fBCM_Gain,         kDouble, (UInt_t) fNumBCMs},
-    {"BCM_Offset",     fBCM_Offset,       kDouble,(UInt_t) fNumBCMs},
-    {"BCM_SatQuadratic",     fBCM_SatQuadratic,       kDouble,(UInt_t) fNumBCMs,1},
-    {"BCM_SatOffset",     fBCM_SatOffset,       kDouble,(UInt_t) fNumBCMs,1},
-    {"BCM_Names",     &bcm_namelist,       kString},
-    {"BCM_Current_threshold",     &fbcm_Current_Threshold,       kDouble,0, 1},
-    {"BCM_Current_threshold_index",     &fbcm_Current_Threshold_Index,       kInt,0,1},
-    {0}
-  };
-
-  fbcm_Current_Threshold = 0.0;
-  fbcm_Current_Threshold_Index = 0;
-  for(Int_t i=0;i<fNumBCMs;i++) {
-    fBCM_SatOffset[i]=0.;
-    fBCM_SatQuadratic[i]=0.;
-  }
-  gHcParms->LoadParmValues((DBRequest*)&list2, prefix);
-  vector<string> bcm_names = vsplit(bcm_namelist);
-  for(Int_t i=0;i<fNumBCMs;i++) {
-    fBCM_Name.push_back(bcm_names[i]+".scal");
-    fBCM_delta_charge[i]=0.;
-  }
+    string bcm_namelist;
+    DBRequest list2[]={
+      {"BCM_Gain",      fBCM_Gain,         kDouble, (UInt_t) fNumBCMs},
+      {"BCM_Offset",     fBCM_Offset,       kDouble,(UInt_t) fNumBCMs},
+      {"BCM_SatQuadratic",     fBCM_SatQuadratic,       kDouble,(UInt_t) fNumBCMs,1},
+      {"BCM_SatOffset",     fBCM_SatOffset,       kDouble,(UInt_t) fNumBCMs,1},
+      {"BCM_Names",     &bcm_namelist,       kString},
+      {"BCM_Current_threshold",     &fbcm_Current_Threshold,       kDouble,0, 1},
+      {"BCM_Current_threshold_index",     &fbcm_Current_Threshold_Index,       kInt,0,1},
+      {0}
+    };
+    
+    fbcm_Current_Threshold = 0.0;
+    fbcm_Current_Threshold_Index = 0;
+    for(Int_t i=0;i<fNumBCMs;i++) {
+      fBCM_SatOffset[i]=0.;
+      fBCM_SatQuadratic[i]=0.;
+    }
+    gHcParms->LoadParmValues((DBRequest*)&list2, prefix);
+    vector<string> bcm_names = vsplit(bcm_namelist);
+    for(Int_t i=0;i<fNumBCMs;i++) {
+      fBCM_Name.push_back(bcm_names[i]+".scal");
+      fBCM_delta_charge[i]=0.;
+    }
   }
   fTotalTime=0.;
   fPrevTotalTime=0.;
   fDeltaTime=-1.;
   
+
+  if (fDebugFile) *fDebugFile << "====== C.Y. | End Calling THcHelicityScaler::ReadDatabase() ======"<<endl; 
+
   return kOK;
 }
 void THcHelicityScaler::SetDelayedType(int evtype) {
@@ -284,7 +288,7 @@ void THcHelicityScaler::SetDelayedType(int evtype) {
   
 Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
 {
-  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcHelicityScaler::Analyze(THaEvData *evdata) "<<endl;      
+  if (fDebugFile) *fDebugFile << "====== C.Y. | Calling THcHelicityScaler::Analyze() ======="<<endl;      
 
   //THcScalerEvtHandler::Analyze() uses this flag (which is forced to be 1),
   //but as to why, it is beyond me. For consistency, I have also used it here.
@@ -325,25 +329,26 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
     fScalerTree->Branch(name.Data(), &evcountR, tinfo.Data(), 4000);
  
    name = "evNumber";
-    tinfo = name + "/D";
-    fScalerTree->Branch(name.Data(), &evNumberR, tinfo.Data(), 4000);
-
-    for (size_t i = 0; i < scalerloc.size(); i++) {
-      name = scalerloc[i]->name;
-      tinfo = name + "/D";
-      fScalerTree->Branch(name.Data(), &dvars[i], tinfo.Data(), 4000);
-    }
-
+   tinfo = name + "/D";
+   fScalerTree->Branch(name.Data(), &evNumberR, tinfo.Data(), 4000);
+   
+   for (size_t i = 0; i < scalerloc.size(); i++) {
+     name = scalerloc[i]->name;
+     tinfo = name + "/D";
+     fScalerTree->Branch(name.Data(), &dvars[i], tinfo.Data(), 4000);
+   }
+   
   }
   
   UInt_t *rdata = (UInt_t*) evdata->GetRawDataBuffer();
   
   if(evdata->GetEvType() == fDelayedType) { // Save this event for processing later
     Int_t evlen = evdata->GetEvLength();
-
+    
     UInt_t *datacopy = new UInt_t[evlen];
     fDelayedEvents.push_back(datacopy);
     memcpy(datacopy,rdata,evlen*sizeof(UInt_t));
+    if (fDebugFile) *fDebugFile << "======= C.Y. | End Calling THcHelicityScaler::Analyze() [== fDelayedType]======"<<endl;
     return 1;
   } else { 			// A normal event
     if (fDebugFile) *fDebugFile<<"\n\nTHcHelicityScaler :: Debugging event type "<<dec<<evdata->GetEvType()<< " event num = " << evdata->GetEvNum() << endl<<endl;
@@ -351,19 +356,22 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
     evNumber=evdata->GetEvNum();
     evNumberR = evNumber;
 
-    Int_t ret;
-    if((AnalyzeBuffer(rdata))) {
+    Int_t ret=AnalyzeBuffer(rdata);
+    if((ret==AnalyzeBuffer(rdata))) {
       if (fDebugFile) *fDebugFile << "scaler tree ptr 1 "<<fScalerTree<<endl;
       if (fScalerTree) fScalerTree->Fill();
     }
-     return ret;
+   
+    if (fDebugFile) *fDebugFile << "======= C.Y. | End Calling THcHelicityScaler::Analyze() [!= fDelayedType]======"<<endl;  
+    return ret;
   }
-
+  
+ 
 }
 Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 {
 
-  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcHelicityScaler::AnalyzeBuffer() "<<endl;   
+  if (fDebugFile) *fDebugFile << "====== C.Y. | Calling THcHelicityScaler::AnalyzeBuffer() ======"<<endl;   
   fNTrigsInBuf = 0;
 
   // Parse the data, load local data arrays.
@@ -426,7 +434,7 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 	  // Save helcitiy and quad info for THcHelicity
 	  for (Int_t iev = 0; iev < nevents; iev++) {  // find number of helicity events in each bank
 	    Int_t index = fNScalerChannels*iev+1;
-
+	    if (fDebugFile) *fDebugFile << "=======> THcHelicityScaler::AnalyzeBuffer() | (iev, index, nevents) =  " << iev << ", " << index << ", " << nevents << endl;
 	    //C.Y. 11/26/2020 This methods extracts the raw helicity information and writes to arrays
 	    AnalyzeHelicityScaler(p+index); 
 	    //	    cout << "H: " << evNumber << endl;
@@ -458,20 +466,27 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
   if (fDebugFile) {
     *fDebugFile << "Finished with decoding.  "<<endl;
     *fDebugFile << "   Found flag   =  "<<ifound<<endl;
+    *fDebugFile << "====== C.Y. | End Calling THcHelicityScaler::AnalyzeBuffer() ======"<<endl; 
   }
 
   if (!ifound) return 0;
 
-  
+  /*  
   //Sets the helicity scaler clock to define the time
   Double_t scal_current=0;
-  UInt_t thisClock = scalers[fNormIdx]->GetData(fClockChan);
+  UInt_t thisClock = fScalerChan[fClockChan]; //scalers[fNormIdx]->GetData(fClockChan);
   if(thisClock < fLastClock) {	// Count clock scaler wrap arounds
     fClockOverflows++;
+    if (fDebugFile) *fDebugFile << "fClockOverflows = " << fClockOverflows << endl;
   }
   fTotalTime = (thisClock+(((Double_t) fClockOverflows)*kMaxUInt+fClockOverflows))/fClockFreq;
   fLastClock = thisClock;
   fDeltaTime= fTotalTime - fPrevTotalTime;
+  if (fDebugFile) *fDebugFile << "thisClock = " << thisClock << endl; 
+  if (fDebugFile) *fDebugFile << "fLastClock = " << fLastClock << endl;
+  if (fDebugFile) *fDebugFile << "fTotalTime = " << fTotalTime << endl;
+  if (fDebugFile) *fDebugFile << "fPrevTotalTime = " << fPrevTotalTime << endl;
+  if (fDebugFile) *fDebugFile << "fDeltaTime = " << fDeltaTime << endl;
   if (fDeltaTime==0) {
     cout << " *******************   Severe Warning ****************************" << endl;
     cout << " In THcScalerEvtHandler have found fDeltaTime is zero !!   " << endl;
@@ -724,15 +739,16 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
   //  
   for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
   
+  */
   
+  if (fDebugFile) *fDebugFile << "====== C.Y. | End Calling THcHelicityScaler::AnalyzeBuffer() ======"<<endl; 
   return 1;
- 	
 }
 
 Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 {
 
-  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcHelicityScaler::AnalyzeHelicityScaler() "<<endl;   
+  if (fDebugFile) *fDebugFile << "====== C.Y. | Calling THcHelicityScaler::AnalyzeHelicityScaler() ======"<<endl;   
 
   Int_t hbits = (p[0]>>30) & 0x3; // quartet and helcity bits in scaler word
   Bool_t isquartet = (hbits&2) != 0;
@@ -812,7 +828,9 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   //each helicity state (+, -, or MPS (undefined)) is stored in a single varibale. Each helicity state
   //will be tagged separately later on.
 
-  if (fDebugFile) *fDebugFile << "C.Y. ---> TESTING BEFORE CALLING Channel, count" << endl; 
+  
+  if (fDebugFile) *fDebugFile << "C.Y. | AnalyzeHelicityScaler() Loop over all 32 Channels" << endl;
+  if (fDebugFile) *fDebugFile << "C.Y. | ActualHelicity = " << actualhelicity << endl;  
   //C.Y. 11/26/2020  Loop over all 32 scaler channels for a specific helicity scaler module (SIS 3801)
     for(Int_t i=0;i<fNScalerChannels;i++) {
 
@@ -821,7 +839,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 
       fScalerChan[i] = count;        //pass the helicity raw information to each helicity scaler channel array element
 
-      if (fDebugFile) *fDebugFile << "C.Y. |---> Channel = "<< i << " | count = "<< count << endl;     
+      if (fDebugFile) *fDebugFile << "C.Y. | (Channel, count) = ("<< i << ", "<< fScalerChan[i] << ")" << endl;     
 
     }
 
@@ -852,23 +870,35 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
     }
   }
 
-  /*
+  
   //Sets the helicity scaler clock to define the time
   Double_t scal_current=0;
-  UInt_t thisClock = scalers[fNormIdx]->GetData(fClockChan);
+  UInt_t thisClock = fScalerChan[fClockChan]; // scalers[fNormIdx]->GetData(fClockChan);
+  if (fDebugFile) *fDebugFile << "evNumber = " << evNumberR << endl;  
+  if (fDebugFile) *fDebugFile << "evcount = " << evcount << endl;
+  if (fDebugFile) *fDebugFile << "thisClock = " << thisClock << endl;  
+  if (fDebugFile) *fDebugFile << "fLastClock = " << fLastClock << endl; 
+  
   if(thisClock < fLastClock) {	// Count clock scaler wrap arounds
     fClockOverflows++;
+    if (fDebugFile) *fDebugFile << "(if thisClock<fLastClock): fClockOverflows = " << fClockOverflows << endl;    
   }
-  fTotalTime = (thisClock+(((Double_t) fClockOverflows)*kMaxUInt+fClockOverflows))/fClockFreq;
+  fTotalTime = (thisClock+(((Double_t) fClockOverflows)*kMaxUInt+fClockOverflows))/fClockFreq;    
   fLastClock = thisClock;
-  fDeltaTime= fTotalTime - fPrevTotalTime;
+  fDeltaTime= fTotalTime - fPrevTotalTime;                                                                                                 
+  if (fDebugFile) *fDebugFile << "fTotalTime = " << fTotalTime << endl;                                                                                     
+  if (fDebugFile) *fDebugFile << "fPrevTotalTime = " << fPrevTotalTime << endl;                                            
+  if (fDebugFile) *fDebugFile << "fDeltaTime = " << fDeltaTime << endl;       
   if (fDeltaTime==0) {
     cout << " *******************   Severe Warning ****************************" << endl;
-    cout << " In THcScalerEvtHandler have found fDeltaTime is zero !!   " << endl;
-      cout << " ******************* Alert DAQ experts ****************************" << endl;
+    cout << " In THcHelicityScaler have found fDeltaTime is zero !!   " << endl;
+    cout << " ******************* Alert DAQ experts ****************************" << endl;
+    if (fDebugFile) *fDebugFile << " In THcHelicityScaler have found fDeltaTime is zero !!   " << endl;   
   }
-  fPrevTotalTime=fTotalTime;
   
+  fPrevTotalTime=fTotalTime;
+ 
+
   //C.Y. Nov 27, 2020 : Here goes the code to write the helicity raw data to a variable
   //and to map the variable to the scaler location //( See THcScalerEvtHandler::AnalyzeBuffer() )
 
@@ -976,7 +1006,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 	}
       }
       else {
-	cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<idx<<"  "<<ichan<<endl;
+	cout << "THcHelicityScaler:: ERROR:: incorrect index "<<ivar<<"  "<<idx<<"  "<<ichan<<endl;
       }
     }else{ // evcount != 0
       if (fDebugFile) *fDebugFile << "Debug dvars "<<i<<"   "<<ivar<<"  "<<idx<<"  "<<ichan<<endl;
@@ -1060,7 +1090,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 	  }
 	if (fDebugFile) *fDebugFile << "   dvars  "<<scalerloc[ivar]->ikind<<"  "<<dvars[ivar]<<endl;
       } else {
-	cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<idx<<"  "<<ichan<<endl;
+	cout << "THcHelicityScaler:: ERROR:: incorrect index "<<ivar<<"  "<<idx<<"  "<<ichan<<endl;
       }
     }
     
@@ -1113,7 +1143,8 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   for (size_t j=0; j<scal_prev_read.size(); j++) scal_prev_read[j]=scal_present_read[j];
   //  
   for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
-  */
+
+  if (fDebugFile) *fDebugFile << "====== C.Y. | End Calling THcHelicityScaler::AnalyzeHelicityScaler() ======"<<endl; 
 
   return(0);
 }
@@ -1136,7 +1167,7 @@ Int_t  THcHelicityScaler::RanBit30(Int_t ranseed)
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
 {
-  if (fDebugFile) *fDebugFile << "C.Y. | Calling THcHelicityScaler::Init() "<<endl;   
+  if (fDebugFile) *fDebugFile << "====== C.Y. | Calling THcHelicityScaler::Init() ======"<<endl;   
 
   ReadDatabase(date);
   const int LEN = 200;
@@ -1219,7 +1250,7 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
 	UInt_t header, mask;
 	char cdum[20];
 	sscanf(sinput.c_str(),"%s %d %d %d %x %x %d \n",cdum,&imodel,&icrate,&islot, &header, &mask, &inorm);
-	if ((fNormSlot >= 0) && (fNormSlot != inorm)) cout << "THcScalerEvtHandler::WARN:  contradictory norm slot  "<<fNormSlot<<"   "<<inorm<<endl;
+	if ((fNormSlot >= 0) && (fNormSlot != inorm)) cout << "THcHelicityScaler::WARN:  contradictory norm slot  "<<fNormSlot<<"   "<<inorm<<endl;
 	fNormSlot = inorm;  // slot number used for normalization.  This variable is not used but is checked.
 	Int_t clkchan = -1;
 	Double_t clkfreq = 1;
@@ -1255,7 +1286,7 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
 	    cout << "Setting scaler clock ... channel = "<<clkchan<<" ... freq = "<<clkfreq<<endl;
 	    if (fDebugFile) *fDebugFile <<"Setting scaler clock ... channel = "<<clkchan<<" ... freq = "<<clkfreq<<endl;
 	    fNormIdx = idx;
-	    if (islot != fNormSlot) cout << "THcScalerEvtHandler:: WARN: contradictory norm slot ! "<<islot<<endl;  
+	    if (islot != fNormSlot) cout << "THcHelicityScaler:: WARN: contradictory norm slot ! "<<islot<<endl;  
 	    
 	  }
 	}	
@@ -1264,7 +1295,7 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
     }
     
   } //end while loop
-
+  
   // can't compare UInt_t to Int_t (compiler warning), so do this
   nscalers=0;
   for (size_t i=0; i<scalers.size(); i++) nscalers++;
@@ -1284,7 +1315,7 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
   for (UInt_t i1=0; i1 < scalers.size()-1; i1++) {
     for (UInt_t i2=i1+1; i2 < scalers.size(); i2++) {
       if (scalers[i1]->GetSlot()==scalers[i2]->GetSlot())
-	cout << "THcScalerEvtHandler:: WARN:  same slot defined twice"<<endl;
+	cout << "THcHelicityScaler:: WARN:  same slot defined twice"<<endl;
     }
   }
   // Identify indices of scalers[] vector to variables.
@@ -1295,7 +1326,7 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
     }
   }
   
-  if(fDebugFile) *fDebugFile << "THcScalerEvtHandler:: Name of scaler bank "<<fName<<endl;
+  if(fDebugFile) *fDebugFile << "THcHelicityScaler:: Name of scaler bank "<<fName<<endl;
   for (size_t i=0; i<scalers.size(); i++) {
     if(fDebugFile) {
       *fDebugFile << "Scaler  #  "<<i<<endl;
@@ -1337,7 +1368,8 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
 
   MakeParms();
 
-  
+  if (fDebugFile) *fDebugFile << "====== C.Y. | End Calling THcHelicityScaler::Init() ====="<<endl; 
+
   return kOK;
 }
 
@@ -1408,7 +1440,7 @@ void THcHelicityScaler::DefVars()
     cout << "No gHaVars ?!  Well, that's a problem !!"<<endl;
     return;
   }
-  if(fDebugFile) *fDebugFile << "THcScalerEvtHandler:: scalerloc size "<<scalerloc.size()<<endl;
+  if(fDebugFile) *fDebugFile << "THcHelicityScaler:: scalerloc size "<<scalerloc.size()<<endl;
   const Int_t* count = 0;
   for (size_t i = 0; i < scalerloc.size(); i++) {
     gHaVars->DefineByType(scalerloc[i]->name.Data(), scalerloc[i]->description.Data(),

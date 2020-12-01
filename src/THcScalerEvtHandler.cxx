@@ -127,7 +127,7 @@ Int_t THcScalerEvtHandler::End( THaRunBase* )
     UInt_t* rdata = *it;
     AnalyzeBuffer(rdata,kFALSE);
   }
-  if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
+  if (fDebugFile) *fDebugFile << "scaler tree ptr 2  "<<fScalerTree<<endl;
     evNumberR = -1;
   if (fScalerTree) fScalerTree->Fill();
 
@@ -243,7 +243,7 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     tinfo = name + "/D";
     fScalerTree->Branch(name.Data(), &evcountR, tinfo.Data(), 4000);
  
-   name = "evNumber";
+    name = "evNumber";
     tinfo = name + "/D";
     fScalerTree->Branch(name.Data(), &evNumberR, tinfo.Data(), 4000);
 
@@ -380,16 +380,25 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
   // will be driven by a scaler.map file  -- later
   Double_t scal_current=0;
   UInt_t thisClock = scalers[fNormIdx]->GetData(fClockChan);
+  if (fDebugFile) *fDebugFile << "evNumber = " << evNumberR << endl; 
+  if (fDebugFile) *fDebugFile << "evcount = " << evcount << endl;   
+  if (fDebugFile) *fDebugFile << "thisClock =  "<< thisClock << endl;  
+  if (fDebugFile) *fDebugFile << "fLastClock =  "<< fLastClock << endl;
   if(thisClock < fLastClock) {	// Count clock scaler wrap arounds
     fClockOverflows++;
+    if (fDebugFile) *fDebugFile << "(if thisClock<fLastClock): fClockOverflows = " << fClockOverflows << endl; 
   }
   fTotalTime = (thisClock+(((Double_t) fClockOverflows)*kMaxUInt+fClockOverflows))/fClockFreq;
   fLastClock = thisClock;
   fDeltaTime= fTotalTime - fPrevTotalTime;
+  if (fDebugFile) *fDebugFile << "fTotalTime =  "<< fTotalTime << endl;   
+  if (fDebugFile) *fDebugFile << "fPrevTotalTime =  "<< fPrevTotalTime << endl; 
+  if (fDebugFile) *fDebugFile << "fDeltaTime =  "<< fDeltaTime << endl; 
+
   if (fDeltaTime==0) {
     cout << " *******************   Severe Warning ****************************" << endl;
     cout << " In THcScalerEvtHandler have found fDeltaTime is zero !!   " << endl;
-      cout << " ******************* Alert DAQ experts ****************************" << endl;
+    cout << " ******************* Alert DAQ experts ****************************" << endl;
   }
   fPrevTotalTime=fTotalTime;
   Int_t nscal=0;
