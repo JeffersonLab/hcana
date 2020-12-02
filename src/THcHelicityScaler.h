@@ -122,7 +122,7 @@ private:
   Double_t evcountR;
   UInt_t evNumber;
   Double_t evNumberR;
- 
+  Double_t actualHelicityR;
 
   Int_t Nvars, ifound, fNormIdx, fNormSlot, nscalers;
   Double_t *dvars;

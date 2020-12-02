@@ -137,7 +137,10 @@ Int_t THcHelicityScaler::End( THaRunBase* )
     delete [] *it;
   fDelayedEvents.clear();
 
-  if (fScalerTree) fScalerTree->Write();
+  if (fScalerTree) {
+  
+    fScalerTree->Write();
+  }
  
   //  cout << " -- Helicity Scalers -- " << endl;
   for(Int_t i=0;i<fNScalerChannels;i++) {
@@ -290,7 +293,7 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
 
   //THcScalerEvtHandler::Analyze() uses this flag (which is forced to be 1),
   //but as to why, it is beyond me. For consistency, I have also used it here.
-  // Int_t lfirst=1;  
+  Int_t lfirst=1;  
    
   if ( !IsMyEvent(evdata->GetEvType()) ) return -1;
 
@@ -304,9 +307,9 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
   //(See Analyze() method in THcScalerEvtHandler.cxx) --- This part of the code has been moved to AnalyzeHelicityScaler() method, so the tree can be
   //filled for every scaler read, as there can be multiple scaler reads per analyze buffer
 
-  /*  
+  
   if (lfirst && !fScalerTree) {
-
+    //if (!fScalerTree) {  
     lfirst = 0; // Can't do this in Init for some reason
 
     //Assign a name to the helicity scaler tree
@@ -328,18 +331,23 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
     tinfo = name + "/D";
     fScalerTree->Branch(name.Data(), &evcountR, tinfo.Data(), 4000);
  
-   name = "evNumber";
-   tinfo = name + "/D";
-   fScalerTree->Branch(name.Data(), &evNumberR, tinfo.Data(), 4000);
-   
-   for (size_t i = 0; i < scalerloc.size(); i++) {
-     name = scalerloc[i]->name;
-     tinfo = name + "/D";
-     fScalerTree->Branch(name.Data(), &dvars[i], tinfo.Data(), 4000);
-   }
-   
+    name = "evNumber";
+    tinfo = name + "/D";
+    fScalerTree->Branch(name.Data(), &evNumberR, tinfo.Data(), 4000);
+
+    //C.Y. 12/02/2020 Added actual helicity to be stored in scaler tree
+    name = "actualHelicity";                                                                                                                                                            
+    tinfo = name + "/D";                                                                                                                                                            
+    fScalerTree->Branch(name.Data(), &actualHelicityR, tinfo.Data(), 4000); 
+
+    for (size_t i = 0; i < scalerloc.size(); i++) {
+      name = scalerloc[i]->name;
+      tinfo = name + "/D";
+      fScalerTree->Branch(name.Data(), &dvars[i], tinfo.Data(), 4000);
+    }
+    
   }
-  */
+  
   UInt_t *rdata = (UInt_t*) evdata->GetRawDataBuffer();
   
   if(evdata->GetEvType() == fDelayedType) { // Save this event for processing later
@@ -350,25 +358,28 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
     memcpy(datacopy,rdata,evlen*sizeof(UInt_t));
     if (fDebugFile) *fDebugFile << "======= C.Y. | End Calling THcHelicityScaler::Analyze() [== fDelayedType]======"<<endl;
     return 1;
-  } else { 			// A normal event
+  } 
+  
+  else { 			// A normal event
     if (fDebugFile) *fDebugFile<<"\n\nTHcHelicityScaler :: Debugging event type "<<dec<<evdata->GetEvType()<< " event num = " << evdata->GetEvNum() << endl<<endl;
     evNumber=evdata->GetEvNum();
     evNumberR = evNumber;
-   
-    /*
-    Int_t ret;
-    if((ret=AnalyzeBuffer(rdata))) {
-      if (fDebugFile) *fDebugFile << "scaler tree ptr 1 "<<fScalerTree<<endl;
-      if (fScalerTree) fScalerTree->Fill();
-    }
-   
-    if (fDebugFile) *fDebugFile << "======= C.Y. | End Calling THcHelicityScaler::Analyze() [!= fDelayedType]======"<<endl;  
-    return ret;
-    */
-    return 0;
   }
   
- 
+  
+    Int_t ret;
+    if((ret==AnalyzeBuffer(rdata))) 
+      {
+	
+	if (fDebugFile) *fDebugFile << "scaler tree ptr 1 "<<fScalerTree<<endl;
+	if (fDebugFile) *fDebugFile << "ret = "<< ret <<endl; 
+	//if (fScalerTree) fScalerTree->Fill();
+      }
+    if (fDebugFile) *fDebugFile << "======= C.Y. | End Calling THcHelicityScaler::Analyze() [!= fDelayedType]======"<<endl;  
+    
+    return ret;
+  
+  
 }
 Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 {
@@ -558,7 +569,9 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   //channel of the helicity scaler onto a variable to be stored in the scaler tree. For each channel,
   //each helicity state (+, -, or MPS (undefined)) is stored in a single varibale. Each helicity state
   //will be tagged separately later on.
-
+  
+  //C.Y. Assign actual helicity value to be written o tree
+  actualHelicityR = actualhelicity;
   
   if (fDebugFile) *fDebugFile << "C.Y. | AnalyzeHelicityScaler() Loop over all 32 Channels" << endl;
   if (fDebugFile) *fDebugFile << "C.Y. | ActualHelicity = " << actualhelicity << endl;  
@@ -606,7 +619,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   //**NOTE: The helicity outputs the clock counter per scaler read, and then it resets back to zero.
   //Therefore, the cumulative time MUST be determined by incrementing the clock counter for each scaler read
 
-  fDeltaTime = fScalerChan[fClockChan];    //total clock counts / clock_frequency (1MHz) for a specific scaler read interval
+  fDeltaTime = fScalerChan[fClockChan]/fClockFreq;    //total clock counts / clock_frequency (1MHz) for a specific scaler read interval
   fTotalTime = fPrevTotalTime + fDeltaTime;   //cumulative scaler time  
 
   if (fDebugFile) *fDebugFile << "evNumber (physics trigger) = " << evNumberR << endl;  
@@ -639,7 +652,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 	  (ichan < MAXCHAN)){
 	if(fUseFirstEvent){
 	  if (scalerloc[ivar]->ikind == ICOUNT){
-	    UInt_t scaldata = fScalerChan[ichan];   //Pass the helicity information per channel to scaldata
+	    UInt_t scaldata = fScalerChan[ichan];   //Pass the helicity information per channel per read to scaldata
 	    dvars[ivar] = scaldata;
 	    scal_present_read.push_back(scaldata);
 	    scal_prev_read.push_back(0);
@@ -860,7 +873,8 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
       } 
     }
   }
-  
+                                                                                                                               
+
   //increment scaler reads
   evcount = evcount + 1;
   evcountR = evcount;
@@ -869,8 +883,14 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   for (size_t j=0; j<scal_prev_read.size(); j++) scal_prev_read[j]=scal_present_read[j];
   for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
 
+  
   //------------------C.Y. 12/02/2020 | Fill Scaler Tree Here--------------------------
-    
+  if (fScalerTree) {
+    if (fDebugFile) *fDebugFile << " scaler tree ptr (AnalyzeHelictyScaler) = " << fScalerTree << endl;       
+    fScalerTree->Fill(); 
+  }
+  
+  /*
   //If scaler TTree does NOT exist, create it.
   if (!fScalerTree) {
 
@@ -906,10 +926,10 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   }
   
   //If scaler TTree exists, then fill for every helicity read
-  if(fScalerTree){
+  else if(fScalerTree){
     fScalerTree->Fill();
   }
-
+  */
   //--------------------------------------------------------
   
   if (fDebugFile) *fDebugFile << "====== C.Y. | End Calling THcHelicityScaler::AnalyzeHelicityScaler() ======"<<endl; 
