@@ -304,7 +304,8 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
 
   //C.Y. Nov 26, 2020 : Here goes the code to create a Helicity Scaler TTree, add the variables obtained in AnalyzeBuffer(), and Fill the tree.
   //(See Analyze() method in THcScalerEvtHandler.cxx)
-  
+
+  /*  
   if (lfirst && !fScalerTree) {
 
     lfirst = 0; // Can't do this in Init for some reason
@@ -339,7 +340,7 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
    }
    
   }
-  
+  */
   UInt_t *rdata = (UInt_t*) evdata->GetRawDataBuffer();
   
   if(evdata->GetEvType() == fDelayedType) { // Save this event for processing later
@@ -356,10 +357,10 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
     evNumber=evdata->GetEvNum();
     evNumberR = evNumber;
 
-    Int_t ret=AnalyzeBuffer(rdata);
+    Int_t ret;
     if((ret==AnalyzeBuffer(rdata))) {
       if (fDebugFile) *fDebugFile << "scaler tree ptr 1 "<<fScalerTree<<endl;
-      if (fScalerTree) fScalerTree->Fill();
+      //if (fScalerTree) fScalerTree->Fill();
     }
    
     if (fDebugFile) *fDebugFile << "======= C.Y. | End Calling THcHelicityScaler::Analyze() [!= fDelayedType]======"<<endl;  
@@ -875,10 +876,52 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   //  
   for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
 
+  //------------------C.Y. 12/02/2020 | Fill Scaler Tree Here--------------------------
+    
+  if (!fScalerTree) {
+
+    //Assign a name to the helicity scaler tree
+    TString sname1 = "TSHel";
+    TString sname2 = sname1 + fName;
+    TString sname3 = fName + "  Scaler Data";
+
+    if (fDebugFile) {
+      *fDebugFile << "\nAnalyze 1st time for fName = "<<fName<<endl;
+      *fDebugFile << sname2 << "      " <<sname3<<endl;
+    }
+
+    fScalerTree = new TTree(sname2.Data(),sname3.Data());
+    fScalerTree->SetAutoSave(200000000);
+
+    TString name, tinfo;
+
+    name = "evcount";
+    tinfo = name + "/D";
+    fScalerTree->Branch(name.Data(), &evcountR, tinfo.Data(), 4000);
+ 
+   name = "evNumber";
+   tinfo = name + "/D";
+   fScalerTree->Branch(name.Data(), &evNumberR, tinfo.Data(), 4000);
+   
+   for (size_t i = 0; i < scalerloc.size(); i++) {
+     name = scalerloc[i]->name;
+     tinfo = name + "/D";
+     fScalerTree->Branch(name.Data(), &dvars[i], tinfo.Data(), 4000);
+   }
+   
+  }
+
+  else if(fScalerTree){
+    fScalerTree->Fill();
+  }
+
+  //--------------------------------------------------------
+  
   if (fDebugFile) *fDebugFile << "====== C.Y. | End Calling THcHelicityScaler::AnalyzeHelicityScaler() ======"<<endl; 
 
   return(0);
 }
+
 //_____________________________________________________________________________
 Int_t  THcHelicityScaler::RanBit30(Int_t ranseed)
 {
