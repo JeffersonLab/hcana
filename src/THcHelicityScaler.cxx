@@ -58,9 +58,9 @@ THcHelicityScaler::THcHelicityScaler(const char *name, const char* description)
     fUseFirstEvent(kTRUE),
     fBCM_Gain(0), fBCM_Offset(0), fBCM_SatOffset(0), fBCM_SatQuadratic(0), fBCM_delta_charge(0),
     evcount(0), evcountR(0.0), ifound(0), fNormIdx(-1),
-    fNormSlot(-1),
-    dvars(0),dvars_prev_read(0), dvarsFirst(0), fScalerTree(0),
-    fOnlyBanks(kFALSE), fDelayedType(-1),
+    fNormSlot(-1), fDelayedType(-1),
+    dvars(0),dvars_prev_read(0), dvarsFirst(0),
+    fScalerTree(0), fOnlyBanks(kFALSE),
     fClockChan(-1), fLastClock(0), fClockOverflows(0)
 {
   if (fDebugFile) *fDebugFile << "C.Y. | Calling THcHelicityScaler::Constructor() "<<endl; 
@@ -129,10 +129,8 @@ Int_t THcHelicityScaler::End( THaRunBase* )
     UInt_t* rdata = *it;
     AnalyzeBuffer(rdata);  
     }
-    // if (fScalerTree) fScalerTree->Fill();  
     if (fDebugFile) *fDebugFile << "scaler tree ptr 2 "<<fScalerTree<<endl;
     evNumberR = -1;
-    //   if (fScalerTree) fScalerTree->Fill();
   
   for( vector<UInt_t*>::iterator it = fDelayedEvents.begin();
        it != fDelayedEvents.end(); ++it )
@@ -292,7 +290,7 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
 
   //THcScalerEvtHandler::Analyze() uses this flag (which is forced to be 1),
   //but as to why, it is beyond me. For consistency, I have also used it here.
-  Int_t lfirst=1;  
+  // Int_t lfirst=1;  
    
   if ( !IsMyEvent(evdata->GetEvType()) ) return -1;
 
@@ -302,8 +300,9 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
     EvDump(evdata);
   }
 
-  //C.Y. Nov 26, 2020 : Here goes the code to create a Helicity Scaler TTree, add the variables obtained in AnalyzeBuffer(), and Fill the tree.
-  //(See Analyze() method in THcScalerEvtHandler.cxx)
+  //C.Y. Nov 26, 2020 : Here used to go the code to create a Helicity Scaler TTree, add the variables obtained in AnalyzeBuffer(), and Fill the tree.
+  //(See Analyze() method in THcScalerEvtHandler.cxx) --- This part of the code has been moved to AnalyzeHelicityScaler() method, so the tree can be
+  //filled for every scaler read, as there can be multiple scaler reads per analyze buffer
 
   /*  
   if (lfirst && !fScalerTree) {
@@ -353,18 +352,20 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
     return 1;
   } else { 			// A normal event
     if (fDebugFile) *fDebugFile<<"\n\nTHcHelicityScaler :: Debugging event type "<<dec<<evdata->GetEvType()<< " event num = " << evdata->GetEvNum() << endl<<endl;
-    //if (fDebugFile) *fDebugFile << "scaler tree ptr 1 (test) "<<fScalerTree<<endl; 
     evNumber=evdata->GetEvNum();
     evNumberR = evNumber;
-
+   
+    /*
     Int_t ret;
-    if((ret==AnalyzeBuffer(rdata))) {
+    if((ret=AnalyzeBuffer(rdata))) {
       if (fDebugFile) *fDebugFile << "scaler tree ptr 1 "<<fScalerTree<<endl;
-      //if (fScalerTree) fScalerTree->Fill();
+      if (fScalerTree) fScalerTree->Fill();
     }
    
     if (fDebugFile) *fDebugFile << "======= C.Y. | End Calling THcHelicityScaler::Analyze() [!= fDelayedType]======"<<endl;  
     return ret;
+    */
+    return 0;
   }
   
  
@@ -472,8 +473,6 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 
   if (!ifound) return 0;
 
-  
-  if (fDebugFile) *fDebugFile << "====== C.Y. | End Calling THcHelicityScaler::AnalyzeBuffer() ======"<<endl; 
   return 1;
 }
 
@@ -603,37 +602,31 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   }
 
   
-  //Sets the helicity scaler clock to define the time
-  Double_t scal_current=0;
-  UInt_t thisClock = fScalerChan[fClockChan]; // scalers[fNormIdx]->GetData(fClockChan);
-  if (fDebugFile) *fDebugFile << "evNumber = " << evNumberR << endl;  
-  if (fDebugFile) *fDebugFile << "evcount = " << evcount << endl;
-  if (fDebugFile) *fDebugFile << "thisClock = " << thisClock << endl;  
-  if (fDebugFile) *fDebugFile << "fLastClock = " << fLastClock << endl; 
-  
-  if(thisClock < fLastClock) {	// Count clock scaler wrap arounds
-    fClockOverflows++;
-    if (fDebugFile) *fDebugFile << "(if thisClock<fLastClock): fClockOverflows = " << fClockOverflows << endl;    
-  }
-  fTotalTime = (thisClock+(((Double_t) fClockOverflows)*kMaxUInt+fClockOverflows))/fClockFreq;    
-  fLastClock = thisClock;
-  fDeltaTime= fTotalTime - fPrevTotalTime;                                                                                                 
-  if (fDebugFile) *fDebugFile << "fTotalTime = " << fTotalTime << endl;                                                                                     
-  if (fDebugFile) *fDebugFile << "fPrevTotalTime = " << fPrevTotalTime << endl;                                            
-  if (fDebugFile) *fDebugFile << "fDeltaTime = " << fDeltaTime << endl;       
+  //Set the helicity scaler clock to define the time
+  //**NOTE: The helicity outputs the clock counter per scaler read, and then it resets back to zero.
+  //Therefore, the cumulative time MUST be determined by incrementing the clock counter for each scaler read
+
+  fDeltaTime = fScalerChan[fClockChan];    //total clock counts / clock_frequency (1MHz) for a specific scaler read interval
+  fTotalTime = fPrevTotalTime + fDeltaTime;   //cumulative scaler time  
+
+  if (fDebugFile) *fDebugFile << "evNumber (physics trigger) = " << evNumberR << endl;  
+  if (fDebugFile) *fDebugFile << "evcount (helicity scaler read) = " << evcount << endl;
+  if (fDebugFile) *fDebugFile << "ActualHelicity = " << actualhelicity << endl;  
+  if (fDebugFile) *fDebugFile << "fDeltaTime = " << fDeltaTime << endl;
+  if (fDebugFile) *fDebugFile << "fTotalTime = " << fTotalTime << endl;                       
+  if (fDebugFile) *fDebugFile << "fPrevTotalTime = " << fPrevTotalTime << endl;   
   if (fDeltaTime==0) {
     cout << " *******************   Severe Warning ****************************" << endl;
-    cout << " In THcHelicityScaler have found fDeltaTime is zero !!   " << endl;
-    cout << " ******************* Alert DAQ experts ****************************" << endl;
+    cout << "       In THcHelicityScaler have found fDeltaTime is zero !!      " << endl;
+    cout << " ******************* Alert DAQ experts ***************************" << endl;
     if (fDebugFile) *fDebugFile << " In THcHelicityScaler have found fDeltaTime is zero !!   " << endl;   
   }
   
-  fPrevTotalTime=fTotalTime;
+  fPrevTotalTime=fTotalTime; //set the current total time to the previous time for the upcoming read
  
-
   //C.Y. Nov 27, 2020 : Here goes the code to write the helicity raw data to a variable
   //and to map the variable to the scaler location //( See THcScalerEvtHandler::AnalyzeBuffer() )
-
+  Double_t scal_current=0;
   Int_t nscal=0;
   for (size_t i = 0; i < scalerloc.size(); i++)  {
     size_t ivar = scalerloc[i]->ivar;
@@ -868,16 +861,17 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
     }
   }
   
-  //
+  //increment scaler reads
   evcount = evcount + 1;
   evcountR = evcount;
+
   //
   for (size_t j=0; j<scal_prev_read.size(); j++) scal_prev_read[j]=scal_present_read[j];
-  //  
   for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
 
   //------------------C.Y. 12/02/2020 | Fill Scaler Tree Here--------------------------
     
+  //If scaler TTree does NOT exist, create it.
   if (!fScalerTree) {
 
     //Assign a name to the helicity scaler tree
@@ -910,8 +904,9 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
    }
    
   }
-
-  else if(fScalerTree){
+  
+  //If scaler TTree exists, then fill for every helicity read
+  if(fScalerTree){
     fScalerTree->Fill();
   }
 
