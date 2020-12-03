@@ -174,25 +174,42 @@ Int_t THcHelicityScaler::End( THaRunBase* )
   Double_t mclock = fHScalers[1][clockindex];
   cout << " -- Beam Charge Asymmetries -- " << endl;
   for(Int_t i=0;i<fNumBCMs;i++) {
-    if(bcmindex.find(fBCM_Name[i]) != bcmindex.end()) {
+    cout << " iBCM = " << i <<  endl;
+    //  if (fDebugFile) *fDebugFile << " bcmindex.find =  " << bcmindex.find(fBCM_Name[i]) << endl;    
+    //cout << bcmindex.find(fBCM_Name[i]) << endl;
+    //cout << "bcmindex.end = " << bcmindex.end() << endl;  
+
+    //if(bcmindex.find(fBCM_Name[i]) != bcmindex.end()) {
+      
       Int_t index=bcmindex[fBCM_Name[i]];
       Double_t pcounts = fHScalers[0][index];
       Double_t mcounts = fHScalers[1][index];
-      //      cout << index << " " << fBCM_Name[i] << " " << pcounts << " " << mcounts
-      //	   << " " << fBCM_Gain[i]
-      //      	   << " " << fBCM_Offset[i] << endl;
+      cout << index << " " << fBCM_Name[i] << " " << pcounts << " " << mcounts
+      	   << " " << fBCM_Gain[i]
+	   << " " << fBCM_Offset[i] << endl;
+
+      //ORIGINAL TOTAL CHARGE CALCULATIONS (DOED NOT INCLUDE QUADRATIC BCM TERM)
       Double_t pcharge = (pcounts - (pclock/clockfreq)*fBCM_Offset[i])
 	/fBCM_Gain[i];
       Double_t mcharge = (mcounts - (mclock/clockfreq)*fBCM_Offset[i])
 	/fBCM_Gain[i];
+
+      //NEW TOTAL CHARFE CALCULATIONS (INCLUDE QUADRATIC BCM TERM: see ikind == ICHARGE in this code)
+      //pcharge = pcharge + fBCM_SatQuadratic[i]*TMath::Power(TMath::Max(pcharge - (fBCM_SatOffset[i]*(pclock/clockfreq)),0.0),2.0);
+      //mcharge = mcharge + fBCM_SatQuadratic[i]*TMath::Power(TMath::Max(mcharge - (fBCM_SatOffset[i]*(mclock/clockfreq)),0.0),2.0); 
+
       fCharge[i] = pcharge+mcharge;
+      
       if(fCharge[i]>0.0) {
 	fChargeAsymmetry[i] = (pcharge-mcharge)/fCharge[i];
       } else {
 	fChargeAsymmetry[i] = 0.0;
       }
-      printf("%6s %12.2f %12.8f\n",fBCM_Name[i].c_str(),fCharge[i],fChargeAsymmetry[i]);
-    }
+      //printf("%6s, Charge: %12.2f, Charge Asymmetry: %12.8f\n",fBCM_Name[i].c_str(),fCharge[i],fChargeAsymmetry[i]);
+      //}
+
+      //cout << fBCM_Name[i].c_str() << " | pcounts = " << pcounts << ", pclock = " << pclock << ", clockfreq = " << clockfreq << ", fBCM_Offset = " << fBCM_Offset[i] << ", fBCM_Gain[i]" << endl;
+      //printf("%6s, Charge: %12.2f, Charge Asymmetry: %12.8f\n",fBCM_Name[i].c_str(),fCharge[i],fChargeAsymmetry[i]);  
   }
   fTime = (pclock+mclock)/clockfreq;
   if(pclock+mclock>0) {
