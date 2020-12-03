@@ -124,30 +124,30 @@ Int_t THcHelicityScaler::End( THaRunBase* )
   //C.Y. Nov 26, 2020 : This method has been updated to add/write the delayed events to the Scaler Tree. See End() method in THcScalerEvtHandler.cxx
   
   cout << "THcHelicityScaler::End Analyzing " << fDelayedEvents.size() << " delayed helicity scaler events" << endl;
-    for(std::vector<UInt_t*>::iterator it = fDelayedEvents.begin();
+  
+  for(std::vector<UInt_t*>::iterator it = fDelayedEvents.begin();
       it != fDelayedEvents.end(); ++it) {
     UInt_t* rdata = *it;
     AnalyzeBuffer(rdata);  
-    }
-    if (fDebugFile) *fDebugFile << "scaler tree ptr 2 "<<fScalerTree<<endl;
-    evNumberR = -1;
+  }
+  
+  if (fDebugFile) *fDebugFile << "scaler tree ptr 2 "<<fScalerTree<<endl;
+  evNumberR = -1;
   
   for( vector<UInt_t*>::iterator it = fDelayedEvents.begin();
        it != fDelayedEvents.end(); ++it )
     delete [] *it;
   fDelayedEvents.clear();
 
-  if (fScalerTree) {
-  
-    fScalerTree->Write();
-  }
+  //Write the helicity variables to scaler tree
+  if (fScalerTree) { fScalerTree->Write(); }
  
-  //  cout << " -- Helicity Scalers -- " << endl;
+  //Calculate scaler asymmetries
   for(Int_t i=0;i<fNScalerChannels;i++) {
     if(fScalerSums[i]>0.5) {
       fAsymmetry[i] = (fHScalers[0][i]-fHScalers[1][i])/fScalerSums[i];
       fAsymmetryError[i] = 2*TMath::Sqrt(fHScalers[0][i]*fHScalers[1][i]
-					*fScalerSums[i])
+					 *fScalerSums[i])
 	/(fScalerSums[i]*fScalerSums[i]);
     } else {
       fAsymmetry[i] = 0.0;
@@ -159,34 +159,35 @@ Int_t THcHelicityScaler::End( THaRunBase* )
   }
   //  cout << " ---------------------- " << endl;
 
-  // Compute Charge Asymmetries
+  //----------Compute Charge Asymmetries-------
+
+  //Set the helicity channels for each BCM
   std::map<std::string, Int_t> bcmindex;
-  bcmindex["BCM1"] = 0;
-  bcmindex["BCM2"] = 2;
-  //  bcmindex["Unser"] = 6;
-  bcmindex["BCM4A"] = 10;
-  bcmindex["BCM4B"] = 4;
-  bcmindex["BCM4C"] = 12;
-  //  bcmindex["1MHz"] = 8;
+  bcmindex["BCM1_Hel.scal"] = 0;
+  bcmindex["BCM2_Hel.scal"] = 2;
+  bcmindex["Unser_Hel.scal"] = 6;
+  bcmindex["BCM4A_Hel.scal"] = 10;
+  bcmindex["BCM4B_Hel.scal"] = 4;
+  bcmindex["BCM4C_Hel.scal"] = 12;
+  //bcmindex["1MHz_Hel.scal"] = 8;
+  
   Int_t clockindex=8;
   Double_t clockfreq=1000000.0;
   Double_t pclock = fHScalers[0][clockindex];
   Double_t mclock = fHScalers[1][clockindex];
   cout << " -- Beam Charge Asymmetries -- " << endl;
   for(Int_t i=0;i<fNumBCMs;i++) {
-    cout << " iBCM = " << i <<  endl;
-    //  if (fDebugFile) *fDebugFile << " bcmindex.find =  " << bcmindex.find(fBCM_Name[i]) << endl;    
-    //cout << bcmindex.find(fBCM_Name[i]) << endl;
-    //cout << "bcmindex.end = " << bcmindex.end() << endl;  
-
+    cout << " loop i  = " << i <<  endl; 
+    
     //if(bcmindex.find(fBCM_Name[i]) != bcmindex.end()) {
-      
+    
       Int_t index=bcmindex[fBCM_Name[i]];
       Double_t pcounts = fHScalers[0][index];
       Double_t mcounts = fHScalers[1][index];
-      cout << index << " " << fBCM_Name[i] << " " << pcounts << " " << mcounts
-      	   << " " << fBCM_Gain[i]
-	   << " " << fBCM_Offset[i] << endl;
+      cout << "index = " << index << " | fBCM_Name[i] = " << fBCM_Name[i] << " | pcounts = " << pcounts << " | mcounts = " << mcounts << endl;
+	// << pcounts << " " << mcounts
+      	//   << " " << fBCM_Gain[i]
+	//   << " " << fBCM_Offset[i] << endl;
 
       //ORIGINAL TOTAL CHARGE CALCULATIONS (DOED NOT INCLUDE QUADRATIC BCM TERM)
       Double_t pcharge = (pcounts - (pclock/clockfreq)*fBCM_Offset[i])
@@ -195,8 +196,8 @@ Int_t THcHelicityScaler::End( THaRunBase* )
 	/fBCM_Gain[i];
 
       //NEW TOTAL CHARFE CALCULATIONS (INCLUDE QUADRATIC BCM TERM: see ikind == ICHARGE in this code)
-      //pcharge = pcharge + fBCM_SatQuadratic[i]*TMath::Power(TMath::Max(pcharge - (fBCM_SatOffset[i]*(pclock/clockfreq)),0.0),2.0);
-      //mcharge = mcharge + fBCM_SatQuadratic[i]*TMath::Power(TMath::Max(mcharge - (fBCM_SatOffset[i]*(mclock/clockfreq)),0.0),2.0); 
+      pcharge = pcharge + fBCM_SatQuadratic[i]*TMath::Power(TMath::Max(pcharge - (fBCM_SatOffset[i]*(pclock/clockfreq)),0.0),2.0);
+      mcharge = mcharge + fBCM_SatQuadratic[i]*TMath::Power(TMath::Max(mcharge - (fBCM_SatOffset[i]*(mclock/clockfreq)),0.0),2.0); 
 
       fCharge[i] = pcharge+mcharge;
       
@@ -587,26 +588,25 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   //each helicity state (+, -, or MPS (undefined)) is stored in a single varibale. Each helicity state
   //will be tagged separately later on.
   
-  //C.Y. Assign actual helicity value to be written o tree
+  //C.Y. Assign actual helicity value to a variable to be written to tree (the value may be MPS(0), +hel (+1), or -hel(-1))
   actualHelicityR = actualhelicity;
   
   if (fDebugFile) *fDebugFile << "C.Y. | AnalyzeHelicityScaler() Loop over all 32 Channels" << endl;
   if (fDebugFile) *fDebugFile << "C.Y. | ActualHelicity = " << actualhelicity << endl;  
+ 
   //C.Y. 11/26/2020  Loop over all 32 scaler channels for a specific helicity scaler module (SIS 3801)
     for(Int_t i=0;i<fNScalerChannels;i++) {
 
       //C.Y. 11/26/2020 the count expression below gets the scaler raw helicity information (+, -, or MPS helicity states) for the ith channel
       Int_t count = p[i]&0xFFFFFF; // Bottom 24 bits  equivalent of scalers->Decode()
-
       fScalerChan[i] = count;        //pass the helicity raw information to each helicity scaler channel array element
-
       if (fDebugFile) *fDebugFile << "C.Y. | (Channel, count) = ("<< i << ", "<< fScalerChan[i] << ")" << endl;     
 
     }
 
 
   //C.Y. 11/26/2020  The block of code below is used to get a cumulative sum of +/- helicity used
-  //for calculation of beam charge asymmetry
+  //for calculation of the cumulative beam charge asymmetry and other quantities in the ::End() method
   if(actualhelicity!=0) {
 
     //C.Y. 11/24/2020  if-else notation--> expression 1 ? expression 2 : 3
