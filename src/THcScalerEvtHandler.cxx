@@ -268,6 +268,7 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     if (fDebugFile) *fDebugFile<<"\n\nTHcScalerEvtHandler :: Debugging event type "<<dec<<evdata->GetEvType()<< " event num = " << evdata->GetEvNum() << endl<<endl;
     evNumber=evdata->GetEvNum();
     evNumberR = evNumber;
+
     Int_t ret;
     if((ret=AnalyzeBuffer(rdata,fOnlySyncEvents))) {
       if (fDebugFile) *fDebugFile << "scaler tree ptr 1 "<<fScalerTree<<endl;
@@ -443,7 +444,7 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
               dvars[ivar]=0.;
 	      if (bcm_ind != -1) {
                  dvars[ivar]=((scalers[idx]->GetData(ichan))/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
-		 dvars[ivar]=dvars[ivar]+fBCM_SatOffset[bcm_ind]*TMath::Max(dvars[ivar]-fBCM_SatOffset[i],0.0);
+		 dvars[ivar]=dvars[ivar]+fBCM_SatQuadratic[bcm_ind]*TMath::Power(TMath::Max(dvars[ivar]-fBCM_SatOffset[i],0.0),2.0);
 	      }
          	if (bcm_ind == fbcm_Current_Threshold_Index) scal_current= dvars[ivar];
 	    }
