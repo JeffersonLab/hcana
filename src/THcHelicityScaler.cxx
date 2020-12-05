@@ -11,8 +11,8 @@
      phelscaler->SetBankID(9801); // Will default to this
      gHaEvtHandlers->Add (phelscaler);
 ~~~
-\authors:  S. A. Wood
-           C. Yero 
+\authors:  S. A. Wood (saw@jlab.org)
+           C. Yero (cyero@jlab.org)
 
 */
 
@@ -109,7 +109,6 @@ THcHelicityScaler::~THcHelicityScaler()
 
 Int_t THcHelicityScaler::End( THaRunBase* )
 {
-  if (fDebugFile) *fDebugFile << "======C.Y. | Calling THcHelicityScaler::End() ======="<<endl;  
 
   // Process any delayed events in order received
       
@@ -144,7 +143,7 @@ Int_t THcHelicityScaler::End( THaRunBase* )
   
   //------Compute Charge Asymmetries-------
 
-  //Set the helicity channels for each BCM
+  //Set the helicity scaler module channels for each BCM
   std::map<std::string, Int_t> bcmindex;
   bcmindex["BCM1_Hel.scal"] = 0;
   bcmindex["BCM2_Hel.scal"] = 2;
@@ -310,8 +309,8 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
     fScalerTree->Branch(name.Data(), &evNumberR, tinfo.Data(), 4000);
 
     //C.Y. 12/02/2020 Added actual helicity to be stored in scaler tree
-    name = "actualHelicity";                                                                                                                                                            
-    tinfo = name + "/D";                                                                                                                                                            
+    name = "actualHelicity";                                                                                                                      
+    tinfo = name + "/D";                                                                                                  
     fScalerTree->Branch(name.Data(), &actualHelicityR, tinfo.Data(), 4000); 
 
     for (size_t i = 0; i < scalerloc.size(); i++) {
@@ -330,7 +329,6 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
     UInt_t *datacopy = new UInt_t[evlen];
     fDelayedEvents.push_back(datacopy);
     memcpy(datacopy,rdata,evlen*sizeof(UInt_t));
-    if (fDebugFile) *fDebugFile << "======= C.Y. | End Calling THcHelicityScaler::Analyze() [== fDelayedType]======"<<endl;
     return 1;
   }
   
@@ -447,7 +445,6 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
   if (fDebugFile) {
     *fDebugFile << "Finished with decoding.  "<<endl;
     *fDebugFile << "   Found flag   =  "<<ifound<<endl;
-    *fDebugFile << "====== C.Y. | End Calling THcHelicityScaler::AnalyzeBuffer() ======"<<endl; 
   }
 
   if (!ifound) return 0;
