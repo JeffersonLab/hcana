@@ -94,8 +94,6 @@ private:
 
   //----C.Y. Nov 26, 2020----
   Double_t *fScalerChan;
-
-  //-------------------------
   
   std::vector<UInt_t*> fDelayedEvents;
   Int_t fROC;
@@ -126,17 +124,12 @@ private:
 
   Int_t Nvars, ifound, fNormIdx, fNormSlot, nscalers;
   Double_t *dvars;
-  UInt_t *dvars_prev_read;
-  std::vector<UInt_t> scal_prev_read;
-  std::vector<UInt_t> scal_present_read;
-  std::vector<UInt_t> scal_overflows;
   Double_t *dvarsFirst;
   TTree *fScalerTree;
   Bool_t fOnlySyncEvents;
   Bool_t fOnlyBanks;
   Int_t fClockChan;
   UInt_t fLastClock;
-  Int_t fClockOverflows;
   std::set<UInt_t> fRocSet;
   std::set<UInt_t> fModuleSet;
   //--------------------------------------------------------
