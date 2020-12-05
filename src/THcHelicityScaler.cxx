@@ -58,10 +58,10 @@ static const UInt_t defaultDT = 4;
 THcHelicityScaler::THcHelicityScaler(const char *name, const char* description)
   : THaEvtTypeHandler(name,description),
     fBankID(9801),
-    fUseFirstEvent(kTRUE),
+    fUseFirstEvent(kTRUE), fDelayedType(-1),
     fBCM_Gain(0), fBCM_Offset(0), fBCM_SatOffset(0), fBCM_SatQuadratic(0), fBCM_delta_charge(0),
-    evcount(0), evcountR(0.0), ifound(0), fNormIdx(-1),
-    fNormSlot(-1), fDelayedType(-1),
+    evcount(0), evcountR(0.0), ifound(0),
+    fNormIdx(-1), fNormSlot(-1),
     dvars(0), dvarsFirst(0),
     fScalerTree(0), fOnlyBanks(kFALSE),
     fClockChan(-1), fLastClock(0)
@@ -594,7 +594,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   //Loop over each scaler variable from the map
   for (size_t i = 0; i < scalerloc.size(); i++)  {
     size_t ivar = scalerloc[i]->ivar;
-    size_t idx = scalerloc[i]->index;
+    size_t idx = scalerloc[i]->index;  
     size_t ichan = scalerloc[i]->ichan;
 
     //ANALYZE 1ST SCALER READ SEPARATE (There is no previous read before this one)
@@ -705,7 +705,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 	      if (scalerloc[ivar]->ikind == ICURRENT) {
 
 		dvarsFirst[ivar] = 0.0;
-		dvars[var] = 0.0;
+		dvars[ivar] = 0.0;
 		
                 if (bcm_ind != -1) {
 		  Double_t cur_temp=((fScalerChan[ichan])/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
@@ -803,7 +803,6 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 
   for (size_t i = 0; i < scalerloc.size(); i++)  {
     size_t ivar = scalerloc[i]->ivar;
-    size_t idx = scalerloc[i]->index;
     size_t ichan = scalerloc[i]->ichan;
 
     if (scalerloc[ivar]->ikind == ICUT+ICOUNT){
