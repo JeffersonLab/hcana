@@ -182,6 +182,8 @@ Int_t THcHelicityScaler::End( THaRunBase* )
     }  
   }
   
+  fTimePlus = pclock/clockfreq;
+  fTimeMinus = mclock/clockfreq;
   fTime = (pclock+mclock)/clockfreq;
   if(pclock+mclock>0) {
     fTimeAsymmetry = (pclock-mclock)/(pclock+mclock);
@@ -1059,7 +1061,8 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
   fCharge = new Double_t[fNumBCMs];
   fChargeAsymmetry = new Double_t[fNumBCMs];
 
-  fTime = fTimeAsymmetry = 0;
+  fTimePlus = fTimeMinus = 0.0;
+  fTime = fTimeAsymmetry = 0.0;
   fTriggerAsymmetry = 0.0;
 
   //Call MakeParms() to define variables to be used in report file 
@@ -1103,6 +1106,12 @@ void THcHelicityScaler::MakeParms()
   gHcParms->Define(Form("g%s_hscaler_charge_asy[%d]",fName.Data(),fNumBCMs),
 		   "Helicity Gated Charge Asymmetry",*fChargeAsymmetry);
 
+  gHcParms->Define(Form("g%s_hscaler_time_plus",fName.Data()),
+		   "Positive Helicity Time",fTimePlus);
+
+  gHcParms->Define(Form("g%s_hscaler_time_minus",fName.Data()),
+		   "Negative Helicity Time",fTimeMinus);
+    
   gHcParms->Define(Form("g%s_hscaler_time",fName.Data()),
 		   "Helicity Gated Time (sec)",fTime);
 

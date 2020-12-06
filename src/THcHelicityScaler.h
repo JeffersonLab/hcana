@@ -88,6 +88,8 @@ private:
   Double_t *fAsymmetryError;
   Double_t *fCharge;
   Double_t *fChargeAsymmetry;
+  Double_t fTimePlus;     
+  Double_t fTimeMinus;       
   Double_t fTime;
   Double_t fTimeAsymmetry;
   Double_t fTriggerAsymmetry;
