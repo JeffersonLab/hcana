@@ -81,6 +81,7 @@ THcHelicityScaler::THcHelicityScaler(const char *name, const char* description)
   AddEvtType(5);
   AddEvtType(6);
   AddEvtType(7);
+  AddEvtType(129);
   SetDelayedType(129);
   
 }
