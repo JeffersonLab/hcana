@@ -544,10 +544,11 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   
   //C.Y. 11/26/2020  The block of code below is used to extract the helicity information from each
   //channel of the helicity scaler onto a variable to be stored in the scaler tree. For each channel,
-  //each helicity state (+, -, or MPS (undefined)) is stored in a single varibale. Each helicity state
+  //each helicity state (+, -, or undefined) is stored in a single varibale. Each helicity state
   //is tagged to the corresponding scaler read via 'actualHelicityR' which is stored below..
   
-  //C.Y. Assign actual helicity value to a variable to be written to tree (the value may be MPS(0), +hel (+1), or -hel(-1))
+  //C.Y. Assign actual helicity value to a variable to be written to tree (the value may be (0, +hel (+1), or -hel(-1))
+  //Where actualhelicity=0  is NOT the MPS.  It is zero when the actual helicity has not been determined.
   actualHelicityR = actualhelicity;
   
   //C.Y. 11/26/2020  Loop over all 32 scaler channels for a specific helicity scaler module (SIS 3801)
