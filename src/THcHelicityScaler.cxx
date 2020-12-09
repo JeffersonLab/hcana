@@ -316,6 +316,11 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
     tinfo = name + "/D";                                                                                                  
     fScalerTree->Branch(name.Data(), &actualHelicityR, tinfo.Data(), 4000); 
 
+    //C.Y. 12/09/2020 Added quartetphase to be stored in scaler tree
+    name = "quartetPhase";
+    tinfo = name + "/D";                                                                                                  
+    fScalerTree->Branch(name.Data(), &quartetphaseR, tinfo.Data(), 4000);
+    
     for (size_t i = 0; i < scalerloc.size(); i++) {
       name = scalerloc[i]->name;
       tinfo = name + "/D";
@@ -468,6 +473,9 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   fNTriggers++;
 
   Int_t quartetphase = (fNTriggers-fFirstCycle)%4;
+  //C.Y. Dec 09 : Pass quartet phase to scaler tree varable
+  quartetphaseR = quartetphase;
+  
   if(fFirstCycle >= -10) {
     if(quartetphase == 0) {
       Int_t predicted = RanBit30(fRingSeed_reported);

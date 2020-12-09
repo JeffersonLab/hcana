@@ -123,7 +123,7 @@ private:
   UInt_t evNumber;
   Double_t evNumberR;
   Double_t actualHelicityR;
-
+  Double_t quartetphaseR;
   Int_t Nvars, ifound, fNormIdx, fNormSlot, nscalers;
   Double_t *dvars;
   Double_t *dvarsFirst;
