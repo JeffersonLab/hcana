@@ -127,6 +127,7 @@ Int_t THcHelicityScaler::End( THaRunBase* )
   
   //Write the helicity variables to scaler tree
   if (fScalerTree) { fScalerTree->Write(); }
+
   
   //Calculate scaler asymmetries
   for(Int_t i=0;i<fNScalerChannels;i++) {
@@ -154,25 +155,30 @@ Int_t THcHelicityScaler::End( THaRunBase* )
   bcmindex["BCM4C_Hel.scal"] = 12;
   //bcmindex["1MHz_Hel.scal"] = 8;
   
-  Int_t clockindex=8;
-  Double_t clockfreq=1000000.0;
-  Double_t pclock = fHScalers[0][clockindex];
-  Double_t mclock = fHScalers[1][clockindex];
+  //Int_t clockindex=8;
+  //Double_t clockfreq=1000000.0;
 
+  Double_t pclock = fHScalers[0][fClockChan];
+  Double_t mclock = fHScalers[1][fClockChan];
+
+  cout << endl << "---------------------- Beam Charge Asymmetries ---------------------- " << endl;
+  cout << "  BCM        Total     Charge        Beam ON     Beam ON      Asymmetry" << endl;
+  cout << " Name       Charge    Asymmetry       Charge    Asymmetry        Error"    << endl;
+  
   for(Int_t i=0;i<fNumBCMs;i++) {
     
     Int_t index=bcmindex[fBCM_Name[i]];
     Double_t pcounts = fHScalers[0][index];
     Double_t mcounts = fHScalers[1][index];
     
-    Double_t pcharge = (pcounts - (pclock/clockfreq)*fBCM_Offset[i])
+    Double_t pcharge = (pcounts - (pclock/fClockFreq)*fBCM_Offset[i])
       /fBCM_Gain[i];
-    Double_t mcharge = (mcounts - (mclock/clockfreq)*fBCM_Offset[i])
+    Double_t mcharge = (mcounts - (mclock/fClockFreq)*fBCM_Offset[i])
       /fBCM_Gain[i];
     
-    //Iclude Quadratic BCM Term in the total charge calculation (look for lines 'ikind == ICURRENT', for example)
-    pcharge = pcharge + fBCM_SatQuadratic[i]*TMath::Power(TMath::Max(pcharge - (fBCM_SatOffset[i]*(pclock/clockfreq)),0.0),2.0);
-    mcharge = mcharge + fBCM_SatQuadratic[i]*TMath::Power(TMath::Max(mcharge - (fBCM_SatOffset[i]*(mclock/clockfreq)),0.0),2.0); 
+    //Include Quadratic BCM Term in the total charge calculation (look for lines 'ikind == ICURRENT', for example)
+    pcharge = pcharge + fBCM_SatQuadratic[i]*TMath::Power(TMath::Max(pcharge - (fBCM_SatOffset[i]*(pclock/fClockFreq)),0.0),2.0);
+    mcharge = mcharge + fBCM_SatQuadratic[i]*TMath::Power(TMath::Max(mcharge - (fBCM_SatOffset[i]*(mclock/fClockFreq)),0.0),2.0); 
     
     fCharge[i] = pcharge+mcharge;
           
@@ -181,11 +187,28 @@ Int_t THcHelicityScaler::End( THaRunBase* )
     } else {
       fChargeAsymmetry[i] = 0.0;
     }  
+    
+    Double_t asy, asyerr;
+    if(fAsymmetryCount[i] <= 1) {
+      asy = -100;
+      asyerr = 0.0;
+    } else {
+      asy = fAsymmetrySum[i]/fAsymmetryCount[i];
+      if(fAsymmetrySum2[i] >= fAsymmetryCount[i]*asy*asy) {
+	asyerr = TMath::Sqrt((fAsymmetrySum2[i] -
+			      fAsymmetryCount[i]*asy*asy) /
+			     (fAsymmetryCount[i]*(fAsymmetryCount[i]-1)));
+      } else {
+	asyerr = 0.0;
+      }
+    }
+    printf("%6s %12.2f %12.8f %12.2f %12.8f %12.8f\n",fBCM_Name[i].c_str(),fCharge[i],
+	   fChargeAsymmetry[i],fChargeSum[i],asy,asyerr);
   }
   
-  fTimePlus = pclock/clockfreq;
-  fTimeMinus = mclock/clockfreq;
-  fTime = (pclock+mclock)/clockfreq;
+  fTimePlus = pclock/fClockFreq;
+  fTimeMinus = mclock/fClockFreq;
+  fTime = (pclock+mclock)/fClockFreq;
   if(pclock+mclock>0) {
     fTimeAsymmetry = (pclock-mclock)/(pclock+mclock);
   } else {
@@ -473,7 +496,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   fNTriggers++;
 
   Int_t quartetphase = (fNTriggers-fFirstCycle)%4;
-  //C.Y. Dec 09 : Pass quartet phase to scaler tree varable
+  //C.Y. 12/09/2020 : Pass quartet phase to scaler tree varable
   quartetphaseR = quartetphase;
   
   if(fFirstCycle >= -10) {
@@ -582,6 +605,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
     }
   }
 
+  
   
   //Set the helicity scaler clock to define the time
   fDeltaTime = fScalerChan[fClockChan]/fClockFreq;    //total clock counts / clock_frequency (1MHz) for a specific scaler read interval
@@ -840,12 +864,64 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 	dvars[ivar] = fDeltaTime; 
       }
     }
+    
   }
+
+  //--------------------------------------
+
+  //C.Y. 12/13/2020 : Calculate the asymmetries at the end of each quartet  (S.A. Wood approach)
+
+  if(actualhelicity!=0) {
+    
+    //Reset fHaveCycle to kFALSE at the start of each quartet (e.g.  - + + -,  + - - +
+    if(quartetphase==0) {
+      fHaveCycle[0] = fHaveCycle[1] = fHaveCycle[2] = fHaveCycle[3] = kFALSE;
+    }
+    
+    
+    //Check if BCM scaler current is above set theshold  
+    if(scal_current > fbcm_Current_Threshold && (quartetphase==0 || fHaveCycle[max(quartetphase-1,0)])) {
+      fHaveCycle[quartetphase] = kTRUE;
+      
+      for(Int_t i=0; i<fNumBCMs; i++) {	 
+	
+	fTimeCycle[quartetphase] = fDeltaTime;
+	fChargeCycle[quartetphase][i] = fBCM_delta_charge[i];
+
+      }
+      
+    }
+    
+    // Compute charge asymmetries for this quartet
+    if(quartetphase == 3 && fHaveCycle[3]) {	
+
+      for(Int_t i=0;i<fNumBCMs;i++) {
+
+	//compute asymmetry for each quartet at the end of saidc quartet
+	Double_t asy = actualhelicity*(fChargeCycle[0][i]+fChargeCycle[3][i]
+				       -fChargeCycle[1][i]-fChargeCycle[2][i]) /
+	  (fChargeCycle[0][i]+fChargeCycle[3][i]+fChargeCycle[1][i]+fChargeCycle[2][i]);
+
+	fChargeSum[i] += fChargeCycle[0][i]+fChargeCycle[1][i]
+	  +fChargeCycle[2][i]+fChargeCycle[3][i];
+
+
+	fAsymmetrySum[i] += asy;
+	fAsymmetrySum2[i] += asy*asy;
+	fAsymmetryCount[i]++;
+      }
+      fTimeSum += fTimeCycle[0]+fTimeCycle[1]
+	+fTimeCycle[2]+fTimeCycle[3];
+    }
+  }
+  
+  
+  //--------------------------------------
   
   //increment scaler reads
   evcount = evcount + 1;
   evcountR = evcount;
-
+  
   //clear Genscaler scalers
   for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
   
@@ -1075,6 +1151,41 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
   fTime = fTimeAsymmetry = 0.0;
   fTriggerAsymmetry = 0.0;
 
+
+
+  //------C.Y.: 12/13/2020  Initialize Variables for quartet-by-quartet asymmetries---------
+  //(and error calculation)
+
+  for(Int_t i=0; i<4; i++) {
+    
+    fChargeCycle[i] = new Double_t[fNumBCMs];
+    fHaveCycle[i] = kFALSE;
+    
+    for(Int_t j=0; j<fNumBCMs; j++) {
+      fChargeCycle[i][j] = 0.0;
+    }
+    
+    fTimeCycle[i] = 0.0;
+  }
+
+  //Why were these initialized to fNScalerChannels if they
+  //are only used for BCM indices? 
+  fChargeSum = new Double_t[fNScalerChannels];
+  fAsymmetrySum = new Double_t[fNScalerChannels];
+  fAsymmetrySum2 = new Double_t[fNScalerChannels];
+  fAsymmetryCount = new Int_t[fNScalerChannels];
+
+  for(Int_t i=0;i<fNumBCMs;i++) {
+    fChargeSum[i] = 0.0;
+    fAsymmetrySum[i] = 0.0;
+    fAsymmetrySum2[i] = 0.0;
+    fAsymmetryCount[i] = 0;
+  }
+  fTimeSum = 0.0;
+  
+  //------------------------------------------------------------------------------------------
+
+  
   //Call MakeParms() to define variables to be used in report file 
   MakeParms();
   

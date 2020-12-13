@@ -94,9 +94,24 @@ private:
   Double_t fTimeAsymmetry;
   Double_t fTriggerAsymmetry;
 
+  // C.Y.: 12/13/2020  Variables for quartet-by-quartet asymmetries
+  Bool_t   fHaveCycle[4];
+  Double_t *fChargeCycle[4];
+  Double_t fTimeCycle[4];
+
+  Double_t *fChargeSum;
+  Double_t fTimeSum;
+  Double_t *fAsymmetrySum;
+  Double_t *fAsymmetrySum2;
+  Int_t    *fAsymmetryCount;
+  
+  //----------------------
+
+  
+  
   //----C.Y. Nov 26, 2020----
   Double_t *fScalerChan;
-  
+
   std::vector<UInt_t*> fDelayedEvents;
   Int_t fROC;
   Int_t fNScalerChannels;	// Number of scaler channels/event
