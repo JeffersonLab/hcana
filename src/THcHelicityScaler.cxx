@@ -214,7 +214,7 @@ Int_t THcHelicityScaler::End( THaRunBase* )
   } else {
     fTimeAsymmetry = 0.0;
   }
-  
+  printf("TIME(s)%12.2f %12.8f %12.2f\n",fTime, fTimeAsymmetry, fTimeSum);
   if(fNTriggersPlus+fNTriggersMinus > 0) {
     fTriggerAsymmetry = ((Double_t) (fNTriggersPlus-fNTriggersMinus))/(fNTriggersPlus+fNTriggersMinus);
   } else {
@@ -879,7 +879,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
     }
     
     
-    //Check if BCM scaler current is above set theshold  
+    //Check if BCM scaler current is above set threshold  
     if(scal_current > fbcm_Current_Threshold && (quartetphase==0 || fHaveCycle[max(quartetphase-1,0)])) {
       fHaveCycle[quartetphase] = kTRUE;
       
@@ -892,12 +892,12 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
       
     }
     
-    // Compute charge asymmetries for this quartet
+    // Compute charge asymmetries at the end this quartet
     if(quartetphase == 3 && fHaveCycle[3]) {	
 
       for(Int_t i=0;i<fNumBCMs;i++) {
 
-	//compute asymmetry for each quartet at the end of saidc quartet
+	//compute asymmetry for each quartet at the end of said quartet
 	Double_t asy = actualhelicity*(fChargeCycle[0][i]+fChargeCycle[3][i]
 				       -fChargeCycle[1][i]-fChargeCycle[2][i]) /
 	  (fChargeCycle[0][i]+fChargeCycle[3][i]+fChargeCycle[1][i]+fChargeCycle[2][i]);
@@ -908,7 +908,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 
 	fAsymmetrySum[i] += asy;
 	fAsymmetrySum2[i] += asy*asy;
-	fAsymmetryCount[i]++;
+	fAsymmetryCount[i]++;    //keep track of the total number of quartets
       }
       fTimeSum += fTimeCycle[0]+fTimeCycle[1]
 	+fTimeCycle[2]+fTimeCycle[3];
