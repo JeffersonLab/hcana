@@ -91,7 +91,7 @@ private:
   Double_t fTimePlus;     
   Double_t fTimeMinus;       
   //Double_t fTime;
-  Double_t fTimeAsymmetry;
+  //Double_t fTimeAsymmetry;
   Double_t fTriggerAsymmetry;
 
   //---- C.Y.: 12/14/2020  Variables for quartet-by-quartet asymmetry/error calculations ----
