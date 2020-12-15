@@ -145,6 +145,48 @@ Int_t THcHelicityScaler::End( THaRunBase* )
   }
   */
 
+    //------Compute Time Asymmetries-------
+
+  //C.Y. 12/15/2020  Time Asymmetry / Error Calculations (with scaler_current cut)
+      
+    if(fTimeAsymCount <= 1) {
+      fTimeAsymmetry       = -1000.;
+      fTimeAsymmetryError  = 0.0;
+    } else {
+      fTimeAsymmetry = fTimeAsymSum/fTimeAsymCount;  //normalize asymmetry to total number of quartets
+      if(fTimeAsymSum2 >= fTimeAsymCount*TMath::Pow(fTimeAsymmetry,2)) {
+	fTimeAsymmetryError = TMath::Sqrt((fTimeAsymSum2 -
+						fTimeAsymCount*TMath::Pow(fTimeAsymmetry,2)) /
+					       (fTimeAsymCount*(fTimeAsymCount-1)));
+      } else {
+	fTimeAsymmetryError = 0.0;
+      }
+    }
+
+  
+  
+  //------Compute Scaler Asymmetries-------
+
+  //C.Y. 12/15/2020  Scaler Asymmetry / Error Calculations (with scaler_current cut)
+  
+  for(Int_t i=0; i<fNScalerChannels; i++) {
+    
+    if(fScalAsymCount[i] <= 1) {
+      fScalAsymmetry[i]       = -1000.;
+      fScalAsymmetryError[i]  = 0.0;
+    } else {
+      fScalAsymmetry[i] = fScalAsymSum[i]/fScalAsymCount[i];  //normalize asymmetry to total number of quartets
+      if(fScalAsymSum2[i] >= fScalAsymCount[i]*TMath::Pow(fScalAsymmetry[i],2)) {
+	fScalAsymmetryError[i] = TMath::Sqrt((fScalAsymSum2[i] -
+						fScalAsymCount[i]*TMath::Pow(fScalAsymmetry[i],2)) /
+					       (fScalAsymCount[i]*(fScalAsymCount[i]-1)));
+      } else {
+	fScalAsymmetryError[i] = 0.0;
+      }
+    }
+
+  }
+
   
   //------Compute Charge Asymmetries-------
 
@@ -171,11 +213,11 @@ Int_t THcHelicityScaler::End( THaRunBase* )
       fChargeAsymmetry[i]       = -1000.;
       fChargeAsymmetryError[i]  = 0.0;
     } else {
-      fChargeAsymmetry = fChargeAsymSum[i]/fChargeAsymCount[i];  //normalize charge asymmetry to total number of quartets (as the sum is for every quartet)
+      fChargeAsymmetry[i] = fChargeAsymSum[i]/fChargeAsymCount[i];  //normalize charge asymmetry to total number of quartets (as the sum is for every quartet)
 
       if(fChargeAsymSum2[i] >= fChargeAsymCount[i]*TMath::Pow(fChargeAsymmetry[i],2)) {
 	fChargeAsymmetryError[i] = TMath::Sqrt((fChargeAsymSum2[i] -
-						fChargeAsymCount[i]*asy*asy) /
+						fChargeAsymCount[i]*TMath::Pow(fChargeAsymmetry[i],2)) /
 					       (fChargeAsymCount[i]*(fChargeAsymCount[i]-1)));
       } else {
 	fChargeAsymmetryError[i] = 0.0;
@@ -1253,23 +1295,18 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
 
 void THcHelicityScaler::MakeParms()
 {
-  /*
-  //Put Various helicity scaler results in gHcParms so they can be included in results.
   
+  //Put Various helicity scaler results in gHcParms so they can be included in results.
+
+  //no bcm cut required
   gHcParms->Define(Form("g%s_hscaler_plus[%d]",fName.Data(),fNScalerChannels),
 		   "Plus Helcity Scalers",*(fHScalers[0]));
 
   gHcParms->Define(Form("g%s_hscaler_minus[%d]",fName.Data(),fNScalerChannels),
 		   "Minus Helcity Scalers",*(fHScalers[1]));
 
-  gHcParms->Define(Form("g%s_hscaler_sum[%d]",fName.Data(),fNScalerChannels),
-		   "Helcity Scalers Sum",*fScalerSums);
-
-  gHcParms->Define(Form("g%s_hscaler_asy[%d]",fName.Data(),fNScalerChannels),
-		   "Helicity Scaler Asymmetry[%d]",*fScalAsymmetry);
-
-  gHcParms->Define(Form("g%s_hscaler_asyerr[%d]",fName.Data(),fNScalerChannels),
-		   "Helicity Scaler Asymmetry Error[%d]",*fScalAsymmetryError);
+  //gHcParms->Define(Form("g%s_hscaler_sum[%d]",fName.Data(),fNScalerChannels),
+  //		   "Helcity Scalers Sum",*fScalerSums);
 
   gHcParms->Define(Form("g%s_hscaler_triggers",fName.Data()),
 		   "Total Helicity Scaler Triggers",fNTriggers);
@@ -1280,17 +1317,30 @@ void THcHelicityScaler::MakeParms()
   gHcParms->Define(Form("g%s_hscaler_triggers_minus",fName.Data()),
 		   "Negative Helicity Scaler Triggers",fNTriggersMinus);
 
+  gHcParms->Define(Form("g%s_hscaler_time_plus",fName.Data()),
+		   "Positive Helicity Time",fTimePlus);
+
+  gHcParms->Define(Form("g%s_hscaler_time_minus",fName.Data()),
+		   "Negative Helicity Time",fTimeMinus);
+  
+  //bcm cut
+  gHcParms->Define(Form("g%s_hscaler_sum[%d]",fName.Data(),fNScalerChannels),
+		   "Helcity Scalers Sum",*fScalerSum);
+
+  gHcParms->Define(Form("g%s_hscaler_asy[%d]",fName.Data(),fNScalerChannels),
+		   "Helicity Scaler Asymmetry[%d]",*fScalAsymmetry);
+
+  gHcParms->Define(Form("g%s_hscaler_asyerr[%d]",fName.Data(),fNScalerChannels),
+		   "Helicity Scaler Asymmetry Error[%d]",*fScalAsymmetryError);
+
   gHcParms->Define(Form("g%s_hscaler_charge[%d]",fName.Data(),fNumBCMs),
 		   "Helicity Gated Charge",*fChargeSum);
 
   gHcParms->Define(Form("g%s_hscaler_charge_asy[%d]",fName.Data(),fNumBCMs),
 		   "Helicity Gated Charge Asymmetry",*fChargeAsymmetry);
 
-  gHcParms->Define(Form("g%s_hscaler_time_plus",fName.Data()),
-		   "Positive Helicity Time",fTimePlus);
-
-  gHcParms->Define(Form("g%s_hscaler_time_minus",fName.Data()),
-		   "Negative Helicity Time",fTimeMinus);
+  gHcParms->Define(Form("g%s_hscaler_charge_asyerr[%d]",fName.Data(),fNumBCMs),
+		   "Helicity Gated Charge Asymmetry Error",*fChargeAsymmetry);
     
   gHcParms->Define(Form("g%s_hscaler_time",fName.Data()),
 		   "Helicity Gated Time (sec)",fTimeSum);
@@ -1301,7 +1351,7 @@ void THcHelicityScaler::MakeParms()
   gHcParms->Define(Form("g%s_hscaler_trigger_asy",fName.Data()),
 		   "Helicity Trigger Asymmetry",fTriggerAsymmetry);
 
-  */
+  
 }
 
 
