@@ -583,6 +583,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 	actualhelicity = -actualhelicity;
       }
     }
+    quartetphase = (quartetphase+1)%4;
 #else
     actualhelicity = (fRingSeed_actual&1)?+1:-1;
     if(quartetphase == 1 || quartetphase == 2) {
