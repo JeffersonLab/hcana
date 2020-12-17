@@ -526,8 +526,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
   fNTriggers++;
 
   Int_t quartetphase = (fNTriggers-fFirstCycle)%4;
-  //C.Y. 12/09/2020 : Pass quartet phase to scaler tree varable
-  quartetphaseR = quartetphase;
+
   
   if(fFirstCycle >= -10) {
     if(quartetphase == 0) {
@@ -594,7 +593,8 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
     fRingSeed_actual = 0;
   }
 
-
+  //C.Y. 12/09/2020 : Pass quartet phase to scaler tree varable
+  quartetphaseR = quartetphase;
   
   //C.Y. 11/26/2020  The block of code below is used to extract the helicity information from each
   //channel of the helicity scaler onto a variable to be stored in the scaler tree. For each channel,
