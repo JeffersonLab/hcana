@@ -97,6 +97,7 @@ private:
   //---- C.Y.: 12/14/2020  Variables for quartet-by-quartet asymmetry/error calculations ----
   Bool_t   fHaveCycle[4];
 
+  Int_t fQuartetCount;      //keep track of number of quartets
 
   //quartet-by-quartet time asymmetry variables
   Double_t fTimeCycle[4];
@@ -105,8 +106,6 @@ private:
   Double_t fTimeAsymmetryError;
   Double_t fTimeAsymSum;
   Double_t fTimeAsymSum2;
-  Int_t    fTimeAsymCount;   //keep track of number of quartets
-
   
   //quartet-by-quartet scaler counts asymmetry variables
   Double_t *fScalCycle[4];  
@@ -115,7 +114,6 @@ private:
   Double_t *fScalAsymmetryError;
   Double_t *fScalAsymSum;
   Double_t *fScalAsymSum2;
-  Int_t    *fScalAsymCount;   //keep track of number of quartets
   
   //quartet-by-quartet charge asymmetry variables
   Double_t *fChargeCycle[4];
@@ -124,7 +122,6 @@ private:
   Double_t *fChargeAsymmetryError;
   Double_t *fChargeAsymSum;
   Double_t *fChargeAsymSum2;
-  Int_t    *fChargeAsymCount;   //keep track of number of quartets
 
 
 

@@ -149,15 +149,15 @@ Int_t THcHelicityScaler::End( THaRunBase* )
 
   //C.Y. 12/15/2020  Time Asymmetry / Error Calculations (with scaler_current cut)
       
-    if(fTimeAsymCount <= 1) {
+    if(fQuartetCount <= 1) {
       fTimeAsymmetry       = -1000.;
       fTimeAsymmetryError  = 0.0;
     } else {
-      fTimeAsymmetry = fTimeAsymSum/fTimeAsymCount;  //normalize asymmetry to total number of quartets
-      if(fTimeAsymSum2 >= fTimeAsymCount*TMath::Power(fTimeAsymmetry,2)) {
+      fTimeAsymmetry = fTimeAsymSum/fQuartetCount;  //normalize asymmetry to total number of quartets
+      if(fTimeAsymSum2 >= fQuartetCount*TMath::Power(fTimeAsymmetry,2)) {
 	fTimeAsymmetryError = TMath::Sqrt((fTimeAsymSum2 -
-						fTimeAsymCount*TMath::Power(fTimeAsymmetry,2)) /
-					       (fTimeAsymCount*(fTimeAsymCount-1)));
+						fQuartetCount*TMath::Power(fTimeAsymmetry,2)) /
+					       (fQuartetCount*(fQuartetCount-1)));
       } else {
 	fTimeAsymmetryError = 0.0;
       }
@@ -171,15 +171,15 @@ Int_t THcHelicityScaler::End( THaRunBase* )
   
   for(Int_t i=0; i<fNScalerChannels; i++) {
     
-    if(fScalAsymCount[i] <= 1) {
+    if(fQuartetCount <= 1) {
       fScalAsymmetry[i]       = -1000.;
       fScalAsymmetryError[i]  = 0.0;
     } else {
-      fScalAsymmetry[i] = fScalAsymSum[i]/fScalAsymCount[i];  //normalize asymmetry to total number of quartets
-      if(fScalAsymSum2[i] >= fScalAsymCount[i]*TMath::Power(fScalAsymmetry[i],2)) {
+      fScalAsymmetry[i] = fScalAsymSum[i]/fQuartetCount;  //normalize asymmetry to total number of quartets
+      if(fScalAsymSum2[i] >= fQuartetCount*TMath::Power(fScalAsymmetry[i],2)) {
 	fScalAsymmetryError[i] = TMath::Sqrt((fScalAsymSum2[i] -
-						fScalAsymCount[i]*TMath::Power(fScalAsymmetry[i],2)) /
-					       (fScalAsymCount[i]*(fScalAsymCount[i]-1)));
+						fQuartetCount*TMath::Power(fScalAsymmetry[i],2)) /
+					       (fQuartetCount*(fQuartetCount-1)));
       } else {
 	fScalAsymmetryError[i] = 0.0;
       }
@@ -209,16 +209,16 @@ Int_t THcHelicityScaler::End( THaRunBase* )
   
   for(Int_t i=0;i<fNumBCMs;i++) {
     
-    if(fChargeAsymCount[i] <= 1) {
+    if(fQuartetCount <= 1) {
       fChargeAsymmetry[i]       = -1000.;
       fChargeAsymmetryError[i]  = 0.0;
     } else {
-      fChargeAsymmetry[i] = fChargeAsymSum[i]/fChargeAsymCount[i];  //normalize charge asymmetry to total number of quartets (as the sum is for every quartet)
+      fChargeAsymmetry[i] = fChargeAsymSum[i]/fQuartetCount;  //normalize charge asymmetry to total number of quartets (as the sum is for every quartet)
 
-      if(fChargeAsymSum2[i] >= fChargeAsymCount[i]*TMath::Power(fChargeAsymmetry[i],2)) {
+      if(fChargeAsymSum2[i] >= fQuartetCount*TMath::Power(fChargeAsymmetry[i],2)) {
 	fChargeAsymmetryError[i] = TMath::Sqrt((fChargeAsymSum2[i] -
-						fChargeAsymCount[i]*TMath::Power(fChargeAsymmetry[i],2)) /
-					       (fChargeAsymCount[i]*(fChargeAsymCount[i]-1)));
+						fQuartetCount*TMath::Power(fChargeAsymmetry[i],2)) /
+					       (fQuartetCount*(fQuartetCount-1)));
       } else {
 	fChargeAsymmetryError[i] = 0.0;
       }
@@ -945,7 +945,6 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 	//keep track of sums for proper error calculation
 	fChargeAsymSum[i] += asy;
 	fChargeAsymSum2[i] += asy*asy;
-	fChargeAsymCount[i]++;    //keep track of the total number of quartets
       }
       
       //-------
@@ -964,7 +963,6 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
 	//keep track of sums for proper error calculation
 	fScalAsymSum[i] += asy;
 	fScalAsymSum2[i] += asy*asy;
-	fScalAsymCount[i]++;    //keep track of the total number of quartets
       }
 
       //-------
@@ -981,10 +979,12 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(UInt_t *p)
       //keep track of sums for proper error calculation
       fTimeAsymSum += asy;
       fTimeAsymSum2 += asy*asy;
-      fTimeAsymCount++;    //keep track of the total number of quartets
       
       //------
-      
+
+      //keep track of the total number of quartets
+      fQuartetCount++;   
+
 
     }
 
@@ -1244,13 +1244,16 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
 
   }
 
+  //Initialize quartet counter
+  fQuartetCount      = 0.0;
+ 
   //Initialize variables for time asymmetry calculation
   fTimeSum            = 0.0;
   fTimeAsymmetry      = 0.0;
   fTimeAsymmetryError = 0.0;
   fTimeAsymSum        = 0.0;
   fTimeAsymSum2       = 0.0;
-  fTimeAsymCount      = 0.0;    
+ 
 
   //Initialize variables for charge asymmetry calculation
   fChargeSum            = new Double_t[fNumBCMs];
@@ -1258,14 +1261,12 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
   fChargeAsymmetryError = new Double_t[fNumBCMs];
   fChargeAsymSum        = new Double_t[fNumBCMs];
   fChargeAsymSum2       = new Double_t[fNumBCMs];
-  fChargeAsymCount      = new Int_t[fNumBCMs];
 
   for(Int_t i=0;i<fNumBCMs;i++) {
     fChargeSum[i]       = 0.0;
     fChargeAsymmetry[i] = 0.0;
     fChargeAsymSum[i]   = 0.0;
     fChargeAsymSum2[i]  = 0.0;
-    fChargeAsymCount[i] = 0.0;
   }
 
   //Initialize variables for scaler asymmetry calculation
@@ -1274,14 +1275,12 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
   fScalAsymmetryError = new Double_t[fNScalerChannels];
   fScalAsymSum        = new Double_t[fNScalerChannels];
   fScalAsymSum2       = new Double_t[fNScalerChannels];
-  fScalAsymCount      = new Int_t[fNScalerChannels];
 
   for(Int_t i=0;i<fNScalerChannels;i++) {
     fScalSum[i]       = 0.0;
     fScalAsymmetry[i] = 0.0;
     fScalAsymSum[i]   = 0.0;
     fScalAsymSum2[i]  = 0.0;
-    fScalAsymCount[i] = 0.0;
   }
   
   
