@@ -7,6 +7,7 @@
 #include <iterator>
 #include <iostream>
 #include <memory>
+#include <vector>
 #include "TMath.h"
 
 using namespace std;
