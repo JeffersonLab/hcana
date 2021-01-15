@@ -116,9 +116,9 @@ Int_t THcHelicityScaler::End( THaRunBase* )
   for(std::vector<UInt_t*>::iterator it = fDelayedEvents.begin();
       it != fDelayedEvents.end(); ++it) {
     UInt_t* rdata = *it;
-    AnalyzeBuffer(rdata);  
+    evNumberR += 1;
+    AnalyzeBuffer(rdata);
   }
-  evNumberR = -1;
   
   for( vector<UInt_t*>::iterator it = fDelayedEvents.begin();
        it != fDelayedEvents.end(); ++it )
@@ -327,6 +327,11 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
   //but as to why, it is beyond me. For consistency, I have also used it here.
   Int_t lfirst=1;  
    
+  if(evdata->GetEvNum() > 0) {
+    evNumber=evdata->GetEvNum();
+    evNumberR = evNumber;
+  }
+
   if ( !IsMyEvent(evdata->GetEvType()) ) return -1;
 
   if (fDebugFile) {
@@ -395,9 +400,6 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
   
   else { 			// A normal event
     if (fDebugFile) *fDebugFile<<"\n\nTHcHelicityScaler :: Debugging event type "<<dec<<evdata->GetEvType()<< " event num = " << evdata->GetEvNum() << endl<<endl;
-    evNumber=evdata->GetEvNum();
-    evNumberR = evNumber;
-    
     Int_t ret;
     if((ret=AnalyzeBuffer(rdata))) 
       {	
