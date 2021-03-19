@@ -37,6 +37,7 @@ THcDriftChamberPlane::THcDriftChamberPlane( const char* name,
 {
   // Normal constructor with name and description
   fHits = new TClonesArray("THcDCHit",100);
+  fFirstPassHits = new TClonesArray("THcDCHit",100);
   fRawHits = new TClonesArray("THcDCHit",100);
   fWires = new TClonesArray("THcDCWire", 100);
 
@@ -49,6 +50,7 @@ THcDriftChamberPlane::THcDriftChamberPlane() :
 {
   // Constructor
   fHits = NULL;
+  fFirstPassHits = NULL;
   fRawHits = NULL;
   fWires = NULL;
   fTTDConv = NULL;
@@ -61,6 +63,7 @@ THcDriftChamberPlane::~THcDriftChamberPlane()
   delete [] fSigmaWire;
   delete fWires;
   delete fHits;
+  delete fFirstPassHits;
   delete fRawHits;
   delete fTTDConv;
 
@@ -110,10 +113,14 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
     {"driftbinsz", &DriftMapBinSize, kDouble},
     {"_using_tzero_per_wire", &fUsingTzeroPerWire, kInt,0,1},
     {"_using_sigma_per_wire", &fUsingSigmaPerWire, kInt,0,1},
+    {"min_drifttime", &fMin_DriftTime, kDouble,0,1},
+    {"max_drifttime", &fMax_DriftTime, kDouble,0,1},
     {0}
   };
 
 
+  fMin_DriftTime = -50.; //ns
+  fMax_DriftTime = 200.; //ns
 
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
 
@@ -312,6 +319,7 @@ void THcDriftChamberPlane::Clear( Option_t* )
   //cout << " Calling THcDriftChamberPlane::Clear " << GetName() << endl;
   // Clears the hit lists
   fHits->Clear();
+  fFirstPassHits->Clear();
   fRawHits->Clear();
 }
 
@@ -352,6 +360,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   */
 
   fHits->Clear();
+  fFirstPassHits->Clear();
   fRawHits->Clear();
   fTdcRefTime = kBig;
   Int_t nrawhits = rawhits->GetLast()+1;
@@ -381,7 +390,7 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	// Increment late count
       } else {
 	if (First_Hit_In_Window) {
-	new( (*fHits)[nextHit++] ) THcDCHit(wire, rawnorefcorrtdc,rawtdc, time, this);
+	new( (*fFirstPassHits)[nextHit++] ) THcDCHit(wire, rawnorefcorrtdc,rawtdc, time, this);
 	First_Hit_In_Window = kFALSE;
 	}
       }
@@ -393,13 +402,22 @@ Int_t THcDriftChamberPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 Int_t THcDriftChamberPlane::SubtractStartTime()
 {
   Double_t StartTime = 0.0;
+  Int_t nextHit=0; 
   if( fglHod ) StartTime = fglHod->GetStartTime();
   if (StartTime == -1000) StartTime = 0.0;
-  for(Int_t ihit=0;ihit<GetNHits();ihit++) { 
-    THcDCHit *thishit = (THcDCHit*) fHits->At(ihit);
+  for(Int_t ihit=0;ihit<(fFirstPassHits->GetLast()+1);ihit++) { 
+    THcDCHit *thishit = (THcDCHit*) fFirstPassHits->At(ihit);
     Double_t temptime= thishit->GetTime()-StartTime;
+    Int_t tempRawtime= thishit->GetRawTime();
+    Int_t tempRawNoRefCorrtime= thishit->GetRawNoRefCorrTime();
+    THcDCWire *tempWire = (THcDCWire*) thishit->GetWire();
     thishit->SetTime(temptime);
     thishit->ConvertTimeToDist();
+    if (temptime > fMin_DriftTime && temptime <fMax_DriftTime) {
+	new( (*fHits)[nextHit++] ) THcDCHit(tempWire, tempRawNoRefCorrtime, tempRawtime, temptime, this);
+      
+    }
+    
   }
   return 0;
 }
