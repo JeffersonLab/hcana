@@ -190,7 +190,7 @@ protected:
   // double tan_angle, sin_angle, cos_angle;
 
   // Intermediate structure for building
-  static const UInt_t MAXTRACKS = 50;
+  static const UInt_t MAXTRACKS = 100;
 
   std::vector<THcDriftChamberPlane*> fPlanes; // List of plane objects
   std::vector<THcDriftChamber*> fChambers; // List of chamber objects
