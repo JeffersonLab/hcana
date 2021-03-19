@@ -77,11 +77,15 @@ public:
   Int_t        GetReadoutTB() const { return fReadoutTB;}
   Int_t        GetVersion() const {return fVersion;}
 
+  Double_t fMin_DriftTime;
+  Double_t fMax_DriftTime;
+
 protected:
 
   TClonesArray* fParentHitList;
 
   TClonesArray* fHits;
+  TClonesArray* fFirstPassHits;
   TClonesArray* fRawHits;
   TClonesArray* fWires;
  
