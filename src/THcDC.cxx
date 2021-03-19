@@ -689,17 +689,16 @@ void THcDC::PrintSpacePoints()
 {
   for(UInt_t ich=0;ich<fNChambers;ich++) {
     printf("%s %2d %s %3d %s %3d \n"," chamber = ",fChambers[ich]->GetChamberNum()," number of hits = ",fChambers[ich]->GetNHits()," number of spacepoints = ",fChambers[ich]->GetNSpacePoints());
-    printf("%6s %-8s %-8s %6s %6s %10s \n","     "," "," ","Number","Number","Plane Wire");
-    printf("%6s %-8s %-8s %6s %6s %10s \n","Point","x","y"," hits ","combos"," for each hit");
+    printf("%6s %-8s %-8s %6s %6s \n","     "," "," ","Number","Number");
+    printf("%6s %-8s %-8s %6s %6s \n","Point","x","y"," hits ","combos");
     TClonesArray* spacepointarray = fChambers[ich]->GetSpacePointsP();
     for(Int_t isp=0;isp<fChambers[ich]->GetNSpacePoints();isp++) {
       THcSpacePoint* sp = (THcSpacePoint*)(spacepointarray->At(isp));
-      printf("%5d %8.5f %8.5f %5d  %5d ",isp+1,sp->GetX(),sp->GetY(),sp->GetNHits(),sp->GetCombos()) ;
+      printf("%5d %8.5f %8.5f %5d  %5d  \n",isp+1,sp->GetX(),sp->GetY(),sp->GetNHits(),sp->GetCombos()) ;
       for (Int_t ii=0;ii<sp->GetNHits();ii++) {
 	THcDCHit* hittemp = (THcDCHit*)(sp->GetHit(ii));
-	printf("%3d %3d %3d",hittemp->GetPlaneNum(),hittemp->GetWireNum(),hittemp->GetLR());
+	printf("%3d %3d %3d \n",hittemp->GetPlaneNum(),hittemp->GetWireNum(),hittemp->GetLR());
       }
-      printf("\n");
     }
   }
 }
@@ -823,7 +822,7 @@ void THcDC::LinkStubs()
 		fStubTest = 1;
 		//stubtest=1;  Used in h_track_tests.f
 		// Make a new track if there are not to many
-		if(fNDCTracks < fNTracksMaxFP) {
+		if(fNDCTracks < MAXTRACKS) {
 		  sptracks=0; // Number of tracks with this seed
 		  stub_tracks[sptracks++] = fNDCTracks;
 		  THcDCTrack *theDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
