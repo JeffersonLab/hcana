@@ -152,8 +152,8 @@ hcer_enorm_max = 1.5
 hcer_dp_min = -20.0
 hcer_dp_max = 25.0
 
-hcer_adcTimeWindowMin = 1500.
-hcer_adcTimeWindowMax = 3500.
+hcer_adcTimeWindowMin = 1500.,1500.
+hcer_adcTimeWindowMax = 3500.,3500.
 
 ; Threshold for good hit (for measureing effic.)
 hcer_npe_thresh = 0.5
