@@ -254,7 +254,6 @@ Int_t THcDriftChamberPlane::ReadDatabase( const TDatime& date )
   fPlaneCoef[7]=-hzchi*hxpsi + hxchi*hzpsi; // 0.
   fPlaneCoef[8]= hychi*hxpsi - hxchi*hypsi; // 1.
 
-  //  cout << fPlaneNum << " " << fNWires << " " << fWireOrder << endl;
 
   fTTDConv = new THcDCLookupTTDConv(DriftMapFirstBin,fPitch/2,DriftMapBinSize,
 				    NumDriftMapBins,DriftMap);
@@ -305,6 +304,8 @@ Int_t THcDriftChamberPlane::DefineVariables( EMode mode )
      "fHits.THcDCHit.GetTime()"},
     {"dist","Drift distancess",
      "fHits.THcDCHit.GetDist()"},
+    {"pos"," Wire pos",
+     "fHits.THcDCHit.GetPos()"},
     {"nhit", "Number of hits", "GetNHits()"},
     {"RefTime", "TDC reference time", "fTdcRefTime"},
     { 0 }
