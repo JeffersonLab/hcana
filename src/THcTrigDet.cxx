@@ -320,12 +320,15 @@ void THcTrigDet::Setup(const char* name, const char* description) {
 Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   std::string adcNames, tdcNames;
   std::string trigNames="pTRIG1_ROC1 pTRIG4_ROC1 pTRIG1_ROC2 pTRIG4_ROC2";
+  // Double check names
+  std::string RFNames="pRF hRF";
   DBRequest list[] = {
     {"_numAdc", &fNumAdc, kInt},  // Number of ADC channels.
     {"_numTdc", &fNumTdc, kInt},  // Number of TDC channels.
     {"_adcNames", &adcNames, kString},  // Names of ADC channels.
     {"_tdcNames", &tdcNames, kString},  // Names of TDC channels.
     {"_trigNames", &trigNames, kString,0,1},  // Names of Triggers for coincidence time.
+    {"_RFNames", &RFNames, kString,0, 1}, // Names for RF time
     {"_tdcoffset", &fTdcOffset, kDouble,0,1},  // Offset of tdc channels
     {"_adc_tdc_offset", &fAdcTdcOffset, kDouble,0,1},  // Offset of Adc Pulse time (ns)
     {"_tdcchanperns", &fTdcChanperNS, kDouble,0,1},  // Convert channesl to ns
@@ -364,7 +367,7 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   fAdcNames = vsplit(adcNames);
   fTdcNames = vsplit(tdcNames);
   fTrigNames = vsplit(trigNames);
-
+  fRFNames = vsplit(RFNames);
   //default index values
  
   //Assign an index to coincidence trigger times strings
@@ -381,11 +384,24 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
      for (UInt_t j = 0; j <fTrigNames.size(); j++) {
        cout << fTrigNames[j] << " " << fTrigId[j] << endl;
      }
-  
+ 
+  //Assign an index to RF times strings
+     for (UInt_t j = 0; j <fRFNames.size(); j++) {
+       fRFId[j]=-1;
+     }
+  for (int i = 0; i <fNumTdc; i++) {
+    for (UInt_t j = 0; j <fRFNames.size(); j++) {
+            if(fTdcNames.at(i)==fRFNames[j]) fRFId[j]=i;
+	  }
+  }
+ 
+  cout << " RF = " << fRFNames.size() << endl;
+     for (UInt_t j = 0; j <fRFNames.size(); j++) {
+       cout << fRFNames[j] << " " << fRFId[j] << endl;
+     }
 
   return kOK;
 }
-
 
 Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
 
