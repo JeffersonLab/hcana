@@ -320,7 +320,7 @@ void THcTrigDet::Setup(const char* name, const char* description) {
 Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   std::string adcNames, tdcNames;
   std::string trigNames="pTRIG1_ROC1 pTRIG4_ROC1 pTRIG1_ROC2 pTRIG4_ROC2";
-  // Double check names
+  // SJDK 12/04/21 - Added new RF names for use in getter
   std::string RFNames="pRF hRF";
   DBRequest list[] = {
     {"_numAdc", &fNumAdc, kInt},  // Number of ADC channels.
@@ -328,7 +328,7 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
     {"_adcNames", &adcNames, kString},  // Names of ADC channels.
     {"_tdcNames", &tdcNames, kString},  // Names of TDC channels.
     {"_trigNames", &trigNames, kString,0,1},  // Names of Triggers for coincidence time.
-    {"_RFNames", &RFNames, kString,0, 1}, // Names for RF time
+    {"_RFNames", &RFNames, kString,0, 1}, // SJDK 12/04/21 -  Names for RF time
     {"_tdcoffset", &fTdcOffset, kDouble,0,1},  // Offset of tdc channels
     {"_adc_tdc_offset", &fAdcTdcOffset, kDouble,0,1},  // Offset of Adc Pulse time (ns)
     {"_tdcchanperns", &fTdcChanperNS, kDouble,0,1},  // Convert channesl to ns
@@ -338,7 +338,7 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   fTdcOffset=300.;
   fAdcTdcOffset=200.;
   gHcParms->LoadParmValues(list, fKwPrefix.c_str());
-  //
+  
   fAdcTimeWindowMin = new Double_t [fNumAdc];
   fAdcTimeWindowMax = new Double_t [fNumAdc];
   fTdcTimeWindowMin = new Double_t [fNumTdc];
@@ -367,7 +367,7 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   fAdcNames = vsplit(adcNames);
   fTdcNames = vsplit(tdcNames);
   fTrigNames = vsplit(trigNames);
-  fRFNames = vsplit(RFNames);
+  fRFNames = vsplit(RFNames); // SJDK 12/04/21 - For RF getter
   //default index values
  
   //Assign an index to coincidence trigger times strings
@@ -385,6 +385,7 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
        cout << fTrigNames[j] << " " << fTrigId[j] << endl;
      }
  
+     // SJDK - 12/04/21 - For RF getter
   //Assign an index to RF times strings
      for (UInt_t j = 0; j <fRFNames.size(); j++) {
        fRFId[j]=-1;

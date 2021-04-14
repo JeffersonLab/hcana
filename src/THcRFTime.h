@@ -2,7 +2,6 @@
 #define ROOT_THcRFTime
 
 ///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
 // THcRFTime Physics Module                                                  //
 // Author: Stephen JD Kay                                                    //
 // University of Regina                                                      //
@@ -22,6 +21,8 @@
 #include <iostream>
 
 #include "THaPhysicsModule.h"
+#include "THaOutput.h"
+#include "THcHitList.h"
 #include "THcTrigDet.h" 
 #include "THcHodoscope.h"
 #include "THcHallCSpectrometer.h"
@@ -32,18 +33,20 @@ class THcRFTime : public THaPhysicsModule {
 public:
   // Single arm required? Single arm name specified
   THcRFTime( const char* name, const char* description, const char* hadArmName="", 
-	       const char* elecArmName="", const char* coinname="");
+	       const char* elecArmName="", const char* RFname="");
 
   virtual ~THcRFTime();
 
   virtual EStatus Init( const TDatime& run_time );
-  virtual Int_t   Process( const THaEvData& );
-  virtual Int_t  Decode( const THaEvData& ); 
+  virtual Int_t  Process( const THaEvData& );
 
   void            Reset( Option_t* opt="" );
   void            Clear( Option_t* opt="" );
   
  protected:
+
+  // Event Information
+  Int_t fNhits;
 
   virtual Int_t ReadDatabase( const TDatime& date);
   virtual Int_t  DefineVariables( EMode mode = kDefine );
@@ -71,6 +74,7 @@ public:
   Double_t Bunch_Spacing_Override;
 
   Double_t Bunch_Spacing;
+  Double_t Bunch_Spacing_Epics;
   Double_t HMS_RFtime; // HMS RF time
   Double_t SHMS_RFtime; // SHMS RF time
   Double_t HMS_FPtime;   //HMS focal plane time  
@@ -152,16 +156,10 @@ public:
   //Double_t had_xfp;      //hadron x-focal plane
   //Double_t had_xpfp;     //hadron xp focal plane
   //Double_t had_ypfp;     //hadron yp focal plane
-  
-  // trigger times pTrig1 (SHMS 3/4 trig) and pTrig4 (HMS 3/4 trig)
-  //Double_t pTRIG1_TdcTime_ROC1;
-  //Double_t pTRIG4_TdcTime_ROC1;
-  //Double_t pTRIG1_TdcTime_ROC2;
-  //Double_t pTRIG4_TdcTime_ROC2;
 
   //--------------------------------------------------------------------
 
-  ClassDef(THcRFTime,0) 	// Coincidence Time Module
+  ClassDef(THcRFTime,0) 	// RF Time Module
 };
 
 #endif
