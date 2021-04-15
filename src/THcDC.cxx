@@ -243,6 +243,9 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   }
 
   fResiduals = new Double_t [fNPlanes];
+  fPos_best = new Double_t [fNPlanes];
+  fLR_best = new Double_t [fNPlanes];
+  fDist_best = new Double_t [fNPlanes];
   fResidualsExclPlane = new Double_t [fNPlanes];
   fWire_hit_did = new Double_t [fNPlanes];
   fWire_hit_should = new Double_t [fNPlanes];
@@ -334,13 +337,15 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"dc_plane_time_zero", fPlaneTimeZero, kDouble, (UInt_t)fNPlanes},
     {"dc_sigma", fSigma, kDouble, (UInt_t)fNPlanes},
     {"single_stub",&fSingleStub, kInt,0,1},
-    {"ntracks_max_fp", &fNTracksMaxFP, kInt},
+    {"ntracks_max_fp", &fNTracksMaxFP, kInt,0,1},
     {"xt_track_criterion", &fXtTrCriterion, kDouble},
     {"yt_track_criterion", &fYtTrCriterion, kDouble},
     {"xpt_track_criterion", &fXptTrCriterion, kDouble},
     {"ypt_track_criterion", &fYptTrCriterion, kDouble},
     {"dc_fix_lr", &fFixLR, kInt},
     {"dc_fix_propcorr", &fFixPropagationCorrection, kInt},
+    {"UseNewLinkStubs", &fUseNewLinkStubs, kInt,0,1},
+    {"UseNewTrackFit", &fUseNewTrackFit, kInt,0,1},
     {"debuglinkstubs", &fdebuglinkstubs, kInt},
     {"debugprintrawdc", &fdebugprintrawdc, kInt},
     {"debugprintdecodeddc", &fdebugprintdecodeddc, kInt},
@@ -349,6 +354,8 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"debugtrackprint", &fdebugtrackprint , kInt},
     {0}
   };
+  fUseNewLinkStubs=0;
+  fUseNewTrackFit=0;
   fSingleStub=0;
    for(Int_t ip=0; ip<fNPlanes;ip++) {
     fReadoutLR[ip] = 0.0;
@@ -403,6 +410,10 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "ntrack", "Number of Tracks", "fNDCTracks" },
     { "nsp", "Number of Space Points", "fNSp" },
     { "track_nsp", "Number of spacepoints in track", "fDCTracks.THcDCTrack.GetNSpacePoints()"},
+    { "track_nhits", "Number of hits in track", "fDCTracks.THcDCTrack.GetNHits()"},
+    { "track_sp1ID", "CH 1 Spacepoint index", "fDCTracks.THcDCTrack.GetSp1_ID()"},
+    { "track_sp2ID", "CH 2 Spacepoint index", "fDCTracks.THcDCTrack.GetSp2_ID()"},
+    { "track_hitpos", "Position of each hit in track", "fDCTracks.THcDCTrack.THcDCHit.GetPos()"},
     { "x", "X at focal plane", "fDCTracks.THcDCTrack.GetX()"},
     { "y", "Y at focal plane", "fDCTracks.THcDCTrack.GetY()"},
     { "xp", "XP at focal plane", "fDCTracks.THcDCTrack.GetXP()"},
@@ -416,6 +427,9 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "sp2_id", " (golden track) ", "fSp2_ID_best"},
     { "InsideDipoleExit", " ","fInSideDipoleExit_best"},
     { "gtrack_nsp", " Number of space points in golden track ", "fNsp_best"},
+    { "pos_best", "Pos (golden track)", "fPos_best"},
+    { "dist_best", "Dist (golden track)", "fDist_best"},
+    { "lr_best", "LR sign (golden track)", "fLR_best"},
     { "residual", "Residuals", "fResiduals"},
     { "residualExclPlane", "Residuals", "fResidualsExclPlane"},
     { "wireHitDid","Wire did have  matched track hit", "fWire_hit_did"},
@@ -489,6 +503,9 @@ void THcDC::DeleteArrays()
 
   delete [] fPlaneCoeffs; fPlaneCoeffs = 0;
   delete [] fResiduals; fResiduals = 0;
+  delete [] fDist_best; fDist_best = 0;
+  delete [] fPos_best; fPos_best = 0;
+  delete [] fLR_best; fLR_best = 0;
   delete [] fResidualsExclPlane; fResidualsExclPlane = 0;
   delete [] fWire_hit_did; fWire_hit_did = 0;
   delete [] fWire_hit_should; fWire_hit_should = 0;
@@ -499,6 +516,7 @@ inline
 void THcDC::ClearEvent()
 {
   // Reset per-event data.
+  fNDCTracks=0;		
   fStubTest = 0;
   fNhits = 0;
   fNthits = 0;
@@ -516,6 +534,9 @@ void THcDC::ClearEvent()
 
   for(Int_t i=0;i<fNPlanes;i++) {
     fResiduals[i] = 1000.0;
+    fPos_best[i] = kBig;
+    fDist_best[i] = kBig;
+    fLR_best[i] = 0;
     fResidualsExclPlane[i] = 1000.0;
     fWire_hit_did[i] = 1000.0;
     fWire_hit_should[i] = 1000.0;
@@ -608,11 +629,16 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
   if (fdebugflagstubs) PrintSpacePoints();
   if (fdebugflagstubs)  PrintStubs();
   // Now link the stubs between chambers
-  LinkStubs();
+  if (fUseNewLinkStubs) {
+    NewLinkStubs();
+  } else {
+    LinkStubs();
+  }
  if(fNDCTracks > 0) {
-     TrackFit();
+   if (!fUseNewTrackFit)  TrackFit();
     // Copy tracks into podd tracks list
     for(UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
+      if (fUseNewTrackFit)  NewTrackFit(itrack);
       THaTrack* theTrack = NULL;
       theTrack = AddTrack(tracks, 0.0, 0.0, 0.0, 0.0); // Leaving off trackID
       // Should we add stubs with AddCluster?  Could we do this
@@ -629,7 +655,8 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
       // Assign the track number
       theTrack->SetTrkNum(itrack+1);
     }
- }
+    if (fdebugtrackprint) PrintTrack();
+}
 
 
   ApplyCorrections();
@@ -662,6 +689,9 @@ void THcDC::SetFocalPlaneBestTrack(Int_t golden_track_index)
 	Int_t plane = hit->GetPlaneNum() - 1;
         fResiduals[plane] = tr1->GetResidual(plane);
         fResidualsExclPlane[plane] = tr1->GetResidualExclPlane(plane);
+        fDist_best[plane] = tr1->GetHitDist(ihit);
+        fLR_best[plane] = tr1->GetHitLR(ihit);
+        fPos_best[plane] = hit->GetPos();
 	 } 
 	 EfficiencyPerWire(golden_track_index);
 }
@@ -719,6 +749,86 @@ void THcDC::PrintStubs()
   }
 }
 //
+void THcDC::NewLinkStubs()
+{
+  fNDCTracks=0;		// Number of Focal Plane tracks found
+  fDCTracks->Delete();
+  if ( fChambers[0]->GetNSpacePoints() >0 && fChambers[1]->GetNSpacePoints() >0 ) {
+  std::vector<THcSpacePoint*> fSp; // vector of spacepoints from ch1 and ch2
+  fNSp=0;
+  fSp.clear();
+  // create array of spacepoints
+  for(UInt_t ich=0;ich<fNChambers;ich++) {
+    Int_t nchamber=fChambers[ich]->GetChamberNum();
+    TClonesArray* spacepointarray = fChambers[ich]->GetSpacePointsP();
+    for(Int_t isp=0;isp<fChambers[ich]->GetNSpacePoints();isp++) {
+      fSp.push_back(static_cast<THcSpacePoint*>(spacepointarray->At(isp)));
+      fSp[fNSp]->fNChamber = nchamber;
+      fSp[fNSp]->fNChamber_spnum = isp;
+      fNSp++;
+     }
+  }
+  //
+   for(Int_t isp1=0;isp1<fChambers[0]->GetNSpacePoints();isp1++) {
+      THcSpacePoint* sp1 = fSp[isp1];
+      Int_t ch1_nsp = fChambers[0]->GetNSpacePoints();
+      Int_t ch2_nsp = fChambers[1]->GetNSpacePoints();
+      for(Int_t isp2=ch1_nsp;isp2<ch1_nsp+ch2_nsp;isp2++) {
+	  THcSpacePoint* sp2=fSp[isp2];
+          if (sp1->GetSetStubFlag()&&sp2->GetSetStubFlag()) {
+	    Double_t *spstub1=sp1->GetStubP();
+	    Double_t *spstub2=sp2->GetStubP();
+	    Double_t dposx = spstub1[0] - spstub2[0];
+	    Double_t dposy;
+	    if(fProjectToChamber) { 
+	      Double_t y1=spstub1[1]+fChambers[sp1->fNChamber]->GetZPos()*spstub1[3];
+	      Double_t y2=spstub2[1]+fChambers[sp2->fNChamber]->GetZPos()*spstub2[3];
+	      dposy = y1-y2;
+	    } else {
+	      dposy = spstub1[1] - spstub2[1];
+	    }
+	    Double_t dposxp = spstub1[2] - spstub2[2];
+	    Double_t dposyp = spstub1[3] - spstub2[3];
+	    if((TMath::Abs(dposx) < fXtTrCriterion)
+	       && (TMath::Abs(dposy) < fYtTrCriterion)
+	       && (TMath::Abs(dposxp) < fXptTrCriterion)
+	       && (TMath::Abs(dposyp) < fYptTrCriterion)) {
+		fStubTest = 1;
+		if(fNDCTracks < MAXTRACKS) {
+		  THcDCTrack *theDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
+		  theDCTrack->AddSpacePoint(sp1);
+		  theDCTrack->AddSpacePoint(sp2);
+		  theDCTrack->SetSp1_ID(sp1->fNChamber_spnum);
+		  theDCTrack->SetSp2_ID(sp2->fNChamber_spnum);
+		}
+	    }
+	  }
+    }// isp2
+   } // isp1
+   //
+   if (fNDCTracks == 0) { // make tracks from all combinations of spacepoints
+    for(Int_t isp1=0;isp1<fChambers[0]->GetNSpacePoints();isp1++) {
+      THcSpacePoint* sp1 = fSp[isp1];
+      Int_t ch1_nsp = fChambers[0]->GetNSpacePoints();
+      Int_t ch2_nsp = fChambers[1]->GetNSpacePoints();
+      for(Int_t isp2=ch1_nsp;isp2<ch1_nsp+ch2_nsp;isp2++) {
+	  THcSpacePoint* sp2=fSp[isp2];
+		fStubTest = 1;
+		if(fNDCTracks < MAXTRACKS) {
+		  THcDCTrack *theDCTrack = new( (*fDCTracks)[fNDCTracks++]) THcDCTrack(fNPlanes);
+		  theDCTrack->AddSpacePoint(sp1);
+		  theDCTrack->AddSpacePoint(sp2);
+		  theDCTrack->SetSp1_ID(sp1->fNChamber_spnum);
+		  theDCTrack->SetSp2_ID(sp2->fNChamber_spnum);
+		}
+       }
+     }
+   } 
+     //  
+  } // both chambers have spacepoints
+//
+
+}
 //_____________________________________________________________________________
 void THcDC::LinkStubs()
 {
@@ -931,6 +1041,175 @@ void THcDC::LinkStubs()
     }
   }
 }
+//_____________________________________________________________________________
+void THcDC::FitLineToTrack(Int_t TrackHits,Double_t coords[],Int_t planes[],Double_t wiresigma[], Double_t TrackCoord[], Double_t save_ray[]) 
+{
+  const Int_t raycoeffmap[]={4,5,2,3};
+     TVectorD TT(4);
+      TMatrixD AA(4,4);
+      for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
+	TT[irayp] = 0.0;
+	for(Int_t ihit=0;ihit < TrackHits;ihit++) {	
+	  TT[irayp] += (coords[ihit]*fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])/pow(wiresigma[ihit],2);
+	}
+      }   
+      // 
+     for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
+	for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
+	  AA[irayp][jrayp] = 0.0;
+	  if(jrayp<irayp) { // Symmetric
+	    AA[irayp][jrayp] = AA[jrayp][irayp];
+	  } else {
+	    for(Int_t ihit=0;ihit <TrackHits ;ihit++) {
+	      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
+		fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/pow(wiresigma[ihit],2);
+	    } //end ihit loop
+	  }
+	}
+      }
+
+      // Solve 4x4 equations
+      TVectorD dray(NUM_FPRAY);
+      AA.Invert();
+      dray = AA*TT;
+      for(Int_t ir=0;ir<NUM_FPRAY;ir++)  save_ray[ir]=dray[ir];
+      for(Int_t iplane=0;iplane < fNPlanes; iplane++) {
+	Double_t sumcoord=0.0;
+	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
+	  sumcoord += fPlaneCoeffs[iplane][raycoeffmap[ir]]*dray[ir];
+	}
+	TrackCoord[iplane]=sumcoord;
+      }
+}
+//_____________________________________________________________________________
+void THcDC::NewTrackFit(UInt_t TrackIndex)
+{
+                   THcDCTrack *tr = static_cast<THcDCTrack*>( fDCTracks->At(TrackIndex));  
+		   Double_t minchi2=100000.;
+		   Int_t MAXHITS=12;
+                   Int_t plusminus[MAXHITS];
+		   Int_t  plusminusknown[MAXHITS];
+		   Int_t TrackHits = tr->GetNHits();
+		   Double_t coords[TrackHits];
+		   Double_t TrackCoord[TrackHits];
+		   Int_t planes[TrackHits];
+		   Double_t wiresigma[TrackHits];
+		   Double_t save_ray[NUM_FPRAY];
+		   for(Int_t ihit=0;ihit<MAXHITS;ihit++) {
+		     plusminusknown[ihit]=0;
+		   }
+		   Int_t nplusminus=1<<TrackHits;
+                   for(Int_t pmloop=0;pmloop<nplusminus;pmloop++) {
+                   Int_t iswhit = 1;
+                      for(Int_t ihit=0;ihit<TrackHits;ihit++) {
+	                if(plusminusknown[ihit]!=0) {
+	                  plusminus[ihit] = plusminusknown[ihit];
+	                } else {
+                 	  if(pmloop & iswhit) {
+	                    plusminus[ihit] = 1;
+	                  } else {
+	                    plusminus[ihit] = -1;
+	                  }
+	                  iswhit <<= 1;
+	                }
+                      }
+                      for(Int_t ihit=0;ihit<TrackHits;ihit++) {
+			THcDCHit* hit=tr->GetHit(ihit);
+		        coords[ihit] =hit->GetPos()+ plusminus[ihit]*tr->GetHitDist(ihit);
+			planes[ihit] =hit->GetPlaneNum()-1;
+			wiresigma[ihit] = hit->GetWireSigma();
+		      }
+			  FitLineToTrack(TrackHits,coords,planes,wiresigma,TrackCoord,save_ray);		      
+                      Double_t  chi2 = 0.0;
+                      for(Int_t ihit=0;ihit < TrackHits;ihit++) {
+                	Double_t residual = coords[ihit] - TrackCoord[planes[ihit]];
+                 	chi2 += pow(residual/wiresigma[ihit],2);
+                      }
+                      if (chi2 < minchi2) {
+			minchi2 = chi2;
+			tr->SetVector(save_ray[0], save_ray[1], 0.0, save_ray[2], save_ray[3]);
+			for(Int_t ihit=0;ihit < TrackHits;ihit++) {
+			  tr->SetHitLR(ihit, plusminus[ihit]);
+			  tr->SetCoord(planes[ihit], TrackCoord[planes[ihit]]);
+                    	Double_t residual = coords[ihit] -TrackCoord[planes[ihit]] ;
+                	tr->SetResidual(planes[ihit], residual);
+			tr->SetChisq(chi2);  
+                        tr->SetNFree(TrackHits - 4);
+			}
+			//cout << " fit = " << chi2 << " " << dray[0] << " "  << dray[1] << " "<< dray[2] << " "<< dray[3] << " " << endl ;		      
+			  } 
+		   } // pmloop
+		      //
+   // calculate ray without a plane in track
+    const Int_t raycoeffmap[]={4,5,2,3};
+                     for(Int_t ihit=0;ihit<TrackHits;ihit++) {
+			THcDCHit* hit=tr->GetHit(ihit);
+		        coords[ihit] =hit->GetPos()+ tr->GetHitLR(ihit)*tr->GetHitDist(ihit);
+			planes[ihit] =hit->GetPlaneNum()-1;
+			wiresigma[ihit] = hit->GetWireSigma();
+		      }
+    for(Int_t ipl_hit=0;ipl_hit < tr->GetNHits();ipl_hit++) {    
+ 
+
+      if(tr->GetNFree() > 0) {
+ 	TVectorD TT(NUM_FPRAY);
+	TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
+	for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
+	  TT[irayp] = 0.0;
+	  for(Int_t ihit=0;ihit < tr->GetNHits();ihit++) {
+	  
+
+	    THcDCHit* hit=tr->GetHit(ihit);
+
+	    if (ihit != ipl_hit) {
+	      TT[irayp] += (coords[ihit]*
+			    fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])
+		/pow(hit->GetWireSigma(),2);
+
+	    }
+	  }
+	}
+	for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
+	  for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
+	    AA[irayp][jrayp] = 0.0;
+	    if(jrayp<irayp) { // Symmetric
+	      AA[irayp][jrayp] = AA[jrayp][irayp];
+	    } else {
+
+	      for(Int_t ihit=0;ihit < tr->GetNHits();ihit++) {
+	      
+		THcDCHit* hit=tr->GetHit(ihit);
+
+
+		if (ihit != ipl_hit) {
+		  AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
+		    fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
+		    pow(hit->GetWireSigma(),2);
+
+		}
+	      }
+	    }
+	  }
+	}
+	//
+	// Solve 4x4 equations
+	// Should check that it is invertable
+	TVectorD dray(NUM_FPRAY);
+	AA.Invert();
+	dray = AA*TT;
+	Double_t coord=0.0;
+	for(Int_t ir=0;ir<NUM_FPRAY;ir++) {
+	  coord += fPlaneCoeffs[planes[ipl_hit]][raycoeffmap[ir]]*dray[ir];
+	  // cout << "ir = " << ir << ", dray[ir] = " << dray[ir] << endl;
+	}
+	Double_t residual = coords[ipl_hit] - coord;
+	tr->SetResidualExclPlane(planes[ipl_hit], residual);
+      }//Calculate residual without plane
+		      //
+    }
+  //
+    
+}
 
 //_____________________________________________________________________________
 void THcDC::TrackFit()
@@ -984,7 +1263,6 @@ void THcDC::TrackFit()
 	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {	
 
 	  THcDCHit* hit=theDCTrack->GetHit(ihit);
-	    
 	  TT[irayp] += (coords[ihit]*fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])/pow(hit->GetWireSigma(),2);
 	  //	  if (hit->GetPlaneNum()==5)
 	  //	    {
@@ -995,6 +1273,12 @@ void THcDC::TrackFit()
 
 	} //end hit loop
       }
+      /*
+	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
+	  cout << " hit = " << ihit << " " << coords[ihit] << " " << planes[ihit] ;
+	}
+	cout << " ****" << endl;
+      */
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
 	for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
 	  AA[irayp][jrayp] = 0.0;
@@ -1200,7 +1484,11 @@ void THcDC::TrackFit()
     }
   }
   //
-  if (fdebugtrackprint) {
+
+  //
+}
+//
+void THcDC::PrintTrack() {
     printf("%5s %-14s %-14s %-14s %-14s  %-10s %-10s \n","Track","x_t","y_t","xp_t","yp_t","chi2","DOF");
     printf("%5s %-14s %-14s %-14s %-14s  %-10s %-10s \n","     ","[cm]","[cm]","[rad]","[rad]"," "," ");
     for(UInt_t itr=0;itr < fNDCTracks;itr++) {
@@ -1234,11 +1522,7 @@ void THcDC::TrackFit()
 	printf("%-5d %15.7e %15.7e %15.7e \n",plane+1,coords_temp,theDCTrack->GetCoord(plane),theDCTrack->GetResidual(plane));
       }
     }
-  }
-
-  //
 }
-//
 //
 Double_t THcDC::DpsiFun(Double_t ray[4], Int_t plane)
 {

@@ -120,6 +120,9 @@ protected:
   Int_t fN_True_RawHits;
   Int_t fNSp;                   // Number of space points
   Int_t fNsp_best;                   // Number of space points for gloden track
+  Double_t* fDist_best;        //[fNPlanes] 
+  Double_t* fLR_best;         //[fNPlanes]
+  Double_t* fPos_best;         //[fNPlanes]
   Double_t* fResiduals;         //[fNPlanes] Array of residuals
   Double_t* fResidualsExclPlane;         //[fNPlanes] Array of residuals with plane excluded
   Double_t* fWire_hit_did;      //[fNPlanes]
@@ -133,6 +136,8 @@ protected:
   Double_t fYtTrCriterion;
   Double_t fXptTrCriterion;
   Double_t fYptTrCriterion;
+  Int_t fUseNewLinkStubs; 
+  Int_t fUseNewTrackFit; 
   Int_t fVersion;
 
   // Each of these will be dimensioned with the number of chambers
@@ -202,7 +207,10 @@ protected:
   virtual Int_t  ReadDatabase( const TDatime& date );
   virtual Int_t  DefineVariables( EMode mode = kDefine );
   void           LinkStubs();
+  void           NewLinkStubs();
   void           TrackFit();
+  void           NewTrackFit(UInt_t TrackIndex);
+  void           FitLineToTrack(Int_t TrackHits,Double_t coords[],Int_t planes[],Double_t wiresigma[], Double_t TrackCoord[], Double_t save_ray[]);
   Double_t       DpsiFun(Double_t ray[4], Int_t plane);
   void           EffInit();
   void           Eff();
@@ -210,6 +218,7 @@ protected:
   void Setup(const char* name, const char* description);
   void PrintSpacePoints();
   void PrintStubs();
+  void PrintTrack();
   void EfficiencyPerWire(Int_t golden_track_index);
   ClassDef(THcDC,0)   // Set of Drift Chambers detector
 };
