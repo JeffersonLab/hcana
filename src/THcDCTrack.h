@@ -56,6 +56,7 @@ public:
   void SetChisq(Double_t chi2)   {fChi2_fp = chi2;}
   void SetSp1_ID(Int_t isp1) {fSp1_ID= isp1;}
   void SetSp2_ID(Int_t isp2) {fSp2_ID= isp2;}
+  void SetHitLR(Int_t ihit,Int_t lrtemp) { fHits[ihit].lr=lrtemp; }
 
   virtual void ClearHits( );
 
