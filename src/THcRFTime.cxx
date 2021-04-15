@@ -187,37 +187,39 @@ Int_t THcRFTime::Process( const THaEvData& evdata )
 
   if( !had_trkifo) cout << " no hadron track " << endl;
   if( !elec_trkifo) cout << " no electron track " << endl;
-  //Check if the hadron/electron arm had a track
+  // Check if the hadron/electron arm had a track
   // May want to consider dropping this condition
   if( !had_trkifo || !had_trkifo->IsOK() ) return 1;
   if( !elec_trkifo || !elec_trkifo->IsOK() ) return 1;
 
   //Create THaTrack object for hadron/elec arms to get relevant golden track quantities
   if (felecArmName=="H") {
-    theSHMSTrack =(fhadSpectro->GetGoldenTrack()); 
+    theSHMSTrack = (fhadSpectro->GetGoldenTrack()); 
     theHMSTrack = (felecSpectro->GetGoldenTrack());
   } else{
-    theSHMSTrack =(felecSpectro->GetGoldenTrack()); 
+    theSHMSTrack = (felecSpectro->GetGoldenTrack()); 
     theHMSTrack = (fhadSpectro->GetGoldenTrack());
   }
 
   //Check if Database is reading the correct elec-arm particle mass
   // if (felecSpectro->GetParticleMass() > 0.00052) return 1;
-        
 
   Double_t SHMS_FPtime = theSHMSTrack->GetFPTime();// SHMS arm
   Double_t HMS_FPtime = theHMSTrack->GetFPTime();  // HMS arm
       
   if (SHMS_FPtime==-2000 || HMS_FPtime==-2000)  return 1;
   if (SHMS_FPtime==-1000 || HMS_FPtime==-1000)  return 1;
-      
+  
   SHMS_RFtime = fCoinDet->Get_RF_TrigTime(0); // SHMS is ID 0
   HMS_RFtime = fCoinDet->Get_RF_TrigTime(1); // HMS is ID 1
   
   // RF Time dist can be utilised for PID, offsets should be set in Standard.kinematics, these are just used to "center" the distribution at a desired point
   // Typically, other PID info needs to be utilised to establish where the relevant peaks for each particle species are in the distribution
-  fHMS_RFtimeDist = fmod((HMS_RFtime - HMS_FPtime + HMS_RF_Offset), Bunch_Spacing);
-  fSHMS_RFtimeDist = fmod((SHMS_RFtime - SHMS_FPtime + SHMS_RF_Offset), Bunch_Spacing);
+  // Note, this expression looks a bit odd but this is to achieve the same results as the Python a % b operation
+  // The result of this calculation will ALWAYS be a POSITIVE number between 0 and Bunch_Spacing
+  // See - https://stackoverflow.com/questions/1907565/c-and-python-different-behaviour-of-the-modulo-operation for more
+  fHMS_RFtimeDist = fmod((fmod((HMS_RFtime - HMS_FPtime + HMS_RF_Offset), Bunch_Spacing) + Bunch_Spacing), Bunch_Spacing);
+  fSHMS_RFtimeDist = fmod((fmod((SHMS_RFtime - SHMS_FPtime + SHMS_RF_Offset), Bunch_Spacing) + Bunch_Spacing), Bunch_Spacing);
   
   return 0;
 }
