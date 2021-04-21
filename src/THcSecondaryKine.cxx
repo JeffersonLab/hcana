@@ -33,14 +33,12 @@ THcSecondaryKine::THcSecondaryKine( const char* name, const char* description,
   fPrimaryName(primary_kine), fPrimary(NULL)
 {
   // Constructor
-
 }
 
 //_____________________________________________________________________________
 THcSecondaryKine::~THcSecondaryKine()
 {
   // Destructor
-
   DefineVariables( kDelete );
 }
 
@@ -152,8 +150,6 @@ THaAnalysisObject::EStatus THcSecondaryKine::Init( const TDatime& run_time )
 Int_t THcSecondaryKine::Process( const THaEvData& )
 {
   // Calculate the kinematics.
-
-
   if( !IsOK() ) return -1;
 
   //Get secondary particle mass
@@ -241,9 +237,9 @@ Int_t THcSecondaryKine::Process( const THaEvData& )
   // Determination of the missing mass under various assumptions, utilises database read in to establish which
   // corrections to use to determine values
   // It might be easier/nicer to just manipulate the missing energy in the 4-vector fB to determine these quantities
-  
+  // Could also tie the calculation into the actual read in value a bit more too  
   // Hadron in standard.kinematics is a charged pion
-  if ( fMX > 0.12957018 && fMX < 0.14957018 ){ 
+  if ( fMX > 0.12957018 && fMX < 0.14957018 ){
     fMMpi = sqrt(abs((fEmiss*fEmiss)-(fPmiss*fPmiss)));
     fMMK = sqrt(abs((pow(fEmiss+(sqrt((fMass_pi*fMass_pi)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_K*fMass_K)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
     fMMp = sqrt(abs((pow(fEmiss+(sqrt((fMass_pi*fMass_pi)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_p*fMass_p)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
@@ -260,7 +256,14 @@ Int_t THcSecondaryKine::Process( const THaEvData& )
     fMMK = sqrt(abs((pow(fEmiss+(sqrt((fMass_p*fMass_p)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_K*fMass_K)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
     fMMp = sqrt(abs((fEmiss*fEmiss)-(fPmiss*fPmiss)));
   }
-  // Any other condition
+  // Any other condition, try and determine something from whatever the hell the specified mass was
+  else if (fMX != 0 ){
+    fMMpi = sqrt(abs((pow(fEmiss+(sqrt((fMX*fMX)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_pi*fMass_pi)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
+    fMMK = sqrt(abs((pow(fEmiss+(sqrt((fMX*fMX)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_K*fMass_K)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
+    fMMp = sqrt(abs((pow(fEmiss+(sqrt((fMX*fMX)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_p*fMass_p)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
+  }
+  // If the secondary mass was 0 or negative for some reason, this is just the "anything else" junk variable output basically
+  // Note, add an extra condition for the mass being 0 if it is relevant for you for some reason!
   else{
     fMMpi = -1000;
     fMMK = -1000;

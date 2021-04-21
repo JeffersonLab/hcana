@@ -115,10 +115,10 @@ Use only with THcTrigApp class.
 #include "THcTrigApp.h"
 #include "THcTrigRawHit.h"
 
-
+//_____________________________________________________________________________
 THcTrigDet::THcTrigDet() {}
 
-
+//_____________________________________________________________________________
 THcTrigDet::THcTrigDet(
   const char* name, const char* description, THaApparatus* app
 ) :
@@ -135,7 +135,7 @@ THcTrigDet::THcTrigDet(
   fSpectName = name[0];
 }
 
-
+//_____________________________________________________________________________
 THcTrigDet::~THcTrigDet() {
   delete [] fAdcTimeWindowMin; fAdcTimeWindowMin = NULL;
   delete [] fAdcTimeWindowMax; fAdcTimeWindowMax = NULL;
@@ -144,7 +144,7 @@ THcTrigDet::~THcTrigDet() {
 
 }
 
-
+//_____________________________________________________________________________
 THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
   // Call `Setup` before everything else.
   Setup(GetName(), GetTitle());
@@ -191,7 +191,7 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
   fTDC_RefTimeCut = -1000;		// Minimum allowed reference times
   fADC_RefTimeCut = -1000;
   gHcParms->LoadParmValues((DBRequest*)&listextra,fKwPrefix.c_str());
- // Initialize hitlist part of the class.
+  // Initialize hitlist part of the class.
   // printf(" Init trig det hitlist\n");
   InitHitList(fDetMap, "THcTrigRawHit", 200,fTDC_RefTimeCut,fADC_RefTimeCut);
   CreateMissReportParms(fKwPrefix.c_str());
@@ -206,7 +206,7 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
   return fStatus;
 }
 
-
+//_____________________________________________________________________________
 void THcTrigDet::Clear(Option_t* opt) {
   THaAnalysisObject::Clear(opt);
 
@@ -230,7 +230,7 @@ void THcTrigDet::Clear(Option_t* opt) {
   };
 }
 
-
+//_____________________________________________________________________________
 Int_t THcTrigDet::Decode(const THaEvData& evData) {
     
   // Decode raw data for this event.
@@ -306,9 +306,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
   return 0;
 }
 
-
-
-
+//_____________________________________________________________________________
 void THcTrigDet::Setup(const char* name, const char* description) {
   // Prefix for parameters in `param` file.
   string kwPrefix = string(GetApparatus()->GetName()) + "_" + name;
@@ -316,7 +314,7 @@ void THcTrigDet::Setup(const char* name, const char* description) {
   fKwPrefix = kwPrefix;
 }
 
-
+//_____________________________________________________________________________
 Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   std::string adcNames, tdcNames;
   std::string trigNames="pTRIG1_ROC1 pTRIG4_ROC1 pTRIG1_ROC2 pTRIG4_ROC2";
@@ -332,7 +330,7 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
     {"_tdcoffset", &fTdcOffset, kDouble,0,1},  // Offset of tdc channels
     {"_adc_tdc_offset", &fAdcTdcOffset, kDouble,0,1},  // Offset of Adc Pulse time (ns)
     {"_tdcchanperns", &fTdcChanperNS, kDouble,0,1},  // Convert channesl to ns
-     {0}
+    {0}
   };
   fTdcChanperNS=0.09766;
   fTdcOffset=300.;
@@ -371,41 +369,39 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   //default index values
  
   //Assign an index to coincidence trigger times strings
-     for (UInt_t j = 0; j <fTrigNames.size(); j++) {
-       fTrigId[j]=-1;
-     }
+  for (UInt_t j = 0; j <fTrigNames.size(); j++) {
+    fTrigId[j]=-1;
+  }
   for (int i = 0; i <fNumTdc; i++) {
     for (UInt_t j = 0; j <fTrigNames.size(); j++) {
-            if(fTdcNames.at(i)==fTrigNames[j]) fTrigId[j]=i;
-	  }
+      if(fTdcNames.at(i)==fTrigNames[j]) fTrigId[j]=i;
+    }
   }
  
   cout << " Trig = " << fTrigNames.size() << endl;
-     for (UInt_t j = 0; j <fTrigNames.size(); j++) {
-       cout << fTrigNames[j] << " " << fTrigId[j] << endl;
-     }
- 
-     // SJDK - 12/04/21 - For RF getter
-  //Assign an index to RF times strings
-     for (UInt_t j = 0; j <fRFNames.size(); j++) {
-       fRFId[j]=-1;
-     }
-  for (int i = 0; i <fNumTdc; i++) {
-    for (UInt_t j = 0; j <fRFNames.size(); j++) {
-            if(fTdcNames.at(i)==fRFNames[j]) fRFId[j]=i;
-	  }
+  for (UInt_t j = 0; j <fTrigNames.size(); j++) {
+    cout << fTrigNames[j] << " " << fTrigId[j] << endl;
   }
  
-  cout << " RF = " << fRFNames.size() << endl;
-     for (UInt_t j = 0; j <fRFNames.size(); j++) {
-       cout << fRFNames[j] << " " << fRFId[j] << endl;
-     }
+  // SJDK - 12/04/21 - For RF getter
+  // Assign an index to RF times strings
+  for (UInt_t j = 0; j <fRFNames.size(); j++) {
+    fRFId[j]=-1;
+  }
+  for (int i = 0; i <fNumTdc; i++) {
+    for (UInt_t j = 0; j <fRFNames.size(); j++) {
+      if(fTdcNames.at(i)==fRFNames[j]) fRFId[j]=i;
+    }
+  } 
+  for (UInt_t j = 0; j <fRFNames.size(); j++) {
+    cout << fRFNames[j] << " " << fRFId[j] << endl;
+  }
 
   return kOK;
 }
 
+//_____________________________________________________________________________
 Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
-
 
   if (mode == kDefine && fIsSetup) return kOK;
   fIsSetup = (mode == kDefine);
@@ -505,8 +501,6 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
     };
     vars.push_back(entry8);
   
- 
-
     adcPulseTimeTitle.at(i) = fAdcNames.at(i) + "_adcPulseTime";
     adcPulseTimeVar.at(i) = TString::Format("fAdcPulseTime[%d]", i);
     RVarDef entry9 {
@@ -524,8 +518,7 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   for (int i=0; i<fNumTdc; ++i) {
     tdcTimeRawTitle.at(i) = fTdcNames.at(i) + "_tdcTimeRaw";
     tdcTimeRawVar.at(i) = TString::Format("fTdcTimeRaw[%d]", i);
-    
-
+   
     RVarDef entry1 {
       tdcTimeRawTitle.at(i).Data(),
       tdcTimeRawTitle.at(i).Data(),
@@ -571,6 +564,7 @@ void THcTrigDet::SetEvtType(int evtype) {
   AddEvtType(evtype);
 }
 
+//_____________________________________________________________________________
 Bool_t THcTrigDet::IsIgnoreType(Int_t evtype) const
 {
   for (UInt_t i=0; i < eventtypes.size(); i++) {
@@ -579,10 +573,12 @@ Bool_t THcTrigDet::IsIgnoreType(Int_t evtype) const
   return kFALSE; 
 }
 
+//_____________________________________________________________________________
 Bool_t THcTrigDet::HaveIgnoreList() const
 {
   return( (eventtypes.size()>0) ? kTRUE : kFALSE);
 }
+
 //_____________________________________________________________________________
 Int_t THcTrigDet::End(THaRunBase* run)
 {

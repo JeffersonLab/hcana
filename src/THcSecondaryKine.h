@@ -113,7 +113,7 @@ public:
   Double_t fMX;         // Mass of secondary particle (GeV)
   Double_t fOopCentralOffset; //Offset of central out-of-plane angle (rad)
   
-  Double_t fMass_pi; // Charged pion mass (GeV)
+  Double_t fMass_pi;// Charged pion mass (GeV)
   Double_t fMass_K; // Charged kaon mass (GeV)
   Double_t fMass_p; // Charged proton mass (GeV)
 
