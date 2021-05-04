@@ -660,6 +660,8 @@ Int_t THcParmList::ReadArray(const char* attrC, T* array, Int_t size)
   if(size > sz) {
     cout << "*** ERROR: requested " << size << " elements of " << attrC <<
       " which has only " << sz << " elements" << endl;
+    cout << "Cannot continue. Must fix database. Terminating program." << endl;
+    //FIXME: probably should make this an exception to be caught in LoadParmValues
     exit(EXIT_FAILURE);
   } else if(size < sz) {
     cout << "*** WARNING: requested " << size << " elements of " << attrC <<
