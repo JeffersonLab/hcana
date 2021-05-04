@@ -22,23 +22,22 @@ class TIBlobModule : public PipeliningModule {
 public:
 
    TIBlobModule() : PipeliningModule() {}
-   TIBlobModule(Int_t crate, Int_t slot);
+   TIBlobModule(UInt_t crate, UInt_t slot);
    virtual ~TIBlobModule();
 
    using Module::GetData;
-   using Module::LoadSlot;
 
-   virtual UInt_t GetData(Int_t chan) const;
+   virtual UInt_t GetData(UInt_t chan) const;
    virtual void Init();
    virtual void Clear(const Option_t *opt="");
    virtual Int_t Decode(const UInt_t*) { return 0; }
-   virtual Int_t LoadSlot(THaSlotData *sldat,  const UInt_t *evbuffer, const UInt_t *pstop );
-   virtual Int_t LoadSlot(THaSlotData *sldat, const UInt_t* evbuffer, Int_t pos, Int_t len);
-   Int_t LoadNextEvBuffer(THaSlotData *sldat);
-   Int_t LoadThisBlock(THaSlotData *sldat, std::vector<UInt_t > evb);
+   virtual UInt_t LoadSlot( THaSlotData *sldat, const UInt_t *evbuffer, const UInt_t *pstop );
+   virtual UInt_t LoadSlot( THaSlotData *sldat, const UInt_t* evbuffer, UInt_t pos, UInt_t len);
+   virtual UInt_t LoadNextEvBuffer(THaSlotData *sldat);
+   virtual UInt_t LoadThisBlock( THaSlotData *sldat, const std::vector<UInt_t>& evbuffer);
  
  protected:
-   Int_t SplitBuffer(std::vector< UInt_t > bigbuffer);
+   virtual Int_t SplitBuffer( const std::vector<UInt_t>& bigbuffer);
 
  private:
 
