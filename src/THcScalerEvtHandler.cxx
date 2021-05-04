@@ -254,8 +254,8 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 
   UInt_t *rdata = (UInt_t*) evdata->GetRawDataBuffer();
 
-  if( evdata->GetEvType() == fDelayedType) { // Save this event for processing later
-    Int_t evlen = evdata->GetEvLength();
+  if( (Int_t)evdata->GetEvType() == fDelayedType) { // Save this event for processing later
+    UInt_t evlen = evdata->GetEvLength();
     
     UInt_t *datacopy = new UInt_t[evlen];
     fDelayedEvents.push_back(datacopy);
