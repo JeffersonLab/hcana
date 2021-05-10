@@ -38,6 +38,9 @@ public:
   Double_t          GetPmiss_z()    const { return fPmiss_z; }
   Double_t          GetEmiss()      const { return fEmiss; }
   Double_t          GetMrecoil()    const { return fMrecoil; }
+  Double_t          GetMMpi()       const { return fMMpi; }
+  Double_t          GetMMK()        const { return fMMK; }
+  Double_t          GetMMp()        const { return fMMp; }
   Double_t          GetErecoil()    const { return fErecoil; }
   Double_t          GetPrecoil_x()  const { return fB.X(); }
   Double_t          GetPrecoil_y()  const { return fB.Y(); }
@@ -82,9 +85,12 @@ public:
   Double_t fPmiss_x;    // x-component of p_miss wrt q (GeV)
   Double_t fPmiss_y;    // y-component of p_miss wrt q (GeV)
   Double_t fPmiss_z;    // z-component of p_miss, along q (GeV)
-  Double_t fEmiss_nuc;      // Missing energy (GeV), nuclear physics definition omega-Tx-Tb
-  Double_t fEmiss; // Missing energy (GeV), correct definition omega+Mt-Ex
+  Double_t fEmiss_nuc;  // Missing energy (GeV), nuclear physics definition omega-Tx-Tb
+  Double_t fEmiss;      // Missing energy (GeV), correct definition omega+Mt-Ex
   Double_t fMrecoil;    // Invariant mass of recoil system (GeV)
+  Double_t fMMpi;       // Missing mass under asssumption hadron is a pion
+  Double_t fMMK;        // Missing mass under asssumption hadron is a kaon
+  Double_t fMMp;        // Missing mass under asssumption hadron is a proton
   Double_t fErecoil;    // Total energy of recoil system (GeV)
   Double_t fTX;         // Kinetic energy of detected particle (GeV)
   Double_t fTB;         // Kinetic energy of recoil system (GeV)
@@ -106,6 +112,10 @@ public:
   // Parameters
   Double_t fMX;         // Mass of secondary particle (GeV)
   Double_t fOopCentralOffset; //Offset of central out-of-plane angle (rad)
+  
+  Double_t fMass_pi;// Charged pion mass (GeV)
+  Double_t fMass_K; // Charged kaon mass (GeV)
+  Double_t fMass_p; // Charged proton mass (GeV)
 
   TString            fSpectroName;  // Name of spectrometer for secondary particle
   THcHallCSpectrometer* fSpectro;   // Pointer to spectrometer object

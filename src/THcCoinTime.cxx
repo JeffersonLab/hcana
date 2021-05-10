@@ -246,8 +246,7 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 
   //Check if Database is reading the correct elec-arm particle mass
   if (felecSpectro->GetParticleMass() > 0.00052) return 1;
-   
-     
+        
       //SHMS arm
       Double_t shms_xptar = theSHMSTrack->GetTTheta();     
       Double_t shms_dP = theSHMSTrack->GetDp();            
@@ -307,8 +306,7 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 	  fROC2_RAW_CoinTime =  (pTRIG1_TdcTime_ROC2 + SHMS_FPtime) - (pTRIG4_TdcTime_ROC2 + HMS_FPtime);
 	  fTRIG1_RAW_CoinTime =  (pTRIG1_TdcTime_ROC1 + SHMS_FPtime) - (pTRIG1_TdcTime_ROC2 + HMS_FPtime);
 	  fTRIG4_RAW_CoinTime =  (pTRIG4_TdcTime_ROC1 + SHMS_FPtime) - (pTRIG4_TdcTime_ROC2 + HMS_FPtime);
-	  
-	  
+	   
 	  //Corrected Coincidence Time for ROC1/ROC2 (ROC1 Should be identical to ROC2)
           // 
 	  //PROTON
@@ -335,9 +333,6 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 	  fTRIG1_ePosCoinTime = fTRIG1_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset ;	  
 	  fTRIG4_ePosCoinTime = fTRIG4_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset;
          
-   
-  
-  
   return 0;
 }
 

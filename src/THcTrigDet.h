@@ -34,19 +34,21 @@ class THcTrigDet : public THaDetector, public THcHitList {
     Int_t          End(THaRunBase* run);
     //Funtions to get TDCtime for cointime module 
     Double_t Get_CT_Trigtime(Int_t ii) { return (fTrigId[ii]==-1 ? 0. : fTdcTime[fTrigId[ii]]) ;}
-
+    // SJDK 12/04/21 - New Getter for RF time info
+    // Function to get RFTDC time for RF module
+    Double_t Get_RF_TrigTime(Int_t ii) { return (fRFId[ii]==-1 ? 0. : fTdcTime[fRFId[ii]]) ;}
+    
   protected:
     void Setup(const char* name, const char* description);
     virtual Int_t ReadDatabase(const TDatime& date);
     virtual Int_t DefineVariables(EMode mode=kDefine);
-    
-
 
     std::string fKwPrefix;
 
     Int_t fNumAdc;
     Int_t fNumTdc;
     Int_t fTrigId[4];
+    Int_t fRFId[2]; // SJDK 12/04/21 -  New RF ID for getter above
 
     Double_t fAdcTdcOffset;
     Double_t fTdcOffset;
@@ -55,6 +57,7 @@ class THcTrigDet : public THaDetector, public THcHitList {
     std::vector<std::string> fAdcNames;
     std::vector<std::string> fTdcNames;
     std::vector<std::string> fTrigNames;
+    std::vector<std::string> fRFNames;
 
     static const int fMaxAdcChannels = 200;
     static const int fMaxTdcChannels = 200;
@@ -68,7 +71,6 @@ class THcTrigDet : public THaDetector, public THcHitList {
     Double_t *fAdcTimeWindowMax;    
     Double_t *fTdcTimeWindowMin;    
     Double_t *fTdcTimeWindowMax;    
-
     
     Int_t fAdcPedRaw[fMaxAdcChannels];
     Int_t fAdcPulseIntRaw[fMaxAdcChannels];

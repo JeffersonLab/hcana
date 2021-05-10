@@ -33,14 +33,12 @@ THcSecondaryKine::THcSecondaryKine( const char* name, const char* description,
   fPrimaryName(primary_kine), fPrimary(NULL)
 {
   // Constructor
-
 }
 
 //_____________________________________________________________________________
 THcSecondaryKine::~THcSecondaryKine()
 {
   // Destructor
-
   DefineVariables( kDelete );
 }
 
@@ -87,6 +85,9 @@ Int_t THcSecondaryKine::DefineVariables( EMode mode )
     { "emiss",    "Missing energy (GeV), ENGINE definition "
                   "omega-Mt-Ex", "fEmiss" },
     { "Mrecoil",  "Invariant mass of recoil system (GeV)", "fMrecoil" },
+    { "MMpi",  "Missing mass under assumption hadron is a pion (GeV)", "fMMpi" },
+    { "MMK",  "Missing mass under assumption hadron is a kaon (GeV)", "fMMK" },
+    { "MMp",  "Missing mass under assumption hadron is a proton (GeV)", "fMMp" },
     { "Erecoil",  "Total energy of recoil system (GeV)", "fErecoil" },
     { "Prec_x",   "x-component of recoil system in lab (GeV/c)", "fB.X()" },
     { "Prec_y",   "y-component of recoil system in lab (GeV/c)", "fB.Y()" },
@@ -149,8 +150,6 @@ THaAnalysisObject::EStatus THcSecondaryKine::Init( const TDatime& run_time )
 Int_t THcSecondaryKine::Process( const THaEvData& )
 {
   // Calculate the kinematics.
-
-
   if( !IsOK() ) return -1;
 
   //Get secondary particle mass
@@ -234,6 +233,43 @@ Int_t THcSecondaryKine::Process( const THaEvData& )
   // This is the "missing mass", Mrecoil, plus any kinetic energy.
   fErecoil = fB.E();
 
+  // SJDK - 15/04/21 - Added new missing mass calculations
+  // Determination of the missing mass under various assumptions, utilises database read in to establish which
+  // corrections to use to determine values
+  // It might be easier/nicer to just manipulate the missing energy in the 4-vector fB to determine these quantities
+  // Could also tie the calculation into the actual read in value a bit more too  
+  // Hadron in standard.kinematics is a charged pion
+  if ( fMX > 0.12957018 && fMX < 0.14957018 ){
+    fMMpi = sqrt(abs((fEmiss*fEmiss)-(fPmiss*fPmiss)));
+    fMMK = sqrt(abs((pow(fEmiss+(sqrt((fMass_pi*fMass_pi)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_K*fMass_K)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
+    fMMp = sqrt(abs((pow(fEmiss+(sqrt((fMass_pi*fMass_pi)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_p*fMass_p)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
+  }
+  // Hadron in standard.kinematics is a charged kaon
+  else if (fMX > 0.483677 && fMX < 0.503677 ){
+    fMMpi = sqrt(abs((pow(fEmiss+(sqrt((fMass_K*fMass_K)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_pi*fMass_pi)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
+    fMMK = sqrt(abs((fEmiss*fEmiss)-(fPmiss*fPmiss)));
+    fMMp = sqrt(abs((pow(fEmiss+(sqrt((fMass_K*fMass_K)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_p*fMass_p)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
+  }
+  // Hadron in standard.kinematics is a proton
+  else if (fMX > 0.92828 && fMX < 0.94828 ){
+    fMMpi = sqrt(abs((pow(fEmiss+(sqrt((fMass_p*fMass_p)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_pi*fMass_pi)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
+    fMMK = sqrt(abs((pow(fEmiss+(sqrt((fMass_p*fMass_p)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_K*fMass_K)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
+    fMMp = sqrt(abs((fEmiss*fEmiss)-(fPmiss*fPmiss)));
+  }
+  // Any other condition, try and determine something from whatever the hell the specified mass was
+  else if (fMX != 0 ){
+    fMMpi = sqrt(abs((pow(fEmiss+(sqrt((fMX*fMX)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_pi*fMass_pi)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
+    fMMK = sqrt(abs((pow(fEmiss+(sqrt((fMX*fMX)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_K*fMass_K)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
+    fMMp = sqrt(abs((pow(fEmiss+(sqrt((fMX*fMX)+(pow((pvect.Mag()), 2))))-(sqrt((fMass_p*fMass_p)+(pow((pvect.Mag()), 2)))), 2)-(fPmiss*fPmiss))));
+  }
+  // If the secondary mass was 0 or negative for some reason, this is just the "anything else" junk variable output basically
+  // Note, add an extra condition for the mass being 0 if it is relevant for you for some reason!
+  else{
+    fMMpi = -1000;
+    fMMK = -1000;
+    fMMp = -1000;
+  }
+
   // Calculate some interesting quantities in the CM system of A'.
   // NB: If the target is initially at rest, the A'-vector (spatial part)
   // is the same as the q-vector, so we could just reuse the q rotation
@@ -288,7 +324,9 @@ Int_t THcSecondaryKine::Process( const THaEvData& )
 Int_t THcSecondaryKine::ReadDatabase( const TDatime& date )
 {
   // cout << "In THcSecondaryKine::ReadDatabase() " << endl;
-
+  fMass_pi = 0.13957018;
+  fMass_K = 0.493677; 
+  fMass_p = 0.93828;
   char prefix[2];
 
   prefix[0] = tolower(GetName()[0]);
