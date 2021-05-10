@@ -188,6 +188,11 @@ Int_t THcCoinTime::DefineVariables( EMode mode )
     {"CoinTime_RAW_ROC2",    "ROC2 RAW Coincidence Time",  "fROC2_RAW_CoinTime"},
     {"CoinTime_RAW_TRIG1",    "TRIG1 RAW Coincidence Time",  "fTRIG1_RAW_CoinTime"},
     {"CoinTime_RAW_TRIG4",    "TRIG4 RAW Coincidence Time",  "fTRIG4_RAW_CoinTime"},
+    {"CoinTime_RAW_ROC1_NoTrack",    "ROC1 RAW Coincidence Time w/o Tracked Param",  "fROC1_RAW_CoinTime_NoTrack"},
+    {"CoinTime_RAW_ROC2_NoTrack",    "ROC2 RAW Coincidence Time w/o Tracked Param",  "fROC2_RAW_CoinTime_NoTrack"},
+    {"CoinTime_RAW_TRIG1_NoTrack",    "TRIG1 RAW Coincidence Time w/o Tracked Param",  "fTRIG1_RAW_CoinTime_NoTrack"},
+    {"CoinTime_RAW_TRIG4_NoTrack",    "TRIG4 RAW Coincidence Time w/o Tracked Param",  "fTRIG4_RAW_CoinTime_NoTrack"},
+
     {"DeltaSHMSPathLength","DeltaSHMSpathLength (cm)","DeltaSHMSpathLength"},
     {"DeltaHMSPathLength", "DeltaHMSpathLength (cm)","DeltaHMSpathLength"},
     {"had_coinCorr_Positron",    "",  "had_coinCorr_Positron"},
@@ -306,6 +311,13 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 	  fROC2_RAW_CoinTime =  (pTRIG1_TdcTime_ROC2 + SHMS_FPtime) - (pTRIG4_TdcTime_ROC2 + HMS_FPtime);
 	  fTRIG1_RAW_CoinTime =  (pTRIG1_TdcTime_ROC1 + SHMS_FPtime) - (pTRIG1_TdcTime_ROC2 + HMS_FPtime);
 	  fTRIG4_RAW_CoinTime =  (pTRIG4_TdcTime_ROC1 + SHMS_FPtime) - (pTRIG4_TdcTime_ROC2 + HMS_FPtime);
+	  
+	  // 04/05/21 - SJDK - Added for use in Report files for tracking efficiency calculations
+	  //Raw, Uncorrected Coincidence Time WITHOUT any tracked quantities
+	  fROC1_RAW_CoinTime_NoTrack =  (pTRIG1_TdcTime_ROC1) - (pTRIG4_TdcTime_ROC1);
+	  fROC2_RAW_CoinTime_NoTrack =  (pTRIG1_TdcTime_ROC2) - (pTRIG4_TdcTime_ROC2);
+	  fTRIG1_RAW_CoinTime_NoTrack =  (pTRIG1_TdcTime_ROC1) - (pTRIG1_TdcTime_ROC2);
+	  fTRIG4_RAW_CoinTime_NoTrack =  (pTRIG4_TdcTime_ROC1) - (pTRIG4_TdcTime_ROC2);
 	   
 	  //Corrected Coincidence Time for ROC1/ROC2 (ROC1 Should be identical to ROC2)
           // 

@@ -181,6 +181,9 @@ Int_t THcRFTime::Process( const THaEvData& evdata )
     }
   }
 
+  // Doesn't crash but just returns 0, wrong variable name?
+  //cout << "Hall C laser frequency is " << (atof(fEpicsHandler->GetString("pgunFreqDiv:C:frequencyVal"))) << endl;
+
   //Declare track information objects for hadron/electron arm
   THaTrackInfo* had_trkifo = fhadSpectro->GetTrackInfo();
   THaTrackInfo* elec_trkifo = felecSpectro->GetTrackInfo();
