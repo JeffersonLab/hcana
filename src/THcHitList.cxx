@@ -218,14 +218,17 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
   }
   if(fDisableSlipCorrection) fTISlot = -1;
     
-  Int_t titime = 0;
+  UInt_t titime = 0;
+  Bool_t TI_TRIGGER_TIME_FOUND = kFALSE;
   if(fTISlot>0) {
-#define FUDGE 7
+    UInt_t FUDGE=7;
+    if (evdata.GetNumHits(fTICrate, fTISlot, 2) > 0) {
+    TI_TRIGGER_TIME_FOUND = kTRUE;
     titime = evdata.GetData(fTICrate, fTISlot, 2, 0)-FUDGE;
     // Need to get the FADC time for all modules in this crate
     // that have hits.  Make a map with these times.
     fTrigTimeShiftMap.clear();
-    //cout << "TI Crate: " << fTICrate << " " << (UInt_t) titime << endl;
+    }
   }
 
   // cout << " Clearing TClonesArray " << endl;
@@ -246,7 +249,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
                                               fRefIndexMaps[i].slot,
                                               fRefIndexMaps[i].channel);
 	Int_t timeshift=0;
-	if(fTISlot>0) {		// Get the trigger time for this module
+	if(fTISlot>0 && TI_TRIGGER_TIME_FOUND) {		// Get the trigger time for this module
 	  if(fTrigTimeShiftMap.find(fRefIndexMaps[i].slot)
 	     == fTrigTimeShiftMap.end()) { // 
 	    if(fFADCSlotMap.find(fRefIndexMaps[i].slot) != fFADCSlotMap.end()) {
@@ -430,7 +433,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	UInt_t npulses=evdata.GetNumEvents(Decoder::kPulseIntegral, d->crate, d->slot, chan);
 	// Assume that the # of pulses for kPulseTime, kPulsePeak and kPulsePedestal are same;
 	Int_t timeshift=0;
-	if(fTISlot>0) {		// Get the trigger time for this module
+	if(fTISlot>0 && TI_TRIGGER_TIME_FOUND) {		// Get the trigger time for this module
 	  if(fTrigTimeShiftMap.find(d->slot)
 	     == fTrigTimeShiftMap.end()) { // 
 	    if(fFADCSlotMap.find(d->slot) != fFADCSlotMap.end()) {
@@ -456,7 +459,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	  Int_t prevtime = 0;
 	  Int_t difftime = 0;
 	  timeshift=0;
-	  if(fTISlot>0) {		// Get the trigger time for this module
+	  if(fTISlot>0 && TI_TRIGGER_TIME_FOUND) {		// Get the trigger time for this module
 	    if(fTrigTimeShiftMap.find(d->slot)
 	       == fTrigTimeShiftMap.end()) { // 
 	      if(fFADCSlotMap.find(d->slot) != fFADCSlotMap.end()) {
@@ -513,7 +516,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
     }
   }
 #if 1
-  if(fTISlot>0) {
+  if(fTISlot>0 && TI_TRIGGER_TIME_FOUND) {
     //    cout << "TI ROC: " << fTICrate << "   TI Time: " << titime << endl;
     map<Int_t, Int_t>::iterator it;
     for(it=fTrigTimeShiftMap.begin(); it!=fTrigTimeShiftMap.end(); it++) {
@@ -522,7 +525,10 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	cout << it->first << " " << it->second << endl;
       }
     }
-  }
+  } else if ( fTISlot>0 && !TI_TRIGGER_TIME_FOUND) {
+    cout << "TI Trigger Time Not found for event type = " << evdata.GetEvType() << " event num = " << evdata.GetEvNum() << " TI Crate = " <<  fTICrate << " TI Slot = " << fTISlot<< endl;
+   } 
+    
 #endif    
   fRawHitList->Sort(fNRawHits);
 
