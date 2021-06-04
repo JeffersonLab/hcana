@@ -62,6 +62,7 @@ public:
 
   // TObject functions redefined
   virtual void Clear( Option_t* opt="" );
+  virtual void RemoveHit(Int_t RemoveHitIndex);
 
 protected:
   Int_t fnSP; /* Number of space points in this track */
@@ -88,7 +89,6 @@ protected:
   Double_t fChi2_fp;
 
   virtual void AddHit(THcDCHit * hit, Double_t dist, Int_t lr);
-
 private:
   // Hide copy ctor and op=
   THcDCTrack( const THcDCTrack& );

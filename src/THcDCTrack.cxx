@@ -29,6 +29,14 @@ void THcDCTrack::AddHit(THcDCHit * hit, Double_t dist, Int_t lr)
   fHits.push_back(newhit);
   fNHits++;
 }
+void THcDCTrack::RemoveHit(Int_t RemoveHitIndex)
+{
+  for (Int_t ih=RemoveHitIndex;ih<fNHits-1;ih++) {
+    fHits[ih] = fHits[ih+1];
+  }
+  fNHits = fNHits -1;
+  fHits.resize(fNHits);
+}
 void THcDCTrack::AddSpacePoint( THcSpacePoint* sp )
 {
   /**
