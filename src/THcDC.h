@@ -85,6 +85,7 @@ public:
 
   THcDC();  // for ROOT I/O
 protected:
+  Int_t fUseNewFindSpacePoints;
   Int_t fdebuglinkstubs;
   Int_t fdebugprintrawdc;
   Int_t fdebugflagpr;
@@ -93,6 +94,7 @@ protected:
   Int_t fdebugprintdecodeddc;
   Int_t fHMSStyleChambers;
   Int_t fTDC_RefTimeCut;
+  Double_t  fTrackLargeResidCut;
 
   UInt_t fNDCTracks;
   TClonesArray* fDCTracks;     // Tracks found from stubs (THcDCTrack obj)

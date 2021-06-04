@@ -19,7 +19,7 @@ public:
   THcDCHit( THcDCWire* wire=NULL, Int_t rawnorefcorrtime=0, Int_t rawtime=0, Double_t time=0.0,
     THcDriftChamberPlane* wp=0) :
     fWire(wire), fRawNoRefCorrTime(rawnorefcorrtime), fRawTime(rawtime), fTime(time), fWirePlane(wp),
-      fDist(0.0), fLR(0), ftrDist(kBig) {
+      fDist(0.0), fLR(0), ftrDist(kBig),fNPlaneCluster(0) {
       if (wire) ConvertTimeToDist();
       fCorrected = 0;
     }
@@ -50,6 +50,8 @@ public:
   void     SetTime(Double_t time)     { fTime = time; }
   void     SetDist(Double_t dist)     { fDist = dist; }
   void     SetLeftRight(Int_t lr)   { fCoord = GetPos() + lr*fDist; fLR=lr;}
+  void     IncrNPlaneClust()   {fNPlaneCluster++ ;}
+  Int_t    GetNPlaneClust() const { return fNPlaneCluster; }
   Int_t    GetLR() { return fLR; }
   void     SetdDist(Double_t ddist)   { fdDist = ddist; }
   void     SetFitDist(Double_t dist)  { ftrDist = dist; }
@@ -75,6 +77,7 @@ protected:
   Double_t    ftrDist;   // (Perpendicular) distance from the track
   Int_t       fCorrected; // Has this hit been corrected?
   Int_t       fReadoutSide; // Side where wire is read out. 1-4 is T/R/B/L from beam view for new chambers.
+  Int_t      fNPlaneCluster; // Number of plane clusters hit is in.
 
   THcDriftChamber* fChamber; //! Pointer to parent wire plane
 

@@ -11,6 +11,7 @@
 */
 
 #include "THcDriftChamber.h"
+#include "THcDCPlaneCluster.h"
 #include "THcDC.h"
 #include "THcDCHit.h"
 #include "THcGlobals.h"
@@ -49,6 +50,12 @@ THcDriftChamber::THcDriftChamber(
   fChamberNum = chambernum;
 
   fSpacePoints = new TClonesArray("THcSpacePoint",10);
+  fXPlaneClusters = new TClonesArray("THcDCPlaneCluster",10);
+  fUPlaneClusters = new TClonesArray("THcDCPlaneCluster",10);
+  fVPlaneClusters = new TClonesArray("THcDCPlaneCluster",10);
+  fUXPlaneClusters = new TClonesArray("THcDCPlaneCluster",10);
+  fVXPlaneClusters = new TClonesArray("THcDCPlaneCluster",10);
+
 
   fHMSStyleChambers = 0;	// Default
 }
@@ -60,7 +67,12 @@ THcDriftChamber::THcDriftChamber() :
   // Constructor
   fTrackProj = NULL;
   fSpacePoints = NULL;
-  fIsInit = 0;
+  fXPlaneClusters = NULL;
+  fUPlaneClusters = NULL;
+  fVPlaneClusters = NULL;
+  fUXPlaneClusters = NULL;
+  fVXPlaneClusters = NULL;
+ fIsInit = 0;
 
 }
 //_____________________________________________________________________________
@@ -235,14 +247,29 @@ Int_t THcDriftChamber::DefineVariables( EMode mode )
     { "spacepoints", "Space points of DC",      "fNSpacePoints" },
     { "nhit", "Number of DC hits",  "fNhits" },
     { "trawhit", "Number of True Raw hits", "fN_True_RawHits" },
+    { "sp_nhits", "", "fSpacePoints.THcSpacePoint.GetNHits()" },
     { "stub_x", "", "fSpacePoints.THcSpacePoint.GetStubX()" },
     { "stub_xp", "", "fSpacePoints.THcSpacePoint.GetStubXP()" },
     { "stub_y", "", "fSpacePoints.THcSpacePoint.GetStubY()" },
     { "stub_yp", "", "fSpacePoints.THcSpacePoint.GetStubYP()" },
     { "ncombos", "", "fSpacePoints.THcSpacePoint.GetCombos()" },
+    { "U_pos", "", "fUPlaneClusters.THcDCPlaneCluster.GetX()" },
+    { "X_pos", "", "fXPlaneClusters.THcDCPlaneCluster.GetX()" },
+    { "V_pos", "", "fVPlaneClusters.THcDCPlaneCluster.GetX()" },
+    { "UX_posx", "", "fUXPlaneClusters.THcDCPlaneCluster.GetX()" },
+    { "UX_posy", "", "fUXPlaneClusters.THcDCPlaneCluster.GetY()" },
+    { "VX_posx", "", "fVXPlaneClusters.THcDCPlaneCluster.GetX()" },
+    { "VX_posy", "", "fVXPlaneClusters.THcDCPlaneCluster.GetY()" },
     { 0 }
   };
-  return DefineVarsFromList( vars, mode );
+  DefineVarsFromList( vars, mode );
+  //
+  std::vector<RVarDef> ve;
+   ve.push_back( { "sphit", "", "fSpHit.SpNHits" });
+  ve.push_back(  { "sphit_index", "", "fSpHit.SpHitIndex" });
+  ve.push_back({0}); // Needed to specify the end of list
+  return DefineVarsFromList( ve.data(), mode );
+
   //return kOK;
 
 }
@@ -252,7 +279,7 @@ void THcDriftChamber::ProcessHits( void)
   fNhits = 0;
   fHits.clear();
   fHits.reserve(40);
-
+  fSpHit.clear();
   for(Int_t ip=0;ip<fNPlanes;ip++) {
     TClonesArray* hitsarray = fPlanes[ip]->GetHits();
     for(Int_t ihit=0;ihit<fPlanes[ip]->GetNHits();ihit++) {
@@ -274,6 +301,220 @@ void THcDriftChamber::PrintDecode( void )
   }
 }
 
+Int_t THcDriftChamber::NewFindSpacePoints( void )
+{
+  //
+  fSpacePoints->Delete();
+  fXPlaneClusters->Clear("C");
+  fUPlaneClusters->Clear("C");
+  fVPlaneClusters->Clear("C");
+  fNSpacePoints=0;
+  fNXPlaneClusters=0;
+  fNUPlaneClusters=0;
+  fNVPlaneClusters=0;
+  if(fNhits >= fMinHits && fNhits < fMaxHits) {
+    if (fhdebugflagpr) cout << " in newfindspacepoints " << endl;
+    // first look for clusters pairs in X,U,V
+  for(Int_t ihit1=0;ihit1<fNhits;ihit1++) {
+    THcDCHit* hit1=fHits[ihit1];
+    THcDriftChamberPlane* plane1 = hit1->GetWirePlane();
+    for(Int_t ihit2=ihit1+1;ihit2<fNhits;ihit2++) {
+	THcDCHit* hit2=fHits[ihit2];
+	THcDriftChamberPlane* plane2 = hit2->GetWirePlane();
+	Double_t determinate = plane1->GetXsp()*plane2->GetYsp()
+	  -plane1->GetYsp()*plane2->GetXsp();
+	if(hit1->GetPlaneIndex() != hit2->GetPlaneIndex() && TMath::Abs(determinate) < 0.1 && abs(hit1->GetPos() - hit2->GetPos()  ) < 0.6) {
+	    THcDCPlaneCluster* clus;
+	    if (hit1->GetPlaneIndex() ==0 || hit1->GetPlaneIndex() ==1) clus = (THcDCPlaneCluster*)fUPlaneClusters->ConstructedAt(fNUPlaneClusters++);
+	    if (hit1->GetPlaneIndex() ==2 || hit1->GetPlaneIndex() ==3) clus = (THcDCPlaneCluster*)fXPlaneClusters->ConstructedAt(fNXPlaneClusters++);
+	    if (hit1->GetPlaneIndex() ==4 || hit1->GetPlaneIndex() ==5) clus = (THcDCPlaneCluster*)fVPlaneClusters->ConstructedAt(fNVPlaneClusters++);
+	    clus->AddHit(hit1);
+	    clus->AddHit(hit2);
+	    if (fhdebugflagpr) cout << ihit1 << " " << hit1->GetPos()<< " "   << ihit2 << " " << hit2->GetPos() << " " << plane1->GetYsp()<< " " << plane1->GetXsp()<< " " << plane2->GetYsp()<< " " << plane2->GetXsp() << endl;
+	    Double_t x = (hit1->GetPos() + hit2->GetPos())/2.;
+	    Double_t y = 0.;
+	    clus->SetXY(x,y);
+	    hit1->IncrNPlaneClust();
+	    hit2->IncrNPlaneClust();
+	  }
+    }
+    if (hit1->GetNPlaneClust() == 0) {
+      if (fhdebugflagpr) cout << " No match found" << endl;
+	    THcDCPlaneCluster* clus;
+	    if (hit1->GetPlaneIndex() ==0 || hit1->GetPlaneIndex() ==1) clus = (THcDCPlaneCluster*)fUPlaneClusters->ConstructedAt(fNUPlaneClusters++);
+	    if (hit1->GetPlaneIndex() ==2 || hit1->GetPlaneIndex() ==3) clus = (THcDCPlaneCluster*)fXPlaneClusters->ConstructedAt(fNXPlaneClusters++);
+	    if (hit1->GetPlaneIndex() ==4 || hit1->GetPlaneIndex() ==5) clus = (THcDCPlaneCluster*)fVPlaneClusters->ConstructedAt(fNVPlaneClusters++);
+	    clus->AddHit(hit1);
+	    if (fhdebugflagpr) cout << ihit1 << " " << hit1->GetPos()<< " "   << plane1->GetYsp()<< " " << plane1->GetXsp()<< endl;
+	    Double_t x = hit1->GetPos();
+	    Double_t y = 0.;
+	    clus->SetXY(x,y);
+	    hit1->IncrNPlaneClust();
+    }
+  } 
+  if (fhdebugflagpr) {
+  cout << " NUmber of U clusters = " << fNUPlaneClusters << endl;
+  for (Int_t nc=0;nc<fNUPlaneClusters;nc++) {
+    THcDCPlaneCluster* clus = (THcDCPlaneCluster*)(*fUPlaneClusters)[nc];
+    cout << " nc = " << nc << " nhits = " << clus->GetNHits() << endl;
+  }
+  cout << " NUmber of V clusters = " << fNVPlaneClusters<< endl;
+  for (Int_t nc=0;nc<fNVPlaneClusters;nc++) {
+    THcDCPlaneCluster* clus = (THcDCPlaneCluster*)(*fVPlaneClusters)[nc];
+    cout << " nc = " << nc << " nhits = " << clus->GetNHits()<< endl;
+  }
+  cout << " NUmber of X clusters = " << fNXPlaneClusters << endl;
+  for (Int_t nc=0;nc<fNXPlaneClusters;nc++) {
+    THcDCPlaneCluster* clus = (THcDCPlaneCluster*)(*fXPlaneClusters)[nc];
+    cout << " nc = " << nc << " nhits = " << clus->GetNHits()<< endl;
+  }
+  }
+  //
+  fNUXPlaneClusters=0;
+  fNVXPlaneClusters=0;
+  fUXPlaneClusters->Clear("C");
+  fVXPlaneClusters->Clear("C");
+  if (fNUPlaneClusters>0) {
+     for (Int_t ncu=0;ncu<fNUPlaneClusters;ncu++) {
+       THcDCPlaneCluster *uclus = static_cast<THcDCPlaneCluster*>(fUPlaneClusters->At(ncu));
+       THcDCHit* uhit = uclus->GetHit(0);
+       Double_t upos=uclus->GetX(); 
+	THcDriftChamberPlane* uplane = uhit->GetWirePlane();
+        for (Int_t ncx=0;ncx<fNXPlaneClusters;ncx++) {
+          THcDCPlaneCluster *xclus = static_cast<THcDCPlaneCluster*>(fXPlaneClusters->At(ncx));
+          THcDCHit* xhit = xclus->GetHit(0);
+          Double_t xpos=xclus->GetX(); 
+	  if ((uclus->GetNHits()+xclus->GetNHits())>2) {
+	  THcDriftChamberPlane* xplane = xhit->GetWirePlane();
+	  Double_t determinate = uplane->GetXsp()*xplane->GetYsp()-uplane->GetYsp()*xplane->GetXsp();
+	  Double_t x = (upos*xplane->GetYsp()- xpos*uplane->GetYsp())/determinate;
+	  Double_t y = (xpos*uplane->GetXsp()- upos*xplane->GetXsp())/determinate;
+          THcDCPlaneCluster* clus = (THcDCPlaneCluster*)fUXPlaneClusters->ConstructedAt(fNUXPlaneClusters++);
+	  for (Int_t ih=0;ih<uclus->GetNHits();ih++) {
+	    THcDCHit* temphit = uclus->GetHit(ih);
+	    clus->AddHit(temphit);
+	  }
+	  for (Int_t ih=0;ih<xclus->GetNHits();ih++) {
+	    THcDCHit* temphit = xclus->GetHit(ih);
+	    clus->AddHit(temphit);
+	  }
+	  clus->SetXY(x,y);
+	  }
+        }       
+     } 
+  }
+  //
+  if (fNVPlaneClusters>0) {
+     for (Int_t ncv=0;ncv<fNVPlaneClusters;ncv++) {
+       THcDCPlaneCluster *vclus = static_cast<THcDCPlaneCluster*>(fVPlaneClusters->At(ncv));
+       THcDCHit* vhit = vclus->GetHit(0);
+       Double_t vpos=vclus->GetX(); 
+	THcDriftChamberPlane* vplane = vhit->GetWirePlane();
+        for (Int_t ncx=0;ncx<fNXPlaneClusters;ncx++) {
+          THcDCPlaneCluster *xclus = static_cast<THcDCPlaneCluster*>(fXPlaneClusters->At(ncx));
+          THcDCHit* xhit = xclus->GetHit(0);
+          Double_t xpos=xclus->GetX(); 
+	  if ((vclus->GetNHits()+xclus->GetNHits())>2) {
+	  THcDriftChamberPlane* xplane = xhit->GetWirePlane();
+	  Double_t determinate = vplane->GetXsp()*xplane->GetYsp()-vplane->GetYsp()*xplane->GetXsp();
+	  Double_t x = (vpos*xplane->GetYsp()- xpos*vplane->GetYsp())/determinate;
+	  Double_t y = (xpos*vplane->GetXsp()- vpos*xplane->GetXsp())/determinate;
+          THcDCPlaneCluster* clus = (THcDCPlaneCluster*)fVXPlaneClusters->ConstructedAt(fNVXPlaneClusters++);
+	  for (Int_t ih=0;ih<vclus->GetNHits();ih++) {
+	    THcDCHit* temphit = vclus->GetHit(ih);
+	    clus->AddHit(temphit);
+	  }
+	  for (Int_t ih=0;ih<xclus->GetNHits();ih++) {
+	    THcDCHit* temphit = xclus->GetHit(ih);
+	    clus->AddHit(temphit);
+	  }
+	  clus->SetXY(x,y);
+	  }
+        }       
+     } 
+  }
+  //
+  if (fhdebugflagpr) {
+   cout << " NUmber of UX clusters = " << fNUXPlaneClusters << endl;
+  for (Int_t nc=0;nc<fNUXPlaneClusters;nc++) {
+    THcDCPlaneCluster* clus = (THcDCPlaneCluster*)(*fUXPlaneClusters)[nc];
+    cout << " nc = " << nc << " nhits = " << clus->GetNHits() << endl;
+  }
+  cout << " NUmber of VX clusters = " << fNVXPlaneClusters<< endl;
+  for (Int_t nc=0;nc<fNVXPlaneClusters;nc++) {
+    THcDCPlaneCluster* clus = (THcDCPlaneCluster*)(*fVXPlaneClusters)[nc];
+    cout << " nc = " << nc << " nhits = " << clus->GetNHits()<< endl;
+  }
+  }
+ //
+       vector <THcDCHit*> UX_uHits;
+       vector <THcDCHit*> UX_xHits;
+       vector <THcDCHit*> VX_vHits;
+       vector <THcDCHit*> VX_xHits;
+  for (Int_t nc=0;nc<fNUXPlaneClusters;nc++) {
+    UX_uHits.clear();
+    UX_xHits.clear();
+       THcDCPlaneCluster *uxclus = static_cast<THcDCPlaneCluster*>(fUXPlaneClusters->At(nc));
+       Double_t ux_posx = uxclus->GetX();
+       Double_t ux_posy = uxclus->GetY();
+        for (Int_t ih=0;ih<uxclus->GetNHits();ih++) {
+	     THcDCHit* hit1 = uxclus->GetHit(ih);
+	     if (hit1->GetPlaneIndex() ==0 || hit1->GetPlaneIndex() ==1) UX_uHits.push_back(hit1);   
+	     if (hit1->GetPlaneIndex() ==2 || hit1->GetPlaneIndex() ==3) UX_xHits.push_back(hit1); 
+         }
+   for (Int_t nc2=0;nc2<fNVXPlaneClusters;nc2++) {
+    VX_vHits.clear();
+    VX_xHits.clear();
+       THcDCPlaneCluster *vxclus = static_cast<THcDCPlaneCluster*>(fVXPlaneClusters->At(nc2));
+       Double_t vx_posx = vxclus->GetX();
+       Double_t vx_posy = vxclus->GetY();
+       Double_t dist2= pow(ux_posx-vx_posx,2) + pow(ux_posy-vx_posy,2) ;
+         for (Int_t ih=0;ih<vxclus->GetNHits();ih++) {
+	     THcDCHit* hit1 = vxclus->GetHit(ih);
+	     if (hit1->GetPlaneIndex() ==4 || hit1->GetPlaneIndex() ==5) VX_vHits.push_back(hit1);   
+	     if (hit1->GetPlaneIndex() ==2 || hit1->GetPlaneIndex() ==3) VX_xHits.push_back(hit1); 
+         }
+	 Bool_t Xhits_match = kFALSE ;
+	 if (fhdebugflagpr)  cout << " vx_xhits = " << VX_xHits.size()  << " ux_xhits = "<< UX_xHits.size() << endl;
+	 if (VX_xHits.size() == UX_xHits.size() && UX_xHits.size()==1) {
+	   if (VX_xHits[0] == UX_xHits[0]) Xhits_match = kTRUE;
+	 } else if (VX_xHits.size() == UX_xHits.size() && UX_xHits.size()==2) {
+	   if (VX_xHits[0] == UX_xHits[0] && VX_xHits[1] == UX_xHits[1])  Xhits_match = kTRUE;
+	   if (VX_xHits[0] == UX_xHits[1] && VX_xHits[1] == UX_xHits[0])  Xhits_match = kTRUE;
+	 }
+	 if (fhdebugflagpr)  cout << " Xhits_match = " << Xhits_match << " dist2  = " <<  dist2 << " spcrit = " << fSpacePointCriterion << " VX_x " << vx_posx<< " UX_x " << ux_posx<< " VX_y " << vx_posy<< " UX_y " << ux_posy << endl;
+	 Int_t TotHits = UX_uHits.size()+UX_xHits.size()+VX_vHits.size();
+	 if (dist2 <= fSpacePointCriterion && Xhits_match && TotHits>=fMinHits) {
+	  if (fhdebugflagpr)  cout << " Make spacepoint " << endl;
+	  THcSpacePoint* sp = (THcSpacePoint*)fSpacePoints->ConstructedAt(fNSpacePoints++);
+	  sp->Clear();
+	  Double_t xt = (ux_posx + vx_posx)/2.;
+	  Double_t yt = (ux_posy + vx_posy)/2.;
+	  sp->SetXY(xt, yt);
+	  sp->SetCombos(1);
+	  for (UInt_t ih=0;ih<UX_uHits.size();ih++) { sp->AddHit(UX_uHits[ih]);}
+	  for (UInt_t ih=0;ih<UX_xHits.size();ih++) { sp->AddHit(UX_xHits[ih]);}
+	  for (UInt_t ih=0;ih<VX_vHits.size();ih++) { sp->AddHit(VX_vHits[ih]);}
+	  fSpHit.SpNHits.push_back(sp->GetNHits());
+            for(Int_t ihit1=0;ihit1<fNhits;ihit1++) {
+                THcDCHit* hit1=fHits[ihit1];
+		for(Int_t isph=0;isph<sp->GetNHits();isph++) {
+		  THcDCHit* hitsp=sp->GetHit(isph);
+		  if (hitsp==hit1) fSpHit.SpHitIndex.push_back(ihit1);
+		}
+	    }
+       }
+      }
+  }
+  // 
+	
+  //
+  }      //fNhits >= fMinHits && fNhits < fMaxH
+  if (fhdebugflagpr)  cout << " leave newfindspacepoints nsp = " << fNSpacePoints<< endl;
+
+  // 
+ return(fNSpacePoints);
+}
 
 Int_t THcDriftChamber::FindSpacePoints( void )
 {
@@ -317,6 +558,7 @@ Int_t THcDriftChamber::FindSpacePoints( void )
           ( exception for easyspacepoint)
   */
   // fSpacePoints->Clear();
+  if (fhdebugflagpr)  cout << " In old findspacepoint " << endl;
   fSpacePoints->Delete();
 
   Int_t plane_hitind=0;
@@ -371,6 +613,20 @@ Int_t THcDriftChamber::FindSpacePoints( void )
     }
     //    if (fhdebugflagpr) cout << fNSpacePoints << " Space Points remain" << endl;
   }
+  //
+  for (Int_t nsp=0;nsp<fNSpacePoints;nsp++) {
+  THcSpacePoint* sp = (THcSpacePoint*)fSpacePoints->ConstructedAt(nsp);
+	  fSpHit.SpNHits.push_back(sp->GetNHits());
+            for(Int_t ihit1=0;ihit1<fNhits;ihit1++) {
+                THcDCHit* hit1=fHits[ihit1];
+		for(Int_t isph=0;isph<sp->GetNHits();isph++) {
+		  THcDCHit* hitsp=sp->GetHit(isph);
+		  if (hitsp==hit1) fSpHit.SpHitIndex.push_back(ihit1);
+		}
+	    }
+  }
+
+  //
   return(fNSpacePoints);
 }
 
@@ -907,6 +1163,8 @@ void THcDriftChamber::SelectSpacePoints()
      number of combinations > min_combos
   */
   Int_t sp_count=0;
+  //
+  //
   for(Int_t isp=0;isp<fNSpacePoints;isp++) {
     // Include fEasySpacePoint because ncombos not filled in
     THcSpacePoint* sp = (THcSpacePoint*)(*fSpacePoints)[isp];
@@ -1176,7 +1434,7 @@ void THcDriftChamber::LeftRight()
       if (fdebugstubchisq) cout << "THcDriftChamber::LeftRight: numhits-2 = 0" << endl;
     }
     Int_t nplaneshit = Count1Bits(bitpat);
-    //if (fhdebugflagpr) cout << " num of pm = " << nplusminus << " num of hits =" << nhits << endl;
+    if (fhdebugflagpr) cout << " num of pm = " << nplusminus << " num of hits =" << nhits << endl;
     // Use bit value of integer word to set + or -
     // Loop over all combinations of left right.
     for(Int_t pmloop=0;pmloop<nplusminus;pmloop++) {
@@ -1240,7 +1498,7 @@ void THcDriftChamber::LeftRight()
       } else if (nplaneshit >= fNPlanes-2 && fHMSStyleChambers) { // Two planes missing
 	Double_t chi2 = FindStub(nhits, sp,plane_list, bitpat, plusminus, stub);
 	//if(debugging)
-	//if (fhdebugflagpr) cout << "pmloop=" << pmloop << " Chi2=" << chi2 << endl;
+	if (fhdebugflagpr) cout << "pmloop=" << pmloop << " Chi2=" << chi2 << endl;
 	// Isn't this a bad idea, doing == with reals
 	if(stub[2]*fTanBeta[plane_list[0]] == -1.0) {
 	  if (fhdebugflagpr) cout << "THcDriftChamber::LeftRight() Error 3" << endl;
@@ -1299,7 +1557,7 @@ void THcDriftChamber::LeftRight()
       stub[1] = spstub[1]
 	- spstub[1]*stub[3]*fSinBeta[pindex];
       sp->SetStub(stub);
-      //if (fhdebugflagpr) cout << " Left/Right space pt " << isp+1 << " " << stub[0]<< " " << stub[1] << " " << stub[2]<< " " << stub[3] << endl;
+      if (fhdebugflagpr) cout << " Left/Right space pt " << isp+1 << " " << stub[0]<< " " << stub[1] << " " << stub[2]<< " " << stub[3] << endl;
     }
   }
   // Option to print stubs
@@ -1357,6 +1615,11 @@ THcDriftChamber::~THcDriftChamber()
 
   if (fhdebugflagpr) cout << fChamberNum << ": delete fSpacePoints: " << hex << fSpacePoints << endl;
   delete fSpacePoints;
+  delete fXPlaneClusters;
+  delete fUPlaneClusters;
+  delete fVPlaneClusters;
+  delete fUXPlaneClusters;
+  delete fVXPlaneClusters;
   // Should delete the matrices
 
   if( fIsSetup )

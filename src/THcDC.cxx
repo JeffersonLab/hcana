@@ -344,6 +344,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"ypt_track_criterion", &fYptTrCriterion, kDouble},
     {"dc_fix_lr", &fFixLR, kInt},
     {"dc_fix_propcorr", &fFixPropagationCorrection, kInt},
+    {"UseNewFindSpacePoints", &fUseNewFindSpacePoints, kInt,0,1},
     {"UseNewLinkStubs", &fUseNewLinkStubs, kInt,0,1},
     {"UseNewTrackFit", &fUseNewTrackFit, kInt,0,1},
     {"debuglinkstubs", &fdebuglinkstubs, kInt},
@@ -352,8 +353,11 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"debugflagpr", &fdebugflagpr, kInt},
     {"debugflagstubs", &fdebugflagstubs, kInt},
     {"debugtrackprint", &fdebugtrackprint , kInt},
+    {"TrackLargeResidCut", &fTrackLargeResidCut , kDouble,0,1},
     {0}
   };
+  fTrackLargeResidCut = -1;
+  fUseNewFindSpacePoints=0;
   fUseNewLinkStubs=0;
   fUseNewTrackFit=0;
   fSingleStub=0;
@@ -410,6 +414,7 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "ntrack", "Number of Tracks", "fNDCTracks" },
     { "nsp", "Number of Space Points", "fNSp" },
     { "track_nsp", "Number of spacepoints in track", "fDCTracks.THcDCTrack.GetNSpacePoints()"},
+    { "track_chisq", "Chisq of track", "fDCTracks.THcDCTrack.GetChisq()"},
     { "track_nhits", "Number of hits in track", "fDCTracks.THcDCTrack.GetNHits()"},
     { "track_sp1ID", "CH 1 Spacepoint index", "fDCTracks.THcDCTrack.GetSp1_ID()"},
     { "track_sp2ID", "CH 2 Spacepoint index", "fDCTracks.THcDCTrack.GetSp2_ID()"},
@@ -622,7 +627,8 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
     }
     //
   for(UInt_t i=0;i<fNChambers;i++) {
-    fChambers[i]->FindSpacePoints();
+    if (fUseNewFindSpacePoints)fChambers[i]->NewFindSpacePoints();
+    if (!fUseNewFindSpacePoints) fChambers[i]->FindSpacePoints();
     fChambers[i]->CorrectHitTimes();
     fChambers[i]->LeftRight();
   }
@@ -1225,6 +1231,12 @@ void THcDC::TrackFit()
   for(UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
     //    Double_t chi2 = dummychi2;
     //    Int_t htrack_fit_num = itrack;
+    Bool_t CheckResid = kTRUE;
+    Int_t NLoops=0;
+    Int_t NLoopsMax=1;
+    while (CheckResid) {
+    Int_t MaxResidHitIndex = -1;
+    Double_t MaxResid = -1000;
     THcDCTrack *theDCTrack = static_cast<THcDCTrack*>( fDCTracks->At(itrack));
 
     Double_t coords[theDCTrack->GetNHits()];
@@ -1304,13 +1316,7 @@ void THcDC::TrackFit()
       // Should check that it is invertable
       AA.Invert();
       dray = AA*TT;
-      //      cout << "DRAY: " << dray[0] << " "<< dray[1] << " "<< dray[2] << " "<< dray[3] << " "  << endl;
-      //      if(bad_determinant) {
-      //	dray[0] = dray[1] = 10000.; dray[2] = dray[3] = 2.0;
-      //      }
-      // Calculate hit coordinate for each plane for chi2 and efficiency
-      // calculations
-
+ 
       // Make sure fCoords, fResiduals, and fDoubleResiduals are clear
       for(Int_t iplane=0;iplane < fNPlanes; iplane++) {
 	Double_t coord=0.0;
@@ -1329,6 +1335,10 @@ void THcDC::TrackFit()
 
 	Double_t residual = coords[ihit] - theDCTrack->GetCoord(planes[ihit]);
 	theDCTrack->SetResidual(planes[ihit], residual);
+	if (abs(residual) > MaxResid) {
+	  MaxResidHitIndex =ihit;
+	  MaxResid = abs(residual);
+	}
 
   //  	  double track_coord = theDCTrack->GetCoord(planes[ihit]);
 //cout<<planes[ihit]<<"\t"<<track_coord<<"\t"<<coords[ihit]<<"\t"<<residual<<endl;
@@ -1339,9 +1349,8 @@ void THcDC::TrackFit()
       theDCTrack->SetVector(dray[0], dray[1], 0.0, dray[2], dray[3]);
     }
     theDCTrack->SetChisq(chi2);
-
     // calculate ray without a plane in track
-    for(Int_t ipl_hit=0;ipl_hit < theDCTrack->GetNHits();ipl_hit++) {    
+     for(Int_t ipl_hit=0;ipl_hit < theDCTrack->GetNHits();ipl_hit++) {    
  
 
       if(theDCTrack->GetNFree() > 0) {
@@ -1399,7 +1408,21 @@ void THcDC::TrackFit()
 	theDCTrack->SetResidualExclPlane(planes[ipl_hit], residual);
       }
     }
-  }
+    //
+    if (fTrackLargeResidCut == -1) {
+      CheckResid = kFALSE;
+    } else { 
+      CheckResid = kFALSE;
+      if ( MaxResid  > fTrackLargeResidCut) {
+         CheckResid = kTRUE;
+	 theDCTrack->RemoveHit(MaxResidHitIndex);
+      }
+    }
+    //
+    if (NLoops  == NLoopsMax) CheckResid = kFALSE;
+    NLoops++;
+    } // while
+  } // loop over tracks
   //Calculate residual without plane
 
   // Calculate residuals for each chamber if in single stub mode

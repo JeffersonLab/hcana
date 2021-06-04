@@ -14,15 +14,25 @@
 
 #include <map>
 #include <vector>
+struct SpacePointHitOutputData {
+  std::vector<Int_t> SpNHits;            //< [] Number of Hits in space point
+  std::vector<Int_t> SpHitIndex;         //< []*SpNHits  Hit index for each hit in sp point
+  void clear() {
+    SpNHits.clear();
+    SpHitIndex.clear();
+  }
+};
 
 #define MAX_SPACE_POINTS 100
 #define MAX_HITS_PER_POINT 20
 
 //#include "TMath.h"
 
+
 //class THaScCalib;
 class TClonesArray;
 class THcSpacePoint;
+
 
 class THcDriftChamber : public THaSubDetector {
 
@@ -38,6 +48,7 @@ public:
   virtual Int_t      ApplyCorrections( void );
   virtual void       ProcessHits( void );
   virtual Int_t      FindSpacePoints( void ) ;
+  virtual Int_t      NewFindSpacePoints( void ) ;
   virtual void       PrintDecode( void ) ;
   virtual void       CorrectHitTimes( void ) ;
   virtual void       LeftRight(void);
@@ -54,6 +65,7 @@ public:
   Double_t GetZPos() const {return fZPos;}
   //  friend class THaScCalib;
   void SetHMSStyleFlag(Int_t flag) {fHMSStyleChambers = flag;}
+  
 
   THcDriftChamber(); // for ROOT I/O
 protected:
@@ -131,8 +143,19 @@ protected:
 
   std::vector<THcDCHit*> fHits;	/* All hits for this chamber */
   TClonesArray *fSpacePoints;
+  TClonesArray *fXPlaneClusters;
+  TClonesArray *fVPlaneClusters;
+  TClonesArray *fUPlaneClusters;
+  TClonesArray *fVXPlaneClusters;
+  TClonesArray *fUXPlaneClusters;
+  Int_t fNXPlaneClusters;
+  Int_t fNUPlaneClusters;
+  Int_t fNVPlaneClusters;
+  Int_t fNUXPlaneClusters;
+  Int_t fNVXPlaneClusters;
   Int_t fNSpacePoints;
   Int_t fEasySpacePoint;	/* This event is an easy space point */
+  SpacePointHitOutputData fSpHit;     //< Space point hit structure
 
   Double_t* stubcoef[4];
   std::map<int,TMatrixD> fAA3Inv;
