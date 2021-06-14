@@ -362,10 +362,10 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
     //    cout << ip << " " << fTdcNames.at(ip) << " " << fTdcTimeWindowMin[ip] << " " << fTdcTimeWindowMax[ip] << endl;
   }
   // Split the names to std::vector<std::string>.
-  fAdcNames = vsplit(adcNames);
-  fTdcNames = vsplit(tdcNames);
-  fTrigNames = vsplit(trigNames);
-  fRFNames = vsplit(RFNames); // SJDK 12/04/21 - For RF getter
+  fAdcNames = Podd::vsplit(adcNames);
+  fTdcNames = Podd::vsplit(tdcNames);
+  fTrigNames = Podd::vsplit(trigNames);
+  fRFNames = Podd::vsplit(RFNames); // SJDK 12/04/21 - For RF getter
   //default index values
  
   //Assign an index to coincidence trigger times strings

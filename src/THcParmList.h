@@ -8,7 +8,7 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "THaVarList.h"
-#include "THaTextvars.h"
+#include "Textvars.h"
 
 #ifdef WITH_CCDB
 #ifdef __CINT__
@@ -61,7 +61,7 @@ public:
 
 private:
 
-  THaTextvars* TextList;  //! Dictionary of string parameters
+  Podd::Textvars* TextList;  //! Dictionary of string parameters
 
 #ifdef WITH_CCDB
   SQLiteCalibration* CCDB_obj;

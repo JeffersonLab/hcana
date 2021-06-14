@@ -176,7 +176,7 @@ Int_t THcScalerEvtHandler::ReadDatabase(const TDatime& date )
       fBCM_SatQuadratic[i]=0.;
     }
     gHcParms->LoadParmValues((DBRequest*)&list2, prefix);
-    vector<string> bcm_names = vsplit(bcm_namelist);
+    vector<string> bcm_names = Podd::vsplit(bcm_namelist);
     for(Int_t i=0;i<fNumBCMs;i++) {
       fBCM_Name.push_back(bcm_names[i]+".scal");
       fBCM_delta_charge[i]=0.;
@@ -660,7 +660,7 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
   TString sname;
   sname = fName+sname0;
 
-  FILE *fi = OpenFile(sname.Data(), date);
+  FILE *fi = Podd::OpenDBFile(sname.Data(), date);
   if ( !fi ) {
     cout << "Cannot find db file for "<<fName<<" scaler event handler"<<endl;
     return kFileError;
@@ -677,7 +677,7 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
     std::string sin(cbuf);
     std::string sinput(sin.substr(0,sin.find_first_of("#")));
     if (fDebugFile) *fDebugFile << "string input "<<sinput<<endl;
-    dbline = vsplit(sinput);
+    dbline = Podd::vsplit(sinput);
     if (dbline.size() > 0) {
       pos1 = FindNoCase(dbline[0],scomment);
       if (pos1 != minus1) continue;

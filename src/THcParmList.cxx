@@ -16,7 +16,7 @@ This class is built on THaVarList, adding a method to load the list of
 parameters from Hall C ENGINE style CTP parameter files and a method
 to retrieve a set of parameters from the list.
 
-An instance of THaTextvars is created to hold the string parameters.
+An instance of Podd::Textvars is created to hold the string parameters.
 
 \fn THcParmList::Load( const char* fname, Int_t RunNumber )
 \brief Load the parameter cache by reading a CTP style parameter file.
@@ -72,7 +72,7 @@ ClassImp(THcParmList)
 /// Create empty numerical and string parameter lists
 THcParmList::THcParmList() : THaVarList()
 {
-  TextList = new THaTextvars;
+  TextList = new Podd::Textvars;
 }
 
 inline static bool IsComment( const string& s, string::size_type pos )
