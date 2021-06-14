@@ -111,7 +111,7 @@ void THcHodoscope::Setup(const char* name, const char* description)
 
   cout << "Plane Name List : " << planenamelist << endl;
 
-  vector<string> plane_names = vsplit(planenamelist);
+  vector<string> plane_names = Podd::vsplit(planenamelist);
   // Plane names
   if(plane_names.size() != (UInt_t) fNPlanes) {
     cout << "ERROR: Number of planes " << fNPlanes << " doesn't agree with number of plane names " << plane_names.size() << endl;
