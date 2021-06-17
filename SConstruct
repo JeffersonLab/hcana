@@ -25,6 +25,7 @@ baseenv.Append(HA_DIR= baseenv.subst('$HC_DIR')+'/podd')
 baseenv.Append(MAIN_DIR= baseenv.subst('$HEAD_DIR'))
 baseenv.Append(HA_Podd = os.path.join(baseenv.subst('$HA_DIR'),'Podd'))
 baseenv.Append(HA_DC = os.path.join(baseenv.subst('$HA_DIR'),'hana_decode'))
+baseenv.Append(HA_DB = os.path.join(baseenv.subst('$HA_DIR'),'Database'))
 baseenv.Append(MAJORVERSION = '0')
 baseenv.Append(MINORVERSION = '90')
 baseenv.Append(PATCH = '0')
@@ -38,7 +39,7 @@ print ("Hall A Main Directory = %s" % baseenv.subst('$HA_DIR'))
 print ("Software Version = %s" % baseenv.subst('$VERSION'))
 ivercode = 65536*int(float(baseenv.subst('$SOVERSION')))+ 256*int(10*(float(baseenv.subst('$SOVERSION'))-int(float(baseenv.subst('$SOVERSION')))))+ int(float(baseenv.subst('$PATCH')))
 baseenv.Append(VERCODE = ivercode)
-baseenv.Append(CPPPATH = ['$HC_SRC','$HA_Podd','$HA_DC'])
+baseenv.Append(CPPPATH = ['$HC_SRC','$HA_Podd','$HA_DC','$HA_DB'])
 
 sys.path.insert(1,baseenv.subst('$HA_DIR'+'/site_scons'))
 import configure
@@ -88,17 +89,21 @@ Export('baseenv')
 hallclib = 'HallC'
 poddlib = 'Podd'
 dclib = 'dc'
+dblib = 'PoddDB'
 
-baseenv.Append(LIBPATH=['$HC_DIR','$HC_SRC','$HA_Podd','$HA_DC'])
-baseenv.Append(RPATH=['$HC_DIR','$HA_Podd','$HA_DC'])
+baseenv.Append(LIBPATH=['$HC_DIR','$HC_SRC','$HA_Podd','$HA_DC','$HA_DB'])
+baseenv.Append(RPATH=['$HC_DIR','$HA_Podd','$HA_DC','$HA_DB'])
 baseenv.Replace(SHLIBSUFFIX = '.so')
 baseenv.Replace(SOSUFFIX = baseenv.subst('$SHLIBSUFFIX'))
 #baseenv.Replace(SHLIBSUFFIX = '.so')
 baseenv.Append(SHLIBSUFFIX = '.'+baseenv.subst('$VERSION'))
+# Scons 4.1.0 sets this to '-Wl,rpath=' which the Xcode 12 linker doesn't understand
+if baseenv['PLATFORM'] == 'darwin':
+    baseenv.Replace(RPATHPREFIX = '-Wl,-rpath,')
 
 pbaseenv=baseenv.Clone()
-pbaseenv.Prepend(LIBS=[hallclib,poddlib,dclib])
-baseenv.Prepend(LIBS=[poddlib,dclib])
+pbaseenv.Prepend(LIBS=[hallclib,poddlib,dclib,dblib])
+baseenv.Prepend(LIBS=[poddlib,dclib,dblib])
 Export('pbaseenv')
 
 if pbaseenv['CXX'] == 'g++':
