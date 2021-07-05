@@ -662,8 +662,31 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
       theTrack->SetTrkNum(itrack+1);
     }
     if (fdebugtrackprint) PrintTrack();
-}
+ }
+ //
+ if(fNDCTracks > 0) {
+   THcHallCSpectrometer *spectro = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+  for (Int_t it=0;it<tracks.GetLast()+1;it++) {
+    THaTrack* track = static_cast<THaTrack*>( tracks[it] );
+    Double_t xptar=kBig,yptar=kBig,ytar=kBig,delta=kBig;
+    Double_t xtar=0;
+    spectro->CalculateTargetQuantities(track,xtar,xptar,ytar,yptar,delta); 
+    // Transfer results to track
+    // No beam raster yet
+    //; In transport coordinates phi = hyptar = dy/dz and theta = hxptar = dx/dz
+    //;    but for unknown reasons the yp offset is named  htheta_offset
+    //;    and  the xp offset is named  hphi_offset
 
+    track->SetTarget(0.0, ytar*100.0, xptar, yptar);
+    track->SetDp(delta*100.0);	// Percent.  
+    Double_t ptemp = spectro->GetPcentral()*(1+track->GetDp()/100.0);
+    track->SetMomentum(ptemp);
+    TVector3 pvect_temp;
+    spectro->TransportToLab(track->GetP(),track->GetTTheta(),track->GetTPhi(),pvect_temp);
+    track->SetPvect(pvect_temp);
+  }
+ }
+ //
 
   ApplyCorrections();
 
@@ -673,7 +696,6 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
 //_____________________________________________________________________________
 Int_t THcDC::FineTrack( TClonesArray& tracks )
 {
-
   return 0;
 }
 //
@@ -684,7 +706,7 @@ void THcDC::SetFocalPlaneBestTrack(Int_t golden_track_index)
       fY_fp_best=tr1->GetY();
       fXp_fp_best=tr1->GetXP();
       fYp_fp_best=tr1->GetYP();
-      THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+   THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
       fInSideDipoleExit_best = app->InsideDipoleExitWindow(fX_fp_best, fXp_fp_best ,fY_fp_best,fYp_fp_best);
       fSp1_ID_best=tr1->GetSp1_ID();
       fSp2_ID_best=tr1->GetSp2_ID();
