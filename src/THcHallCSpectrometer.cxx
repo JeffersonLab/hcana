@@ -481,7 +481,8 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
 
   fNtracks = tracks.GetLast()+1;
 
-  for (Int_t it=0;it<tracks.GetLast()+1;it++) {
+  /*
+ for (Int_t it=0;it<tracks.GetLast()+1;it++) {
     THaTrack* track = static_cast<THaTrack*>( tracks[it] );
     Double_t xptar=kBig,yptar=kBig,ytar=kBig,delta=kBig;
     Double_t xtar=0;
@@ -495,11 +496,13 @@ Int_t THcHallCSpectrometer::FindVertices( TClonesArray& tracks )
     track->SetTarget(0.0, ytar*100.0, xptar, yptar);
     track->SetDp(delta*100.0);	// Percent.  
     Double_t ptemp = fPcentral*(1+track->GetDp()/100.0);
+    cout << " it = " << " Set track p = " << ptemp << endl;
     track->SetMomentum(ptemp);
     TVector3 pvect_temp;
     TransportToLab(track->GetP(),track->GetTTheta(),track->GetTPhi(),pvect_temp);
     track->SetPvect(pvect_temp);
   }
+  */
   fPruneSelect=-1.;
   if (fHodo==0 || (( fSelUsingScin == 0 ) && ( fSelUsingPrune == 0 )) ) {
     BestTrackSimple();
