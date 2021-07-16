@@ -98,7 +98,7 @@ void THcHitList::InitHitList(THaDetMap* detmap,
   fNRefIndex = 0;
   fRefIndexMaps.clear();
   /* Find the biggest refindex */
-  for (Int_t i=0; i < fdMap->GetSize(); i++) {
+  for (UInt_t i=0; i < fdMap->GetSize(); i++) {
     THaDetMap::Module* d = fdMap->GetModule(i);
     if(d->plane >= 1000) {
       Int_t refindex = d->signal;
@@ -115,7 +115,7 @@ void THcHitList::InitHitList(THaDetMap* detmap,
     fRefIndexMaps.push_back(map);
   }
   // Put the refindex mapping information in the vector
-  for (Int_t i=0; i < fdMap->GetSize(); i++) {
+  for (UInt_t i=0; i < fdMap->GetSize(); i++) {
     THaDetMap::Module* d = fdMap->GetModule(i);
     if(d->plane >= 1000) {	// This is a reference time definition
       Int_t refindex = d->signal;
@@ -131,7 +131,7 @@ void THcHitList::InitHitList(THaDetMap* detmap,
   }
   // Loop to check that requested refindex's are defined
   // and that signal #'s are in range
-  for (Int_t i=0; i < fdMap->GetSize(); i++) {
+  for (UInt_t i=0; i < fdMap->GetSize(); i++) {
     THaDetMap::Module* d = fdMap->GetModule(i);
     Int_t refindex = d->refindex;
     if(d->plane < 1000) {
@@ -189,12 +189,12 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
     // Assumes that all FADCs are in the same crate
     cout << "Got the Crate map" << endl;
     fMap = evdata.GetCrateMap();
-    for (Int_t i=0; i < fdMap->GetSize(); i++) { // Look for a FADC250
+    for (UInt_t i=0; i < fdMap->GetSize(); i++) { // Look for a FADC250
       THaDetMap::Module* d = fdMap->GetModule(i);
       Decoder::Fadc250Module* isfadc = dynamic_cast<Decoder::Fadc250Module*>(evdata.GetModule(d->crate, d->slot));
       if(isfadc) {
 	// Scan this crate to find the TI.
-	for(Int_t slot=0;slot<Decoder::MAXSLOT;slot++) {
+	for(UInt_t slot=0;slot<Decoder::MAXSLOT;slot++) {
 	  if(fMap->getModel(d->crate, slot) == 4) {
 	    fTISlot = slot;
 	    fTICrate = d->crate;
@@ -204,7 +204,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	}
 	// Now make a map of all the FADCs in this crate
 	if(fTISlot>0) {
-	  for(Int_t slot=0;slot<Decoder::MAXSLOT;slot++) {
+	  for(UInt_t slot=0;slot<Decoder::MAXSLOT;slot++) {
 	    Decoder::Fadc250Module* fadc = dynamic_cast<Decoder::Fadc250Module*>
 	      (evdata.GetModule(d->crate, slot));
 	    if(fadc) {
@@ -218,14 +218,17 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
   }
   if(fDisableSlipCorrection) fTISlot = -1;
     
-  Int_t titime = 0;
+  UInt_t titime = 0;
+  Bool_t TI_TRIGGER_TIME_FOUND = kFALSE;
   if(fTISlot>0) {
-#define FUDGE 7
+    UInt_t FUDGE=7;
+    if (evdata.GetNumHits(fTICrate, fTISlot, 2) > 0) {
+    TI_TRIGGER_TIME_FOUND = kTRUE;
     titime = evdata.GetData(fTICrate, fTISlot, 2, 0)-FUDGE;
     // Need to get the FADC time for all modules in this crate
     // that have hits.  Make a map with these times.
     fTrigTimeShiftMap.clear();
-    //cout << "TI Crate: " << fTICrate << " " << (UInt_t) titime << endl;
+    }
   }
 
   // cout << " Clearing TClonesArray " << endl;
@@ -241,12 +244,12 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
       if(evdata.IsMultifunction(fRefIndexMaps[i].crate,
 				fRefIndexMaps[i].slot)) { // Multifunction module (e.g. FADC)
 	// Make sure at least one pulse
-	Int_t nrefhits = evdata.GetNumEvents(Decoder::kPulseTime,
-					     fRefIndexMaps[i].crate,
-					     fRefIndexMaps[i].slot,
-					     fRefIndexMaps[i].channel);
+	UInt_t nrefhits = evdata.GetNumEvents(Decoder::kPulseTime,
+                                              fRefIndexMaps[i].crate,
+                                              fRefIndexMaps[i].slot,
+                                              fRefIndexMaps[i].channel);
 	Int_t timeshift=0;
-	if(fTISlot>0) {		// Get the trigger time for this module
+	if(fTISlot>0 && TI_TRIGGER_TIME_FOUND) {		// Get the trigger time for this module
 	  if(fTrigTimeShiftMap.find(fRefIndexMaps[i].slot)
 	     == fTrigTimeShiftMap.end()) { // 
 	    if(fFADCSlotMap.find(fRefIndexMaps[i].slot) != fFADCSlotMap.end()) {
@@ -261,7 +264,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	Int_t reftime = 0;
 	Int_t prevtime = 0;
 	Int_t difftime = 0;
-	for(Int_t ihit=0; ihit<nrefhits; ihit++) {
+	for(UInt_t ihit=0; ihit<nrefhits; ihit++) {
 	  reftime = evdata.GetData(Decoder::kPulseTime,fRefIndexMaps[i].crate,
 				   fRefIndexMaps[i].slot, fRefIndexMaps[i].channel,ihit);
 	  reftime += 64*timeshift;
@@ -306,7 +309,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
       }
     }
   }
-  for ( Int_t i=0; i < fdMap->GetSize(); i++ ) {
+  for ( UInt_t i=0; i < fdMap->GetSize(); i++ ) {
     THaDetMap::Module* d = fdMap->GetModule(i);
     
     // Loop over all channels that have a hit.
@@ -319,10 +322,10 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
     // Should probably get the Decoder::Module object and use it's
     // methods.  Saving a THaEvData::GetModule call every time
 
-    for ( Int_t j=0; j < evdata.GetNumChan( d->crate, d->slot); j++) {
+    for ( UInt_t j=0; j < evdata.GetNumChan( d->crate, d->slot); j++) {
       THcRawHit* rawhit=0;
 
-      Int_t chan = evdata.GetNextChan( d->crate, d->slot, j );
+      UInt_t chan = evdata.GetNextChan( d->crate, d->slot, j );
       if( chan < d->lo || chan > d->hi ) continue;     // Not one of my channels
 
       // Need to convert crate, slot, chan into plane, counter, signal
@@ -353,20 +356,20 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
       // Get the data from this channel
       // Allow for multiple hits
       if(signaltype == THcRawHit::kTDC || !multifunction) {
-	Int_t nMHits = evdata.GetNumHits(d->crate, d->slot, chan);
-	for (Int_t mhit = 0; mhit < nMHits; mhit++) {
-	  Int_t data = evdata.GetData( d->crate, d->slot, chan, mhit);
+	UInt_t nMHits = evdata.GetNumHits(d->crate, d->slot, chan);
+	for (UInt_t mhit = 0; mhit < nMHits; mhit++) {
+          UInt_t data = evdata.GetData( d->crate, d->slot, chan, mhit);
 	  // cout << "Signal " << signal << "=" << data << endl;
 	  rawhit->SetData(signal,data);
 	}
 	// Get the reference time.
 	if(d->refchan >= 0) {
-	  Int_t nrefhits = evdata.GetNumHits(d->crate,d->slot,d->refchan);
+	  UInt_t nrefhits = evdata.GetNumHits(d->crate,d->slot,d->refchan);
 	  Bool_t goodreftime=kFALSE;
 	  Int_t reftime=0;
 	  Int_t prevtime=0;
 	  Int_t difftime=0;
-	  for(Int_t ihit=0; ihit<nrefhits; ihit++) {
+	  for(UInt_t ihit=0; ihit<nrefhits; ihit++) {
 	    reftime = evdata.GetData(d->crate, d->slot, d->refchan, ihit);
 	    if (ihit != 0 ) difftime=reftime-prevtime;
               prevtime = reftime;
@@ -418,19 +421,19 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
         }
 	
 	// Copy the samples
-	Int_t nsamples=evdata.GetNumEvents(Decoder::kSampleADC, d->crate, d->slot, chan);
+	UInt_t nsamples=evdata.GetNumEvents(Decoder::kSampleADC, d->crate, d->slot, chan);
 
 	// If nsamples comes back zero, may want to suppress further attempts to
 	// get sample data for this or all modules
-	for (Int_t isamp=0;isamp<nsamples;isamp++) {
+	for (UInt_t isamp=0;isamp<nsamples;isamp++) {
 	  rawhit->SetSample(signal,evdata.GetData(Decoder::kSampleADC, d->crate, d->slot, chan, isamp));
 	}
 	// Now get the pulse mode data
 	// Pulse area will go into regular SetData, others will use special hit methods
-	Int_t npulses=evdata.GetNumEvents(Decoder::kPulseIntegral, d->crate, d->slot, chan);
+	UInt_t npulses=evdata.GetNumEvents(Decoder::kPulseIntegral, d->crate, d->slot, chan);
 	// Assume that the # of pulses for kPulseTime, kPulsePeak and kPulsePedestal are same;
 	Int_t timeshift=0;
-	if(fTISlot>0) {		// Get the trigger time for this module
+	if(fTISlot>0 && TI_TRIGGER_TIME_FOUND) {		// Get the trigger time for this module
 	  if(fTrigTimeShiftMap.find(d->slot)
 	     == fTrigTimeShiftMap.end()) { // 
 	    if(fFADCSlotMap.find(d->slot) != fFADCSlotMap.end()) {
@@ -440,7 +443,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	  }
 	  timeshift = fTrigTimeShiftMap[d->slot];
 	}
-	for (Int_t ipulse=0;ipulse<npulses;ipulse++) {
+	for (UInt_t ipulse=0;ipulse<npulses;ipulse++) {
 	  rawhit->SetDataTimePedestalPeak(signal,
 					  evdata.GetData(Decoder::kPulseIntegral, d->crate, d->slot, chan, ipulse),
 					  evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, chan, ipulse)+64*timeshift,
@@ -449,14 +452,14 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	}
 	// Get the reference time for the FADC pulse time
 	if(d->refchan >= 0) {	// Reference time for the slot
-	  Int_t nrefhits = evdata.GetNumEvents(Decoder::kPulseIntegral,
-					       d->crate, d->slot, d->refchan);
+	  UInt_t nrefhits = evdata.GetNumEvents(Decoder::kPulseIntegral,
+                                                d->crate, d->slot, d->refchan);
 	  Bool_t goodreftime=kFALSE;
 	  Int_t reftime = 0;
 	  Int_t prevtime = 0;
 	  Int_t difftime = 0;
 	  timeshift=0;
-	  if(fTISlot>0) {		// Get the trigger time for this module
+	  if(fTISlot>0 && TI_TRIGGER_TIME_FOUND) {		// Get the trigger time for this module
 	    if(fTrigTimeShiftMap.find(d->slot)
 	       == fTrigTimeShiftMap.end()) { // 
 	      if(fFADCSlotMap.find(d->slot) != fFADCSlotMap.end()) {
@@ -466,7 +469,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	    }
 	    timeshift = fTrigTimeShiftMap[d->slot];
 	  }
-	  for(Int_t ihit=0; ihit<nrefhits; ihit++) {
+	  for(UInt_t ihit=0; ihit<nrefhits; ihit++) {
 	    reftime = evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, d->refchan, ihit);
 	    reftime += 64*timeshift;
 	    if (ihit != 0) difftime=reftime-prevtime;
@@ -513,7 +516,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
     }
   }
 #if 1
-  if(fTISlot>0) {
+  if(fTISlot>0 && TI_TRIGGER_TIME_FOUND) {
     //    cout << "TI ROC: " << fTICrate << "   TI Time: " << titime << endl;
     map<Int_t, Int_t>::iterator it;
     for(it=fTrigTimeShiftMap.begin(); it!=fTrigTimeShiftMap.end(); it++) {
@@ -522,7 +525,10 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	cout << it->first << " " << it->second << endl;
       }
     }
-  }
+  } else if ( fTISlot>0 && !TI_TRIGGER_TIME_FOUND) {
+    cout << "TI Trigger Time Not found for event type = " << evdata.GetEvType() << " event num = " << evdata.GetEvNum() << " TI Crate = " <<  fTICrate << " TI Slot = " << fTISlot<< endl;
+   } 
+    
 #endif    
   fRawHitList->Sort(fNRawHits);
 

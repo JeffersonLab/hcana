@@ -7,12 +7,10 @@ option(HCANA_BUILTIN_PODD "Use built-in Podd submodule (default: YES)" ON)
 #----------------------------------------------------------------------------
 # Set up Podd and ROOT dependencies
 if(HCANA_BUILTIN_PODD)
-  set(CMAKE_MODULE_PATH
-    ${PROJECT_SOURCE_DIR}/podd/cmake/Modules
-    ${CMAKE_MODULE_PATH}
-    )
+  list(INSERT CMAKE_MODULE_PATH 0 "${PROJECT_SOURCE_DIR}/podd/cmake/Modules")
   include(PoddCMakeEnv)
-  find_package(ROOT 5.10 REQUIRED)
+  find_package(ROOT 6.00 REQUIRED)
+  config_add_dependency(ROOT 6.00)
 else()
   # Find Podd and register it as a dependency
   # This will also automatically set up ROOT
@@ -20,9 +18,6 @@ else()
   include(PoddCMakeEnv)
   config_add_dependency(Podd 1.6)
 endif()
-
-# Register ROOT dependency - it's in our public interface
-config_add_dependency(ROOT 5.10)
 
 #----------------------------------------------------------------------------
 # Set up the compiler flags

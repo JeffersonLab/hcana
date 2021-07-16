@@ -18,7 +18,7 @@ namespace Decoder {
   Module::TypeIter_t TIBlobModule::fgThisType =
     DoRegister( ModuleType( "Decoder::TIBlobModule" , 4 ));
 
-  TIBlobModule::TIBlobModule(Int_t crate, Int_t slot) : PipeliningModule(crate, slot) {
+  TIBlobModule::TIBlobModule(UInt_t crate, UInt_t slot) : PipeliningModule(crate, slot) {
     fDebugFile=0;
     Init();
   }
@@ -29,7 +29,7 @@ namespace Decoder {
   void TIBlobModule::Init() {
     Module::Init();
     fNumChan=NTICHAN;
-    for (Int_t i=0; i<fNumChan; i++) fData.push_back(0);
+    fData.assign(fNumChan,0);
 #if defined DEBUG && defined WITH_DEBUG
     // This will make a HUGE output
     delete fDebugFile; fDebugFile = 0;
@@ -43,7 +43,7 @@ namespace Decoder {
     fName = "TIBlob";
   }
 
-  Int_t TIBlobModule::LoadSlot(THaSlotData *sldat, const UInt_t* evbuffer, const UInt_t *pstop) {
+  UInt_t TIBlobModule::LoadSlot( THaSlotData *sldat, const UInt_t* evbuffer, const UInt_t *pstop) {
     // the 3-arg verison of LoadSlot
 
     std::vector< UInt_t > evb;
@@ -56,19 +56,19 @@ namespace Decoder {
     return LoadThisBlock(sldat, GetNextBlock());
   }
 
-  Int_t TIBlobModule::LoadSlot(THaSlotData *sldat, const UInt_t *evbuffer, Int_t pos, Int_t len) {
+  UInt_t TIBlobModule::LoadSlot( THaSlotData *sldat, const UInt_t *evbuffer, UInt_t pos, UInt_t len) {
     // the 4-arg verison of LoadSlot.  Let it call the 3-arg version.
     // Do we need this or is it historical?
 
     return LoadSlot(sldat, evbuffer+pos, evbuffer+pos+len);
   }
 
-  Int_t TIBlobModule::LoadNextEvBuffer(THaSlotData *sldat) {
+  UInt_t TIBlobModule::LoadNextEvBuffer( THaSlotData *sldat) {
     // Note, GetNextBlock belongs to PipeliningModule
     return LoadThisBlock(sldat, GetNextBlock());
   }
 
-  Int_t TIBlobModule::LoadThisBlock(THaSlotData *sldat, std::vector< UInt_t>evbuffer) {
+  UInt_t TIBlobModule::LoadThisBlock( THaSlotData *sldat, const vector<UInt_t>& evbuffer) {
 
     // Fill data structures of this class using the event buffer of one "event".
     // An "event" is defined in the traditional way -- a scattering from a target, etc.
@@ -77,21 +77,21 @@ namespace Decoder {
 
     // Only interpret data if fSlot agrees with the slot in the headers
     
-    Int_t evlen = evbuffer.size();
+    UInt_t evlen = evbuffer.size();
     if(evlen>0) {
       // The first word might be a filler word
-      Int_t ifill = (((evbuffer[0]>>27)&0x1F) == 0x1F) ? 1 : 0;
+      UInt_t ifill = (((evbuffer[0] >> 27) & 0x1F) == 0x1F) ? 1 : 0;
       if (evlen>=5+ifill) {// Need at least two headers and the trailer and 2 data words
 	UInt_t header1=evbuffer[ifill];
-	Int_t slot_blk_hdr=(header1 >> 22) & 0x1F;  // Slot number (set by VME64x backplane), mask 5 bits
+	UInt_t slot_blk_hdr=(header1 >> 22) & 0x1F;  // Slot number (set by VME64x backplane), mask 5 bits
 	if(fSlot != slot_blk_hdr) {
 	  return evlen;
 	}
-	fData[0] = (evbuffer[2+ifill]>>24)&0xFF; // Trigger type
-	fData[1] = evbuffer[3+ifill];		 // Trigger number
-	fData[2] = (evlen>5+ifill) ? evbuffer[4+ifill] : 0; // Trigger time
+	fData[0] = (evbuffer[2 + ifill] >> 24) & 0xFF; // Trigger type
+	fData[1] = evbuffer[3 + ifill];		 // Trigger number
+	fData[2] = (evlen>5+ifill) ? evbuffer[4 + ifill] : 0; // Trigger time
 	//      cout << "TIBlob Slot " << fSlot << ": ";
-	for(Int_t i=0;i<3;i++) {
+	for(UInt_t i=0;i<3;i++) {
 	  sldat->loadData(i, fData[i], fData[i]);
 	  //	cout << " " << fData[i];
 	}
@@ -103,7 +103,7 @@ namespace Decoder {
 
   }
 
-  Int_t TIBlobModule::SplitBuffer(std::vector< UInt_t > codabuffer ) {
+  Int_t TIBlobModule::SplitBuffer( const vector<UInt_t>& bigbuffer ) {
 
     // Split a CODA buffer into blocks.   A block is data from a traditional physics event.
     // In MultiBlock Mode, a pipelining module can have several events in each CODA buffer.
@@ -119,7 +119,7 @@ namespace Decoder {
     //    Int_t evt_num_modblock;
 
     //    if ((fFirstTime == kFALSE) && (IsMultiBlockMode() == kFALSE)) {
-      eventblock.push_back(codabuffer);
+      eventblock.push_back(bigbuffer);
       index_buffer=1;
       return 1;
       //    }
@@ -159,14 +159,14 @@ namespace Decoder {
 
 
   /* Does anything use this method */
-UInt_t TIBlobModule::GetData(Int_t chan) const {
-  if (chan < 0 || chan > fNumChan) return 0;
+UInt_t TIBlobModule::GetData( UInt_t chan ) const {
+  if (chan >= fNumChan) return 0;
   return fData[chan];
 }
 
 void TIBlobModule::Clear(const Option_t* opt) {
   VmeModule::Clear(opt);
-  for (Int_t i=0; i<fNumChan; i++) fData[i]=0;
+  fData.assign(fNumChan,0);
 }
 
 }

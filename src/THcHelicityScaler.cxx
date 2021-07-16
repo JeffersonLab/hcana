@@ -294,7 +294,7 @@ Int_t THcHelicityScaler::ReadDatabase(const TDatime& date )
       fBCM_SatQuadratic[i]=0.;
     }
     gHcParms->LoadParmValues((DBRequest*)&list2, prefix);
-    vector<string> bcm_names = vsplit(bcm_namelist);
+    vector<string> bcm_names = Podd::vsplit(bcm_namelist);
     for(Int_t i=0;i<fNumBCMs;i++) {
       fBCM_Name.push_back(bcm_names[i]+"_Hel.scal");
       fBCM_delta_charge[i]=0.;
@@ -389,8 +389,8 @@ Int_t THcHelicityScaler::Analyze(THaEvData *evdata)
   
   UInt_t *rdata = (UInt_t*) evdata->GetRawDataBuffer();
   
-  if(evdata->GetEvType() == fDelayedType) { // Save this event for processing later
-    Int_t evlen = evdata->GetEvLength();
+  if((Int_t)evdata->GetEvType() == fDelayedType) { // Save this event for processing later
+    UInt_t evlen = evdata->GetEvLength();
     
     UInt_t *datacopy = new UInt_t[evlen];
     fDelayedEvents.push_back(datacopy);
@@ -421,12 +421,12 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 
   UInt_t *plast = p+*p;		// Index to last word in the bank
   Int_t roc = -1;
-  Int_t evlen = *p+1;
+  UInt_t evlen = *p+1;
   
   Int_t ifound=0;
   
   while(p<plast) {
-    Int_t banklen = *p;
+    UInt_t banklen = *p;
     p++;			  // point to header
     
     if (fDebugFile) {
@@ -466,7 +466,7 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
       } else {
 	// This is a helicity scaler bank
 	if (roc == fROC) {
-	  Int_t nevents = (banklen-2)/fNScalerChannels;
+	  UInt_t nevents = (banklen-2)/fNScalerChannels;
 	  //cout << "# of helicity events in bank:" << " " << nevents << endl;
 	  if (nevents > 100) {
 	    cout << "Error! Beam off for too long" << endl;	
@@ -475,7 +475,7 @@ Int_t THcHelicityScaler::AnalyzeBuffer(UInt_t* rdata)
 	  fNTrigsInBuf = 0;
 
 	  // Save helcitiy and quad info for THcHelicity
-	  for (Int_t iev = 0; iev < nevents; iev++) {  // find number of helicity events in each bank
+	  for (UInt_t iev = 0; iev < nevents; iev++) {  // find number of helicity events in each bank
 	    Int_t index = fNScalerChannels*iev+1;
 
 	    //C.Y. 11/26/2020 This methods extracts the raw helicity information
@@ -1064,7 +1064,7 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
   sname = "hel"+fName+sname0;   //This should be: 'helPScalevt' or 'helHScalevt'
 
   //Open helicity scaler .dat map file 
-  FILE *fi = OpenFile(sname.Data(), date);
+  FILE *fi = Podd::OpenDBFile(sname.Data(), date);
   if ( !fi ) {
     cout << "Cannot find db file for "<<fName<<" scaler event handler"<<endl;
     return kFileError;
@@ -1081,7 +1081,7 @@ THaAnalysisObject::EStatus THcHelicityScaler::Init(const TDatime& date)
     std::string sin(cbuf);
     std::string sinput(sin.substr(0,sin.find_first_of("#")));
     if (fDebugFile) *fDebugFile << "string input "<<sinput<<endl;
-    dbline = vsplit(sinput);
+    dbline = Podd::vsplit(sinput);
     if (dbline.size() > 0) {
       pos1 = FindNoCase(dbline[0],scomment);
       if (pos1 != minus1) continue;

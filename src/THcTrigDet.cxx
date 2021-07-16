@@ -251,7 +251,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
 
     Int_t cnt = hit->fCounter-1;
     if (hit->fPlane == 1) {
-      THcRawAdcHit rawAdcHit = hit->GetRawAdcHit();
+      THcRawAdcHit& rawAdcHit = hit->GetRawAdcHit();
       fAdcMultiplicity[cnt] = rawAdcHit.GetNPulses();
       UInt_t good_hit=999;
           for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
@@ -272,7 +272,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
 	 }
     }
     else if (hit->fPlane == 2) {
-      THcRawTdcHit rawTdcHit = hit->GetRawTdcHit();
+      THcRawTdcHit& rawTdcHit = hit->GetRawTdcHit();
     if (rawTdcHit.GetNHits() >0 && rawTdcHit.HasRefTime() && fTdcRefTime == kBig) fTdcRefTime=rawTdcHit.GetRefTime() ;
       UInt_t good_hit=999;
       UInt_t closest_hit=999;
@@ -362,10 +362,10 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
     //    cout << ip << " " << fTdcNames.at(ip) << " " << fTdcTimeWindowMin[ip] << " " << fTdcTimeWindowMax[ip] << endl;
   }
   // Split the names to std::vector<std::string>.
-  fAdcNames = vsplit(adcNames);
-  fTdcNames = vsplit(tdcNames);
-  fTrigNames = vsplit(trigNames);
-  fRFNames = vsplit(RFNames); // SJDK 12/04/21 - For RF getter
+  fAdcNames = Podd::vsplit(adcNames);
+  fTdcNames = Podd::vsplit(tdcNames);
+  fTrigNames = Podd::vsplit(trigNames);
+  fRFNames = Podd::vsplit(RFNames); // SJDK 12/04/21 - For RF getter
   //default index values
  
   //Assign an index to coincidence trigger times strings

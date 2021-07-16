@@ -84,7 +84,7 @@ void THcShower::Setup(const char* name, const char* description)
   fADC_RefTimeCut = 0;
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   fNTotLayers = (fNLayers+(fHasArray!=0?1:0));
-  vector<string> layer_names = vsplit(layernamelist);
+  vector<string> layer_names = Podd::vsplit(layernamelist);
 
   if(layer_names.size() != fNTotLayers) {
     cout << "THcShower::Setup ERROR: Number of layers " << fNTotLayers
