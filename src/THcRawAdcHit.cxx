@@ -470,6 +470,8 @@ void THcRawAdcHit::SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED) {
   fNPedestalSamples = NPED;
   fNPeakSamples = NSA + NSB;
   fPeakPedestalRatio = 1.0*fNPeakSamples/fNPedestalSamples;
+  fNSA = NSA;
+  fNSB = NSB;
 }
 
 // FADC conversion factors

@@ -23,6 +23,8 @@ class THcRawAdcHit : public TObject {
     Int_t GetRawData(UInt_t iPulse=0) const;
     Double_t GetF250_PeakPedestalRatio() {return fPeakPedestalRatio;};
     Int_t GetF250_NPedestalSamples() {return fNPedestalSamples;};
+    Int_t GetF250_NSA() {return fNSA;};
+    Int_t GetF250_NSB() {return fNSB;};
 
     Double_t GetAverage(UInt_t iSampleLow, UInt_t iSampleHigh) const;
     Int_t GetIntegral(UInt_t iSampleLow, UInt_t iSampleHigh) const;
@@ -71,6 +73,8 @@ class THcRawAdcHit : public TObject {
 
     Int_t fNPedestalSamples;  // TODO: Get this from prestart event...
     Int_t fNPeakSamples;
+    Int_t fNSA;
+    Int_t fNSB;
     Double_t fPeakPedestalRatio;
     Double_t fSubsampleToTimeFactor;
     
