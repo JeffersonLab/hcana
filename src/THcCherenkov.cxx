@@ -476,7 +476,7 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
 
       ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(npmt, 0);
       ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(npmt, kBig);
-     ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 1);      
+     ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 3);      
         ++nrAdcHits;
       fTotNumAdcHits++;
       fNumAdcHits.at(npmt-1) = npmt;
