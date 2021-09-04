@@ -270,6 +270,23 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
        fAdcPulseInt[cnt] = rawAdcHit.GetPulseInt(good_hit);
        fAdcPulseAmp[cnt] = rawAdcHit.GetPulseAmp(good_hit);
 	 }
+	 if (rawAdcHit.GetNPulses()==0 && rawAdcHit.GetNSamples()>0) {
+	Double_t PeakPedRatio= rawAdcHit.GetF250_PeakPedestalRatio();
+	UInt_t NPedSamples= rawAdcHit.GetF250_NPedestalSamples();
+	Double_t AdcToC =  rawAdcHit.GetAdcTopC();
+	Double_t AdcToV =  rawAdcHit.GetAdcTomV();
+	Int_t PedRaw = rawAdcHit.GetIntegral(0, NPedSamples-1);
+	Double_t Ped = float(PedRaw)/float(NPedSamples)*AdcToV;
+       fAdcPedRaw[cnt] = PedRaw;
+       fAdcPulseIntRaw[cnt] = 0;
+       fAdcPulseAmpRaw[cnt] = 0;
+       fAdcPulseTimeRaw[cnt] = 0;
+       fAdcPulseTime[cnt] = 0.;
+       fAdcPed[cnt] = Ped;
+       fAdcPulseInt[cnt] = 0.;
+       fAdcPulseAmp[cnt] = 0.;
+
+	 }
     }
     else if (hit->fPlane == 2) {
       THcRawTdcHit& rawTdcHit = hit->GetRawTdcHit();

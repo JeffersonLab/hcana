@@ -1003,6 +1003,33 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
       ++nrAdcHits;
     }
+    //
+    if ((rawAdcHit.GetNPulses()==0) && (rawAdcHit.GetNSamples()>0) ) {
+	Double_t PeakPedRatio= rawAdcHit.GetF250_PeakPedestalRatio();
+	UInt_t NPedSamples= rawAdcHit.GetF250_NPedestalSamples();
+	Double_t AdcToC =  rawAdcHit.GetAdcTopC();
+	Double_t AdcToV =  rawAdcHit.GetAdcTomV();
+	Int_t PedRaw = rawAdcHit.GetIntegral(0, NPedSamples-1);
+	Double_t Ped = float(PedRaw)/float(NPedSamples)*AdcToV;
+      ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, PedRaw);
+        fThresh[padnum-1]=PedRaw*rawAdcHit.GetF250_PeakPedestalRatio()+fAdcThreshold;
+      ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum,Ped);
+      UInt_t LS = 5;
+      UInt_t HS = 35;
+      Int_t rawdata = rawAdcHit.GetIntegral(LS,HS);
+      Double_t SampInt = AdcToC*(rawdata - PedRaw*PeakPedRatio);
+      ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(nrAdcHits))->Set(padnum,rawdata);
+      ((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(padnum,SampInt);
+
+      ((THcSignalHit*) frAdcPulseAmpRaw->ConstructedAt(nrAdcHits))->Set(padnum,0);
+      ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, 0);
+
+      ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, 0);
+      ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, kBig);
+	((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum,1);
+        ++nrAdcHits;
+    }
+   //
     ihit++;
   }
 

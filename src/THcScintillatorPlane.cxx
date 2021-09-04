@@ -850,7 +850,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       fTotNumNegTdcHits++;
     }
     THcRawAdcHit& rawPosAdcHit = hit->GetRawAdcHitPos();
-    if (rawPosAdcHit.GetNPulses() >0 && rawPosAdcHit.HasRefTime()) {
+    if ( (rawPosAdcHit.GetNPulses() >0 || rawPosAdcHit.GetNSamples() >0) && rawPosAdcHit.HasRefTime()) {
       if (fPosAdcRefTime == kBig  ) {
 	fPosAdcRefTime=rawPosAdcHit.GetRefTime() ;
 	fPosAdcRefDiffTime=rawPosAdcHit.GetRefDiffTime() ;
@@ -882,8 +882,34 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       fTotNumAdcHits++;
       fTotNumPosAdcHits++;
     }
+    //
+    if (rawPosAdcHit.GetNPulses()==0 && rawPosAdcHit.GetNSamples()>0) {
+	Double_t PeakPedRatio= rawPosAdcHit.GetF250_PeakPedestalRatio();
+	Int_t NPedSamples= rawPosAdcHit.GetF250_NPedestalSamples();
+	Double_t AdcToC =  rawPosAdcHit.GetAdcTopC();
+	Double_t AdcToV =  rawPosAdcHit.GetAdcTomV();
+ 	Int_t PedRaw = rawPosAdcHit.GetIntegral(0, NPedSamples-1);
+	Double_t Ped = float(PedRaw)/float(NPedSamples)*AdcToV;
+      ((THcSignalHit*) frPosAdcPedRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, PedRaw);
+      ((THcSignalHit*) frPosAdcPed->ConstructedAt(nrPosAdcHits))->Set(padnum,Ped);
+      UInt_t LS = 5;
+      UInt_t HS = 35;
+      Int_t rawdata = rawPosAdcHit.GetIntegral(LS,HS);
+      Double_t SampInt = AdcToC*(rawdata - PedRaw*PeakPedRatio);
+      ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawdata);
+      ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(nrPosAdcHits))->Set(padnum, SampInt);
+      ((THcSignalHit*) frPosAdcPulseAmpRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, 0);
+      ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(nrPosAdcHits))->Set(padnum, 0);
+      ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, 0);
+      ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(nrPosAdcHits))->Set(padnum, kBig);
+      ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 1);
+      ++nrPosAdcHits;
+      fTotNumAdcHits++;
+      fTotNumPosAdcHits++;
+    }
+    //
     THcRawAdcHit& rawNegAdcHit = hit->GetRawAdcHitNeg();
-    if (rawNegAdcHit.GetNPulses()>0 && rawNegAdcHit.HasRefTime()) {
+    if ( (rawNegAdcHit.GetNPulses()>0 || rawNegAdcHit.GetNSamples()>0) && rawNegAdcHit.HasRefTime()) {
       if (fNegAdcRefTime == kBig) {
 	fNegAdcRefTime=rawNegAdcHit.GetRefTime() ;
 	fNegAdcRefDiffTime=rawNegAdcHit.GetRefDiffTime() ;
@@ -913,7 +939,33 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       fTotNumAdcHits++;
       fTotNumNegAdcHits++;
     }
-
+    //
+    if (rawNegAdcHit.GetNPulses()==0 && rawNegAdcHit.GetNSamples()>0) {
+	Double_t PeakPedRatio= rawNegAdcHit.GetF250_PeakPedestalRatio();
+	Int_t NPedSamples= rawNegAdcHit.GetF250_NPedestalSamples();
+	Double_t AdcToC =  rawNegAdcHit.GetAdcTopC();
+	Double_t AdcToV =  rawNegAdcHit.GetAdcTomV();
+ 	Int_t PedRaw = rawNegAdcHit.GetIntegral(0, NPedSamples-1);
+	Double_t Ped = float(PedRaw)/float(NPedSamples)*AdcToV;
+      ((THcSignalHit*) frNegAdcPedRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, PedRaw);
+      ((THcSignalHit*) frNegAdcPed->ConstructedAt(nrNegAdcHits))->Set(padnum,Ped);
+      UInt_t LS = 5;
+      UInt_t HS = 35;
+      Int_t rawdata = rawNegAdcHit.GetIntegral(LS,HS);
+      Double_t SampInt = AdcToC*(rawdata - PedRaw*PeakPedRatio);
+      ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawdata);
+      ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(nrNegAdcHits))->Set(padnum, SampInt);
+      ((THcSignalHit*) frNegAdcPulseAmpRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, 0);
+      ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(nrNegAdcHits))->Set(padnum, 0);
+      ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, 0);
+      ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(nrNegAdcHits))->Set(padnum, kBig);
+      ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 1);
+      ++nrNegAdcHits;
+      fTotNumAdcHits++;
+      fTotNumNegAdcHits++;
+    }
+    //
+ 
     // Need to be finding first hit in TDC range, not the first hit overall
     if (hit->GetRawTdcHitPos().GetNHits() > 0)
       ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->GetRawTdcHitPos().GetTime()+fTdcOffset);

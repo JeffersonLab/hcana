@@ -344,7 +344,14 @@ void THcRaster::AccumulatePedestals(TClonesArray* rawhits)
        ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(nsig, rawPosAdcHit.GetPulseIntRaw(thit));
        ++nrPosAdcHits;
      }
-    
+    if (rawPosAdcHit.GetNPulses()==0 &&rawPosAdcHit.GetNSamples()>0 ) {
+	Int_t NSA= rawPosAdcHit.GetF250_NSA();
+      UInt_t LS = 0;
+      UInt_t HS = NSA-1;
+      Int_t rawdata = rawPosAdcHit.GetIntegral(LS,HS);
+      ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(nsig,rawdata );
+       ++nrPosAdcHits;
+    }     
      ihit++;
   }
 

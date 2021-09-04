@@ -389,11 +389,10 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
   if(fPresentP) {		// if this spectrometer not part of trigger
     present = *fPresentP;
   }
-  fNhits = DecodeToHitList(evdata, !present);
-
-  //THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
-  // cout << "Cerenkov  Event num = " << evdata.GetEvNum() << " spec = " << app->GetName() << endl;
-
+  // THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+  // cout << "Cerenkov  Event num = " << evdata.GetEvNum() << " spec = " << app->GetName() << " det = "  << GetName()<< endl;
+ fNhits = DecodeToHitList(evdata, !present);
+ //cout << " number of hit after DecodeToHitList = " << fNhits << endl; 
   if(gHaCuts->Result("Pedestal_event")) {
     AccumulatePedestals(fRawHitList);
     fAnalyzePedestals = 1;	// Analyze pedestals first normal events
@@ -413,10 +412,10 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
     THcCherenkovHit* hit         = (THcCherenkovHit*) fRawHitList->At(ihit);
     Int_t            npmt        = hit->fCounter;
     THcRawAdcHit&    rawAdcHit   = hit->GetRawAdcHitPos();
-    if (rawAdcHit.GetNPulses() >0 && rawAdcHit.HasRefTime()) {
+    if ((rawAdcHit.GetNPulses() >0 || rawAdcHit.GetNSamples() >0) && rawAdcHit.HasRefTime()) {
       fRefTime=rawAdcHit.GetRefTime() ;
     }
-    //if (rawAdcHit.GetNPulses()>0) cout << "Cer npmt = " << " ped = " << rawAdcHit.GetPed() << endl;
+    
     for (UInt_t thit = 0; thit < rawAdcHit.GetNPulses(); thit++) {
 
       ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPedRaw());
@@ -455,6 +454,35 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
       fTotNumAdcHits++;
       fNumAdcHits.at(npmt-1) = npmt;
     }
+    //
+    if ((rawAdcHit.GetNPulses()==0) && (rawAdcHit.GetNSamples()>0) ) {
+	Double_t PeakPedRatio= rawAdcHit.GetF250_PeakPedestalRatio();
+	UInt_t NPedSamples= rawAdcHit.GetF250_NPedestalSamples();
+	Double_t AdcToC =  rawAdcHit.GetAdcTopC();
+	Double_t AdcToV =  rawAdcHit.GetAdcTomV();
+	Int_t PedRaw = rawAdcHit.GetIntegral(0, NPedSamples-1);
+	Double_t Ped = float(PedRaw)/float(NPedSamples)*AdcToV;
+      ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(npmt, PedRaw);
+      ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(npmt,Ped);
+      UInt_t LS = 5;
+      UInt_t HS = 35;
+      Int_t rawdata = rawAdcHit.GetIntegral(LS,HS);
+      Double_t SampInt = AdcToC*(rawdata - PedRaw*PeakPedRatio);
+      ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(nrAdcHits))->Set(npmt,rawdata);
+      ((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(npmt,SampInt);
+
+      ((THcSignalHit*) frAdcPulseAmpRaw->ConstructedAt(nrAdcHits))->Set(npmt,0);
+      ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(npmt, 0);
+
+      ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(npmt, 0);
+      ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(npmt, kBig);
+     ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 1);      
+        ++nrAdcHits;
+      fTotNumAdcHits++;
+      fNumAdcHits.at(npmt-1) = npmt;
+   }								      
+
+    //
     ihit++;
   }
   return ihit;

@@ -668,14 +668,40 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
 	  
 	}
 	((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(nrPosAdcHits))->Set(npmt, 0.);	
-      }
-
+     }
       ++nrPosAdcHits;
       fTotNumAdcHits++;
       fTotNumPosAdcHits++;
       fNumPosAdcHits.at(npmt-1) = npmt;
     }
+    //
+    if (rawPosAdcHit.GetNPulses()==0 &&rawPosAdcHit.GetNSamples()>0 ) {
+	Double_t PeakPedRatio= rawPosAdcHit.GetF250_PeakPedestalRatio();
+	Int_t NPedSamples= rawPosAdcHit.GetF250_NPedestalSamples();
+	Double_t AdcToC =  rawPosAdcHit.GetAdcTopC();
+	Double_t AdcToV =  rawPosAdcHit.GetAdcTomV();
+ 	Int_t PedRaw = rawPosAdcHit.GetIntegral(0, NPedSamples-1);
+	Double_t Ped = float(PedRaw)/float(NPedSamples)*AdcToV;
+     ((THcSignalHit*) frPosAdcPedRaw->ConstructedAt(nrPosAdcHits))->Set(npmt, PedRaw);
+      ((THcSignalHit*) frPosAdcPed->ConstructedAt(nrPosAdcHits))->Set(npmt, Ped);
+      UInt_t LS = 5;
+      UInt_t HS = 35;
+      Int_t rawdata = rawPosAdcHit.GetIntegral(LS,HS);
+      Double_t SampInt = AdcToC*(rawdata - PedRaw*PeakPedRatio);
+      ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(npmt,rawdata);
+      ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(nrPosAdcHits))->Set(npmt,SampInt);
+      ((THcSignalHit*) frPosAdcPulseAmpRaw->ConstructedAt(nrPosAdcHits))->Set(npmt, 0);
+      ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(nrPosAdcHits))->Set(npmt, 0);
 
+      ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(nrPosAdcHits))->Set(npmt, 0);
+      ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(nrPosAdcHits))->Set(npmt, kBig);
+      ((THcSignalHit*) fPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(npmt, 1);
+        ++nrPosAdcHits;
+      fTotNumAdcHits++;
+      fTotNumPosAdcHits++;
+      fNumPosAdcHits.at(npmt-1) = npmt;
+    }
+      //
     for (UInt_t thit=0; thit<rawNegAdcHit.GetNPulses(); ++thit) {
       ((THcSignalHit*) frNegAdcPedRaw->ConstructedAt(nrNegAdcHits))->Set(npmt, rawNegAdcHit.GetPedRaw());
       ((THcSignalHit*) frNegAdcPed->ConstructedAt(nrNegAdcHits))->Set(npmt, rawNegAdcHit.GetPed());
@@ -712,6 +738,34 @@ Int_t THcAerogel::Decode( const THaEvData& evdata )
       fTotNumNegAdcHits++;
       fNumNegAdcHits.at(npmt-1) = npmt;
     }
+   //
+    if (rawNegAdcHit.GetNPulses()==0 &&rawNegAdcHit.GetNSamples()>0 ) {
+	Double_t PeakPedRatio= rawNegAdcHit.GetF250_PeakPedestalRatio();
+	Int_t NPedSamples= rawNegAdcHit.GetF250_NPedestalSamples();
+	Double_t AdcToC =  rawNegAdcHit.GetAdcTopC();
+	Double_t AdcToV =  rawNegAdcHit.GetAdcTomV();
+ 	Int_t PedRaw = rawNegAdcHit.GetIntegral(0, NPedSamples-1);
+	Double_t Ped = float(PedRaw)/float(NPedSamples)*AdcToV;
+     ((THcSignalHit*) frNegAdcPedRaw->ConstructedAt(nrNegAdcHits))->Set(npmt, PedRaw);
+      ((THcSignalHit*) frNegAdcPed->ConstructedAt(nrNegAdcHits))->Set(npmt, Ped);
+      UInt_t LS = 5;
+      UInt_t HS = 35;
+      Int_t rawdata = rawNegAdcHit.GetIntegral(LS,HS);
+      Double_t SampInt = AdcToC*(rawdata - PedRaw*PeakPedRatio);
+      ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(nrNegAdcHits))->Set(npmt,rawdata);
+      ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(nrNegAdcHits))->Set(npmt,SampInt);
+      ((THcSignalHit*) frNegAdcPulseAmpRaw->ConstructedAt(nrNegAdcHits))->Set(npmt, 0);
+      ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(nrNegAdcHits))->Set(npmt, 0);
+
+      ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(nrNegAdcHits))->Set(npmt, 0);
+      ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(nrNegAdcHits))->Set(npmt, kBig);
+      ((THcSignalHit*) fNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(npmt, 1);
+        ++nrNegAdcHits;
+      fTotNumAdcHits++;
+      fTotNumNegAdcHits++;
+      fNumNegAdcHits.at(npmt-1) = npmt;
+    }
+      //
     ihit++;
   }
   return ihit;
