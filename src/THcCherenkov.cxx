@@ -510,17 +510,17 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
     Int_t    npmt         = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
     Double_t pulseTime    = ((THcSignalHit*) frAdcPulseTime->ConstructedAt(ielem))->GetData();
     Double_t pulseAmp     = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
-    Bool_t   errorFlag    = ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(ielem))->GetData();
+    Int_t   errorFlag    = ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(ielem))->GetData();
     Double_t adctdcdiffTime = StartTime-pulseTime+OffsetTime;
     Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin[npmt] && adctdcdiffTime < fAdcTimeWindowMax[npmt];
  	fGoodAdcMult.at(npmt) += 1;
-	if (!errorFlag) {
+	if (errorFlag == 0) {
 	  if (pulseTimeCut && pulseAmp > fAdcPulseAmpTest[npmt]) {
              fAdcGoodElem[npmt]=ielem;
               fAdcPulseAmpTest[npmt] = pulseAmp;
 	  }
         } else {
-	  if (pulseTimeCut) fAdcGoodElem[npmt]=ielem;
+	  fAdcGoodElem[npmt]=ielem;
         }
   }
   // Loop over the npmt
