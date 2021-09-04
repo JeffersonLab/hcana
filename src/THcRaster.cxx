@@ -433,7 +433,7 @@ Int_t THcRaster::Decode( const THaEvData& evdata )
     if (rawPosAdcHit.GetNPulses()==0 &&rawPosAdcHit.GetNSamples()>0 ) {
 	Int_t NSA= rawPosAdcHit.GetF250_NSA();
       UInt_t LS = 0;
-      UInt_t HS = NSA-1;
+      UInt_t HS = 50;
       Int_t rawdata = rawPosAdcHit.GetIntegral(LS,HS);
       ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(nsig,rawdata );
        ++nrPosAdcHits;
