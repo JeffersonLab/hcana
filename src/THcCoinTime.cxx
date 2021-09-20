@@ -66,13 +66,13 @@ void THcCoinTime::Clear( Option_t* opt )
   fROC1_RAW_CoinTime=kBig;
   fROC2_RAW_CoinTime=kBig;
   fTRIG1_ePosCoinTime=kBig;
-  fTRIG4_ePosCoinTime=kBig;
+  fTRIG3_ePosCoinTime=kBig;
   fTRIG1_ePiCoinTime=kBig;
-  fTRIG4_ePiCoinTime=kBig;
+  fTRIG3_ePiCoinTime=kBig;
   fTRIG1_eKCoinTime=kBig;
-  fTRIG4_eKCoinTime=kBig;
+  fTRIG3_eKCoinTime=kBig;
   fTRIG1_epCoinTime=kBig;
-  fTRIG4_epCoinTime=kBig;
+  fTRIG3_epCoinTime=kBig;
 }
 
 //_____________________________________________________________________________
@@ -167,31 +167,33 @@ Int_t THcCoinTime::DefineVariables( EMode mode )
     {"epCoinTime_ROC1",    "ROC1 Corrected ep Coincidence Time",  "fROC1_epCoinTime"},
     {"epCoinTime_ROC2",    "ROC2 Corrected ep Coincidence Time",  "fROC2_epCoinTime"},
     {"epCoinTime_TRIG1",    "TRIG1 Corrected ep Coincidence Time",  "fTRIG1_epCoinTime"},
-    {"epCoinTime_TRIG4",    "TRIG4 Corrected ep Coincidence Time",  "fTRIG4_epCoinTime"},
+    {"epCoinTime_TRIG3",    "TRIG3 Corrected ep Coincidence Time",  "fTRIG3_epCoinTime"},
   
     {"eKCoinTime_ROC1",    "ROC1 Corrected eK Coincidence Time",  "fROC1_eKCoinTime"},
     {"eKCoinTime_ROC2",    "ROC2 Corrected eK Coincidence Time",  "fROC2_eKCoinTime"},
     {"eKCoinTime_TRIG1",    "TRIG1 Corrected eK Coincidence Time",  "fTRIG1_eKCoinTime"},
-    {"eKCoinTime_TRIG4",    "TRIG4 Corrected eK Coincidence Time",  "fTRIG4_eKCoinTime"},
+    {"eKCoinTime_TRIG3",    "TRIG3 Corrected eK Coincidence Time",  "fTRIG3_eKCoinTime"},
     
     {"ePiCoinTime_ROC1",    "ROC1 Corrected ePi Coincidence Time",  "fROC1_ePiCoinTime"},
     {"ePiCoinTime_ROC2",    "ROC2 Corrected ePi Coincidence Time",  "fROC2_ePiCoinTime"},
     {"ePiCoinTime_TRIG1",    "TRIG1 Corrected ePi Coincidence Time",  "fTRIG1_ePiCoinTime"},
-    {"ePiCoinTime_TRIG4",    "TRIG4 Corrected ePi Coincidence Time",  "fTRIG4_ePiCoinTime"},
+    {"ePiCoinTime_TRIG3",    "TRIG3 Corrected ePi Coincidence Time",  "fTRIG3_ePiCoinTime"},
       
     {"ePositronCoinTime_ROC1",    "ROC1 Corrected e-Positorn Coincidence Time",  "fROC1_ePosCoinTime"},
     {"ePositronCoinTime_ROC2",    "ROC2 Corrected e-Positron Coincidence Time",  "fROC2_ePosCoinTime"},
     {"ePositronCoinTime_TRIG1",    "TRIG1 Corrected e-Positorn Coincidence Time",  "fTRIG1_ePosCoinTime"},
-    {"ePositronCoinTime_TRIG4",    "TRIG4 Corrected e-Positron Coincidence Time",  "fTRIG4_ePosCoinTime"},
+    {"ePositronCoinTime_TRIG3",    "TRIG3 Corrected e-Positron Coincidence Time",  "fTRIG3_ePosCoinTime"},
     
     {"CoinTime_RAW_ROC1",    "ROC1 RAW Coincidence Time",  "fROC1_RAW_CoinTime"},
     {"CoinTime_RAW_ROC2",    "ROC2 RAW Coincidence Time",  "fROC2_RAW_CoinTime"},
     {"CoinTime_RAW_TRIG1",    "TRIG1 RAW Coincidence Time",  "fTRIG1_RAW_CoinTime"},
-    {"CoinTime_RAW_TRIG4",    "TRIG4 RAW Coincidence Time",  "fTRIG4_RAW_CoinTime"},
+    {"CoinTime_RAW_TRIG3",    "TRIG3 RAW Coincidence Time",  "fTRIG3_RAW_CoinTime"},
     {"DeltaSHMSPathLength","DeltaSHMSpathLength (cm)","DeltaSHMSpathLength"},
     {"DeltaHMSPathLength", "DeltaHMSpathLength (cm)","DeltaHMSpathLength"},
     {"had_coinCorr_Positron",    "",  "had_coinCorr_Positron"},
     {"elec_coinCorr",    "",  "elec_coinCorr"},
+
+
     { 0 }
   };
 
@@ -237,16 +239,20 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
   kaonMass = 493.677/1000.0;    //charged kaon mass in GeV/c^2
   pionMass = 139.570/1000.0;    //charged pion mass in GeV/c^2
 
- 
+
   //Check if there was a golden track in both arms
   if (!theSHMSTrack || !theHMSTrack)
     {
       return 1;
     }
 
+
   //Check if Database is reading the correct elec-arm particle mass
-  if (felecSpectro->GetParticleMass() > 0.00052) return 1;
-        
+  if (felecSpectro->GetParticleMass() > 0.00052) {
+    cout << "ERROR CHECK PARTICLE MASS IN STANDARD.KINEMATICS ! ! !" << endl;
+    return 1;
+  }
+
       //SHMS arm
       Double_t shms_xptar = theSHMSTrack->GetTTheta();     
       Double_t shms_dP = theSHMSTrack->GetDp();            
@@ -265,10 +271,10 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
       
       //Get raw TDC Times for HMS/SHMS (3/4 trigger)
       pTRIG1_TdcTime_ROC1 = fCoinDet->Get_CT_Trigtime(0);  //SHMS
-      pTRIG4_TdcTime_ROC1 = fCoinDet->Get_CT_Trigtime(1);  //HMS
+      pTRIG3_TdcTime_ROC1 = fCoinDet->Get_CT_Trigtime(1);  //HMS
       pTRIG1_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(2);//SHMS
-      pTRIG4_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(3);//HMS
-
+      pTRIG3_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(3);//HMS
+      	  
       DeltaSHMSpathLength = .11*shms_xptar*1000 +0.057*shms_dP/100.;
       DeltaHMSpathLength = -1.0*(12.462*hms_xpfp + 0.1138*hms_xpfp*hms_xfp - 0.0154*hms_xfp - 72.292*hms_xpfp*hms_xpfp - 0.0000544*hms_xfp*had_xfp - 116.52*hms_ypfp*hms_ypfp);
       DeltaHMSpathLength = (.12*hms_xptar*1000 +0.17*hms_dP/100.);
@@ -293,7 +299,6 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 	  hadArm_BetaCalc_Pion = had_P / sqrt(had_P*had_P + pionMass*pionMass);	
 	  hadArm_BetaCalc_Positron = had_P / sqrt(had_P*had_P + positronMass*positronMass);
 
-
 	  //Coincidence Corrections
 	  elec_coinCorr = (ElecPathLength) / (lightSpeed * elecArm_BetaCalc );
 	  had_coinCorr_proton = (HadPathLength) / (lightSpeed * hadArm_BetaCalc_proton );
@@ -302,36 +307,35 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 	  had_coinCorr_Positron = (HadPathLength) / (lightSpeed * hadArm_BetaCalc_Positron );
 
 	  //Raw, Uncorrected Coincidence Time
-	  fROC1_RAW_CoinTime =  (pTRIG1_TdcTime_ROC1 + SHMS_FPtime) - (pTRIG4_TdcTime_ROC1 + HMS_FPtime);
-	  fROC2_RAW_CoinTime =  (pTRIG1_TdcTime_ROC2 + SHMS_FPtime) - (pTRIG4_TdcTime_ROC2 + HMS_FPtime);
+	  fROC1_RAW_CoinTime =  (pTRIG1_TdcTime_ROC1 + SHMS_FPtime) - (pTRIG3_TdcTime_ROC1 + HMS_FPtime);
+	  fROC2_RAW_CoinTime =  (pTRIG1_TdcTime_ROC2 + SHMS_FPtime) - (pTRIG3_TdcTime_ROC2 + HMS_FPtime);
 	  fTRIG1_RAW_CoinTime =  (pTRIG1_TdcTime_ROC1 + SHMS_FPtime) - (pTRIG1_TdcTime_ROC2 + HMS_FPtime);
-	  fTRIG4_RAW_CoinTime =  (pTRIG4_TdcTime_ROC1 + SHMS_FPtime) - (pTRIG4_TdcTime_ROC2 + HMS_FPtime);
-	   
+	  fTRIG3_RAW_CoinTime =  (pTRIG3_TdcTime_ROC1 + SHMS_FPtime) - (pTRIG3_TdcTime_ROC2 + HMS_FPtime);
 	  //Corrected Coincidence Time for ROC1/ROC2 (ROC1 Should be identical to ROC2)
           // 
 	  //PROTON
 	  fROC1_epCoinTime = fROC1_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_proton) - eHad_CT_Offset; 
 	  fROC2_epCoinTime = fROC2_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_proton) - eHad_CT_Offset; 
 	  fTRIG1_epCoinTime = fTRIG1_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_proton) - eHad_CT_Offset; 
-	  fTRIG4_epCoinTime = fTRIG4_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_proton) - eHad_CT_Offset; 
+	  fTRIG3_epCoinTime = fTRIG3_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_proton) - eHad_CT_Offset; 
 
 	  //KAON
 	  fROC1_eKCoinTime = fROC1_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_Kaon) - eHad_CT_Offset;
 	  fROC2_eKCoinTime = fROC2_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_Kaon) - eHad_CT_Offset;
 	  fTRIG1_eKCoinTime = fTRIG1_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_Kaon) - eHad_CT_Offset;
-	  fTRIG4_eKCoinTime = fTRIG4_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_Kaon) - eHad_CT_Offset;
+	  fTRIG3_eKCoinTime = fTRIG3_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_Kaon) - eHad_CT_Offset;
 	
 	  //PION
 	  fROC1_ePiCoinTime = fROC1_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Pion) - eHad_CT_Offset;	  
 	  fROC2_ePiCoinTime = fROC2_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Pion) - eHad_CT_Offset;
 	  fTRIG1_ePiCoinTime = fTRIG1_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Pion) - eHad_CT_Offset;	  
-	  fTRIG4_ePiCoinTime = fTRIG4_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Pion) - eHad_CT_Offset;
+	  fTRIG3_ePiCoinTime = fTRIG3_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Pion) - eHad_CT_Offset;
 
 	  //POSITRON
 	  fROC1_ePosCoinTime = fROC1_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset ;	  
 	  fROC2_ePosCoinTime = fROC2_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset;
 	  fTRIG1_ePosCoinTime = fTRIG1_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset ;	  
-	  fTRIG4_ePosCoinTime = fTRIG4_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset;
+	  fTRIG3_ePosCoinTime = fTRIG3_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset;
          
   return 0;
 }

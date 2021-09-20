@@ -34,6 +34,7 @@ class THcTrigDet : public THaDetector, public THcHitList {
     Int_t          End(THaRunBase* run);
     //Funtions to get TDCtime for cointime module 
     Double_t Get_CT_Trigtime(Int_t ii) { return (fTrigId[ii]==-1 ? 0. : fTdcTime[fTrigId[ii]]) ;}
+
     // SJDK 12/04/21 - New Getter for RF time info
     // Function to get RFTDC time for RF module
     Double_t Get_RF_TrigTime(Int_t ii) { return (fRFId[ii]==-1 ? 0. : fTdcTime[fRFId[ii]]) ;}
