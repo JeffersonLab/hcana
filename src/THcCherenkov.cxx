@@ -520,7 +520,7 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
               fAdcPulseAmpTest[npmt] = pulseAmp;
 	  }
         } else {
-	  fAdcGoodElem[npmt]=ielem;
+	  if (pulseTimeCut) fAdcGoodElem[npmt]=ielem;
         }
   }
   // Loop over the npmt
