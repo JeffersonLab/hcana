@@ -14,7 +14,9 @@ class THcRawAdcHit : public TObject {
 
     void SetData(Int_t data);
     void SetSample(Int_t data);
+    void SetSampIntTimePedestalPeak();
     void SetRefTime(Int_t refTime);
+    void SetSampThreshold(Double_t thres);
     void SetRefDiffTime(Int_t refDiffTime);
     void SetDataTimePedestalPeak(
       Int_t data, Int_t time, Int_t pedestal, Int_t peak
@@ -33,24 +35,33 @@ class THcRawAdcHit : public TObject {
     ) const;
 
     UInt_t GetNPulses() const;
+    UInt_t GetNSampPulses() const;
     UInt_t GetNSamples() const;
 
     Bool_t HasMulti() const;
     Bool_t HasRefTime() const;
 
     Int_t GetPedRaw() const;
+    Int_t GetSampPedRaw() const;
     Int_t GetPulseIntRaw(UInt_t iPulse=0) const;
     Int_t GetPulseAmpRaw(UInt_t iPulse=0) const;
     Int_t GetPulseTimeRaw(UInt_t iPulse=0) const;
     Int_t GetSampleRaw(UInt_t iSample=0) const;
+    Int_t GetSampPulseIntRaw(UInt_t iPulse=0) const;
+    Int_t GetSampPulseAmpRaw(UInt_t iPulse=0) const;
+    Int_t GetSampPulseTimeRaw(UInt_t iPulse=0) const;
     Int_t GetRefTime() const;
     Int_t GetRefDiffTime() const;
 
     Double_t GetPed() const;
+    Double_t GetSampPed() const;
+    Double_t GetSample(UInt_t iSample=0) const;
     Double_t GetPulseInt(UInt_t iPulse=0) const;
     Double_t GetPulseAmp(UInt_t iPulse=0) const;
     Double_t GetPulseTime(UInt_t iPulse=0) const;
-    //Int_t GetSample(UInt_t iSample=0) const;
+    Double_t GetSampPulseInt(UInt_t iPulse=0) const;
+    Double_t GetSampPulseAmp(UInt_t iPulse=0) const;
+    Double_t GetSampPulseTime(UInt_t iPulse=0) const;
 
     Int_t    GetSampleIntRaw() const;
     Double_t GetSampleInt() const;
@@ -77,11 +88,16 @@ class THcRawAdcHit : public TObject {
     Int_t fNSB;
     Double_t fPeakPedestalRatio;
     Double_t fSubsampleToTimeFactor;
+    Double_t fSampThreshold;
     
     Int_t fPed;
+    Int_t fSampPed;
     Int_t fPulseInt[fMaxNPulses];
     Int_t fPulseAmp[fMaxNPulses];
     Int_t fPulseTime[fMaxNPulses];
+    Int_t fSampPulseInt[fMaxNPulses];
+    Int_t fSampPulseAmp[fMaxNPulses];
+    Int_t fSampPulseTime[fMaxNPulses];
     Int_t fSample[fMaxNSamples];
     Int_t fRefTime;
     Int_t fRefDiffTime;
@@ -89,6 +105,7 @@ class THcRawAdcHit : public TObject {
     Bool_t fHasMulti;
     Bool_t fHasRefTime;
     UInt_t fNPulses;
+    UInt_t fNSampPulses;
     UInt_t fNSamples;
 
   private:
