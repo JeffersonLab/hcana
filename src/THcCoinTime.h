@@ -82,6 +82,11 @@ public:
   Double_t fROC2_RAW_CoinTime;
   Double_t fSHMS_RAW_CoinTime;
   Double_t fHMS_RAW_CoinTime;  
+
+  Double_t fROC1_RAW_CoinTime_NoTrack;
+  Double_t fROC2_RAW_CoinTime_NoTrack;
+  Double_t fSHMS_RAW_CoinTime_NoTrack;
+  Double_t fHMS_RAW_CoinTime_NoTrack;  
   
   Double_t fROC1_epCoinTime;
   Double_t fROC2_epCoinTime;

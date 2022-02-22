@@ -163,27 +163,31 @@ Int_t THcCoinTime::DefineVariables( EMode mode )
     {"epCoinTime_ROC1",    "ROC1 Corrected ep Coincidence Time",  "fROC1_epCoinTime"},
     {"epCoinTime_ROC2",    "ROC2 Corrected ep Coincidence Time",  "fROC2_epCoinTime"},
     {"epCoinTime_SHMS",    "SHMS Corrected ep Coincidence Time",  "fSHMS_epCoinTime"},
-    {"epCoinTime_TRIG3",    "TRIG3 Corrected ep Coincidence Time",  "fHMS_epCoinTime"},
+    {"epCoinTime_HMS",    "HMS Corrected ep Coincidence Time",  "fHMS_epCoinTime"},
   
     {"eKCoinTime_ROC1",    "ROC1 Corrected eK Coincidence Time",  "fROC1_eKCoinTime"},
     {"eKCoinTime_ROC2",    "ROC2 Corrected eK Coincidence Time",  "fROC2_eKCoinTime"},
     {"eKCoinTime_SHMS",    "SHMS Corrected eK Coincidence Time",  "fSHMS_eKCoinTime"},
-    {"eKCoinTime_TRIG3",    "TRIG3 Corrected eK Coincidence Time",  "fHMS_eKCoinTime"},
+    {"eKCoinTime_HMS",    "HMS Corrected eK Coincidence Time",  "fHMS_eKCoinTime"},
     
     {"ePiCoinTime_ROC1",    "ROC1 Corrected ePi Coincidence Time",  "fROC1_ePiCoinTime"},
     {"ePiCoinTime_ROC2",    "ROC2 Corrected ePi Coincidence Time",  "fROC2_ePiCoinTime"},
     {"ePiCoinTime_SHMS",    "SHMS Corrected ePi Coincidence Time",  "fSHMS_ePiCoinTime"},
-    {"ePiCoinTime_TRIG3",    "TRIG3 Corrected ePi Coincidence Time",  "fHMS_ePiCoinTime"},
+    {"ePiCoinTime_HMS",    "HMS Corrected ePi Coincidence Time",  "fHMS_ePiCoinTime"},
       
     {"ePositronCoinTime_ROC1",    "ROC1 Corrected e-Positorn Coincidence Time",  "fROC1_ePosCoinTime"},
     {"ePositronCoinTime_ROC2",    "ROC2 Corrected e-Positron Coincidence Time",  "fROC2_ePosCoinTime"},
     {"ePositronCoinTime_SHMS",    "SHMS Corrected e-Positorn Coincidence Time",  "fSHMS_ePosCoinTime"},
-    {"ePositronCoinTime_TRIG3",    "TRIG3 Corrected e-Positron Coincidence Time",  "fHMS_ePosCoinTime"},
+    {"ePositronCoinTime_HMS",    "HMS Corrected e-Positron Coincidence Time",  "fHMS_ePosCoinTime"},
     
     {"CoinTime_RAW_ROC1",    "ROC1 RAW Coincidence Time",  "fROC1_RAW_CoinTime"},
     {"CoinTime_RAW_ROC2",    "ROC2 RAW Coincidence Time",  "fROC2_RAW_CoinTime"},
     {"CoinTime_RAW_SHMS",    "SHMS RAW Coincidence Time",  "fSHMS_RAW_CoinTime"},
-    {"CoinTime_RAW_TRIG3",    "TRIG3 RAW Coincidence Time",  "fHMS_RAW_CoinTime"},
+    {"CoinTime_RAW_HMS",    "HMS RAW Coincidence Time",  "fHMS_RAW_CoinTime"},
+    {"CoinTime_RAW_ROC1_NoTrack",    "ROC1 RAW Coincidence Time w/o Tracked Param",  "fROC1_RAW_CoinTime_NoTrack"},
+    {"CoinTime_RAW_ROC2_NoTrack",    "ROC2 RAW Coincidence Time w/o Tracked Param",  "fROC2_RAW_CoinTime_NoTrack"},
+    {"CoinTime_RAW_SHMS_NoTrack",    "SHMS RAW Coincidence Time w/o Tracked Param",  "fSHMS_RAW_CoinTime_NoTrack"},
+    {"CoinTime_RAW_HMS_NoTrack",    "HMS RAW Coincidence Time w/o Tracked Param",  "fHMS_RAW_CoinTime_NoTrack"},
     {"DeltaSHMSPathLength","DeltaSHMSpathLength (cm)","DeltaSHMSpathLength"},
     {"DeltaHMSPathLength", "DeltaHMSpathLength (cm)","DeltaHMSpathLength"},
     {"had_coinCorr_Positron",    "",  "had_coinCorr_Positron"},
@@ -263,8 +267,8 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
       //Get raw TDC Times for HMS/SHMS (3/4 trigger)
       pSHMS_TdcTime_ROC1 = fCoinDet->Get_CT_Trigtime(0);  //SHMS
       pHMS_TdcTime_ROC1 = fCoinDet->Get_CT_Trigtime(1);  //HMS
-      pSHMS_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(2);//SHMS pTRIG1
-      pHMS_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(3);//HMS pTRIG3
+      pSHMS_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(2);//SHMS pTrig1
+      pHMS_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(3);//HMS pTrig3
       	  
       DeltaSHMSpathLength = .11*shms_xptar*1000 +0.057*shms_dP/100.;
       DeltaHMSpathLength = -1.0*(12.462*hms_xpfp + 0.1138*hms_xpfp*hms_xfp - 0.0154*hms_xfp - 72.292*hms_xpfp*hms_xpfp - 0.0000544*hms_xfp*had_xfp - 116.52*hms_ypfp*hms_ypfp);
@@ -303,6 +307,12 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 	  fROC2_RAW_CoinTime =  (pSHMS_TdcTime_ROC2 + SHMS_FPtime) - (pHMS_TdcTime_ROC2 + HMS_FPtime);
 	  fSHMS_RAW_CoinTime =  (pSHMS_TdcTime_ROC1 + SHMS_FPtime) - (pSHMS_TdcTime_ROC2 + HMS_FPtime);
 	  fHMS_RAW_CoinTime =  (pHMS_TdcTime_ROC1 + SHMS_FPtime) - (pHMS_TdcTime_ROC2 + HMS_FPtime);
+	  // 04/05/21 - SJDK - Added for use in Report files for tracking efficiency calculations
+	  //Raw, Uncorrected Coincidence Time WITHOUT any tracked quantities
+	  fROC1_RAW_CoinTime_NoTrack =  (pSHMS_TdcTime_ROC1) - (pTRIG4_TdcTime_ROC1);
+	  fROC2_RAW_CoinTime_NoTrack =  (pSHMS_TdcTime_ROC2) - (pTRIG4_TdcTime_ROC2);
+	  fSHMS_RAW_CoinTime_NoTrack =  (pSHMS_TdcTime_ROC1) - (pSHMS_TdcTime_ROC2);
+	  fHMS_RAW_CoinTime_NoTrack =  (pHMS_TdcTime_ROC1) - (pHMS_TdcTime_ROC2);
 	  //Corrected Coincidence Time for ROC1/ROC2 (ROC1 Should be identical to ROC2)
           // 
 	  //PROTON
