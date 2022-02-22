@@ -335,10 +335,11 @@ void THcTrigDet::Setup(const char* name, const char* description) {
 Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   std::string adcNames, tdcNames;
   
-  //std::string trigNames="pTRIG1_ROC1 pTRIG4_ROC1 pTRIG1_ROC2 pTRIG4_ROC2";
+  std::string trigNames="pTRIG1_ROC1 pTRIG4_ROC1 pTRIG1_ROC2 pTRIG4_ROC2";
   
   //C.Y. Sep 08, 2021 | changed pTRIG4 to pTRIG3 (Since in hardware, pTRIG3 -> h3/4 trigger)
-  std::string trigNames="pTRIG1_ROC1 pTRIG3_ROC1 pTRIG1_ROC2 pTRIG3_ROC2";
+  // SJDK - 22/02/22 - Switched back, keep names here as is, can set in param files later
+  //std::string trigNames="pTRIG1_ROC1 pTRIG3_ROC1 pTRIG1_ROC2 pTRIG3_ROC2";
 
   // SJDK 12/04/21 - Added new RF names for use in getter
   std::string RFNames="pRF hRF";
