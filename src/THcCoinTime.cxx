@@ -66,14 +66,14 @@ void THcCoinTime::Clear( Option_t* opt )
   fROC2_ePosCoinTime=kBig;
   fROC1_RAW_CoinTime=kBig;
   fROC2_RAW_CoinTime=kBig;
-  fTRIG1_ePosCoinTime=kBig;
-  fTRIG3_ePosCoinTime=kBig;
-  fTRIG1_ePiCoinTime=kBig;
-  fTRIG3_ePiCoinTime=kBig;
-  fTRIG1_eKCoinTime=kBig;
-  fTRIG3_eKCoinTime=kBig;
-  fTRIG1_epCoinTime=kBig;
-  fTRIG3_epCoinTime=kBig;
+  fSHMS_ePosCoinTime=kBig;
+  fHMS_ePosCoinTime=kBig;
+  fSHMS_ePiCoinTime=kBig;
+  fHMS_ePiCoinTime=kBig;
+  fSHMS_eKCoinTime=kBig;
+  fHMS_eKCoinTime=kBig;
+  fSHMS_epCoinTime=kBig;
+  fHMS_epCoinTime=kBig;
 }
 
 //_____________________________________________________________________________
@@ -121,9 +121,7 @@ THaAnalysisObject::EStatus THcCoinTime::Init( const TDatime& run_time )
     fStatus = kInitError;
     return fStatus;
   }
-  
-
-  
+    
   if( (fStatus=THaPhysicsModule::Init( run_time )) != kOK ) {
     return fStatus;
   }
@@ -148,7 +146,6 @@ Int_t THcCoinTime::ReadDatabase( const TDatime& date )
 
   HMScentralPathLen = 22.0*100.;
   SHMScentralPathLen = 18.1*100.;
-
   
   gHcParms->LoadParmValues((DBRequest*)&list, "");
 
@@ -165,28 +162,28 @@ Int_t THcCoinTime::DefineVariables( EMode mode )
   const RVarDef vars[] = {
     {"epCoinTime_ROC1",    "ROC1 Corrected ep Coincidence Time",  "fROC1_epCoinTime"},
     {"epCoinTime_ROC2",    "ROC2 Corrected ep Coincidence Time",  "fROC2_epCoinTime"},
-    {"epCoinTime_TRIG1",    "TRIG1 Corrected ep Coincidence Time",  "fTRIG1_epCoinTime"},
-    {"epCoinTime_TRIG3",    "TRIG3 Corrected ep Coincidence Time",  "fTRIG3_epCoinTime"},
+    {"epCoinTime_SHMS",    "SHMS Corrected ep Coincidence Time",  "fSHMS_epCoinTime"},
+    {"epCoinTime_TRIG3",    "TRIG3 Corrected ep Coincidence Time",  "fHMS_epCoinTime"},
   
     {"eKCoinTime_ROC1",    "ROC1 Corrected eK Coincidence Time",  "fROC1_eKCoinTime"},
     {"eKCoinTime_ROC2",    "ROC2 Corrected eK Coincidence Time",  "fROC2_eKCoinTime"},
-    {"eKCoinTime_TRIG1",    "TRIG1 Corrected eK Coincidence Time",  "fTRIG1_eKCoinTime"},
-    {"eKCoinTime_TRIG3",    "TRIG3 Corrected eK Coincidence Time",  "fTRIG3_eKCoinTime"},
+    {"eKCoinTime_SHMS",    "SHMS Corrected eK Coincidence Time",  "fSHMS_eKCoinTime"},
+    {"eKCoinTime_TRIG3",    "TRIG3 Corrected eK Coincidence Time",  "fHMS_eKCoinTime"},
     
     {"ePiCoinTime_ROC1",    "ROC1 Corrected ePi Coincidence Time",  "fROC1_ePiCoinTime"},
     {"ePiCoinTime_ROC2",    "ROC2 Corrected ePi Coincidence Time",  "fROC2_ePiCoinTime"},
-    {"ePiCoinTime_TRIG1",    "TRIG1 Corrected ePi Coincidence Time",  "fTRIG1_ePiCoinTime"},
-    {"ePiCoinTime_TRIG3",    "TRIG3 Corrected ePi Coincidence Time",  "fTRIG3_ePiCoinTime"},
+    {"ePiCoinTime_SHMS",    "SHMS Corrected ePi Coincidence Time",  "fSHMS_ePiCoinTime"},
+    {"ePiCoinTime_TRIG3",    "TRIG3 Corrected ePi Coincidence Time",  "fHMS_ePiCoinTime"},
       
     {"ePositronCoinTime_ROC1",    "ROC1 Corrected e-Positorn Coincidence Time",  "fROC1_ePosCoinTime"},
     {"ePositronCoinTime_ROC2",    "ROC2 Corrected e-Positron Coincidence Time",  "fROC2_ePosCoinTime"},
-    {"ePositronCoinTime_TRIG1",    "TRIG1 Corrected e-Positorn Coincidence Time",  "fTRIG1_ePosCoinTime"},
-    {"ePositronCoinTime_TRIG3",    "TRIG3 Corrected e-Positron Coincidence Time",  "fTRIG3_ePosCoinTime"},
+    {"ePositronCoinTime_SHMS",    "SHMS Corrected e-Positorn Coincidence Time",  "fSHMS_ePosCoinTime"},
+    {"ePositronCoinTime_TRIG3",    "TRIG3 Corrected e-Positron Coincidence Time",  "fHMS_ePosCoinTime"},
     
     {"CoinTime_RAW_ROC1",    "ROC1 RAW Coincidence Time",  "fROC1_RAW_CoinTime"},
     {"CoinTime_RAW_ROC2",    "ROC2 RAW Coincidence Time",  "fROC2_RAW_CoinTime"},
-    {"CoinTime_RAW_TRIG1",    "TRIG1 RAW Coincidence Time",  "fTRIG1_RAW_CoinTime"},
-    {"CoinTime_RAW_TRIG3",    "TRIG3 RAW Coincidence Time",  "fTRIG3_RAW_CoinTime"},
+    {"CoinTime_RAW_SHMS",    "SHMS RAW Coincidence Time",  "fSHMS_RAW_CoinTime"},
+    {"CoinTime_RAW_TRIG3",    "TRIG3 RAW Coincidence Time",  "fHMS_RAW_CoinTime"},
     {"DeltaSHMSPathLength","DeltaSHMSpathLength (cm)","DeltaSHMSpathLength"},
     {"DeltaHMSPathLength", "DeltaHMSpathLength (cm)","DeltaHMSpathLength"},
     {"had_coinCorr_Positron",    "",  "had_coinCorr_Positron"},
@@ -198,8 +195,6 @@ Int_t THcCoinTime::DefineVariables( EMode mode )
   return DefineVarsFromList( vars, mode );
 
 }
-
-
 
 //_____________________________________________________________________________
 Int_t THcCoinTime::Process( const THaEvData& evdata )
@@ -266,10 +261,10 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
       if (SHMS_FPtime==-1000 || HMS_FPtime==-1000)  return 1;
       
       //Get raw TDC Times for HMS/SHMS (3/4 trigger)
-      pTRIG1_TdcTime_ROC1 = fCoinDet->Get_CT_Trigtime(0);  //SHMS
-      pTRIG3_TdcTime_ROC1 = fCoinDet->Get_CT_Trigtime(1);  //HMS
-      pTRIG1_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(2);//SHMS
-      pTRIG3_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(3);//HMS
+      pSHMS_TdcTime_ROC1 = fCoinDet->Get_CT_Trigtime(0);  //SHMS
+      pHMS_TdcTime_ROC1 = fCoinDet->Get_CT_Trigtime(1);  //HMS
+      pSHMS_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(2);//SHMS pTRIG1
+      pHMS_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(3);//HMS pTRIG3
       	  
       DeltaSHMSpathLength = .11*shms_xptar*1000 +0.057*shms_dP/100.;
       DeltaHMSpathLength = -1.0*(12.462*hms_xpfp + 0.1138*hms_xpfp*hms_xfp - 0.0154*hms_xfp - 72.292*hms_xpfp*hms_xpfp - 0.0000544*hms_xfp*had_xfp - 116.52*hms_ypfp*hms_ypfp);
@@ -288,6 +283,7 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
              had_P = theSHMSTrack->GetP();              //hadron golden track arm momentum
              sign=1;
 	  }
+
 	  //beta calculations beta = v/c = p/E
 	  elecArm_BetaCalc = elec_P / sqrt(elec_P*elec_P + elecMass*elecMass);
 	  hadArm_BetaCalc_proton = had_P / sqrt(had_P*had_P + protonMass*protonMass);
@@ -303,35 +299,35 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 	  had_coinCorr_Positron = (HadPathLength) / (lightSpeed * hadArm_BetaCalc_Positron );
 
 	  //Raw, Uncorrected Coincidence Time
-	  fROC1_RAW_CoinTime =  (pTRIG1_TdcTime_ROC1 + SHMS_FPtime) - (pTRIG3_TdcTime_ROC1 + HMS_FPtime);
-	  fROC2_RAW_CoinTime =  (pTRIG1_TdcTime_ROC2 + SHMS_FPtime) - (pTRIG3_TdcTime_ROC2 + HMS_FPtime);
-	  fTRIG1_RAW_CoinTime =  (pTRIG1_TdcTime_ROC1 + SHMS_FPtime) - (pTRIG1_TdcTime_ROC2 + HMS_FPtime);
-	  fTRIG3_RAW_CoinTime =  (pTRIG3_TdcTime_ROC1 + SHMS_FPtime) - (pTRIG3_TdcTime_ROC2 + HMS_FPtime);
+	  fROC1_RAW_CoinTime =  (pSHMS_TdcTime_ROC1 + SHMS_FPtime) - (pHMS_TdcTime_ROC1 + HMS_FPtime);
+	  fROC2_RAW_CoinTime =  (pSHMS_TdcTime_ROC2 + SHMS_FPtime) - (pHMS_TdcTime_ROC2 + HMS_FPtime);
+	  fSHMS_RAW_CoinTime =  (pSHMS_TdcTime_ROC1 + SHMS_FPtime) - (pSHMS_TdcTime_ROC2 + HMS_FPtime);
+	  fHMS_RAW_CoinTime =  (pHMS_TdcTime_ROC1 + SHMS_FPtime) - (pHMS_TdcTime_ROC2 + HMS_FPtime);
 	  //Corrected Coincidence Time for ROC1/ROC2 (ROC1 Should be identical to ROC2)
           // 
 	  //PROTON
 	  fROC1_epCoinTime = fROC1_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_proton) - eHad_CT_Offset; 
 	  fROC2_epCoinTime = fROC2_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_proton) - eHad_CT_Offset; 
-	  fTRIG1_epCoinTime = fTRIG1_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_proton) - eHad_CT_Offset; 
-	  fTRIG3_epCoinTime = fTRIG3_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_proton) - eHad_CT_Offset; 
+	  fSHMS_epCoinTime = fSHMS_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_proton) - eHad_CT_Offset; 
+	  fHMS_epCoinTime = fHMS_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_proton) - eHad_CT_Offset; 
 
 	  //KAON
 	  fROC1_eKCoinTime = fROC1_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_Kaon) - eHad_CT_Offset;
 	  fROC2_eKCoinTime = fROC2_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_Kaon) - eHad_CT_Offset;
-	  fTRIG1_eKCoinTime = fTRIG1_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_Kaon) - eHad_CT_Offset;
-	  fTRIG3_eKCoinTime = fTRIG3_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_Kaon) - eHad_CT_Offset;
+	  fSHMS_eKCoinTime = fSHMS_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_Kaon) - eHad_CT_Offset;
+	  fHMS_eKCoinTime = fHMS_RAW_CoinTime + sign*( elec_coinCorr-had_coinCorr_Kaon) - eHad_CT_Offset;
 	
 	  //PION
 	  fROC1_ePiCoinTime = fROC1_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Pion) - eHad_CT_Offset;	  
 	  fROC2_ePiCoinTime = fROC2_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Pion) - eHad_CT_Offset;
-	  fTRIG1_ePiCoinTime = fTRIG1_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Pion) - eHad_CT_Offset;	  
-	  fTRIG3_ePiCoinTime = fTRIG3_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Pion) - eHad_CT_Offset;
+	  fSHMS_ePiCoinTime = fSHMS_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Pion) - eHad_CT_Offset;	  
+	  fHMS_ePiCoinTime = fHMS_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Pion) - eHad_CT_Offset;
 
 	  //POSITRON
 	  fROC1_ePosCoinTime = fROC1_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset ;	  
 	  fROC2_ePosCoinTime = fROC2_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset;
-	  fTRIG1_ePosCoinTime = fTRIG1_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset ;	  
-	  fTRIG3_ePosCoinTime = fTRIG3_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset;
+	  fSHMS_ePosCoinTime = fSHMS_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset ;	  
+	  fHMS_ePosCoinTime = fHMS_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset;
          
   return 0;
 }
