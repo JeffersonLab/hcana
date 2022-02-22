@@ -2,6 +2,7 @@
     \ingroup PhysMods
 
 \brief Class for calculating and adding the Coincidence Time in the Tree.
+// SJDK - 08/09/21 - Switched Trig4 to Trig3 due to hardware changes
 
 //Author: Carlos Yero
 //Date: April 27, 2018
@@ -134,8 +135,6 @@ THaAnalysisObject::EStatus THcCoinTime::Init( const TDatime& run_time )
 Int_t THcCoinTime::ReadDatabase( const TDatime& date )
 {
   // Read database. Gets variable needed for CoinTime calculation
-
-
   DBRequest list[]={
     {"eHadCoinTime_Offset",  &eHad_CT_Offset, kDouble, 0, 1},   //coin time offset for ep coincidences
 
@@ -193,7 +192,6 @@ Int_t THcCoinTime::DefineVariables( EMode mode )
     {"had_coinCorr_Positron",    "",  "had_coinCorr_Positron"},
     {"elec_coinCorr",    "",  "elec_coinCorr"},
 
-
     { 0 }
   };
 
@@ -239,13 +237,11 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
   kaonMass = 493.677/1000.0;    //charged kaon mass in GeV/c^2
   pionMass = 139.570/1000.0;    //charged pion mass in GeV/c^2
 
-
   //Check if there was a golden track in both arms
   if (!theSHMSTrack || !theHMSTrack)
     {
       return 1;
     }
-
 
   //Check if Database is reading the correct elec-arm particle mass
   if (felecSpectro->GetParticleMass() > 0.00052) {
