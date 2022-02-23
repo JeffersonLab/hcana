@@ -309,8 +309,8 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 	  fHMS_RAW_CoinTime =  (pHMS_TdcTime_ROC1 + SHMS_FPtime) - (pHMS_TdcTime_ROC2 + HMS_FPtime);
 	  // 04/05/21 - SJDK - Added for use in Report files for tracking efficiency calculations
 	  //Raw, Uncorrected Coincidence Time WITHOUT any tracked quantities
-	  fROC1_RAW_CoinTime_NoTrack =  (pSHMS_TdcTime_ROC1) - (pTRIG4_TdcTime_ROC1);
-	  fROC2_RAW_CoinTime_NoTrack =  (pSHMS_TdcTime_ROC2) - (pTRIG4_TdcTime_ROC2);
+	  fROC1_RAW_CoinTime_NoTrack =  (pSHMS_TdcTime_ROC1) - (pHMS_TdcTime_ROC1);
+	  fROC2_RAW_CoinTime_NoTrack =  (pSHMS_TdcTime_ROC2) - (pHMS_TdcTime_ROC2);
 	  fSHMS_RAW_CoinTime_NoTrack =  (pSHMS_TdcTime_ROC1) - (pSHMS_TdcTime_ROC2);
 	  fHMS_RAW_CoinTime_NoTrack =  (pHMS_TdcTime_ROC1) - (pHMS_TdcTime_ROC2);
 	  //Corrected Coincidence Time for ROC1/ROC2 (ROC1 Should be identical to ROC2)
