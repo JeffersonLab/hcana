@@ -270,6 +270,7 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
     {0}
   };
   fSampThreshold = 5.;
+      cout << " fSampThreshold 1 = " << fSampThreshold << endl;
   fOutputSampWaveform = 0; // 0= no output , 1 = output Sample Waveform
   for (Int_t i=0;i<fNelem;i++) {
     fAdcTimeWindowMin[i]=-1000.;
@@ -281,7 +282,8 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fADC_RefTimeCut = 0;
 
   gHcParms->LoadParmValues((DBRequest*)&list, prefix.c_str());
-
+      cout << " fSampThreshold = " << fSampThreshold << endl;
+   
   // if (fDebugAdc) cout << "Cherenkov ADC Debug Flag Set To TRUE" << endl;
 
   fIsInit = true;
@@ -511,13 +513,13 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
       fNumAdcHits.at(npmt-1) = npmt;
     }
     //
-    if (rawAdcHit.GetNSamples() >0 ) {      
+    if (rawAdcHit.GetNSamples() >0 ) {   
       rawAdcHit.SetSampThreshold(fSampThreshold);
       rawAdcHit.SetSampIntTimePedestalPeak();
        fSampWaveform.push_back(float(npmt));
        fSampWaveform.push_back(float(rawAdcHit.GetNSamples()));
       for (UInt_t thit = 0; thit < rawAdcHit.GetNSamples(); thit++) {
-	fSampWaveform.push_back(rawAdcHit.GetSample()); // ped subtracted sample (mV)
+	fSampWaveform.push_back(rawAdcHit.GetSample(thit)); // ped subtracted sample (mV)
       }
       for (UInt_t thit = 0; thit < rawAdcHit.GetNSampPulses(); thit++) {
       ((THcSignalHit*) frAdcSampPedRaw->ConstructedAt(nrSampAdcHits))->Set(npmt, rawAdcHit.GetSampPedRaw());
