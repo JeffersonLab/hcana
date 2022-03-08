@@ -340,6 +340,8 @@ void THcRawAdcHit::SetSampIntTimePedestalPeak() {
         }
 	if (ns_found ==fNSAT) { // NS is The TC bin
 	  fSampPulseInt[fNSampPulses] = GetIntegral(TMath::Max(NS-fNSB,0),TMath::Min((NS+fNSA-1),int(fNSamples-1)));
+	  fNPeakSamples = TMath::Min((NS+fNSA-1),int(fNSamples-1)) - TMath::Max(NS-fNSB,0)+1;
+          fPeakPedestalRatio= 1.0*fNPeakSamples/fNPedestalSamples;
 	  fSampPulseAmp[fNSampPulses] = 0;
 	  fSampPulseTime[fNSampPulses] = 0;
 	  Int_t PeakBin= 0;
@@ -362,6 +364,9 @@ void THcRawAdcHit::SetSampIntTimePedestalPeak() {
 	      }
 	    }
 	    fSampPulseTime[fNSampPulses] = Time;
+	  } else {
+	     fSampPulseAmp[fNSampPulses] = GetSampleRaw(NS);
+	     fSampPulseTime[fNSampPulses] = 64*NS;
 	  }
 	  //	  if (fNPulses ==0) 	  std::cout << " NsampPulse = " << fNSampPulses+1 << " " << fSampPulseInt[fNSampPulses] << " " << GetSampPulseInt(fNSampPulses) << " npeak = " <<PeakBin << " " << fSampPulseAmp[fNSampPulses] << " " << GetSampPulseAmp(fNSampPulses) << " " << fSampPulseTime[fNSampPulses]<< " " << GetSampPulseTime(fNSampPulses) << " Vmid = " << VMid  << " TC = " << NS << " TC+NSA-1 ="  << NS+fNSA << std::endl;
 	  fNSampPulses++; 

@@ -499,6 +499,7 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
 
       if (rawAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 0);
       if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 1);
+     if (rawAdcHit.GetPulseAmpRaw(thit) <= 0 && rawAdcHit.GetNSamples() >0) ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 2);
 
       if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) {
 	Double_t PeakPedRatio= rawAdcHit.GetF250_PeakPedestalRatio();
@@ -559,7 +560,8 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
 
       ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(npmt,rawAdcHit.GetSampPulseTimeRaw(thit) );
       ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetSampPulseTime(thit)+fAdcTdcOffset);
-     ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 3);  
+      ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 3);  
+      if (fUseSampWaveform ==1) ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 0);  
         ++nrAdcHits;
       fTotNumAdcHits++;
       fNumAdcHits.at(npmt-1) = npmt;
@@ -607,7 +609,7 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
              fAdcGoodElem[npmt]=ielem;
               fAdcPulseAmpTest[npmt] = pulseAmp;
 	  }
-        } else {
+        } else if (errorFlag == 1) {
 	  fAdcGoodElem[npmt]=ielem;
         }
   }
