@@ -17,6 +17,7 @@ class THcRawAdcHit : public TObject {
     void SetSampIntTimePedestalPeak();
     void SetRefTime(Int_t refTime);
     void SetSampThreshold(Double_t thres);
+    void SetSampNSAT(Int_t nsat);
     void SetRefDiffTime(Int_t refDiffTime);
     void SetDataTimePedestalPeak(
       Int_t data, Int_t time, Int_t pedestal, Int_t peak
@@ -85,6 +86,7 @@ class THcRawAdcHit : public TObject {
     Int_t fNPedestalSamples;  // TODO: Get this from prestart event...
     Int_t fNPeakSamples;
     Int_t fNSA;
+    Int_t fNSAT;
     Int_t fNSB;
     Double_t fPeakPedestalRatio;
     Double_t fSubsampleToTimeFactor;

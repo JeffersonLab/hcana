@@ -289,6 +289,12 @@ void THcRawAdcHit::SetSampThreshold(Double_t thres) {
   fSampThreshold = thres;
 }
 
+
+void THcRawAdcHit::SetSampNSAT(Int_t nsat) {
+  fNSAT = nsat;
+}
+
+
 void THcRawAdcHit::SetSample(Int_t data) {
   if (fNSamples >= fMaxNSamples) {
     throw std::out_of_range(
@@ -322,7 +328,6 @@ void THcRawAdcHit::SetSampIntTimePedestalPeak() {
   // if fNPulses!=0 then good mode 10 event
   Int_t NS=fNPedestalSamples-1;
   fNSampPulses = 0;
-  Int_t NSAT = 2; // Number of Samples Above Threshold needs for Threshold Crossing (TC).
   while (NS < int(fNSamples) && fNSampPulses<fMaxNPulses) {
     // GetSample(NS) Pedestal subtracted sample value (mV)
     if (FADCerror) { // if FADC error find first sample below threshold to start search
@@ -330,10 +335,10 @@ void THcRawAdcHit::SetSampIntTimePedestalPeak() {
       // when FADCerror = kFALSE can treat rest of waveform like good mode 10
     } else {
 	Int_t ns_found=0;
-	for (Int_t nt=NS;nt<TMath::Min((NS+NSAT),int(fNSamples));nt++) {
+	for (Int_t nt=NS;nt<TMath::Min((NS+fNSAT),int(fNSamples));nt++) {
 	  if (GetSample(nt)>fSampThreshold)  ns_found++;
         }
-	if (ns_found ==NSAT) { // NS is The TC bin
+	if (ns_found ==fNSAT) { // NS is The TC bin
 	  fSampPulseInt[fNSampPulses] = GetIntegral(TMath::Max(NS-fNSB,0),TMath::Min((NS+fNSA-1),int(fNSamples-1)));
 	  fSampPulseAmp[fNSampPulses] = 0;
 	  fSampPulseTime[fNSampPulses] = 0;
@@ -629,6 +634,7 @@ void THcRawAdcHit::SetF250Params(Int_t NSA, Int_t NSB, Int_t NPED) {
   fPeakPedestalRatio = 1.0*fNPeakSamples/fNPedestalSamples;
   fNSA = NSA;
   fNSB = NSB;
+  fNSAT = 2;
 }
 
 // FADC conversion factors

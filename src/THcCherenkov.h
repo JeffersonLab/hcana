@@ -80,7 +80,11 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Int_t     fNRegions;
   Int_t     fRegionsValueMax;
   Int_t  fOutputSampWaveform;
+  Int_t  fUseSampWaveform;
   Double_t  fSampThreshold;
+  Int_t  fSampNSA;
+  Int_t  fSampNSAT;
+  Int_t  fSampNSB;
   Double_t  fRedChi2Min;
   Double_t  fRedChi2Max;
   Double_t  fBetaMin;

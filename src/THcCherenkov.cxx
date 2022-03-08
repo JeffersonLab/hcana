@@ -249,7 +249,11 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
     {"_ped_limit",        fPedLimit,          kInt,     (UInt_t) fNelem, optional},
     {"_adc_to_npe",       fGain,              kDouble,  (UInt_t) fNelem},
     {"_SampThreshold",     &fSampThreshold,       kDouble,0,1},
+    {"_SampNSA",     &fSampNSA,       kInt,0,1},
+    {"_SampNSAT",     &fSampNSAT,       kInt,0,1},
+    {"_SampNSB",     &fSampNSB,       kInt,0,1},
     {"_OutputSampWaveform",     &fOutputSampWaveform,       kInt,0,1},
+    {"_UseSampWaveform",     &fUseSampWaveform,       kInt,0,1},
     {"_red_chi2_min",     &fRedChi2Min,       kDouble},
     {"_red_chi2_max",     &fRedChi2Max,       kDouble},
     {"_beta_min",         &fBetaMin,          kDouble},
@@ -270,8 +274,12 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
     {0}
   };
   fSampThreshold = 5.;
+  fSampNSA = 0; // use value stored in event 125 info
+  fSampNSB = 0; // use value stored in event 125 info
+  fSampNSAT = 2; // default value in THcRawHit::SetF250Params
       cout << " fSampThreshold 1 = " << fSampThreshold << endl;
   fOutputSampWaveform = 0; // 0= no output , 1 = output Sample Waveform
+  fUseSampWaveform = 0; // 0= do not use , 1 = use Sample Waveform
   for (Int_t i=0;i<fNelem;i++) {
     fAdcTimeWindowMin[i]=-1000.;
     fAdcTimeWindowMax[i]=1000.;
@@ -474,6 +482,7 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
     if ((rawAdcHit.GetNPulses() >0 || rawAdcHit.GetNSamples() >0) && rawAdcHit.HasRefTime()) {
       fRefTime=rawAdcHit.GetRefTime() ;
     }
+    if ( fUseSampWaveform == 0 ) {
     for (UInt_t thit = 0; thit < rawAdcHit.GetNPulses(); thit++) {
 
       ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPedRaw());
@@ -512,9 +521,14 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
       fTotNumAdcHits++;
       fNumAdcHits.at(npmt-1) = npmt;
     }
+    }
     //
     if (rawAdcHit.GetNSamples() >0 ) {   
       rawAdcHit.SetSampThreshold(fSampThreshold);
+      if (fSampNSA == 0) fSampNSA=rawAdcHit.GetF250_NSA();
+      if (fSampNSB == 0) fSampNSB=rawAdcHit.GetF250_NSB();
+      rawAdcHit.SetF250Params(fSampNSA,fSampNSB,4); // Set NPED =4
+      if (fSampNSAT != 2) rawAdcHit.SetSampNSAT(fSampNSAT);
       rawAdcHit.SetSampIntTimePedestalPeak();
        fSampWaveform.push_back(float(npmt));
        fSampWaveform.push_back(float(rawAdcHit.GetNSamples()));
@@ -533,7 +547,7 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
       ((THcSignalHit*) frAdcSampPulseTimeRaw->ConstructedAt(nrSampAdcHits))->Set(npmt, rawAdcHit.GetSampPulseTimeRaw(thit));
       ((THcSignalHit*) frAdcSampPulseTime->ConstructedAt(nrSampAdcHits))->Set(npmt, rawAdcHit.GetSampPulseTime(thit)+fAdcTdcOffset);
       //
-      if ( rawAdcHit.GetNPulses() ==0 ) {
+      if ( rawAdcHit.GetNPulses() ==0 || fUseSampWaveform ==1 ) {
       ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetSampPedRaw());
       ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetSampPed());
 
