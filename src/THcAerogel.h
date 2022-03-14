@@ -50,6 +50,12 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   // Tracking variables
   Int_t     fNRegions;
   Int_t     fRegionsValueMax;
+  Int_t  fOutputSampWaveform;
+  Int_t  fUseSampWaveform;
+  Double_t  fSampThreshold;
+  Int_t  fSampNSA;
+  Int_t  fSampNSAT;
+  Int_t  fSampNSB;
   Int_t     fDebugAdc;
   Double_t  fRedChi2Min;
   Double_t  fRedChi2Max;
@@ -109,6 +115,23 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   TClonesArray* frNegAdcPulseTime;
   TClonesArray* fPosAdcErrorFlag;
   TClonesArray* fNegAdcErrorFlag;
+  // 12 Gev FADC Sample variables
+  TClonesArray* frPosAdcSampPedRaw;
+  TClonesArray* frPosAdcSampPulseIntRaw;
+  TClonesArray* frPosAdcSampPulseAmpRaw;
+  TClonesArray* frPosAdcSampPulseTimeRaw;
+  TClonesArray* frPosAdcSampPed;
+  TClonesArray* frPosAdcSampPulseInt;
+  TClonesArray* frPosAdcSampPulseAmp;
+  TClonesArray* frPosAdcSampPulseTime;
+  TClonesArray* frNegAdcSampPedRaw;
+  TClonesArray* frNegAdcSampPulseIntRaw;
+  TClonesArray* frNegAdcSampPulseAmpRaw;
+  TClonesArray* frNegAdcSampPulseTimeRaw;
+  TClonesArray* frNegAdcSampPed;
+  TClonesArray* frNegAdcSampPulseInt;
+  TClonesArray* frNegAdcSampPulseAmp;
+  TClonesArray* frNegAdcSampPulseTime;
   // Individual PMT data objects
   vector<Int_t>    fNumPosAdcHits;
   vector<Int_t>    fNumNegAdcHits;
@@ -132,6 +155,8 @@ class THcAerogel : public THaNonTrackingDetector, public THcHitList {
   vector<Double_t> fGoodNegAdcPulseAmp;
   vector<Double_t> fGoodNegAdcPulseTime;
   vector<Double_t> fGoodNegAdcTdcDiffTime;
+  vector<Double_t> fNegAdcSampWaveform;
+  vector<Double_t> fPosAdcSampWaveform;
 
   // 6 GeV era variables
   Int_t     fAnalyzePedestals;
