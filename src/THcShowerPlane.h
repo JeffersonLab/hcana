@@ -137,6 +137,13 @@ protected:
   Double_t fAdcPosThreshold;		//
   Double_t fAdcTdcOffset;
 
+  Int_t  fOutputSampWaveform;
+  Int_t  fUseSampWaveform;
+  Double_t  fSampThreshold;
+  Int_t  fSampNSA;
+  Int_t  fSampNSAT;
+  Int_t  fSampNSB;
+
   //counting variables
   Int_t     fTotNumPosAdcHits;
   Int_t     fTotNumNegAdcHits;
@@ -164,6 +171,9 @@ protected:
 
   vector<Double_t>      fGoodPosAdcPulseIntRaw;
   vector<Double_t>      fGoodNegAdcPulseIntRaw;
+
+  vector<Double_t> fNegAdcSampWaveform;
+  vector<Double_t> fPosAdcSampWaveform;
   
   vector<Double_t> fGoodPosAdcMult;
   vector<Double_t> fGoodNegAdcMult;
@@ -201,6 +211,23 @@ protected:
   Float_t *fNegPed;
   Float_t *fNegSig;
   Float_t *fNegThresh;
+
+  TClonesArray* frPosAdcSampPedRaw;
+  TClonesArray* frPosAdcSampPulseIntRaw;
+  TClonesArray* frPosAdcSampPulseAmpRaw;
+  TClonesArray* frPosAdcSampPulseTimeRaw;
+  TClonesArray* frPosAdcSampPed;
+  TClonesArray* frPosAdcSampPulseInt;
+  TClonesArray* frPosAdcSampPulseAmp;
+  TClonesArray* frPosAdcSampPulseTime;
+  TClonesArray* frNegAdcSampPedRaw;
+  TClonesArray* frNegAdcSampPulseIntRaw;
+  TClonesArray* frNegAdcSampPulseAmpRaw;
+  TClonesArray* frNegAdcSampPulseTimeRaw;
+  TClonesArray* frNegAdcSampPed;
+  TClonesArray* frNegAdcSampPulseInt;
+  TClonesArray* frNegAdcSampPulseAmp;
+  TClonesArray* frNegAdcSampPulseTime;
 
   TClonesArray* frPosAdcErrorFlag;
   TClonesArray* frPosAdcPedRaw;

@@ -116,6 +116,7 @@ protected:
   vector<Double_t>      fGoodAdcPulseAmp;
   vector<Double_t>      fGoodAdcPulseTime;
   vector<Double_t>      fGoodAdcTdcDiffTime;
+  vector<Double_t>      fSampWaveform;
 
   vector<Double_t>      fE;                    //[fNelem] energy deposition in shower blocks
 
@@ -138,11 +139,11 @@ protected:
   Double_t** fZPos;              // block Z coordinates
 
   Int_t fUsingFADC;		// != 0 if using FADC in sample mode
-   Int_t fADCMode;		//    
-   //  1 == Use the pulse int - pulse ped
-    //  2 == Use the sample integral - known ped
-    //  3 == Use the sample integral - sample ped
- static const Int_t kADCStandard=0;
+  Int_t fADCMode;		//    
+  //  1 == Use the pulse int - pulse ped
+  //  2 == Use the sample integral - known ped
+  //  3 == Use the sample integral - sample ped
+  static const Int_t kADCStandard=0;
   static const Int_t kADCDynamicPedestal=1;
   static const Int_t kADCSampleIntegral=2;
   static const Int_t kADCSampIntDynPed=3;
@@ -159,6 +160,13 @@ protected:
   Int_t fDataSampHigh;		// sample integration
 
   Int_t fLayerNum;		// 2 for SHMS
+
+  Int_t  fOutputSampWaveform;
+  Int_t  fUseSampWaveform;
+  Double_t  fSampThreshold;
+  Int_t  fSampNSA;
+  Int_t  fSampNSAT;
+  Int_t  fSampNSB;
 
   // Accumulators for pedestals go here
 
@@ -189,16 +197,25 @@ protected:
 
   THcShowerClusterList* fClusterList;   // List of hit clusters
 
+  TClonesArray* frAdcSampPedRaw;
+  TClonesArray* frAdcSampPulseIntRaw;
+  TClonesArray* frAdcSampPulseAmpRaw;
+  TClonesArray* frAdcSampPulseTimeRaw;
+  TClonesArray* frAdcSampPed;
+  TClonesArray* frAdcSampPulseInt;
+  TClonesArray* frAdcSampPulseAmp;
+  TClonesArray* frAdcSampPulseTime;
+  TClonesArray* frAdcSampWaveform;
+
   TClonesArray* frAdcPedRaw;
-  TClonesArray* frAdcErrorFlag;
   TClonesArray* frAdcPulseIntRaw;
   TClonesArray* frAdcPulseAmpRaw;
   TClonesArray* frAdcPulseTimeRaw;
-
   TClonesArray* frAdcPed;
   TClonesArray* frAdcPulseInt;
   TClonesArray* frAdcPulseAmp;
   TClonesArray* frAdcPulseTime;
+  TClonesArray* frAdcErrorFlag;
 
   //Quatitites for efficiency calculations.
 
