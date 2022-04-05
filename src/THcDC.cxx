@@ -418,7 +418,6 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "track_nhits", "Number of hits in track", "fDCTracks.THcDCTrack.GetNHits()"},
     { "track_sp1ID", "CH 1 Spacepoint index", "fDCTracks.THcDCTrack.GetSp1_ID()"},
     { "track_sp2ID", "CH 2 Spacepoint index", "fDCTracks.THcDCTrack.GetSp2_ID()"},
-    { "track_hitpos", "Position of each hit in track", "fDCTracks.THcDCTrack.THcDCHit.GetPos()"},
     { "x", "X at focal plane", "fDCTracks.THcDCTrack.GetX()"},
     { "y", "Y at focal plane", "fDCTracks.THcDCTrack.GetY()"},
     { "xp", "XP at focal plane", "fDCTracks.THcDCTrack.GetXP()"},
