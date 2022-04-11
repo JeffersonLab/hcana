@@ -321,13 +321,24 @@ void THcRawAdcHit::SetSampIntTimePedestalPeak() {
   */
   fHasMulti = kTRUE;
   fSampPed = GetIntegral(0, fNPedestalSamples-1);
+  //
+  Int_t NS=fNPedestalSamples-1;
+  fNSampPulses = 0;
+  if (fSampThreshold ==0) { // just want to get the pedestal for determining FADC threshold 
+     fSampPulseInt[fNSampPulses] = GetIntegral(TMath::Max(NS-fNSB,0),TMath::Min((NS+fNSA-1),int(fNSamples-1)));
+     fNPeakSamples = TMath::Min((NS+fNSA-1),int(fNSamples-1)) - TMath::Max(NS-fNSB,0)+1;
+     fPeakPedestalRatio= 1.0*fNPeakSamples/fNPedestalSamples;
+     fSampPulseAmp[fNSampPulses] = GetSampleRaw(NS);
+     fSampPulseTime[fNSampPulses] = 64*NS;
+     fNSampPulses = 1;
+    
+  } else { 
+  //
   Bool_t FADCerror = kFALSE;
   if (fNPulses==0) FADCerror = kTRUE;
    if (FADCerror) fSampPed = GetIntegral(fNSamples-fNPedestalSamples, fNSamples-1);
   // if fNPulses==0 then pedestal region has a pulse above the FADC ROL threshold in mode9/10
   // if fNPulses!=0 then good mode 10 event
-  Int_t NS=fNPedestalSamples-1;
-  fNSampPulses = 0;
   while (NS < int(fNSamples) && fNSampPulses<fMaxNPulses) {
     // GetSample(NS) Pedestal subtracted sample value (mV)
     if (FADCerror) { // if FADC error find first sample below threshold to start search
@@ -375,6 +386,7 @@ void THcRawAdcHit::SetSampIntTimePedestalPeak() {
     }
     NS++;
   }
+  } // match else 
   /*
   if ( fNSampPulses==0 && fNPulses==0) {
      std::cout << " No sample pulses found" << std::endl;
