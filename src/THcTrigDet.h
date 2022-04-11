@@ -55,6 +55,13 @@ class THcTrigDet : public THaDetector, public THcHitList {
     Double_t fTdcOffset;
     Double_t fTdcChanperNS;
 
+  Int_t  fOutputSampWaveform;
+  Int_t  fUseSampWaveform;
+  Double_t  fSampThreshold;
+  Int_t  fSampNSA;
+  Int_t  fSampNSAT;
+  Int_t  fSampNSB;
+ 
     std::vector<std::string> fAdcNames;
     std::vector<std::string> fTdcNames;
     std::vector<std::string> fTrigNames;
@@ -83,8 +90,21 @@ class THcTrigDet : public THaDetector, public THcHitList {
     Double_t fAdcPulseAmp[fMaxAdcChannels];
     Double_t fAdcPulseTime[fMaxAdcChannels];
 
+    Int_t fAdcSampPedRaw[fMaxAdcChannels];
+    Int_t fAdcSampPulseIntRaw[fMaxAdcChannels];
+    Int_t fAdcSampPulseAmpRaw[fMaxAdcChannels];
+    Int_t fAdcSampPulseTimeRaw[fMaxAdcChannels];
+
+    Double_t fAdcSampPed[fMaxAdcChannels];
+    Double_t fAdcSampPulseInt[fMaxAdcChannels];
+    Double_t fAdcSampPulseAmp[fMaxAdcChannels];
+    Double_t fAdcSampPulseTime[fMaxAdcChannels];
+
+    std::vector<Double_t> fSampWaveform;
+
     Int_t fTdcMultiplicity[fMaxTdcChannels];
     Int_t fAdcMultiplicity[fMaxAdcChannels];
+    Int_t fAdcSampMultiplicity[fMaxAdcChannels];
     Double_t fTdcRefTime;
 
     TString fSpectName;
