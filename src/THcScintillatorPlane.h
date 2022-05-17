@@ -119,6 +119,23 @@ class THcScintillatorPlane : public THaSubDetector {
   TClonesArray* frNegAdcPulseAmp;
   TClonesArray* frNegAdcPulseTime;
 
+  TClonesArray* frPosAdcSampPedRaw;
+  TClonesArray* frPosAdcSampPulseIntRaw;
+  TClonesArray* frPosAdcSampPulseAmpRaw;
+  TClonesArray* frPosAdcSampPulseTimeRaw;
+  TClonesArray* frPosAdcSampPed;
+  TClonesArray* frPosAdcSampPulseInt;
+  TClonesArray* frPosAdcSampPulseAmp;
+  TClonesArray* frPosAdcSampPulseTime;
+  TClonesArray* frNegAdcSampPedRaw;
+  TClonesArray* frNegAdcSampPulseIntRaw;
+  TClonesArray* frNegAdcSampPulseAmpRaw;
+  TClonesArray* frNegAdcSampPulseTimeRaw;
+  TClonesArray* frNegAdcSampPed;
+  TClonesArray* frNegAdcSampPulseInt;
+  TClonesArray* frNegAdcSampPulseAmp;
+  TClonesArray* frNegAdcSampPulseTime;
+
   //Hodoscopes Multiplicities
   Int_t fTotNumPosAdcHits;
   Int_t fTotNumNegAdcHits;
@@ -165,6 +182,9 @@ class THcScintillatorPlane : public THaSubDetector {
  
   vector<Double_t>  fGoodPosAdcTdcDiffTime;
   vector<Double_t>  fGoodNegAdcTdcDiffTime;
+
+  vector<Double_t> fNegAdcSampWaveform;
+  vector<Double_t> fPosAdcSampWaveform;
 
   //Hodoscopoe "GOOD" TDC Variables
   vector<Double_t>  fGoodPosTdcTimeUnCorr;
@@ -213,6 +233,14 @@ class THcScintillatorPlane : public THaSubDetector {
   Int_t fADCDiagCut;		// Cut for ADC in hit maps.  Defaults to 50
   Int_t fTdcOffset;		/* Overall offset to raw tdc */
   Double_t fAdcTdcOffset;	/* Overall offset to raw adc times */
+
+  Int_t  fOutputSampWaveform;
+  Int_t  fUseSampWaveform;
+  Double_t  fSampThreshold;
+  Int_t  fSampNSA;
+  Int_t  fSampNSAT;
+  Int_t  fSampNSB;
+
   Int_t fMaxHits;               /* maximum number of hits to be considered - useful for dimensioning arrays */
   Double_t fSpacing;            /* paddle spacing */
   Double_t fSize;               /* paddle size */
