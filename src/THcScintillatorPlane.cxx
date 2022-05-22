@@ -908,10 +908,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   fHodoHits->Clear();
   Int_t nrawhits = rawhits->GetLast()+1;
-  // cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
+  //   cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
   Int_t ihit = nexthit;
 
-  //cout << "THcScintillatorPlane: " << GetName() << " raw hits = " << nrawhits << endl;
+  // cout << "THcScintillatorPlane: " << GetName() << " raw hits = " << nrawhits << endl;
 
   // A THcRawHodoHit contains all the information (tdc and adc for both
   // pmts) for a single paddle for a single trigger.  The tdc information
@@ -938,10 +938,11 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	fPosTdcRefDiffTime=rawPosTdcHit.GetRefDiffTime() ;
       }
     if (fPosTdcRefTime != rawPosTdcHit.GetRefTime()) {
-      cout <<  "THcScintillatorPlane: " << GetName() << " reftime problem at paddle num = " << padnum << " TDC pos hits = " << rawPosTdcHit.GetNHits() << endl;
+      // cout <<  "THcScintillatorPlane: " << GetName() << " reftime problem at paddle num = " << padnum << " TDC pos hits = " << rawPosTdcHit.GetNHits() << endl;
         problem_flag=kTRUE;
     }
     }
+     // cout << " paddle num = " << padnum << " TDC Pos hits = " << rawPosTdcHit.GetNHits() << endl;
     for (UInt_t thit=0; thit<rawPosTdcHit.GetNHits(); ++thit) {
       ((THcSignalHit*) frPosTdcTimeRaw->ConstructedAt(nrPosTdcHits))->Set(padnum, rawPosTdcHit.GetTimeRaw(thit));
       ((THcSignalHit*) frPosTdcTime->ConstructedAt(nrPosTdcHits))->Set(padnum, rawPosTdcHit.GetTime(thit));
@@ -956,11 +957,11 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	fNegTdcRefDiffTime=rawNegTdcHit.GetRefDiffTime() ;
       }
     if (fNegTdcRefTime != rawNegTdcHit.GetRefTime()) {
-        cout <<  "THcScintillatorPlane: " << GetName()<< " Neg TDC reftime problem at paddle num = " << padnum << " TDC neg hits = " << rawNegTdcHit.GetNHits() << endl;
+        // cout <<  "THcScintillatorPlane: " << GetName()<< " Neg TDC reftime problem at paddle num = " << padnum << " TDC neg hits = " << rawNegTdcHit.GetNHits() << endl;
         problem_flag=kTRUE;
     }
     }
-    // cout << " paddle num = " << padnum << " TDC Neg hits = " << rawNegTdcHit.GetNHits() << endl;
+     // cout << " paddle num = " << padnum << " TDC Neg hits = " << rawNegTdcHit.GetNHits() << endl;
     for (UInt_t thit=0; thit<rawNegTdcHit.GetNHits(); ++thit) {
       ((THcSignalHit*) frNegTdcTimeRaw->ConstructedAt(nrNegTdcHits))->Set(padnum, rawNegTdcHit.GetTimeRaw(thit));
       ((THcSignalHit*) frNegTdcTime->ConstructedAt(nrNegTdcHits))->Set(padnum, rawNegTdcHit.GetTime(thit));
@@ -977,11 +978,11 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	fPosAdcRefDiffTime=rawPosAdcHit.GetRefDiffTime() ;
       }
     if (fPosAdcRefTime != rawPosAdcHit.GetRefTime()) {
-      cout <<  "THcScintillatorPlane: " << GetName()<< " Pos ADC reftime problem at paddle num = " << padnum << " ADC pos hits = " << rawPosAdcHit.GetNPulses() << endl;
+      // cout <<  "THcScintillatorPlane: " << GetName()<< " Pos ADC reftime problem at paddle num = " << padnum << " ADC pos hits = " << rawPosAdcHit.GetNPulses() << endl;
         problem_flag=kTRUE;
       }
     }
-    // cout << " paddle num = " << padnum << " ADC Pos hits = " << rawPosAdcHit.GetNPulses() << endl;
+     // cout << " paddle num = " << padnum << " ADC Pos hits = " << rawPosAdcHit.GetNPulses() << endl;
     if ( fUseSampWaveform == 0 ) {
       
       for (UInt_t thit=0; thit<rawPosAdcHit.GetNPulses(); ++thit) {
@@ -1008,6 +1009,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       }
     }
     //
+     // cout << " paddle num = " << padnum << "Pos ADC GetNSamples = " << rawPosAdcHit.GetNSamples() << endl;
     if (rawPosAdcHit.GetNSamples()>0 ) {
       rawPosAdcHit.SetSampThreshold(fSampThreshold);
       if (fSampNSA == 0) fSampNSA=rawPosAdcHit.GetF250_NSA();
@@ -1058,7 +1060,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
     THcRawAdcHit& rawNegAdcHit = hit->GetRawAdcHitNeg();
 
-    if ( (rawNegAdcHit.GetNPulses()>0 || rawNegAdcHit.GetNSamples()>0) && rawNegAdcHit.HasRefTime()) {
+      // cout << " paddle num = " << padnum << " ADC Neg hits = " << rawNegAdcHit.GetNPulses() << endl;
+   if ( (rawNegAdcHit.GetNPulses()>0 || rawNegAdcHit.GetNSamples()>0) && rawNegAdcHit.HasRefTime()) {
       if (fNegAdcRefTime == kBig) {
 	fNegAdcRefTime=rawNegAdcHit.GetRefTime() ;
 	fNegAdcRefDiffTime=rawNegAdcHit.GetRefDiffTime() ;
@@ -1069,10 +1072,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       }
     }
 
-    // cout << " paddle num = " << padnum << " ADC Neg hits = " << rawNegAdcHit.GetNPulses() << endl;
     if ( fUseSampWaveform == 0 ) {
-
       for (UInt_t thit=0; thit<rawNegAdcHit.GetNPulses(); ++thit) {
+	// cout << "neg adc  thit = " << thit << endl;
+	
 	((THcSignalHit*) frNegAdcPedRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPedRaw());
 	((THcSignalHit*) frNegAdcPed->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPed());
 	
@@ -1086,7 +1089,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	
 	if (rawNegAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 0);
 	if (rawNegAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 1);
-	if (rawPosAdcHit.GetPulseAmpRaw(thit) <= 0 && rawPosAdcHit.GetNSamples() >0) ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 2);
+	if (rawNegAdcHit.GetPulseAmpRaw(thit) <= 0 && rawNegAdcHit.GetNSamples() >0) ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 2);
 	
 	++nrNegAdcHits;
 	fTotNumAdcHits++;
@@ -1094,6 +1097,7 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       }
     }
 
+     // cout << " paddle num = " << padnum << "Neg ADC GetNSamples = " << rawNegAdcHit.GetNSamples() << endl;
     if (rawNegAdcHit.GetNSamples()>0 ) {
       rawNegAdcHit.SetSampThreshold(fSampThreshold);
       if (fSampNSA == 0) fSampNSA=rawNegAdcHit.GetF250_NSA();
@@ -1139,7 +1143,8 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       }	
     }
     
-    // Need to be finding first hit in TDC range, not the first hit overall
+     // cout << " Finding tdc hit " << endl;
+     // Need to be finding first hit in TDC range, not the first hit overall
     if (hit->GetRawTdcHitPos().GetNHits() > 0)
       ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->GetRawTdcHitPos().GetTime()+fTdcOffset);
     if (hit->GetRawTdcHitNeg().GetNHits() > 0)
