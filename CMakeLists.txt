@@ -24,6 +24,9 @@ endif()
 set_compiler_flags("${ROOT_CXX_FLAGS}")
 set_diagnostic_flags(WALL WEXTRA)
 report_build_info()
+if(PODD_SET_RPATH)
+  set_install_rpath()
+endif()
 
 #----------------------------------------------------------------------------
 # Install in GNU-style directory layout
