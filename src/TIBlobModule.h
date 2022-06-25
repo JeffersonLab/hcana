@@ -26,6 +26,7 @@ public:
    virtual ~TIBlobModule();
 
    using Module::GetData;
+   using PipeliningModule::Init;
 
    virtual UInt_t GetData(UInt_t chan) const;
    virtual void Init();
@@ -33,11 +34,8 @@ public:
    virtual Int_t Decode(const UInt_t*) { return 0; }
    virtual UInt_t LoadSlot( THaSlotData *sldat, const UInt_t *evbuffer, const UInt_t *pstop );
    virtual UInt_t LoadSlot( THaSlotData *sldat, const UInt_t* evbuffer, UInt_t pos, UInt_t len);
-   virtual UInt_t LoadNextEvBuffer(THaSlotData *sldat);
-   virtual UInt_t LoadThisBlock( THaSlotData *sldat, const std::vector<UInt_t>& evbuffer);
- 
+
  protected:
-   virtual Int_t SplitBuffer( const std::vector<UInt_t>& bigbuffer);
 
  private:
 
