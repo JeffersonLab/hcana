@@ -57,6 +57,15 @@ THcCherenkov::THcCherenkov( const char* name, const char* description,
   frAdcPulseAmp     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
   frAdcPulseTime    = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
   fAdcErrorFlag     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  // Normal constructor with name and description
+  frAdcSampPedRaw       = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcSampPulseIntRaw  = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcSampPulseAmpRaw  = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcSampPulseTimeRaw = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcSampPed          = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcSampPulseInt     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcSampPulseAmp     = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
+  frAdcSampPulseTime    = new TClonesArray("THcSignalHit", MaxNumCerPmt*MaxNumAdcPulse);
 
   fNumAdcHits         = vector<Int_t>    (MaxNumCerPmt, 0.0);
   fNumGoodAdcHits     = vector<Int_t>    (MaxNumCerPmt, 0.0);
@@ -89,6 +98,14 @@ THcCherenkov::THcCherenkov( ) :
   frAdcPulseAmp     = NULL;
   frAdcPulseTime    = NULL;
   fAdcErrorFlag     = NULL;
+  frAdcSampPedRaw       = NULL;
+  frAdcSampPulseIntRaw  = NULL;
+  frAdcSampPulseAmpRaw  = NULL;
+  frAdcSampPulseTimeRaw = NULL;
+  frAdcSampPed          = NULL;
+  frAdcSampPulseInt     = NULL;
+  frAdcSampPulseAmp     = NULL;
+  frAdcSampPulseTime    = NULL;
 
   InitArrays();
 }
@@ -106,6 +123,14 @@ THcCherenkov::~THcCherenkov()
   delete frAdcPulseAmp;     frAdcPulseAmp     = NULL;
   delete frAdcPulseTime;    frAdcPulseTime    = NULL;
   delete fAdcErrorFlag;     fAdcErrorFlag     = NULL;
+  delete frAdcSampPedRaw;       frAdcSampPedRaw       = NULL;
+  delete frAdcSampPulseIntRaw;  frAdcSampPulseIntRaw  = NULL;
+  delete frAdcSampPulseAmpRaw;  frAdcSampPulseAmpRaw  = NULL;
+  delete frAdcSampPulseTimeRaw; frAdcSampPulseTimeRaw = NULL;
+  delete frAdcSampPed;          frAdcSampPed          = NULL;
+  delete frAdcSampPulseInt;     frAdcSampPulseInt     = NULL;
+  delete frAdcSampPulseAmp;     frAdcSampPulseAmp     = NULL;
+  delete frAdcSampPulseTime;    frAdcSampPulseTime    = NULL;
 
   DeleteArrays();
 }
@@ -223,6 +248,12 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   DBRequest list[]={
     {"_ped_limit",        fPedLimit,          kInt,     (UInt_t) fNelem, optional},
     {"_adc_to_npe",       fGain,              kDouble,  (UInt_t) fNelem},
+    {"_SampThreshold",     &fSampThreshold,       kDouble,0,1},
+    {"_SampNSA",     &fSampNSA,       kInt,0,1},
+    {"_SampNSAT",     &fSampNSAT,       kInt,0,1},
+    {"_SampNSB",     &fSampNSB,       kInt,0,1},
+    {"_OutputSampWaveform",     &fOutputSampWaveform,       kInt,0,1},
+    {"_UseSampWaveform",     &fUseSampWaveform,       kInt,0,1},
     {"_red_chi2_min",     &fRedChi2Min,       kDouble},
     {"_red_chi2_max",     &fRedChi2Max,       kDouble},
     {"_beta_min",         &fBetaMin,          kDouble},
@@ -242,6 +273,13 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
     {"_adcrefcut",        &fADC_RefTimeCut,   kInt,    0, 1},
     {0}
   };
+  fSampThreshold = 5.;
+  fSampNSA = 0; // use value stored in event 125 info
+  fSampNSB = 0; // use value stored in event 125 info
+  fSampNSAT = 2; // default value in THcRawHit::SetF250Params
+      cout << " fSampThreshold 1 = " << fSampThreshold << endl;
+  fOutputSampWaveform = 0; // 0= no output , 1 = output Sample Waveform
+  fUseSampWaveform = 0; // 0= do not use , 1 = use Sample Waveform
   for (Int_t i=0;i<fNelem;i++) {
     fAdcTimeWindowMin[i]=-1000.;
     fAdcTimeWindowMax[i]=1000.;
@@ -252,7 +290,8 @@ Int_t THcCherenkov::ReadDatabase( const TDatime& date )
   fADC_RefTimeCut = 0;
 
   gHcParms->LoadParmValues((DBRequest*)&list, prefix.c_str());
-
+      cout << " fSampThreshold = " << fSampThreshold << endl;
+   
   // if (fDebugAdc) cout << "Cherenkov ADC Debug Flag Set To TRUE" << endl;
 
   fIsInit = true;
@@ -294,13 +333,30 @@ Int_t THcCherenkov::DefineVariables( EMode mode )
       {"adcPulseInt",     "ADC pulse integrals",        "frAdcPulseInt.THcSignalHit.GetData()"},
       {"adcPulseAmp",     "ADC pulse amplitudes",       "frAdcPulseAmp.THcSignalHit.GetData()"},
       {"adcPulseTime",    "ADC pulse times",            "frAdcPulseTime.THcSignalHit.GetData()"},
+      {"adcSampPedRaw",       "Raw ADCSAMP pedestals",          "frAdcSampPedRaw.THcSignalHit.GetData()"},
+      {"adcSampPulseIntRaw",  "Raw ADCSAMP pulse integrals",    "frAdcSampPulseIntRaw.THcSignalHit.GetData()"},
+      {"adcSampPulseAmpRaw",  "Raw ADCSAMP pulse amplitudes",   "frAdcSampPulseAmpRaw.THcSignalHit.GetData()"},
+      {"adcSampPulseTimeRaw", "Raw ADCSAMP pulse times",        "frAdcSampPulseTimeRaw.THcSignalHit.GetData()"},
+      {"adcSampPed",          "ADCSAMP pedestals",              "frAdcSampPed.THcSignalHit.GetData()"},
+      {"adcSampPulseInt",     "ADCSAMP pulse integrals",        "frAdcSampPulseInt.THcSignalHit.GetData()"},
+      {"adcSampPulseAmp",     "ADCSAMP pulse amplitudes",       "frAdcSampPulseAmp.THcSignalHit.GetData()"},
+      {"adcSampPulseTime",    "ADCSAMP pulse times",            "frAdcSampPulseTime.THcSignalHit.GetData()"},
       { 0 }
     };
     DefineVarsFromList( vars, mode);
   } //end debug statement
 
+  if (fOutputSampWaveform==1) {
+  RVarDef vars[] = {
+    {"adcSampWaveform",          "FADC Sample Waveform",           "fSampWaveform"},
+      { 0 }
+    };
+    DefineVarsFromList( vars, mode);
+  }
+
   RVarDef vars[] = {
     {"adcCounter",   "ADC counter numbers",            "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+    {"adcSampleCounter",   "ADC SAMP counter numbers",            "frAdcSampPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
     {"adcErrorFlag", "Error Flag for When FPGA Fails", "fAdcErrorFlag.THcSignalHit.GetData()"},
 
     {"numGoodAdcHits",    "Number of Good ADC Hits Per PMT", "fNumGoodAdcHits"},    // Cherenkov occupancy
@@ -359,6 +415,16 @@ void THcCherenkov::Clear(Option_t* opt)
   frAdcPulseTime->Clear();
   fAdcErrorFlag->Clear();
 
+  frAdcSampPedRaw->Clear();
+  frAdcSampPulseIntRaw->Clear();
+  frAdcSampPulseAmpRaw->Clear();
+  frAdcSampPulseTimeRaw->Clear();
+
+  frAdcSampPed->Clear();
+  frAdcSampPulseInt->Clear();
+  frAdcSampPulseAmp->Clear();
+  frAdcSampPulseTime->Clear();
+
   for (UInt_t ielem = 0; ielem < fNumAdcHits.size(); ielem++)
     fNumAdcHits.at(ielem) = 0;
   for (UInt_t ielem = 0; ielem < fNumGoodAdcHits.size(); ielem++)
@@ -389,11 +455,9 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
   if(fPresentP) {		// if this spectrometer not part of trigger
     present = *fPresentP;
   }
-  fNhits = DecodeToHitList(evdata, !present);
-
-  //THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
-  // cout << "Cerenkov  Event num = " << evdata.GetEvNum() << " spec = " << app->GetName() << endl;
-
+  // THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
+   // cout << "Cerenkov  Event num = " << evdata.GetEvNum() << " spec = " << app->GetName() << " det = "  << GetName()<< endl;
+ fNhits = DecodeToHitList(evdata, !present);
   if(gHaCuts->Result("Pedestal_event")) {
     AccumulatePedestals(fRawHitList);
     fAnalyzePedestals = 1;	// Analyze pedestals first normal events
@@ -407,16 +471,18 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
 
   Int_t  ihit      = 0;
   UInt_t nrAdcHits = 0;
+  UInt_t nrSampAdcHits = 0;
+  fSampWaveform.clear();
 
   while(ihit < fNhits) {
  
     THcCherenkovHit* hit         = (THcCherenkovHit*) fRawHitList->At(ihit);
     Int_t            npmt        = hit->fCounter;
     THcRawAdcHit&    rawAdcHit   = hit->GetRawAdcHitPos();
-    if (rawAdcHit.GetNPulses() >0 && rawAdcHit.HasRefTime()) {
+    if ((rawAdcHit.GetNPulses() >0 || rawAdcHit.GetNSamples() >0) && rawAdcHit.HasRefTime()) {
       fRefTime=rawAdcHit.GetRefTime() ;
     }
-    //if (rawAdcHit.GetNPulses()>0) cout << "Cer npmt = " << " ped = " << rawAdcHit.GetPed() << endl;
+    if ( fUseSampWaveform == 0 ) {
     for (UInt_t thit = 0; thit < rawAdcHit.GetNPulses(); thit++) {
 
       ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetPedRaw());
@@ -433,6 +499,7 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
 
       if (rawAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 0);
       if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 1);
+     if (rawAdcHit.GetPulseAmpRaw(thit) <= 0 && rawAdcHit.GetNSamples() >0) ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 2);
 
       if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) {
 	Double_t PeakPedRatio= rawAdcHit.GetF250_PeakPedestalRatio();
@@ -455,6 +522,57 @@ Int_t THcCherenkov::Decode( const THaEvData& evdata )
       fTotNumAdcHits++;
       fNumAdcHits.at(npmt-1) = npmt;
     }
+    }
+    //
+    if (rawAdcHit.GetNSamples() >0 ) {   
+      rawAdcHit.SetSampThreshold(fSampThreshold);
+      if (fSampNSA == 0) fSampNSA=rawAdcHit.GetF250_NSA();
+      if (fSampNSB == 0) fSampNSB=rawAdcHit.GetF250_NSB();
+      rawAdcHit.SetF250Params(fSampNSA,fSampNSB,4); // Set NPED =4
+      if (fSampNSAT != 2) rawAdcHit.SetSampNSAT(fSampNSAT);
+      rawAdcHit.SetSampIntTimePedestalPeak();
+       fSampWaveform.push_back(float(npmt));
+       fSampWaveform.push_back(float(rawAdcHit.GetNSamples()));
+      for (UInt_t thit = 0; thit < rawAdcHit.GetNSamples(); thit++) {
+	fSampWaveform.push_back(rawAdcHit.GetSample(thit)); // ped subtracted sample (mV)
+      }
+      for (UInt_t thit = 0; thit < rawAdcHit.GetNSampPulses(); thit++) {
+      ((THcSignalHit*) frAdcSampPedRaw->ConstructedAt(nrSampAdcHits))->Set(npmt, rawAdcHit.GetSampPedRaw());
+      ((THcSignalHit*) frAdcSampPed->ConstructedAt(nrSampAdcHits))->Set(npmt, rawAdcHit.GetSampPed());
+
+      ((THcSignalHit*) frAdcSampPulseIntRaw->ConstructedAt(nrSampAdcHits))->Set(npmt, rawAdcHit.GetSampPulseIntRaw(thit));
+      ((THcSignalHit*) frAdcSampPulseInt->ConstructedAt(nrSampAdcHits))->Set(npmt, rawAdcHit.GetSampPulseInt(thit));
+
+      ((THcSignalHit*) frAdcSampPulseAmpRaw->ConstructedAt(nrSampAdcHits))->Set(npmt, rawAdcHit.GetSampPulseAmpRaw(thit));
+      ((THcSignalHit*) frAdcSampPulseAmp->ConstructedAt(nrSampAdcHits))->Set(npmt, rawAdcHit.GetSampPulseAmp(thit));
+      ((THcSignalHit*) frAdcSampPulseTimeRaw->ConstructedAt(nrSampAdcHits))->Set(npmt, rawAdcHit.GetSampPulseTimeRaw(thit));
+      ((THcSignalHit*) frAdcSampPulseTime->ConstructedAt(nrSampAdcHits))->Set(npmt, rawAdcHit.GetSampPulseTime(thit)+fAdcTdcOffset);
+      //
+      if ( rawAdcHit.GetNPulses() ==0 || fUseSampWaveform ==1 ) {
+      ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetSampPedRaw());
+      ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetSampPed());
+
+      ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(nrAdcHits))->Set(npmt,rawAdcHit.GetSampPulseIntRaw(thit));
+      ((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(npmt,rawAdcHit.GetSampPulseInt(thit));
+
+      ((THcSignalHit*) frAdcPulseAmpRaw->ConstructedAt(nrAdcHits))->Set(npmt,rawAdcHit.GetSampPulseAmpRaw(thit));
+      ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(npmt,rawAdcHit.GetSampPulseAmp(thit) );
+
+      ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(npmt,rawAdcHit.GetSampPulseTimeRaw(thit) );
+      ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(npmt, rawAdcHit.GetSampPulseTime(thit)+fAdcTdcOffset);
+      ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 3);  
+      if (fUseSampWaveform ==1) ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(npmt, 0);  
+        ++nrAdcHits;
+      fTotNumAdcHits++;
+      fNumAdcHits.at(npmt-1) = npmt;
+      }
+      ++nrSampAdcHits;
+      }	
+    }							      
+	//		  Int_t t=0;
+	//		  std::cin >> t;
+
+    //
     ihit++;
   }
   return ihit;
@@ -482,17 +600,17 @@ Int_t THcCherenkov::CoarseProcess( TClonesArray&  )
     Int_t    npmt         = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber() - 1;
     Double_t pulseTime    = ((THcSignalHit*) frAdcPulseTime->ConstructedAt(ielem))->GetData();
     Double_t pulseAmp     = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
-    Bool_t   errorFlag    = ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(ielem))->GetData();
+    Int_t   errorFlag    = ((THcSignalHit*) fAdcErrorFlag->ConstructedAt(ielem))->GetData();
     Double_t adctdcdiffTime = StartTime-pulseTime+OffsetTime;
     Bool_t   pulseTimeCut = adctdcdiffTime > fAdcTimeWindowMin[npmt] && adctdcdiffTime < fAdcTimeWindowMax[npmt];
  	fGoodAdcMult.at(npmt) += 1;
-	if (!errorFlag) {
+	if (errorFlag == 0 || errorFlag == 3) {
 	  if (pulseTimeCut && pulseAmp > fAdcPulseAmpTest[npmt]) {
              fAdcGoodElem[npmt]=ielem;
               fAdcPulseAmpTest[npmt] = pulseAmp;
 	  }
-        } else {
-	  if (pulseTimeCut) fAdcGoodElem[npmt]=ielem;
+        } else if (errorFlag == 1) {
+	  fAdcGoodElem[npmt]=ielem;
         }
   }
   // Loop over the npmt

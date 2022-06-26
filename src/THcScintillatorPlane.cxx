@@ -100,6 +100,23 @@ THcScintillatorPlane::THcScintillatorPlane( const char* name,
   frNegAdcPulseAmp  = new TClonesArray("THcSignalHit", 16);
   frNegAdcPulseTime = new TClonesArray("THcSignalHit", 16);
 
+  frPosAdcSampPedRaw       = new TClonesArray("THcSignalHit", 16);
+  frPosAdcSampPulseIntRaw  = new TClonesArray("THcSignalHit", 16);
+  frPosAdcSampPulseAmpRaw  = new TClonesArray("THcSignalHit", 16);
+  frPosAdcSampPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
+  frPosAdcSampPed          = new TClonesArray("THcSignalHit", 16);
+  frPosAdcSampPulseInt	   = new TClonesArray("THcSignalHit", 16);
+  frPosAdcSampPulseAmp	   = new TClonesArray("THcSignalHit", 16);
+  frPosAdcSampPulseTime	   = new TClonesArray("THcSignalHit", 16);
+
+  frNegAdcSampPedRaw       = new TClonesArray("THcSignalHit", 16);
+  frNegAdcSampPulseIntRaw  = new TClonesArray("THcSignalHit", 16);
+  frNegAdcSampPulseAmpRaw  = new TClonesArray("THcSignalHit", 16);
+  frNegAdcSampPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
+  frNegAdcSampPed 	   = new TClonesArray("THcSignalHit", 16);
+  frNegAdcSampPulseInt	   = new TClonesArray("THcSignalHit", 16);
+  frNegAdcSampPulseAmp	   = new TClonesArray("THcSignalHit", 16);
+  frNegAdcSampPulseTime    = new TClonesArray("THcSignalHit", 16);
 
   fPlaneNum = planenum;
   fTotPlanes = planenum;
@@ -150,6 +167,24 @@ THcScintillatorPlane::~THcScintillatorPlane()
   delete frNegAdcPulseInt;
   delete frNegAdcPulseAmp;
   delete frNegAdcPulseTime;
+
+  delete frPosAdcSampPedRaw;       frPosAdcSampPedRaw       = NULL;
+  delete frPosAdcSampPulseIntRaw;  frPosAdcSampPulseIntRaw  = NULL;
+  delete frPosAdcSampPulseAmpRaw;  frPosAdcSampPulseAmpRaw  = NULL;
+  delete frPosAdcSampPulseTimeRaw; frPosAdcSampPulseTimeRaw = NULL;
+  delete frPosAdcSampPed;          frPosAdcSampPed          = NULL;
+  delete frPosAdcSampPulseInt;     frPosAdcSampPulseInt     = NULL;
+  delete frPosAdcSampPulseAmp;     frPosAdcSampPulseAmp     = NULL;
+  delete frPosAdcSampPulseTime;    frPosAdcSampPulseTime    = NULL;
+
+  delete frNegAdcSampPedRaw;       frNegAdcSampPedRaw       = NULL;
+  delete frNegAdcSampPulseIntRaw;  frNegAdcSampPulseIntRaw  = NULL;
+  delete frNegAdcSampPulseAmpRaw;  frNegAdcSampPulseAmpRaw  = NULL;
+  delete frNegAdcSampPulseTimeRaw; frNegAdcSampPulseTimeRaw = NULL;
+  delete frNegAdcSampPed;          frNegAdcSampPed          = NULL;
+  delete frNegAdcSampPulseInt;     frNegAdcSampPulseInt     = NULL;
+  delete frNegAdcSampPulseAmp;     frNegAdcSampPulseAmp     = NULL;
+  delete frNegAdcSampPulseTime;    frNegAdcSampPulseTime    = NULL;
 
   delete [] fPosCenter; fPosCenter = 0;
 
@@ -271,6 +306,12 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
     {"hodo_adc_diag_cut", &fADCDiagCut, kInt, 0, 1},
     {"cosmicflag", &fCosmicFlag, kInt, 0, 1},
     {"hodo_debug_adc",  &fDebugAdc, kInt, 0, 1},
+    {"hodo_SampThreshold",     &fSampThreshold,       kDouble,0,1},
+    {"hodo_SampNSA",     &fSampNSA,       kInt,0,1},
+    {"hodo_SampNSAT",     &fSampNSAT,       kInt,0,1},
+    {"hodo_SampNSB",     &fSampNSB,       kInt,0,1},
+    {"hodo_OutputSampWaveform",     &fOutputSampWaveform,       kInt,0,1},
+    {"hodo_UseSampWaveform",     &fUseSampWaveform,       kInt,0,1},
     {0}
   };
 
@@ -281,6 +322,14 @@ Int_t THcScintillatorPlane::ReadDatabase( const TDatime& date )
   fADCPedScaleFactor = 1.0;
   fADCDiagCut = 50.0;
   fCosmicFlag=0;
+
+  fSampThreshold = 5.;
+  fSampNSA = 0; // use value stored in event 125 info
+  fSampNSB = 0; // use value stored in event 125 info
+  fSampNSAT = 2; // default value in THcRawHit::SetF250Params
+  fOutputSampWaveform = 0; // 0= no output , 1 = output Sample Waveform
+  fUseSampWaveform = 0; // 0= do not use , 1 = use Sample Waveform
+
   gHcParms->LoadParmValues((DBRequest*)&list,prefix);
   if (fCosmicFlag==1) cout << " setup for cosmics in scint plane"<< endl;
   // cout << " cosmic flag = " << fCosmicFlag << endl;
@@ -453,6 +502,15 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
       {"posAdcPulseAmp",     "List of positive ADC pulse amplitudes.",     "frPosAdcPulseAmp.THcSignalHit.GetData()"},
       {"posAdcPulseTime",    "List of positive ADC pulse times.",          "frPosAdcPulseTime.THcSignalHit.GetData()"},
 
+      {"posAdcSampPedRaw",       "Positive Raw Samp ADC pedestals",        "frPosAdcSampPedRaw.THcSignalHit.GetData()"},
+      {"posAdcSampPulseIntRaw",  "Positive Raw Samp ADC pulse integrals",  "frPosAdcSampPulseIntRaw.THcSignalHit.GetData()"},
+      {"posAdcSampPulseAmpRaw",  "Positive Raw Samp ADC pulse amplitudes", "frPosAdcSampPulseAmpRaw.THcSignalHit.GetData()"},
+      {"posAdcSampPulseTimeRaw", "Positive Raw Samp ADC pulse times",      "frPosAdcSampPulseTimeRaw.THcSignalHit.GetData()"},
+      {"posAdcSampPed",          "Positive Samp ADC pedestals",            "frPosAdcSampPed.THcSignalHit.GetData()"},
+      {"posAdcSampPulseInt",     "Positive Samp ADC pulse integrals",      "frPosAdcSampPulseInt.THcSignalHit.GetData()"},
+      {"posAdcSampPulseAmp",     "Positive Samp ADC pulse amplitudes",     "frPosAdcSampPulseAmp.THcSignalHit.GetData()"},
+      {"posAdcSampPulseTime",    "Positive Samp ADC pulse times",          "frPosAdcSampPulseTime.THcSignalHit.GetData()"},
+
       {"negTdcTimeRaw",      "List of negative raw TDC values.",           "frNegTdcTimeRaw.THcSignalHit.GetData()"},
       {"negAdcPedRaw",       "List of negative raw ADC pedestals",         "frNegAdcPedRaw.THcSignalHit.GetData()"},
       {"negAdcPulseIntRaw",  "List of negative raw ADC pulse integrals.",  "frNegAdcPulseIntRaw.THcSignalHit.GetData()"},
@@ -465,6 +523,15 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
       {"negAdcPulseAmp",     "List of negative ADC pulse amplitudes.",     "frNegAdcPulseAmp.THcSignalHit.GetData()"},
       {"negAdcPulseTime",    "List of negative ADC pulse times.",          "frNegAdcPulseTime.THcSignalHit.GetData()"},
 
+      {"negAdcSampPedRaw",       "Negative Raw Samp ADC pedestals",        "frNegAdcSampPedRaw.THcSignalHit.GetData()"},
+      {"negAdcSampPulseIntRaw",  "Negative Raw Samp ADC pulse integrals",  "frNegAdcSampPulseIntRaw.THcSignalHit.GetData()"},
+      {"negAdcSampPulseAmpRaw",  "Negative Raw Samp ADC pulse amplitudes", "frNegAdcSampPulseAmpRaw.THcSignalHit.GetData()"},
+      {"negAdcSampPulseTimeRaw", "Negative Raw Samp ADC pulse times",      "frNegAdcSampPulseTimeRaw.THcSignalHit.GetData()"},
+      {"negAdcSampPed",          "Negative Samp ADC pedestals",            "frNegAdcSampPed.THcSignalHit.GetData()"},
+      {"negAdcSampPulseInt",     "Negative Samp ADC pulse integrals",      "frNegAdcSampPulseInt.THcSignalHit.GetData()"},
+      {"negAdcSampPulseAmp",     "Negative Samp ADC pulse amplitudes",     "frNegAdcSampPulseAmp.THcSignalHit.GetData()"},
+      {"negAdcSampPulseTime",    "Negative Samp ADC pulse times",          "frNegAdcSampPulseTime.THcSignalHit.GetData()"},
+
       {"totNumPosAdcHits", "Total Number of Positive ADC Hits",   "fTotNumPosAdcHits"}, // Hodo+ raw ADC multiplicity Int_t
       {"totNumNegAdcHits", "Total Number of Negative ADC Hits",   "fTotNumNegAdcHits"}, // Hodo- raw ADC multiplicity  ""
       {"totNumAdcHits",   "Total Number of PMTs Hit (as measured by ADCs)",      "fTotNumAdcHits"},    // Hodo raw ADC multiplicity  ""
@@ -476,6 +543,15 @@ Int_t THcScintillatorPlane::DefineVariables( EMode mode )
     };
     DefineVarsFromList( vars, mode);
   } //end debug statement
+
+  if (fOutputSampWaveform==1) {
+  RVarDef vars[] = {
+    {"adcNegSampWaveform",          "FADC Neg ADCSample Waveform",           "fNegAdcSampWaveform"},
+    {"adcPosSampWaveform",          "FADC Pos ADCSample Waveform",           "fPosAdcSampWaveform"},
+      { 0 }
+    };
+    DefineVarsFromList( vars, mode);
+  }
 
   RVarDef vars[] = {
     {"nhits", "Number of paddle hits (passed TDC && ADC Min and Max cuts for either end)",           "GetNScinHits() "},
@@ -587,6 +663,15 @@ void THcScintillatorPlane::Clear( Option_t* )
   frPosAdcPulseAmp->Clear();
   frPosAdcPulseTime->Clear();
 
+  frPosAdcSampPedRaw->Clear();
+  frPosAdcSampPulseIntRaw->Clear();
+  frPosAdcSampPulseAmpRaw->Clear();
+  frPosAdcSampPulseTimeRaw->Clear();
+  frPosAdcSampPed->Clear();
+  frPosAdcSampPulseInt->Clear();
+  frPosAdcSampPulseAmp->Clear();
+  frPosAdcSampPulseTime->Clear();
+
   frNegTdcTimeRaw->Clear();
   frNegAdcPedRaw->Clear();
   frNegAdcPulseIntRaw->Clear();
@@ -598,6 +683,15 @@ void THcScintillatorPlane::Clear( Option_t* )
   frNegAdcPulseInt->Clear();
   frNegAdcPulseAmp->Clear();
   frNegAdcPulseTime->Clear();
+
+  frNegAdcSampPedRaw->Clear();
+  frNegAdcSampPulseIntRaw->Clear();
+  frNegAdcSampPulseAmpRaw->Clear();
+  frNegAdcSampPulseTimeRaw->Clear();
+  frNegAdcSampPed->Clear();
+  frNegAdcSampPulseInt->Clear();
+  frNegAdcSampPulseAmp->Clear();
+  frNegAdcSampPulseTime->Clear();
 
 
   //Clear occupancies
@@ -735,6 +829,10 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   UInt_t nrNegAdcHits = 0;
   UInt_t nrPosTdcHits = 0;
   UInt_t nrNegTdcHits = 0;
+  UInt_t nrSampPosAdcHits = 0;
+  UInt_t nrSampNegAdcHits = 0;
+  fPosAdcSampWaveform.clear();
+  fNegAdcSampWaveform.clear();
   frPosTDCHits->Clear();
   frNegTDCHits->Clear();
   frPosADCHits->Clear();
@@ -757,6 +855,15 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frPosAdcPulseAmp->Clear();
   frPosAdcPulseTime->Clear();
 
+  frPosAdcSampPedRaw->Clear();
+  frPosAdcSampPulseIntRaw->Clear();
+  frPosAdcSampPulseAmpRaw->Clear();
+  frPosAdcSampPulseTimeRaw->Clear();
+  frPosAdcSampPed->Clear();
+  frPosAdcSampPulseInt->Clear();
+  frPosAdcSampPulseAmp->Clear();
+  frPosAdcSampPulseTime->Clear();
+
   frNegTdcTimeRaw->Clear();
   frNegAdcPedRaw->Clear();
   frNegAdcPulseIntRaw->Clear();
@@ -768,6 +875,16 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frNegAdcPulseInt->Clear();
   frNegAdcPulseAmp->Clear();
   frNegAdcPulseTime->Clear();
+
+  frNegAdcSampPedRaw->Clear();
+  frNegAdcSampPulseIntRaw->Clear();
+  frNegAdcSampPulseAmpRaw->Clear();
+  frNegAdcSampPulseTimeRaw->Clear();
+  frNegAdcSampPed->Clear();
+  frNegAdcSampPulseInt->Clear();
+  frNegAdcSampPulseAmp->Clear();
+  frNegAdcSampPulseTime->Clear();
+
   //stripped
   fNScinHits=0;
 
@@ -791,18 +908,20 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 
   fHodoHits->Clear();
   Int_t nrawhits = rawhits->GetLast()+1;
-  // cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
+  //   cout << "THcScintillatorPlane::ProcessHits " << fPlaneNum << " " << nexthit << "/" << nrawhits << endl;
   Int_t ihit = nexthit;
 
-  //cout << "THcScintillatorPlane: " << GetName() << " raw hits = " << nrawhits << endl;
+  // cout << "THcScintillatorPlane: " << GetName() << " raw hits = " << nrawhits << endl;
 
   // A THcRawHodoHit contains all the information (tdc and adc for both
   // pmts) for a single paddle for a single trigger.  The tdc information
   // might include multiple hits if it uses a multihit tdc.
   // Use "ihit" as the index over THcRawHodoHit objects.  Use
   // "thit" to index over multiple tdc hits within an "ihit".
-    Bool_t problem_flag=kFALSE;
+  Bool_t problem_flag=kFALSE;
+
   while(ihit < nrawhits) {
+
     THcRawHodoHit* hit = (THcRawHodoHit *) rawhits->At(ihit);
     if(hit->fPlane > fPlaneNum) {
       break;
@@ -819,10 +938,11 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	fPosTdcRefDiffTime=rawPosTdcHit.GetRefDiffTime() ;
       }
     if (fPosTdcRefTime != rawPosTdcHit.GetRefTime()) {
-      cout <<  "THcScintillatorPlane: " << GetName() << " reftime problem at paddle num = " << padnum << " TDC pos hits = " << rawPosTdcHit.GetNHits() << endl;
+      // cout <<  "THcScintillatorPlane: " << GetName() << " reftime problem at paddle num = " << padnum << " TDC pos hits = " << rawPosTdcHit.GetNHits() << endl;
         problem_flag=kTRUE;
     }
     }
+     // cout << " paddle num = " << padnum << " TDC Pos hits = " << rawPosTdcHit.GetNHits() << endl;
     for (UInt_t thit=0; thit<rawPosTdcHit.GetNHits(); ++thit) {
       ((THcSignalHit*) frPosTdcTimeRaw->ConstructedAt(nrPosTdcHits))->Set(padnum, rawPosTdcHit.GetTimeRaw(thit));
       ((THcSignalHit*) frPosTdcTime->ConstructedAt(nrPosTdcHits))->Set(padnum, rawPosTdcHit.GetTime(thit));
@@ -837,11 +957,11 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
 	fNegTdcRefDiffTime=rawNegTdcHit.GetRefDiffTime() ;
       }
     if (fNegTdcRefTime != rawNegTdcHit.GetRefTime()) {
-        cout <<  "THcScintillatorPlane: " << GetName()<< " Neg TDC reftime problem at paddle num = " << padnum << " TDC neg hits = " << rawNegTdcHit.GetNHits() << endl;
+        // cout <<  "THcScintillatorPlane: " << GetName()<< " Neg TDC reftime problem at paddle num = " << padnum << " TDC neg hits = " << rawNegTdcHit.GetNHits() << endl;
         problem_flag=kTRUE;
     }
     }
-    // cout << " paddle num = " << padnum << " TDC Neg hits = " << rawNegTdcHit.GetNHits() << endl;
+     // cout << " paddle num = " << padnum << " TDC Neg hits = " << rawNegTdcHit.GetNHits() << endl;
     for (UInt_t thit=0; thit<rawNegTdcHit.GetNHits(); ++thit) {
       ((THcSignalHit*) frNegTdcTimeRaw->ConstructedAt(nrNegTdcHits))->Set(padnum, rawNegTdcHit.GetTimeRaw(thit));
       ((THcSignalHit*) frNegTdcTime->ConstructedAt(nrNegTdcHits))->Set(padnum, rawNegTdcHit.GetTime(thit));
@@ -849,41 +969,99 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
       fTotNumTdcHits++;
       fTotNumNegTdcHits++;
     }
+    
     THcRawAdcHit& rawPosAdcHit = hit->GetRawAdcHitPos();
-    if (rawPosAdcHit.GetNPulses() >0 && rawPosAdcHit.HasRefTime()) {
+
+    if ( (rawPosAdcHit.GetNPulses() >0 || rawPosAdcHit.GetNSamples() >0) && rawPosAdcHit.HasRefTime()) {
       if (fPosAdcRefTime == kBig  ) {
 	fPosAdcRefTime=rawPosAdcHit.GetRefTime() ;
 	fPosAdcRefDiffTime=rawPosAdcHit.GetRefDiffTime() ;
       }
     if (fPosAdcRefTime != rawPosAdcHit.GetRefTime()) {
-      cout <<  "THcScintillatorPlane: " << GetName()<< " Pos ADC reftime problem at paddle num = " << padnum << " ADC pos hits = " << rawPosAdcHit.GetNPulses() << endl;
+      // cout <<  "THcScintillatorPlane: " << GetName()<< " Pos ADC reftime problem at paddle num = " << padnum << " ADC pos hits = " << rawPosAdcHit.GetNPulses() << endl;
         problem_flag=kTRUE;
       }
     }
-    // cout << " paddle num = " << padnum << " ADC Pos hits = " << rawPosAdcHit.GetNPulses() << endl;
-    for (UInt_t thit=0; thit<rawPosAdcHit.GetNPulses(); ++thit) {
-      ((THcSignalHit*) frPosAdcPedRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPedRaw());
-      ((THcSignalHit*) frPosAdcPed->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPed());
-
-      ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseIntRaw(thit));
-      ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseInt(thit));
-
-      ((THcSignalHit*) frPosAdcPulseAmpRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseAmpRaw(thit));
-
-      ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseAmp(thit));
-
-      ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTimeRaw(thit));
-      ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
-
-      if (rawPosAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 0);
-      if (rawPosAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 1);
-
-      ++nrPosAdcHits;
-      fTotNumAdcHits++;
-      fTotNumPosAdcHits++;
+     // cout << " paddle num = " << padnum << " ADC Pos hits = " << rawPosAdcHit.GetNPulses() << endl;
+    if ( fUseSampWaveform == 0 ) {
+      
+      for (UInt_t thit=0; thit<rawPosAdcHit.GetNPulses(); ++thit) {
+	((THcSignalHit*) frPosAdcPedRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPedRaw());
+	((THcSignalHit*) frPosAdcPed->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPed());
+	
+	((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseIntRaw(thit));
+	((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseInt(thit));
+	
+	((THcSignalHit*) frPosAdcPulseAmpRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseAmpRaw(thit));
+	
+	((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseAmp(thit));
+	
+	((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTimeRaw(thit));
+	((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
+	
+	if (rawPosAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 0);
+	if (rawPosAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 1);
+	if (rawPosAdcHit.GetPulseAmpRaw(thit) <= 0 && rawPosAdcHit.GetNSamples() >0) ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 2);
+	
+	++nrPosAdcHits;
+	fTotNumAdcHits++;
+	fTotNumPosAdcHits++;
+      }
     }
+    //
+     // cout << " paddle num = " << padnum << "Pos ADC GetNSamples = " << rawPosAdcHit.GetNSamples() << endl;
+    if (rawPosAdcHit.GetNSamples()>0 ) {
+      rawPosAdcHit.SetSampThreshold(fSampThreshold);
+      if (fSampNSA == 0) fSampNSA=rawPosAdcHit.GetF250_NSA();
+      if (fSampNSB == 0) fSampNSB=rawPosAdcHit.GetF250_NSB();
+      rawPosAdcHit.SetF250Params(fSampNSA,fSampNSB,4); // Set NPED =4
+      if (fSampNSAT != 2) rawPosAdcHit.SetSampNSAT(fSampNSAT);
+      rawPosAdcHit.SetSampIntTimePedestalPeak();
+      fPosAdcSampWaveform.push_back(float(padnum));
+      fPosAdcSampWaveform.push_back(float(rawPosAdcHit.GetNSamples()));
+      for (UInt_t thit = 0; thit < rawPosAdcHit.GetNSamples(); thit++) {
+	fPosAdcSampWaveform.push_back(rawPosAdcHit.GetSample(thit)); // ped subtracted sample (mV)
+      }
+      for (UInt_t thit = 0; thit < rawPosAdcHit.GetNSampPulses(); thit++) {
+	((THcSignalHit*) frPosAdcSampPedRaw->ConstructedAt(nrSampPosAdcHits))->Set(padnum, rawPosAdcHit.GetSampPedRaw());
+	((THcSignalHit*) frPosAdcSampPed->ConstructedAt(nrSampPosAdcHits))->Set(padnum, rawPosAdcHit.GetSampPed());
+	
+	((THcSignalHit*) frPosAdcSampPulseIntRaw->ConstructedAt(nrSampPosAdcHits))->Set(padnum, rawPosAdcHit.GetSampPulseIntRaw(thit));
+	((THcSignalHit*) frPosAdcSampPulseInt->ConstructedAt(nrSampPosAdcHits))->Set(padnum, rawPosAdcHit.GetSampPulseInt(thit));
+	
+	((THcSignalHit*) frPosAdcSampPulseAmpRaw->ConstructedAt(nrSampPosAdcHits))->Set(padnum, rawPosAdcHit.GetSampPulseAmpRaw(thit));
+	((THcSignalHit*) frPosAdcSampPulseAmp->ConstructedAt(nrSampPosAdcHits))->Set(padnum, rawPosAdcHit.GetSampPulseAmp(thit));
+	((THcSignalHit*) frPosAdcSampPulseTimeRaw->ConstructedAt(nrSampPosAdcHits))->Set(padnum, rawPosAdcHit.GetSampPulseTimeRaw(thit));
+	((THcSignalHit*) frPosAdcSampPulseTime->ConstructedAt(nrSampPosAdcHits))->Set(padnum, rawPosAdcHit.GetSampPulseTime(thit)+fAdcTdcOffset);
+	//
+	if ( rawPosAdcHit.GetNPulses() ==0 || fUseSampWaveform ==1 ) {
+	  ((THcSignalHit*) frPosAdcPedRaw->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetSampPedRaw());
+	  ((THcSignalHit*) frPosAdcPed->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetSampPed());
+	  
+	  ((THcSignalHit*) frPosAdcPulseIntRaw->ConstructedAt(nrPosAdcHits))->Set(padnum,rawPosAdcHit.GetSampPulseIntRaw(thit));
+	  ((THcSignalHit*) frPosAdcPulseInt->ConstructedAt(nrPosAdcHits))->Set(padnum,rawPosAdcHit.GetSampPulseInt(thit));
+	  
+	  ((THcSignalHit*) frPosAdcPulseAmpRaw->ConstructedAt(nrPosAdcHits))->Set(padnum,rawPosAdcHit.GetSampPulseAmpRaw(thit));
+	  ((THcSignalHit*) frPosAdcPulseAmp->ConstructedAt(nrPosAdcHits))->Set(padnum,rawPosAdcHit.GetSampPulseAmp(thit) );
+	  
+	  ((THcSignalHit*) frPosAdcPulseTimeRaw->ConstructedAt(nrPosAdcHits))->Set(padnum,rawPosAdcHit.GetSampPulseTimeRaw(thit) );
+	  ((THcSignalHit*) frPosAdcPulseTime->ConstructedAt(nrPosAdcHits))->Set(padnum, rawPosAdcHit.GetSampPulseTime(thit)+fAdcTdcOffset);
+	  ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 3);  
+	  if (fUseSampWaveform ==1) ((THcSignalHit*) frPosAdcErrorFlag->ConstructedAt(nrPosAdcHits))->Set(padnum, 0);  
+
+	  ++nrPosAdcHits;
+	  fTotNumPosAdcHits++;
+	  fTotNumAdcHits++;
+	}
+	++nrSampPosAdcHits;
+      }	
+    }
+    
+
     THcRawAdcHit& rawNegAdcHit = hit->GetRawAdcHitNeg();
-    if (rawNegAdcHit.GetNPulses()>0 && rawNegAdcHit.HasRefTime()) {
+
+      // cout << " paddle num = " << padnum << " ADC Neg hits = " << rawNegAdcHit.GetNPulses() << endl;
+   if ( (rawNegAdcHit.GetNPulses()>0 || rawNegAdcHit.GetNSamples()>0) && rawNegAdcHit.HasRefTime()) {
       if (fNegAdcRefTime == kBig) {
 	fNegAdcRefTime=rawNegAdcHit.GetRefTime() ;
 	fNegAdcRefDiffTime=rawNegAdcHit.GetRefDiffTime() ;
@@ -893,28 +1071,80 @@ Int_t THcScintillatorPlane::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
         problem_flag=kTRUE;
       }
     }
-    // cout << " paddle num = " << padnum << " ADC Neg hits = " << rawNegAdcHit.GetNPulses() << endl;
-    for (UInt_t thit=0; thit<rawNegAdcHit.GetNPulses(); ++thit) {
-      ((THcSignalHit*) frNegAdcPedRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPedRaw());
-      ((THcSignalHit*) frNegAdcPed->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPed());
 
-      ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseIntRaw(thit));
-      ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseInt(thit));
-
-      ((THcSignalHit*) frNegAdcPulseAmpRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseAmpRaw(thit));
-      ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseAmp(thit));
-      ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTimeRaw(thit));
-      ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
-
-      if (rawNegAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 0);
-      if (rawNegAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 1);
-
-      ++nrNegAdcHits;
-      fTotNumAdcHits++;
-      fTotNumNegAdcHits++;
+    if ( fUseSampWaveform == 0 ) {
+      for (UInt_t thit=0; thit<rawNegAdcHit.GetNPulses(); ++thit) {
+	// cout << "neg adc  thit = " << thit << endl;
+	
+	((THcSignalHit*) frNegAdcPedRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPedRaw());
+	((THcSignalHit*) frNegAdcPed->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPed());
+	
+	((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseIntRaw(thit));
+	((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseInt(thit));
+	
+	((THcSignalHit*) frNegAdcPulseAmpRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseAmpRaw(thit));
+	((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseAmp(thit));
+	((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTimeRaw(thit));
+	((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
+	
+	if (rawNegAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 0);
+	if (rawNegAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 1);
+	if (rawNegAdcHit.GetPulseAmpRaw(thit) <= 0 && rawNegAdcHit.GetNSamples() >0) ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 2);
+	
+	++nrNegAdcHits;
+	fTotNumAdcHits++;
+	fTotNumNegAdcHits++;
+      }
     }
 
-    // Need to be finding first hit in TDC range, not the first hit overall
+     // cout << " paddle num = " << padnum << "Neg ADC GetNSamples = " << rawNegAdcHit.GetNSamples() << endl;
+    if (rawNegAdcHit.GetNSamples()>0 ) {
+      rawNegAdcHit.SetSampThreshold(fSampThreshold);
+      if (fSampNSA == 0) fSampNSA=rawNegAdcHit.GetF250_NSA();
+      if (fSampNSB == 0) fSampNSB=rawNegAdcHit.GetF250_NSB();
+      rawNegAdcHit.SetF250Params(fSampNSA,fSampNSB,4); // Set NPED =4
+      if (fSampNSAT != 2) rawNegAdcHit.SetSampNSAT(fSampNSAT);
+      rawNegAdcHit.SetSampIntTimePedestalPeak();
+      fNegAdcSampWaveform.push_back(float(padnum));
+      fNegAdcSampWaveform.push_back(float(rawNegAdcHit.GetNSamples()));
+      for (UInt_t thit = 0; thit < rawNegAdcHit.GetNSamples(); thit++) {
+	fNegAdcSampWaveform.push_back(rawNegAdcHit.GetSample(thit)); // ped subtracted sample (mV)
+      }
+      for (UInt_t thit = 0; thit < rawNegAdcHit.GetNSampPulses(); thit++) {
+	((THcSignalHit*) frNegAdcSampPedRaw->ConstructedAt(nrSampNegAdcHits))->Set(padnum, rawNegAdcHit.GetSampPedRaw());
+	((THcSignalHit*) frNegAdcSampPed->ConstructedAt(nrSampNegAdcHits))->Set(padnum, rawNegAdcHit.GetSampPed());
+	((THcSignalHit*) frNegAdcSampPulseIntRaw->ConstructedAt(nrSampNegAdcHits))->Set(padnum, rawNegAdcHit.GetSampPulseIntRaw(thit));
+	((THcSignalHit*) frNegAdcSampPulseInt->ConstructedAt(nrSampNegAdcHits))->Set(padnum, rawNegAdcHit.GetSampPulseInt(thit));
+	
+	((THcSignalHit*) frNegAdcSampPulseAmpRaw->ConstructedAt(nrSampNegAdcHits))->Set(padnum, rawNegAdcHit.GetSampPulseAmpRaw(thit));
+	((THcSignalHit*) frNegAdcSampPulseAmp->ConstructedAt(nrSampNegAdcHits))->Set(padnum, rawNegAdcHit.GetSampPulseAmp(thit));
+	((THcSignalHit*) frNegAdcSampPulseTimeRaw->ConstructedAt(nrSampNegAdcHits))->Set(padnum, rawNegAdcHit.GetSampPulseTimeRaw(thit));
+	((THcSignalHit*) frNegAdcSampPulseTime->ConstructedAt(nrSampNegAdcHits))->Set(padnum, rawNegAdcHit.GetSampPulseTime(thit));
+	//
+	if ( rawNegAdcHit.GetNPulses() ==0 || fUseSampWaveform ==1 ) {
+	  ((THcSignalHit*) frNegAdcPedRaw->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetSampPedRaw());
+	  ((THcSignalHit*) frNegAdcPed->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetSampPed());
+	  
+	  ((THcSignalHit*) frNegAdcPulseIntRaw->ConstructedAt(nrNegAdcHits))->Set(padnum,rawNegAdcHit.GetSampPulseIntRaw(thit));
+	  ((THcSignalHit*) frNegAdcPulseInt->ConstructedAt(nrNegAdcHits))->Set(padnum,rawNegAdcHit.GetSampPulseInt(thit));
+	  
+	  ((THcSignalHit*) frNegAdcPulseAmpRaw->ConstructedAt(nrNegAdcHits))->Set(padnum,rawNegAdcHit.GetSampPulseAmpRaw(thit));
+	  ((THcSignalHit*) frNegAdcPulseAmp->ConstructedAt(nrNegAdcHits))->Set(padnum,rawNegAdcHit.GetSampPulseAmp(thit) );
+	  
+	  ((THcSignalHit*) frNegAdcPulseTimeRaw->ConstructedAt(nrNegAdcHits))->Set(padnum,rawNegAdcHit.GetSampPulseTimeRaw(thit) );
+	  ((THcSignalHit*) frNegAdcPulseTime->ConstructedAt(nrNegAdcHits))->Set(padnum, rawNegAdcHit.GetSampPulseTime(thit));
+	  ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 3);  
+	  if (fUseSampWaveform ==1) ((THcSignalHit*) frNegAdcErrorFlag->ConstructedAt(nrNegAdcHits))->Set(padnum, 0);  
+	  ++nrNegAdcHits;
+	  fTotNumNegAdcHits++;
+	  fTotNumAdcHits++;
+	}
+	++nrSampNegAdcHits;
+      }	
+    }
+    
+     // cout << " Finding tdc hit " << endl;
+     // Need to be finding first hit in TDC range, not the first hit overall
     if (hit->GetRawTdcHitPos().GetNHits() > 0)
       ((THcSignalHit*) frPosTDCHits->ConstructedAt(nrPosTDCHits++))->Set(padnum, hit->GetRawTdcHitPos().GetTime()+fTdcOffset);
     if (hit->GetRawTdcHitNeg().GetNHits() > 0)

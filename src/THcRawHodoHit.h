@@ -21,6 +21,8 @@ class THcRawHodoHit : public THcRawHit {
 
     virtual void SetData(Int_t signal, Int_t data);
     virtual void SetSample(Int_t signal, Int_t data);
+    virtual void SetSampThreshold(Int_t signal, Double_t thres);
+    virtual void SetSampIntTimePedestalPeak(Int_t signal);
     virtual void SetDataTimePedestalPeak(
       Int_t signal, Int_t data, Int_t time, Int_t pedestal, Int_t peak
     );

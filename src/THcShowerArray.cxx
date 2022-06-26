@@ -48,11 +48,19 @@ THcShowerArray::THcShowerArray( const char* name,
   frAdcPulseIntRaw  = new TClonesArray("THcSignalHit", 16);
   frAdcPulseAmpRaw  = new TClonesArray("THcSignalHit", 16);
   frAdcPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
-
   frAdcPed       = new TClonesArray("THcSignalHit", 16);
   frAdcPulseInt  = new TClonesArray("THcSignalHit", 16);
   frAdcPulseAmp  = new TClonesArray("THcSignalHit", 16);
   frAdcPulseTime = new TClonesArray("THcSignalHit", 16);
+
+  frAdcSampPedRaw       = new TClonesArray("THcSignalHit", 16);
+  frAdcSampPulseIntRaw  = new TClonesArray("THcSignalHit", 16);
+  frAdcSampPulseAmpRaw  = new TClonesArray("THcSignalHit", 16);
+  frAdcSampPulseTimeRaw = new TClonesArray("THcSignalHit", 16);
+  frAdcSampPed          = new TClonesArray("THcSignalHit", 16);
+  frAdcSampPulseInt     = new TClonesArray("THcSignalHit", 16);
+  frAdcSampPulseAmp     = new TClonesArray("THcSignalHit", 16);
+  frAdcSampPulseTime    = new TClonesArray("THcSignalHit", 16);
 
   fClusterList = new THcShowerClusterList;         // List of hit clusters
 }
@@ -88,11 +96,19 @@ THcShowerArray::~THcShowerArray()
   delete frAdcPulseIntRaw; frAdcPulseIntRaw = NULL;
   delete frAdcPulseAmpRaw; frAdcPulseAmpRaw = NULL;
   delete frAdcPulseTimeRaw; frAdcPulseTimeRaw = NULL;
-
   delete frAdcPed; frAdcPed = NULL;
   delete frAdcPulseInt; frAdcPulseInt = NULL;
   delete frAdcPulseAmp; frAdcPulseAmp = NULL;
   delete frAdcPulseTime; frAdcPulseTime = NULL;
+
+  delete frAdcSampPedRaw;       frAdcSampPedRaw       = NULL;
+  delete frAdcSampPulseIntRaw;  frAdcSampPulseIntRaw  = NULL;
+  delete frAdcSampPulseAmpRaw;  frAdcSampPulseAmpRaw  = NULL;
+  delete frAdcSampPulseTimeRaw; frAdcSampPulseTimeRaw = NULL;
+  delete frAdcSampPed;          frAdcSampPed          = NULL;
+  delete frAdcSampPulseInt;     frAdcSampPulseInt     = NULL;
+  delete frAdcSampPulseAmp;     frAdcSampPulseAmp     = NULL;
+  delete frAdcSampPulseTime;    frAdcSampPulseTime    = NULL;
 
   //  delete [] fA;
   //delete [] fP;
@@ -182,6 +198,7 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
   fADCMode=kADCDynamicPedestal;
   fAdcTdcOffset=0.0;
   fAdcThreshold=0.;
+
 
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   fNelem = fNRows*fNColumns;
@@ -290,6 +307,12 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     {"cal_arr_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNelem),1},
     {"cal_arr_AdcTimeWindowMax", fAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNelem),1},
     {"cal_arr_PedDefault", fPedDefault, kInt, static_cast<UInt_t>(fNelem),1},
+    {"cal_arr_SampThreshold",     &fSampThreshold,       kDouble,0,1},
+    {"cal_arr_SampNSA",     &fSampNSA,       kInt,0,1},
+    {"cal_arr_SampNSAT",     &fSampNSAT,       kInt,0,1},
+    {"cal_arr_SampNSB",     &fSampNSB,       kInt,0,1},
+    {"cal_arr_OutputSampWaveform",     &fOutputSampWaveform,       kInt,0,1},
+    {"cal_arr_UseSampWaveform",     &fUseSampWaveform,       kInt,0,1},
     {0}
   };
 
@@ -298,6 +321,14 @@ Int_t THcShowerArray::ReadDatabase( const TDatime& date )
     fAdcTimeWindowMax[ip] = 1000.;
     fPedDefault[ip] = 0;
    }
+
+  fSampThreshold = 5.;
+  fSampNSA = 0; // use value stored in event 125 info
+  fSampNSB = 0; // use value stored in event 125 info
+  fSampNSAT = 2; // default value in THcRawHit::SetF250Params
+      cout << " fSampThreshold 1 = " << fSampThreshold << endl;
+  fOutputSampWaveform = 0; // 0= no output , 1 = output Sample Waveform
+  fUseSampWaveform = 0; // 0= do not use , 1 = use Sample Waveform
 
   gHcParms->LoadParmValues((DBRequest*)&list1, prefix);
 
@@ -438,18 +469,36 @@ Int_t THcShowerArray::DefineVariables( EMode mode )
       {"adcPulseInt",     "List of ADC pulse integrals.",      "frAdcPulseInt.THcSignalHit.GetData()"},
       {"adcPulseAmp",     "List of ADC pulse amplitudes.",     "frAdcPulseAmp.THcSignalHit.GetData()"},
       {"adcPulseTime",    "List of ADC pulse times.",          "frAdcPulseTime.THcSignalHit.GetData()"},
+
+      {"adcSampPedRaw",       "Raw ADCSAMP pedestals",         "frAdcSampPedRaw.THcSignalHit.GetData()"},
+      {"adcSampPulseIntRaw",  "Raw ADCSAMP pulse integrals",   "frAdcSampPulseIntRaw.THcSignalHit.GetData()"},
+      {"adcSampPulseAmpRaw",  "Raw ADCSAMP pulse amplitudes",  "frAdcSampPulseAmpRaw.THcSignalHit.GetData()"},
+      {"adcSampPulseTimeRaw", "Raw ADCSAMP pulse times",       "frAdcSampPulseTimeRaw.THcSignalHit.GetData()"},
+      {"adcSampPed",          "ADCSAMP pedestals",             "frAdcSampPed.THcSignalHit.GetData()"},
+      {"adcSampPulseInt",     "ADCSAMP pulse integrals",       "frAdcSampPulseInt.THcSignalHit.GetData()"},
+      {"adcSampPulseAmp",     "ADCSAMP pulse amplitudes",      "frAdcSampPulseAmp.THcSignalHit.GetData()"},
+      {"adcSampPulseTime",    "ADCSAMP pulse times",           "frAdcSampPulseTime.THcSignalHit.GetData()"},
       { 0 }
     };
     DefineVarsFromList( vars, mode);
   } //end debug statement
+
+  if (fOutputSampWaveform==1) {
+  RVarDef vars[] = {
+    {"adcSampWaveform",          "FADC Sample Waveform",           "fSampWaveform"},
+      { 0 }
+    };
+    DefineVarsFromList( vars, mode);
+  }
 
   RVarDef vars[] = {
     //{"adchits", "List of ADC hits", "fADCHits.THcSignalHit.GetPaddleNumber()"}, // appears an empty histogram in the root file
 
     {"adcErrorFlag",       "Error Flag When FPGA Fails",      "frAdcErrorFlag.THcSignalHit.GetData()"},
 
-    {"adcCounter",      "List of ADC counter numbers.",      "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},  //raw occupancy
-    {"numGoodAdcHits", "Number of Good ADC Hits per PMT", "fNumGoodAdcHits" },                                   //good occupancy
+    {"adcCounter",       "List of ADC counter numbers.",      "frAdcPulseIntRaw.THcSignalHit.GetPaddleNumber()"},  //raw occupancy
+    {"adcSampleCounter", "ADC SAMP counter numbers",          "frAdcSampPulseIntRaw.THcSignalHit.GetPaddleNumber()"},
+    {"numGoodAdcHits",   "Number of Good ADC Hits per PMT",   "fNumGoodAdcHits" },                                   //good occupancy
 
     {"totNumAdcHits", "Total Number of ADC Hits", "fTotNumAdcHits" },                                            // raw multiplicity
     {"totNumGoodAdcHits", "Total Number of Good ADC Hits", "fTotNumGoodAdcHits" },                               // good multiplicity
@@ -508,6 +557,16 @@ void THcShowerArray::Clear( Option_t* )
   frAdcPulseInt->Clear();
   frAdcPulseAmp->Clear();
   frAdcPulseTime->Clear();
+
+  frAdcSampPedRaw->Clear();
+  frAdcSampPulseIntRaw->Clear();
+  frAdcSampPulseAmpRaw->Clear();
+  frAdcSampPulseTimeRaw->Clear();
+
+  frAdcSampPed->Clear();
+  frAdcSampPulseInt->Clear();
+  frAdcSampPulseAmp->Clear();
+  frAdcSampPulseTime->Clear();
 
   for (UInt_t ielem = 0; ielem < fGoodAdcPed.size(); ielem++) {
     fGoodAdcPulseIntRaw.at(ielem)      = 0.0;
@@ -935,6 +994,16 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   frAdcPulseAmp->Clear();
   frAdcPulseTime->Clear();
 
+  frAdcSampPedRaw->Clear();
+  frAdcSampPulseIntRaw->Clear();
+  frAdcSampPulseAmpRaw->Clear();
+  frAdcSampPulseTimeRaw->Clear();
+
+  frAdcSampPed->Clear();
+  frAdcSampPulseInt->Clear();
+  frAdcSampPulseAmp->Clear();
+  frAdcSampPulseTime->Clear();
+
   for(Int_t i=0;i<fNelem;i++) {
     //fA[i] = 0;
     //fA_p[i] = 0;
@@ -953,6 +1022,8 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
   Int_t ihit = nexthit;
 
   UInt_t nrAdcHits = 0;
+  UInt_t nrSampAdcHits = 0;
+  fSampWaveform.clear();
 
   while(ihit < nrawhits) {
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
@@ -964,46 +1035,95 @@ Int_t THcShowerArray::ProcessHits(TClonesArray* rawhits, Int_t nexthit)
     Int_t padnum = hit->fCounter;
     THcRawAdcHit& rawAdcHit = hit->GetRawAdcHitPos();
     //
-    for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
-      ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPedRaw());
+    if ( fUseSampWaveform == 0 ) {
+      for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
+
+	((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPedRaw());
         fThresh[padnum-1]=rawAdcHit.GetPedRaw()*rawAdcHit.GetF250_PeakPedestalRatio()+fAdcThreshold;
-     ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPed());
-
-      ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseIntRaw(thit));
-      ((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseInt(thit));
-
-      ((THcSignalHit*) frAdcPulseAmpRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmpRaw(thit));
-      ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp(thit));
-
-      ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTimeRaw(thit));
-      ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
-
-      if (rawAdcHit.GetPulseAmp(thit)>0&&rawAdcHit.GetPulseIntRaw(thit)>0) {
-	((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum,0);
-      } else {
-	((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum,1);
-      }
-
-      if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) {
-	Double_t PeakPedRatio= rawAdcHit.GetF250_PeakPedestalRatio();
-	Int_t NPedSamples= rawAdcHit.GetF250_NPedestalSamples();
-	Double_t AdcToC =  rawAdcHit.GetAdcTopC();
-	Double_t AdcToV =  rawAdcHit.GetAdcTomV();
-	if (fPedDefault[padnum-1] !=0) {
-	  Double_t tPulseInt = AdcToC*(rawAdcHit.GetPulseIntRaw(thit) - fPedDefault[padnum-1]*PeakPedRatio);
-	  ((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(padnum, tPulseInt);
-          ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, fPedDefault[padnum-1]);
-          ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, float(fPedDefault[padnum-1])/float(NPedSamples)*AdcToV);
-	  
-	}
-	((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, 0.);
+	((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPed());
 	
+	((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseIntRaw(thit));
+	((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseInt(thit));
+	
+	((THcSignalHit*) frAdcPulseAmpRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmpRaw(thit));
+	((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp(thit));
+	
+	((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTimeRaw(thit));
+	((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
+
+	if (rawAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 0);
+	if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 1);
+	if (rawAdcHit.GetPulseAmpRaw(thit) <= 0 && rawAdcHit.GetNSamples() >0) ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 2);
+	
+	if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) {
+	  Double_t PeakPedRatio= rawAdcHit.GetF250_PeakPedestalRatio();
+	  Int_t NPedSamples= rawAdcHit.GetF250_NPedestalSamples();
+	  Double_t AdcToC =  rawAdcHit.GetAdcTopC();
+	  Double_t AdcToV =  rawAdcHit.GetAdcTomV();
+	  if (fPedDefault[padnum-1] !=0) {
+	    Double_t tPulseInt = AdcToC*(rawAdcHit.GetPulseIntRaw(thit) - fPedDefault[padnum-1]*PeakPedRatio);
+	    ((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(padnum, tPulseInt);
+	    ((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, fPedDefault[padnum-1]);
+	    ((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, float(fPedDefault[padnum-1])/float(NPedSamples)*AdcToV);
+	    
+	  }
+	  ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, 0.);
+	}
+
+	++nrAdcHits;
+	fTotNumAdcHits++;
       }
-
-
-      ++nrAdcHits;
     }
-    ihit++;
+    
+  if (rawAdcHit.GetNSamples() >0 ) {   
+
+    rawAdcHit.SetSampThreshold(fSampThreshold);
+    if (fSampNSA == 0) fSampNSA=rawAdcHit.GetF250_NSA();
+    if (fSampNSB == 0) fSampNSB=rawAdcHit.GetF250_NSB();
+    rawAdcHit.SetF250Params(fSampNSA,fSampNSB,4); // Set NPED =4
+    if (fSampNSAT != 2) rawAdcHit.SetSampNSAT(fSampNSAT);
+    rawAdcHit.SetSampIntTimePedestalPeak();
+    fSampWaveform.push_back(float(padnum));
+    fSampWaveform.push_back(float(rawAdcHit.GetNSamples()));
+
+    for (UInt_t thit = 0; thit < rawAdcHit.GetNSamples(); thit++) {
+      fSampWaveform.push_back(rawAdcHit.GetSample(thit)); // ped subtracted sample (mV)
+    }
+    
+    for (UInt_t thit = 0; thit < rawAdcHit.GetNSampPulses(); thit++) {
+      ((THcSignalHit*) frAdcSampPedRaw->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPedRaw());
+      ((THcSignalHit*) frAdcSampPed->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPed());
+      
+      ((THcSignalHit*) frAdcSampPulseIntRaw->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseIntRaw(thit));
+      ((THcSignalHit*) frAdcSampPulseInt->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseInt(thit));
+      
+      ((THcSignalHit*) frAdcSampPulseAmpRaw->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseAmpRaw(thit));
+      ((THcSignalHit*) frAdcSampPulseAmp->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseAmp(thit));
+      ((THcSignalHit*) frAdcSampPulseTimeRaw->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseTimeRaw(thit));
+      ((THcSignalHit*) frAdcSampPulseTime->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseTime(thit)+fAdcTdcOffset);
+      //
+      if ( rawAdcHit.GetNPulses() == 0 || fUseSampWaveform ==1 ) {
+	((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetSampPedRaw());
+	((THcSignalHit*) frAdcPed->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetSampPed());
+	
+	((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(nrAdcHits))->Set(padnum,rawAdcHit.GetSampPulseIntRaw(thit));
+	((THcSignalHit*) frAdcPulseInt->ConstructedAt(nrAdcHits))->Set(padnum,rawAdcHit.GetSampPulseInt(thit));
+	
+	((THcSignalHit*) frAdcPulseAmpRaw->ConstructedAt(nrAdcHits))->Set(padnum,rawAdcHit.GetSampPulseAmpRaw(thit));
+	((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum,rawAdcHit.GetSampPulseAmp(thit) );
+	
+	((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum,rawAdcHit.GetSampPulseTimeRaw(thit) );
+	((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetSampPulseTime(thit)+fAdcTdcOffset);
+
+	((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 3);  
+	if (fUseSampWaveform ==1) ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 0);  
+	++nrAdcHits;
+	fTotNumAdcHits++;
+      }
+      ++nrSampAdcHits;
+      }	
+    }							      
+  ihit++;
   }
 
 #if 0

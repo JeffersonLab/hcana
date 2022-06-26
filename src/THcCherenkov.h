@@ -74,10 +74,17 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   vector<Double_t> fGoodAdcPulseAmp;
   vector<Double_t> fGoodAdcPulseTime;
   vector<Double_t> fGoodAdcTdcDiffTime;
+  vector<Double_t> fSampWaveform;
   vector<Double_t> fNpe;
 
   Int_t     fNRegions;
   Int_t     fRegionsValueMax;
+  Int_t  fOutputSampWaveform;
+  Int_t  fUseSampWaveform;
+  Double_t  fSampThreshold;
+  Int_t  fSampNSA;
+  Int_t  fSampNSAT;
+  Int_t  fSampNSB;
   Double_t  fRedChi2Min;
   Double_t  fRedChi2Max;
   Double_t  fBetaMin;
@@ -109,6 +116,16 @@ class THcCherenkov : public THaNonTrackingDetector, public THcHitList {
   Double_t* fAdcPulseAmpTest;
   Int_t*    fAdcGoodElem;
 
+  // 12 Gev FADC variables
+  TClonesArray* frAdcSampPedRaw;
+  TClonesArray* frAdcSampPulseIntRaw;
+  TClonesArray* frAdcSampPulseAmpRaw;
+  TClonesArray* frAdcSampPulseTimeRaw;
+  TClonesArray* frAdcSampPed;
+  TClonesArray* frAdcSampPulseInt;
+  TClonesArray* frAdcSampPulseAmp;
+  TClonesArray* frAdcSampPulseTime;
+  TClonesArray* frAdcSampWaveform;
   // 12 Gev FADC variables
   TClonesArray* frAdcPedRaw;
   TClonesArray* frAdcPulseIntRaw;

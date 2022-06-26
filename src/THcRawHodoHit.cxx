@@ -78,12 +78,34 @@ void THcRawHodoHit::SetSample(Int_t signal, Int_t data) {
   }
 }
 
+void THcRawHodoHit::SetSampThreshold(Int_t signal, Double_t thres) {
+  if (0 <= signal && signal < fNAdcSignals) {
+    fAdcHits[signal].SetSampThreshold(thres);
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::SetSampThreshold`: only signals `0` and `1` available!"
+    );
+  }
+}
+
 
 void THcRawHodoHit::SetDataTimePedestalPeak(
   Int_t signal, Int_t data, Int_t time, Int_t pedestal, Int_t peak
 ) {
   if (0 <= signal && signal < fNAdcSignals) {
     fAdcHits[signal].SetDataTimePedestalPeak(data, time, pedestal, peak);
+  }
+  else {
+    throw std::out_of_range(
+      "`THcRawHodoHit::SetDataTimePedestalPeak`: only signals `0` and `1` available!"
+    );
+  }
+}
+
+void THcRawHodoHit::SetSampIntTimePedestalPeak(Int_t signal) {
+  if (0 <= signal && signal < fNAdcSignals) {
+    fAdcHits[signal].SetSampIntTimePedestalPeak();
   }
   else {
     throw std::out_of_range(
@@ -116,6 +138,7 @@ void THcRawHodoHit::SetReferenceDiff(Int_t signal, Int_t referenceDiff) {
     );
   }
 }
+
 
 
 Int_t THcRawHodoHit::GetData(Int_t signal) {
