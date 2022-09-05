@@ -24,6 +24,17 @@ for the Hall C style parameter database.
 //#include "TGXW.h"
  //#include "TVirtualX.h"
 
+// Workaround for SCons build
+#ifndef HC_GITREV
+#define HC_GITREV HC_GITVERS
+#endif
+#ifndef HC_BUILDTIME
+#define HC_BUILDTIME HC_DATETIME
+#endif
+#ifndef HC_SOURCETIME
+#define HC_SOURCETIME HC_DATETIME
+#endif
+
 using namespace std;
 
 THcParmList* gHcParms     = NULL;  // List of symbolic analyzer variables
@@ -45,9 +56,9 @@ This class is copy of THaInterface with the addition of of the global
   */
 
   if( !noLogo )
-    PrintLogo();
+    THcInterface::PrintLogo();
 
-  SetPrompt("hcana [%d] ");
+  THaInterface::SetPrompt("hcana [%d] ");
   gHcParms    = new THcParmList;
 
   // Jure update: 100 GB
@@ -67,11 +78,7 @@ THcInterface::~THcInterface()
 }
 
 //_____________________________________________________________________________
-#if ROOT_VERSION_CODE < ROOT_VERSION(5,18,0)
-void THcInterface::PrintLogo()
-#else
 void THcInterface::PrintLogo( Bool_t lite )
-#endif
 {
   /// Print the Hall C analyzer logo on standard output.
 
@@ -92,36 +99,43 @@ void THcInterface::PrintLogo( Bool_t lite )
      mille = iyear;
    char* root_date = Form("%s %d %4d",months[imonth-1],iday,mille);
 
-   //   const char* halla_version = HA_VERSION;
-   //   const char* halla_date = Form("%d %s %4d",24,months[2-1],2003);
-
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,18,0)
    if( !lite ) {
-#endif
      Printf("  ************************************************");
      Printf("  *                                              *");
      Printf("  *            W E L C O M E  to  the            *");
      Printf("  *          H A L L C ++  A N A L Y Z E R       *");
      Printf("  *                                              *");
-     Printf("  *  hcana release %12s %16s *",HC_VERSION,HC_DATE);
-     Printf("  *  PODD release %13s %16s *",HA_VERSION,HA_DATE);
-     Printf("  *  ROOT            %10s %16s *",root_version,root_date);
+     Printf("  *  hcana release %12s %16s *", HC_VERSION, THcInterface::GetHcDate());
+     Printf("  *  PODD release %13s %16s *", HA_VERSION, THaInterface::GetHaDate());
+     Printf("  *  ROOT            %10s %16s *", root_version, root_date);
      Printf("  *                                              *");
      Printf("  *            For information visit             *");
      Printf("  *      http://hallcweb.jlab.org/hcana/docs/    *");
      Printf("  *                                              *");
      Printf("  ************************************************");
-#if ROOT_VERSION_CODE >= ROOT_VERSION(5,18,0)
    }
-#endif
-
-#ifdef R__UNIX
-   //   if (!strcmp(gGXW->GetName(), "X11TTF"))
-   //   Printf("\nFreeType Engine v1.1 used to render TrueType fonts.");
-#endif
 
    gInterpreter->PrintIntro();
+}
 
+//_____________________________________________________________________________
+const char* THcInterface::GetHcDate()
+{
+  static TString hc_date;
+
+  if( hc_date.IsNull() ) {
+    bool use_buildtime = true;
+    size_t len = strlen(HC_GITREV);
+    if( len > 0 ) {
+      const char* gitrev = HC_GITREV;
+      use_buildtime = (len > 6 && strcmp(gitrev + len - 6, "-dirty") == 0);
+    }
+    if( use_buildtime )
+      hc_date = extract_short_date(HC_BUILDTIME);
+    else
+      hc_date = extract_short_date(HC_SOURCETIME);
+  }
+  return hc_date.Data();
 }
 
 //_____________________________________________________________________________
@@ -133,9 +147,10 @@ const char* THcInterface::GetVersionString()
 
   if( version_string.IsNull() ) {
     ostringstream ostr;
-    ostr << "hcana " << HC_VERSION << " ";
-    if( strlen(HC_GITVERS) > 0 )
-      ostr << "git @" << HC_GITVERS << " ";
+    ostr << "hcana " << HC_VERSION;
+    if( strlen(HC_GITREV) > 0 )
+      ostr << " git@" << HC_GITREV;
+    ostr << " " << GetHcDate() << endl;
     ostr << THaInterface::GetVersionString();
     version_string = ostr.str().c_str();
   }
@@ -144,4 +159,3 @@ const char* THcInterface::GetVersionString()
 
 //_____________________________________________________________________________
 ClassImp(THcInterface)
-

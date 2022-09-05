@@ -81,6 +81,7 @@ set_target_properties(${LIBNAME} PROPERTIES
   VERSION ${PROJECT_VERSION}
   EXPORT_NAME ${LIBNAME}
   )
+add_dependencies(${LIBNAME} gitrev_${PROJECT_NAME})
 
 install(TARGETS ${LIBNAME}
   EXPORT ${MAIN_PROJECT_NAME_LC}-exports

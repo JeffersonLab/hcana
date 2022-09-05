@@ -19,11 +19,8 @@ public:
 		Bool_t noLogo = kFALSE );
   virtual ~THcInterface();
 
-#if ROOT_VERSION_CODE < 332288  // 5.18/00
-  virtual void PrintLogo();
-#else
   virtual void PrintLogo(Bool_t lite = kFALSE);
-#endif
+  static const char* GetHcDate();
   static const char* GetVersionString();
 
 protected:
