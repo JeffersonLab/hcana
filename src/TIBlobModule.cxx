@@ -76,7 +76,7 @@ namespace Decoder {
         assert(fData.size() >= 3 && NTICHAN >= 3);  // else error in constructor
         fData[0] = (bank[2 + ifill] >> 24) & 0xFF;  // Trigger type
         fData[1] = bank[3 + ifill];                 // Trigger number
-        fData[2] = (len > 5 + ifill) ? evbuffer[4 + ifill] : 0; // Trigger time
+        fData[2] = (len > 5 + ifill) ? bank[4 + ifill] : 0; // Trigger time
         //      cout << "TIBlob Slot " << fSlot << ": ";
         for( UInt_t i = 0; i < NTICHAN; i++ ) {
           sldat->loadData(i, fData[i], fData[i]);
