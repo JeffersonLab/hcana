@@ -27,7 +27,7 @@ baseenv.Append(HA_Podd = os.path.join(baseenv.subst('$HA_DIR'),'Podd'))
 baseenv.Append(HA_DC = os.path.join(baseenv.subst('$HA_DIR'),'hana_decode'))
 baseenv.Append(HA_DB = os.path.join(baseenv.subst('$HA_DIR'),'Database'))
 baseenv.Append(MAJORVERSION = '0')
-baseenv.Append(MINORVERSION = '90')
+baseenv.Append(MINORVERSION = '95')
 baseenv.Append(PATCH = '0')
 baseenv.Append(SOVERSION = baseenv.subst('$MAJORVERSION')+'.'+baseenv.subst('$MINORVERSION'))
 baseenv.Append(VERSION = baseenv.subst('$SOVERSION')+'.'+baseenv.subst('$PATCH'))
@@ -122,7 +122,7 @@ else:
     subprocess.call(['echo', '!!!!!! Building Podd !!!!!! '])
     podd_command_scons = "cd %s; scons" % baseenv.subst('$HA_DIR')
     if baseenv.GetOption('num_jobs'):
-        podd_command_scons += " -j%s" % (GetOption('num_jobs')) 
+        podd_command_scons += " -j%s" % (GetOption('num_jobs'))
     if baseenv.GetOption('silent'):
         podd_command_scons += " -s"
     for key,value in ARGLIST:

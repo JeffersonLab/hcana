@@ -7,7 +7,7 @@
 # List only the implementation files (*.cxx). For every implementation file
 # there must be a corresponding header file (*.h).
 
-SOVERSION := 0.90
+SOVERSION := 0.95
 PATCH     := 0
 VERSION   := $(SOVERSION).$(PATCH)
 EXTVERS   :=
