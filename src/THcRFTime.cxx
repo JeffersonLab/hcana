@@ -35,11 +35,11 @@
 using namespace std;
 
 //_____________________________________________________________________________
-THcRFTime::THcRFTime (const char *name, const char* description, const char* hadArmName, 
+THcRFTime::THcRFTime (const char *name, const char* description, const char* hadArmName,
 		      const char* elecArmName, const char* RFname) :
-  
-  THaPhysicsModule(name, description), 
-  fCoinDetName(RFname), 
+
+  THaPhysicsModule(name, description),
+  fCoinDetName(RFname),
   fhadArmName(hadArmName),                 //initialize spectro names
   felecArmName(elecArmName),
   fhadSpectro(NULL),                      //initialize spectro objects
@@ -79,7 +79,7 @@ void THcRFTime::Reset( Option_t* opt)
 THaAnalysisObject::EStatus THcRFTime::Init( const TDatime& run_time )
 {
   // Initialize THcRFTime physics module
-  
+
   cout << "*************************************************" << endl;
   cout << "Initializing THcRFTime Physics Modue" << endl;
   cout << "Hadron Arm   -------> " << fhadArmName << endl;
@@ -95,7 +95,7 @@ THaAnalysisObject::EStatus THcRFTime::Init( const TDatime& run_time )
     fStatus = kInitError;
     return fStatus;
   }
-  
+
   felecSpectro = dynamic_cast<THcHallCSpectrometer*>
     ( FindModule( felecArmName.Data(), "THcHallCSpectrometer"));
   if( !felecSpectro ) {
@@ -111,7 +111,7 @@ THaAnalysisObject::EStatus THcRFTime::Init( const TDatime& run_time )
     fStatus = kInitError;
     return fStatus;
   }
-    
+
   if( (fStatus=THaPhysicsModule::Init( run_time )) != kOK ) {
     return fStatus;
   }
@@ -130,9 +130,9 @@ Int_t THcRFTime::ReadDatabase( const TDatime& date )
     {"Bunch_Spacing_Override",  &Bunch_Spacing_Override, kDouble, 0, 1}, // Bunch spacing value, can be manually set to override the Epics read in
     {0}
   };
-  
+
   // Default values if not read from param file
-  Bunch_Spacing_Override = 1.5556; // Strangely specific value so we can check if it's set or not 
+  Bunch_Spacing_Override = 1.5556; // Strangely specific value so we can check if it's set or not
   HMS_RF_Offset = 0.0;
   SHMS_RF_Offset = 0.0;
   gHcParms->LoadParmValues((DBRequest*)&list, "");
@@ -144,9 +144,9 @@ Int_t THcRFTime::ReadDatabase( const TDatime& date )
   else if (Bunch_Spacing_Override == 1.5556){
     Bunch_Spacing = 4.008;
   }
-  
+
   THcAnalyzer *analyzer = dynamic_cast<THcAnalyzer*>(THcAnalyzer::GetInstance());
-  fEpicsHandler = analyzer->GetEpicsEvtHandler(); 
+  fEpicsHandler = analyzer->GetEpicsEvtHandler();
 
   return kOK;
 }
@@ -170,10 +170,12 @@ Int_t THcRFTime::DefineVariables( EMode mode )
 //_____________________________________________________________________________
 Int_t THcRFTime::Process( const THaEvData& evdata )
 {
+  static const char* const epics_tag = "MOFC1FREQ";
+
   if( !IsOK() || !gHaRun ) return -1;
-  
-  if (Bunch_Spacing_Epics == 0.0001){ // If Bunch_Spacing_Epics is still the default value (0.0001), set it to the Epics read in, this is to ensure it is only set ONCE
-    Bunch_Spacing_Epics = (2.0/(atof(fEpicsHandler->GetString("MOFC1FREQ"))))*(pow(10, 9)); // Calculation of Bunch Spacing, 2/f as we get every OTHER bucket typically, converted to ns
+
+  if (Bunch_Spacing_Epics == 0.0001 && fEpicsHandler->IsLoaded(epics_tag)){ // If Bunch_Spacing_Epics is still the default value (0.0001), set it to the Epics read in, this is to ensure it is only set ONCE
+    Bunch_Spacing_Epics = (2.0/(atof(fEpicsHandler->GetString(epics_tag))))*(pow(10, 9)); // Calculation of Bunch Spacing, 2/f as we get every OTHER bucket typically, converted to ns
     if (Bunch_Spacing_Epics > 0.1 && Bunch_Spacing_Epics < 4.5){ // If the value looks sensible, check if an override value has been set
       if (Bunch_Spacing_Override == 1.5556){ // If the Bunch_Spacing_override has NOT been set by the user, set the bunch spacing to be the epics value
 	Bunch_Spacing = Bunch_Spacing_Epics;
@@ -194,10 +196,10 @@ Int_t THcRFTime::Process( const THaEvData& evdata )
 
   //Create THaTrack object for hadron/elec arms to get relevant golden track quantities
   if (felecArmName=="H") {
-    theSHMSTrack = (fhadSpectro->GetGoldenTrack()); 
+    theSHMSTrack = (fhadSpectro->GetGoldenTrack());
     theHMSTrack = (felecSpectro->GetGoldenTrack());
   } else{
-    theSHMSTrack = (felecSpectro->GetGoldenTrack()); 
+    theSHMSTrack = (felecSpectro->GetGoldenTrack());
     theHMSTrack = (fhadSpectro->GetGoldenTrack());
   }
 
@@ -206,13 +208,13 @@ Int_t THcRFTime::Process( const THaEvData& evdata )
 
   Double_t SHMS_FPtime = theSHMSTrack->GetFPTime();// SHMS arm
   Double_t HMS_FPtime = theHMSTrack->GetFPTime();  // HMS arm
-      
+
   if (SHMS_FPtime==-2000 || HMS_FPtime==-2000)  return 1;
   if (SHMS_FPtime==-1000 || HMS_FPtime==-1000)  return 1;
-  
+
   SHMS_RFtime = fCoinDet->Get_RF_TrigTime(0); // SHMS is ID 0
   HMS_RFtime = fCoinDet->Get_RF_TrigTime(1); // HMS is ID 1
-  
+
   // RF Time dist can be utilised for PID, offsets should be set in Standard.kinematics, these are just used to "center" the distribution at a desired point
   // Typically, other PID info needs to be utilised to establish where the relevant peaks for each particle species are in the distribution
   // Note, this expression looks a bit odd but this is to achieve the same results as the Python a % b operation
@@ -220,7 +222,7 @@ Int_t THcRFTime::Process( const THaEvData& evdata )
   // See - https://stackoverflow.com/questions/1907565/c-and-python-different-behaviour-of-the-modulo-operation for more
   fHMS_RFtimeDist = fmod((fmod((HMS_RFtime - HMS_FPtime + HMS_RF_Offset), Bunch_Spacing) + Bunch_Spacing), Bunch_Spacing);
   fSHMS_RFtimeDist = fmod((fmod((SHMS_RFtime - SHMS_FPtime + SHMS_RF_Offset), Bunch_Spacing) + Bunch_Spacing), Bunch_Spacing);
-  
+
   return 0;
 }
 
