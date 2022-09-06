@@ -21,7 +21,7 @@ class TIBlobModule : public PipeliningModule {
 
 public:
 
-   TIBlobModule() : PipeliningModule() {}
+   TIBlobModule();
    TIBlobModule(UInt_t crate, UInt_t slot);
    virtual ~TIBlobModule();
 
@@ -49,4 +49,3 @@ public:
 }
 
 #endif
-

@@ -9,7 +9,8 @@
 
 #include "TIBlobModule.h"
 #include "THaSlotData.h"
-#include <iostream>
+#include <cassert>
+//#include <iostream>
 
 using namespace std;
 
@@ -18,17 +19,17 @@ namespace Decoder {
   Module::TypeIter_t TIBlobModule::fgThisType =
     DoRegister( ModuleType( "Decoder::TIBlobModule" , 4 ));
 
-  TIBlobModule::TIBlobModule(UInt_t crate, UInt_t slot) : PipeliningModule(crate, slot) {
-    fDebugFile=nullptr;
-    TIBlobModule::Init();
-  }
+  TIBlobModule::TIBlobModule()
+    : TIBlobModule(0,0) {}
+
+  TIBlobModule::TIBlobModule(UInt_t crate, UInt_t slot)
+    : PipeliningModule(crate, slot) { fNumChan = NTICHAN; }
 
   TIBlobModule::~TIBlobModule() = default;
 
   void TIBlobModule::Init() {
     Module::Init();
     fNumChan=NTICHAN;
-    fData.assign(fNumChan,0);
 #if defined DEBUG && defined WITH_DEBUG
     // This will make a HUGE output
     delete fDebugFile; fDebugFile = 0;
@@ -38,7 +39,7 @@ namespace Decoder {
     //fDebugFile=0;
     Clear();
     IsInit = kTRUE;
-    
+
     fName = "TIBlob";
   }
 
@@ -72,11 +73,12 @@ namespace Decoder {
         if( fSlot != slot_blk_hdr ) {
           return len;
         }
-        fData[0] = (bank[2 + ifill] >> 24) & 0xFF; // Trigger type
+        assert(fData.size() >= 3 && NTICHAN >= 3);  // else error in constructor
+        fData[0] = (bank[2 + ifill] >> 24) & 0xFF;  // Trigger type
         fData[1] = bank[3 + ifill];                 // Trigger number
         fData[2] = (len > 5 + ifill) ? evbuffer[4 + ifill] : 0; // Trigger time
         //      cout << "TIBlob Slot " << fSlot << ": ";
-        for( UInt_t i = 0; i < 3; i++ ) {
+        for( UInt_t i = 0; i < NTICHAN; i++ ) {
           sldat->loadData(i, fData[i], fData[i]);
           //	cout << " " << fData[i];
         }
