@@ -84,7 +84,7 @@ protected:
   Decoder::THaCrateMap* fMap;	/* The Crate map */
   Int_t fTISlot;
   Int_t fTICrate;
-  Double_t fDisableSlipCorrection;
+  Bool_t fDisableSlipCorrection;
   std::map<Int_t, Int_t> fTrigTimeShiftMap;
   std::map<Int_t, Decoder::Fadc250Module*> fFADCSlotMap;
 
