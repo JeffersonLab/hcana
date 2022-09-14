@@ -132,6 +132,7 @@ protected:
   vector<Double_t>      fGoodAdcPulseAmp;
   vector<Double_t>      fGoodAdcPulseTime;
   vector<Double_t>      fGoodAdcTdcDiffTime;
+  vector<Double_t>      fSampWaveform;
 
   vector<Double_t>      fE;                    //[fNelem] energy deposition in shower blocks
   vector<Double_t>      fT;                    //[fNelem] time of hit in shower blocks
@@ -189,6 +190,7 @@ protected:
   Double_t fAdcThreshold;
   Double_t fAdcSampThreshold;
   Double_t fAdcTdcOffset;
+  Int_t *fPedDefault ;
 
   //C.Y. Feb 09, 2021: Added fAdcPulseTime window parameters to be used in
   //the NPS clustering algorithm to select good adc pulse signals
@@ -203,6 +205,13 @@ protected:
   Int_t fDataSampWidth;		// Integration range
 
   Int_t fLayerNum;		// 2 for SHMS
+
+  Int_t  fOutputSampWaveform;
+  Int_t  fUseSampWaveform;
+  Double_t  fSampThreshold;
+  Int_t  fSampNSA;
+  Int_t  fSampNSAT;
+  Int_t  fSampNSB;
 
   // Accumulators for pedestals go here
 
@@ -238,11 +247,20 @@ protected:
   TClonesArray* frAdcPulseIntRaw;
   TClonesArray* frAdcPulseAmpRaw;
   TClonesArray* frAdcPulseTimeRaw;
-
   TClonesArray* frAdcPed;
   TClonesArray* frAdcPulseInt;
   TClonesArray* frAdcPulseAmp;
   TClonesArray* frAdcPulseTime;
+
+  TClonesArray* frAdcSampPedRaw;
+  TClonesArray* frAdcSampPulseIntRaw;
+  TClonesArray* frAdcSampPulseAmpRaw;
+  TClonesArray* frAdcSampPulseTimeRaw;
+  TClonesArray* frAdcSampPed;
+  TClonesArray* frAdcSampPulseInt;
+  TClonesArray* frAdcSampPulseAmp;
+  TClonesArray* frAdcSampPulseTime;
+  TClonesArray* frAdcSampWaveform;
 
   //Quatitites for efficiency calculations.
 
