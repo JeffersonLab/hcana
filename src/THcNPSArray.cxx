@@ -1040,8 +1040,16 @@ Int_t THcNPSArray::AccumulateHits(TClonesArray* rawhits, Int_t nexthit, Int_t tr
 
   while(ihit < nrawhits) {
     THcRawShowerHit* hit = (THcRawShowerHit *) rawhits->At(ihit);
-    
-    Int_t padnum = shms2nps_transform(hit->fCounter, transform);
+
+    if(hit->fPlane != fLayerNum) {
+      break;
+    }
+
+    Int_t padnum = hit->fCounter;
+
+    cout << padnum << endl;
+
+    //    Int_t padnum = shms2nps_transform(hit->fCounter, transform);
     
     //Create rawAdcHit object (passed by ref.) to access raw ADC quantities, and Fill the frAdc* TClonesArray
     THcRawAdcHit& rawAdcHit = hit->GetRawAdcHitPos();
