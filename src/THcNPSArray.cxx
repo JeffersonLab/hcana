@@ -1047,8 +1047,6 @@ Int_t THcNPSArray::AccumulateHits(TClonesArray* rawhits, Int_t nexthit, Int_t tr
 
     Int_t padnum = hit->fCounter;
 
-    cout << padnum << endl;
-
     //    Int_t padnum = shms2nps_transform(hit->fCounter, transform);
     
     //Create rawAdcHit object (passed by ref.) to access raw ADC quantities, and Fill the frAdc* TClonesArray
