@@ -10,6 +10,8 @@
 //////////////////////////////////////////////////////////////////////////
 
 #include "Rtypes.h"
+#include "Decoder.h"
+#include "Fadc250Module.h"
 
 class THaEvData;
 class TDatime;
@@ -51,7 +53,11 @@ protected:
   Bool_t fIsHelm;
 
   Int_t fADCThreshold;		// Threshold for On/Off of helicity signals
+  Int_t fADCRawSamples;		// Use raw sample data if true
 
+  Decoder::Fadc250Module* fFADCModule; // Module object to get trigger time
+  Int_t fTTimeDiff;		       // Difference between TI and ADC times
+  
   ROCinfo  fROCinfo[kCount];
 
   Int_t    fQWEAKDebug;          // Debug level
