@@ -18,12 +18,14 @@
 #include <vector>
 #include "TH1F.h"
 
+#define DEFAULT_FADCTHRESHOLD 8000
+
 using namespace std;
 
 //____________________________________________________________________
 THcHelicityReader::THcHelicityReader()
-  : fTITime(0), fTITime_last(0), fTITime_rollovers(0), 
-    fHaveROCs(kFALSE)
+  : fTITime(0), fTITime_last(0), fTITime_rollovers(0), fFADCModule(0), 
+    fTTimeDiff(0), fHaveROCs(kFALSE)
 {
   // Default constructor
   
@@ -63,11 +65,13 @@ Int_t THcHelicityReader::ReadDatabase( const char* /*dbfilename*/,
   SetROCinfo(kMPS,2,14,10);
   SetROCinfo(kQrt,2,14,7);	// Starting about run 5818
   SetROCinfo(kTime,2,21,2);
-  
-  fADCThreshold = 8000;
+
+  fADCThreshold = DEFAULT_FADCTHRESHOLD;
+  fADCRawSamples = 0;
   
   DBRequest list[] = {
     {"helicity_adcthreshold",&fADCThreshold, kInt, 0, 1},
+    {"helicity_adcrawsamples",&fADCRawSamples, kInt, 0, 1},
     {0}
   };
 
@@ -122,6 +126,8 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   // Check if ROC info is correct
 
   if(!evdata.GetModule(fROCinfo[kTime].roc, fROCinfo[kTime].slot)) {
+    //    cout << "ROC, Slot: " << fROCinfo[kTime].roc << " " << fROCinfo[kTime].slot << endl;
+    //    cout << "Evtype = " << evdata.GetEvType() << endl;
     cout << "THcHelicityReader: ROC 2 not found" << endl;
     cout << "Changing to ROC 1 (HMS)" << endl;
     SetROCinfo(kHel,1,18,9);
@@ -132,13 +138,34 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   }
 
   // Get the TI Data
-  //  Int_t fTIType = evData.GetData(fTICrate, fTISlot, 0, 0);
-  //  Int_t fTIEvNum = evData.GetData(fTICrate, fTISlot, 1, 0);
   UInt_t titime = (UInt_t) evdata.GetData(fROCinfo[kTime].roc,
 					  fROCinfo[kTime].slot,
 					  fROCinfo[kTime].index, 0);
+  
+  if(!fFADCModule) {
+    fFADCModule = dynamic_cast<Decoder::Fadc250Module*>
+      (evdata.GetModule(fROCinfo[kHel].roc, fROCinfo[kHel].slot));
+    fTTimeDiff = titime - fFADCModule->GetTriggerTime();
+  }
+
+  if(titime == 0) {
+    cout << "Event " << evdata.GetEvNum() << " TI Trigger time missing." << endl;
+    //    cout << "Event " << evdata.GetEvNum() << " TI Trigger time missing.  Using FADC trigger time" << endl;
+    //    cout << "TI Evnum: " << fROCinfo[kTime].roc << " " <<
+    //      evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 0, 0)
+    //	 << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 1, 0) << endl;
+    //    titime = fFADCModule->GetTriggerTime() + fTTimeDiff;
+  }
+
+  //  cout << "Time " << titime << " " << fTITime_last << " " <<
+  //    evdata.GetData(1,21,2,0) << " " <<
+  //    evdata.GetData(2,21,2,0) << " " << fFADCModule->GetTriggerTime() << endl;
+
   // Check again if ROC info is correct
+  //    cout << "Evtype = " << evdata.GetEvType() << endl;
+#if 0
   if(titime == 0 && fTITime_last==0) {
+    cout << "B ROC, Slot: " << fROCinfo[kTime].roc << " " << fROCinfo[kTime].slot << endl;
     cout << "THcHelicityReader: ROC 2 not found" << endl;
     cout << "Changing to ROC 1 (HMS)" << endl;
     SetROCinfo(kHel,1,18,9);
@@ -149,8 +176,10 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
     titime = (UInt_t) evdata.GetData(fROCinfo[kTime].roc,
 					  fROCinfo[kTime].slot,
 					  fROCinfo[kTime].index, 0);
-  }     
-  //cout << fTITime_last << " " << titime << endl;
+  }
+#endif
+
+  //  cout << fTITime_last << " " << titime << endl;
   if(titime < fTITime_last) {
     fTITime_rollovers++;
   }
@@ -160,29 +189,63 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   const_cast<THaEvData&>(evdata).SetEvTime(fTITime);
 
   // Get the helicity control signals.  These are from the pedestals
-  // acquired by FADC channels.
+  // acquired by FADC channels.  If helpraw and helmraw both
+  // come back zero, assume that we have raw sample data instead
+  // and switch to using raw sample data for the rest of the run.
+  // If the FADC threshold has not be set by the user, set the threshold
+  // to the default threshold divided by 4.
 
-  Int_t helpraw = evdata.GetData(Decoder::kPulsePedestal,
-				  fROCinfo[kHel].roc,
-				  fROCinfo[kHel].slot,
-				  fROCinfo[kHel].index, 0);
-  Int_t helmraw = evdata.GetData(Decoder::kPulsePedestal,
-				  fROCinfo[kHelm].roc,
-				  fROCinfo[kHelm].slot,
-				  fROCinfo[kHelm].index, 0);
-  Int_t mpsraw = evdata.GetData(Decoder::kPulsePedestal,
-				  fROCinfo[kMPS].roc,
-				  fROCinfo[kMPS].slot,
-				  fROCinfo[kMPS].index, 0);
-  Int_t qrtraw = evdata.GetData(Decoder::kPulsePedestal,
-				  fROCinfo[kQrt].roc,
-				  fROCinfo[kQrt].slot,
-				  fROCinfo[kQrt].index, 0);
-
+  Int_t helpraw, helmraw, mpsraw, qrtraw;
+  if(!fADCRawSamples) {
+    helpraw = evdata.GetData(Decoder::kPulsePedestal,
+			     fROCinfo[kHel].roc,
+			     fROCinfo[kHel].slot,
+			     fROCinfo[kHel].index, 0);
+    helmraw = evdata.GetData(Decoder::kPulsePedestal,
+			     fROCinfo[kHelm].roc,
+			     fROCinfo[kHelm].slot,
+			     fROCinfo[kHelm].index, 0);
+    mpsraw = evdata.GetData(Decoder::kPulsePedestal,
+			    fROCinfo[kMPS].roc,
+			    fROCinfo[kMPS].slot,
+			    fROCinfo[kMPS].index, 0);
+    qrtraw = evdata.GetData(Decoder::kPulsePedestal,
+			    fROCinfo[kQrt].roc,
+			    fROCinfo[kQrt].slot,
+			    fROCinfo[kQrt].index, 0);
+    if(helpraw <= 0 && helmraw <=0) {
+      fADCRawSamples = 1;
+      if(fADCThreshold == DEFAULT_FADCTHRESHOLD) {
+	fADCThreshold = DEFAULT_FADCTHRESHOLD/4;
+      }
+    }
+  }
+  if(fADCRawSamples) {
+    helpraw = evdata.GetData(Decoder::kSampleADC,
+			     fROCinfo[kHel].roc,
+			     fROCinfo[kHel].slot,
+			     fROCinfo[kHel].index, 0);
+    helmraw = evdata.GetData(Decoder::kSampleADC,
+			     fROCinfo[kHelm].roc,
+			     fROCinfo[kHelm].slot,
+			     fROCinfo[kHelm].index, 0);
+    mpsraw = evdata.GetData(Decoder::kSampleADC,
+			    fROCinfo[kMPS].roc,
+			    fROCinfo[kMPS].slot,
+			    fROCinfo[kMPS].index, 0);
+    qrtraw = evdata.GetData(Decoder::kSampleADC,
+			    fROCinfo[kQrt].roc,
+			    fROCinfo[kQrt].slot,
+			    fROCinfo[kQrt].index, 0);
+  }
+    
   fIsQrt = qrtraw > fADCThreshold;
   fIsMPS = mpsraw > fADCThreshold;
   fIsHelp = helpraw > fADCThreshold;
   fIsHelm = helmraw > fADCThreshold;
+
+  //  cout << helpraw << " " << helmraw << " " << mpsraw << " " << qrtraw << endl;
+  //  cout << fADCThreshold << " " << fADCRawSamples << " " << fIsQrt << " " << fIsMPS << " " << fIsHelp << " " << fIsHelm << endl;
 
   return 0;
 }

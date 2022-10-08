@@ -10,7 +10,7 @@
 #include "TIBlobModule.h"
 #include "THaSlotData.h"
 #include <cassert>
-//#include <iostream>
+#include <iostream>
 
 using namespace std;
 
@@ -76,8 +76,31 @@ namespace Decoder {
         assert(fData.size() >= 3 && NTICHAN >= 3);  // else error in constructor
         fData[0] = (bank[2 + ifill] >> 24) & 0xFF;  // Trigger type
         fData[1] = bank[3 + ifill];                 // Trigger number
-        fData[2] = (len > 5 + ifill) ? bank[4 + ifill] : 0; // Trigger time
-        //      cout << "TIBlob Slot " << fSlot << ": ";
+        //fData[2] = (len > 5 + ifill) ? bank[4 + ifill] : 0; // Trigger time
+
+	// PipeliningModule might supply a too short event length.
+	// This happens if the Trigger time looks like a block trailer
+	// We have two ways to check that the trigger time is really present
+	// 1.  Find the event length from event data word 1
+	// 2.  Look for the Timestamp present bit in block header 2
+
+	// Method 1
+	//      if((bank[2+ifill]&0xffff) >= 2) {
+	//	  fData[2] = bank[4+ifill];
+	//	} else {
+	//	  fData[2] = 0;
+	//	}
+	//	cout << "H: " << hex << bank[0+ifill] << " " << 
+	//	     bank[1+ifill] << " " << 
+	//	     bank[2+ifill] << " " << 
+	//	     bank[3+ifill] << " " << 
+	//	     bank[4+ifill] << dec << endl;
+	// Method 2
+	if((bank[1+ifill] & 0x10000) != 0) {
+	fData[2] = bank[4+ifill];
+	} else {
+		  fData[2] = 0;
+		}
         for( UInt_t i = 0; i < NTICHAN; i++ ) {
           sldat->loadData(i, fData[i], fData[i]);
           //	cout << " " << fData[i];
