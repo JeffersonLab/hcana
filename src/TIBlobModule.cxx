@@ -12,7 +12,6 @@
 #include <cassert>
 #include <iostream>
 #include <sstream>
-#include <cstring>   // memcpy
 
 using namespace std;
 
@@ -29,8 +28,12 @@ TIBlobModule::TIBlobModule()
 TIBlobModule::TIBlobModule(UInt_t crate, UInt_t slot)
   : PipeliningModule(crate, slot)
   , fNfill{0}
+  , fDataAvail{0}
+  , fWord4Type{0}
   , fHasTimestamp{true}
-{}
+{
+  fNumChan = kNTICHAN;
+}
 
 //_____________________________________________________________________________
 TIBlobModule::~TIBlobModule() = default;
@@ -53,6 +56,30 @@ void TIBlobModule::Init()
 }
 
 //_____________________________________________________________________________
+void TIBlobModule::Init( const char* configstr )
+{
+  // Set parameters of this module via optional configuration string in
+  // db_cratemap.dat. Supported parameters:
+  //   debug:   debug level
+  //   word4:   type of word4 (0 = auto, 3 = counter bits, 4 = trigger bits)
+  //
+  // Example:
+  // ==== Crate 30 type vme
+  // # slot   model   bank   configuration string
+  //   21       4       4    cfg: debug=1
+
+  Init();  // standard Init
+
+  UInt_t debug = 0, word4 = 0;
+  vector<ConfigStrReq> req = { { "debug", debug },
+                               { "word4", word4} };
+  ParseConfigStr(configstr, req);
+
+  fDebug = static_cast<Int_t>(debug);
+  SetWord4Type(word4);
+}
+
+//_____________________________________________________________________________
 UInt_t TIBlobModule::LoadSlot( THaSlotData* sldat, const UInt_t* evbuffer,
                                  const UInt_t* pstop )
 {
@@ -71,6 +98,23 @@ string TIBlobModule::Here( const char* function )
 }
 
 //_____________________________________________________________________________
+static inline bool IsTrigBits( UInt_t word )
+{
+  return (word & 0xFFFF0000) == 0xDA560000;
+}
+
+//_____________________________________________________________________________
+void TIBlobModule::CheckWarnTrigBits( UInt_t word, UInt_t nopt, const char* here )
+{
+  if( !IsTrigBits(word) ) {
+    cerr << Here(here)
+         << "Unexpected data in event with " << nopt << " optional "
+         << "words. Expected trigger bits 0xDA5600XX, but found."
+         << hex << "0x" << word << dec << endl;
+  }
+}
+
+//_____________________________________________________________________________
 UInt_t TIBlobModule::LoadSlot( THaSlotData* sldat, const UInt_t* evbuffer,
                                UInt_t pos, UInt_t len ) {
   // Load from bank data in evbuffer between [pos,pos+len)
@@ -84,8 +128,8 @@ UInt_t TIBlobModule::LoadSlot( THaSlotData* sldat, const UInt_t* evbuffer,
 
   // Clear event data and ensure there is enough space including optional data.
   // Don't call Clear() here; it would wipe out the bank-level info.
-  fNumChan = 0;
-  fData.assign(NTICHAN,0);
+  fDataAvail = 0;
+  fData.assign(kNTICHAN,0);
 
   if( len < 2 )
     return 0;
@@ -94,12 +138,16 @@ UInt_t TIBlobModule::LoadSlot( THaSlotData* sldat, const UInt_t* evbuffer,
   //  event[0]:  header: trigger type, event length
   //  event[1]:  trigger number lower 32 bits
   //  event[2]:  trigger time lower 32 bits (optional)
-  //  event[3]:  maybe: tigger number/time upper 16 bits (optional, firmware-dependent)
-  const auto* event = evbuffer + pos;
-  UInt_t nwords = (event[0] & 0xFFFF) + 1;   // Number of words in this event
-  if( nwords > len || nwords > NTICHAN ) {
+  //  event[3]:  trigger number/time upper 16 bits (optional, firmware-dependent)
+  //  event[4]:  front-panel trigger bit pattern (bits 0-5) | 0xDA560000 (optional)
+  // If any optional values are missing, the indices of any following words
+  // are correspondingly smaller, i.e. the event size depends on how many
+  // optional data are configured.
+  const auto* p = evbuffer + pos;
+  UInt_t nwords = (*p & 0xFFFF) + 1;   // Number of words in this event
+  if( nwords > len || nwords > kNTICHAN ) {
     cerr << Here(here) << "Reported event length too long: hdr = "
-         << nwords << ", buf = " << len << ", need <= " << NTICHAN
+         << nwords << ", buf = " << len << ", need <= " << kNTICHAN
          << " and <= " << len << endl;
     return 0;
   }
@@ -113,17 +161,74 @@ UInt_t TIBlobModule::LoadSlot( THaSlotData* sldat, const UInt_t* evbuffer,
          << " but timestamp present requires >= 3" << endl;
     return 0;
   }
-  fData[0] = (event[0] >> 24) & 0xFF;  // Trigger type
-  memcpy( fData.data()+1, event+1, (nwords-1)*sizeof(*event));
-  for( UInt_t i = 0; i < nwords; i++ ) {
-    sldat->loadData(i, fData[i], fData[i]);
-    //	cout << " " << fData[i];
+  if( nwords < len ) {
+    cerr << Here(here) << "Warning: TI event data unexpectedly "
+         <<" followed by " << len-nwords << " extra words" << endl;
   }
-  //      cout << endl;
+  // Trigger type:
+  //  0x00: filler events
+  //  0x01-0x40: Physics trigger; if the trigger is from TS, 0x01-0x20 indicates
+  //    one bit from the GTP, 0x21-0x40 indicates one bit from TS front panel
+  //  0xfc: multiple trigger inputs to TS
+  //  0xfd: VME trigger
+  //  0xfe: Random trigger
+  //  For TImaster, bit(31:26) represents the TS#6-1 inputs
+  SETBIT(fDataAvail, kTriggerType);
+  fData[kTriggerType] = (*p++ >> 24) & 0xFF;
+  // Trigger number starting at 1
+  SETBIT(fDataAvail, kTriggerNum);
+  fData[kTriggerNum] = *p++;
+  // Trigger timing in units of 4 ns
+  if( fHasTimestamp ) {
+    assert(nwords >= 3); // nwords >= 3 assured above
+    SETBIT(fDataAvail, kTimestamp);
+    fData[kTimestamp] = *p++;
+  }
+  // From here on, the data format leaves something to be desired
+  const auto* q = evbuffer + pos + nwords;  // end of data + 1
+  assert(p <= q);
+  auto noptional = q-p;
+  if( noptional == 2 ) {
+    // This case is unambiguous
 
-  // Report actual number of valid data words, which is variable for this module
-  // although it should not change from event to event
-  fNumChan = nwords;
+    // Upper 16 bits of trigger number (bits 31:16) and trigger time (bits 15:0)
+    SETBIT(fDataAvail, kCounterBits);
+    fData[kCounterBits] = *p++;
+
+    // TI front panel TSinput(6:1), before prescale
+    CheckWarnTrigBits(*p, noptional, here);
+    SETBIT(fDataAvail, kTriggerBits);
+    fData[kTriggerBits] = (*p++ & 0x3F);
+  }
+  else if( noptional == 1 ) {
+    // One optional word is ambiguous without extra information
+    if( (fWord4Type == 0   // If data format hint not set
+         // then guess the type. This may be wrong in the very rare case that
+         // the upper 16 bits of event data "word4" (counter bits) happen to
+         // match the magic number 0xDA56
+         && IsTrigBits(*p))
+        // User provided data format hint
+        || fWord4Type == kTriggerBits )
+    {
+      if( fWord4Type == kTriggerBits )
+        CheckWarnTrigBits(*p, noptional, here);
+      SETBIT(fDataAvail, kTriggerBits);
+      fData[kTriggerBits] = (*p++ & 0x3F);
+    } else {
+      SETBIT(fDataAvail, kCounterBits);
+      fData[kCounterBits] = *p++;
+    }
+  }
+  if( p != q ) {
+    cerr << Here(here) << "Unexpected decoding error, read "
+         << p - evbuffer - pos
+         << " words out of " << nwords << ". Call expert." << endl;
+  }
+  for( UInt_t i = 0; i < kNTICHAN; i++ ) {
+    if( TESTBIT(fDataAvail, i) )
+      sldat->loadData(i, fData[i], fData[i]);
+  }
+
   return nwords;
 }
 
@@ -169,17 +274,16 @@ UInt_t TIBlobModule::LoadBank( Decoder::THaSlotData* sldat,
   // Find block header for this module's slot
   // There should never be more than one TI module per bank per ROC, so this
   // really ought to match the very first word.
-  auto ibeg = FindBlockHeaderForSlot(evbuffer, pos, len,
-                                     fSlot);
+  auto ibeg = FindBlockHeaderForSlot(evbuffer, pos, len, fSlot);
   if( ibeg == -1 ) {
     // Block header not present. Should not happen.
-    cerr << Here(here) << "No block header found in bank for slot " << fSlot
-         << "Call expert." << endl;
+    cerr << Here(here)
+         << "No block header found in bank. Call expert." << endl;
     return 0;
   }
   if( ibeg != pos ) {
-    cerr << Here(here) << "Warning: " << ibeg-pos << " words of leading garbage"
-         << endl;
+    cerr << Here(here)
+         << "Warning: " << ibeg-pos << " words of leading garbage" << endl;
   }
   const UInt_t* p = evbuffer+ibeg;
   // Block header lower 18 bits
@@ -188,10 +292,10 @@ UInt_t TIBlobModule::LoadBank( Decoder::THaSlotData* sldat,
   //fBlockNum     = (*p & 0x0003FF00) >> 8; // Block number
 
   // Block header #2
-  UInt_t hdr2id = *++p & 0xFFFEFF00;
+  UInt_t hdr2id = (*++p & 0xFFFEFF00);
   if( hdr2id != 0xFF102000 ) {
-    cerr << Here(here) << "Invalid block header #2 signature = "
-         << hex << *p << dec << ", expected 0xFF1020xx or 0xFF1120xx" << endl;
+    cerr << Here(here) << "Invalid block header #2 signature = " << hex
+         << "0x" << *p << dec << ", expected 0xFF1020xx or 0xFF1120xx" << endl;
     return 0;
   }
   fHasTimestamp = TESTBIT(*p, 16);
@@ -213,17 +317,17 @@ UInt_t TIBlobModule::LoadBank( Decoder::THaSlotData* sldat,
     if( sig != 0x01 ) {
       cerr << Here(here) << "Invalid event header signature for iblock "
            << block_size-blksz << ". Expected xx01xxxx, got "
-           << hex << *p << dec << endl;
+           << hex << "0x" << *p << dec << endl;
       return 0;
     }
-    UInt_t nwords = *p & 0xFFFF;   // Number of 32-bit words following
-    if( nwords < 1 ) {
+    UInt_t nwords = (*p & 0xFFFF) + 1;   // Number of 32-bit words in event
+    if( nwords < 2 ) {
       cerr << Here(here) << "Event data too short, expected >= 2, got "
-           << nwords+1 << endl;
+           << nwords << endl;
       return 0;
     }
     evtblk.push_back(p - evbuffer);
-    p += nwords+1;
+    p += nwords;
     --blksz;
   }
 
@@ -315,10 +419,18 @@ UInt_t TIBlobModule::GetData( UInt_t chan ) const
 void TIBlobModule::Clear(const Option_t* opt)
 {
   PipeliningModule::Clear(opt);
-  fNumChan = 0;  // For this module: number of data words in current event
-  fData.assign(NTICHAN, 0);
+  fData.assign(kNTICHAN, 0);
   fNfill = 0;
+  fDataAvail = 0;
   fHasTimestamp = true;
+}
+
+//_____________________________________________________________________________
+void TIBlobModule::SetWord4Type( UInt_t type )
+{
+  if( type != 0 && type != kCounterBits && type != kTriggerBits )
+    return;
+  fWord4Type = type;
 }
 
 } // namespace Decoder
