@@ -28,7 +28,7 @@ that the cut has been tested can be accessed with cutname.`scaler` (or
 
 using namespace std;
 
-static const Double_t kBig = 1e38; // Error value
+//static const Double_t kBig = 1e38; // Error value
 
 enum EFuncCode { kLength, kSum, kMean, kStdDev, kMax, kMin,
 		 kGeoMean, kMedian, kIteration, kNumSetBits };
@@ -112,7 +112,7 @@ Int_t THcFormula::DefinedCut( TString& name )
 //_____________________________________________________________________________
 Int_t THcFormula::DefinedGlobalVariable( TString& name )
 {
-  
+
   return DefinedGlobalVariableExtraList(name, (THaVarList*) fParmList);
 }
 
