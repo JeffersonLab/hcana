@@ -13,20 +13,25 @@
 #include "THaEvtTypeHandler.h"
 #include "Decoder.h"
 #include <string>
+#include <utility>
 #include <vector>
 #include <set>
 #include "TTree.h"
 #include "TString.h"
 #include <cstring>
 
-
 class HCScalerLoc { // Utility class used by THcScalerEvtHandler
- public:
+public:
   HCScalerLoc(TString nm, TString desc, UInt_t idx, Int_t s1, UInt_t ich,
-	      UInt_t iki, Int_t iv) :
-   name(nm), description(desc), index(idx), islot(s1), ichan(ich),
-   ikind(iki), ivar(iv) { };
-  ~HCScalerLoc() {}
+              UInt_t iki, Int_t iv)
+    : name(std::move(nm))
+    , description(std::move(desc))
+    , index(idx)
+    , islot(s1)
+    , ichan(ich)
+    , ikind(iki)
+    , ivar(iv)
+  {}
   TString name, description;
   UInt_t index, islot, ichan, ikind, ivar;
 };
@@ -42,7 +47,7 @@ public:
    Int_t AnalyzeBuffer(UInt_t *rdata, Bool_t onlysync);
    virtual EStatus Init( const TDatime& run_time);
    virtual Int_t   ReadDatabase(const TDatime& date );
-   virtual Int_t End( THaRunBase* r=0 );
+   virtual Int_t End( THaRunBase* r = nullptr );
    virtual void SetUseFirstEvent(Bool_t b = kFALSE) {fUseFirstEvent = b;}
    virtual void SetDelayedType(int evtype);
    virtual void SetOnlyBanks(Bool_t b = kFALSE) {fOnlyBanks = b;fRocSet.clear();}
@@ -50,9 +55,8 @@ public:
 
 private:
 
-   void AddVars(TString name, TString desc, UInt_t iscal, UInt_t ichan, UInt_t ikind);
+   void AddVars(const TString& name, const TString& desc, UInt_t iscal, UInt_t ichan, UInt_t ikind);
    void DefVars();
-   static size_t FindNoCase(const std::string& sdata, const std::string& skey);
 
    std::vector<Decoder::GenScaler*> scalers;
    std::vector<HCScalerLoc*> scalerloc;

@@ -28,6 +28,7 @@ the number of parameters per plane.
 #include "TVectorD.h"
 #include "THaApparatus.h"
 #include "THcHallCSpectrometer.h"
+#include "Textvars.h"  // vsplit
 
 #include <cstring>
 #include <cstdio>
@@ -257,7 +258,7 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   //    { &fLTNhit, &fLANhit, fLT, fLT_c, fLA, fLA_p, fLA_c, fLOff, fLPed, fLGain }
   //  };
   //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
-  
+
   fPresentP = 0;
   THaVar* vpresent = gHaVars->Find(Form("%s.present",GetApparatus()->GetName()));
   if(vpresent) {
@@ -520,7 +521,7 @@ inline
 void THcDC::ClearEvent()
 {
   // Reset per-event data.
-  fNDCTracks=0;		
+  fNDCTracks=0;
   fStubTest = 0;
   fNhits = 0;
   fNthits = 0;
@@ -669,7 +670,7 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
     THaTrack* track = static_cast<THaTrack*>( tracks[it] );
     Double_t xptar=kBig,yptar=kBig,ytar=kBig,delta=kBig;
     Double_t xtar=0;
-    spectro->CalculateTargetQuantities(track,xtar,xptar,ytar,yptar,delta); 
+    spectro->CalculateTargetQuantities(track,xtar,xptar,ytar,yptar,delta);
     // Transfer results to track
     // No beam raster yet
     //; In transport coordinates phi = hyptar = dy/dz and theta = hxptar = dx/dz
@@ -677,7 +678,7 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
     //;    and  the xp offset is named  hphi_offset
 
     track->SetTarget(0.0, ytar*100.0, xptar, yptar);
-    track->SetDp(delta*100.0);	// Percent.  
+    track->SetDp(delta*100.0);	// Percent.
     Double_t ptemp = spectro->GetPcentral()*(1+track->GetDp()/100.0);
     track->SetMomentum(ptemp);
     TVector3 pvect_temp;
@@ -719,7 +720,7 @@ void THcDC::SetFocalPlaneBestTrack(Int_t golden_track_index)
         fDist_best[plane] = tr1->GetHitDist(ihit);
         fLR_best[plane] = tr1->GetHitLR(ihit);
         fPos_best[plane] = hit->GetPos();
-	 } 
+	 }
 	 EfficiencyPerWire(golden_track_index);
 }
 //
@@ -734,7 +735,7 @@ void THcDC::EfficiencyPerWire(Int_t golden_track_index)
     Int_t wire_num = hit->GetWireNum();
     Int_t wire_track_num=round(fPlanes[plane]->CalcWireFromPos(track_pos));
     if ( (wire_num-wire_track_num) ==0) fWire_hit_did[plane]=wire_num;
-  } 
+  }
   for(Int_t ip=0; ip<fNPlanes;ip++) {
     track_pos=tr1->GetCoord(ip);
     Int_t wire_should = round(fPlanes[ip]->CalcWireFromPos(track_pos));
@@ -807,7 +808,7 @@ void THcDC::NewLinkStubs()
 	    Double_t *spstub2=sp2->GetStubP();
 	    Double_t dposx = spstub1[0] - spstub2[0];
 	    Double_t dposy;
-	    if(fProjectToChamber) { 
+	    if(fProjectToChamber) {
 	      Double_t y1=spstub1[1]+fChambers[sp1->fNChamber]->GetZPos()*spstub1[3];
 	      Double_t y2=spstub2[1]+fChambers[sp2->fNChamber]->GetZPos()*spstub2[3];
 	      dposy = y1-y2;
@@ -850,8 +851,8 @@ void THcDC::NewLinkStubs()
 		}
        }
      }
-   } 
-     //  
+   }
+     //
   } // both chambers have spacepoints
 //
 
@@ -1069,18 +1070,18 @@ void THcDC::LinkStubs()
   }
 }
 //_____________________________________________________________________________
-void THcDC::FitLineToTrack(Int_t TrackHits,Double_t coords[],Int_t planes[],Double_t wiresigma[], Double_t TrackCoord[], Double_t save_ray[]) 
+void THcDC::FitLineToTrack(Int_t TrackHits,Double_t coords[],Int_t planes[],Double_t wiresigma[], Double_t TrackCoord[], Double_t save_ray[])
 {
   const Int_t raycoeffmap[]={4,5,2,3};
      TVectorD TT(4);
       TMatrixD AA(4,4);
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
 	TT[irayp] = 0.0;
-	for(Int_t ihit=0;ihit < TrackHits;ihit++) {	
+	for(Int_t ihit=0;ihit < TrackHits;ihit++) {
 	  TT[irayp] += (coords[ihit]*fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])/pow(wiresigma[ihit],2);
 	}
-      }   
-      // 
+      }
+      //
      for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
 	for(Int_t jrayp=0;jrayp<NUM_FPRAY;jrayp++) {
 	  AA[irayp][jrayp] = 0.0;
@@ -1111,7 +1112,7 @@ void THcDC::FitLineToTrack(Int_t TrackHits,Double_t coords[],Int_t planes[],Doub
 //_____________________________________________________________________________
 void THcDC::NewTrackFit(UInt_t TrackIndex)
 {
-                   THcDCTrack *tr = static_cast<THcDCTrack*>( fDCTracks->At(TrackIndex));  
+                   THcDCTrack *tr = static_cast<THcDCTrack*>( fDCTracks->At(TrackIndex));
 		   Double_t minchi2=100000.;
 		   Int_t MAXHITS=12;
                    Int_t plusminus[MAXHITS];
@@ -1146,7 +1147,7 @@ void THcDC::NewTrackFit(UInt_t TrackIndex)
 			planes[ihit] =hit->GetPlaneNum()-1;
 			wiresigma[ihit] = hit->GetWireSigma();
 		      }
-			  FitLineToTrack(TrackHits,coords,planes,wiresigma,TrackCoord,save_ray);		      
+			  FitLineToTrack(TrackHits,coords,planes,wiresigma,TrackCoord,save_ray);
                       Double_t  chi2 = 0.0;
                       for(Int_t ihit=0;ihit < TrackHits;ihit++) {
                 	Double_t residual = coords[ihit] - TrackCoord[planes[ihit]];
@@ -1160,11 +1161,11 @@ void THcDC::NewTrackFit(UInt_t TrackIndex)
 			  tr->SetCoord(planes[ihit], TrackCoord[planes[ihit]]);
                     	Double_t residual = coords[ihit] -TrackCoord[planes[ihit]] ;
                 	tr->SetResidual(planes[ihit], residual);
-			tr->SetChisq(chi2);  
+			tr->SetChisq(chi2);
                         tr->SetNFree(TrackHits - 4);
 			}
-			//cout << " fit = " << chi2 << " " << dray[0] << " "  << dray[1] << " "<< dray[2] << " "<< dray[3] << " " << endl ;		      
-			  } 
+			//cout << " fit = " << chi2 << " " << dray[0] << " "  << dray[1] << " "<< dray[2] << " "<< dray[3] << " " << endl ;
+			  }
 		   } // pmloop
 		      //
    // calculate ray without a plane in track
@@ -1175,8 +1176,8 @@ void THcDC::NewTrackFit(UInt_t TrackIndex)
 			planes[ihit] =hit->GetPlaneNum()-1;
 			wiresigma[ihit] = hit->GetWireSigma();
 		      }
-    for(Int_t ipl_hit=0;ipl_hit < tr->GetNHits();ipl_hit++) {    
- 
+    for(Int_t ipl_hit=0;ipl_hit < tr->GetNHits();ipl_hit++) {
+
 
       if(tr->GetNFree() > 0) {
  	TVectorD TT(NUM_FPRAY);
@@ -1184,7 +1185,7 @@ void THcDC::NewTrackFit(UInt_t TrackIndex)
 	for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
 	  TT[irayp] = 0.0;
 	  for(Int_t ihit=0;ihit < tr->GetNHits();ihit++) {
-	  
+
 
 	    THcDCHit* hit=tr->GetHit(ihit);
 
@@ -1204,7 +1205,7 @@ void THcDC::NewTrackFit(UInt_t TrackIndex)
 	    } else {
 
 	      for(Int_t ihit=0;ihit < tr->GetNHits();ihit++) {
-	      
+
 		THcDCHit* hit=tr->GetHit(ihit);
 
 
@@ -1235,7 +1236,7 @@ void THcDC::NewTrackFit(UInt_t TrackIndex)
 		      //
     }
   //
-    
+
 }
 
 //_____________________________________________________________________________
@@ -1293,7 +1294,7 @@ void THcDC::TrackFit()
       TMatrixD AA(NUM_FPRAY,NUM_FPRAY);
       for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
 	TT[irayp] = 0.0;
-	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {	
+	for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
 
 	  THcDCHit* hit=theDCTrack->GetHit(ihit);
 	  TT[irayp] += (coords[ihit]*fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]])/pow(hit->GetWireSigma(),2);
@@ -1321,8 +1322,8 @@ void THcDC::TrackFit()
 	    for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
 
 	      THcDCHit* hit=theDCTrack->GetHit(ihit);
-        
-		      
+
+
 	      AA[irayp][jrayp] += fPlaneCoeffs[planes[ihit]][raycoeffmap[irayp]]*
 		fPlaneCoeffs[planes[ihit]][raycoeffmap[jrayp]]/
 		pow(hit->GetWireSigma(),2);
@@ -1337,7 +1338,7 @@ void THcDC::TrackFit()
       // Should check that it is invertable
       AA.Invert();
       dray = AA*TT;
- 
+
       // Make sure fCoords, fResiduals, and fDoubleResiduals are clear
       for(Int_t iplane=0;iplane < fNPlanes; iplane++) {
 	Double_t coord=0.0;
@@ -1371,8 +1372,8 @@ void THcDC::TrackFit()
     }
     theDCTrack->SetChisq(chi2);
     // calculate ray without a plane in track
-     for(Int_t ipl_hit=0;ipl_hit < theDCTrack->GetNHits();ipl_hit++) {    
- 
+     for(Int_t ipl_hit=0;ipl_hit < theDCTrack->GetNHits();ipl_hit++) {
+
 
       if(theDCTrack->GetNFree() > 0) {
 	TVectorD TT(NUM_FPRAY);
@@ -1380,7 +1381,7 @@ void THcDC::TrackFit()
 	for(Int_t irayp=0;irayp<NUM_FPRAY;irayp++) {
 	  TT[irayp] = 0.0;
 	  for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-	  
+
 
 	    THcDCHit* hit=theDCTrack->GetHit(ihit);
 
@@ -1400,7 +1401,7 @@ void THcDC::TrackFit()
 	    } else {
 
 	      for(Int_t ihit=0;ihit < theDCTrack->GetNHits();ihit++) {
-	      
+
 		THcDCHit* hit=theDCTrack->GetHit(ihit);
 
 
@@ -1432,7 +1433,7 @@ void THcDC::TrackFit()
     //
     if (fTrackLargeResidCut == -1) {
       CheckResid = kFALSE;
-    } else { 
+    } else {
       CheckResid = kFALSE;
       if ( MaxResid  > fTrackLargeResidCut) {
          CheckResid = kTRUE;

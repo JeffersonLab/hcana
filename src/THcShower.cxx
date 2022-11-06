@@ -4,7 +4,7 @@
 \brief Generic segmented shower detector.
 
 */
- 
+
 #include "THcShower.h"
 #include "THcHallCSpectrometer.h"
 #include "THaEvData.h"
@@ -20,6 +20,7 @@
 #include "THaTrackProj.h"
 #include "TMath.h"
 #include "Helper.h"
+#include "Textvars.h"  // for Podd::vsplit
 
 #include <cstring>
 #include <cstdio>
@@ -700,7 +701,7 @@ Int_t THcShower::Decode( const THaEvData& evdata )
     present = *fPresentP;
   }
   Int_t nhits = DecodeToHitList(evdata, !present);
-  
+
   fEvent = evdata.GetEvNum();
 
   if(gHaCuts->Result("Pedestal_event")) {
@@ -775,9 +776,9 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 	Double_t x = fXPos[j][i] + BlockThick[j]/2.;        //top + thick/2
         Double_t y=-1000;
         if (fHasArray) {
-	  if (Eneg>0) y = fYPos[2*j]/2 ;  
-	  if (Epos>0) y = fYPos[2*j+1]/2 ;  
-	  if (Epos>0 && Eneg>0) y = 0. ;  
+	  if (Eneg>0) y = fYPos[2*j]/2 ;
+	  if (Epos>0) y = fYPos[2*j+1]/2 ;
+	  if (Epos>0 && Eneg>0) y = 0. ;
         } else {
           y=0.;
 	}
@@ -850,7 +851,7 @@ Int_t THcShower::CoarseProcess( TClonesArray& tracks)
 
   if(fHasArray) fArray->CoarseProcess(tracks);
 
-  //  
+  //
   Int_t Ntracks = tracks.GetLast()+1;   // Number of reconstructed tracks
   Double_t save_energy=0;
  for (Int_t itrk=0; itrk<Ntracks; itrk++) {
@@ -1231,7 +1232,7 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
       fEPRtrackNorm=fEPRtrack/theTrack->GetP();
       fETotTrackNorm=fEtot/theTrack->GetP();
       Xtr = -100.;
-      Ytr = -100.;               
+      Ytr = -100.;
       fNclustTrack = MatchCluster(theTrack, Xtr, Ytr);
       fXTrack=Xtr;
       fYTrack=Ytr;
@@ -1241,7 +1242,7 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
         fYclustTrack=clY(cluster);
       }
       if (fHasArray) {
-	fNclustArrayTrack = fArray->MatchCluster(theTrack,Xtr,Ytr);      
+	fNclustArrayTrack = fArray->MatchCluster(theTrack,Xtr,Ytr);
         if (fNclustArrayTrack>=0) {
           fXclustArrayTrack=fArray->GetClX();
           fYclustArrayTrack=fArray->GetClY();
@@ -1260,7 +1261,7 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
     }
     if(fHasArray) fArray->AccumulateStat(tracks);
   }
-  
+
   //Debug output.
 
   if (fdbg_tracks_cal) {
@@ -1282,7 +1283,7 @@ Int_t THcShower::FineProcess( TClonesArray& tracks )
 	   << "  Y = " << theTrack->GetY()
 	   << "  Theta = " << theTrack->GetTheta()
 	   << "  Phi = " << theTrack->GetPhi()
-	   << "  Energy = " << theTrack->GetEnergy() 
+	   << "  Energy = " << theTrack->GetEnergy()
 	   << "  Energy/Ptrack = " <<  fEtrackNorm << endl;
     }
 

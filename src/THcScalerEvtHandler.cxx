@@ -33,21 +33,18 @@ To enable debugging you may try this in the setup script
 \author  E. Brash based on THaScalerEvtHandler by R. Michaels
 */
 
-#include "THaEvtTypeHandler.h"
 #include "THcScalerEvtHandler.h"
-#include "GenScaler.h"
+//#include "GenScaler.h"
 #include "Scaler3800.h"
 #include "Scaler3801.h"
 #include "Scaler1151.h"
 #include "Scaler560.h"
 #include "Scaler9001.h"
 #include "Scaler9250.h"
-#include "THaCodaData.h"
 #include "THaEvData.h"
 #include "THcParmList.h"
 #include "THcGlobals.h"
 #include "THaGlobals.h"
-#include "TNamed.h"
 #include "TMath.h"
 #include "TString.h"
 #include "TROOT.h"
@@ -55,15 +52,17 @@ To enable debugging you may try this in the setup script
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
-#include <sstream>
 #include <map>
 #include <iterator>
 #include "THaVarList.h"
 #include "VarDef.h"
 #include "Helper.h"
+#include "Textvars.h"   // for Podd::vsplit
+#include "THaString.h"
 
 using namespace std;
 using namespace Decoder;
+using THaString::FindNoCase;
 
 static const UInt_t ICOUNT    = 1;
 static const UInt_t IRATE     = 2;
@@ -93,7 +92,7 @@ THcScalerEvtHandler::THcScalerEvtHandler(const char *name, const char* descripti
 THcScalerEvtHandler::~THcScalerEvtHandler()
 {
   // The tree object is owned by ROOT since it gets associated wth the output
-  // file, so DO NOT delete it here. 
+  // file, so DO NOT delete it here.
   if (!TROOT::Initialized()) {
     delete fScalerTree;
   }
@@ -108,9 +107,8 @@ THcScalerEvtHandler::~THcScalerEvtHandler()
   delete [] fBCM_SatQuadratic;
   delete [] fBCM_delta_charge;
 
-  for( vector<UInt_t*>::iterator it = fDelayedEvents.begin();
-       it != fDelayedEvents.end(); ++it )
-    delete [] *it;
+  for( auto& fDelayedEvent: fDelayedEvents )
+    delete[] fDelayedEvent;
   fDelayedEvents.clear();
 }
 
@@ -119,19 +117,16 @@ Int_t THcScalerEvtHandler::End( THaRunBase* )
   // Process any delayed events in order received
 
   cout << "THcScalerEvtHandler::End Analyzing " << fDelayedEvents.size() << " delayed scaler events" << endl;
-  for(std::vector<UInt_t*>::iterator it = fDelayedEvents.begin();
-      it != fDelayedEvents.end(); ++it) {
-    UInt_t* rdata = *it;
-    AnalyzeBuffer(rdata,kFALSE);
+  for( auto rdata: fDelayedEvents ) {
+    AnalyzeBuffer(rdata, kFALSE);
   }
   if (fDebugFile) *fDebugFile << "scaler tree ptr  "<<fScalerTree<<endl;
   evNumber += 1;
   evNumberR = evNumber;
   if (fScalerTree) fScalerTree->Fill();
 
-  for( vector<UInt_t*>::iterator it = fDelayedEvents.begin();
-       it != fDelayedEvents.end(); ++it )
-    delete [] *it;
+  for( auto& fDelayedEvent: fDelayedEvents )
+    delete[] fDelayedEvent;
   fDelayedEvents.clear();
 
   if (fScalerTree) fScalerTree->Write();
@@ -146,8 +141,8 @@ Int_t THcScalerEvtHandler::ReadDatabase(const TDatime& date )
   prefix[1]='\0';
   fNumBCMs = 0;
   DBRequest list[]={
-    {"NumBCMs",&fNumBCMs, kInt, 0, 1},
-    {0}
+    {"NumBCMs",&fNumBCMs, kInt, 0, true},
+    {nullptr}
   };
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
   //cout << " NUmber of BCMs = " << fNumBCMs << endl;
@@ -162,12 +157,12 @@ Int_t THcScalerEvtHandler::ReadDatabase(const TDatime& date )
     DBRequest list2[]={
       {"BCM_Gain",      fBCM_Gain,         kDouble, (UInt_t) fNumBCMs},
       {"BCM_Offset",     fBCM_Offset,       kDouble,(UInt_t) fNumBCMs},
-      {"BCM_SatQuadratic",     fBCM_SatQuadratic,       kDouble,(UInt_t) fNumBCMs,1},
-      {"BCM_SatOffset",     fBCM_SatOffset,       kDouble,(UInt_t) fNumBCMs,1},
+      {"BCM_SatQuadratic",     fBCM_SatQuadratic,       kDouble,(UInt_t) fNumBCMs,true},
+      {"BCM_SatOffset",     fBCM_SatOffset,       kDouble,(UInt_t) fNumBCMs,true},
       {"BCM_Names",     &bcm_namelist,       kString},
-      {"BCM_Current_threshold",     &fbcm_Current_Threshold,       kDouble,0, 1},
-      {"BCM_Current_threshold_index",     &fbcm_Current_Threshold_Index,       kInt,0,1},
-      {0}
+      {"BCM_Current_threshold",     &fbcm_Current_Threshold,       kDouble,0, true},
+      {"BCM_Current_threshold_index",     &fbcm_Current_Threshold_Index,       kInt,0,true},
+      {nullptr}
     };
     fbcm_Current_Threshold = 0.0;
     fbcm_Current_Threshold_Index = 0;
@@ -200,7 +195,7 @@ void THcScalerEvtHandler::SetDelayedType(int evtype) {
    */
   fDelayedType = evtype;
 }
-  
+
 Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 {
   Int_t lfirst=1;
@@ -239,7 +234,7 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
     name = "evcount";
     tinfo = name + "/D";
     fScalerTree->Branch(name.Data(), &evcountR, tinfo.Data(), 4000);
- 
+
    name = "evNumber";
     tinfo = name + "/D";
     fScalerTree->Branch(name.Data(), &evNumberR, tinfo.Data(), 4000);
@@ -252,12 +247,12 @@ Int_t THcScalerEvtHandler::Analyze(THaEvData *evdata)
 
   }  // if (lfirst && !fScalerTree)
 
-  UInt_t *rdata = (UInt_t*) evdata->GetRawDataBuffer();
+  auto *rdata = (UInt_t*) evdata->GetRawDataBuffer();
 
   if( (Int_t)evdata->GetEvType() == fDelayedType) { // Save this event for processing later
     UInt_t evlen = evdata->GetEvLength();
-    
-    UInt_t *datacopy = new UInt_t[evlen];
+
+    auto *datacopy = new UInt_t[evlen];
     fDelayedEvents.push_back(datacopy);
     memcpy(datacopy,rdata,evlen*sizeof(UInt_t));
     return 1;
@@ -277,7 +272,7 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 {
 
   // Parse the data, load local data arrays.
-  UInt_t *p = (UInt_t*) rdata;
+  auto *p = (UInt_t*) rdata;
 
   UInt_t *plast = p+*p;		// Index to last word in the bank
 
@@ -410,13 +405,13 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 	  }
 	  if (scalerloc[ivar]->ikind == IRATE) {
 	    dvars[ivar] = (scalers[idx]->GetData(ichan))/fDeltaTime;
-	    dvarsFirst[ivar] = dvars[ivar];            
+	    dvarsFirst[ivar] = dvars[ivar];
 	    //printf("%s %f\n",scalerloc[ivar]->name.Data(),scalers[idx]->GetRate(ichan)); //checks
 	  }
 	  if(scalerloc[ivar]->ikind == ICURRENT || scalerloc[ivar]->ikind == ICHARGE){
 	    Int_t bcm_ind=-1;
 	    for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
-	      {		
+	      {
 		size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
 		if (match!=string::npos)
 		  {
@@ -442,9 +437,9 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 	    }
 	    //	    printf("1st event %i index %i fBCMname %s scalerloc %s offset %f gain %f computed %f\n",evcount, bcm_ind, fBCM_Name[bcm_ind],scalerloc[ivar]->name.Data(),fBCM_Offset[bcm_ind],fBCM_Gain[bcm_ind],dvars[ivar]);
 	  }
-	  
+
 	  if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
-	  
+
 	} else { //ifnotusefirstevent
 	  if (scalerloc[ivar]->ikind == ICOUNT) {
               dvarsFirst[ivar] = scalers[idx]->GetData(ichan) ;
@@ -462,7 +457,7 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 	    {
 	      Int_t bcm_ind=-1;
 	      for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
-		{		
+		{
 		  size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
 		  if (match!=string::npos)
 		    {
@@ -488,7 +483,7 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 	    }
 	  if (fDebugFile) *fDebugFile << "   dvarsFirst  "<<scalerloc[ivar]->ikind<<"  "<<dvarsFirst[ivar]<<endl;
 	}
-      } 
+      }
       else {
 	cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<idx<<"  "<<ichan<<endl;
       }
@@ -525,7 +520,7 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 	  {
 	    Int_t bcm_ind=-1;
 	    for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
-	      {		
+	      {
 		size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
 		if (match!=string::npos)
 		  {
@@ -546,7 +541,7 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
  		if (fDeltaTime>0) {
 		Double_t cur_temp=(diff/fDeltaTime-fBCM_Offset[bcm_ind])/fBCM_Gain[bcm_ind];
 		cur_temp=cur_temp+fBCM_SatQuadratic[bcm_ind]*TMath::Power(TMath::Max(cur_temp-fBCM_SatOffset[bcm_ind],0.0),2.);
-		  
+
 		dvars[ivar]=cur_temp;
 		}
 	      }
@@ -577,13 +572,13 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 	cout << "THcScalerEvtHandler:: ERROR:: incorrect index "<<ivar<<"  "<<idx<<"  "<<ichan<<endl;
       }
     }
-    
+
   }
   //
-  for (size_t i = 0; i < scalerloc.size(); i++)  {
-    size_t ivar = scalerloc[i]->ivar;
-    size_t idx = scalerloc[i]->index;
-    size_t ichan = scalerloc[i]->ichan;
+  for( auto& i: scalerloc ) {
+    size_t ivar = i->ivar;
+    size_t idx = i->index;
+    size_t ichan = i->ichan;
     if (scalerloc[ivar]->ikind == ICUT+ICOUNT){
       UInt_t scaldata = scalers[idx]->GetData(ichan);
       if ( scal_current > fbcm_Current_Threshold) {
@@ -594,13 +589,13 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 	  diff = scaldata - dvars_prev_read[ivar];
 	}
 	dvars[ivar] += diff;
-      } 
+      }
       dvars_prev_read[ivar] = scaldata;
     }
     if (scalerloc[ivar]->ikind == ICUT+ICHARGE){
 	    Int_t bcm_ind=-1;
 	    for(Int_t itemp =0; itemp<fNumBCMs;itemp++)
-	      {		
+	      {
 		size_t match = string(scalerloc[ivar]->name.Data()).find(string(fBCM_Name[itemp]));
 		if (match!=string::npos)
 		  {
@@ -609,12 +604,12 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
 	      }
       if ( scal_current > fbcm_Current_Threshold && bcm_ind != -1) {
 	dvars[ivar] += fBCM_delta_charge[bcm_ind];
-     } 
+     }
     }
     if (scalerloc[ivar]->ikind == ICUT+ITIME){
       if ( scal_current > fbcm_Current_Threshold) {
          dvars[ivar] += fDeltaTime;
-      } 
+      }
     }
   }
   //
@@ -622,9 +617,9 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
   evcountR = evcount;
   //
   for (size_t j=0; j<scal_prev_read.size(); j++) scal_prev_read[j]=scal_present_read[j];
-  //  
-  for (size_t j=0; j<scalers.size(); j++) scalers[j]->Clear("");
-  
+  //
+  for( auto& scaler: scalers ) scaler->Clear("");
+
   return 1;
 }
 
@@ -639,15 +634,14 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
   fStatus = kOK;
   fNormIdx = -1;
 
-  for( vector<UInt_t*>::iterator it = fDelayedEvents.begin();
-       it != fDelayedEvents.end(); ++it )
-    delete [] *it;
+  for( auto& fDelayedEvent: fDelayedEvents )
+    delete [] fDelayedEvent;
   fDelayedEvents.clear();
 
   cout << "Howdy !  We are initializing THcScalerEvtHandler !!   name =   "
         << fName << endl;
 
-  if(eventtypes.size()==0) {
+  if(eventtypes.empty()) {
     eventtypes.push_back(0);  // Default Event Type
   }
 
@@ -673,17 +667,17 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
   string smap = "map";
   vector<string> dbline;
 
-  while( fgets(cbuf, LEN, fi) != NULL) {
+  while( fgets(cbuf, LEN, fi) ) {
     std::string sin(cbuf);
-    std::string sinput(sin.substr(0,sin.find_first_of("#")));
+    std::string sinput(sin.substr(0,sin.find_first_of('#')));
     if (fDebugFile) *fDebugFile << "string input "<<sinput<<endl;
     dbline = Podd::vsplit(sinput);
-    if (dbline.size() > 0) {
+    if (!dbline.empty()) {
       pos1 = FindNoCase(dbline[0],scomment);
       if (pos1 != minus1) continue;
       pos1 = FindNoCase(dbline[0],svariable);
       if (pos1 != minus1 && dbline.size()>4) {
-	string sdesc = "";
+	string sdesc;
 	for (size_t j=5; j<dbline.size(); j++) sdesc = sdesc+" "+dbline[j];
 	UInt_t islot = atoi(dbline[1].c_str());
 	UInt_t ichan = atoi(dbline[2].c_str());
@@ -751,22 +745,24 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
 	  if(!fOnlyBanks) fRocSet.insert(icrate);
 	  fModuleSet.insert(imodel);
 	  break;
+  default:
+    break;
 	}
-	if (scalers.size() > 0) {
+	if (!scalers.empty()) {
 	  UInt_t idx = scalers.size()-1;
 	  // Headers must be unique over whole event, not
 	  // just within a ROC
 	  scalers[idx]->SetHeader(header, mask);
 // The normalization slot has the clock in it, so we automatically recognize it.
-// fNormIdx is the index in scaler[] and 
+// fNormIdx is the index in scaler[] and
 // fNormSlot is the slot#, checked for consistency
 	  if (clkchan >= 0) {
 		  scalers[idx]->SetClock(defaultDT, clkchan, clkfreq);
 		  cout << "Setting scaler clock ... channel = "<<clkchan<<" ... freq = "<<clkfreq<<endl;
 		  if (fDebugFile) *fDebugFile <<"Setting scaler clock ... channel = "<<clkchan<<" ... freq = "<<clkfreq<<endl;
 		  fNormIdx = idx;
-		  if (islot != fNormSlot) cout << "THcScalerEvtHandler:: WARN: contradictory norm slot ! "<<islot<<endl;  
-		  
+		  if (islot != fNormSlot) cout << "THcScalerEvtHandler:: WARN: contradictory norm slot ! "<<islot<<endl;
+
 	  }
 	}
       }
@@ -842,9 +838,9 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
   }
   // Identify indices of scalers[] vector to variables.
   for (UInt_t i=0; i < scalers.size(); i++) {
-    for (UInt_t j = 0; j < scalerloc.size(); j++) {
-      if (scalerloc[j]->islot==static_cast<UInt_t>(scalers[i]->GetSlot()))
-	scalerloc[j]->index = i;
+    for( auto& j: scalerloc ) {
+      if (j->islot==static_cast<UInt_t>(scalers[i]->GetSlot()))
+	j->index = i;
     }
   }
 
@@ -857,13 +853,13 @@ THaAnalysisObject::EStatus THcScalerEvtHandler::Init(const TDatime& date)
     }
   }
 
- 
+
   //
   return kOK;
 }
 
-void THcScalerEvtHandler::AddVars(TString name, TString desc, UInt_t islot,
-				  UInt_t ichan, UInt_t ikind)
+void THcScalerEvtHandler::AddVars(const TString& name, const TString& desc,
+                                  UInt_t islot, UInt_t ichan, UInt_t ikind )
 {
   // need to add fName here to make it a unique variable.  (Left vs Right HRS, for example)
   TString name1 = fName + name;
@@ -892,7 +888,7 @@ void THcScalerEvtHandler::DefVars()
     return;
   }
   if(fDebugFile) *fDebugFile << "THcScalerEvtHandler:: scalerloc size "<<scalerloc.size()<<endl;
-  const Int_t* count = 0;
+  const Int_t* count = nullptr;
   for (size_t i = 0; i < scalerloc.size(); i++) {
     gHaVars->DefineByType(scalerloc[i]->name.Data(), scalerloc[i]->description.Data(),
 			  &dvars[i], kDouble, count);
@@ -900,22 +896,5 @@ void THcScalerEvtHandler::DefVars()
     //			  &dvarsFirst[i], kDouble, count);
   }
 }
-
-size_t THcScalerEvtHandler::FindNoCase(const string& sdata, const string& skey)
-{
-  // Find iterator of word "sdata" where "skey" starts.  Case insensitive.
-  string sdatalc, skeylc;
-  sdatalc = "";  skeylc = "";
-  for (string::const_iterator p =
-	 sdata.begin(); p != sdata.end(); ++p) {
-    sdatalc += tolower(*p);
-  }
-  for (string::const_iterator p =
-	 skey.begin(); p != skey.end(); ++p) {
-    skeylc += tolower(*p);
-  }
-  if (sdatalc.find(skeylc,0) == string::npos) return -1;
-  return sdatalc.find(skeylc,0);
-};
 
 ClassImp(THcScalerEvtHandler)

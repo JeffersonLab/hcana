@@ -106,6 +106,7 @@ Use only with THcTrigApp class.
 
 #include "THaApparatus.h"
 #include "THaEvData.h"
+#include "Textvars.h"   // for Podd::vsplit
 
 #include "THcDetectorMap.h"
 #include "THcGlobals.h"
@@ -173,7 +174,7 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
   if (status) {
     fStatus = status;
     return fStatus;
-  
+
 }
   // Fill in detector map.
   string EngineDID = string(GetApparatus()->GetName()).substr(0, 1) + GetName();
@@ -242,7 +243,7 @@ void THcTrigDet::Clear(Option_t* opt) {
 
 //_____________________________________________________________________________
 Int_t THcTrigDet::Decode(const THaEvData& evData) {
-    
+
   // Decode raw data for this event.
   Bool_t present = kTRUE;	// Don't suppress reference time warnings
   if(HaveIgnoreList()) {
@@ -280,7 +281,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
        fAdcPulseInt[cnt] = rawAdcHit.GetPulseInt(good_hit);
        fAdcPulseAmp[cnt] = rawAdcHit.GetPulseAmp(good_hit);
 	 }
-    if (rawAdcHit.GetNSamples() >0 ) {   
+    if (rawAdcHit.GetNSamples() >0 ) {
       rawAdcHit.SetSampThreshold(fSampThreshold);
       if (fSampNSA == 0) fSampNSA=rawAdcHit.GetF250_NSA();
       if (fSampNSB == 0) fSampNSB=rawAdcHit.GetF250_NSB();
@@ -322,7 +323,7 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
              fAdcPulseAmp[cnt] = rawAdcHit.GetSampPulseAmp(sampgood_hit);
 	   }
  	 }
-    }	 
+    }
     }
     else if (hit->fPlane == 2) {
       THcRawTdcHit& rawTdcHit = hit->GetRawTdcHit();
@@ -370,9 +371,9 @@ void THcTrigDet::Setup(const char* name, const char* description) {
 //_____________________________________________________________________________
 Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   std::string adcNames, tdcNames;
-  
+
   std::string trigNames="pTRIG1_ROC1 pTRIG4_ROC1 pTRIG1_ROC2 pTRIG4_ROC2";
-  
+
   //C.Y. Sep 08, 2021 | changed pTRIG4 to pTRIG3 (Since in hardware, pTRIG3 -> h3/4 trigger)
   // SJDK - 22/02/22 - Switched back, keep names here as is, can set in param files later
   //std::string trigNames="pTRIG1_ROC1 pTRIG3_ROC1 pTRIG1_ROC2 pTRIG3_ROC2";
@@ -395,7 +396,7 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   fTdcOffset=300.;
   fAdcTdcOffset=200.;
   gHcParms->LoadParmValues(list, fKwPrefix.c_str());
-  
+
   fAdcTimeWindowMin = new Double_t [fNumAdc];
   fAdcTimeWindowMax = new Double_t [fNumAdc];
   fTdcTimeWindowMin = new Double_t [fNumTdc];
@@ -430,7 +431,7 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   fUseSampWaveform = 0; // 0= do not use , 1 = use Sample Waveform
 
   gHcParms->LoadParmValues(list2, fKwPrefix.c_str());
-  for(Int_t ip=0;ip<fNumTdc;ip++) { 
+  for(Int_t ip=0;ip<fNumTdc;ip++) {
     //    cout << ip << " " << fTdcNames.at(ip) << " " << fTdcTimeWindowMin[ip] << " " << fTdcTimeWindowMax[ip] << endl;
   }
   // Split the names to std::vector<std::string>.
@@ -439,7 +440,7 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
   fTrigNames = Podd::vsplit(trigNames);
   fRFNames = Podd::vsplit(RFNames); // SJDK 12/04/21 - For RF getter
   //default index values
- 
+
   //Assign an index to coincidence trigger times strings
   for (UInt_t j = 0; j <fTrigNames.size(); j++) {
     fTrigId[j]=-1;
@@ -449,13 +450,13 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
       if(fTdcNames.at(i)==fTrigNames[j]) fTrigId[j]=i;
     }
   }
- 
+
   cout << " Trig = " << fTrigNames.size() << endl;
   for (UInt_t j = 0; j <fTrigNames.size(); j++) {
     cout << fTrigNames[j] << " " << fTrigId[j] << endl;
 
   }
- 
+
   // SJDK - 12/04/21 - For RF getter
   // Assign an index to RF times strings
   for (UInt_t j = 0; j <fRFNames.size(); j++) {
@@ -465,7 +466,7 @@ Int_t THcTrigDet::ReadDatabase(const TDatime& date) {
     for (UInt_t j = 0; j <fRFNames.size(); j++) {
       if(fTdcNames.at(i)==fRFNames[j]) fRFId[j]=i;
     }
-  } 
+  }
   for (UInt_t j = 0; j <fRFNames.size(); j++) {
     cout << fRFNames[j] << " " << fRFId[j] << endl;
   }
@@ -501,7 +502,7 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   std::vector<TString> adcSampPulseIntTitle(fNumAdc), adcSampPulseIntVar(fNumAdc);
   std::vector<TString> adcSampPulseAmpTitle(fNumAdc), adcSampPulseAmpVar(fNumAdc);
   std::vector<TString> adcSampMultiplicityTitle(fNumAdc), adcSampMultiplicityVar(fNumAdc);
-  
+
   TString RefTimeTitle= "TdcRefTime";
    TString RefTimeVar= "fTdcRefTime";
    RVarDef entryRefTime {
@@ -510,7 +511,7 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
       RefTimeVar.Data()
     };
      vars.push_back(entryRefTime);
- 
+
   for (int i=0; i<fNumAdc; ++i) {
     adcPedRawTitle.at(i) = fAdcNames.at(i) + "_adcPedRaw";
     adcPedRawVar.at(i) = TString::Format("fAdcPedRaw[%d]", i);
@@ -651,7 +652,7 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
       adcMultiplicityVar.at(i).Data()
     };
     vars.push_back(entry8);
-  
+
 
     adcSampMultiplicityTitle.at(i) = fAdcNames.at(i) + "_adcSampMultiplicity";
     adcSampMultiplicityVar.at(i) = TString::Format("fAdcSampMultiplicity[%d]", i);
@@ -661,7 +662,7 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
       adcSampMultiplicityVar.at(i).Data()
     };
     vars.push_back(entry88);
-  
+
     adcPulseTimeTitle.at(i) = fAdcNames.at(i) + "_adcPulseTime";
     adcPulseTimeVar.at(i) = TString::Format("fAdcPulseTime[%d]", i);
     RVarDef entry9 {
@@ -670,7 +671,7 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
       adcPulseTimeVar.at(i).Data()
     };
     vars.push_back(entry9);
-  
+
     adcSampPulseTimeTitle.at(i) = fAdcNames.at(i) + "_adcSampPulseTime";
     adcSampPulseTimeVar.at(i) = TString::Format("fAdcSampPulseTime[%d]", i);
     RVarDef entry99 {
@@ -680,7 +681,7 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
     };
     vars.push_back(entry99);
 
-  } // loop over fNumAdc 
+  } // loop over fNumAdc
   // Push the variable names for TDC channels.
   std::vector<TString> tdcTimeRawTitle(fNumTdc), tdcTimeRawVar(fNumTdc);
   std::vector<TString> tdcTimeTitle(fNumTdc), tdcTimeVar(fNumTdc);
@@ -689,7 +690,7 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   for (int i=0; i<fNumTdc; ++i) {
     tdcTimeRawTitle.at(i) = fTdcNames.at(i) + "_tdcTimeRaw";
     tdcTimeRawVar.at(i) = TString::Format("fTdcTimeRaw[%d]", i);
-   
+
     RVarDef entry1 {
       tdcTimeRawTitle.at(i).Data(),
       tdcTimeRawTitle.at(i).Data(),
@@ -737,7 +738,7 @@ void THcTrigDet::SetSpectName( const char* name)
 void THcTrigDet::AddEvtType(int evtype) {
   eventtypes.push_back(evtype);
 }
-  
+
 void THcTrigDet::SetEvtType(int evtype) {
   eventtypes.clear();
   AddEvtType(evtype);
@@ -749,7 +750,7 @@ Bool_t THcTrigDet::IsIgnoreType(Int_t evtype) const
   for (UInt_t i=0; i < eventtypes.size(); i++) {
     if (evtype == eventtypes[i]) return kTRUE;
   }
-  return kFALSE; 
+  return kFALSE;
 }
 
 //_____________________________________________________________________________
