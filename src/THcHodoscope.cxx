@@ -17,7 +17,7 @@ hodoscope array, not just one plane.
 #include "THcHitList.h"
 #include "THcRawShowerHit.h"
 #include "TClass.h"
-#include "math.h"
+#include "cmath"
 #include "THaSubDetector.h"
 
 #include "THcHodoscope.h"
@@ -33,6 +33,7 @@ hodoscope array, not just one plane.
 #include "THaTrack.h"
 #include "TClonesArray.h"
 #include "TMath.h"
+#include "Textvars.h"  // for Podd::vsplit
 
 #include "THaTrackProj.h"
 #include <vector>
@@ -198,7 +199,7 @@ THaAnalysisObject::EStatus THcHodoscope::Init( const TDatime& date )
   // }
 
   for (int ip=0; ip<fNPlanes; ++ip) {
-    fScinHitPaddle.push_back(std::vector<Int_t>(fNPaddle[ip], 0));
+    fScinHitPaddle.emplace_back(fNPaddle[ip], 0);
   }
 
   fPresentP = 0;
@@ -895,7 +896,7 @@ Double_t  THcHodoscope::DetermineTimePeak(Int_t FillFlag)
     }
   }
   //
-   if (hpeakNum.size() >0 && best_peak_index<hpeakNum.size() ) {
+   if (!hpeakNum.empty() && best_peak_index<hpeakNum.size() ) {
           time_peak= hpeakCent[best_peak_index];
           if (FillFlag==1) {
           fTimeHist_StartTime_NumPeaks=hpeakNum.size()  ;
@@ -1182,7 +1183,7 @@ void THcHodoscope::EstimateFocalPlaneTime()
 }
 
 //_____________________________________________________________________________
-Int_t THcHodoscope::ApplyCorrections( void )
+Int_t THcHodoscope::ApplyCorrections()
 {
   return(0);
 }
@@ -1268,7 +1269,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	  // iphit is hit # within a plane
 	  THcHodoHit *hit = (THcHodoHit*)hodoHits->At(iphit);
 
-	  fTOFPInfo.push_back(TOFPInfo());
+	  fTOFPInfo.emplace_back();
 	  // Can remove these as we will initialize in the constructor
 	  //	  fTOFPInfo[ihhit].time_pos = -99.0;
 	  //	  fTOFPInfo[ihhit].time_neg = -99.0;
@@ -1430,7 +1431,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 	fGoodFlags[itrack][ip][iphit].goodTdcNeg = kFALSE;
 	fGoodFlags[itrack][ip][iphit].goodTdcPos = kFALSE;
 
-	fTOFCalc.push_back(TOFCalc());
+	fTOFCalc.emplace_back();
 	// Do we set back to false for each track, or just once per event?
 	assert( ih >= 0 && (size_t)ih < fTOFCalc.size() );
 	fTOFCalc[ih].good_scin_time = kFALSE;
@@ -1671,11 +1672,11 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
       if (nGoodPlanesHit>=3) fptime = FPTimeSum/nFPTimeSum;
       fFPTimeAll = fptime;
       Double_t dedx=0.0;
-      for(UInt_t ih=0;ih<fTOFCalc.size();ih++) {
-	if(fTOFCalc[ih].good_scin_time) {
-	  dedx = fTOFCalc[ih].dedx;
-	  break;
-	}
+      for( auto& ih: fTOFCalc ) {
+        if( ih.good_scin_time ) {
+          dedx = ih.dedx;
+          break;
+        }
       }
       theTrack->SetDedx(dedx);
       theTrack->SetFPTime(fptime);
@@ -1698,7 +1699,7 @@ Int_t THcHodoscope::CoarseProcess( TClonesArray& tracks )
 
 }
 //
-void THcHodoscope::CalcCluster(void)
+void THcHodoscope::CalcCluster()
 {
   //    THcHallCSpectrometer *app = dynamic_cast<THcHallCSpectrometer*>(GetApparatus());
   //    cout << app->GetName() << endl;
@@ -1835,7 +1836,7 @@ void THcHodoscope::CalcCluster(void)
   //
 }
 //
-void THcHodoscope::TrackEffTest(void)
+void THcHodoscope::TrackEffTest()
 {
   Double_t PadLow[4];
   Double_t PadHigh[4];
@@ -1993,7 +1994,7 @@ void THcHodoscope::TrackEffTest(void)
 //
 //
 //
-void THcHodoscope::OriginalTrackEffTest(void)
+void THcHodoscope::OriginalTrackEffTest()
 {
   /**
       Translation of h_track_tests.f file for tracking efficiency
@@ -2231,7 +2232,7 @@ Int_t THcHodoscope::FineProcess( TClonesArray&  tracks  )
 	    Bool_t sh_pid=(shower_track_enorm > fTOFCalib_shtrk_lo && shower_track_enorm < fTOFCalib_shtrk_hi);
 	    Bool_t beta_pid=( fBeta > fTOFCalib_beta_lo &&  fBeta < fTOFCalib_beta_hi);
 	    // cer_pid is true if there is no Cherenkov detector
-	    Bool_t cer_pid=(fCherenkov?(fCherenkov->GetCerNPE()>fTOFCalib_cer_lo):kTRUE);
+	    Bool_t cer_pid= !fCherenkov || fCherenkov->GetCerNPE() > fTOFCalib_cer_lo;
 	    if(fDumpTOF && Ntracks==1 && fGoodEventTOFCalib && sh_pid && beta_pid && cer_pid) {
 	      fDumpOut << fixed << setprecision(2);
 	      fDumpOut  << showpoint << " 1" << setw(3) << ip+1 << setw(3) << hit->GetPaddleNumber()  << setw(10) << hit->GetPosTDC()*fScinTdcToTime  << setw(10) << fTOFPInfo[ih].pathp << setw(10) << fTOFPInfo[ih].zcor  << setw(10) << fTOFPInfo[ih].time_pos << setw(10) << hit->GetPosADC() << endl;

@@ -8,7 +8,6 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-#include "THaEvtTypeHandler.h"
 #include "THcScalerEvtHandler.h"
 #include "Decoder.h"
 #include <string>
@@ -32,8 +31,8 @@ public:
 
   Int_t Analyze(THaEvData *evdata);
   Int_t AnalyzeBuffer(UInt_t *rdata);
-  Int_t AnalyzeHelicityScaler(UInt_t *p);
-	
+  Int_t AnalyzeHelicityScaler(const UInt_t *p);
+
   virtual EStatus Init( const TDatime& run_time);
   virtual Int_t   ReadDatabase(const TDatime& date );
   virtual Int_t End( THaRunBase* r=0 );
@@ -54,15 +53,14 @@ public:
 private:
 
   //------------C.Y. Sep 20, 2020 :: Added Utility Function Prototypes----------------
-  void AddVars(TString name, TString desc, UInt_t iscal, UInt_t ichan, UInt_t ikind);
+  void AddVars(const TString& name, const TString& desc, UInt_t iscal, UInt_t ichan, UInt_t ikind);
   void DefVars();
-  static size_t FindNoCase(const std::string& sdata, const std::string& skey);
-  
+
   std::vector<Decoder::GenScaler*> scalers;
   std::vector<HCScalerLoc*> scalerloc;
   //----------------------------------------------------------------------------------
-  
-  Int_t RanBit30(Int_t ranseed);
+
+  static Int_t RanBit30(Int_t ranseed);
   void MakeParms();
 
   UInt_t fBankID;
@@ -88,8 +86,8 @@ private:
   Double_t *fAsymmetryError;
   //Double_t *fCharge;
 
-  Double_t fTimePlus;     
-  Double_t fTimeMinus;       
+  Double_t fTimePlus;
+  Double_t fTimeMinus;
   //Double_t fTime;
   //Double_t fTimeAsymmetry;
   Double_t fTriggerAsymmetry;
@@ -106,15 +104,15 @@ private:
   Double_t fTimeAsymmetryError;
   Double_t fTimeAsymSum;
   Double_t fTimeAsymSum2;
-  
+
   //quartet-by-quartet scaler counts asymmetry variables
-  Double_t *fScalCycle[4];  
+  Double_t *fScalCycle[4];
   Double_t *fScalSum;     //reminder: need to initialize
   Double_t *fScalAsymmetry;
   Double_t *fScalAsymmetryError;
   Double_t *fScalAsymSum;
   Double_t *fScalAsymSum2;
-  
+
   //quartet-by-quartet charge asymmetry variables
   Double_t *fChargeCycle[4];
   Double_t *fChargeSum;
@@ -125,11 +123,11 @@ private:
 
 
 
-  
+
   //----------------------
 
-  
-  
+
+
   //----C.Y. Nov 26, 2020----
   Double_t *fScalerChan;
 
@@ -171,7 +169,7 @@ private:
   std::set<UInt_t> fRocSet;
   std::set<UInt_t> fModuleSet;
   //--------------------------------------------------------
-  
+
   THcHelicityScaler(const THcHelicityScaler& fh);
   THcHelicityScaler& operator=(const THcHelicityScaler& fh);
 
