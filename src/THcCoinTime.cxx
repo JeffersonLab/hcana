@@ -143,7 +143,8 @@ Int_t THcCoinTime::ReadDatabase( const TDatime& date )
   
   //Default values if not read from param file
   eHad_CT_Offset = 0.0;
-
+  
+  // SJDK 16/11/22 - This must be to a specific point? Where? The first hodo plane?
   HMScentralPathLen = 22.0*100.;
   SHMScentralPathLen = 18.1*100.;
   
@@ -271,7 +272,9 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
       pHMS_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(3);//HMS pTrig3
       	  
       DeltaSHMSpathLength = .11*shms_xptar*1000 +0.057*shms_dP/100.;
-      DeltaHMSpathLength = -1.0*(12.462*hms_xpfp + 0.1138*hms_xpfp*hms_xfp - 0.0154*hms_xfp - 72.292*hms_xpfp*hms_xpfp - 0.0000544*hms_xfp*had_xfp - 116.52*hms_ypfp*hms_ypfp);
+      // 16/11/22 - SJDK - The calculation below seems to be "correct" in the sense this it is accounting for the beam on target angle etc. However, it is only defined this was for the HMS. Also, it is is redefined on the next line
+      // I've commented it out for now since it seems pointless to define it twice.
+      //DeltaHMSpathLength = -1.0*(12.462*hms_xpfp + 0.1138*hms_xpfp*hms_xfp - 0.0154*hms_xfp - 72.292*hms_xpfp*hms_xpfp - 0.0000544*hms_xfp*had_xfp - 116.52*hms_ypfp*hms_ypfp);
       DeltaHMSpathLength = (.12*hms_xptar*1000 +0.17*hms_dP/100.);
 
           // default assume SHMS is electron arm

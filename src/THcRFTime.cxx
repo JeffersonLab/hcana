@@ -206,6 +206,7 @@ Int_t THcRFTime::ReadDatabase( const TDatime& date )
     cout << endl;
   }
 
+  // SJDK 16/11/22 - This must be to a specific point? Where? The first hodo plane?
   HMS_CentralPathLen = 22.0*100.; // Path length in cm
   SHMS_CentralPathLen = 18.1*100.; // Path legnth in cm
 
@@ -262,11 +263,12 @@ Int_t THcRFTime::Process( const THaEvData& evdata )
   if( !had_trkifo) cout << " no hadron track " << endl;
   if( !elec_trkifo) cout << " no electron track " << endl;
   // Check if the hadron/electron arm had a track
-  // May want to consider dropping this condition
   if( !had_trkifo || !had_trkifo->IsOK() ) return 1;
   if( !elec_trkifo || !elec_trkifo->IsOK() ) return 1;
 
   //Create THaTrack object for hadron/elec arms to get relevant golden track quantities
+  // 16/11/22 SJDK - Which arm is which is a little irrelevant for most of the RFTime variables
+  // However, if coin time dependent corrections are implemented, then this will matter
   if (felecArmName=="H") {
     theSHMSTrack = (fhadSpectro->GetGoldenTrack());
     theHMSTrack = (felecSpectro->GetGoldenTrack());
@@ -276,14 +278,12 @@ Int_t THcRFTime::Process( const THaEvData& evdata )
   }
 
   lightSpeed = 29.9792; // in cm/ns
-  //Particle Masses (HardCoded)
+  //Particle Masses (Hardcoded - should be able to grab from elsewhere?)
   elecMass =  0.510998/1000.0; // electron mass in GeV/c^2
   pionMass = 139.570/1000.0;    //charged pion mass in GeV/c^2
   kaonMass = 493.677/1000.0;    //charged kaon mass in GeV/c^2
   protonMass = 938.27208/1000.0; // proton mass in GeV/c^2	
 
-  //Check if Database is reading the correct elec-arm particle mass
-  // if (felecSpectro->GetParticleMass() > 0.00052) return 1;
   // HMS Arm
   Double_t HMS_xptar = theHMSTrack->GetTTheta();
   Double_t HMS_P = theHMSTrack->GetP();
@@ -300,11 +300,13 @@ Int_t THcRFTime::Process( const THaEvData& evdata )
 
   HMS_RFtime = fCoinDet->Get_RF_TrigTime(1); // HMS is ID 1
   SHMS_RFtime = fCoinDet->Get_RF_TrigTime(0); // SHMS is ID 0
-
+  
+  // These calculations are taken from the CoinTime class by C.Yero. There is another calculation which uses xfp, xpfp and ypfp, but this does not seem to be used?
   HMS_DeltaPathLen = HMS_CentralPathLen + (.12*HMS_xptar*1000) + (0.17*(HMS_dP/100.)); // Path length in cm
   SHMS_DeltaPathLen = SHMS_CentralPathLen + (.11*SHMS_xptar*1000) + (0.057*(SHMS_dP/100.));
 
-  //beta calculations beta = v/c = p/E
+  // beta calculations beta = v/c = p/E
+  // Note that this is the TRACK momentum and not the spectrometer momentum
   HMS_Beta_Calc_e = HMS_P / sqrt((HMS_P*HMS_P)+(elecMass*elecMass));
   HMS_Beta_Calc_pi = HMS_P / sqrt((HMS_P*HMS_P)+(pionMass*pionMass));
   HMS_Beta_Calc_K = HMS_P / sqrt((HMS_P*HMS_P)+(kaonMass*kaonMass));
@@ -314,15 +316,6 @@ Int_t THcRFTime::Process( const THaEvData& evdata )
   SHMS_Beta_Calc_K = SHMS_P / sqrt((SHMS_P*SHMS_P)+(kaonMass*kaonMass));
   SHMS_Beta_Calc_p = SHMS_P / sqrt((SHMS_P*SHMS_P)+(protonMass*protonMass));
 
-  // ToF for central path by particle species - Not needed? Shuo calculates, but doesn't actually seem useful
-  HMS_RFCentralTime_e = (HMS_CentralPathLen)/(lightSpeed*HMS_Beta_Calc_e);
-  HMS_RFCentralTime_pi = (HMS_CentralPathLen)/(lightSpeed*HMS_Beta_Calc_pi);
-  HMS_RFCentralTime_K = (HMS_CentralPathLen)/(lightSpeed*HMS_Beta_Calc_K);
-  HMS_RFCentralTime_p = (HMS_CentralPathLen)/(lightSpeed*HMS_Beta_Calc_p);
-  SHMS_RFCentralTime_e = (SHMS_CentralPathLen)/(lightSpeed*SHMS_Beta_Calc_e);
-  SHMS_RFCentralTime_pi = (SHMS_CentralPathLen)/(lightSpeed*SHMS_Beta_Calc_pi);
-  SHMS_RFCentralTime_K = (SHMS_CentralPathLen)/(lightSpeed*SHMS_Beta_Calc_K);
-  SHMS_RFCentralTime_p = (SHMS_CentralPathLen)/(lightSpeed*SHMS_Beta_Calc_p);
   // ToF for delta path by particle species
   HMS_RFDeltaTime_e = (HMS_DeltaPathLen)/(lightSpeed*HMS_Beta_Calc_e);
   HMS_RFDeltaTime_pi = (HMS_DeltaPathLen)/(lightSpeed*HMS_Beta_Calc_pi);
