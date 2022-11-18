@@ -64,7 +64,16 @@ void THcRFTime::Clear( Option_t* opt )
   // Only need to clear variables that are actually used, will need to re-tweak this when the rest is set up
   //  THaPhysicsModule::Clear(opt);
   fHMS_RFtimeDist=kBig;
+  fHMS_eRFtimeDist=kBig;
+  fHMS_piRFtimeDist=kBig;
+  fHMS_KRFtimeDist=kBig;
+  fHMS_pRFtimeDist=kBig;
   fSHMS_RFtimeDist=kBig;
+  fSHMS_eRFtimeDist=kBig;
+  fSHMS_piRFtimeDist=kBig;
+  fSHMS_KRFtimeDist=kBig;
+  fSHMS_pRFtimeDist=kBig;
+  
 }
 
 //_____________________________________________________________________________
@@ -73,7 +82,6 @@ void THcRFTime::Reset( Option_t* opt)
 {
   Clear(opt);
 }
-
 
 //_____________________________________________________________________________
 THaAnalysisObject::EStatus THcRFTime::Init( const TDatime& run_time )
