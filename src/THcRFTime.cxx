@@ -72,8 +72,7 @@ void THcRFTime::Clear( Option_t* opt )
   fSHMS_eRFtimeDist=kBig;
   fSHMS_piRFtimeDist=kBig;
   fSHMS_KRFtimeDist=kBig;
-  fSHMS_pRFtimeDist=kBig;
-  
+  fSHMS_pRFtimeDist=kBig;  
 }
 
 //_____________________________________________________________________________
@@ -286,7 +285,7 @@ Int_t THcRFTime::Process( const THaEvData& evdata )
   }
 
   lightSpeed = 29.9792; // in cm/ns
-  //Particle Masses (Hardcoded - should be able to grab from elsewhere?)
+  // Particle Masses (Hardcoded - should be able to grab from elsewhere?)
   elecMass =  0.510998/1000.0; // electron mass in GeV/c^2
   pionMass = 139.570/1000.0;    //charged pion mass in GeV/c^2
   kaonMass = 493.677/1000.0;    //charged kaon mass in GeV/c^2
