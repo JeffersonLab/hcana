@@ -325,13 +325,13 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
     {"_cal_arr_AdcPulseTimeMin", fAdcPulseTimeMin, kDouble, static_cast<UInt_t>(fNelem),1},
     {"_cal_arr_AdcPulseTimeMax", fAdcPulseTimeMax, kDouble, static_cast<UInt_t>(fNelem),1},
     // DJH 14 Sep 22
-    {"cal_arr_PedDefault", fPedDefault, kInt, static_cast<UInt_t>(fNelem),1},
-    {"cal_arr_SampThreshold",     &fSampThreshold,       kDouble,0,1},
-    {"cal_arr_SampNSA",     &fSampNSA,       kInt,0,1},
-    {"cal_arr_SampNSAT",     &fSampNSAT,       kInt,0,1},
-    {"cal_arr_SampNSB",     &fSampNSB,       kInt,0,1},
-    {"cal_arr_OutputSampWaveform",     &fOutputSampWaveform,       kInt,0,1},
-    {"cal_arr_UseSampWaveform",     &fUseSampWaveform,       kInt,0,1},
+    {"_cal_arr_PedDefault", fPedDefault, kInt, static_cast<UInt_t>(fNelem),1},
+    {"_cal_arr_SampThreshold",     &fSampThreshold,       kDouble,0,1},
+    {"_cal_arr_SampNSA",     &fSampNSA,       kInt,0,1},
+    {"_cal_arr_SampNSAT",     &fSampNSAT,       kInt,0,1},
+    {"_cal_arr_SampNSB",     &fSampNSB,       kInt,0,1},
+    {"_cal_arr_OutputSampWaveform",     &fOutputSampWaveform,       kInt,0,1},
+    {"_cal_arr_UseSampWaveform",     &fUseSampWaveform,       kInt,0,1},
     {0}
   };
 
