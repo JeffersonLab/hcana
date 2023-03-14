@@ -293,11 +293,6 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	      ref_fNSA = fPSE125->GetNSA(fRefIndexMaps[i].crate);
 	      ref_fNSB = fPSE125->GetNSB(fRefIndexMaps[i].crate);
  	      ref_fNPED = fPSE125->GetNPED(fRefIndexMaps[i].crate);
-	      // DJH 14 Sep 22 -- fudge for now until I fix 125 decode
-	      ref_fNSA  = 4;
-	      ref_fNSB  = 6;
-	      ref_fNPED = 4;
-
   	      }
 	  // Set F250 parameters.
           refrawhit->SetF250Params(ref_fNSA, ref_fNSB, ref_fNPED);
@@ -459,10 +454,6 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	    fNSA = fPSE125->GetNSA(d->crate);
 	    fNSB = fPSE125->GetNSB(d->crate);
 	    fNPED = fPSE125->GetNPED(d->crate);
-	    // DJH 14 Sep 22 -- fudge for now until I fix 125 decode
-	    fNSA  = 4;
-	    fNSB  = 6;
-	    fNPED = 4;
 	    fHaveFADCInfo = kTRUE;
 	  }
 	  // Set F250 parameters.
