@@ -293,7 +293,16 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	      ref_fNSA = fPSE125->GetNSA(fRefIndexMaps[i].crate);
 	      ref_fNSB = fPSE125->GetNSB(fRefIndexMaps[i].crate);
  	      ref_fNPED = fPSE125->GetNPED(fRefIndexMaps[i].crate);
-  	      }
+	      // DJH 14 Sep 22 -- fudge for now until I fix 125 decode
+	      if (ref_fNSA == -1) ref_fNSA  = 20;
+	      if (ref_fNSB == -1) ref_fNSB  = 6;
+	      if (ref_fNPED == -1) ref_fNPED = 4;
+
+	    } else {
+	      ref_fNSA  = 20;
+	      ref_fNSB  = 6;
+	      ref_fNPED = 4;
+	    }
 	  // Set F250 parameters.
           refrawhit->SetF250Params(ref_fNSA, ref_fNSB, ref_fNPED);
 	    for (UInt_t isamp=0;isamp<nrefsamples;isamp++) {
@@ -450,16 +459,23 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
       } else {			// This is a Flash ADC
 
         if (fPSE125) {
-	  if(!fHaveFADCInfo) {
+            if (!fHaveFADCInfo) {
 	    fNSA = fPSE125->GetNSA(d->crate);
 	    fNSB = fPSE125->GetNSB(d->crate);
 	    fNPED = fPSE125->GetNPED(d->crate);
+	      if (fNSA == -1) fNSA  = 20;
+	      if (fNSB == -1) fNSB  = 6;
+	      if (fNPED == -1) fNPED = 4;            
 	    fHaveFADCInfo = kTRUE;
-	  }
-	  // Set F250 parameters.
-          rawhit->SetF250Params(fNSA, fNSB, fNPED);
-        }
-
+	    }
+        } else if (!fHaveFADCInfo) {
+	      fNSA  = 20;
+	      fNSB  = 6;
+	      fNPED = 4;
+	    fHaveFADCInfo = kTRUE;
+	}
+         rawhit->SetF250Params(fNSA, fNSB, fNPED);
+ 
 	// Copy the samples
 	UInt_t nsamples=evdata.GetNumEvents(Decoder::kSampleADC, d->crate, d->slot, chan);
 
