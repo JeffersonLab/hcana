@@ -207,6 +207,7 @@ protected:
   Int_t fLayerNum;		// 2 for SHMS
 
   Int_t  fOutputSampWaveform;
+  Int_t  fOutputSampRawWaveform;
   Int_t  fUseSampWaveform;
   Double_t  fSampThreshold;
   Int_t  fSampNSA;

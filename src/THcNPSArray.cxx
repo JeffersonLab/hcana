@@ -331,6 +331,7 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
     {"_cal_arr_SampNSAT",     &fSampNSAT,       kInt,0,1},
     {"_cal_arr_SampNSB",     &fSampNSB,       kInt,0,1},
     {"_cal_arr_OutputSampWaveform",     &fOutputSampWaveform,       kInt,0,1},
+    {"_cal_arr_OutputSampRawWaveform",     &fOutputSampRawWaveform,       kInt,0,1},
     {"_cal_arr_UseSampWaveform",     &fUseSampWaveform,       kInt,0,1},
     {0}
   };
@@ -350,6 +351,7 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
    fSampNSAT = 2; // default value in THcRawHit::SetF250Params
    cout << " fSampThreshold 1 = " << fSampThreshold << endl;
    fOutputSampWaveform = 1; // 0= no output , 1 = output Sample Waveform
+   fOutputSampRawWaveform = 0; // 0= output pedestal subtracted (mV) , 1 = output Sample Raw Waveform (ADC chan)
    fUseSampWaveform = 1; // 0= do not use , 1 = use Sample Waveform
    
    gHcParms->LoadParmValues((DBRequest*)&list1, fKwPrefix.c_str());
@@ -1104,7 +1106,11 @@ Int_t THcNPSArray::AccumulateHits(TClonesArray* rawhits, Int_t nexthit, Int_t tr
     fSampWaveform.push_back(float(rawAdcHit.GetNSamples()));
 
     for (UInt_t thit = 0; thit < rawAdcHit.GetNSamples(); thit++) {
-      fSampWaveform.push_back(rawAdcHit.GetSample(thit)); // ped subtracted sample (mV)
+      if (fOutputSampRawWaveform == 1) {
+          fSampWaveform.push_back(rawAdcHit.GetSampleRaw(thit)); // raw sample (Adc chan)
+       } else {
+         fSampWaveform.push_back(rawAdcHit.GetSample(thit)); // ped subtracted sample (mV)
+       }
     }
     
     for (UInt_t thit = 0; thit < rawAdcHit.GetNSampPulses(); thit++) {
