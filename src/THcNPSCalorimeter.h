@@ -96,6 +96,20 @@ public:
 
 protected:
 
+  // DJH: VTP stuff
+  static const Int_t fnVTP = 3;
+  Int_t fVTPErrorFlag;
+  std::vector<UInt_t> fVTPTriggerTime;
+  std::vector<UInt_t> fVTPTriggerType0;
+  std::vector<UInt_t> fVTPTriggerType1;
+  std::vector<UInt_t> fVTPTriggerType2;
+
+  std::vector<UInt_t> fVTPClusterEnergy;
+  std::vector<UInt_t> fVTPClusterTime;
+  std::vector<UInt_t> fVTPClusterSize;
+  std::vector<UInt_t> fVTPClusterX;
+  std::vector<UInt_t> fVTPClusterY;
+
   //C.Y. Feb 22, 2021 : Added output filestream for the purpose of
   //writing to file (and plotting a 2D grid of) the blocks
   //that participate on cluster formation

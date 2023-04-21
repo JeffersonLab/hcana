@@ -14,6 +14,7 @@
 #include "THcGlobals.h"
 #include "THaCutList.h"
 #include "THcParmList.h"
+#include "VTPModule.h"
 #include "VarDef.h"
 #include "VarType.h"
 #include "THaTrack.h"
@@ -43,6 +44,8 @@ THcNPSCalorimeter::THcNPSCalorimeter( const char* name, const char* description,
 {
   
   //cout << "Calling Constructor | THcNPSCalorimeter::THcNPSCalorimeter() . . . " << endl;
+
+  fVTPErrorFlag = 0;
 
   // Constructor
   //  fNLayers = 0;			// No layers until we make them
@@ -386,6 +389,16 @@ Int_t THcNPSCalorimeter::DefineVariables( EMode mode )
     { "eprtracknorm", "Preshower energy divided by track momentum", "fEPRtrackNorm" },
     { "etottracknorm", "Total energy divided by track momentum", "fETotTrackNorm" },
     //{ "ntracks", "Number of shower tracks",                      "fNtracks" }, //C.Y. Jan 13, 2021, comment out to prevent replay errors for now.
+    { "vtpErrorFlag", "VTP error flag",           "fVTPErrorFlag"     },
+    { "vtpTrigTime",  "VTP trigger time",         "fVTPTriggerTime"   },
+    { "vtpTrigType0", "VTP trigger type0 bit",    "fVTPTriggerType0"  },
+    { "vtpTrigType1", "VTP trigger type1 bit",    "fVTPTriggerType1"  },
+    { "vtpTrigType2", "VTP trigger type2 bit",    "fVTPTriggerType2"  },
+    { "vtpClusTime",  "VTP cluster time",         "fVTPClusterTime"   },
+    { "vtpClusE",     "VTP cluster energy",       "fVTPClusterEnergy" },
+    { "vtpClusSize",  "VTP cluster n blocks",     "fVTPClusterSize"   },
+    { "vtpClusX",     "VTP cluster x coordinate", "fVTPClusX"         },
+    { "vtpClusY",     "VTP cluster y coordinate", "fVTPClusY"         },
     { 0 }
   };
 
@@ -495,6 +508,43 @@ Int_t THcNPSCalorimeter::Decode( const THaEvData& evdata )
 
   if(clear) Clear();
   // Should move this up to the apparatus level.
+
+  // DJH: decode VTP here (for now?)
+  Int_t Nvtpfound = 0;
+  Int_t Ntottrig  = 0;
+  Int_t Ntotclus  = 0;
+
+  for (UInt_t i=0; i < fDetMap->GetSize(); i++) { // Look for a VTP
+    THaDetMap::Module* d = fDetMap->GetModule(i);
+    Decoder::VTPModule* isvtp = dynamic_cast<Decoder::VTPModule*>(evdata.GetModule(d->crate, d->slot));
+    if(isvtp) {
+      Nvtpfound++;
+      if(  evdata.GetEvNum() != isvtp->GetTriggerNum() ) {
+	cout << "THcNPSCalorimeter VTP data synch error: THaEvData = " << evdata.GetEvNum() << ", VTP decoder = "<< isvtp->GetTriggerNum() 
+	     << " for VTP in crate" << d->crate <<  endl;
+	fVTPErrorFlag = 1;
+      }
+      else {
+// 	cout << "VTP data for event " << evdata.GetEvNum() << " for module in crate " << d->crate <<  endl;
+// 	cout << "N trigger words = " << isvtp->GetNTriggers() << " N cluster words " << isvtp->GetNClusters() <<  endl;
+
+	fVTPTriggerTime  = isvtp->GetTriggerTime();
+	fVTPTriggerType0 = isvtp->GetTriggerType0();
+	fVTPTriggerType1 = isvtp->GetTriggerType1();
+	fVTPTriggerType2 = isvtp->GetTriggerType2();
+
+	fVTPClusterTime   = isvtp->GetClusterTime();
+	fVTPClusterEnergy = isvtp->GetClusterEnergy();
+	fVTPClusterSize   = isvtp->GetClusterSize();
+	fVTPClusterX      = isvtp->GetClusterX();
+	fVTPClusterY      = isvtp->GetClusterY();
+      }
+    }
+  }
+  if( Nvtpfound != fnVTP ) {
+    cout << "THcNPSCalorimeter VTP decode error: Found " << Nvtpfound << " VTP modules. There should be " << fnVTP << endl;
+    fVTPErrorFlag = 1;
+  }
 
   // Get the Hall C style hitlist (fRawHitList) for this event
   Bool_t present = kTRUE;	// Suppress reference time warnings
