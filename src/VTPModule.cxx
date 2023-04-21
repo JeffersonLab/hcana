@@ -35,12 +35,15 @@ using namespace std;
 
 namespace Decoder {
 
+using vsiz_t = vector<int>::size_type;
+
 Module::TypeIter_t VTPModule::fgThisType =
         DoRegister( ModuleType( "Decoder::VTPModule" , 514 ));
 
 //_____________________________________________________________________________
 VTPModule::VTPModule(UInt_t crate, UInt_t slot)
-  : PipeliningModule(crate, slot), vtp_data{},
+  : PipeliningModule(crate, slot), 
+    vtp_header_data{}, vtp_trigger_data{}, vtp_cluster_data{},
     block_header_found(false), block_trailer_found(false),
     event_header_found(false), slots_match(false)
 {
@@ -56,7 +59,10 @@ void VTPModule::Clear( Option_t* opt )
 {
   // Clear event-by-event data
   PipeliningModule::Clear(opt);
-  vtp_data.clear();
+  vtp_header_data.clear();
+  vtp_trigger_data.clear();
+  vtp_cluster_data.clear();
+  
   // Initialize data_type_def to FILLER and data types to false
   data_type_def = 15;
   // Initialize data types to false
@@ -80,72 +86,14 @@ void VTPModule::Init()
 }
 
 //_____________________________________________________________________________
-  UInt_t VTPModule::GetNumEvents( Decoder::EModuleType emode, UInt_t chan ) const
-{
-//   vsiz_t ret = 0;
-//   switch( emode ) {
-//     case kSampleADC:
-//       ret = fPulseData[chan].samples.size();
-//       break;
-//     case kPulseIntegral:
-//       ret = fPulseData[chan].integral.size();
-//       break;
-//     case kPulseTime:
-//       ret = fPulseData[chan].time.size();
-//       break;
-//     case kPulsePeak:
-//       ret = fPulseData[chan].peak.size();
-//       break;
-//     case kPulsePedestal:
-//       if( fFirmwareVers == 2 )
-//         ret = fPulseData[chan].pedestal.size();
-//       else
-//         ret = fPulseData[chan].integral.size();
-//       break;
-//     case kCoarseTime:
-//       ret = fPulseData[chan].coarse_time.size();
-//       break;
-//     case kFineTime:
-//       ret = fPulseData[chan].fine_time.size();
-//       break;
-//   }
-//   if( ret > kMaxUInt )
-//     throw overflow_error("ERROR! VTPModule::GetNumEvents: "
-//                          "integer overflow");
-//   return ret;
-}
-
-//_____________________________________________________________________________
-UInt_t VTPModule::GetData( Decoder::EModuleType emode, UInt_t chan, UInt_t ievent ) const
-{
-//   switch( emode ) {
-//     case kSampleADC:
-//       return GetPulseSamplesData(chan, ievent);
-//     case kPulseIntegral:
-//       return GetPulseIntegralData(chan, ievent);
-//     case kPulseTime:
-//       return GetPulseTimeData(chan, ievent);
-//     case kPulsePeak:
-//       return GetPulsePeakData(chan, ievent);
-//     case kPulsePedestal:
-//       return GetPulsePedestalData(chan, ievent);
-//     case kCoarseTime:
-//       return GetPulseCoarseTimeData(chan, ievent);
-//     case kFineTime:
-//       return GetPulseFineTimeData(chan, ievent);
-//   }
-//   return 0;
-}
-
-//_____________________________________________________________________________
-UInt_t VTPModule::GetTriggerTime() const
+UInt_t VTPModule::GetHeaderTriggerTime() 
 {
   // Truncate to 32 bits
-  UInt_t shorttime = vtp_data.trig_time;
+  UInt_t shorttime = vtp_header_data.trig_time;
 #ifdef WITH_DEBUG
   if( fDebugFile )
     *fDebugFile << "VTPModule::GetTriggerTime = "
-                << vtp_data.trig_time << " " << shorttime << endl;
+                << vtp_header_data.trig_time << " " << shorttime << endl;
 #endif
   return shorttime;
 }
@@ -158,27 +106,27 @@ void VTPModule::DecodeBlockHeader( UInt_t pdat, uint32_t data_type_id )
 
   if( data_type_id ) {
     block_header_found = true;                     // Set to true if found
-    vtp_data.slot_blk_hdr = (pdat >> 22) & 0x1F;  // Slot number (set by VME64x backplane), mask 5 bits
+    vtp_header_data.slot_blk_hdr = (pdat >> 22) & 0x1F;  // Slot number (set by VME64x backplane), mask 5 bits
     // Debug output
 #ifdef WITH_DEBUG
     if( fDebugFile )
-      *fDebugFile << "VTPModule::Decode:: Slot from VTP block header = " << vtp_data.slot_blk_hdr << endl;
+      *fDebugFile << "VTPModule::Decode:: Slot from VTP block header = " << vtp_header_data.slot_blk_hdr << endl;
 #endif
     // Ensure that slots from cratemap and VTP match
-    slots_match = ((uint32_t) fSlot == vtp_data.slot_blk_hdr);
+    slots_match = ((uint32_t) fSlot == vtp_header_data.slot_blk_hdr);
     if( !slots_match )
       return;
-    //    vtp_data.iblock_num = (pdat >> 11) & 0xFF;    // DJH Event block number, mask 8 bits
-    vtp_data.iblock_num = (pdat >> 8) & 0x3FF;    // Event block number, mask 10 bits
-    vtp_data.nblock_events = (pdat >> 0) & 0xFF;  // Number of events in block, mask 8 bits
+    //    vtp_header_data.iblock_num = (pdat >> 11) & 0xFF;    // DJH Event block number, mask 8 bits
+    vtp_header_data.iblock_num = (pdat >> 8) & 0x3FF;    // Event block number, mask 10 bits
+    vtp_header_data.nblock_events = (pdat >> 0) & 0xFF;  // Number of events in block, mask 8 bits
     // Debug output
 #ifdef WITH_DEBUG
     if( fDebugFile )
       *fDebugFile << "VTPModule::Decode:: VTP BLOCK HEADER"
                   << " >> data = " << hex << pdat << dec
-                  << " >> slot = " << vtp_data.slot_blk_hdr
-                  << " >> event block number = " << vtp_data.iblock_num
-                  << " >> num events in block = " << vtp_data.nblock_events
+                  << " >> slot = " << vtp_header_data.slot_blk_hdr
+                  << " >> event block number = " << vtp_header_data.iblock_num
+                  << " >> num events in block = " << vtp_header_data.nblock_events
                   << endl;
 #endif
   }
@@ -188,16 +136,16 @@ void VTPModule::DecodeBlockHeader( UInt_t pdat, uint32_t data_type_id )
 void VTPModule::DecodeBlockTrailer( UInt_t pdat )
 {
   block_trailer_found = true;
-  vtp_data.slot_blk_trl = (pdat >> 22) & 0x1F;       // Slot number (set by VME64x backplane), mask 5 bits
-  vtp_data.nwords_inblock = (pdat >> 0) & 0xFFFFF;  // DJH Total number of words in block of events, mask 20 bits
-  //  vtp_data.nwords_inblock = (pdat >> 0) & 0x3FFFFF;  // Total number of words in block of events, mask 22 bits
+  vtp_header_data.slot_blk_trl = (pdat >> 22) & 0x1F;       // Slot number (set by VME64x backplane), mask 5 bits
+  vtp_header_data.nwords_inblock = (pdat >> 0) & 0xFFFFF;  // DJH Total number of words in block of events, mask 20 bits
+  //  vtp_header_data.nwords_inblock = (pdat >> 0) & 0x3FFFFF;  // Total number of words in block of events, mask 22 bits
   // Debug output
 #ifdef WITH_DEBUG
   if( fDebugFile )
     *fDebugFile << "VTPModule::Decode:: VTP BLOCK TRAILER"
                 << " >> data = " << hex << pdat << dec
-                << " >> slot = " << vtp_data.slot_blk_trl
-                << " >> nwords in block = " << vtp_data.nwords_inblock
+                << " >> slot = " << vtp_header_data.slot_blk_trl
+                << " >> nwords in block = " << vtp_header_data.nwords_inblock
                 << endl;
 #endif
 }
@@ -206,25 +154,12 @@ void VTPModule::DecodeBlockTrailer( UInt_t pdat )
 void VTPModule::DecodeEventHeader( UInt_t pdat )
 {
   event_header_found = true;
-  // For firmware versions pre 0x0C00 (06/09/2016)
-  //vtp_data.slot_evt_hdr = (pdat >> 22) & 0x1F;  // Slot number (set by VME64x backplane), mask 5 bits
-  // vtp_data.evt_num = (pdat >> 0) & 0x3FFFFF;    // Event number, mask 22 bits
-  // For firmware versions post 0x0C00 (06/09/2016)
-  //vtp_data.eh_trig_time = (pdat >> 12) & 0x3FF;  // Event header trigger time
-  //  vtp_data.trig_num = (pdat >> 0) & 0xFFF;       // Trigger number
-  vtp_data.trig_num = (pdat >> 0) & 0xFFFFF;  // DJH Trigger number, mask 20 bits
-  // Debug output
-  // #ifdef WITH_DEBUG
-  //	if (fDebugFile)
-  //	  *fDebugFile << "VTPModule::Decode:: VTP EVENT HEADER >> data = " << hex
-  //		      << data << dec << " >> slot = " << vtp_data.slot_evt_hdr
-  //		      << " >> event number = " << vtp_data.evt_num << endl;
-  // #endif
+  vtp_header_data.trig_num = (pdat >> 0) & 0xFFFFF;  // DJH Trigger number, mask 20 bits
 #ifdef WITH_DEBUG
   if( fDebugFile )
     *fDebugFile << "VTPModule::Decode:: VTP EVENT HEADER"
                 << " >> data = " << hex << pdat << dec
-                << " >> trigger number = " << vtp_data.trig_num
+                << " >> trigger number = " << vtp_header_data.trig_num
                 << endl;
 #endif
 }
@@ -233,22 +168,98 @@ void VTPModule::DecodeEventHeader( UInt_t pdat )
 void VTPModule::DecodeTriggerTime( UInt_t pdat, uint32_t data_type_id )
 {
   if( data_type_id )  // Trigger time word 1
-    vtp_data.trig_time_w1 = (pdat >> 0) & 0xFFFFFF;  // Time = T_D T_E T_F
+    vtp_header_data.trig_time_w1 = (pdat >> 0) & 0xFFFFFF;  // Time = T_D T_E T_F
   else  // Trigger time word 2
-    vtp_data.trig_time_w2 = (pdat >> 0) & 0xFFFFFF;  // Time = T_A T_B T_C
+    vtp_header_data.trig_time_w2 = (pdat >> 0) & 0xFFFFFF;  // Time = T_A T_B T_C
   // Time = T_A T_B T_C T_D T_E T_F
-  vtp_data.trig_time = (vtp_data.trig_time_w2 << 24) | vtp_data.trig_time_w1;
+  vtp_header_data.trig_time = (vtp_header_data.trig_time_w2 << 24) | vtp_header_data.trig_time_w1;
   // Debug output
 #ifdef WITH_DEBUG
   if( fDebugFile )
     *fDebugFile << "VTPModule::Decode:: VTP TRIGGER TIME"
                 << " >> data = " << hex << pdat << dec
-                << " >> trigger time word 1 = " << vtp_data.trig_time_w1
-                << " >> trigger time word 2 = " << vtp_data.trig_time_w2
-                << " >> trigger time = " << vtp_data.trig_time
+                << " >> trigger time word 1 = " << vtp_header_data.trig_time_w1
+                << " >> trigger time word 2 = " << vtp_header_data.trig_time_w2
+                << " >> trigger time = " << vtp_header_data.trig_time
                 << endl;
 #endif
 }
+
+//_____________________________________________________________________________
+  void VTPModule::DecodeTriggerDecision( UInt_t pdat, uint32_t data_type_id )
+  {
+    uint32_t tpattern = 0;
+    uint32_t ttime    = 0;
+    uint32_t ttype0   = 0;
+    uint32_t ttype1   = 0;
+    uint32_t ttype2   = 0;
+    
+    if( data_type_id ) {  // NPS trigger decision word 1
+      
+      tpattern = (pdat >> 0) & 0xFFFF; // NPS trigger pattern, mask 16 bits
+      ttime    = (pdat >> 16) & 0x7F;  // NPS trigger time, mask 11 bits
+      
+      if( (tpattern >> 0 ) & 0x1 ) ttype0 = 1;
+      if( (tpattern >> 1 ) & 0x1 ) ttype1 = 1;
+      if( (tpattern >> 2 ) & 0x1 ) ttype2 = 1;
+      
+      vtp_trigger_data.trigtype0.push_back( ttype0 );
+      vtp_trigger_data.trigtype1.push_back( ttype1 );
+      vtp_trigger_data.trigtype2.push_back( ttype2 );
+      vtp_trigger_data.trigtime.push_back( ttime );
+    }
+    // else  // NPS trigger decision word 2 (DJH: no second word?)
+    
+#ifdef WITH_DEBUG
+    if( fDebugFile )
+      *fDebugFile << "VTPModule::Decode:: VTP NPS Trigger"
+		  << " >> data  = " << hex << pdat << dec
+		  << " >> trig0 = " << ttype0
+		  << " >> trig1 = " << ttype1
+		  << " >> trig2 = " << ttype2
+		  << " >> trig time = " << ttime
+		  << endl;
+#endif
+  }
+  
+  //_____________________________________________________________________________
+  void VTPModule::DecodeNPSCluster( UInt_t pdat, uint32_t data_type_id )
+  {
+    uint32_t ce = 0;
+    uint32_t ct = 0;
+    uint32_t cn = 0;
+    uint32_t cx = 0;
+    uint32_t cy = 0;
+    
+    if( data_type_id )  { // NPS cluster word 1
+      ce = (pdat >> 0) & 0x3FFF;  // NPS cluster energy, mask 14 bits
+    }
+    else { // NPS ckuster word 2
+      ct = (pdat >> 0)  & 0x7F;   // NPS cluster time, mask 11 bits
+      cn = (pdat >> 11) & 0xF;    // NPS cluster n blocks, mask 4 bits
+      cx = (pdat >> 15) & 0x1F;   // NPS cluster x coordinate, mask 5 bits
+      cy = (pdat >> 20) & 0x3F;   // NPS cluster y coordinate, mask 6 bits
+    }
+
+    vtp_cluster_data.energy.push_back( ce ); 
+    vtp_cluster_data.time.push_back( ct );
+    vtp_cluster_data.nblocks.push_back( cn );
+    vtp_cluster_data.xcoord.push_back( cx );
+    vtp_cluster_data.ycoord.push_back( cy );
+
+#ifdef WITH_DEBUG
+  if( fDebugFile )
+    *fDebugFile << "VTPModule::Decode:: VTP NPS Cluster"
+                << " >> data = " << hex << pdat << dec
+                << " >> energy = " << ce
+                << " >> n blocks = " << cn
+                << " >> time  = " << ct
+                << " >> x coordinate = " << cx
+                << " >> y coordinate = " << cy
+                << endl;
+#endif
+}
+
 
 //_____________________________________________________________________________
 void VTPModule::UnsupportedType( UInt_t pdat, uint32_t data_type_id )
@@ -290,56 +301,6 @@ void VTPModule::UnsupportedType( UInt_t pdat, uint32_t data_type_id )
     *fDebugFile << str.str();
   if( idx == what_map.end() )
     cerr << str.str();
-#endif
-}
-//_____________________________________________________________________________
-  void VTPModule::DecodeNPSCluster( UInt_t pdat, uint32_t data_type_id )
-{
-
-  if( data_type_id )  // NPS cluster word 1
-    vtp_data.nps_e = (pdat >> 0) & 0x3FFF;  // NPS cluster energy, mask 14 bits
-  else { // NPS ckuster word 2
-    vtp_data.nps_t = (pdat >> 0)  & 0x7F;   // NPS cluster time, mask 11 bits
-    vtp_data.nps_n = (pdat >> 11) & 0xF;    // NPS cluster n blocks, mask 4 bits
-    vtp_data.nps_x = (pdat >> 15) & 0x1F;   // NPS cluster x coordinate, mask 5 bits
-    vtp_data.nps_y = (pdat >> 20) & 0x3F;   // NPS cluster y coordinate, mask 6 bits
-  }
-#ifdef WITH_DEBUG
-  if( fDebugFile )
-    *fDebugFile << "VTPModule::Decode:: VTP NPS Cluster"
-                << " >> data = " << hex << pdat << dec
-                << " >> energy = " << vtp_data.nps_e
-                << " >> n blocks = " << vtp_data.nps_n
-                << " >> time  = " << vtp_data.nps_t
-                << " >> x coordinate = " << vtp_data.nps_x
-                << " >> y coordinate = " << vtp_data.nps_y
-                << endl;
-#endif
-}
-
-//_____________________________________________________________________________
-  void VTPModule::DecodeTriggerDecision( UInt_t pdat, uint32_t data_type_id )
-{
-  uint32_t trigpattern = 0x0;
-  if( data_type_id ) {  // NPS trigger decision word 1
-    trigpattern = (pdat >> 0) & 0xFFFF; // NPS trigger time, mask 16 bits
-    vtp_data.nps_trigtime  = (pdat >> 16) & 0x7F;  // NPS trigger pattern, mask 11 bits
-  }
-  // else  // NPS trigger decision word 2
-
-  vtp_data.nps_trig0 = vtp_data.nps_trig1 = vtp_data.nps_trig2 = 0;
-    if( (trigpattern >> 0 ) & 0x1 )       vtp_data.nps_trig0 = 1;
-    else if( (trigpattern >> 1 ) & 0x1 )  vtp_data.nps_trig1 = 1;
-    else if( (trigpattern >> 2 ) & 0x1 )  vtp_data.nps_trig2 = 1;
-#ifdef WITH_DEBUG
-  if( fDebugFile )
-    *fDebugFile << "VTPModule::Decode:: VTP NPS Trigger"
-                << " >> data  = " << hex << pdat << dec
-                << " >> trig0 = " << vtp_data.nps_trig0
-                << " >> trig1 = " << vtp_data.nps_trig1
-                << " >> trig2 = " << vtp_data.nps_trig2
-                << " >> trig time = " << vtp_data.nps_trigtime
-                << endl;
 #endif
 }
 
@@ -403,7 +364,7 @@ Int_t VTPModule::Decode( const UInt_t* pdat )
     case 7:  // Undefined type
     case 8:  // Undefined type
     case 9:  // Undefined type
-    case 10:  // Undefined type
+    case 10: // Undefined type
     case 11: // Undefined type
     case 14: // Data not valid
     case 15: // Filler Word, should be ignored
@@ -420,6 +381,35 @@ Int_t VTPModule::Decode( const UInt_t* pdat )
 #endif
   
   return block_trailer_found;
+}
+
+//_____________________________________________________________________________
+void VTPModule::LoadTHaSlotDataObj( THaSlotData* sldat )
+{
+  // Load THaSlotData
+
+  // NPS trigger data
+  for( vsiz_t itrig = 0; itrig < vtp_trigger_data.trigtype0.size(); itrig++ )
+    sldat->loadData("scaler", 0, vtp_trigger_data.trigtype0[itrig], vtp_trigger_data.trigtype0[itrig]);
+  for( vsiz_t itrig = 0; itrig < vtp_trigger_data.trigtype1.size(); itrig++ )
+    sldat->loadData("scaler", 0, vtp_trigger_data.trigtype1[itrig], vtp_trigger_data.trigtype1[itrig]);
+  for( vsiz_t itrig = 0; itrig < vtp_trigger_data.trigtype2.size(); itrig++ )
+    sldat->loadData("scaler", 0, vtp_trigger_data.trigtype2[itrig], vtp_trigger_data.trigtype2[itrig]);
+  for( vsiz_t itrig = 0; itrig < vtp_trigger_data.trigtime.size(); itrig++ )
+    sldat->loadData("scaler", 0, vtp_trigger_data.trigtime[itrig], vtp_trigger_data.trigtime[itrig]);
+
+  // NPS cluster data
+  for( vsiz_t iclus = 0; iclus < vtp_cluster_data.energy.size(); iclus++ )
+    sldat->loadData("scaler", 0, vtp_cluster_data.energy[iclus], vtp_cluster_data.energy[iclus]);
+  for( vsiz_t iclus = 0; iclus < vtp_cluster_data.time.size(); iclus++ )
+    sldat->loadData("scaler", 0, vtp_cluster_data.time[iclus], vtp_cluster_data.time[iclus]);
+  for( vsiz_t iclus = 0; iclus < vtp_cluster_data.nblocks.size(); iclus++ )
+    sldat->loadData("scaler", 0, vtp_cluster_data.nblocks[iclus], vtp_cluster_data.nblocks[iclus]);
+  for( vsiz_t iclus = 0; iclus < vtp_cluster_data.xcoord.size(); iclus++ )
+    sldat->loadData("scaler", 0, vtp_cluster_data.xcoord[iclus], vtp_cluster_data.xcoord[iclus]);
+  for( vsiz_t iclus = 0; iclus < vtp_cluster_data.ycoord.size(); iclus++ )
+    sldat->loadData("scaler", 0, vtp_cluster_data.ycoord[iclus], vtp_cluster_data.ycoord[iclus]);
+
 }
 
 //_____________________________________________________________________________
@@ -441,6 +431,8 @@ UInt_t VTPModule::LoadSlot( THaSlotData *sldat, const UInt_t* evbuffer,
     if( Decode(p++) == 1 )
       break;  // block trailer found
   }
+
+  LoadTHaSlotDataObj(sldat);
   
   return fWordsSeen = p - (evbuffer + pos);
 }
