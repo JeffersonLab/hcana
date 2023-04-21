@@ -26,8 +26,8 @@
 
 using namespace std;
 
-#define DEBUG
-#define WITH_DEBUG
+//#define DEBUG
+//#define WITH_DEBUG
 
 #ifdef DEBUG
 #include <fstream>
