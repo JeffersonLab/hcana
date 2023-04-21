@@ -397,8 +397,8 @@ Int_t THcNPSCalorimeter::DefineVariables( EMode mode )
     { "vtpClusTime",  "VTP cluster time",         "fVTPClusterTime"   },
     { "vtpClusE",     "VTP cluster energy",       "fVTPClusterEnergy" },
     { "vtpClusSize",  "VTP cluster n blocks",     "fVTPClusterSize"   },
-    { "vtpClusX",     "VTP cluster x coordinate", "fVTPClusX"         },
-    { "vtpClusY",     "VTP cluster y coordinate", "fVTPClusY"         },
+    { "vtpClusX",     "VTP cluster x coordinate", "fVTPClusterX"      },
+    { "vtpClusY",     "VTP cluster y coordinate", "fVTPClusterY"      },
     { 0 }
   };
 
