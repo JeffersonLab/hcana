@@ -27,7 +27,7 @@ for hcheaderfile in hcheadersbase:
     # Assume filenames beginning with Scaler are decoder classes
     if newbasefilename[1] == 'hc_compiledata':
         continue
-    if newbasefilename[1][:6] == 'Scaler' or newbasefilename[1] == "TIBlobModule":
+    if newbasefilename[1][:6] == 'Scaler' or newbasefilename[1] == "TIBlobModule" or newbasefilename[1] == "VTPModule":
         cmd1 = "echo '#pragma link C++ class Decoder::%s+;' >> src/HallC_LinkDef.h" % newbasefilename[1]
     else:
         cmd1 = "echo '#pragma link C++ class %s+;' >> src/HallC_LinkDef.h" % newbasefilename[1]
