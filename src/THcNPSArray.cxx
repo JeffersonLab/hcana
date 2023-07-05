@@ -729,7 +729,7 @@ Int_t THcNPSArray::CoarseProcess(TClonesArray& tracks)
 	   ++pph) {
       //C.Y. Feb 09, 2021: I believe a +1 is not necessary if block numbering starts at zero (simply, "block = column * fNRows + Row" will do)
       block = ((**pph).hitColumn())*fNRows + (**pph).hitRow(); //+1; 
-       fBlock_ClusterID[block-1] = ncl;
+      if (block >=0 && block < fNelem)  fBlock_ClusterID[block] = ncl;
       }
       ncl++;
     }
@@ -777,7 +777,6 @@ Int_t THcNPSArray::FineProcess( TClonesArray& tracks )
 //_____________________________________________________________________________
 Int_t THcNPSArray::CoarseProcessHits()
 {
-  // cout<< "THcNPSArray::CoarseProcessHits() " << endl;
   /* This decision really belongs in decode */
   /*  if(fADCMode == kADCDynamicPedestal) {
     FillADC_DynamicPedestal();
@@ -848,21 +847,22 @@ void THcNPSArray::FillADC_DynamicPedestal()
 {
   //C.Y. Feb 07 2021: Eventually, we want to re-define the start time, since NPS does not have hodoscopes. Maybe we can chose
   //another time as reference?  How about the RF time?  Something to be discussed w/ M. Jones and S. Wood
-  Double_t StartTime = 60.0; 	// Arbitrary time to put tdc in range
+  Double_t StartTime = 0.0; 	// Arbitrary time to put tdc in range
 
-  //cout << "THcNPSArray::FillADC_DynamicPed | total # of  hits: " << frAdcPulseInt->GetEntries() << endl;
+  //  cout << "THcNPSArray::FillADC_DynamicPed | total # of  hits: " << frAdcPulseInt->GetEntries() << endl;
   //if( fglHod ) StartTime = fglHod->GetStartTime();
   
   //Loop over all entries (all hits over all elements (i.e., all hits of all blocks))
   for (Int_t ielem=0;ielem<frAdcPulseInt->GetEntries();ielem++) {  
     //npad is block # of the corresponding ielem (hit)
     Int_t npad           = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetPaddleNumber(); 
+    if (npad > fNelem-1) continue;
     Double_t pulseIntRaw = ((THcSignalHit*) frAdcPulseIntRaw->ConstructedAt(ielem))->GetData();
     Double_t pulsePed    = ((THcSignalHit*) frAdcPed->ConstructedAt(ielem))->GetData();
     Double_t pulseInt    = ((THcSignalHit*) frAdcPulseInt->ConstructedAt(ielem))->GetData();
     Double_t pulseAmp    = ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(ielem))->GetData();
     Double_t pulseTime   = ((THcSignalHit*) frAdcPulseTime->ConstructedAt(ielem))->GetData();
-    Double_t adctdcdiffTime = StartTime-pulseTime;
+    Double_t adctdcdiffTime = pulseTime-StartTime;
     Bool_t errorflag     = ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(ielem))->GetData();
     Bool_t pulseTimeCut  = (adctdcdiffTime > fAdcTimeWindowMin[npad]) &&  (adctdcdiffTime < fAdcTimeWindowMax[npad]);
 
@@ -874,7 +874,6 @@ void THcNPSArray::FillADC_DynamicPedestal()
 
     if (!errorflag && pulseTimeCut) {
       
-      fTotNumAdcHits++;
       fGoodAdcPulseIntRaw.at(npad) = pulseIntRaw;
 
       //store multiple raw pulse integral per paddle (in the case of >1 hits)
@@ -892,7 +891,7 @@ void THcNPSArray::FillADC_DynamicPedestal()
 	  adctdcdiffTime window. This is what is originally done in THcShower.cxx for HMS/SHMS */
 	
 	
-	if(fGoodAdcPulseIntRaw.at(npad) >  fThresh[npad] && fGoodAdcPulseInt.at(npad)==0) {
+	if(fGoodAdcPulseInt.at(npad)==0) {
 	  
 	  fTotNumGoodAdcHits++;
 	  fGoodAdcPulseInt.at(npad) = pulseInt;
@@ -982,8 +981,6 @@ void THcNPSArray::FillADC_DynamicPedestal()
   
   }
   */
-  
-  
   
 }
 //_____________________________________________________________________________
