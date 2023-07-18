@@ -189,7 +189,7 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
     {"_cal_using_fadc", &fUsingFADC, kInt, 0, 1},
     {"_cal_clustering", &fClustMethod, kInt, 0, 1},
     //    {"_cal_arr_ADCMode", &fADCMode, kInt, 0, 1},
-    {"_cal_arr_adc_tdc_offset", &fAdcTdcOffset, kDouble, 0, 1},
+    //    {"_cal_arr_adc_tdc_offset", &fAdcTdcOffset, kDouble, 0, 1},
     {"_cal_arr_AdcThreshold", &fAdcThreshold, kDouble, 0, 1},
     {"_cal_arr_adc_samp_threshold", &fAdcSampThreshold, kDouble, 0, 1},
     {"_cal_arr_adc_peak_samp_width", &fDataSampWidth, kDouble, 0, 1},
@@ -207,7 +207,7 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
   fClustMethod = 0;  //Set default clusterin method to HMS/SHMS original 
   fDebugAdc = 0;  // Set ADC debug parameter to false unless set in parameter file
   //  fADCMode=kADCDynamicPedestal;
-  fAdcTdcOffset=0.0;
+  //  fAdcTdcOffset=0.0;
   fAdcThreshold=0.;
   fAdcSampThreshold=30;		// Peak found if this amount above pedestal
   fDataSampWidth=15;		// Integrate this # of samples to get peak area
@@ -306,6 +306,7 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
   // Pedestal limits per channel.
   fPedLimit = new Int_t [fNelem];
 
+  Double_t cal_arr_AdcTdcOffset[fNelem];
   Double_t cal_arr_cal_const[fNelem];
   Double_t cal_arr_gain_cor[fNelem];
 
@@ -318,6 +319,7 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
   
   DBRequest list1[]={
     {"_cal_arr_ped_limit", fPedLimit, kInt, static_cast<UInt_t>(fNelem),1},
+    {"_cal_arr_AdcTdcOffset", cal_arr_AdcTdcOffset, kDouble, static_cast<UInt_t>(fNelem)},
     {"_cal_arr_cal_const", cal_arr_cal_const, kDouble, static_cast<UInt_t>(fNelem)},
     {"_cal_arr_gain_cor",  cal_arr_gain_cor,  kDouble, static_cast<UInt_t>(fNelem)},
     {"_cal_arr_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNelem),1},
@@ -367,6 +369,16 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
 	cout << fPedLimit[el++] << " ";
       };
       cout <<  endl;
+    };
+
+    cout << "  cal_arr_AdcTdcOffset:" << endl;
+    el=0;
+    for (UInt_t j=0; j<fNColumns; j++) {
+      cout << "    ";
+      for (UInt_t i=0; i<fNRows; i++) {
+	cout << cal_arr_AdcTdcOffset[el++] << " ";
+      };
+      cout << endl;
     };
 
     cout << "  cal_arr_cal_const:" << endl;
