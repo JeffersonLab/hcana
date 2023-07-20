@@ -8,7 +8,7 @@
 //   TI Trigger information
 //     This version just pulls out
 //       Trigger type
-//       Event number (just bottum 32 bits)
+//       Event number (just bottom 32 bits)
 //       4ns clock
 //
 /////////////////////////////////////////////////////////////////////
