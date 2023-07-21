@@ -205,7 +205,7 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
   };
 
   fClustMethod = 0;  //Set default clusterin method to HMS/SHMS original 
-  fDebugAdc = 0;  // Set ADC debug parameter to false unless set in parameter file
+  fDebugAdc = 1;  // Set ADC debug parameter to false unless set in parameter file
   //  fADCMode=kADCDynamicPedestal;
   //  fAdcTdcOffset=0.0;
   fAdcThreshold=0.;
@@ -1077,7 +1077,7 @@ Int_t THcNPSArray::AccumulateHits(TClonesArray* rawhits, Int_t nexthit, Int_t tr
 	((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp(thit));
 	
 	((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTimeRaw(thit));
-	((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
+	((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTime(thit)+cal_arr_AdcTdcOffset[padnum]);
 
 	if (rawAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 0);
 	if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 1);
@@ -1132,7 +1132,7 @@ Int_t THcNPSArray::AccumulateHits(TClonesArray* rawhits, Int_t nexthit, Int_t tr
       ((THcSignalHit*) frAdcSampPulseAmpRaw->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseAmpRaw(thit));
       ((THcSignalHit*) frAdcSampPulseAmp->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseAmp(thit));
       ((THcSignalHit*) frAdcSampPulseTimeRaw->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseTimeRaw(thit));
-      ((THcSignalHit*) frAdcSampPulseTime->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseTime(thit)+fAdcTdcOffset);
+      ((THcSignalHit*) frAdcSampPulseTime->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseTime(thit)+cal_arr_AdcTdcOffset[padnum]);
       //
       if ( rawAdcHit.GetNPulses() == 0 || fUseSampWaveform ==1 ) {
 	((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetSampPedRaw());
@@ -1145,7 +1145,7 @@ Int_t THcNPSArray::AccumulateHits(TClonesArray* rawhits, Int_t nexthit, Int_t tr
 	((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum,rawAdcHit.GetSampPulseAmp(thit) );
 	
 	((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum,rawAdcHit.GetSampPulseTimeRaw(thit) );
-	((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetSampPulseTime(thit)+fAdcTdcOffset);
+	((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetSampPulseTime(thit)+cal_arr_AdcTdcOffset[padnum]);
 
 	((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 3);  
 	if (fUseSampWaveform ==1) ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 0);  
