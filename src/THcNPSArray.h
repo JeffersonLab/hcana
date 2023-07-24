@@ -189,7 +189,8 @@ protected:
   Double_t *fAdcTimeWindowMax ;
   Double_t fAdcThreshold;
   Double_t fAdcSampThreshold;
-  Double_t fAdcTdcOffset;
+  //Double_t fAdcTdcOffset;
+  Double_t *cal_arr_AdcTdcOffset;
   Int_t *fPedDefault ;
 
   //C.Y. Feb 09, 2021: Added fAdcPulseTime window parameters to be used in

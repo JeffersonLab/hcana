@@ -306,9 +306,11 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
   // Pedestal limits per channel.
   fPedLimit = new Int_t [fNelem];
 
-  Double_t cal_arr_AdcTdcOffset[fNelem];
+  //Double_t cal_arr_AdcTdcOffset[fNelem];
   Double_t cal_arr_cal_const[fNelem];
   Double_t cal_arr_gain_cor[fNelem];
+
+  cal_arr_AdcTdcOffset = new Double_t [fNelem];
 
   fAdcTimeWindowMin = new Double_t [fNelem];
   fAdcTimeWindowMax = new Double_t [fNelem];
@@ -319,7 +321,7 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
   
   DBRequest list1[]={
     {"_cal_arr_ped_limit", fPedLimit, kInt, static_cast<UInt_t>(fNelem),1},
-    {"_cal_arr_AdcTdcOffset", cal_arr_AdcTdcOffset, kDouble, static_cast<UInt_t>(fNelem)},
+    {"_cal_arr_AdcTdcOffset", cal_arr_AdcTdcOffset, kDouble, static_cast<UInt_t>(fNelem),1},
     {"_cal_arr_cal_const", cal_arr_cal_const, kDouble, static_cast<UInt_t>(fNelem)},
     {"_cal_arr_gain_cor",  cal_arr_gain_cor,  kDouble, static_cast<UInt_t>(fNelem)},
     {"_cal_arr_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNelem),1},
