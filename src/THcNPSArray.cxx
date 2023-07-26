@@ -338,6 +338,7 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
   };
 
    for(Int_t ip=0;ip<fNelem;ip++) {
+    fAdcTdcOffset[ip] = 0.;
     fAdcTimeWindowMin[ip] = -1000.;
     fAdcTimeWindowMax[ip] = 1000.;
     fAdcPulseTimeMin[ip] = -1000.;
