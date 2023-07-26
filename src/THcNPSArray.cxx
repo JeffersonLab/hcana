@@ -189,7 +189,6 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
     {"_cal_using_fadc", &fUsingFADC, kInt, 0, 1},
     {"_cal_clustering", &fClustMethod, kInt, 0, 1},
     //    {"_cal_arr_ADCMode", &fADCMode, kInt, 0, 1},
-    //    {"_cal_arr_adc_tdc_offset", &fAdcTdcOffset, kDouble, 0, 1},
     {"_cal_arr_AdcThreshold", &fAdcThreshold, kDouble, 0, 1},
     {"_cal_arr_adc_samp_threshold", &fAdcSampThreshold, kDouble, 0, 1},
     {"_cal_arr_adc_peak_samp_width", &fDataSampWidth, kDouble, 0, 1},
@@ -205,9 +204,8 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
   };
 
   fClustMethod = 0;  //Set default clusterin method to HMS/SHMS original 
-  fDebugAdc = 1;  // Set ADC debug parameter to false unless set in parameter file
+  fDebugAdc = 0;  // Set ADC debug parameter to false unless set in parameter file
   //  fADCMode=kADCDynamicPedestal;
-  //  fAdcTdcOffset=0.0;
   fAdcThreshold=0.;
   fAdcSampThreshold=30;		// Peak found if this amount above pedestal
   fDataSampWidth=15;		// Integrate this # of samples to get peak area
@@ -310,7 +308,7 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
   Double_t cal_arr_cal_const[fNelem];
   Double_t cal_arr_gain_cor[fNelem];
 
-  cal_arr_AdcTdcOffset = new Double_t [fNelem];
+  fAdcTdcOffset = new Double_t [fNelem];
 
   fAdcTimeWindowMin = new Double_t [fNelem];
   fAdcTimeWindowMax = new Double_t [fNelem];
@@ -321,9 +319,9 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
   
   DBRequest list1[]={
     {"_cal_arr_ped_limit", fPedLimit, kInt, static_cast<UInt_t>(fNelem),1},
-    {"_cal_arr_AdcTdcOffset", cal_arr_AdcTdcOffset, kDouble, static_cast<UInt_t>(fNelem),1},
     {"_cal_arr_cal_const", cal_arr_cal_const, kDouble, static_cast<UInt_t>(fNelem)},
     {"_cal_arr_gain_cor",  cal_arr_gain_cor,  kDouble, static_cast<UInt_t>(fNelem)},
+    {"_cal_arr_adc_tdc_offset", fAdcTdcOffset, kDouble, static_cast<UInt_t>(fNelem),1},
     {"_cal_arr_AdcTimeWindowMin", fAdcTimeWindowMin, kDouble, static_cast<UInt_t>(fNelem),1},
     {"_cal_arr_AdcTimeWindowMax", fAdcTimeWindowMax, kDouble, static_cast<UInt_t>(fNelem),1},
     {"_cal_arr_AdcPulseTimeMin", fAdcPulseTimeMin, kDouble, static_cast<UInt_t>(fNelem),1},
@@ -373,12 +371,12 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
       cout <<  endl;
     };
 
-    cout << "  cal_arr_AdcTdcOffset:" << endl;
+    cout << "  cal_arr_adc_tdc_offset:" << endl;
     el=0;
     for (UInt_t j=0; j<fNColumns; j++) {
       cout << "    ";
       for (UInt_t i=0; i<fNRows; i++) {
-	cout << cal_arr_AdcTdcOffset[el++] << " ";
+	cout << fAdcTdcOffset[el++] << " ";
       };
       cout << endl;
     };
@@ -1079,7 +1077,7 @@ Int_t THcNPSArray::AccumulateHits(TClonesArray* rawhits, Int_t nexthit, Int_t tr
 	((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp(thit));
 	
 	((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTimeRaw(thit));
-	((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTime(thit)+cal_arr_AdcTdcOffset[padnum]);
+	((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTime(thit)+fAdcTdcOffset[padnum]);
 
 	if (rawAdcHit.GetPulseAmpRaw(thit) > 0)  ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 0);
 	if (rawAdcHit.GetPulseAmpRaw(thit) <= 0) ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 1);
@@ -1134,7 +1132,7 @@ Int_t THcNPSArray::AccumulateHits(TClonesArray* rawhits, Int_t nexthit, Int_t tr
       ((THcSignalHit*) frAdcSampPulseAmpRaw->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseAmpRaw(thit));
       ((THcSignalHit*) frAdcSampPulseAmp->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseAmp(thit));
       ((THcSignalHit*) frAdcSampPulseTimeRaw->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseTimeRaw(thit));
-      ((THcSignalHit*) frAdcSampPulseTime->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseTime(thit)+cal_arr_AdcTdcOffset[padnum]);
+      ((THcSignalHit*) frAdcSampPulseTime->ConstructedAt(nrSampAdcHits))->Set(padnum, rawAdcHit.GetSampPulseTime(thit)+fAdcTdcOffset[padnum]);
       //
       if ( rawAdcHit.GetNPulses() == 0 || fUseSampWaveform ==1 ) {
 	((THcSignalHit*) frAdcPedRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetSampPedRaw());
@@ -1147,7 +1145,7 @@ Int_t THcNPSArray::AccumulateHits(TClonesArray* rawhits, Int_t nexthit, Int_t tr
 	((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum,rawAdcHit.GetSampPulseAmp(thit) );
 	
 	((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum,rawAdcHit.GetSampPulseTimeRaw(thit) );
-	((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetSampPulseTime(thit)+cal_arr_AdcTdcOffset[padnum]);
+	((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetSampPulseTime(thit)+fAdcTdcOffset[padnum]);
 
 	((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 3);  
 	if (fUseSampWaveform ==1) ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum, 0);  
@@ -1218,9 +1216,9 @@ Int_t THcNPSArray::AccumulateHits(TClonesArray* rawhits, Int_t nexthit, Int_t tr
 // 	    ((THcSignalHit*) frAdcPulseAmpRaw->ConstructedAt(nrAdcHits))->Set(padnum, sampmax);
 // 	    ((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, (sampmax-pedestal)*rawAdcHit.GetAdcTomV());
 // 	    ((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawtime);
-// 	    Double_t time = (rawtime - rawAdcHit.GetRefTime())*rawAdcHit.GetAdcTons()+fAdcTdcOffset;
+// 	    Double_t time = (rawtime - rawAdcHit.GetRefTime())*rawAdcHit.GetAdcTons()+fAdcTdcOffset[padnum];
 // 	    //	    ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->
-// 	    //	      Set(padnum, (rawtime - rawAdcHit.GetRefTime())*rawAdcHit.GetAdcTons()+fAdcTdcOffset);
+// 	    //	      Set(padnum, (rawtime - rawAdcHit.GetRefTime())*rawAdcHit.GetAdcTons()+fAdcTdcOffset[padnum]);
 // 	    ((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->
 // 	      Set(padnum, time);
 // 	    if (sampmax-pedestal>0&&integralraw>0) {
@@ -1250,8 +1248,8 @@ Int_t THcNPSArray::AccumulateHits(TClonesArray* rawhits, Int_t nexthit, Int_t tr
 //     if(padnum == 112) {
 //       for (UInt_t thit=0; thit<rawAdcHit.GetNPulses(); ++thit) {
 // 	Double_t rawtime = rawAdcHit.GetPulseTimeRaw(thit);
-// 	Double_t time = rawAdcHit.GetPulseTime(thit)+fAdcTdcOffset;
-// 	cout << "Pulse: " << thit << " " << time << " " << rawtime << " " << fAdcTdcOffset <<
+// 	Double_t time = rawAdcHit.GetPulseTime(thit)+fAdcTdcOffset[padnum];
+// 	cout << "Pulse: " << thit << " " << time << " " << rawtime << " " << fAdcTdcOffset[padnum] <<
 // 	  " R" << rawAdcHit.GetRefTime() << endl;
 //       }
 //     }
@@ -1277,7 +1275,7 @@ Int_t THcNPSArray::AccumulateHits(TClonesArray* rawhits, Int_t nexthit, Int_t tr
 // 	((THcSignalHit*) frAdcPulseAmp->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseAmp(thit));
 	
 // 	((THcSignalHit*) frAdcPulseTimeRaw->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTimeRaw(thit));
-// 	((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTime(thit)+fAdcTdcOffset);
+// 	((THcSignalHit*) frAdcPulseTime->ConstructedAt(nrAdcHits))->Set(padnum, rawAdcHit.GetPulseTime(thit)+fAdcTdcOffset[padnum]);
 
 // 	if (rawAdcHit.GetPulseAmp(thit)>0&&rawAdcHit.GetPulseIntRaw(thit)>0) {
 // 	  ((THcSignalHit*) frAdcErrorFlag->ConstructedAt(nrAdcHits))->Set(padnum,0);

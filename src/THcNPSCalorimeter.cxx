@@ -253,7 +253,7 @@ Int_t THcNPSCalorimeter::ReadDatabase( const TDatime& date )
     fdbg_sparsified_cal = 0;
     fdbg_clusters_cal = 0;
     fdbg_tracks_cal = 0;
-    fdbg_init_cal = 1;
+    fdbg_init_cal = 0;
     fAdcTdcOffset=0.0;
     fADCMode=kADCDynamicPedestal;
     gHcParms->LoadParmValues((DBRequest*)&list, fKwPrefix.c_str());
