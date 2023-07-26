@@ -304,7 +304,6 @@ Int_t THcNPSArray::ReadDatabase( const TDatime& date )
   // Pedestal limits per channel.
   fPedLimit = new Int_t [fNelem];
 
-  //Double_t cal_arr_AdcTdcOffset[fNelem];
   Double_t cal_arr_cal_const[fNelem];
   Double_t cal_arr_gain_cor[fNelem];
 
