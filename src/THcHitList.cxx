@@ -223,7 +223,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
   Bool_t TI_TRIGGER_TIME_FOUND = kFALSE;
   if(fTISlot>0) {
     const UInt_t FUDGE = 7;
-    if (evdata.GetNumHits(fTICrate, fTISlot, 2) > 0) {
+       if (evdata.GetNumHits(fTICrate, fTISlot, 2) > 0) {
       TI_TRIGGER_TIME_FOUND = kTRUE;
       titime = evdata.GetData(fTICrate, fTISlot, 2, 0);
       if( titime >= FUDGE )
@@ -294,13 +294,13 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	      ref_fNSB = fPSE125->GetNSB(fRefIndexMaps[i].crate);
  	      ref_fNPED = fPSE125->GetNPED(fRefIndexMaps[i].crate);
 	      // DJH 14 Sep 22 -- fudge for now until I fix 125 decode
-	      if (ref_fNSA == -1) ref_fNSA  = 20;
-	      if (ref_fNSB == -1) ref_fNSB  = 6;
+	      if (ref_fNSA == -1) ref_fNSA  = 26;
+	      if (ref_fNSB == -1) ref_fNSB  = 3;
 	      if (ref_fNPED == -1) ref_fNPED = 4;
 
 	    } else {
-	      ref_fNSA  = 20;
-	      ref_fNSB  = 6;
+	      ref_fNSA  = 26;
+	      ref_fNSB  = 3;
 	      ref_fNPED = 4;
 	    }
 	  // Set F250 parameters.
@@ -463,14 +463,14 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	    fNSA = fPSE125->GetNSA(d->crate);
 	    fNSB = fPSE125->GetNSB(d->crate);
 	    fNPED = fPSE125->GetNPED(d->crate);
-	      if (fNSA == -1) fNSA  = 20;
-	      if (fNSB == -1) fNSB  = 6;
+	      if (fNSA == -1) fNSA  = 26;
+	      if (fNSB == -1) fNSB  = 3;
 	      if (fNPED == -1) fNPED = 4;            
 	    fHaveFADCInfo = kTRUE;
 	    }
         } else if (!fHaveFADCInfo) {
-	      fNSA  = 20;
-	      fNSB  = 6;
+	      fNSA  = 26;
+	      fNSB  = 3;
 	      fNPED = 4;
 	    fHaveFADCInfo = kTRUE;
 	}
@@ -607,7 +607,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
       }
     }
   } else if ( fTISlot>0 && !TI_TRIGGER_TIME_FOUND) {
-    cout << "TI Trigger Time Not found for event type = " << evdata.GetEvType() << " event num = " << evdata.GetEvNum() << " TI Crate = " <<  fTICrate << " TI Slot = " << fTISlot<< endl;
+    //  cout << "TI Trigger Time Not found for event type = " << evdata.GetEvType() << " event num = " << evdata.GetEvNum() << " TI Crate = " <<  fTICrate << " TI Slot = " << fTISlot<< endl;
    }
 
 #endif
