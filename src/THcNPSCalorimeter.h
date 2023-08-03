@@ -97,7 +97,7 @@ public:
 protected:
 
   // DJH: VTP stuff
-  static const Int_t fnVTP = 3;
+  static const Int_t fnVTP = 5;
   Int_t fVTPErrorFlag;
   std::vector<UInt_t> fVTPTriggerTime;
   std::vector<UInt_t> fVTPTriggerType0;

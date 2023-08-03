@@ -541,7 +541,7 @@ Int_t THcNPSCalorimeter::Decode( const THaEvData& evdata )
       }
     }
   }
-  if( Nvtpfound != fnVTP ) {
+  if( Nvtpfound > fnVTP ) {
     cout << "THcNPSCalorimeter VTP decode error: Found " << Nvtpfound << " VTP modules. There should be " << fnVTP << endl;
     fVTPErrorFlag = 1;
   }
