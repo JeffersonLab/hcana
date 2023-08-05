@@ -20,18 +20,18 @@ else()
 endif()
 
 #----------------------------------------------------------------------------
-# Set up the compiler flags
-set_compiler_flags("${ROOT_CXX_FLAGS}")
-set_diagnostic_flags(WALL WEXTRA)
-report_build_info()
+# Install in GNU-style directory layout
+include(GNUInstallDirs)
+set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/${MAIN_PROJECT_NAME_LC})
 if(PODD_SET_RPATH)
   set_install_rpath()
 endif()
 
 #----------------------------------------------------------------------------
-# Install in GNU-style directory layout
-include(GNUInstallDirs)
-set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/${MAIN_PROJECT_NAME_LC})
+# Set up the compiler flags
+set_compiler_flags("${ROOT_CXX_FLAGS}")
+set_diagnostic_flags(WALL WEXTRA)
+report_build_info()
 
 #----------------------------------------------------------------------------
 # Directories in which we build things
