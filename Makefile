@@ -254,7 +254,7 @@ $(LINKDEF): $(LINKDEF)_preamble $(LINKDEF)_postamble $(SRC)
 	@cat $(LINKDEF)_preamble > $(LINKDEF)
 	@echo $(SRC) | tr ' ' '\n' | sed -e "s|src/|#pragma link C++ class |" | sed -e "s|.cxx|+;|" >> $(LINKDEF)
 	@cat $(LINKDEF)_postamble >> $(LINKDEF)
-	@sed -e "s/class Scaler/class Decoder::Scaler/" -e "s/class TIBlobModule/class Decoder::TIBlobModule/" -e "s/class VTPModule/class Decoder::VTPModule/" $(LINKDEF) > $(LINKDEF)_tmp
+	@sed -e "s/class Scaler/class Decoder::Scaler/" -e "s/class TIBlobModule/class Decoder::TIBlobModule/" $(LINKDEF) > $(LINKDEF)_tmp
 	@mv $(LINKDEF)_tmp $(LINKDEF)
 
 install:	all
