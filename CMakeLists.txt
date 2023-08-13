@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(hcana VERSION 0.96 LANGUAGES CXX)
+project(hcana VERSION 0.97 LANGUAGES CXX)
 
 option(HCANA_BUILTIN_PODD "Use built-in Podd submodule (default: YES)" ON)
 
