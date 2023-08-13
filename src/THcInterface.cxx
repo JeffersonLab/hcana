@@ -105,8 +105,8 @@ void THcInterface::PrintLogo( Bool_t lite )
      Printf("  *            W E L C O M E  to  the            *");
      Printf("  *          H A L L C ++  A N A L Y Z E R       *");
      Printf("  *                                              *");
-     Printf("  *  hcana release %12s %16s *", HC_VERSION, THcInterface::GetHcDate());
-     Printf("  *  PODD release %13s %16s *", HA_VERSION, THaInterface::GetHaDate());
+     Printf("  *  hcana release %12s %16s *", HC_VERSION "", GetHcDate());
+     Printf("  *  PODD release %13s %16s *", HA_VERSION "", GetHaDate());
      Printf("  *  ROOT            %10s %16s *", root_version, root_date);
      Printf("  *                                              *");
      Printf("  *            For information visit             *");
@@ -125,15 +125,15 @@ const char* THcInterface::GetHcDate()
 
   if( hc_date.IsNull() ) {
     bool use_buildtime = true;
-    size_t len = strlen(HC_GITREV);
+    size_t len = strlen(HC_GITREV "");
     if( len > 0 ) {
-      const char* gitrev = HC_GITREV;
+      const char* gitrev = HC_GITREV "";
       use_buildtime = (len > 6 && strcmp(gitrev + len - 6, "-dirty") == 0);
     }
     if( use_buildtime )
-      hc_date = extract_short_date(HC_BUILDTIME);
+      hc_date = extract_short_date(HC_BUILDTIME "");
     else
-      hc_date = extract_short_date(HC_SOURCETIME);
+      hc_date = extract_short_date(HC_SOURCETIME "");
   }
   return hc_date.Data();
 }
@@ -147,9 +147,9 @@ const char* THcInterface::GetVersionString()
 
   if( version_string.IsNull() ) {
     ostringstream ostr;
-    ostr << "hcana " << HC_VERSION;
-    if( strlen(HC_GITREV) > 0 )
-      ostr << " git@" << HC_GITREV;
+    ostr << "hcana " << HC_VERSION "";
+    if( strlen(HC_GITREV "") > 0 )
+      ostr << " git@" << HC_GITREV "";
     ostr << " " << GetHcDate() << endl;
     ostr << THaInterface::GetVersionString();
     version_string = ostr.str().c_str();

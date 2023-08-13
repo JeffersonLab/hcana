@@ -319,39 +319,50 @@ Int_t THcDriftChamber::NewFindSpacePoints( void )
     THcDCHit* hit1=fHits[ihit1];
     THcDriftChamberPlane* plane1 = hit1->GetWirePlane();
     for(Int_t ihit2=ihit1+1;ihit2<fNhits;ihit2++) {
-	THcDCHit* hit2=fHits[ihit2];
-	THcDriftChamberPlane* plane2 = hit2->GetWirePlane();
-	Double_t determinate = plane1->GetXsp()*plane2->GetYsp()
-	  -plane1->GetYsp()*plane2->GetXsp();
-	if(hit1->GetPlaneIndex() != hit2->GetPlaneIndex() && TMath::Abs(determinate) < 0.1 && abs(hit1->GetPos() - hit2->GetPos()  ) < 0.6) {
-	    THcDCPlaneCluster* clus;
-	    if (hit1->GetPlaneIndex() ==0 || hit1->GetPlaneIndex() ==1) clus = (THcDCPlaneCluster*)fUPlaneClusters->ConstructedAt(fNUPlaneClusters++);
-	    if (hit1->GetPlaneIndex() ==2 || hit1->GetPlaneIndex() ==3) clus = (THcDCPlaneCluster*)fXPlaneClusters->ConstructedAt(fNXPlaneClusters++);
-	    if (hit1->GetPlaneIndex() ==4 || hit1->GetPlaneIndex() ==5) clus = (THcDCPlaneCluster*)fVPlaneClusters->ConstructedAt(fNVPlaneClusters++);
-	    clus->AddHit(hit1);
-	    clus->AddHit(hit2);
-	    if (fhdebugflagpr) cout << ihit1 << " " << hit1->GetPos()<< " "   << ihit2 << " " << hit2->GetPos() << " " << plane1->GetYsp()<< " " << plane1->GetXsp()<< " " << plane2->GetYsp()<< " " << plane2->GetXsp() << endl;
-	    Double_t x = (hit1->GetPos() + hit2->GetPos())/2.;
-	    Double_t y = 0.;
-	    clus->SetXY(x,y);
-	    hit1->IncrNPlaneClust();
-	    hit2->IncrNPlaneClust();
-	  }
+        THcDCHit* hit2=fHits[ihit2];
+        THcDriftChamberPlane* plane2 = hit2->GetWirePlane();
+        Double_t determinate = plane1->GetXsp()*plane2->GetYsp() - plane1->GetYsp()*plane2->GetXsp();
+        if (hit1->GetPlaneIndex() != hit2->GetPlaneIndex() &&
+            TMath::Abs(determinate) < 0.1 && abs(hit1->GetPos() - hit2->GetPos()  ) < 0.6) {
+            auto idx = hit1->GetPlaneIndex();
+            if (idx >= 0 && idx < 6) {
+                THcDCPlaneCluster* clus = nullptr;;
+                if      (idx < 2)  clus = (THcDCPlaneCluster*)fUPlaneClusters->ConstructedAt(fNUPlaneClusters++);
+                else if (idx < 4)  clus = (THcDCPlaneCluster*)fXPlaneClusters->ConstructedAt(fNXPlaneClusters++);
+                else               clus = (THcDCPlaneCluster*)fVPlaneClusters->ConstructedAt(fNVPlaneClusters++);
+                clus->AddHit(hit1);
+                clus->AddHit(hit2);
+                if (fhdebugflagpr)
+                    cout << ihit1 << " " << hit1->GetPos()<< " "   << ihit2 << " " << hit2->GetPos() << " "
+                         << plane1->GetYsp()<< " " << plane1->GetXsp()<< " "
+                         << plane2->GetYsp()<< " " << plane2->GetXsp() << endl;
+                Double_t x = (hit1->GetPos() + hit2->GetPos())/2.;
+                Double_t y = 0.;
+                clus->SetXY(x,y);
+                hit1->IncrNPlaneClust();
+                hit2->IncrNPlaneClust();
+            }
+        }
     }
     if (hit1->GetNPlaneClust() == 0) {
-      if (fhdebugflagpr) cout << " No match found" << endl;
-	    THcDCPlaneCluster* clus;
-	    if (hit1->GetPlaneIndex() ==0 || hit1->GetPlaneIndex() ==1) clus = (THcDCPlaneCluster*)fUPlaneClusters->ConstructedAt(fNUPlaneClusters++);
-	    if (hit1->GetPlaneIndex() ==2 || hit1->GetPlaneIndex() ==3) clus = (THcDCPlaneCluster*)fXPlaneClusters->ConstructedAt(fNXPlaneClusters++);
-	    if (hit1->GetPlaneIndex() ==4 || hit1->GetPlaneIndex() ==5) clus = (THcDCPlaneCluster*)fVPlaneClusters->ConstructedAt(fNVPlaneClusters++);
-	    clus->AddHit(hit1);
-	    if (fhdebugflagpr) cout << ihit1 << " " << hit1->GetPos()<< " "   << plane1->GetYsp()<< " " << plane1->GetXsp()<< endl;
-	    Double_t x = hit1->GetPos();
-	    Double_t y = 0.;
-	    clus->SetXY(x,y);
-	    hit1->IncrNPlaneClust();
+        if (fhdebugflagpr)
+            cout << " No match found" << endl;
+        auto idx = hit1->GetPlaneIndex();
+        if (idx >= 0 && idx < 6) {
+            THcDCPlaneCluster* clus = nullptr;;
+            if      (idx < 2)  clus = (THcDCPlaneCluster*)fUPlaneClusters->ConstructedAt(fNUPlaneClusters++);
+            else if (idx < 4)  clus = (THcDCPlaneCluster*)fXPlaneClusters->ConstructedAt(fNXPlaneClusters++);
+            else               clus = (THcDCPlaneCluster*)fVPlaneClusters->ConstructedAt(fNVPlaneClusters++);
+            clus->AddHit(hit1);
+            if (fhdebugflagpr)
+                cout << ihit1 << " " << hit1->GetPos()<< " "   << plane1->GetYsp()<< " " << plane1->GetXsp()<< endl;
+            Double_t x = hit1->GetPos();
+            Double_t y = 0.;
+            clus->SetXY(x,y);
+            hit1->IncrNPlaneClust();
+        }
     }
-  } 
+  }
   if (fhdebugflagpr) {
   cout << " NUmber of U clusters = " << fNUPlaneClusters << endl;
   for (Int_t nc=0;nc<fNUPlaneClusters;nc++) {
