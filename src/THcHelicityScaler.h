@@ -76,6 +76,7 @@ private:
   Int_t fRingSeed_reported;
   Int_t fRingSeed_actual;
   Int_t fNBits;
+  Int_t ispos; 
 
   Int_t fNTriggersPlus;
   Int_t fNTriggersMinus;
@@ -136,6 +137,8 @@ private:
   Int_t fNScalerChannels;	// Number of scaler channels/event
 
   Int_t fNumBCMs;
+  Int_t fHelicityCycleOffset;
+
   Double_t *fBCM_Gain;
   Double_t *fBCM_Offset;
   //---C.Y. Sep 2020 : Added additional BCM-related variables--

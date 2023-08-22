@@ -128,8 +128,8 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   if(!evdata.GetModule(fROCinfo[kTime].roc, fROCinfo[kTime].slot)) {
     //    cout << "ROC, Slot: " << fROCinfo[kTime].roc << " " << fROCinfo[kTime].slot << endl;
     //    cout << "Evtype = " << evdata.GetEvType() << endl;
-    cout << "THcHelicityReader: ROC 2 not found" << endl;
-    cout << "Changing to ROC 1 (HMS)" << endl;
+    //  cout << "THcHelicityReader: ROC 2 not found" << endl;
+    //cout << "Changing to ROC 1 (HMS)" << endl;
     SetROCinfo(kHel,1,18,9);
     SetROCinfo(kHelm,1,18,8);
     SetROCinfo(kMPS,1,18,10);
@@ -138,23 +138,23 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   }
 
   // Get the TI Data
-  UInt_t titime = (UInt_t) evdata.GetData(fROCinfo[kTime].roc,
-					  fROCinfo[kTime].slot,
-					  fROCinfo[kTime].index, 0);
-  
+
+  // UInt_t titime = (UInt_t) evdata.GetData(fROCinfo[kTime].roc,
+  //					  fROCinfo[kTime].slot,
+  //					  fROCinfo[kTime].index, 0);
+  ULong64_t  titime = (ULong64_t) evdata.GetEvTime();
   if(!fFADCModule) {
     fFADCModule = dynamic_cast<Decoder::Fadc250Module*>
       (evdata.GetModule(fROCinfo[kHel].roc, fROCinfo[kHel].slot));
     fTTimeDiff = titime - fFADCModule->GetTriggerTime();
   }
-
+  // cout << " titime = " << titime << endl;
   if(titime == 0) {
     cout << "Event " << evdata.GetEvNum() << " TI Trigger time missing." << endl;
-    //    cout << "Event " << evdata.GetEvNum() << " TI Trigger time missing.  Using FADC trigger time" << endl;
-    //    cout << "TI Evnum: " << fROCinfo[kTime].roc << " " <<
-    //      evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 0, 0)
-    //	 << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 1, 0) << endl;
-    //    titime = fFADCModule->GetTriggerTime() + fTTimeDiff;
+        cout << "Event " << evdata.GetEvNum() << " TI Trigger time missing.  Using FADC trigger time" << endl;
+        cout << " kTime = " << kTime << " TI Roc slot : " << fROCinfo[kTime].roc << " " << fROCinfo[kTime].slot << " " << fROCinfo[kTime].index << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 0, 0)
+    	 << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 1, 0) << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 2, 0)<< endl;
+        titime = fFADCModule->GetTriggerTime() + fTTimeDiff;
   }
 
   //  cout << "Time " << titime << " " << fTITime_last << " " <<
@@ -178,15 +178,15 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
 					  fROCinfo[kTime].index, 0);
   }
 #endif
-
+  /*
   //  cout << fTITime_last << " " << titime << endl;
   if(titime < fTITime_last) {
     fTITime_rollovers++;
   }
-  fTITime = titime + fTITime_rollovers*4294967296;
+   fTITime = titime + fTITime_rollovers*TMath::Pow(2,64);
   fTITime_last = titime;
-
-  const_cast<THaEvData&>(evdata).SetEvTime(fTITime);
+  */
+  //const_cast<THaEvData&>(evdata).SetEvTime(fTITime);
 
   // Get the helicity control signals.  These are from the pedestals
   // acquired by FADC channels.  If helpraw and helmraw both
@@ -244,7 +244,7 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   fIsHelp = helpraw > fADCThreshold;
   fIsHelm = helmraw > fADCThreshold;
 
-  //  cout << helpraw << " " << helmraw << " " << mpsraw << " " << qrtraw << endl;
+  // cout << helpraw << " " << helmraw << " " << mpsraw << " " << qrtraw << endl;
   //  cout << fADCThreshold << " " << fADCRawSamples << " " << fIsQrt << " " << fIsMPS << " " << fIsHelp << " " << fIsHelm << endl;
 
   return 0;
@@ -272,8 +272,8 @@ Int_t THcHelicityReader::SetROCinfo( EROC which, Int_t roc,
   fROCinfo[which].slot = slot;
   fROCinfo[which].index  = index;
 
-  cout << "SetROCInfo: " << which << " " << fROCinfo[which].roc << " " << fROCinfo[which].slot <<
-    " " << fROCinfo[which].index << endl;
+  //cout << "SetROCInfo: " << which << " " << fROCinfo[which].roc << " " << fROCinfo[which].slot <<
+  //  " " << fROCinfo[which].index << endl;
   fHaveROCs = (fROCinfo[kHel].roc > 0 && fROCinfo[kTime].roc > 0 && fROCinfo[kMPS].roc);
   
   return 0;

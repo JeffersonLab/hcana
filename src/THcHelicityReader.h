@@ -43,8 +43,8 @@ protected:
   void End();
 
   ULong64_t fTITime;
-  UInt_t fTITime_last;
-  UInt_t fTITime_rollovers;
+  ULong64_t  fTITime_last;
+  Int_t fTITime_rollovers;
   
   // Reported Helicity status for the event
   Bool_t fIsMPS;
