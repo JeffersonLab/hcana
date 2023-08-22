@@ -57,7 +57,7 @@ static const UInt_t defaultDT = 4;
 THcHelicityScaler::THcHelicityScaler(const char *name, const char* description)
   : THaEvtTypeHandler(name,description),
     fBankID(9801),
-    fUseFirstEvent(kTRUE), fDelayedType(-1),
+    fUseFirstEvent(kTRUE), fDelayedType(-1),fHelicityCycleOffset(-3),
     fBCM_Gain(0), fBCM_Offset(0), fBCM_SatOffset(0), fBCM_SatQuadratic(0), fBCM_delta_charge(0),
     evcount(0), evcountR(0.0), ifound(0),
     fNormIdx(-1), fNormSlot(-1),
@@ -257,12 +257,13 @@ Int_t THcHelicityScaler::ReadDatabase(const TDatime& date )
   prefix[0]='g';
   prefix[1]='\0';
   fNumBCMs = 0;
+
+
   DBRequest list[]={
     {"NumBCMs",&fNumBCMs, kInt, 0, true},
     {nullptr}
   };
   gHcParms->LoadParmValues((DBRequest*)&list, prefix);
-
   if(fNumBCMs > 0) {
     fBCM_Gain = new Double_t[fNumBCMs];
     fBCM_Offset = new Double_t[fNumBCMs];
@@ -282,6 +283,7 @@ Int_t THcHelicityScaler::ReadDatabase(const TDatime& date )
       {nullptr}
     };
 
+
     fbcm_Current_Threshold = 0.0;
     fbcm_Current_Threshold_Index = 0;
     for(Int_t i=0;i<fNumBCMs;i++) {
@@ -295,9 +297,24 @@ Int_t THcHelicityScaler::ReadDatabase(const TDatime& date )
       fBCM_delta_charge[i]=0.;
     }
   }
+
+
+  DBRequest list3[]={
+    {"helicity_CycleOffset",&fHelicityCycleOffset, kInt, 0, true},
+    {nullptr}
+  };
+  gHcParms->LoadParmValues((DBRequest*)&list3,"");
+
+  cout << "fHelicityCycleOffset= " <<fHelicityCycleOffset<<endl;
+
+
+
+
   fTotalTime=0.;
   fPrevTotalTime=0.;
   fDeltaTime=-1.;
+
+
 
   return kOK;
 }
@@ -540,7 +557,17 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(const UInt_t *p)
 	cout << "THcHelicityScaler: A " << bitset<32>(fRingSeed_reported) <<
 	  " found at cycle " << fNTriggers << endl;
       }
-    } else if (quartetphase == 3) {
+      //First H+ and qrt come in same window
+      if(!isquartet && fHelicityCycleOffset==0){
+	cout << "THcHelicityScaler: Quartet bit expected but not set (" <<
+	  fNTriggers << ")" << endl;
+	fNBits = 0;
+	fRingSeed_reported = 0;
+	fRingSeed_actual = 0;
+	fFirstCycle = -100;
+      }
+      //Pre NPS/CODA 3 the H+ came 1 hel. window after qrt
+    }else if (quartetphase == 3 && fHelicityCycleOffset==-3){
       if(!isquartet) {
 	cout << "THcHelicityScaler: Quartet bit expected but not set (" <<
 	  fNTriggers << ")" << endl;
@@ -552,7 +579,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(const UInt_t *p)
     }
   } else { 			// First cycle not yet identified
     if(isquartet) { // Helicity and quartet signal for next set of scalers
-      fFirstCycle = fNTriggers - 3;
+      fFirstCycle = fNTriggers-fHelicityCycleOffset;
       quartetphase = (fNTriggers-fFirstCycle)%4;
       // Helicity at start of quartet is same as last of quartet, so we can start filling the seed
       fRingSeed_reported = ((fRingSeed_reported<<1) | ispos) & 0x3FFFFFFF;
@@ -632,7 +659,6 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(const UInt_t *p)
       fScalerSums[i] += count;
     }
   }
-
 
 
   //Set the helicity scaler clock to define the time
