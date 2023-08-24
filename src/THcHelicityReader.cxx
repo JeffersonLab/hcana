@@ -125,9 +125,8 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   }
 
   // Check if ROC info is correct
-  auto coda_version=(gHaRun) ? gHaRun->GetDataVersion() :3;
 
-  if(!evdata.GetModule(fROCinfo[kHel].roc, fROCinfo[kHel].slot)) {
+  if(!evdata.GetModule(fROCinfo[kTime].roc, fROCinfo[kTime].slot)) {
     //    cout << "ROC, Slot: " << fROCinfo[kTime].roc << " " << fROCinfo[kTime].slot << endl;
     //    cout << "Evtype = " << evdata.GetEvType() << endl;
     //  cout << "THcHelicityReader: ROC 2 not found" << endl;
@@ -139,6 +138,7 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
     SetROCinfo(kTime,1,21,2);
   }
 
+  auto coda_version=(gHaRun) ? gHaRun->GetDataVersion() :3;
 
   // Get the TI Data
   ULong64_t titime;
@@ -160,9 +160,9 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   if(titime == 0) {
     cout << "Event " << evdata.GetEvNum() << " TI Trigger time missing." << endl;
     cout << "Event " << evdata.GetEvNum() << " TI Trigger time missing.  Using FADC trigger time" << endl;
-    if(coda_version<3){
-    cout << " kTime = " << kTime << " TI Roc slot : " << fROCinfo[kTime].roc << " " << fROCinfo[kTime].slot << " " << fROCinfo[kTime].index << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 0, 0)
-    	 << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 1, 0) << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 2, 0)<< endl;
+    if(coda_version<3){    
+      cout << " kTime = " << kTime << " TI Roc slot : " << fROCinfo[kTime].roc << " " << fROCinfo[kTime].slot << " " << fROCinfo[kTime].index << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 0, 0)
+	   << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 1, 0) << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 2, 0)<< endl;
     }
     titime = fFADCModule->GetTriggerTime() + fTTimeDiff;
   }
@@ -173,7 +173,22 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
 
   // Check again if ROC info is correct
   //    cout << "Evtype = " << evdata.GetEvType() << endl;
-
+#if 0
+  if(titime == 0 && fTITime_last==0) {
+    cout << "B ROC, Slot: " << fROCinfo[kTime].roc << " " << fROCinfo[kTime].slot << endl;
+    cout << "THcHelicityReader: ROC 2 not found" << endl;
+    cout << "Changing to ROC 1 (HMS)" << endl;
+    SetROCinfo(kHel,1,18,9);
+    SetROCinfo(kHelm,1,18,8);
+    SetROCinfo(kMPS,1,18,10);
+    SetROCinfo(kQrt,1,18,7);
+    SetROCinfo(kTime,1,21,2);
+    titime = (UInt_t) evdata.GetData(fROCinfo[kTime].roc,
+					  fROCinfo[kTime].slot,
+					  fROCinfo[kTime].index, 0);
+  }
+#endif
+  
   //  cout << fTITime_last << " " << titime << endl;
   if(titime < fTITime_last && coda_version<3) {
     fTITime_rollovers++;
@@ -182,7 +197,7 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   fTITime = titime + fTITime_rollovers*TMath::Power(2,32);
   fTITime_last = titime;
   
-  const_cast<THaEvData&>(evdata).SetEvTime(fTITime);
+  if(coda_version<3)const_cast<THaEvData&>(evdata).SetEvTime(fTITime);
 
   // Get the helicity control signals.  These are from the pedestals
   // acquired by FADC channels.  If helpraw and helmraw both
@@ -240,7 +255,7 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
   fIsHelp = helpraw > fADCThreshold;
   fIsHelm = helmraw > fADCThreshold;
 
-  //  cout << helpraw << " " << helmraw << " " << mpsraw << " " << qrtraw << endl;
+  // cout << helpraw << " " << helmraw << " " << mpsraw << " " << qrtraw << endl;
   //  cout << fADCThreshold << " " << fADCRawSamples << " " << fIsQrt << " " << fIsMPS << " " << fIsHelp << " " << fIsHelm << endl;
 
   return 0;
