@@ -9,6 +9,7 @@
 #include "THcHelicityReader.h"
 #include "THaEvData.h"
 #include "THcGlobals.h"
+#include "THcRun.h"
 #include "THcParmList.h"
 #include "TMath.h"
 #include "TError.h"
@@ -137,24 +138,31 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
     SetROCinfo(kTime,1,21,2);
   }
 
-  // Get the TI Data
+  auto coda_version=(gHaRun) ? gHaRun->GetDataVersion() :3;
 
-  // UInt_t titime = (UInt_t) evdata.GetData(fROCinfo[kTime].roc,
-  //					  fROCinfo[kTime].slot,
-  //					  fROCinfo[kTime].index, 0);
-  ULong64_t  titime = (ULong64_t) evdata.GetEvTime();
+  // Get the TI Data
+  ULong64_t titime;
+
+  if(coda_version<3){
+    titime = (ULong64_t) evdata.GetData(fROCinfo[kTime].roc,
+					    fROCinfo[kTime].slot,
+					    fROCinfo[kTime].index, 0);
+  }else{
+    titime = (ULong64_t) evdata.GetEvTime();
+  }
+
   if(!fFADCModule) {
     fFADCModule = dynamic_cast<Decoder::Fadc250Module*>
       (evdata.GetModule(fROCinfo[kHel].roc, fROCinfo[kHel].slot));
     fTTimeDiff = titime - fFADCModule->GetTriggerTime();
   }
-  // cout << " titime = " << titime << endl;
+
   if(titime == 0) {
     cout << "Event " << evdata.GetEvNum() << " TI Trigger time missing." << endl;
-        cout << "Event " << evdata.GetEvNum() << " TI Trigger time missing.  Using FADC trigger time" << endl;
-        cout << " kTime = " << kTime << " TI Roc slot : " << fROCinfo[kTime].roc << " " << fROCinfo[kTime].slot << " " << fROCinfo[kTime].index << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 0, 0)
+    cout << "Event " << evdata.GetEvNum() << " TI Trigger time missing.  Using FADC trigger time" << endl;
+    cout << " kTime = " << kTime << " TI Roc slot : " << fROCinfo[kTime].roc << " " << fROCinfo[kTime].slot << " " << fROCinfo[kTime].index << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 0, 0)
     	 << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 1, 0) << " " << evdata.GetData(fROCinfo[kTime].roc,fROCinfo[kTime].slot, 2, 0)<< endl;
-        titime = fFADCModule->GetTriggerTime() + fTTimeDiff;
+    titime = fFADCModule->GetTriggerTime() + fTTimeDiff;
   }
 
   //  cout << "Time " << titime << " " << fTITime_last << " " <<
@@ -178,14 +186,15 @@ Int_t THcHelicityReader::ReadData( const THaEvData& evdata )
 					  fROCinfo[kTime].index, 0);
   }
 #endif
-  /*
+  
   //  cout << fTITime_last << " " << titime << endl;
-  if(titime < fTITime_last) {
+  if(titime < fTITime_last && coda_version<3) {
     fTITime_rollovers++;
   }
-   fTITime = titime + fTITime_rollovers*TMath::Pow(2,64);
+
+  fTITime = titime + fTITime_rollovers*TMath::Power(2,32);
   fTITime_last = titime;
-  */
+  
   //const_cast<THaEvData&>(evdata).SetEvTime(fTITime);
 
   // Get the helicity control signals.  These are from the pedestals
