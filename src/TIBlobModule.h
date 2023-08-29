@@ -54,6 +54,8 @@ public:
    // bits or the trigger bit pattern word, but not both. This case cannot
    // be unambiguously decoded automatically.
    // Values can be 0 = automatic, kCounterBits, or kTriggerBits.
+   // If this data word represents counter bits, this flag should be set via
+   // a configuration string (see Init()).
    void SetWord4Type( UInt_t type );
 
 protected:
