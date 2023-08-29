@@ -149,8 +149,8 @@ void THcDC::Setup(const char* name, const char* description)
     strcpy(fPlaneNames[i], plane_names[i].c_str());
   }
 
-  char *desc = new char[strlen(description)+100];
-  char *desc1= new char[strlen(description)+100];
+  size_t buflen = strlen(description)+100;
+  char *desc = new char[buflen];
   fPlanes.clear();
 
   for(Int_t i=0;i<fNPlanes;i++) {
@@ -163,7 +163,6 @@ void THcDC::Setup(const char* name, const char* description)
       Error( Here(here), "Error creating Drift Chamber plane %s. Call expert.", name);
       MakeZombie();
       delete [] desc;
-      delete [] desc1;
       return;
     }
     fPlanes.push_back(newplane);
@@ -174,16 +173,15 @@ void THcDC::Setup(const char* name, const char* description)
 
   fChambers.clear();
   for(UInt_t i=0;i<fNChambers;i++) {
-    sprintf(desc1,"Ch%d",i+1);
+    snprintf(desc,buflen,"Ch%d",i+1);
 
     // Should construct a better chamber name
-    THcDriftChamber* newchamber = new THcDriftChamber(desc1, desc, i+1, this);
+    THcDriftChamber* newchamber = new THcDriftChamber(desc, desc, i+1, this);
     fChambers.push_back(newchamber);
-    cout << "Created Drift Chamber " << i+1 << ", " << desc1 << endl;
+    cout << "Created Drift Chamber " << i+1 << ", " << desc << endl;
     newchamber->SetHMSStyleFlag(fHMSStyleChambers); // Tell the chamber its style
   }
   delete [] desc;
-  delete [] desc1;
 }
 
 //_____________________________________________________________________________

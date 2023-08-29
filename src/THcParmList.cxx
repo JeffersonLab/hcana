@@ -441,8 +441,9 @@ The ENGINE CTP support parameter "blocks" which were marked with
 	  delete [] (Int_t*) existingvar->GetValuePointer();
 	}
 	RemoveName(varname);
-	char *arrayname=new char [strlen(varname)+20];
-	sprintf(arrayname,"%s[%d]",varname,newlength);
+  size_t buflen = strlen(varname) + 20;
+	char *arrayname=new char [buflen];
+	snprintf(arrayname,buflen,"%s[%d]",varname,newlength);
 	if(newtype == kInt) {
 	  Define(arrayname, current_comment.c_str(), *ip);
 	} else {
@@ -499,8 +500,9 @@ The ENGINE CTP support parameter "blocks" which were marked with
       }
       currentindex = nvals;
 
-      char *arrayname=new char [strlen(varname)+20];
-      sprintf(arrayname,"%s[%d]",varname,nvals);
+      size_t buflen = strlen(varname)+20;
+      char *arrayname=new char [buflen];
+      snprintf(arrayname,buflen,"%s[%d]",varname,nvals);
       if(ttype==0) {
 	Define(arrayname, current_comment.c_str(), *ip);
       } else {
