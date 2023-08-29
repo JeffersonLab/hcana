@@ -341,7 +341,7 @@ UInt_t TIBlobModule::LoadBank( Decoder::THaSlotData* sldat,
   evtblk.push_back(p-evbuffer); // include block trailer
 
   // Verify block trailer
-  if( (*p & 0xFFC00000) != (BIT(31) | (1U << 27) | (fSlot & 0x1F) << 22) ) {
+  if( (*p & 0xFFC00000) != (BIT(31) | (kBlockTrailer << 27) | (fSlot & 0x1F) << 22) ) {
     cerr << Here(here) << "Warning: Missing block trailer" << endl;
   }
   UInt_t nwords_inblock = *p & 0x3FFFFF;
@@ -437,8 +437,12 @@ void TIBlobModule::Clear(const Option_t* opt)
 //_____________________________________________________________________________
 void TIBlobModule::SetWord4Type( UInt_t type )
 {
-  if( type != 0 && type != kCounterBits && type != kTriggerBits )
+  if( type != 0 && type != kCounterBits && type != kTriggerBits ) {
+    Warning( "TIBlobModule::SetWord4Type",
+             "Unsupported type for 3rd/4th data word: %u. "
+             "Check configuration string in crate map.", type);
     return;
+  }
   fWord4Type = type;
 }
 
