@@ -27,6 +27,7 @@ TIBlobModule::TIBlobModule()
 //_____________________________________________________________________________
 TIBlobModule::TIBlobModule(UInt_t crate, UInt_t slot)
   : PipeliningModule(crate, slot)
+  , fEvBuf{nullptr}
   , fNfill{0}
   , fDataAvail{0}
   , fWord4Type{0}
@@ -41,7 +42,7 @@ TIBlobModule::~TIBlobModule() = default;
 //_____________________________________________________________________________
 void TIBlobModule::Init()
 {
-  Module::Init();
+  VmeModule::Init();
 #if defined DEBUG && defined WITH_DEBUG
   // This will make a HUGE output
   delete fDebugFile; fDebugFile = 0;
@@ -81,7 +82,7 @@ void TIBlobModule::Init( const char* configstr )
 
 //_____________________________________________________________________________
 UInt_t TIBlobModule::LoadSlot( THaSlotData* sldat, const UInt_t* evbuffer,
-                                 const UInt_t* pstop )
+                               const UInt_t* pstop )
 {
     // Load from evbuffer between [evbuffer,pstop]
 
@@ -345,9 +346,10 @@ UInt_t TIBlobModule::LoadBank( Decoder::THaSlotData* sldat,
   }
   UInt_t nwords_inblock = *p & 0x3FFFFF;
   Long64_t iend = p-evbuffer;   // Position of block trailer
-  if( nwords_inblock != iend+1-ibeg ) {
+  size_t blklen = iend + 1 - ibeg;
+  if( nwords_inblock != blklen ) {
     cerr << Here(here) << "Warning: block trailer word count mismatch, "
-         << "got " << nwords_inblock << ", expected " << iend+1-ibeg << endl;
+         << "got " << nwords_inblock << ", expected " << blklen << endl;
   }
   assert( ibeg >= pos && iend > ibeg && iend < pos+len ); // trivially
 
@@ -365,6 +367,8 @@ UInt_t TIBlobModule::LoadBank( Decoder::THaSlotData* sldat,
   fMultiBlockMode = ( block_size > 1 );
 
   if( fMultiBlockMode ) {
+    // Save pointer to event buffer for use in LoadNextEvBuffer
+    fEvBuf = evbuffer;
     // Multi-block: decode first event, using event positions from evtblk[]
     index_buffer = 0;
     return LoadNextEvBuffer(sldat)
@@ -391,15 +395,20 @@ UInt_t TIBlobModule::LoadNextEvBuffer( Decoder::THaSlotData* sldat )
   // ibeg = event header, iend = one past last word of this event ( = next
   // event header if more events pending)
   auto ibeg = evtblk[ii], iend = evtblk[ii+1];
-  assert(ibeg > 0 && iend > ibeg && static_cast<size_t>(iend) <= fBuffer.size());
+  assert(ibeg > 0 && iend > ibeg);  // else bug in LoadBank
+
+  assert(fEvBuf);  // We should never get here without a prior call to LoadBank
+                   // or after fBlockIsDone is set
 
   // Load slot starting with event header at ibeg
-  ii = LoadSlot(sldat, fBuffer.data(), ibeg, iend-ibeg);
+  ii = LoadSlot(sldat, fEvBuf, ibeg, iend-ibeg);
 
   // Next cached buffer. Set flag if we've exhausted the cache.
   ++index_buffer;
-  if( index_buffer+1 >= evtblk.size() )
+  if( index_buffer+1 >= evtblk.size() ) {
     fBlockIsDone = true;
+    fEvBuf = nullptr;
+  }
 
   if( fBlockIsDone )
     ii += 1 + fNfill; // block trailer + filler words
