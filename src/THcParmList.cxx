@@ -154,7 +154,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
   }
 
   while(nfiles) {
-    string current_comment("");
+    string current_comment;
     // EJB_Note:  existing_comment is never used.
     // string existing_comment("");
     string::size_type start, pos = 0;
@@ -306,7 +306,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
     // Interpret left of = as var name
     Int_t valuestartpos=0;  // Stays zero if no = found
     Int_t ttype = 0;     // Are any of the values floating point?
-    if((pos=line.find_first_of("="))!=string::npos) {
+    if((pos=line.find_first_of('='))!=string::npos) {
       strcpy(varname, (line.substr(0,pos)).c_str());
       valuestartpos = pos+1;
       currentindex = 0;
@@ -341,8 +341,8 @@ The ENGINE CTP support parameter "blocks" which were marked with
     TObjArray *vararr = values.Tokenize(",");
     Int_t nvals = vararr->GetLast()+1;
 
-    Int_t* ip=0;
-    Double_t* fp=0;
+    Int_t* ip=nullptr;
+    Double_t* fp=nullptr;
     // or expressions
     for(Int_t i=0;(ttype==0&&i<nvals);i++) {
       TString valstr = ((TObjString *)vararr->At(i))->GetString();
@@ -427,7 +427,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
 	      fp[currentindex+i] = valstr.Atof();
 	    } else {
 	      THaFormula* formula = new THaFormula
-		("temp",valstr.Data(), (Bool_t) 0, this, 0);
+		("temp",valstr.Data(), false, this, nullptr);
 	      fp[currentindex+i] = formula->Eval();
 	      delete formula;
 	    }
@@ -466,7 +466,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
 	      existingp[currentindex+i] = valstr.Atof();
 	    } else {
 	      THaFormula* formula = new THaFormula
-		("temp",valstr.Data(), (Bool_t) 0, this, 0);
+		("temp",valstr.Data(), false, this, nullptr);
 	      existingp[currentindex+i] = formula->Eval();
 	      delete formula;
 	    }
@@ -492,7 +492,7 @@ The ENGINE CTP support parameter "blocks" which were marked with
 	    fp[i] = valstr.Atof();
 	  } else {
 	    THaFormula* formula = new THaFormula
-	      ("temp",valstr.Data(), (Bool_t) 0, this, 0);
+	      ("temp",valstr.Data(), false, this, nullptr);
 	    fp[i] = formula->Eval();
 	    delete formula;
 	  }
@@ -516,10 +516,8 @@ The ENGINE CTP support parameter "blocks" which were marked with
     //    cout << line << endl;
 
   }
-
-  return;
-
 }
+
 //_____________________________________________________________________________
 Int_t THcParmList::LoadParmValues(const DBRequest* list, const char* prefix)
 {
