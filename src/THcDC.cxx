@@ -47,33 +47,33 @@ THcDC::THcDC(
 
   fNPlanes = 0;			// No planes until we make them
 
-  fXCenter = NULL;
-  fYCenter = NULL;
-  fMinHits = NULL;
-  fMaxHits = NULL;
-  fMinCombos = NULL;
-  fSpace_Point_Criterion = NULL;
+  fXCenter = nullptr;
+  fYCenter = nullptr;
+  fMinHits = nullptr;
+  fMaxHits = nullptr;
+  fMinCombos = nullptr;
+  fSpace_Point_Criterion = nullptr;
 
-  fTdcWinMin = NULL;
-  fTdcWinMax = NULL;
-  fCentralTime = NULL;
-  fNWires = NULL;
-  fNChamber = NULL;
-  fWireOrder = NULL;
-  fDriftTimeSign = NULL;
-  fReadoutTB = NULL;
-  fReadoutLR = NULL;
+  fTdcWinMin = nullptr;
+  fTdcWinMax = nullptr;
+  fCentralTime = nullptr;
+  fNWires = nullptr;
+  fNChamber = nullptr;
+  fWireOrder = nullptr;
+  fDriftTimeSign = nullptr;
+  fReadoutTB = nullptr;
+  fReadoutLR = nullptr;
 
-  fXPos = NULL;
-  fYPos = NULL;
-  fZPos = NULL;
-  fAlphaAngle = NULL;
-  fBetaAngle = NULL;
-  fGammaAngle = NULL;
-  fPitch = NULL;
-  fCentralWire = NULL;
-  fPlaneTimeZero = NULL;
-  fSigma = NULL;
+  fXPos = nullptr;
+  fYPos = nullptr;
+  fZPos = nullptr;
+  fAlphaAngle = nullptr;
+  fBetaAngle = nullptr;
+  fGammaAngle = nullptr;
+  fPitch = nullptr;
+  fCentralWire = nullptr;
+  fPlaneTimeZero = nullptr;
+  fSigma = nullptr;
 
   // These should be set to zero (in a parameter file) in order to
   // replicate historical ENGINE behavior
@@ -83,8 +83,8 @@ THcDC::THcDC(
 
   fDCTracks = new TClonesArray( "THcDCTrack", 20 );
 
-  fNChamHits = 0;
-  fPlaneEvents = 0;
+  fNChamHits = nullptr;
+  fPlaneEvents = nullptr;
 
   //The version defaults to 0 (old HMS style). 1 is new HMS style and 2 is SHMS style.
   fVersion = 0;
@@ -120,8 +120,8 @@ void THcDC::Setup(const char* name, const char* description)
     {"dc_wire_velocity",&fWireVelocity,kDouble},
     {"dc_plane_names",&planenamelist, kString},
     {"dc_version", &fVersion, kInt, 0, optional},
-    {"dc_tdcrefcut", &fTDC_RefTimeCut, kInt, 0, 1},
-    {0}
+    {"dc_tdcrefcut", &fTDC_RefTimeCut, kInt, 0, true},
+    {nullptr}
   };
 
   fTDC_RefTimeCut = 0;		// Minimum allowed reference times
@@ -257,7 +257,7 @@ THaAnalysisObject::EStatus THcDC::Init( const TDatime& date )
   //  };
   //  memcpy( fDataDest, tmp, NDEST*sizeof(DataDest) );
 
-  fPresentP = 0;
+  fPresentP = nullptr;
   THaVar* vpresent = gHaVars->Find(Form("%s.present",GetApparatus()->GetName()));
   if(vpresent) {
     fPresentP = (Bool_t *) vpresent->GetValuePointer();
@@ -335,25 +335,25 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
     {"dc_central_wire", fCentralWire, kDouble, (UInt_t)fNPlanes},
     {"dc_plane_time_zero", fPlaneTimeZero, kDouble, (UInt_t)fNPlanes},
     {"dc_sigma", fSigma, kDouble, (UInt_t)fNPlanes},
-    {"single_stub",&fSingleStub, kInt,0,1},
-    {"ntracks_max_fp", &fNTracksMaxFP, kInt,0,1},
+    {"single_stub",&fSingleStub, kInt,0,true},
+    {"ntracks_max_fp", &fNTracksMaxFP, kInt,0,true},
     {"xt_track_criterion", &fXtTrCriterion, kDouble},
     {"yt_track_criterion", &fYtTrCriterion, kDouble},
     {"xpt_track_criterion", &fXptTrCriterion, kDouble},
     {"ypt_track_criterion", &fYptTrCriterion, kDouble},
     {"dc_fix_lr", &fFixLR, kInt},
     {"dc_fix_propcorr", &fFixPropagationCorrection, kInt},
-    {"UseNewFindSpacePoints", &fUseNewFindSpacePoints, kInt,0,1},
-    {"UseNewLinkStubs", &fUseNewLinkStubs, kInt,0,1},
-    {"UseNewTrackFit", &fUseNewTrackFit, kInt,0,1},
+    {"UseNewFindSpacePoints", &fUseNewFindSpacePoints, kInt,0,true},
+    {"UseNewLinkStubs", &fUseNewLinkStubs, kInt,0,true},
+    {"UseNewTrackFit", &fUseNewTrackFit, kInt,0,true},
     {"debuglinkstubs", &fdebuglinkstubs, kInt},
     {"debugprintrawdc", &fdebugprintrawdc, kInt},
     {"debugprintdecodeddc", &fdebugprintdecodeddc, kInt},
     {"debugflagpr", &fdebugflagpr, kInt},
     {"debugflagstubs", &fdebugflagstubs, kInt},
     {"debugtrackprint", &fdebugtrackprint , kInt},
-    {"TrackLargeResidCut", &fTrackLargeResidCut , kDouble,0,1},
-    {0}
+    {"TrackLargeResidCut", &fTrackLargeResidCut , kDouble,0,true},
+    {nullptr}
   };
   fTrackLargeResidCut = -1;
   fUseNewFindSpacePoints=0;
@@ -378,7 +378,7 @@ Int_t THcDC::ReadDatabase( const TDatime& date )
    DBRequest listOpt[]={
      {"dc_xpos", fXPos, kDouble, (UInt_t)fNPlanes, optional},
      {"dc_ypos", fYPos, kDouble, (UInt_t)fNPlanes, optional},
-     {0}
+     {nullptr}
    };
    gHcParms->LoadParmValues((DBRequest*)&listOpt,fPrefix);
   if(fNTracksMaxFP <= 0) fNTracksMaxFP = 10;
@@ -437,7 +437,7 @@ Int_t THcDC::DefineVariables( EMode mode )
     { "residualExclPlane", "Residuals", "fResidualsExclPlane"},
     { "wireHitDid","Wire did have  matched track hit", "fWire_hit_did"},
     { "wireHitShould", "Wire should have matched track hit", "fWire_hit_should"},
-    { 0 }
+    { nullptr }
   };
   return DefineVarsFromList( vars, mode );
 
@@ -468,37 +468,37 @@ void THcDC::DeleteArrays()
 {
   // Delete member arrays. Used by destructor.
 
-  delete [] fXCenter;   fXCenter = NULL;
-  delete [] fYCenter;   fYCenter = NULL;
-  delete [] fMinHits;   fMinHits = NULL;
-  delete [] fMaxHits;   fMaxHits = NULL;
-  delete [] fMinCombos;   fMinCombos = NULL;
-  delete [] fSpace_Point_Criterion;   fSpace_Point_Criterion = NULL;
+  delete [] fXCenter;   fXCenter = nullptr;
+  delete [] fYCenter;   fYCenter = nullptr;
+  delete [] fMinHits;   fMinHits = nullptr;
+  delete [] fMaxHits;   fMaxHits = nullptr;
+  delete [] fMinCombos;   fMinCombos = nullptr;
+  delete [] fSpace_Point_Criterion;   fSpace_Point_Criterion = nullptr;
 
-  delete [] fTdcWinMin;   fTdcWinMin = NULL;
-  delete [] fTdcWinMax;   fTdcWinMax = NULL;
-  delete [] fCentralTime;   fCentralTime = NULL;
-  delete [] fNWires;   fNWires = NULL;
-  delete [] fNChamber;   fNChamber = NULL;
-  delete [] fWireOrder;   fWireOrder = NULL;
-  delete [] fDriftTimeSign;   fDriftTimeSign = NULL;
-  delete [] fReadoutLR;   fReadoutLR = NULL;
-  delete [] fReadoutTB;   fReadoutTB = NULL;
+  delete [] fTdcWinMin;   fTdcWinMin = nullptr;
+  delete [] fTdcWinMax;   fTdcWinMax = nullptr;
+  delete [] fCentralTime;   fCentralTime = nullptr;
+  delete [] fNWires;   fNWires = nullptr;
+  delete [] fNChamber;   fNChamber = nullptr;
+  delete [] fWireOrder;   fWireOrder = nullptr;
+  delete [] fDriftTimeSign;   fDriftTimeSign = nullptr;
+  delete [] fReadoutLR;   fReadoutLR = nullptr;
+  delete [] fReadoutTB;   fReadoutTB = nullptr;
 
-  delete [] fXPos;   fXPos = NULL;
-  delete [] fYPos;   fYPos = NULL;
-  delete [] fZPos;   fZPos = NULL;
-  delete [] fAlphaAngle;   fAlphaAngle = NULL;
-  delete [] fBetaAngle;   fBetaAngle = NULL;
-  delete [] fGammaAngle;   fGammaAngle = NULL;
-  delete [] fPitch;   fPitch = NULL;
-  delete [] fCentralWire;   fCentralWire = NULL;
-  delete [] fPlaneTimeZero;   fPlaneTimeZero = NULL;
-  delete [] fSigma;   fSigma = NULL;
+  delete [] fXPos;   fXPos = nullptr;
+  delete [] fYPos;   fYPos = nullptr;
+  delete [] fZPos;   fZPos = nullptr;
+  delete [] fAlphaAngle;   fAlphaAngle = nullptr;
+  delete [] fBetaAngle;   fBetaAngle = nullptr;
+  delete [] fGammaAngle;   fGammaAngle = nullptr;
+  delete [] fPitch;   fPitch = nullptr;
+  delete [] fCentralWire;   fCentralWire = nullptr;
+  delete [] fPlaneTimeZero;   fPlaneTimeZero = nullptr;
+  delete [] fSigma;   fSigma = nullptr;
 
   // Efficiency arrays
-  delete [] fNChamHits; fNChamHits = NULL;
-  delete [] fPlaneEvents; fPlaneEvents = NULL;
+  delete [] fNChamHits; fNChamHits = nullptr;
+  delete [] fPlaneEvents; fPlaneEvents = nullptr;
 
   for( Int_t i = 0; i<fNPlanes; ++i )
     delete [] fPlaneNames[i];
@@ -643,7 +643,7 @@ Int_t THcDC::CoarseTrack( TClonesArray& tracks )
     // Copy tracks into podd tracks list
     for(UInt_t itrack=0;itrack<fNDCTracks;itrack++) {
       if (fUseNewTrackFit)  NewTrackFit(itrack);
-      THaTrack* theTrack = NULL;
+      THaTrack* theTrack = nullptr;
       theTrack = AddTrack(tracks, 0.0, 0.0, 0.0, 0.0); // Leaving off trackID
       // Should we add stubs with AddCluster?  Could we do this
       // by having stubs inherit from cluster
