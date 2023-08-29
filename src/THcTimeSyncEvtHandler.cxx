@@ -282,7 +282,7 @@ Int_t THcTimeSyncEvtHandler::Analyze(THaEvData *evdata)
 	p=p+*(p-1);
       }
     }
-    Int_t icopied=0;
+//    Int_t icopied=0;
     if(poverwrite) {
       //      cout << banklen << endl;
       if(replacementlen < banklen) { // Shift data after bank down
@@ -292,7 +292,7 @@ Int_t THcTimeSyncEvtHandler::Analyze(THaEvData *evdata)
 	  //	  cout << (p+replacementlen-banklen-fLastEvent) << ": " << hex << *p << dec << endl;
 	  *(p + replacementlen - banklen) = *p;
 	  p++;
-	  icopied++;
+//	  icopied++;
 	}
       } else if (replacementlen > banklen) { // Shift data up
 	p = plast;
@@ -303,7 +303,7 @@ Int_t THcTimeSyncEvtHandler::Analyze(THaEvData *evdata)
 	  //	  cout << (p+replacementlen-banklen-fLastEvent) << ": " << hex << *p << dec << endl;
 	  *(p+replacementlen-banklen) = *p;
 	  p--;
-	  icopied++;
+//	  icopied++;
 	}
       }
       fLastEvent[0] += replacementlen-banklen; // Correct overall event length
