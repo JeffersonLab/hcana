@@ -60,6 +60,7 @@ protected:
   virtual UInt_t LoadNextEvBuffer( THaSlotData *sldat );
 
 private:
+   const UInt_t* fEvBuf; // Pointer to current event buffer (for multi-block)
    UInt_t fNfill;        // Number of filler words at end of current bank
    UInt_t fDataAvail;    // Bitfield of data read (see EInfoType)
    UInt_t fWord4Type;    // Which data contained in event data word4
