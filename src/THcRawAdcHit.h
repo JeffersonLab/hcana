@@ -74,8 +74,8 @@ class THcRawAdcHit : public TObject {
 
   protected:
     static const UInt_t fMaxNPulses  = 4;
-    static const UInt_t fMaxNSamples = 511;
-    
+    static const UInt_t fMaxNSamples = 1024;
+
     // FADC conversion factors
     static const Double_t fNAdcChan; // Number of FADC channels in units of ADC channels
     static const Double_t fAdcRange;    // Dynamic range of FADCs in units of V, // TO-DO: Get fAdcRange from pre-start event
@@ -91,7 +91,7 @@ class THcRawAdcHit : public TObject {
     Double_t fPeakPedestalRatio;
     Double_t fSubsampleToTimeFactor;
     Double_t fSampThreshold;
-    
+
     Int_t fPed;
     Int_t fSampPed;
     Int_t fPulseInt[fMaxNPulses];
