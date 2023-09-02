@@ -23,12 +23,9 @@
 
 #include "THcConfigEvtHandler.h"
 #include "THaEvData.h"
-#include "THaGlobals.h"
 #include "THcGlobals.h"
 #include "THcParmList.h"
-#include <cstring>
-#include <cstdio>
-#include <cstdlib>
+#include "TError.h"
 #include <iostream>
 #include <iomanip>
 
@@ -41,9 +38,11 @@ THcConfigEvtHandler::THcConfigEvtHandler(const char *name, const char* descripti
 
 THcConfigEvtHandler::~THcConfigEvtHandler()
 {
-  // TODO: remove the parameters we've added to gHcParms
+  // Remove the parameters we've added to gHcParms. Otherwise they would
+  // reference deallocated memory once this object goes away
+  for( const auto& name : fParms )
+    gHcParms->RemoveName( name.c_str() );
 
-  DeleteCrateInfoMap();
 }
 
 //Float_t THcConfigEvtHandler::GetData(const std::string& tag)
@@ -54,340 +53,354 @@ THcConfigEvtHandler::~THcConfigEvtHandler()
 // return theDataMap[tag];
 //}
 
-void THcConfigEvtHandler::DeleteCrateInfoMap()
-{
-  // Clear the CrateInfoMap, deallocating its elements' dynamic memory
-
-  //TODO: don't manage memory manually, contain the object, use STL vectors
-  typedef std::map<Int_t, CrateInfo_t *> cmap_t;
-  typedef std::map<Int_t, Int_t *> imap_t;
-  for( cmap_t::iterator it = CrateInfoMap.begin();
-       it != CrateInfoMap.end(); ++it ) {
-    CrateInfo_t* cinfo = it->second;
-    if( cinfo ) {
-      for( imap_t::iterator jt = cinfo->FADC250.thresholds.begin();
-	   jt != cinfo->FADC250.thresholds.end(); ++jt ) {
-	delete [] jt->second;
-      }
-      delete cinfo;
-    }
-  }
-  CrateInfoMap.clear();
-}
-
 Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
 {
-
-  Bool_t ldebug = true;  // FIXME: use fDebug
+  static const char* const here = "Analyze";
 
   if ( !IsMyEvent(evdata->GetEvType()) ) return -1;
 
-  if (ldebug) cout << "------------------\n  Event type 125"<<endl;
+  if (fDebug) cout << "------------------\n  Event type 125"<<endl;
 
-  Int_t evlen = evdata->GetEvLength();
-  Int_t ip = 0;
-  ip++;
-  UInt_t thisword = evdata->GetRawData(ip);
-  Int_t roc = thisword & 0xff;
+  UInt_t evlen = evdata->GetEvLength();
+  UInt_t ip = 1; // index of next word to be processed
+  UInt_t thisword = evdata->GetRawData(ip++);
+  UInt_t roc = thisword & 0xff;
   cout << "THcConfigEvtHandler: " << roc << endl;
-  // Should check if this roc has already been seen
-  CrateInfo_t *cinfo = new CrateInfo_t;
-  cinfo->FADC250.nmodules=0;
-  cinfo->FADC250.present=0;
-  cinfo->CAEN1190.present=0;
-  cinfo->TI.present=0;  
-  // FIXME: check if entry for this roc already present in the map
-  CrateInfoMap.insert(std::make_pair(roc, cinfo));
-  ip++;
+  // Using a map as opposed to a vector ensures that none of the iterators into
+  // it are invalidated as more elements are added. This is important since we
+  // define parameters on _references_ to the map elements (see MakeParms()).
+  auto ins = CrateInfoMap.emplace(roc, CrateInfo_t());
   // Three possible blocks of config data
-  // 0xdafadc01 - FADC information for the crate
+  // 0xdafadcNN - FADC information for the crate (NN = blocklevel)
   // 0xdafadcff - Set of threshold by slot/channel
   // 0xdedc1190 - 1190 TDC information for the crate
-  while(ip<evlen) {
-    thisword = evdata->GetRawData(ip);
+  // 0xd0000000 - TI configuration (for TI master crate only)
+  while( ip < evlen ) {
+    auto& cinfo = ins.first->second; 
+    thisword = evdata->GetRawData(ip++);
+
     if (thisword == 0xdafadcff) {
-      ip++;
-      thisword = evdata->GetRawData(ip);
+      thisword = evdata->GetRawData(ip++);
       cout << "ADC thresholds for slots ";
-      while((thisword & 0xfffff000)==0xfadcf000) {
-        Int_t slot = thisword&0x1f;
+      auto& cfg = cinfo.FADC250;
+      while( (thisword & 0xfffff000) == 0xfadcf000 ) {
+        UInt_t slot = thisword & 0x1f;
         // Should check if this slot has already been SDC_WIRE_CENTER
-        cinfo->FADC250.nmodules++;
         cout << " " << slot;
-        Int_t *thresholds = new Int_t [16];
-        cinfo->FADC250.thresholds.insert(std::make_pair(slot, thresholds));
-        for(Int_t i=0;i<16;i++) {
-          thresholds[i] = evdata->GetRawData(ip+1+i);
-        }
-        ip +=18;
-        if(ip>=evlen) {
-          if(ip>evlen) {
+        auto ithr =
+          cfg.thresholds.emplace(slot, std::array<UInt_t, NTHR>{});
+        if( ithr.second ) // if insertion successful, then we've added a module
+          cfg.nmodules++;
+        for( auto& threshold : ithr.first->second )  // assigns NTHR (=16) values 
+          threshold = evdata->GetRawData(ip++);
+        if( ip >= evlen ) {
+          if( ip > evlen ) {
             cout << endl << "Info event truncated" << endl;
           }
           break;
         }
-        thisword = evdata->GetRawData(ip);
+        thisword = evdata->GetRawData(ip++);
       }
       cout << endl;
-    } else if((thisword&0xffffff00) == 0xdafadc00) { // FADC250 information
+
+    } else if( (thisword & 0xffffff00) == 0xdafadc00 ) { // FADC250 information
       cout << "ADC information: Block level " << (thisword&0xff) << endl;
-      cinfo->FADC250.present = 1;
-      cinfo->FADC250.blocklevel = thisword&0xff;
-      cinfo->FADC250.dac_level = evdata->GetRawData(ip+2);
-      cinfo->FADC250.threshold = evdata->GetRawData(ip+3);
-      cinfo->FADC250.mode = evdata->GetRawData(ip+4);
-      cinfo->FADC250.window_lat = evdata->GetRawData(ip+5);
-      cinfo->FADC250.window_width = evdata->GetRawData(ip+6);
-      cinfo->FADC250.nsb = evdata->GetRawData(ip+7);
-      cinfo->FADC250.nsa = evdata->GetRawData(ip+8);
-      cinfo->FADC250.np = evdata->GetRawData(ip+9);
-      cinfo->FADC250.nped = evdata->GetRawData(ip+10);
-      cinfo->FADC250.maxped = evdata->GetRawData(ip+11);
-      cinfo->FADC250.nsat = evdata->GetRawData(ip+12);
-      ip += 13;
-    } else if (thisword == 0xdedc1190) { // CAEN 1190 information
+      auto& cfg = cinfo.FADC250;
+      cfg.present = true;
+      cfg.blocklevel = thisword & 0xff;
+      cfg.dac_level = evdata->GetRawData(ip + 1);
+      cfg.threshold = evdata->GetRawData(ip + 2);
+      cfg.mode = evdata->GetRawData(ip + 3);
+      cfg.window_lat = evdata->GetRawData(ip + 4);
+      cfg.window_width = evdata->GetRawData(ip + 5);
+      cfg.nsb = evdata->GetRawData(ip + 6);
+      cfg.nsa = evdata->GetRawData(ip + 7);
+      cfg.np = evdata->GetRawData(ip + 8);
+      cfg.nped = evdata->GetRawData(ip + 9);
+      cfg.maxped = evdata->GetRawData(ip + 10);
+      cfg.nsat = evdata->GetRawData(ip + 11);
+      ip += 12;
+
+    } else if (thisword == 0xdedc1190) {  // CAEN 1190 information
       cout << "TDC information" << endl;
-      cinfo->CAEN1190.present = 1;
-      cinfo->CAEN1190.resolution = evdata->GetRawData(ip+2);
-      cinfo->CAEN1190.timewindow_offset = evdata->GetRawData(ip+3);
-      cinfo->CAEN1190.timewindow_width = evdata->GetRawData(ip+4);
-      ip += 6;
-    } else if (thisword == 0xd0000000) { // TI setup data
-      cinfo->TI.present = 1;
-      ip += 1;
+      auto& cfg = cinfo.CAEN1190;
+      cfg.present = true;
+      cfg.resolution = evdata->GetRawData(ip + 1);
+      cfg.timewindow_offset = evdata->GetRawData(ip + 2);
+      cfg.timewindow_width = evdata->GetRawData(ip + 3);
+      ip += 5;
+
+    } else if( thisword == 0xd0000000 ) { // TI setup data
+      cout << "TI setup data" << endl;
+      auto& cfg = cinfo.TI;
+      cfg.present = true;
       UInt_t versionword = evdata->GetRawData(ip++);
-      if((versionword & 0xffff0000) != 0xabcd0000) {
-	cout << "Unexpected TI info word " << hex << thisword << dec << endl;
-	cout << "  Expected 0xabcdNNNN" << endl;
-	ip += 1;
+      if( (versionword & 0xffff0000) == 0xabcd0000 ) {
+        UInt_t version = versionword & 0xffff;
+        cfg.nped = evdata->GetRawData(ip++);
+        if( version >= 2 ) {
+          cfg.scaler_period = evdata->GetRawData(ip++);
+          cfg.sync_count = evdata->GetRawData(ip++);
+        } else {
+          cfg.scaler_period = 2;
+          cfg.sync_count = -1;
+        }
+        for( auto& ps: cfg.prescales ) {
+          ps = static_cast<Int_t>(evdata->GetRawData(ip++));
+        }
+        UInt_t lastword = evdata->GetRawData(ip++);
+        if( lastword != 0xd000000f ) {
+          cout << Here(here) << "Unexpected last word of TI information block "
+               << hex << lastword << dec << endl;
+        }
       } else {
-	Int_t version = versionword & 0xffff;
-	cinfo->TI.num_prescales = 6;
-	cinfo->TI.nped = evdata->GetRawData(ip++);
-	if(version >= 2) {
-	  cinfo->TI.scaler_period = evdata->GetRawData(ip++);
-	  cinfo->TI.sync_count = evdata->GetRawData(ip++);
-	} else {
-	  cinfo->TI.scaler_period = 2;
-	  cinfo->TI.sync_count = -1;
-	}
-	for(Int_t i = 0; i<cinfo->TI.num_prescales; i++) {
-	  cinfo->TI.prescales[i] = evdata->GetRawData(ip++);
-	}
-	UInt_t lastword = evdata->GetRawData(ip++);
-	if(lastword != 0xd000000f) {
-	  cout << "Unexpected last word of TI information block "
-	       << hex << lastword << dec << endl;
-	}
+        cout << Here(here) << "Unexpected TI info word " << hex << thisword << dec << endl;
+        cout << "  Expected 0xabcdNNNN" << endl;
       }
     } else {
-      cout << "Expected header missing" << endl;
-      cout << ip << " " << hex << thisword << dec << endl;
-      ip = evlen;
+      cout << Here(here) << "Expected header missing" << endl;
+      cout << "pos " << ip-1 << ", data " << hex << thisword << dec << endl;
+      // Let's keep looking. The header words are quite unique.
+      //break;
     }
   }
 
-  cout << "Making Parms for ROC " << roc << "  Event type " << evdata->GetEvType() << endl;
+  cout << Here(here) << "Making Parms for ROC " << roc << "  Event type " << evdata->GetEvType() << endl;
   MakeParms(roc);
 
   return 1;
 }
 
-void THcConfigEvtHandler::MakeParms(Int_t roc)
+void THcConfigEvtHandler::MakeParms( UInt_t roc )
 {
   /**
      Add parameters to gHcParms for this roc
   */
-  std::map<Int_t, CrateInfo_t *>::iterator it = CrateInfoMap.begin();
-  while(it != CrateInfoMap.end()) {
-    Int_t thisroc = it->first;
-    if(thisroc != roc) {
-      it++;
-      continue;
-    }
-    CrateInfo_t *cinfo = it->second;
+  auto it = CrateInfoMap.find(roc);
+  assert(it != CrateInfoMap.end());  // else bug in Analyze 
+  
+  auto& cinfo = it->second;
 
-    // CAEN 1190 TDC information
-    if (cinfo->CAEN1190.present) {
-      Int_t resolution = cinfo->CAEN1190.resolution;
-      gHcParms->Define(Form("g%s_tdc_resolution_%d",fName.Data(),roc),"TDC resolution",resolution);
-      Int_t offset = cinfo->CAEN1190.timewindow_offset;
-      gHcParms->Define(Form("g%s_tdc_offset_%d",fName.Data(),roc),"TDC Time Window Offset",offset);
-      Int_t width = cinfo->CAEN1190.timewindow_width;
-      gHcParms->Define(Form("g%s_tdc_width_%d",fName.Data(),roc),"TDC Time Window Width",width);
-    }
-    // FADC Thresholds
-    if (cinfo->FADC250.present) {
-      // Loop over FADC slots
-      std::map<Int_t, Int_t *>::iterator itt = cinfo->FADC250.thresholds.begin();
-      while(itt != cinfo->FADC250.thresholds.end()) {
-        Int_t slot = itt->first;
-
-	// this memory would leak
-//	Int_t *thresholds = new Int_t[16];
-//	memcpy(thresholds,itt->second,16*sizeof(Int_t));
-//	gHcParms->Define(Form("g%s_adc_thresholds_%d_%d[16]",fName.Data(),roc,slot),"ADC Thresholds",*thresholds);
-	// Define the variable directly on the CrateInfo_t that resides in CrateInfoMap where it will stay
-	// until the end of the life of this object
-	gHcParms->Define(Form("g%s_adc_thresholds_%d_%d[16]",fName.Data(),roc,slot),"ADC Thresholds",*itt->second);
-
-	Int_t mode = cinfo->FADC250.mode;
-	gHcParms->Define(Form("g%s_adc_mode_%d_%d",fName.Data(),roc,slot),"ADC Mode",mode);
-	Int_t latency = cinfo->FADC250.window_lat;
-	gHcParms->Define(Form("g%s_adc_latency_%d_%d",fName.Data(),roc,slot),"Window Latency",latency);
-
-	Int_t width = cinfo->FADC250.window_width;
-	gHcParms->Define(Form("g%s_adc_width_%d_%d",fName.Data(),roc,slot),"Window Width",width);
-
-	Int_t daclevel = cinfo->FADC250.dac_level;
-	gHcParms->Define(Form("g%s_adc_daclevely_%d_%d",fName.Data(),roc,slot),"DAC Level",daclevel);
-	Int_t nped = cinfo->FADC250.nped;
-	gHcParms->Define(Form("g%s_adc_nped_%d_%d",fName.Data(),roc,slot),"NPED",nped);
-	Int_t nsa = cinfo->FADC250.nsa;
-	gHcParms->Define(Form("g%s_adc_nsa_%d_%d",fName.Data(),roc,slot),"NSA",nsa);
-	Int_t maxped = cinfo->FADC250.maxped;
-	gHcParms->Define(Form("g%s_adc_maxped_%d_%d",fName.Data(),roc,slot),"MAXPED",maxped);
-	Int_t np = cinfo->FADC250.np;
-	gHcParms->Define(Form("g%s_adc_np_%d_%d",fName.Data(),roc,slot),"NP",np);
-
-        itt++;
-      }
-      // TI Configuration
-      // We assume that this information is only provided by the master TI crate.
-      // If that is not true we will get "Variable XXX already exists." warnings
-      if(cinfo->TI.present) {
-	Int_t nped = cinfo->TI.nped;
-	gHcParms->Define(Form("g%s_ti_nped",fName.Data()),"Number of Pedestal events",nped);
-	Int_t scaler_period = cinfo->TI.scaler_period;
-	gHcParms->Define(Form("g%s_ti_scaler_period",fName.Data()),"Number of Pedestal events",scaler_period);
-	Int_t sync_count = cinfo->TI.sync_count;
-	gHcParms->Define(Form("g%s_ti_sync_count",fName.Data()),"Number of Pedestal events",sync_count);
-
-	Int_t *ps_exps = new Int_t[cinfo->TI.num_prescales];
-	Int_t *ps_factors = new Int_t[cinfo->TI.num_prescales];
-	for(Int_t i=0;i<cinfo->TI.num_prescales;i++) {
-	  ps_exps[i] = cinfo->TI.prescales[i];
-	  if(ps_exps[i] > 0) {
-	    ps_factors[i] = (1<<(ps_exps[i]-1)) + 1;
-	  } else if (ps_exps[i] == 0) {
-	    ps_factors[i] = 1;
-	  } else {
-	    ps_factors[i] = -1;
-	  }
-	}
-	gHcParms->Define(Form("g%s_ti_ps[%d]",fName.Data(),cinfo->TI.num_prescales),"TI Event Prescale Internal Value",*ps_exps);
-	gHcParms->Define(Form("g%s_ti_ps_factors[%d]",fName.Data(),cinfo->TI.num_prescales),"TI Event Prescale Factor",*ps_factors);
-      }
-    }
-    it++;
+  // CAEN 1190 TDC information
+  if( cinfo.CAEN1190.present ) {
+    // FIXME: shouldn't this info be per slot?
+    const auto& cfg = cinfo.CAEN1190;
+    fParms.emplace_back(Form("g%s_tdc_resolution_%d", fName.Data(), roc));
+    gHcParms->Define(fParms.back().c_str(), "TDC resolution", cfg.resolution);
+    fParms.emplace_back(Form("g%s_tdc_offset_%d", fName.Data(), roc));
+    gHcParms->Define(fParms.back().c_str(), "TDC Time Window Offset", cfg.timewindow_offset);
+    fParms.emplace_back(Form("g%s_tdc_width_%d", fName.Data(), roc));
+    gHcParms->Define(fParms.back().c_str(), "TDC Time Window Width", cfg.timewindow_width);
   }
-}    
+  // FADC configuration
+  if( cinfo.FADC250.present ) {
+    const auto& cfg = cinfo.FADC250;
+    // Loop over FADC slots
+    for( const auto& islot: cfg.thresholds ) {
+      auto slot = islot.first;
+      const auto& thresholds = islot.second;
+
+      fParms.emplace_back(Form("g%s_adc_thresholds_%u_%u[%u]", fName.Data(), roc, slot, NTHR));
+      gHcParms->Define(fParms.back().c_str(), "ADC Thresholds", *thresholds.data());
+
+      // FIXME: The following parameters are labeled "per slot", but their
+      //  values are identical for all slots.
+      fParms.emplace_back(Form("g%s_adc_mode_%u_%u", fName.Data(), roc, slot));
+      gHcParms->Define(fParms.back().c_str(), "ADC Mode", cfg.mode);
+      fParms.emplace_back(Form("g%s_adc_latency_%u_%u", fName.Data(), roc, slot));
+      gHcParms->Define(fParms.back().c_str(), "Window Latency", cfg.window_lat);
+
+      fParms.emplace_back(Form("g%s_adc_width_%u_%u", fName.Data(), roc, slot));
+      gHcParms->Define(fParms.back().c_str(), "Window Width", cfg.window_width);
+
+      fParms.emplace_back(Form("g%s_adc_daclevel_%u_%u", fName.Data(), roc, slot));
+      gHcParms->Define(fParms.back().c_str(), "DAC Level", cfg.dac_level);
+      fParms.emplace_back(Form("g%s_adc_nped_%u_%u", fName.Data(), roc, slot));
+      gHcParms->Define(fParms.back().c_str(), "NPED", cfg.nped);
+      fParms.emplace_back(Form("g%s_adc_nsa_%u_%u", fName.Data(), roc, slot));
+      gHcParms->Define(fParms.back().c_str(), "NSA", cfg.nsa);
+      fParms.emplace_back(Form("g%s_adc_maxped_%u_%u", fName.Data(), roc, slot));
+      gHcParms->Define(fParms.back().c_str(), "MAXPED", cfg.maxped);
+      fParms.emplace_back(Form("g%s_adc_np_%u_%u", fName.Data(), roc, slot));
+      gHcParms->Define(fParms.back().c_str(), "NP", cfg.np);
+      fParms.emplace_back(Form("g%s_adc_blocklevel_%u_%u", fName.Data(), roc, slot));
+      gHcParms->Define(fParms.back().c_str(), "Blocklevel", cfg.blocklevel);
+    }
+  }
+  // TI Configuration
+  // We assume that this information is only provided by the master TI crate.
+  // If that is not true we will get "Variable XXX already exists." warnings
+  if( cinfo.TI.present ) {
+    auto& cfg = cinfo.TI;
+    fParms.emplace_back(Form("g%s_ti_nped", fName.Data()));
+    gHcParms->Define(fParms.back().c_str(),
+                     "Number of Pedestal events", cfg.nped);
+    fParms.emplace_back(Form("g%s_ti_scaler_period", fName.Data()));
+    gHcParms->Define(fParms.back().c_str(),
+                     "Number of Pedestal events", cfg.scaler_period);
+    fParms.emplace_back(Form("g%s_ti_sync_count", fName.Data()));
+    gHcParms->Define(fParms.back().c_str(),
+                     "Number of Pedestal events", cfg.sync_count);
+
+    // Calculate actual prescale factors from "exponent" format
+    for( UInt_t i = 0; i < NPS; i++ ) {
+      auto ps = cfg.prescales[i];
+      auto& fact = cfg.ps_factors[i];
+      if( ps > 0 ) {
+        fact = (1 << (ps - 1)) + 1;
+      } else if( ps == 0 ) {
+        fact = 1;
+      } else {
+        fact = -1;
+      }
+    }
+    fParms.emplace_back(Form("g%s_ti_ps[%d]", fName.Data(), NPS));
+    gHcParms->Define(fParms.back().c_str(), "TI Event Prescale Internal Value", *cfg.prescales.data());
+    fParms.emplace_back(Form("g%s_ti_ps_factors[%d]", fName.Data(), NPS));
+    gHcParms->Define(fParms.back().c_str(), "TI Event Prescale Factor", *cfg.ps_factors.data());
+  }
+}
     
 void THcConfigEvtHandler::PrintConfig()
 {
 /**
   Stub of method to pretty print the config data
 */
-  std::map<Int_t, CrateInfo_t *>::iterator it = CrateInfoMap.begin();
-  while(it != CrateInfoMap.end()) {
-    Int_t roc = it->first;
+  for( const auto& item : CrateInfoMap ) {
+    UInt_t roc = item.first;
     cout << "================= Configuration Data ROC " << roc << "==================" << endl;
-    CrateInfo_t *cinfo = it->second;
-    if(cinfo->CAEN1190.present) {
+    const auto& cinfo = item.second;
+    if( cinfo.CAEN1190.present ) {
+      const auto& cfg = cinfo.CAEN1190; 
       cout << "    CAEN 1190 Configuration" << endl;
-      cout << "        Resolution: " << cinfo->CAEN1190.resolution << " ps" << endl;
-      cout << "        T Offset:   " << cinfo->CAEN1190.timewindow_offset << endl;
-      cout << "        T Width:    " << cinfo->CAEN1190.timewindow_width << endl;
+      cout << "        Resolution: " << cfg.resolution << " ps" << endl;
+      cout << "        T Offset:   " << cfg.timewindow_offset << endl;
+      cout << "        T Width:    " << cfg.timewindow_width << endl;
     }
-    if (cinfo->FADC250.present) {
+    if( cinfo.FADC250.present ) {
+      const auto& cfg = cinfo.FADC250;
       cout << "    FADC250 Configuration" << endl;
-      cout << "       Mode:   " << cinfo->FADC250.mode << endl;
-      cout << "       Latency: " << cinfo->FADC250.window_lat << "  Width: "<< cinfo->FADC250.window_width << endl;
-      cout << "       DAC Level: " << cinfo->FADC250.dac_level << "  Threshold: " << cinfo->FADC250.threshold << endl;
-      cout << "       NPED: " << cinfo->FADC250.nped << "  NSA: " << cinfo->FADC250.nsa << "  NSB: " << cinfo->FADC250.nsb << endl;
-      cout << "       MAXPED: " << cinfo->FADC250.maxped << "  NP: " << cinfo->FADC250.np << "  NSAT: " << cinfo->FADC250.nsat << endl;
+      cout << "       Mode:   " << cfg.mode << endl;
+      cout << "       Latency: " << cfg.window_lat << "  Width: "<< cfg.window_width << endl;
+      cout << "       DAC Level: " << cfg.dac_level << "  Threshold: " << cfg.threshold << endl;
+      cout << "       NPED: " << cfg.nped << "  NSA: " << cfg.nsa << "  NSB: " << cfg.nsb << endl;
+      cout << "       MAXPED: " << cfg.maxped << "  NP: " << cfg.np << "  NSAT: " << cfg.nsat << endl;
 
       // Loop over FADC slots
       cout << "       Thresholds";
-      std::map<Int_t, Int_t *>::iterator itt = cinfo->FADC250.thresholds.begin();
-      while(itt != cinfo->FADC250.thresholds.end()) {
-        Int_t slot = itt->first;
+      for( const auto& thr : cfg.thresholds ) {
+        auto slot = thr.first;
         cout << " " << setw(5) << slot;
-        itt++;
       }
       cout << endl;
-      for(Int_t ichan=0;ichan<16;ichan++) {
+      for( UInt_t ichan = 0; ichan < NTHR; ichan++ ) {
         cout << "           " << setw(2) << ichan << "    ";
-        std::map<Int_t, Int_t *>::iterator itt = cinfo->FADC250.thresholds.begin();
-        while(itt != cinfo->FADC250.thresholds.end()) {
-          Int_t *thresholds = itt->second;
+        auto ithr = cfg.thresholds.begin();
+        while( ithr != cfg.thresholds.end() ) {
+          const auto& thresholds = ithr->second;
           cout << " " << setw(5) << thresholds[ichan];
-          itt++;
+          ++ithr;
         }
         cout << endl;
       }
     }
-    if(cinfo->TI.present) {
+    if( cinfo.TI.present ) {
+      const auto& cfg = cinfo.TI;
       cout << "    TI Configuration" << endl;
-      cout << "        N Pedestals:   " << cinfo->TI.nped << " events" << endl;
-      cout << "        Scaler Period: " << cinfo->TI.scaler_period << " seconds" << endl;
-      cout << "        Sync interval: " << cinfo->TI.sync_count << " events" << endl;
+      cout << "        N Pedestals:   " << cfg.nped << " events" << endl;
+      cout << "        Scaler Period: " << cfg.scaler_period << " seconds" << endl;
+      cout << "        Sync interval: " << cfg.sync_count << " events" << endl;
       cout << "        Prescales:    ";
-      for(Int_t i=0;i<cinfo->TI.num_prescales;i++) {
-	cout << " " << cinfo->TI.prescales[i];
+      for( UInt_t i = 0; i < NPS; i++ ) {
+        cout << " " << cfg.prescales[i];
       }
       cout << endl;
     }
-    it++;
   }
 }
 
-Int_t THcConfigEvtHandler::IsPresent(Int_t crate) {
-  if(CrateInfoMap.find(crate)!=CrateInfoMap.end()) {
-    CrateInfo_t *cinfo = CrateInfoMap[crate];
-    return cinfo->FADC250.present;
-  }
-  return(0);
-}
-Int_t THcConfigEvtHandler::GetNSA(Int_t crate) {
-  if(CrateInfoMap.find(crate)!=CrateInfoMap.end()) {
-    CrateInfo_t *cinfo = CrateInfoMap[crate];
-    if(cinfo->FADC250.present > 0) return(cinfo->FADC250.nsa);
-  }
-  return(-1);
-}
-Int_t THcConfigEvtHandler::GetNSB(Int_t crate) {
-  if(CrateInfoMap.find(crate)!=CrateInfoMap.end()) {
-    CrateInfo_t *cinfo = CrateInfoMap[crate];
-    if(cinfo->FADC250.present > 0) return(cinfo->FADC250.nsb);
-  }
-  return(-1);
-}
-Int_t THcConfigEvtHandler::GetNPED(Int_t crate) {
-  if(CrateInfoMap.find(crate)!=CrateInfoMap.end()) {
-    CrateInfo_t *cinfo = CrateInfoMap[crate];
-    if(cinfo->FADC250.present > 0) return(cinfo->FADC250.nped);
-  }
-  return(-1);
-}
-void THcConfigEvtHandler::AddEventType(Int_t evtype)
+Bool_t THcConfigEvtHandler::IsPresent( UInt_t crate)
 {
-  eventtypes.push_back(evtype);
+  auto it = CrateInfoMap.find(crate);
+  if( it != CrateInfoMap.end() ) {
+    const auto& cinfo = it->second;
+    return cinfo.FADC250.present;
+  }
+  return false;
 }
-
+UInt_t THcConfigEvtHandler::GetNSA( UInt_t crate)
+{
+  auto it = CrateInfoMap.find(crate);
+  if( it != CrateInfoMap.end() ) {
+    const auto& cinfo = it->second;
+    if(cinfo.FADC250.present > 0) return(cinfo.FADC250.nsa);
+  }
+  return(-1);
+}
+UInt_t THcConfigEvtHandler::GetNSB( UInt_t crate)
+{
+  auto it = CrateInfoMap.find(crate);
+  if( it != CrateInfoMap.end() ) {
+    const auto& cinfo = it->second;
+    if( cinfo.FADC250.present > 0 )
+      return cinfo.FADC250.nsb;
+  }
+  return(-1);
+}
+UInt_t THcConfigEvtHandler::GetNPED( UInt_t crate)
+{
+  auto it = CrateInfoMap.find(crate);
+  if( it != CrateInfoMap.end() ) {
+    const auto& cinfo = it->second;
+    if(cinfo.FADC250.present > 0) return(cinfo.FADC250.nped);
+  }
+  return(-1);
+}
 THaAnalysisObject::EStatus THcConfigEvtHandler::Init(const TDatime& date)
 {
-
-  cout << "Howdy !  We are initializing THcConfigEvtHandler !!   name =   "<<fName<<endl;
-
-  if(eventtypes.size()==0) {
+  if( eventtypes.empty() ) {
     eventtypes.push_back(125);  // what events to look for
   }
 
-  DeleteCrateInfoMap();
+  CrateInfoMap.clear();
+  
+  return THaEvtTypeHandler::Init(date);
+}
 
-  fStatus = kOK;
-  return kOK;
+THcConfigEvtHandler::CrateInfo_t::FADC250::FADC250()
+  : present{false}
+  , blocklevel{0}
+  , dac_level{0}
+  , threshold{0}
+  , mode{0}
+  , window_lat{0}
+  , window_width{0}
+  , nsb{0}
+  , nsa{0}
+  , np{0}
+  , nped{0}
+  , maxped{0}
+  , nsat{0}
+  , nmodules{0}
+{}
+
+THcConfigEvtHandler::CrateInfo_t::CAEN1190::CAEN1190()
+  : present{false}
+  , resolution{0}
+  , timewindow_offset{0}
+  , timewindow_width{0}
+{}
+
+THcConfigEvtHandler::CrateInfo_t::TI::TI()
+  : present{false}
+  , nped{0}
+  , scaler_period{0}
+  , sync_count{0}
+  , prescales{}
+  , ps_factors{}
+{
+  for( auto& ps : prescales )
+    ps = 0;
 }
 
 ClassImp(THcConfigEvtHandler)
