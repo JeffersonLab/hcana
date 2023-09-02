@@ -14,68 +14,73 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <array>
 
 class THcConfigEvtHandler : public THaEvtTypeHandler {
 
 public:
 
   THcConfigEvtHandler(const char* name, const char* description);
+  THcConfigEvtHandler(const THcConfigEvtHandler& fh) = delete;
+  THcConfigEvtHandler& operator=(const THcConfigEvtHandler& fh) = delete;
   virtual ~THcConfigEvtHandler();
 
-  virtual Int_t Analyze(THaEvData *evdata);
-  virtual void AddEventType(Int_t evtype);
+  virtual Int_t Analyze( THaEvData* evdata );
   virtual void PrintConfig();
-  virtual Int_t IsPresent(Int_t crate);
-  virtual Int_t GetNSA(Int_t crate);
-  virtual Int_t GetNSB(Int_t crate);
-  virtual Int_t GetNPED(Int_t crate);
-  virtual EStatus Init( const TDatime& run_time);
- //  Float_t GetData(const std::string& tag);
-  virtual void MakeParms(Int_t roc);
+  Bool_t IsPresent( UInt_t crate );
+  UInt_t GetNSA( UInt_t crate );
+  UInt_t GetNSB( UInt_t crate );
+  UInt_t GetNPED( UInt_t crate );
+  virtual EStatus Init( const TDatime& run_time );
+  //  Float_t GetData(const std::string& tag);
+  virtual void MakeParms( UInt_t roc );
 
 private:
 
-  typedef struct {
+  // Number of FADC250 thresholds 
+  static constexpr UInt_t NTHR = 16;
+  static constexpr UInt_t NPS = 6;
+  
+  typedef struct crateinfo {
     struct FADC250 {
-      Int_t present;
-      Int_t dac_level;
-      Int_t threshold;
-      Int_t mode;
-      Int_t window_lat;
-      Int_t window_width;
-      Int_t nsb;
-      Int_t nsa;
-      Int_t np;
-      Int_t nped;
-      Int_t maxped;
-      Int_t nsat;
-      Int_t nmodules;
-      Int_t blocklevel;
-      std::map<Int_t, Int_t *> thresholds;
+      FADC250();
+      Bool_t present;
+      UInt_t blocklevel;
+      UInt_t dac_level;
+      UInt_t threshold;
+      UInt_t mode;
+      UInt_t window_lat;
+      UInt_t window_width;
+      UInt_t nsb;
+      UInt_t nsa;
+      UInt_t np;
+      UInt_t nped;
+      UInt_t maxped;
+      UInt_t nsat;
+      UInt_t nmodules;
+      std::map<UInt_t, std::array<UInt_t, NTHR>> thresholds; // slot -> thresholds[16]
    } FADC250;
    struct CAEN1190 {
-      Int_t present;
-      Int_t resolution;
-      Int_t timewindow_offset;
-      Int_t timewindow_width;
+     CAEN1190();
+      Bool_t present;
+      UInt_t resolution;
+      UInt_t timewindow_offset;
+      UInt_t timewindow_width;
    } CAEN1190;
     struct TI {
-      Int_t present;
-      Int_t nped;
-      Int_t scaler_period;
-      Int_t sync_count;
-      Int_t num_prescales;
-      Int_t prescales[6];
+      TI();
+      Bool_t present;
+      UInt_t nped;
+      UInt_t scaler_period;
+      UInt_t sync_count;
+      std::array<Int_t, NPS> prescales;
+      std::array<Int_t, NPS> ps_factors;
     } TI;
    //CrateInfo : FADC250.nmodules(0),CAEN1190.present(0) {}
   } CrateInfo_t;
 
-  std::map<Int_t, CrateInfo_t *> CrateInfoMap;
-
-  void DeleteCrateInfoMap();
-
-  THcConfigEvtHandler(const THcConfigEvtHandler& fh);
-  THcConfigEvtHandler& operator=(const THcConfigEvtHandler& fh);
+  std::map<UInt_t, CrateInfo_t> CrateInfoMap;  // roc -> crate info
+  std::vector<std::string> fParms;  // names of parameters we've defined
 
   ClassDef(THcConfigEvtHandler,0)  // Hall C event type 125
 
