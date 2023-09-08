@@ -6,7 +6,8 @@
 //   THcConfigEvtHandler
 //   For more details see the implementation file.
 //   This handles hall C's event type 125.
-//   author  Robert Michaels (rom@jlab.org)
+//   Author Stephen Wood, Feb 2017 - Dec 2018.
+//   Partly rewritten by Ole Hansen, Aug/Sep 2023.
 //
 /////////////////////////////////////////////////////////////////////
 
@@ -37,12 +38,17 @@ public:
 
 private:
 
-  // Number of FADC250 thresholds 
+  // Number of FADC250 thresholds
   static constexpr UInt_t NTHR = 16;
   static constexpr UInt_t NPS = 6;
-  
-  typedef struct crateinfo {
-    struct FADC250 {
+
+  struct CrateConfig {
+    CrateConfig() : CrateConfig(0) {}
+    explicit CrateConfig( UInt_t crate ) : roc{crate} {}
+    Int_t MakeParms( THcConfigEvtHandler& h ) const;
+    void Print() const;
+    UInt_t roc;
+    typedef struct FADC250 {
       FADC250();
       Bool_t present;
       UInt_t blocklevel;
@@ -59,15 +65,17 @@ private:
       UInt_t nsat;
       UInt_t nmodules;
       std::map<UInt_t, std::array<UInt_t, NTHR>> thresholds; // slot -> thresholds[16]
-   } FADC250;
-   struct CAEN1190 {
-     CAEN1190();
+    } FADC250_t;
+    FADC250_t FADC250;
+    typedef struct CAEN1190 {
+      CAEN1190();
       Bool_t present;
       UInt_t resolution;
       UInt_t timewindow_offset;
       UInt_t timewindow_width;
-   } CAEN1190;
-    struct TI {
+    } CAEN1190_t;
+    CAEN1190_t CAEN1190;
+    typedef struct TI {
       TI();
       Bool_t present;
       UInt_t nped;
@@ -75,12 +83,19 @@ private:
       UInt_t sync_count;
       std::array<Int_t, NPS> prescales;
       std::array<Int_t, NPS> ps_factors;
-    } TI;
-   //CrateInfo : FADC250.nmodules(0),CAEN1190.present(0) {}
-  } CrateInfo_t;
+    } TI_t;
+    TI_t TI;
+  };
 
-  std::map<UInt_t, CrateInfo_t> CrateInfoMap;  // roc -> crate info
+  std::map<UInt_t, CrateConfig> fCrateInfoMap;  // roc -> crate info
   std::vector<std::string> fParms;  // names of parameters we've defined
+
+  UInt_t DecodeFADC250Config( THaEvData* evdata, UInt_t ip,
+                              CrateConfig::FADC250_t& cfg );
+  UInt_t DecodeCAEN1190Config( THaEvData* evdata, UInt_t ip,
+                               CrateConfig::CAEN1190_t& cfg );
+  UInt_t DecodeTIConfig( THaEvData* evdata, UInt_t ip,
+                         CrateConfig::TI_t& cfg );
 
   ClassDef(THcConfigEvtHandler,0)  // Hall C event type 125
 
