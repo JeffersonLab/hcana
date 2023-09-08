@@ -285,7 +285,6 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	//
 	UInt_t nrefsamples=evdata.GetNumEvents(Decoder::kSampleADC,fRefIndexMaps[i].crate,fRefIndexMaps[i].slot, fRefIndexMaps[i].channel);
 	if (nrefhits==0 && nrefsamples>0) {
-        THcRawAdcHit* refrawhit = new THcRawAdcHit();
 	      Int_t ref_fNSA = 0;
 	      Int_t ref_fNSB = 0;
  	      Int_t ref_fNPED = 0;
@@ -293,7 +292,6 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	      ref_fNSA = fPSE125->GetNSA(fRefIndexMaps[i].crate);
 	      ref_fNSB = fPSE125->GetNSB(fRefIndexMaps[i].crate);
  	      ref_fNPED = fPSE125->GetNPED(fRefIndexMaps[i].crate);
-	      // DJH 14 Sep 22 -- fudge for now until I fix 125 decode
 	      if (ref_fNSA == -1) ref_fNSA  = 26;
 	      if (ref_fNSB == -1) ref_fNSB  = 3;
 	      if (ref_fNPED == -1) ref_fNPED = 4;
@@ -304,6 +302,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	      ref_fNPED = 4;
 	    }
 	  // Set F250 parameters.
+          THcRawAdcHit* refrawhit = new THcRawAdcHit();
           refrawhit->SetF250Params(ref_fNSA, ref_fNSB, ref_fNPED);
 	    for (UInt_t isamp=0;isamp<nrefsamples;isamp++) {
 	      refrawhit->SetSample(evdata.GetData(Decoder::kSampleADC,fRefIndexMaps[i].crate,fRefIndexMaps[i].slot, fRefIndexMaps[i].channel, isamp));
@@ -321,6 +320,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	           break;
 	        }
 	     }
+          delete refrawhit;
       }
 	//
 	if(goodreftime || (nrefhits>0 && fADC_RefTimeBest)|| (nrefsamples>0 && fADC_RefTimeBest)) {
@@ -465,7 +465,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	    fNPED = fPSE125->GetNPED(d->crate);
 	      if (fNSA == -1) fNSA  = 26;
 	      if (fNSB == -1) fNSB  = 3;
-	      if (fNPED == -1) fNPED = 4;            
+	      if (fNPED == -1) fNPED = 4;
 	    fHaveFADCInfo = kTRUE;
 	    }
         } else if (!fHaveFADCInfo) {
@@ -475,7 +475,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	    fHaveFADCInfo = kTRUE;
 	}
          rawhit->SetF250Params(fNSA, fNSB, fNPED);
- 
+
 	// Copy the samples
 	UInt_t nsamples=evdata.GetNumEvents(Decoder::kSampleADC, d->crate, d->slot, chan);
 
@@ -558,6 +558,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	           break;
 	      }
 	     }
+          delete refrawhit;
 	}
 	//
 	  // If RefTimeBest flag set, take the last hit if none of the
