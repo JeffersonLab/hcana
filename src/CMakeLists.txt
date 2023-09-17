@@ -100,7 +100,7 @@ build_root_dictionary(${LIBNAME} ${headers}
 
 #----------------------------------------------------------------------------
 # hcana executable
-add_executable(${EXENAME} main.C)
+add_executable(${EXENAME} main.cxx)
 
 target_link_libraries(${EXENAME}
   PRIVATE
