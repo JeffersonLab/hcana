@@ -8,22 +8,20 @@ import subprocess
 import platform
 import time
 import SCons.Util
-Import ('pbaseenv')
 
-######## ROOT Dictionaries #########
+Import('pbaseenv')
 
-roothcdict = pbaseenv.subst('$HC_DIR')+'/HallCDict.C'
-roothcobj = pbaseenv.subst('$HC_SRC')+'/HallCDict.so'
- 
-hcheadersbase = Glob('src/*.h',exclude=['src/THcGlobals.h','src/HallC_LinkDef.h'])
+#######  write src/hc_compiledata.h header file ######
+
+hcheadersbase = Glob('src/*.h', exclude=['src/THcGlobals.h', 'src/HallC_LinkDef.h'])
 
 cmd = "cat src/HallC_LinkDef.h_preamble > src/HallC_LinkDef.h"
 os.system(cmd)
 
 for hcheaderfile in hcheadersbase:
     filename = '%s' % hcheaderfile
-    basefilename = filename.rsplit('.',1)
-    newbasefilename = basefilename[0].rsplit('/',1)
+    basefilename = filename.rsplit('.', 1)
+    newbasefilename = basefilename[0].rsplit('/', 1)
     # Assume filenames beginning with Scaler are decoder classes
     if newbasefilename[1] == 'hc_compiledata':
         continue
@@ -35,14 +33,6 @@ for hcheaderfile in hcheadersbase:
 
 cmd = "cat src/HallC_LinkDef.h_postamble >> src/HallC_LinkDef.h"
 os.system(cmd)
-
-hcheaders = Glob('src/*.h',exclude=['src/HallC_LinkDef.h','src/hc_compiledata.h'])+Glob('src/HallC_LinkDef.h')
-
-pbaseenv.RootCint(roothcdict,hcheaders)
-pbaseenv.Clean(roothcdict,re.sub(r'\.C\Z','_rdict.pcm',roothcdict))
-pbaseenv.SharedObject(target = roothcobj, source = roothcdict)
-
-#######  write src/hc_compiledata.h header file ######
 
 if sys.version_info >= (2, 7):
     try:
@@ -63,12 +53,12 @@ if sys.version_info >= (2, 7):
 else:
     FNULL = open(os.devnull, 'w')
     try:
-        gitrev = subprocess.Popen(['git', 'rev-parse', 'HEAD', '2>dev/null'],\
-                    stdout=subprocess.PIPE, stderr=FNULL).communicate()[0].rstrip()
+        gitrev = subprocess.Popen(['git', 'rev-parse', 'HEAD', '2>dev/null'],
+                                  stdout=subprocess.PIPE, stderr=FNULL).communicate()[0].rstrip()
     except:
-        gitrev =''
+        gitrev = ''
     try:
-        outp = subprocess.Popen([pbaseenv.subst('$CXX'), '--version'],\
+        outp = subprocess.Popen([pbaseenv.subst('$CXX'), '--version'],
                                 stdout=subprocess.PIPE, stderr=FNULL).communicate()[0]
         lines = outp.splitlines()
         cxxver = lines[0]
@@ -76,7 +66,7 @@ else:
         cxxver = ''
 
 compiledata = 'src/hc_compiledata.h'
-f=open(compiledata,'w')
+f = open(compiledata, 'w')
 f.write('#ifndef HCANA_COMPILEDATA_H\n')
 f.write('#define HCANA_COMPILEDATA_H\n')
 f.write('\n')
@@ -84,7 +74,7 @@ f.write('#define HC_INCLUDEPATH "%s"\n' % (pbaseenv.subst('$HC_SRC')))
 f.write('#define HC_VERSION "%s"\n' % pbaseenv.subst('$HC_VERSION'))
 f.write('#define HC_DATE "%s"\n' % time.strftime("%b %d %Y"))
 f.write('#define HC_DATETIME "%s"\n' % time.strftime("%a %b %d %Y"))
-#f.write('#define HC_DATETIME "%s"\n' % time.strftime("%a %b %d %H:%M:%S %Z %Y"))
+# f.write('#define HC_DATETIME "%s"\n' % time.strftime("%a %b %d %H:%M:%S %Z %Y"))
 f.write('#define HC_PLATFORM "%s"\n' % platform.platform())
 f.write('#define HC_BUILDNODE "%s"\n' % platform.node())
 f.write('#define HC_BUILDDIR "%s"\n' % os.getcwd())
@@ -104,17 +94,23 @@ f.close()
 
 #######  Start of main SConscript ###########
 
-print ('LIBS = %s\n' % pbaseenv.subst('$LIBS'))
-
 # SCons seems to ignore $RPATH on macOS... sigh
 if pbaseenv['PLATFORM'] == 'darwin':
     try:
         for rp in pbaseenv['RPATH']:
-            pbaseenv.Append(LINKFLAGS = ['-Wl,-rpath,'+rp])
+            pbaseenv.Append(LINKFLAGS=['-Wl,-rpath,' + rp])
     except KeyError:
         pass
 
-analyzer = pbaseenv.Program(target = 'hcana', source = 'src/main.o')
-pbaseenv.Install('./bin',analyzer)
-pbaseenv.Alias('install',['./bin'])
-#pbaseenv.Clean(analyzer,)
+sources = os.path.join('src','main.cxx')
+hcana_prog = pbaseenv.Program(target='hcana', source=sources)
+
+# Installation
+install_prefix = pbaseenv.subst('$INSTALLDIR')
+bin_dir = os.path.join(install_prefix, 'bin')
+rel_lib_dir = os.path.join(pbaseenv['RPATH_ORIGIN_TAG'],
+                           os.path.join('..', pbaseenv.subst('$LIBSUBDIR')))
+src_dir = os.path.join(install_prefix, 'src', 'hcana')
+
+pbaseenv.InstallWithRPATH(bin_dir, hcana_prog, [rel_lib_dir])
+pbaseenv.Install(src_dir, sources)
