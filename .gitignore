@@ -42,6 +42,7 @@ config.log
 
 # Doxygen generated documentation directory
 docs/ROOT.tag
+docs/Doxygen.tag
 docs/html
 docs/Doxyfile_podd
 docs/Doxygen_podd.tag
