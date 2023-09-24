@@ -7,6 +7,7 @@ export DOXYGEN_SOURCE_DIRECTORY := ..
 PODDDIR = ../podd/docs
 # THISDIR is absolute location of this directory
 THISDIR = $(PWD)
+export THISDIR
 INSTALLPATH = /u/group/hallc/www/hallcweb/html/hcana
 INSTALLPATHHCANA = $(INSTALLPATH)/docs/
 INSTALLPATHPODD = $(INSTALLPATH)/podddocs/
@@ -17,10 +18,13 @@ all: doxygen $(DOXYGEN_OUTPUT_DIRECTORY)/html/Doxygen_hcana.tag \
 doxygen html/index.html Doxygen.tag: Doxyfile Doxygen_podd.tag ROOT.tag DoxygenLayout.xml
 	doxygen $(THISDIR)/Doxyfile
 
-Doxyfile_podd: $(PODDDIR)/Doxyfile
-	sed -e 's/^TAGFILES.*/TAGFILES = /;s|Doxygen.tag|$(THISDIR)/Doxygen_podd.tag|' $< > $@
+#Doxyfile_podd: $(PODDDIR)/Doxyfile
+#	sed -e 's/^TAGFILES.*/TAGFILES = /;s|Doxygen.tag|$(THISDIR)/Doxygen_podd.tag|' $< > $@
+Doxyfile_podd: Doxyfile_podd_tmp
+	cp Doxyfile_podd_tmp Doxyfile_podd
 
 Doxygen_podd.tag: Doxyfile_podd
+	cp ROOT.tag $(PODDDIR)
 	cd $(PODDDIR);doxygen $(THISDIR)/Doxyfile_podd
 
 ROOT.tag:
