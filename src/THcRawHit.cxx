@@ -12,22 +12,29 @@
 
 Int_t THcRawHit::Compare(const TObject* obj) const
 {
-  // Comparision function for Sort().
+  // Comparison function for Sort().
 
-  const THcRawHit* hit = dynamic_cast<const THcRawHit*>(obj);
-
-  if(!hit) return -1;
-  Int_t p1 = fPlane;
-  Int_t p2 = hit->fPlane;
-  if(p1 < p2) return -1;
-  else if(p1 > p2) return 1;
-  else {
-    Int_t c1 = fCounter;
-    Int_t c2 = hit->fCounter;
-    if(c1 < c2) return -1;
-    else if (c1 == c2) return 0;
-    else return 1;
+#ifndef NDEBUG
+  const auto* hit = dynamic_cast<const THcRawHit*>(obj);
+  assert(hit);
+#else
+  // dynamic_cast turns out to be quite expensive here
+  const auto* hit = static_cast<const THcRawHit*>(obj);
+#endif
+  Int_t dp = fPlane - hit->fPlane;
+  if( dp == 0 )  {
+    Int_t dc = fCounter - hit->fCounter;
+    if( dc < 0 )
+      return -1;
+    else if( dc > 0 )
+      return 1;
+    else
+      return 0;
   }
+  else if( dp < 0 )
+    return -1;
+  else
+    return 1;
 }
 
 

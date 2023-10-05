@@ -19,17 +19,37 @@
 #include "THcParmList.h"
 #include "TList.h"
 
+#include <cassert>
+
 using namespace std;
 
 #define SUPPRESSMISSINGADCREFTIMEMESSAGES 1
-THcHitList::THcHitList() : fMap(0), fTISlot(0), fDisableSlipCorrection(kFALSE)
+THcHitList::THcHitList()
+  : fNRawHits(0)
+  , fNMaxRawHits(0)
+  , fTDC_RefTimeCut(0)
+  , fADC_RefTimeCut(0)
+  , fTDC_RefTimeBest(false)
+  , fADC_RefTimeBest(false)
+  , fRawHitList(nullptr)
+  , fRawHitClass(nullptr)
+  , fdMap(nullptr)
+  , fNRefIndex(0)
+  , fNSignals(0)
+  , fSignalTypes(nullptr)
+  , fPSE125(nullptr)
+  , fHaveFADCInfo(false)
+  , fNSA(-1)
+  , fNSB(-1)
+  , fNPED(-1)
+  , fNTDCRef_miss(0)
+  , fNADCRef_miss(0)
+  , fMap(nullptr)
+  , fTISlot(0)
+  , fTICrate(0)
+  , fDisableSlipCorrection(false)
 {
   /// Normal constructor.
-
-  fRawHitList = NULL;
-  fPSE125 = NULL;
-  fFADCSlotMap.clear();
-
 }
 
 THcHitList::~THcHitList() {
@@ -37,6 +57,7 @@ THcHitList::~THcHitList() {
   delete fRawHitList;
   delete [] fSignalTypes;
 }
+
 /**
 
 \brief Save the electronics module to detector mapping and
@@ -86,7 +107,7 @@ void THcHitList::InitHitList(THaDetMap* detmap,
     fRawHitList->ConstructedAt(i);
   }
   // Query a raw hit object to see what kind of data to deliver
-  THcRawHit* rawhit = (THcRawHit*) (*fRawHitList)[0];
+  auto* rawhit = (THcRawHit*) (*fRawHitList)[0];
   fNSignals = rawhit->GetNSignals();
   fSignalTypes = new THcRawHit::ESignalType[fNSignals];
   for(UInt_t isig=0;isig<fNSignals;isig++) {
@@ -98,55 +119,54 @@ void THcHitList::InitHitList(THaDetMap* detmap,
   /* Pull out all the reference channels */
   fNRefIndex = 0;
   fRefIndexMaps.clear();
+  fRefIdxDefined.clear();
   /* Find the biggest refindex */
   for (UInt_t i=0; i < fdMap->GetSize(); i++) {
     THaDetMap::Module* d = fdMap->GetModule(i);
     if(d->plane >= 1000) {
-      Int_t refindex = d->signal;
-      if(refindex>=fNRefIndex) {
-	fNRefIndex = refindex+1;
+      auto refindex = static_cast<Int_t>(d->signal);
+      if( refindex >= fNRefIndex) {
+        fNRefIndex = refindex + 1;
       }
     }
   }
-  // Create the vector.  Could roll this into last loop
-  for(Int_t i=0;i<fNRefIndex;i++) {
-    RefIndexMap map;
-    map.defined = kFALSE;
-    map.hashit = kFALSE;
-    fRefIndexMaps.push_back(map);
-  }
+  // Create the vector
+  fRefIndexMaps.resize(fNRefIndex);
+  fRefIdxDefined.reserve(fNRefIndex/10);
   // Put the refindex mapping information in the vector
-  for (UInt_t i=0; i < fdMap->GetSize(); i++) {
+  for( UInt_t i = 0; i < fdMap->GetSize(); i++ ) {
     THaDetMap::Module* d = fdMap->GetModule(i);
-    if(d->plane >= 1000) {	// This is a reference time definition
-      Int_t refindex = d->signal;
-      if(refindex >= 0) {
-	fRefIndexMaps[refindex].crate = d->crate;
-	fRefIndexMaps[refindex].slot = d->slot;
-	fRefIndexMaps[refindex].channel = d->lo;
-	fRefIndexMaps[refindex].defined = kTRUE;
+    if( d->plane >= 1000 ) {        // This is a reference time definition
+      auto refindex = static_cast<Int_t>(d->signal); // Really an Int_t
+      if( refindex >= 0 ) {
+        auto& theMap = fRefIndexMaps[refindex];
+        theMap.crate = d->crate;
+        theMap.slot = d->slot;
+        theMap.channel = d->lo;
+        theMap.defined = kTRUE;
+        fRefIdxDefined.push_back(refindex);
       } else {
-	cout << "Hitlist: Invalid refindex mapping" << endl;
+        cout << "Hitlist: Invalid refindex mapping" << endl;
       }
     }
   }
   // Loop to check that requested refindex's are defined
   // and that signal #'s are in range
-  for (UInt_t i=0; i < fdMap->GetSize(); i++) {
+  for( UInt_t i = 0; i < fdMap->GetSize(); i++ ) {
     THaDetMap::Module* d = fdMap->GetModule(i);
     Int_t refindex = d->refindex;
-    if(d->plane < 1000) {
-      if(d->signal >= fNSignals) {
-	cout << "Invalid signal " << d->signal << " for " <<
-	  " (" << d->crate << ", " << d->slot <<
-	  ", " << d->lo << ")" << endl;
+    if( d->plane < 1000 ) {
+      if( d->signal >= fNSignals ) {
+        cout << "Invalid signal " << d->signal << " for " <<
+             " (" << d->crate << ", " << d->slot <<
+             ", " << d->lo << ")" << endl;
       }
-      if(refindex >= 0) {
-	if(!fRefIndexMaps[refindex].defined) {
-	  cout << "Refindex " << refindex << " not defined for " <<
-	    " (" << d->crate << ", " << d->slot <<
-	    ", " << d->lo << ")" << endl;
-	}
+      if( refindex >= 0 ) {
+        if( !fRefIndexMaps[refindex].defined ) {
+          cout << "Refindex " << refindex << " not defined for " <<
+               " (" << d->crate << ", " << d->slot <<
+               ", " << d->lo << ")" << endl;
+        }
       }
     }
   }
@@ -159,11 +179,9 @@ void THcHitList::InitHitList(THaDetMap* detmap,
     }
     lnk = lnk->Next();
   }
-  if(lnk) {
-    fPSE125 = static_cast<THcConfigEvtHandler*>(lnk->GetObject());
-  } else {
+  fPSE125 = lnk ? dynamic_cast<THcConfigEvtHandler*>(lnk->GetObject()) : nullptr;
+  if( !fPSE125 ) {
     cout << "THcHitList::InitHitList : Prestart event 125 not found." << endl;
-    fPSE125 = 0;
   }
   fHaveFADCInfo = kFALSE;
 
@@ -184,53 +202,54 @@ multiple signal types (e.g. ADC+, ADC-, TDC+, TDC-), or multiplehits for multihi
 The hit list is sorted (by plane, counter) after filling.
 
 */
-Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarnings ) {
+Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarnings )
+{
+  if( fDisableSlipCorrection )
+    fTISlot = -1;
 
-  if(!fMap) {			// Find the TI slot for ADCs
+  else if( !fMap ) {                        // Find the TI slot for ADCs
     // Assumes that all FADCs are in the same crate
     //cout << "Got the Crate map" << endl;
     fMap = evdata.GetCrateMap();
-    for (UInt_t i=0; i < fdMap->GetSize(); i++) { // Look for a FADC250
+    for( UInt_t i = 0; i < fdMap->GetSize(); i++ ) { // Look for a FADC250
       THaDetMap::Module* d = fdMap->GetModule(i);
-      Decoder::Fadc250Module* isfadc = dynamic_cast<Decoder::Fadc250Module*>(evdata.GetModule(d->crate, d->slot));
-      if(isfadc) {
-	// Scan this crate to find the TI.
-	for(UInt_t slot=0;slot<Decoder::MAXSLOT;slot++) {
-	  if(fMap->getModel(d->crate, slot) == 4) {
-	    fTISlot = slot;
-	    fTICrate = d->crate;
-	    //cout << "TI Slot = " << fTISlot << endl;
-	    break;
-	  }
-	}
-	// Now make a map of all the FADCs in this crate
-	if(fTISlot>0) {
-	  for(UInt_t slot=0;slot<Decoder::MAXSLOT;slot++) {
-	    Decoder::Fadc250Module* fadc = dynamic_cast<Decoder::Fadc250Module*>
-	      (evdata.GetModule(d->crate, slot));
-	    if(fadc) {
-	      fFADCSlotMap[slot] = fadc;
-	    }
-	  }
-	}
-	break;
+      auto* isfadc = dynamic_cast<Decoder::Fadc250Module*>(evdata.GetModule(d->crate, d->slot));
+      if( isfadc ) {
+        // Scan this crate to find the TI.
+        for( UInt_t slot = 0; slot < Decoder::MAXSLOT; slot++ ) {
+          if( fMap->getModel(d->crate, slot) == 4 ) {
+            fTISlot = slot;
+            fTICrate = d->crate;
+            //cout << "TI Slot = " << fTISlot << endl;
+            break;
+          }
+        }
+        // Now make a map of all the FADCs in this crate
+        if( fTISlot > 0 ) {
+          for( UInt_t slot = 0; slot < Decoder::MAXSLOT; slot++ ) {
+            auto* fadc = dynamic_cast<Decoder::Fadc250Module*>(evdata.GetModule(d->crate, slot));
+            if( fadc ) {
+              fFADCSlotMap[slot] = fadc;
+            }
+          }
+        }
+        break;
       }
     }
   }
-  if(fDisableSlipCorrection) fTISlot = -1;
 
   UInt_t titime = 0;
   Bool_t TI_TRIGGER_TIME_FOUND = kFALSE;
-  if(fTISlot>0) {
+  if( fTISlot > 0 ) {
     const UInt_t FUDGE = 7;
-       if (evdata.GetNumHits(fTICrate, fTISlot, 2) > 0) {
+    if( evdata.GetNumHits(fTICrate, fTISlot, 2) > 0 ) {
       TI_TRIGGER_TIME_FOUND = kTRUE;
       titime = evdata.GetData(fTICrate, fTISlot, 2, 0);
       if( titime >= FUDGE )
         titime -= FUDGE;
       else {
-        Warning(Here("DecodeToHitList"), "Invalid TI time %u - %u < 0 "
-                                         " for crate/slot = %d/%d",
+        Warning(Here("DecodeToHitList"),
+                "Invalid TI time %u - %u < 0 for crate/slot = %d/%d",
                 titime, FUDGE, fTICrate, fTISlot);
         titime = 0;
       }
@@ -247,378 +266,400 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
   Bool_t adcref_miss = kFALSE;
 
   // Get the indexed reference times for this event
-  for(Int_t i=0;i<fNRefIndex;i++) {
-    if(fRefIndexMaps[i].defined) {
-      if(evdata.IsMultifunction(fRefIndexMaps[i].crate,fRefIndexMaps[i].slot)) { // Multifunction module (e.g. FADC)
-	// Make sure at least one pulse
-  	UInt_t nrefhits = evdata.GetNumEvents(Decoder::kPulseTime,
-                                              fRefIndexMaps[i].crate,
-                                              fRefIndexMaps[i].slot,
-                                              fRefIndexMaps[i].channel);
-	Int_t timeshift=0;
-	if(fTISlot>0 && TI_TRIGGER_TIME_FOUND) {		// Get the trigger time for this module
-	  if(fTrigTimeShiftMap.find(fRefIndexMaps[i].slot)
-	     == fTrigTimeShiftMap.end()) { //
-	    if(fFADCSlotMap.find(fRefIndexMaps[i].slot) != fFADCSlotMap.end()) {
-	      fTrigTimeShiftMap[fRefIndexMaps[i].slot]
-		= fFADCSlotMap[fRefIndexMaps[i].slot]->GetTriggerTime() - titime;
-	    }
-	    timeshift = fTrigTimeShiftMap[fRefIndexMaps[i].slot];
-	  }
-	}
-	fRefIndexMaps[i].hashit = kFALSE;
-	Bool_t goodreftime=kFALSE;
-	Int_t reftime = 0;
-	Int_t prevtime = 0;
-	Int_t difftime = 0;
-	for(UInt_t ihit=0; ihit<nrefhits; ihit++) {
-	  reftime = evdata.GetData(Decoder::kPulseTime,fRefIndexMaps[i].crate,
-				   fRefIndexMaps[i].slot, fRefIndexMaps[i].channel,ihit);
-	  reftime += 64*timeshift;
-	  if (ihit != 0) difftime=reftime-prevtime;
-	  prevtime = reftime;
-	  if(reftime >= fADC_RefTimeCut) {
-	    goodreftime = kTRUE;
-	    break;
-	  }
-	}
-	//
-	UInt_t nrefsamples=evdata.GetNumEvents(Decoder::kSampleADC,fRefIndexMaps[i].crate,fRefIndexMaps[i].slot, fRefIndexMaps[i].channel);
-	if (nrefhits==0 && nrefsamples>0) {
-	      Int_t ref_fNSA = 0;
-	      Int_t ref_fNSB = 0;
- 	      Int_t ref_fNPED = 0;
-            if (fPSE125) {
-	      ref_fNSA = fPSE125->GetNSA(fRefIndexMaps[i].crate);
-	      ref_fNSB = fPSE125->GetNSB(fRefIndexMaps[i].crate);
- 	      ref_fNPED = fPSE125->GetNPED(fRefIndexMaps[i].crate);
-	      if (ref_fNSA == -1) ref_fNSA  = 26;
-	      if (ref_fNSB == -1) ref_fNSB  = 3;
-	      if (ref_fNPED == -1) ref_fNPED = 4;
+  for( auto i: fRefIdxDefined ) {
+    assert(fRefIndexMaps[i].defined);  // else bug in InitHitList
+    auto& theMap =  fRefIndexMaps[i];
 
-	    } else {
-	      ref_fNSA  = 26;
-	      ref_fNSB  = 3;
-	      ref_fNPED = 4;
-	    }
-	  // Set F250 parameters.
-          THcRawAdcHit* refrawhit = new THcRawAdcHit();
-          refrawhit->SetF250Params(ref_fNSA, ref_fNSB, ref_fNPED);
-	    for (UInt_t isamp=0;isamp<nrefsamples;isamp++) {
-	      refrawhit->SetSample(evdata.GetData(Decoder::kSampleADC,fRefIndexMaps[i].crate,fRefIndexMaps[i].slot, fRefIndexMaps[i].channel, isamp));
-	     }
-	    refrawhit->SetSampThreshold(20.);
-	    refrawhit->SetSampIntTimePedestalPeak();
-	    Int_t NRefSampPulses = refrawhit->GetNSampPulses();
-     	    for(Int_t ihit=0; ihit<NRefSampPulses; ihit++) {
-	        reftime = refrawhit->GetSampPulseTimeRaw(ihit);
-	        reftime += 64*timeshift;
-	        if (ihit != 0) difftime=reftime-prevtime;
-	        prevtime = reftime;
-	        if(reftime >= fADC_RefTimeCut) {
-	           goodreftime = kTRUE;
-	           break;
-	        }
-	     }
-          delete refrawhit;
+    if( evdata.IsMultifunction(theMap.crate, theMap.slot) ) {
+      // Multifunction module (e.g. FADC)
+      Int_t timeshift = 0;
+      if( fTISlot > 0 && TI_TRIGGER_TIME_FOUND ) {                // Get the trigger time for this module
+        auto ishift = fTrigTimeShiftMap.find(theMap.slot);
+        if( ishift == fTrigTimeShiftMap.end() ) {
+          auto ifadc = fFADCSlotMap.find(theMap.slot);
+          if( ifadc != fFADCSlotMap.end() ) {
+            timeshift = fTrigTimeShiftMap[theMap.slot] =
+              static_cast<Int_t>(ifadc->second->GetTriggerTime() - titime);
+          }
+        } else {
+          timeshift = ishift->second;
+        }
       }
-	//
-	if(goodreftime || (nrefhits>0 && fADC_RefTimeBest)|| (nrefsamples>0 && fADC_RefTimeBest)) {
-	  fRefIndexMaps[i].reftime = reftime;
-	  fRefIndexMaps[i].refdifftime = difftime;
-	  fRefIndexMaps[i].hashit = kTRUE;
-	}
-      } else {			// Assume this is a TDC
-	Int_t nrefhits = evdata.GetNumHits(fRefIndexMaps[i].crate,
-					   fRefIndexMaps[i].slot,
-					   fRefIndexMaps[i].channel);
-	fRefIndexMaps[i].hashit = kFALSE;
-	// Only take first hit in this reference channel that is bigger
-	// then fTDC_RefTimeCut
-	Bool_t goodreftime=kFALSE;
-	Int_t reftime = 0;
-	Int_t prevtime = 0;
-	Int_t difftime = 0;
-	for(Int_t ihit=0; ihit<nrefhits; ihit++) {
-	  reftime = evdata.GetData(fRefIndexMaps[i].crate,fRefIndexMaps[i].slot,
-				   fRefIndexMaps[i].channel,ihit);
-	  if( ihit != 0) difftime=reftime-prevtime;
-	    prevtime=reftime;
-	  if(reftime >= fTDC_RefTimeCut) {
-	    goodreftime = kTRUE;
-	    break;
-	  }
-	}
-	if(goodreftime || (nrefhits>0 && fTDC_RefTimeBest)) {
-	    fRefIndexMaps[i].reftime = reftime;
-	    fRefIndexMaps[i].refdifftime = difftime;
-	    fRefIndexMaps[i].hashit = kTRUE;
-	}
+      theMap.hashit = kFALSE;
+      Bool_t goodreftime = kFALSE;
+      Int_t reftime = 0;
+      Int_t prevtime = 0;
+      Int_t difftime = 0;
+      // Make sure there is at least one pulse
+      UInt_t nrefhits = evdata.GetNumEvents(Decoder::kPulseTime,
+                                            theMap.crate, theMap.slot, theMap.channel);
+      for( UInt_t ihit = 0; ihit < nrefhits; ihit++ ) {
+        reftime = evdata.GetData(Decoder::kPulseTime, theMap.crate,
+                                 theMap.slot, theMap.channel, ihit);
+        reftime += 64 * timeshift;
+        if( ihit != 0 )
+          difftime = reftime - prevtime;
+        prevtime = reftime;
+        if( reftime >= fADC_RefTimeCut ) {
+          goodreftime = kTRUE;
+          break;
+        }
+      }
+
+      UInt_t nrefsamples = evdata.GetNumEvents(Decoder::kSampleADC,
+                                               theMap.crate, theMap.slot, theMap.channel);
+      if( nrefhits == 0 && nrefsamples > 0 ) {
+        Int_t ref_fNSA = 0;
+        Int_t ref_fNSB = 0;
+        Int_t ref_fNPED = 0;
+        if( fPSE125 ) {
+          ref_fNSA = fPSE125->GetNSA(theMap.crate);
+          ref_fNSB = fPSE125->GetNSB(theMap.crate);
+          ref_fNPED = fPSE125->GetNPED(theMap.crate);
+          if( ref_fNSA == -1 ) ref_fNSA = 26;
+          if( ref_fNSB == -1 ) ref_fNSB = 3;
+          if( ref_fNPED == -1 ) ref_fNPED = 4;
+        } else {
+          ref_fNSA = 26;
+          ref_fNSB = 3;
+          ref_fNPED = 4;
+        }
+        // Set F250 parameters.
+        auto* refrawhit = new THcRawAdcHit();  // large object, better on the heap
+        refrawhit->SetF250Params(ref_fNSA, ref_fNSB, ref_fNPED);
+        for( UInt_t isamp = 0; isamp < nrefsamples; isamp++ ) {
+          refrawhit->SetSample(
+            evdata.GetData(Decoder::kSampleADC,
+                           theMap.crate, theMap.slot, theMap.channel, isamp));
+        }
+        refrawhit->SetSampThreshold(20.);
+        refrawhit->SetSampIntTimePedestalPeak();
+        UInt_t NRefSampPulses = refrawhit->GetNSampPulses();
+        for( UInt_t ihit = 0; ihit < NRefSampPulses; ihit++ ) {
+          reftime = refrawhit->GetSampPulseTimeRaw(ihit);
+          reftime += 64 * timeshift;
+          if( ihit != 0 )
+            difftime = reftime - prevtime;
+          prevtime = reftime;
+          if( reftime >= fADC_RefTimeCut ) {
+            goodreftime = kTRUE;
+            break;
+          }
+        }
+        delete refrawhit;
+      }
+
+      if( goodreftime || (nrefhits > 0 && fADC_RefTimeBest) || (nrefsamples > 0 && fADC_RefTimeBest) ) {
+        theMap.reftime = reftime;
+        theMap.refdifftime = difftime;
+        theMap.hashit = kTRUE;
+      }
+    }
+
+    else {
+      // Assume this is a TDC
+      UInt_t nrefhits = evdata.GetNumHits(theMap.crate, theMap.slot, theMap.channel);
+      theMap.hashit = kFALSE;
+      // Only take first hit in this reference channel that is bigger
+      // then fTDC_RefTimeCut
+      Bool_t goodreftime = kFALSE;
+      Int_t reftime = 0;
+      Int_t prevtime = 0;
+      Int_t difftime = 0;
+      for( UInt_t ihit = 0; ihit < nrefhits; ihit++ ) {
+        reftime = evdata.GetData(theMap.crate, theMap.slot, theMap.channel, ihit);
+        if( ihit != 0 )
+          difftime = reftime - prevtime;
+        prevtime = reftime;
+        if( reftime >= fTDC_RefTimeCut ) {
+          goodreftime = kTRUE;
+          break;
+        }
+      }
+      if( goodreftime || (nrefhits > 0 && fTDC_RefTimeBest) ) {
+        theMap.reftime = reftime;
+        theMap.refdifftime = difftime;
+        theMap.hashit = kTRUE;
       }
     }
   }
+
+  map<ULong64_t, THcRawHit*> hitlookup;
+  auto lookupkey = []( UInt_t plane, UInt_t counter) -> ULong64_t {
+    return (static_cast<ULong64_t>(plane) << 32) + counter;
+  };
+
+  THcRawHit* prev_rawhit = nullptr;
+  bool sorted = true;
   for ( UInt_t i=0; i < fdMap->GetSize(); i++ ) {
     THaDetMap::Module* d = fdMap->GetModule(i);
 
     // Loop over all channels that have a hit.
     //    cout << "Crate/Slot: " << d->crate << "/" << d->slot << endl;
-    Int_t plane = d->plane;
-    if (plane >= 1000) continue; // Skip reference times
-    Int_t signal = d->signal;
+    auto plane = static_cast<Int_t>(d->plane);
+    if( plane >= 1000 )
+      continue; // Skip reference times
+    auto signal = static_cast<Int_t>(d->signal);
     UInt_t signaltype = fSignalTypes[signal];
     Bool_t multifunction = evdata.IsMultifunction(d->crate, d->slot);
-    // Should probably get the Decoder::Module object and use it's
-    // methods.  Saving a THaEvData::GetModule call every time
 
-    for ( UInt_t j=0; j < evdata.GetNumChan( d->crate, d->slot); j++) {
-      THcRawHit* rawhit=0;
-
-      UInt_t chan = evdata.GetNextChan( d->crate, d->slot, j );
-      if( chan < d->lo || chan > d->hi ) continue;     // Not one of my channels
+    for( UInt_t j = 0; j < evdata.GetNumChan(d->crate, d->slot); j++ ) {
+      UInt_t chan = evdata.GetNextChan(d->crate, d->slot, j);
+      if( chan < d->lo || chan > d->hi )
+        continue;     // Not one of my channels
 
       // Need to convert crate, slot, chan into plane, counter, signal
       // Search hitlist for this plane,counter,signal
-      Int_t counter = d->reverse ? d->first + d->hi - chan : d->first + chan - d->lo;
+      Int_t counter = d->reverse
+                      ? static_cast<Int_t>(d->first + d->hi - chan)
+                      : static_cast<Int_t>(d->first + chan - d->lo);
       //cout << d->crate << " " << d->slot << " " << chan << " " << plane << " "
       // << counter << " " << signal << endl;
-      // Search hit list for plane and counter
-      // We could do sorting
-      UInt_t thishit = 0;
-      while(thishit < fNRawHits) {
-	rawhit = (THcRawHit*) (*fRawHitList)[thishit];
-	if (plane == rawhit->fPlane
-	    && counter == rawhit->fCounter) {
-	  //  cout << "Found as " << thishit << "/" << fNRawHits << " pl = " << plane << " c = " << counter << endl;
-	  break;
-	}
-	thishit++;
-      }
-
-      if(thishit == fNRawHits) {
-	rawhit = (THcRawHit*) fRawHitList->ConstructedAt(thishit,"");
-	fNRawHits++;
+      THcRawHit* rawhit = nullptr;
+      // See if we already have a hit for this plane and counter.
+      auto found = hitlookup.find(lookupkey(plane, counter));
+      if( found != hitlookup.end() )
+        rawhit = found->second;
+      else {
+        rawhit = static_cast<THcRawHit*>(fRawHitList->ConstructedAt(fNRawHits,""));
 	rawhit->fPlane = plane;
 	rawhit->fCounter = counter;
-	//	cout << "Found as " << thishit << " = " << fNRawHits << " pl = " << plane << " c = " << counter << endl;
+	//	cout << "Found as " << fNRawHits << " pl = " << plane << " c = " << counter << endl;
+        hitlookup.emplace(lookupkey(plane, counter), rawhit);
+        fNRawHits++;
+        assert(fNRawHits == hitlookup.size());
+        if( sorted ) {
+          if( prev_rawhit && prev_rawhit->Compare(rawhit) >= 0 )
+            sorted = false;
+          else
+            prev_rawhit = rawhit;
+        }
       }
 
       // Get the data from this channel
       // Allow for multiple hits
-      if(signaltype == THcRawHit::kTDC || !multifunction) {
-	UInt_t nMHits = evdata.GetNumHits(d->crate, d->slot, chan);
-	for (UInt_t mhit = 0; mhit < nMHits; mhit++) {
-          UInt_t data = evdata.GetData( d->crate, d->slot, chan, mhit);
-	  // cout << "Signal " << signal << "=" << data << endl;
-	  rawhit->SetData(signal,data);
-	}
-	// Get the reference time.
-	if(d->refchan >= 0) {
-	  UInt_t nrefhits = evdata.GetNumHits(d->crate,d->slot,d->refchan);
-	  Bool_t goodreftime=kFALSE;
-	  Int_t reftime=0;
-	  Int_t prevtime=0;
-	  Int_t difftime=0;
-	  for(UInt_t ihit=0; ihit<nrefhits; ihit++) {
-	    reftime = evdata.GetData(d->crate, d->slot, d->refchan, ihit);
-	    if (ihit != 0 ) difftime=reftime-prevtime;
-              prevtime = reftime;
-	    if(reftime >= fTDC_RefTimeCut) {
-	      goodreftime = kTRUE;
-	      break;
-	    }
-	  }
-	  // If RefTimeBest flag set, take the last hit if none of the
-	  // hits make the RefTimeCut
-	  if(goodreftime || (nrefhits>0 && fTDC_RefTimeBest)) {
-	    rawhit->SetReference(signal, reftime);
-	    rawhit->SetReferenceDiff(signal, difftime);
-	  } else if (!suppresswarnings) {
-	    cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
-	      " missing for (" << d->crate << ", " << d->slot <<
-	      ", " << chan << ")" << endl;
-	      tdcref_miss = kTRUE;
-	  }
-	} else {
-	  if(d->refindex >=0 && d->refindex < fNRefIndex) {
-	    if(fRefIndexMaps[d->refindex].hashit) {
-	      rawhit->SetReference(signal, fRefIndexMaps[d->refindex].reftime);
-	      rawhit->SetReferenceDiff(signal, fRefIndexMaps[d->refindex].refdifftime);
-	    } else {
-	      if(!suppresswarnings) {
-		cout << "HitList(event=" << evdata.GetEvNum() << "): refindex " << d->refindex <<
-		  " (" << fRefIndexMaps[d->refindex].crate <<
-		  ", " << fRefIndexMaps[d->refindex].slot <<
-		  ", " << fRefIndexMaps[d->refindex].channel << ")" <<
-		  " missing for (" << d->crate << ", " << d->slot <<
-		  ", " << chan << ")" << endl;
-		tdcref_miss = kTRUE;
-	      }
-	    }
-	  }
-	}
-      } else {			// This is a Flash ADC
+      if( signaltype == THcRawHit::kTDC || !multifunction ) {
+        UInt_t nMHits = evdata.GetNumHits(d->crate, d->slot, chan);
+        for( UInt_t mhit = 0; mhit < nMHits; mhit++ ) {
+          Int_t data = evdata.GetData(d->crate, d->slot, chan, mhit);
+          // cout << "Signal " << signal << "=" << data << endl;
+          rawhit->SetData(signal, data);
+        }
+        // Get the reference time.
+        if( d->refchan >= 0 ) {
+          UInt_t nrefhits = evdata.GetNumHits(d->crate, d->slot, d->refchan);
+          Bool_t goodreftime = kFALSE;
+          Int_t reftime = 0;
+          Int_t prevtime = 0;
+          Int_t difftime = 0;
+          for( UInt_t ihit = 0; ihit < nrefhits; ihit++ ) {
+            reftime = evdata.GetData(d->crate, d->slot, d->refchan, ihit);
+            if( ihit != 0 ) difftime = reftime - prevtime;
+            prevtime = reftime;
+            if( reftime >= fTDC_RefTimeCut ) {
+              goodreftime = kTRUE;
+              break;
+            }
+          }
+          // If RefTimeBest flag set, take the last hit if none of the
+          // hits make the RefTimeCut
+          if( goodreftime || (nrefhits > 0 && fTDC_RefTimeBest) ) {
+            rawhit->SetReference(signal, reftime);
+            rawhit->SetReferenceDiff(signal, difftime);
+          } else if( !suppresswarnings ) {
+            cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
+                 " missing for (" << d->crate << ", " << d->slot <<
+                 ", " << chan << ")" << endl;
+            tdcref_miss = kTRUE;
+          }
+        } else {
+          if( d->refindex >= 0 && d->refindex < static_cast<Int_t>(fNRefIndex) ) {
+            const auto& theMap = fRefIndexMaps[d->refindex];
+            if( theMap.hashit ) {
+              rawhit->SetReference(signal, theMap.reftime);
+              rawhit->SetReferenceDiff(signal, theMap.refdifftime);
+            } else {
+              if( !suppresswarnings ) {
+                cout << "HitList(event=" << evdata.GetEvNum() << "): refindex " << d->refindex <<
+                     " (" << theMap.crate <<
+                     ", " << theMap.slot <<
+                     ", " << theMap.channel << ")" <<
+                     " missing for (" << d->crate << ", " << d->slot <<
+                     ", " << chan << ")" << endl;
+                tdcref_miss = kTRUE;
+              }
+            }
+          }
+        }
+      } else {                        // This is a Flash ADC
 
-        if (fPSE125) {
-            if (!fHaveFADCInfo) {
-	    fNSA = fPSE125->GetNSA(d->crate);
-	    fNSB = fPSE125->GetNSB(d->crate);
-	    fNPED = fPSE125->GetNPED(d->crate);
-	      if (fNSA == -1) fNSA  = 26;
-	      if (fNSB == -1) fNSB  = 3;
-	      if (fNPED == -1) fNPED = 4;
-	    fHaveFADCInfo = kTRUE;
-	    }
-        } else if (!fHaveFADCInfo) {
-	      fNSA  = 26;
-	      fNSB  = 3;
-	      fNPED = 4;
-	    fHaveFADCInfo = kTRUE;
-	}
-         rawhit->SetF250Params(fNSA, fNSB, fNPED);
+        if( fPSE125 ) {
+          if( !fHaveFADCInfo ) {
+            fNSA = fPSE125->GetNSA(d->crate);
+            fNSB = fPSE125->GetNSB(d->crate);
+            fNPED = fPSE125->GetNPED(d->crate);
+            if( fNSA == -1 ) fNSA = 26;
+            if( fNSB == -1 ) fNSB = 3;
+            if( fNPED == -1 ) fNPED = 4;
+            fHaveFADCInfo = kTRUE;
+          }
+        } else if( !fHaveFADCInfo ) {
+          fNSA = 26;
+          fNSB = 3;
+          fNPED = 4;
+          fHaveFADCInfo = kTRUE;
+        }
+        rawhit->SetF250Params(fNSA, fNSB, fNPED);
 
 	// Copy the samples
-	UInt_t nsamples=evdata.GetNumEvents(Decoder::kSampleADC, d->crate, d->slot, chan);
+        UInt_t nsamples = evdata.GetNumEvents(Decoder::kSampleADC, d->crate, d->slot, chan);
 
 	// If nsamples comes back zero, may want to suppress further attempts to
 	// get sample data for this or all modules
-	for (UInt_t isamp=0;isamp<nsamples;isamp++) {
-	  rawhit->SetSample(signal,evdata.GetData(Decoder::kSampleADC, d->crate, d->slot, chan, isamp));
-	}
+        for( UInt_t isamp = 0; isamp < nsamples; isamp++ ) {
+          rawhit->SetSample(signal, evdata.GetData(Decoder::kSampleADC, d->crate, d->slot, chan, isamp));
+        }
 	// Now get the pulse mode data
 	// Pulse area will go into regular SetData, others will use special hit methods
-	UInt_t npulses=evdata.GetNumEvents(Decoder::kPulseIntegral, d->crate, d->slot, chan);
-	// Assume that the # of pulses for kPulseTime, kPulsePeak and kPulsePedestal are same;
-	Int_t timeshift=0;
-	if(fTISlot>0 && TI_TRIGGER_TIME_FOUND) {		// Get the trigger time for this module
-	  if(fTrigTimeShiftMap.find(d->slot)
-	     == fTrigTimeShiftMap.end()) { //
-	    if(fFADCSlotMap.find(d->slot) != fFADCSlotMap.end()) {
-	      fTrigTimeShiftMap[d->slot]
-		= fFADCSlotMap[d->slot]->GetTriggerTime() - titime;
-	    }
-	  }
-	  timeshift = fTrigTimeShiftMap[d->slot];
+        UInt_t npulses = evdata.GetNumEvents(Decoder::kPulseIntegral, d->crate, d->slot, chan);
+        // Assume that the # of pulses for kPulseTime, kPulsePeak and kPulsePedestal are same;
+        Int_t timeshift = 0;
+        if( fTISlot > 0 && TI_TRIGGER_TIME_FOUND ) {                // Get the trigger time for this module
+          auto ishift = fTrigTimeShiftMap.find(d->slot);
+          if( ishift == fTrigTimeShiftMap.end() ) {
+            auto ifadc = fFADCSlotMap.find(d->slot);
+            if( ifadc != fFADCSlotMap.end() ) {
+              timeshift = fTrigTimeShiftMap[d->slot] =
+                static_cast<Int_t>(ifadc->second->GetTriggerTime() - titime);
+            }
+          } else {
+            timeshift = ishift->second;
+          }
+        }
+        for( UInt_t ipulse = 0; ipulse < npulses; ipulse++ ) {
+          rawhit->SetDataTimePedestalPeak(signal,
+              evdata.GetData(Decoder::kPulseIntegral, d->crate, d->slot, chan, ipulse),
+              evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, chan, ipulse) + 64 * timeshift,
+              evdata.GetData(Decoder::kPulsePedestal, d->crate, d->slot, chan, ipulse),
+              evdata.GetData(Decoder::kPulsePeak, d->crate, d->slot, chan, ipulse));
 	}
-	for (UInt_t ipulse=0;ipulse<npulses;ipulse++) {
-	  rawhit->SetDataTimePedestalPeak(signal,
-					  evdata.GetData(Decoder::kPulseIntegral, d->crate, d->slot, chan, ipulse),
-					  evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, chan, ipulse)+64*timeshift,
-					  evdata.GetData(Decoder::kPulsePedestal, d->crate, d->slot, chan, ipulse),
-					  evdata.GetData(Decoder::kPulsePeak, d->crate, d->slot, chan, ipulse));
-	}
-	if (nsamples>0) {
-	  	  rawhit->SetSampIntTimePedestalPeak(signal);
-	}
+        if( nsamples > 0 ) {
+          rawhit->SetSampIntTimePedestalPeak(signal);
+        }
 	// Get the reference time for the FADC pulse time
-	if(d->refchan >= 0) {	// Reference time for the slot
-	  UInt_t nrefhits = evdata.GetNumEvents(Decoder::kPulseIntegral,
+        if( d->refchan >= 0 ) {        // Reference time for the slot
+          UInt_t nrefhits = evdata.GetNumEvents(Decoder::kPulseIntegral,
                                                 d->crate, d->slot, d->refchan);
-	  Bool_t goodreftime=kFALSE;
-	  Int_t reftime = 0;
-	  Int_t prevtime = 0;
-	  Int_t difftime = 0;
-	  timeshift=0;
-	  if(fTISlot>0 && TI_TRIGGER_TIME_FOUND) {		// Get the trigger time for this module
-	    if(fTrigTimeShiftMap.find(d->slot)
-	       == fTrigTimeShiftMap.end()) { //
-	      if(fFADCSlotMap.find(d->slot) != fFADCSlotMap.end()) {
-		fTrigTimeShiftMap[d->slot]
-		  = fFADCSlotMap[d->slot]->GetTriggerTime() - titime;
-	      }
-	    }
-	    timeshift = fTrigTimeShiftMap[d->slot];
-	  }
-	  for(UInt_t ihit=0; ihit<nrefhits; ihit++) {
-	    reftime = evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, d->refchan, ihit);
-	    reftime += 64*timeshift;
-	    if (ihit != 0) difftime=reftime-prevtime;
-	    prevtime=reftime;
-	    if(reftime >= fADC_RefTimeCut) {
-	      goodreftime=kTRUE;
-	      break;
-	    }
-	  }
-	//
-	UInt_t nrefsamples=evdata.GetNumEvents(Decoder::kSampleADC, d->crate, d->slot, d->refchan);
-	if (nrefhits==0 && nrefsamples>0) {
-            THcRawAdcHit* refrawhit = new THcRawAdcHit();
-	    for (UInt_t isamp=0;isamp<nrefsamples;isamp++) {
-	      refrawhit->SetSample(evdata.GetData(Decoder::kSampleADC, d->crate, d->slot, d->refchan, isamp));
-	     }
-	    refrawhit->SetSampThreshold(20.);
-	    refrawhit->SetSampIntTimePedestalPeak();
-	    Int_t NRefSampPulses = refrawhit->GetNSampPulses();
-     	    for(Int_t ihit=0; ihit<NRefSampPulses; ihit++) {
-	        reftime = refrawhit->GetSampPulseTimeRaw(ihit);
-	        reftime += 64*timeshift;
-	        if (ihit != 0) difftime=reftime-prevtime;
-	        prevtime = reftime;
-	        if(reftime >= fADC_RefTimeCut) {
-	           goodreftime = kTRUE;
-	           break;
-	      }
-	     }
-          delete refrawhit;
-	}
-	//
-	  // If RefTimeBest flag set, take the last hit if none of the
-	  // hits make the RefTimeCut
-	  if(goodreftime || (nrefhits>0 && fADC_RefTimeBest)|| (nrefsamples>0 && fADC_RefTimeBest)) {
-	    rawhit->SetReference(signal, reftime);
-	    rawhit->SetReferenceDiff(signal, difftime);
-	  } else if (!suppresswarnings) {
+          Int_t reftime = 0;
+          Int_t prevtime = 0;
+          Int_t difftime = 0;
+          timeshift = 0;
+          if( fTISlot > 0 && TI_TRIGGER_TIME_FOUND ) {                // Get the trigger time for this module
+            auto ishift = fTrigTimeShiftMap.find(d->slot);
+            if( ishift == fTrigTimeShiftMap.end() ) {
+              auto ifadc = fFADCSlotMap.find(d->slot);
+              if( ifadc != fFADCSlotMap.end() ) {
+                timeshift = fTrigTimeShiftMap[d->slot] =
+                  static_cast<Int_t>(ifadc->second->GetTriggerTime() - titime);
+              }
+            } else {
+              timeshift = ishift->second;
+            }
+          }
+          Bool_t goodreftime = kFALSE;
+          for( UInt_t ihit = 0; ihit < nrefhits; ihit++ ) {
+            reftime = evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, d->refchan, ihit);
+            reftime += 64 * timeshift;
+            if( ihit != 0 ) difftime = reftime - prevtime;
+            prevtime = reftime;
+            if( reftime >= fADC_RefTimeCut ) {
+              goodreftime = kTRUE;
+              break;
+            }
+          }
+
+          UInt_t nrefsamples = evdata.GetNumEvents(Decoder::kSampleADC, d->crate, d->slot, d->refchan);
+          if( nrefhits == 0 && nrefsamples > 0 ) {
+            auto* refrawhit = new THcRawAdcHit();
+            for( UInt_t isamp = 0; isamp < nrefsamples; isamp++ ) {
+              refrawhit->SetSample(evdata.GetData(Decoder::kSampleADC, d->crate, d->slot, d->refchan, isamp));
+            }
+            refrawhit->SetSampThreshold(20.);
+            refrawhit->SetSampIntTimePedestalPeak();
+            UInt_t NRefSampPulses = refrawhit->GetNSampPulses();
+            for( UInt_t ihit = 0; ihit < NRefSampPulses; ihit++ ) {
+              reftime = refrawhit->GetSampPulseTimeRaw(ihit);
+              reftime += 64 * timeshift;
+              if( ihit != 0 )
+                difftime = reftime - prevtime;
+              prevtime = reftime;
+              if( reftime >= fADC_RefTimeCut ) {
+                goodreftime = kTRUE;
+                break;
+              }
+            }
+            delete refrawhit;
+          }
+
+          // If RefTimeBest flag set, take the last hit if none of the
+          // hits make the RefTimeCut
+          if( goodreftime || (nrefhits > 0 && fADC_RefTimeBest) || (nrefsamples > 0 && fADC_RefTimeBest) ) {
+            rawhit->SetReference(signal, reftime);
+            rawhit->SetReferenceDiff(signal, difftime);
+          } else if( !suppresswarnings ) {
 #ifndef SUPPRESSMISSINGADCREFTIMEMESSAGES
-	    cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
-	      " missing for (" << d->crate << ", " << d->slot <<
-	      ", " << chan << ")" << endl;
+            cout << "HitList(event=" << evdata.GetEvNum() << "): refchan " << d->refchan <<
+              " missing for (" << d->crate << ", " << d->slot <<
+              ", " << chan << ")" << endl;
 #endif
-	      adcref_miss = kTRUE;
-	  }
-	} else {
-	  if(d->refindex >=0 && d->refindex < fNRefIndex) {
-	    if(fRefIndexMaps[d->refindex].hashit) {
-	      rawhit->SetReference(signal, fRefIndexMaps[d->refindex].reftime);
-	      rawhit->SetReferenceDiff(signal, fRefIndexMaps[d->refindex].refdifftime);
-	    } else {
-	      if(!suppresswarnings) {
+            adcref_miss = kTRUE;
+          }
+        } else {
+          if( d->refindex >= 0 && d->refindex < fNRefIndex ) {
+            const auto& theMap = fRefIndexMaps[d->refindex];
+            if( theMap.hashit ) {
+              rawhit->SetReference(signal, theMap.reftime);
+              rawhit->SetReferenceDiff(signal, theMap.refdifftime);
+            } else {
+              if( !suppresswarnings ) {
 #ifndef SUPPRESSMISSINGADCREFTIMEMESSAGES
-		cout << "HitList(event=" << evdata.GetEvNum() << "): refindex " << d->refindex <<
-		  " (" << fRefIndexMaps[d->refindex].crate <<
-		  ", " << fRefIndexMaps[d->refindex].slot <<
-		  ", " << fRefIndexMaps[d->refindex].channel << ")" <<
-		  " missing for (" << d->crate << ", " << d->slot <<
-		  ", " << chan << ")" << endl;
+                cout << "HitList(event=" << evdata.GetEvNum() << "): refindex " << d->refindex <<
+                  " (" << theMap.crate <<
+                  ", " << theMap.slot <<
+                  ", " << theMap.channel << ")" <<
+                  " missing for (" << d->crate << ", " << d->slot <<
+                  ", " << chan << ")" << endl;
 #endif
-		adcref_miss = kTRUE;
-	      }
-	    }
-	  }
-	}
+                adcref_miss = kTRUE;
+              }
+            }
+          }
+        }
       }
     }
   }
 #if 1
-  if(fTISlot>0 && TI_TRIGGER_TIME_FOUND) {
+  if( fTISlot > 0 && TI_TRIGGER_TIME_FOUND ) {
     //    cout << "TI ROC: " << fTICrate << "   TI Time: " << titime << endl;
-    map<Int_t, Int_t>::iterator it;
-    for(it=fTrigTimeShiftMap.begin(); it!=fTrigTimeShiftMap.end(); it++) {
-      if(it->second < -3 || it->second > 3) {
-	cout << "Big ADC Trigger Time Shift, ROC " << fTICrate << endl;
-	cout << it->first << " " << it->second << endl;
+    for( const auto& it: fTrigTimeShiftMap ) {
+      if( it.second < -3 || it.second > 3 ) {
+        cout << "Big ADC Trigger Time Shift, ROC " << fTICrate << endl;
+        cout << it.first << " " << it.second << endl;
       }
     }
-  } else if ( fTISlot>0 && !TI_TRIGGER_TIME_FOUND) {
+  } else if( fTISlot > 0 && !TI_TRIGGER_TIME_FOUND ) {
     //  cout << "TI Trigger Time Not found for event type = " << evdata.GetEvType() << " event num = " << evdata.GetEvNum() << " TI Crate = " <<  fTICrate << " TI Slot = " << fTISlot<< endl;
-   }
+  }
 
 #endif
-  fRawHitList->Sort(fNRawHits);
+  if( !sorted )
+    fRawHitList->Sort(fNRawHits);
 
   fNTDCRef_miss += (tdcref_miss ? 1 : 0);
   fNADCRef_miss += (adcref_miss ? 1 : 0);
   return fNRawHits;		// Does anything care what is returned
 }
-void THcHitList::CreateMissReportParms(const char *prefix)
+void THcHitList::CreateMissReportParms(const char *prefix) const
 {
   /**
 
@@ -631,7 +672,7 @@ Parameters created are ${prefix}_tdcref_miss and ${prefix}_adcref_miss
   gHcParms->Define(Form("%s_tdcref_miss", prefix), "Missing TDC reference times", fNTDCRef_miss);
   gHcParms->Define(Form("%s_adcref_miss", prefix), "Missing ADC reference times", fNADCRef_miss);
 }
-void THcHitList::MissReport(const char *name)
+void THcHitList::MissReport(const char *name) const
 {
   cout << "Missing Ref times:" << setw(20) << name << setw(10) << fNTDCRef_miss << setw(10) << fNADCRef_miss << endl;
 }

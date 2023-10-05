@@ -38,35 +38,35 @@ public:
 			    Int_t tdcref_cut=0, Int_t adcref_cut=0);
 
   TClonesArray* GetHitList() const {return fRawHitList; }
-  void          CreateMissReportParms(const char *prefix);
-  void          MissReport(const char *name);
+  void          CreateMissReportParms(const char *prefix) const;
+  void          MissReport(const char *name) const;
   void          DisableSlipCorrection() {fDisableSlipCorrection = kTRUE;}
 
-  UInt_t         fNRawHits;
+  UInt_t        fNRawHits;
   Int_t         fNMaxRawHits;
   Int_t         fTDC_RefTimeCut;
   Int_t         fADC_RefTimeCut;
   Bool_t        fTDC_RefTimeBest;
   Bool_t        fADC_RefTimeBest;
-  TClonesArray* fRawHitList; // List of raw hits
-  TClass* fRawHitClass;		  // Class of raw hit object to use
+  TClonesArray* fRawHitList;       // List of raw hits
+  TClass*       fRawHitClass;	   // Class of raw hit object to use
 
   THaDetMap*    fdMap;
 
 protected:
 
   struct RefIndexMap { // Mapping for one reference channel
-    Bool_t defined;
-    Bool_t hashit;
-    Int_t crate;
-    Int_t slot;
-    Int_t channel;
-    Int_t reftime;
-    Int_t refdifftime;
+    RefIndexMap() = default;
+    Bool_t defined{false};
+    Bool_t hashit{false};
+    UInt_t crate{0};
+    UInt_t slot{0};
+    UInt_t channel{0};
+    Int_t reftime{0};
+    Int_t refdifftime{0};
   };
   std::vector<RefIndexMap> fRefIndexMaps;
-  // Should this be a sparse list instead in case user
-  // picks ridiculously large refindexes?
+  std::vector<UInt_t> fRefIdxDefined;
 
   Int_t fNRefIndex;
   UInt_t fNSignals;
@@ -85,8 +85,8 @@ protected:
   Int_t fTISlot;
   Int_t fTICrate;
   Bool_t fDisableSlipCorrection;
-  std::map<Int_t, Int_t> fTrigTimeShiftMap;
-  std::map<Int_t, Decoder::Fadc250Module*> fFADCSlotMap;
+  std::map<UInt_t, Int_t> fTrigTimeShiftMap;
+  std::map<UInt_t, Decoder::Fadc250Module*> fFADCSlotMap;
 
   ClassDef(THcHitList,0);  // List of raw hits sorted by plane, counter
 };
