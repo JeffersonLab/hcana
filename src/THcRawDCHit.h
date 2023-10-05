@@ -10,7 +10,7 @@ class THcRawDCHit : public THcRawHit {
   friend class THcDC;
 
   public:
-    THcRawDCHit(Int_t plane=0, Int_t counter=0);
+    explicit THcRawDCHit(Int_t plane=0, Int_t counter=0);
     THcRawDCHit& operator=(const THcRawDCHit& right);
     virtual ~THcRawDCHit();
 

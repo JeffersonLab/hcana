@@ -13,7 +13,7 @@ class THcRawHodoHit : public THcRawHit {
 
   public:
 
-    THcRawHodoHit(Int_t plane=0, Int_t counter=0);
+    explicit THcRawHodoHit(Int_t plane=0, Int_t counter=0);
     THcRawHodoHit& operator=(const THcRawHodoHit& right);
     virtual ~THcRawHodoHit();
 

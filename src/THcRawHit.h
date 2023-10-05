@@ -11,15 +11,11 @@
 class THcRawHit : public TObject {
 
 public:
-  THcRawHit(Int_t plane=0, Int_t counter=0) :
+  explicit THcRawHit( Int_t plane = 0, Int_t counter = 0 ) :
     fPlane(plane), fCounter(counter) {};
- THcRawHit( const THcRawHit& rhs ) : TObject(rhs) {}
-  THcRawHit& operator=( const THcRawHit& rhs )
-    { TObject::operator=(rhs);
-      if (this != &rhs) { fPlane = rhs.fPlane; fCounter = rhs.fCounter; }
-      return *this; };
-
-  virtual ~THcRawHit() {}
+  THcRawHit( const THcRawHit& rhs ) = default;
+  THcRawHit& operator=( const THcRawHit& rhs ) = default;
+  virtual ~THcRawHit() = default;
 
   enum ESignalType { kUndefined, kTDC, kADC};
 
