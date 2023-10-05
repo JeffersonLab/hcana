@@ -584,7 +584,7 @@ Int_t THcDC::Decode( const THaEvData& evdata )
       cout << " RAW_TOT_HITS = " <<  fNRawHits << endl;
       cout << " Hit #  " << "Plane  " << " Wire " <<  " Raw TDC " << endl;
       for(UInt_t ihit = 0; ihit < fNRawHits ; ihit++) {
-	THcRawDCHit* hit = (THcRawDCHit *) fRawHitList->At(ihit);
+	auto* hit = (THcRawDCHit *) fRawHitList->At(ihit);
 	for(UInt_t imhit = 0; imhit < hit->GetRawTdcHit().GetNHits(); imhit++) {
 	  counter++;
 	  cout << counter << "      " << hit->fPlane << "     " << hit->fCounter << "     " << hit->GetRawTdcHit().GetTimeRaw(imhit)	   << endl;
@@ -598,7 +598,7 @@ Int_t THcDC::Decode( const THaEvData& evdata )
 }
 
 //_____________________________________________________________________________
-Int_t THcDC::ApplyCorrections( void )
+Int_t THcDC::ApplyCorrections( )
 {
   return(0);
 }

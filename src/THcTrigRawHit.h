@@ -9,7 +9,7 @@
 
 class THcTrigRawHit : public THcRawHit {
   public:
-    THcTrigRawHit(Int_t plane=0, Int_t counter=0);
+    explicit THcTrigRawHit(Int_t plane=0, Int_t counter=0);
     THcTrigRawHit& operator=(const THcTrigRawHit& right);
     virtual ~THcTrigRawHit();
 

@@ -10,7 +10,7 @@ class THcRawShowerHit : public THcRawHit {
   friend class THcShowerArray;
 
   public:
-    THcRawShowerHit(Int_t plane=0, Int_t counter=0);
+    explicit THcRawShowerHit(Int_t plane=0, Int_t counter=0);
     THcRawShowerHit& operator=(const THcRawShowerHit& right);
     virtual ~THcRawShowerHit();
 
