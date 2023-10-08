@@ -8,7 +8,7 @@
 */
 
 #include "THcRawHit.h"
-
+#include <cassert>
 
 Int_t THcRawHit::Compare(const TObject* obj) const
 {
