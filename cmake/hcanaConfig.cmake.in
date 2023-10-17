@@ -1,3 +1,5 @@
+# hcana CMake project configuration file. For use by subprojects/plugins.
+
 @PACKAGE_INIT@
 
 message(STATUS "Found @PROJECT_NAME@: @PACKAGE_CMAKE_INSTALL_PREFIX@ (found version @PROJECT_VERSION@@EXTVERS@)")
@@ -9,9 +11,13 @@ if(IS_DIRECTORY "@PACKAGE_INSTALL_CONFIGDIR@/Modules")
   list(APPEND CMAKE_MODULE_PATH "@PACKAGE_INSTALL_CONFIGDIR@/Modules")
 endif()
 
-include("@PACKAGE_TARGETS_FILE@")
+# Save PACKAGE_PREFIX_DIR. Dependencies may overwrite it.
+set(@PROJECT_NAME_UC@_SAVED_PACKAGE_PREFIX_DIR "${PACKAGE_PREFIX_DIR}")
 
 @FIND_DEPENDENCY_COMMANDS@
 
-check_required_components(@PROJECT_NAME_UC@)
+set(PACKAGE_PREFIX_DIR "${@PROJECT_NAME_UC@_SAVED_PACKAGE_PREFIX_DIR}")
+unset(@PROJECT_NAME_UC@_SAVED_PACKAGE_PREFIX_DIR)
+include("@PACKAGE_TARGETS_FILE@")
 
+check_required_components(@PROJECT_NAME_UC@)
