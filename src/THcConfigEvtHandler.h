@@ -90,11 +90,11 @@ private:
   std::map<UInt_t, CrateConfig> fCrateInfoMap;  // roc -> crate info
   std::vector<std::string> fParms;  // names of parameters we've defined
 
-  UInt_t DecodeFADC250Config( THaEvData* evdata, UInt_t ip,
+  UInt_t DecodeFADC250Config( THaEvData* evdata, UInt_t ip, UInt_t len,
                               CrateConfig::FADC250_t& cfg );
-  UInt_t DecodeCAEN1190Config( THaEvData* evdata, UInt_t ip,
+  UInt_t DecodeCAEN1190Config( THaEvData* evdata, UInt_t ip, UInt_t len,
                                CrateConfig::CAEN1190_t& cfg );
-  UInt_t DecodeTIConfig( THaEvData* evdata, UInt_t ip,
+  UInt_t DecodeTIConfig( THaEvData* evdata, UInt_t ip, UInt_t len,
                          CrateConfig::TI_t& cfg );
 
   ClassDef(THcConfigEvtHandler,0)  // Hall C event type 125

@@ -32,6 +32,7 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
+#include <cassert>
 
 using namespace std;
 
@@ -117,15 +118,15 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
 
     if( (thisword & 0xffffff00) == 0xdafadc00 ) {
       // FADC250 information
-      ip = DecodeFADC250Config(evdata, ip, cinfo.FADC250);
+      ip = DecodeFADC250Config(evdata, ip, evlen, cinfo.FADC250);
 
     } else if( thisword == 0xdedc1190 ) {
       // CAEN 1190 information
-      ip = DecodeCAEN1190Config(evdata, ip, cinfo.CAEN1190);
+      ip = DecodeCAEN1190Config(evdata, ip, evlen, cinfo.CAEN1190);
 
     } else if( thisword == 0xd0000000 ) {
       // TI setup data
-      ip = DecodeTIConfig(evdata, ip, cinfo.TI);
+      ip = DecodeTIConfig(evdata, ip, evlen, cinfo.TI);
 
     } else {
       cerr << whereami << ": Expected header missing"
@@ -154,15 +155,21 @@ Int_t THcConfigEvtHandler::Analyze(THaEvData *evdata)
   return 1;
 }
 
-UInt_t THcConfigEvtHandler::DecodeFADC250Config( THaEvData* evdata, UInt_t ip,
-                                                 CrateConfig::FADC250_t& cfg )
+UInt_t THcConfigEvtHandler::DecodeFADC250Config(
+  THaEvData* evdata, UInt_t ip, UInt_t len, CrateConfig::FADC250_t& cfg )
 {
   static const char* here = "THcConfigEvtHandler::DecodeFADC250Config";
   const char* whereami = Here(here);
 
+  assert(ip < len);
   UInt_t thisword = evdata->GetRawData(ip);
   if( fDebug )
     cout << whereami << ": FADC250 config: Block level " << (thisword & 0xff) << endl;
+  if( ip+13 >= len ) {
+    cerr << whereami << ": FADC250 config block unexpectedly too short. "
+                        "Call expert." << endl;
+    return len;
+  }
   UInt_t versionword = evdata->GetRawData(ip + 1);
   if( (versionword & 0xffff0000) == 0xabcd0000 ) {
     //UInt_t version = versionword & 0xffff;
@@ -189,49 +196,71 @@ UInt_t THcConfigEvtHandler::DecodeFADC250Config( THaEvData* evdata, UInt_t ip,
          << hex << thisword << dec << ", expected 0xabcdNNNN" << endl;
   }
   ip += 14;
+  if( ip >= len ) {
+    assert(ip == len);
+    return ip;
+  }
 
   // A set of per-slot ADC thresholds may follow
   thisword = evdata->GetRawData(ip);
-  if( (thisword & 0xffffff00) == 0xfadcf000 ) {
+  if( (thisword & 0xffffff00) != 0xfadcf000 )
+    return ip;
+
+  if( fDebug )
+    cout << whereami << ": FADC250 thresholds for slot";
+  while( (thisword & 0xffffff00) == 0xfadcf000 ) {
+    UInt_t slot = thisword & 0x1f;
     if( fDebug )
-      cout << whereami << ": FADC250 thresholds for slot";
-    while( (thisword & 0xffffff00) == 0xfadcf000 ) {
-      UInt_t slot = thisword & 0x1f;
-      if( fDebug )
-        cout << " " << slot;
-      // Should check if this slot has already been SDC_WIRE_CENTER
-      auto ithr =
-        cfg.thresholds.emplace(slot, std::array<UInt_t, NTHR>{});
-      if( ithr.second ) // if insertion successful, then we've added a module
-        cfg.nmodules++;
-      ip++;
-      for( auto& threshold: ithr.first->second )  // assigns NTHR (=16) values
-        threshold = evdata->GetRawData(ip++);
-      UInt_t lastword = evdata->GetRawData(ip++);
-      if( lastword != (0xfadcff00 | slot) ) {
-        if( fDebug )
-          cout << endl;
-        cerr << whereami << ": Unexpected FADC250 threshold block trailer"
-             << ", expected " << hex << (0xfadcff00 | slot)
-             << ", got " << lastword << dec
-             << ". Thresholds for this slot may be incorrect." << endl;
-      }
-      thisword = evdata->GetRawData(ip);
+      cout << " " << slot;
+    if( ip+1+NTHR >= len ) {
+      cerr << whereami << ": FADC250 threshold data block unexpectedly too "
+                          "short. Call expert." << endl;
+      return len;
     }
-    if( fDebug )
-      cout << endl;
+    auto ithr =
+      cfg.thresholds.emplace(slot, std::array<UInt_t, NTHR>{});
+    if( ithr.second ) // if insertion successful, then we've added a module
+      cfg.nmodules++;
+    ip++;
+    for( auto& threshold: ithr.first->second ) { // assigns NTHR (=16) values
+      assert(ip < len);
+      threshold = evdata->GetRawData(ip++);
+    }
+    assert(ip < len);
+    UInt_t lastword = evdata->GetRawData(ip++);
+    if( lastword != (0xfadcff00 | slot) ) {
+      if( fDebug )
+        cout << endl;
+      cerr << whereami << ": Unexpected FADC250 threshold block trailer"
+           << ", expected " << hex << (0xfadcff00 | slot)
+           << ", got " << lastword << dec
+           << ". Thresholds for this slot may be incorrect." << endl;
+    }
+    if( ip >= len ) {
+      assert(ip == len);
+      break;
+    }
+    thisword = evdata->GetRawData(ip);
   }
+  if( fDebug )
+    cout << endl;
 
   return ip;
 }
 
-UInt_t THcConfigEvtHandler::DecodeCAEN1190Config( THaEvData* evdata, UInt_t ip,
-                                                  CrateConfig::CAEN1190_t& cfg )
+UInt_t
+THcConfigEvtHandler::DecodeCAEN1190Config(
+  THaEvData* evdata, UInt_t ip, UInt_t len, CrateConfig::CAEN1190_t& cfg )
 {
   static const char* here = "THcConfigEvtHandler::DecodeCAEN1190Config";
   const char* whereami = Here(here);
-  const UInt_t trailer = 0xdedc119f;
+  constexpr UInt_t trailer = 0xdedc119f;
 
+  if( ip+5 >= len ) {
+    cerr << whereami << ": CAEN1190 config block unexpectedly too short. "
+                        "Call expert." << endl;
+    return len;
+  }
   if (fDebug)
     cout << whereami << ": CAEN1190 TDC information" << endl;
   UInt_t versionword = evdata->GetRawData(ip + 1);
@@ -246,20 +275,27 @@ UInt_t THcConfigEvtHandler::DecodeCAEN1190Config( THaEvData* evdata, UInt_t ip,
       cerr << whereami << ": Unexpected 1190 configuration block trailer"
            << ", expected " << hex << trailer << ", got " << lastword << dec << endl;
     }
+    ip += 6;
+    assert(ip <= len);
   } else {
-    UInt_t thisword = evdata->GetRawData(ip);
     cerr << whereami << ": Unexpected 1190 version word "
-         << hex << thisword << dec  << ", expected 0xabcdNNNN" << endl;
+         << hex << versionword << dec  << ", expected 0xabcdNNNN" << endl;
+    ip = len; // We don't know the data length. Give up on this event.
   }
-  return ip + 6;
+  return ip;
 }
 
-UInt_t THcConfigEvtHandler::DecodeTIConfig( THaEvData* evdata, UInt_t ip,
-                                            CrateConfig::TI_t& cfg )
+UInt_t THcConfigEvtHandler::DecodeTIConfig(
+  THaEvData* evdata, UInt_t ip, UInt_t len, CrateConfig::TI_t& cfg )
 {
   static const char* here = "THcConfigEvtHandler::DecodeTIConfig";
   const char* whereami = Here(here);
 
+  if( ip+2+NPS >= len ) {
+    cerr << whereami << ": CAEN1190 config block unexpectedly too short. "
+                        "Call expert." << endl;
+    return len;
+  }
   if (fDebug)
     cout << whereami << ": TI setup data" << endl;
 
@@ -270,6 +306,11 @@ UInt_t THcConfigEvtHandler::DecodeTIConfig( THaEvData* evdata, UInt_t ip,
     cfg.present = true;
     cfg.nped = evdata->GetRawData(ip++);
     if( version >= 2 ) {
+      if( ip+1+NPS >= len ) {
+        cerr << whereami << ": CAEN1190 config block unexpectedly too short. "
+                            "Call expert." << endl;
+        return len;
+      }
       cfg.scaler_period = evdata->GetRawData(ip++);
       cfg.sync_count = evdata->GetRawData(ip++);
     } else {
@@ -278,6 +319,7 @@ UInt_t THcConfigEvtHandler::DecodeTIConfig( THaEvData* evdata, UInt_t ip,
     }
     // Prescale factors
     for( UInt_t i = 0; i < NPS; i++ ) {
+      assert(ip < len);
       auto ps = cfg.prescales[i] = static_cast<Int_t>(evdata->GetRawData(ip++));
       if( evdata->GetDataVersion() > 2 ) {
         // CODA3: Calculate actual factor from "exponent" format
@@ -296,16 +338,16 @@ UInt_t THcConfigEvtHandler::DecodeTIConfig( THaEvData* evdata, UInt_t ip,
       } else
         cfg.ps_factors = cfg.prescales;
     }
+    assert(ip < len);
     UInt_t lastword = evdata->GetRawData(ip++);
     if( lastword != 0xd000000f ) {
       cerr << whereami << ": Unexpected last word of TI information block "
            << hex << lastword << dec << endl;
     }
   } else {
-    UInt_t thisword = evdata->GetRawData(ip);
-    cerr << whereami << ": Unexpected TI info word " << hex << thisword
+    cerr << whereami << ": Unexpected TI info word " << hex << versionword
          << dec << endl << "  Expected 0xabcdNNNN" << endl;
-    ip += 11; // This may be wrong. Look for trailer? Give up on entire event?
+    ip = len; // We don't know the data length. Give up on this event.
   }
   return ip;
 }
@@ -325,7 +367,8 @@ void THcConfigEvtHandler::MakeParms( UInt_t roc ) {
 void THcConfigEvtHandler::PrintConfig()
 {
   for( const auto& crate_config : fCrateInfoMap ) {
-    cout << "================= Configuration Data ROC " << crate_config.first << "==================" << endl;
+    cout << "+================= Configuration Data ROC "
+         << crate_config.first << " ==================" << endl;
     crate_config.second.Print();
   }
 }
