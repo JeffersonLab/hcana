@@ -339,16 +339,16 @@ void THcRawAdcHit::SetSampIntTimePedestalPeak() {
 
   } else {
     //
-    Bool_t FADCerror = kFALSE;
-    if( fNPulses == 0 ) FADCerror = kTRUE;
-    if( FADCerror ) fSampPed = GetIntegral(fNSamples - fNPedestalSamples, fNSamples - 1);
-    // if fNPulses==0 then pedestal region has a pulse above the FADC ROL threshold in mode9/10
-    // if fNPulses!=0 then good mode 10 event
+    Bool_t CheckSampBelowThres = kFALSE;
+     Int_t LastFourSampPed = GetIntegral(fNSamples - fNPedestalSamples, fNSamples - 1);
+    if ( LastFourSampPed < fSampPed) {
+           fSampPed= LastFourSampPed;
+           CheckSampBelowThres = kTRUE;
+    }
     while( NS < int(fNSamples) && fNSampPulses < fMaxNPulses ) {
       // GetSample(NS) Pedestal subtracted sample value (mV)
-      if( FADCerror ) { // if FADC error find first sample below threshold to start search
-        if( GetSample(NS) < fSampThreshold ) FADCerror = kFALSE;
-        // when FADCerror = kFALSE can treat rest of waveform like good mode 10
+      if( CheckSampBelowThres ) { // find sample below threshold to start search
+        if( GetSample(NS) < fSampThreshold ) CheckSampBelowThres = kFALSE;
       } else {
         Int_t ns_found = 0;
         for( Int_t nt = NS; nt < TMath::Min((NS + fNSAT), int(fNSamples)); nt++ ) {
@@ -388,6 +388,7 @@ void THcRawAdcHit::SetSampIntTimePedestalPeak() {
           //	  if (fNPulses ==0) 	  std::cout << " NsampPulse = " << fNSampPulses+1 << " " << fSampPulseInt[fNSampPulses] << " " << GetSampPulseInt(fNSampPulses) << " npeak = " <<PeakBin << " " << fSampPulseAmp[fNSampPulses] << " " << GetSampPulseAmp(fNSampPulses) << " " << fSampPulseTime[fNSampPulses]<< " " << GetSampPulseTime(fNSampPulses) << " Vmid = " << VMid  << " TC = " << NS << " TC+NSA-1 ="  << NS+fNSA << std::endl;
           fNSampPulses++;
           NS = NS + fNSA;
+	  CheckSampBelowThres = kTRUE;
         }
       }
       NS++;
