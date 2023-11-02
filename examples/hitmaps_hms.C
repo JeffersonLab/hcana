@@ -35,5 +35,5 @@
     h[ihn]->SetFillStyle(3354);
     h[ihn]->Draw("same");
   }
-
+c1->Print("Scintillator_Hit_Maps.png");
 }
