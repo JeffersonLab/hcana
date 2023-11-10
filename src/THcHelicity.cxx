@@ -341,6 +341,10 @@ Int_t THcHelicity::Decode( const THaEvData& evdata )
 
   fEvNumCheck++;
   Int_t evnum = evdata.GetEvNum();
+
+  // For split replay support
+  if(fEvNumCheck == 1) fEvNumCheck = evnum;
+    
   if(fEvNumCheck!=evnum) {
     cout << "THcHelicity: Missed " << evnum-fEvNumCheck << " events at event " << evnum << endl;
     cout << "             Disabling helicity decoding for rest of run." << endl;
