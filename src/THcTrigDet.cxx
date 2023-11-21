@@ -166,6 +166,8 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
     fTdcTimeRaw[i] = 0;
     fTdcTime[i] = 0.0;
     //Clear vectors used to store all good hits
+    fVecTdcTimeRaw[i].clear();
+    fVecTdcTime[i].clear();
     fTdcMultiplicity[i] = 0;
   };
 
@@ -238,6 +240,8 @@ void THcTrigDet::Clear(Option_t* opt) {
     fTdcTimeRaw[i] = 0;
     fTdcTime[i] = 0.0;
     //clear vectors used to stor all good hits.
+    fVecTdcTimeRaw[i].clear();
+    fVecTdcTime[i].clear();
     fTdcMultiplicity[i] = 0;
   };
        fSampWaveform.clear();
@@ -341,8 +345,8 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
 	    }
 	    if (TestTime>=fTdcTimeWindowMin[cnt]&&TestTime<=fTdcTimeWindowMax[cnt]) {
 	      //Fill vectors of good hits.
-	      fVecTdcTimeRaw[cnt].push_back(rawTdcHit.GetTimeRaw(good_hit));
-	      fVecTdcTime[cnt].push_back(rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset);
+	      fVecTdcTimeRaw[cnt].push_back(rawTdcHit.GetTimeRaw(thit));
+	      fVecTdcTime[cnt].push_back(rawTdcHit.GetTime(thit)*fTdcChanperNS+fTdcOffset);
 	      if (good_hit==999) {
 		//This will only ever find the first good hit in the window and never try again. (Assumes ordered, takes closest hit)
 		good_hit=thit;
@@ -350,13 +354,15 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
 	    }
 	   }
 	   //Only if no good hit was found in the window, use th closest hit to timewindowmin
-	   if (good_hit == 999 and closest_hit != 999) good_hit=closest_hit;
-	   if (good_hit<rawTdcHit.GetNHits()) {
-	     fTdcTimeRaw[cnt] = rawTdcHit.GetTimeRaw(good_hit);
-	     fTdcTime[cnt] = rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset;
+	   if (good_hit == 999 and closest_hit != 999) {
+	     good_hit=closest_hit;
 	     //Also fill vectors here for when a good hit within window isn't found, use closest hit.
 	     fVecTdcTimeRaw[cnt].push_back(rawTdcHit.GetTimeRaw(good_hit));
 	     fVecTdcTime[cnt].push_back(rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset);
+	   }
+	   if (good_hit<rawTdcHit.GetNHits()) {
+	     fTdcTimeRaw[cnt] = rawTdcHit.GetTimeRaw(good_hit);
+	     fTdcTime[cnt] = rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset;
 	   }
 	   //Add zero to vector if no hit is found.  
 	   if (good_hit == 999 and closest_hit == 999) {
@@ -724,6 +730,13 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
     };
     vars.push_back(entry1);
 
+    RVarDef entry1vec {
+      vecTdcTimeRawTitle.at(i).Data(),
+      vecTdcTimeRawTitle.at(i).Data(),
+      vecTdcTimeRawVar.at(i).Data()
+    };
+    vars.push_back(entry1vec);
+
     tdcTimeTitle.at(i) = fTdcNames.at(i) + "_tdcTime";
     tdcTimeVar.at(i) = TString::Format("fTdcTime[%d]", i);
     //Add fVecTdcTimeRaw output
@@ -736,6 +749,13 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
       tdcTimeVar.at(i).Data()
     };
     vars.push_back(entry2);
+
+    RVarDef entry2vec {
+      vecTdcTimeTitle.at(i).Data(),
+      vecTdcTimeTitle.at(i).Data(),
+      vecTdcTimeVar.at(i).Data()
+    };
+    vars.push_back(entry2vec);
 
     tdcMultiplicityTitle.at(i) = fTdcNames.at(i) + "_tdcMultiplicity";
     tdcMultiplicityVar.at(i) = TString::Format("fTdcMultiplicity[%d]", i);
