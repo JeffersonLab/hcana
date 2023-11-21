@@ -163,9 +163,8 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
     fAdcMultiplicity[i] = 0;
   };
   for (int i=0; i<fMaxTdcChannels; ++i) {
-    fTdcTimeRaw[i] = 0;
-    fTdcTime[i] = 0.0;
-    //Clear vectors used to store all good hits
+    //fTdcTimeRaw[i] = 0;
+    //fTdcTime[i] = 0.0;
     fTdcMultiplicity[i] = 0;
   };
 
@@ -235,9 +234,8 @@ void THcTrigDet::Clear(Option_t* opt) {
     fAdcSampMultiplicity[i] = 0;
   };
   for (int i=0; i<fNumTdc; ++i) {
-    fTdcTimeRaw[i] = 0;
-    fTdcTime[i] = 0.0;
-    //clear vectors used to stor all good hits.
+    //fTdcTimeRaw[i] = 0;
+    //fTdcTime[i] = 0.0;
     fTdcMultiplicity[i] = 0;
   };
        fSampWaveform.clear();
@@ -340,35 +338,29 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
 	      TimeDiff=abs(TestTime-fTdcTimeWindowMin[cnt]);
 	    }
 	    if (TestTime>=fTdcTimeWindowMin[cnt]&&TestTime<=fTdcTimeWindowMax[cnt]) {
-	      //Fill vectors of good hits.
-	      fVecTdcTimeRaw[cnt].push_back(rawTdcHit.GetTimeRaw(good_hit));
-	      fVecTdcTime[cnt].push_back(rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset);
-	      if (good_hit==999) {
-		//This will only ever find the first good hit in the window and never try again. (Assumes ordered, takes closest hit)
-		good_hit=thit;
-	      }
+	        good_hit=thit; //If any hit is found within the window, reset good_hit
+		fTdcTimeRaw[cnt].push_back(rawTdcHit.GetTimeRaw(good_hit));
+		fTdcTime[cnt].push_back(rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset);
 	    }
 	   }
-	   //Only if no good hit was found in the window, use th closest hit to timewindowmin
-	   if (good_hit == 999 and closest_hit != 999) good_hit=closest_hit;
-	   if (good_hit<rawTdcHit.GetNHits()) {
-	     fTdcTimeRaw[cnt] = rawTdcHit.GetTimeRaw(good_hit);
-	     fTdcTime[cnt] = rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset;
-	     //Also fill vectors here for when a good hit within window isn't found, use closest hit.
-	     fVecTdcTimeRaw[cnt].push_back(rawTdcHit.GetTimeRaw(good_hit));
-	     fVecTdcTime[cnt].push_back(rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset);
+	   if (good_hit == 999 and closest_hit != 999) {
+	     good_hit=closest_hit; //If no good hit found within the window, add the closest hit
+	     if (good_hit<rawTdcHit.GetNHits()) {
+	       fTdcTimeRaw[cnt].push_back(rawTdcHit.GetTimeRaw(good_hit));
+	       fTdcTime[cnt].push_back(rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset);
+	     }
 	   }
-	   //Add zero to vector if no hit is found.  
 	   if (good_hit == 999 and closest_hit == 999) {
 	     //If no hits were found, set the hit to 0 for this channel
-	     fVecTdcTimeRaw[cnt].push_back(0);
-	     fVecTdcTime[cnt].push_back(0);
+	       fTdcTimeRaw[cnt].push_back(0);
+	       fTdcTime[cnt].push_back(0);
 	   }
-	   //Sort the vector in ascending order
-	   std::sort(fVecTdcTimeRaw[cnt].begin(), fVecTdcTimeRaw[cnt].end());
-	   std::sort(fVecTdcTime[cnt].begin(), fVecTdcTime[cnt].end());
+	   //Sort the values from smallest to largest
+	   std::sort(fTdcTimeRaw[cnt].begin(), fTdcTimeRaw[cnt].end());
+	   std::sort(fTdcTime[cnt].begin(), fTdcTime[cnt].end());
+	   //Correct ctime and rftime .at() function.
 
-	   fTdcMultiplicity[cnt] = rawTdcHit.GetNHits();
+      fTdcMultiplicity[cnt] = rawTdcHit.GetNHits();
     }
     else {
       throw std::out_of_range(
@@ -707,16 +699,12 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   // Push the variable names for TDC channels.
   std::vector<TString> tdcTimeRawTitle(fNumTdc), tdcTimeRawVar(fNumTdc);
   std::vector<TString> tdcTimeTitle(fNumTdc), tdcTimeVar(fNumTdc);
-  std::vector<TString> vecTdcTimeRawTitle(fNumTdc), vecTdcTimeRawVar(fNumTdc);
-  std::vector<TString> vecTdcTimeTitle(fNumTdc), vecTdcTimeVar(fNumTdc);
   std::vector<TString> tdcMultiplicityTitle(fNumTdc), tdcMultiplicityVar(fNumTdc);
 
   for (int i=0; i<fNumTdc; ++i) {
     tdcTimeRawTitle.at(i) = fTdcNames.at(i) + "_tdcTimeRaw";
     tdcTimeRawVar.at(i) = TString::Format("fTdcTimeRaw[%d]", i);
-    //Add fVecTdcTimeRaw output
-    vecTdcTimeRawTitle.at(i) = fTdcNames.at(i) + "_vecTdcTimeRaw";
-    vecTdcTimeRawVar.at(i) = TString::Format("fVecTdcTimeRaw[%d]", i);
+
     RVarDef entry1 {
       tdcTimeRawTitle.at(i).Data(),
       tdcTimeRawTitle.at(i).Data(),
@@ -726,10 +714,6 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
 
     tdcTimeTitle.at(i) = fTdcNames.at(i) + "_tdcTime";
     tdcTimeVar.at(i) = TString::Format("fTdcTime[%d]", i);
-    //Add fVecTdcTimeRaw output
-    vecTdcTimeTitle.at(i) = fTdcNames.at(i) + "_vecTdcTime";
-    vecTdcTimeVar.at(i) = TString::Format("fVecTdcTime[%d]", i);
-
     RVarDef entry2 {
       tdcTimeTitle.at(i).Data(),
       tdcTimeTitle.at(i).Data(),

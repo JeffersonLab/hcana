@@ -72,6 +72,9 @@ class THcTrigDet : public THaDetector, public THcHitList {
 
     Int_t fTdcTimeRaw[fMaxTdcChannels];
     Double_t fTdcTime[fMaxTdcChannels];
+    vector<Int_t> fVecTdcTimeRaw[fMaxTdcChannels];
+    vector<Double_t> fVecTdcTime[fMaxTdcChannels];
+
     Int_t fTDC_RefTimeCut;
     Int_t fADC_RefTimeCut;
 
