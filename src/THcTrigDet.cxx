@@ -165,6 +165,8 @@ THaAnalysisObject::EStatus THcTrigDet::Init(const TDatime& date) {
   for (int i=0; i<fMaxTdcChannels; ++i) {
     fTdcTimeRaw[i] = 0;
     fTdcTime[i] = 0.0;
+    fVecTdcTimeRaw[i].clear();
+    fVecTdcTime[i].clear();
     fTdcMultiplicity[i] = 0;
   };
 
@@ -236,6 +238,8 @@ void THcTrigDet::Clear(Option_t* opt) {
   for (int i=0; i<fNumTdc; ++i) {
     fTdcTimeRaw[i] = 0;
     fTdcTime[i] = 0.0;
+    fVecTdcTimeRaw[i].clear();
+    fVecTdcTime[i].clear();
     fTdcMultiplicity[i] = 0;
   };
        fSampWaveform.clear();
@@ -337,16 +341,31 @@ Int_t THcTrigDet::Decode(const THaEvData& evData) {
 	      closest_hit=thit;
 	      TimeDiff=abs(TestTime-fTdcTimeWindowMin[cnt]);
 	    }
-	    if (TestTime>=fTdcTimeWindowMin[cnt]&&TestTime<=fTdcTimeWindowMax[cnt]&&good_hit==999) {
-	      good_hit=thit;
+	    if (TestTime>=fTdcTimeWindowMin[cnt]&&TestTime<=fTdcTimeWindowMax[cnt]) {
+	      fVecTdcTimeRaw[cnt].push_back(rawTdcHit.GetTimeRaw(thit));
+	      fVecTdcTime[cnt].push_back(rawTdcHit.GetTime(thit)*fTdcChanperNS+fTdcOffset);
+	      if (good_hit==999) {
+		good_hit=thit;
+	      }
 	    }
 	   }
-	   if (good_hit == 999 and closest_hit != 999) good_hit=closest_hit;
-	 if (good_hit<rawTdcHit.GetNHits()) {
-      fTdcTimeRaw[cnt] = rawTdcHit.GetTimeRaw(good_hit);
-      fTdcTime[cnt] = rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset;
-	 }
-      fTdcMultiplicity[cnt] = rawTdcHit.GetNHits();
+	   if (good_hit == 999 and closest_hit != 999) {
+	     good_hit=closest_hit;
+	     fVecTdcTimeRaw[cnt].push_back(rawTdcHit.GetTimeRaw(good_hit));
+	     fVecTdcTime[cnt].push_back(rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset);
+	   }
+	   if (good_hit<rawTdcHit.GetNHits()) {
+	     fTdcTimeRaw[cnt] = rawTdcHit.GetTimeRaw(good_hit);
+	     fTdcTime[cnt] = rawTdcHit.GetTime(good_hit)*fTdcChanperNS+fTdcOffset;
+	   }
+	   if (good_hit == 999 and closest_hit == 999) {
+	     fVecTdcTimeRaw[cnt].push_back(0);
+	     fVecTdcTime[cnt].push_back(0);
+	   }
+	   std::sort(fVecTdcTimeRaw[cnt].begin(), fVecTdcTimeRaw[cnt].end());
+	   std::sort(fVecTdcTime[cnt].begin(), fVecTdcTime[cnt].end());
+
+	   fTdcMultiplicity[cnt] = rawTdcHit.GetNHits();
     }
     else {
       throw std::out_of_range(
@@ -685,12 +704,15 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
   // Push the variable names for TDC channels.
   std::vector<TString> tdcTimeRawTitle(fNumTdc), tdcTimeRawVar(fNumTdc);
   std::vector<TString> tdcTimeTitle(fNumTdc), tdcTimeVar(fNumTdc);
+  std::vector<TString> vecTdcTimeRawTitle(fNumTdc), vecTdcTimeRawVar(fNumTdc);
+  std::vector<TString> vecTdcTimeTitle(fNumTdc), vecTdcTimeVar(fNumTdc);
   std::vector<TString> tdcMultiplicityTitle(fNumTdc), tdcMultiplicityVar(fNumTdc);
 
   for (int i=0; i<fNumTdc; ++i) {
     tdcTimeRawTitle.at(i) = fTdcNames.at(i) + "_tdcTimeRaw";
     tdcTimeRawVar.at(i) = TString::Format("fTdcTimeRaw[%d]", i);
-
+    vecTdcTimeRawTitle.at(i) = fTdcNames.at(i) + "_vecTdcTimeRaw";
+    vecTdcTimeRawVar.at(i) = TString::Format("fVecTdcTimeRaw[%d]", i);
     RVarDef entry1 {
       tdcTimeRawTitle.at(i).Data(),
       tdcTimeRawTitle.at(i).Data(),
@@ -698,14 +720,31 @@ Int_t THcTrigDet::DefineVariables(THaAnalysisObject::EMode mode) {
     };
     vars.push_back(entry1);
 
+    RVarDef entry1vec {
+      vecTdcTimeRawTitle.at(i).Data(),
+      vecTdcTimeRawTitle.at(i).Data(),
+      vecTdcTimeRawVar.at(i).Data()
+    };
+    vars.push_back(entry1vec);
+
     tdcTimeTitle.at(i) = fTdcNames.at(i) + "_tdcTime";
     tdcTimeVar.at(i) = TString::Format("fTdcTime[%d]", i);
+    vecTdcTimeTitle.at(i) = fTdcNames.at(i) + "_vecTdcTime";
+    vecTdcTimeVar.at(i) = TString::Format("fVecTdcTime[%d]", i);
+
     RVarDef entry2 {
       tdcTimeTitle.at(i).Data(),
       tdcTimeTitle.at(i).Data(),
       tdcTimeVar.at(i).Data()
     };
     vars.push_back(entry2);
+
+    RVarDef entry2vec {
+      vecTdcTimeTitle.at(i).Data(),
+      vecTdcTimeTitle.at(i).Data(),
+      vecTdcTimeVar.at(i).Data()
+    };
+    vars.push_back(entry2vec);
 
     tdcMultiplicityTitle.at(i) = fTdcNames.at(i) + "_tdcMultiplicity";
     tdcMultiplicityVar.at(i) = TString::Format("fTdcMultiplicity[%d]", i);
