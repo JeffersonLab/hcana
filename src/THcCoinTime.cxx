@@ -74,6 +74,15 @@ void THcCoinTime::Clear( Option_t* opt )
   fHMS_eKCoinTime=kBig;
   fSHMS_epCoinTime=kBig;
   fHMS_epCoinTime=kBig;
+
+  /*
+  // 31/01/23 - SJDK - Commented out for now
+  // 18/11/22 - SJDK - Added RF time distributions with a CoinTime correction
+  fSHMS_eRFtimeDist_CT=kBig;
+  fSHMS_piRFtimeDist_CT=kBig;
+  fSHMS_KRFtimeDist_CT=kBig;
+  fSHMS_pRFtimeDist_CT=kBig;  
+  */
 }
 
 //_____________________________________________________________________________
@@ -135,20 +144,63 @@ Int_t THcCoinTime::ReadDatabase( const TDatime& date )
   // Read database. Gets variable needed for CoinTime calculation
   DBRequest list[]={
     {"eHadCoinTime_Offset",  &eHad_CT_Offset, kDouble, 0, 1},   //coin time offset for ep coincidences
-
     {"HMS_CentralPathLen",  &HMScentralPathLen, kDouble, 0, 1},
     {"SHMS_CentralPathLen", &SHMScentralPathLen, kDouble, 0, 1},
+    /*
+    // 31/01/23 - SJDK - Commented out for now, this is for testing the CT corrected RF times
+    // 18/11/22 - SJDK - New variables read in for the RF calculations included here
+    {"SHMS_RF_Offset",  &SHMS_RF_Offset, kDouble, 0, 1}, // RF offset for SHMS
+    {"SHMS_eRF_Offset",  &SHMS_eRF_Offset, kDouble, 0, 1},   // Electron/Positron RF offset for SHMS
+    {"SHMS_piRF_Offset",  &SHMS_piRF_Offset, kDouble, 0, 1},   // Pion RF offset for SHMS
+    {"SHMS_KRF_Offset",  &SHMS_KRF_Offset, kDouble, 0, 1},   //  Kaon RF offset for SHMS
+    {"SHMS_pRF_Offset",  &SHMS_pRF_Offset, kDouble, 0, 1},   // Proton RF offset for SHMS
+    {"Bunch_Spacing_Override",  &Bunch_Spacing_Override, kDouble, 0, 1}, // Bunch spacing value, can be manually set to override the Epics read in,
+    */
     {0}
   };
   
   //Default values if not read from param file
   eHad_CT_Offset = 0.0;
-
+  
+  // SJDK 16/11/22 - This must be to a specific point? Where? The first hodo plane?
   HMScentralPathLen = 22.0*100.;
   SHMScentralPathLen = 18.1*100.;
+ 
+  /*
+  // 31/01/23 - Again, just for testing the CT corrected RF time, commented out for now
+  // SJDK 18/11/22 - New variables associated with RFTime calculations
+  // Default values if not read from param file
+  Bunch_Spacing_Override = 1.5556; // Strangely specific value so we can check if it's set or not
+  SHMS_RF_Offset = 0.0;
   
-  gHcParms->LoadParmValues((DBRequest*)&list, "");
+  // Particle specific RF offset values, set to a default value. The default doesn't really make sense as a choice, check after read in if it was set
+  SHMS_eRF_Offset = -5.1114;
+  SHMS_piRF_Offset = -5.1114;
+  SHMS_KRF_Offset = -5.1114;
+  SHMS_pRF_Offset = -5.1114;
 
+  gHcParms->LoadParmValues((DBRequest*)&list, "");
+  // If the override value has been set (i.e. it is NOT the default value), set it to whatever the read in is
+  if ( Bunch_Spacing_Override != 1.5556){
+  Bunch_Spacing = Bunch_Spacing_Override;
+  }
+  // If override wasn't set, assume the bunch spacing has some default value (will be overriden by Epics if it looks OK)
+  else if (Bunch_Spacing_Override == 1.5556){
+  Bunch_Spacing = 4.008;
+  }
+  if (SHMS_eRF_Offset == -5.1114){
+  SHMS_eRF_Offset = SHMS_RF_Offset; // If electron SHMS offset wasn't explicitly set, set it to the same value as the generic spectrometer offset
+  }
+  if (SHMS_piRF_Offset == -5.1114){
+  SHMS_piRF_Offset = SHMS_RF_Offset; // If pion SHMS offset wasn't explicitly set, set it to the same value as the generic spectrometer offset
+  }
+  if (SHMS_KRF_Offset == -5.1114){
+  SHMS_KRF_Offset = SHMS_RF_Offset; // If kaon SHMS offset wasn't explicitly set, set it to the same value as the generic spectrometer offset
+  }
+  if (SHMS_pRF_Offset == -5.1114){
+  SHMS_pRF_Offset = SHMS_RF_Offset; // If proton SHMS offset wasn't explicitly set, set it to the same value as the generic spectrometer offset
+  }
+  */
   return kOK;
 }
 
@@ -193,7 +245,14 @@ Int_t THcCoinTime::DefineVariables( EMode mode )
     {"had_coinCorr_Positron",    "",  "had_coinCorr_Positron"},
     {"elec_coinCorr",    "",  "elec_coinCorr"},
 
-    { 0 }
+    // 31/01/23 - SJDK - Defined here just in case someone wants to take a closer look at these in the future
+    /*
+    {"SHMS_eRFtimeDist_CT", "SHMS Corrected RF time Distribution for PID (e)", "fSHMS_eRFtimeDist_CT"},
+    {"SHMS_piRFtimeDist_CT", "SHMS Corrected RF time Distribution for PID (pi)", "fSHMS_piRFtimeDist_CT"},
+    {"SHMS_KRFtimeDist_CT", "SHMS Corrected RF time Distribution for PID (K)", "fSHMS_KRFtimeDist_CT"},
+    {"SHMS_pRFtimeDist_CT", "SHMS Corrected RF time Distribution for PID (p)", "fSHMS_pRFtimeDist_CT"},
+    */
+    {0}
   };
 
   return DefineVarsFromList( vars, mode );
@@ -271,7 +330,9 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
       pHMS_TdcTime_ROC2 = fCoinDet->Get_CT_Trigtime(3);//HMS pTrig3
       	  
       DeltaSHMSpathLength = .11*shms_xptar*1000 +0.057*shms_dP/100.;
-      DeltaHMSpathLength = -1.0*(12.462*hms_xpfp + 0.1138*hms_xpfp*hms_xfp - 0.0154*hms_xfp - 72.292*hms_xpfp*hms_xpfp - 0.0000544*hms_xfp*had_xfp - 116.52*hms_ypfp*hms_ypfp);
+      // 16/11/22 - SJDK - The calculation below seems to be "correct" in the sense this it is accounting for the beam on target angle etc. However, it is only defined this was for the HMS. Also, it is is redefined on the next line
+      // I've commented it out for now since it seems pointless to define it twice.
+      //DeltaHMSpathLength = -1.0*(12.462*hms_xpfp + 0.1138*hms_xpfp*hms_xfp - 0.0154*hms_xfp - 72.292*hms_xpfp*hms_xpfp - 0.0000544*hms_xfp*had_xfp - 116.52*hms_ypfp*hms_ypfp);
       DeltaHMSpathLength = (.12*hms_xptar*1000 +0.17*hms_dP/100.);
 
           // default assume SHMS is electron arm
@@ -334,11 +395,28 @@ Int_t THcCoinTime::Process( const THaEvData& evdata )
 	  fHMS_ePiCoinTime = fHMS_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Pion) - eHad_CT_Offset;
 
 	  //POSITRON
-	  fROC1_ePosCoinTime = fROC1_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset ;	  
+	  fROC1_ePosCoinTime = fROC1_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset;
 	  fROC2_ePosCoinTime = fROC2_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset;
-	  fSHMS_ePosCoinTime = fSHMS_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset ;	  
+	  fSHMS_ePosCoinTime = fSHMS_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset;
 	  fHMS_ePosCoinTime = fHMS_RAW_CoinTime + sign*( elec_coinCorr - had_coinCorr_Positron) - eHad_CT_Offset;
-         
+
+	  /*
+	  // SJDK - 31/01/23 - Tested a few different methods to correct the RF time for the Coin time based upon different particle types. Didn't have much luck with this. Shelving it for now
+	  // SJDK - 18/11/22 - Note, this is just for testing, RF time calculations should be made more "generic" as the CT ones already are
+	  // RF Time calculations - Testing
+	  // 21/11/22 - From testing, adding fROC1_ePosCoinTime as a correction doesn't have the desired effect. It is not a sign issue. Adding/subtracting fails to flatten CT vs RFTime
+	  // Will try using RAW times instead
+	  // Adding it didn't quite work, trying subtraction, didn't work either
+	  // Add coin time WITHOTUT adding correction? Being applied twice. Didn't work either
+	  // Raw Untracked variable? fROC1_RAW_CoinTime_NoTrack
+	  SHMS_RFtime = fCoinDet->Get_RF_TrigTime(0); // SHMS is ID 0
+
+	  fSHMS_eRFtimeDist_CT = fmod((fmod((SHMS_RFtime - SHMS_FPtime + SHMS_eRF_Offset + had_coinCorr_Positron + fROC1_RAW_CoinTime_NoTrack), Bunch_Spacing) + Bunch_Spacing), Bunch_Spacing);
+	  fSHMS_piRFtimeDist_CT = fmod((fmod((SHMS_RFtime - SHMS_FPtime + SHMS_piRF_Offset + had_coinCorr_Pion + fROC1_RAW_CoinTime_NoTrack), Bunch_Spacing) + Bunch_Spacing), Bunch_Spacing);
+	  fSHMS_KRFtimeDist_CT = fmod((fmod((SHMS_RFtime - SHMS_FPtime + SHMS_KRF_Offset + had_coinCorr_Kaon + fROC1_RAW_CoinTime_NoTrack), Bunch_Spacing) + Bunch_Spacing), Bunch_Spacing);
+	  fSHMS_pRFtimeDist_CT = fmod((fmod((SHMS_RFtime - SHMS_FPtime + SHMS_pRF_Offset + had_coinCorr_proton + fROC1_RAW_CoinTime_NoTrack), Bunch_Spacing) + Bunch_Spacing), Bunch_Spacing);
+	  */
+
   return 0;
 }
 

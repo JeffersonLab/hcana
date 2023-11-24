@@ -107,7 +107,24 @@ public:
   Double_t fROC2_ePosCoinTime;
   Double_t fSHMS_ePosCoinTime;   //electron-positron coin time 
   Double_t fHMS_ePosCoinTime;
+  /*
+  // SJDK - 18/11/22 - Variables for RF testing
+  // SJDK 31/01/23 - No luck in getting this working, commented out again for now
+  Double_t SHMS_RF_Offset;
+  Double_t SHMS_eRF_Offset;
+  Double_t SHMS_piRF_Offset;
+  Double_t SHMS_KRF_Offset;
+  Double_t SHMS_pRF_Offset;
+  Double_t Bunch_Spacing;
+  Double_t Bunch_Spacing_Override;
+  Double_t SHMS_RFtime; // SHMS RF time
   
+  Double_t fSHMS_eRFtimeDist_CT;
+  Double_t fSHMS_piRFtimeDist_CT;
+  Double_t fSHMS_KRFtimeDist_CT;
+  Double_t fSHMS_pRFtimeDist_CT;  
+  */
+
   Double_t elec_coinCorr;
   Double_t elecArm_BetaCalc;
   Double_t elec_hodFPtime;
