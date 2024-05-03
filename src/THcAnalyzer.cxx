@@ -19,6 +19,7 @@ Adds the following to the Hall A analyzer base class.
 #include "THcParmList.h"
 #include "THcFormula.h"
 #include "THcGlobals.h"
+#include "THaGlobals.h"
 #include "TMath.h"
 
 #include <fstream>
