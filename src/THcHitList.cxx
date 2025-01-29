@@ -42,6 +42,7 @@ THcHitList::THcHitList()
   , fNSA(-1)
   , fNSB(-1)
   , fNPED(-1)
+  , fPSE137(nullptr)
   , fNTDCRef_miss(0)
   , fNADCRef_miss(0)
   , fMap(nullptr)
@@ -175,11 +176,15 @@ void THcHitList::InitHitList(THaDetMap* detmap,
   TObjLink *lnk = gHaEvtHandlers->FirstLink();
   while (lnk) {
     if(strcmp(lnk->GetObject()->ClassName(),"THcConfigEvtHandler")==0) {
-      break;
+      fPSE125 = lnk ? dynamic_cast<THcConfigEvtHandler*>(lnk->GetObject()) : nullptr;
     }
+
+    if(strcmp(lnk->GetObject()->ClassName(),"THcEvt137Handler")==0) {
+      fPSE137 = lnk ? dynamic_cast<THcEvt137Handler*>(lnk->GetObject()) : nullptr;
+    }      
+
     lnk = lnk->Next();
   }
-  fPSE125 = lnk ? dynamic_cast<THcConfigEvtHandler*>(lnk->GetObject()) : nullptr;
   if( !fPSE125 ) {
     cout << "THcHitList::InitHitList : Prestart event 125 not found." << endl;
   }
@@ -187,6 +192,10 @@ void THcHitList::InitHitList(THaDetMap* detmap,
 
   fNTDCRef_miss = 0;
   fNADCRef_miss = 0;
+
+  if( !fPSE137 ) {
+    cout << "THcHitList::InitHitList : Prestart event 137 not found." << endl;
+  }
 
   //  DisableSlipCorrection();
 }
@@ -312,10 +321,17 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
         Int_t ref_fNSA = 0;
         Int_t ref_fNSB = 0;
         Int_t ref_fNPED = 0;
-        if( fPSE125 ) {
+        if( fPSE125->IsPresent(theMap.crate) ) {
           ref_fNSA = fPSE125->GetNSA(theMap.crate);
           ref_fNSB = fPSE125->GetNSB(theMap.crate);
           ref_fNPED = fPSE125->GetNPED(theMap.crate);
+          if( ref_fNSA == -1 ) ref_fNSA = 26;
+          if( ref_fNSB == -1 ) ref_fNSB = 3;
+          if( ref_fNPED == -1 ) ref_fNPED = 4;
+	} else if ( fPSE137 ) {
+          ref_fNSA = fPSE137->GetNSA(theMap.crate, theMap.slot);
+          ref_fNSB = fPSE137->GetNSB(theMap.crate, theMap.slot);
+          ref_fNPED = fPSE137->GetNPED(theMap.crate, theMap.slot);
           if( ref_fNSA == -1 ) ref_fNSA = 26;
           if( ref_fNSB == -1 ) ref_fNSB = 3;
           if( ref_fNPED == -1 ) ref_fNPED = 4;
@@ -324,6 +340,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
           ref_fNSB = 3;
           ref_fNPED = 4;
         }
+
         // Set F250 parameters.
         auto* refrawhit = new THcRawAdcHit();  // large object, better on the heap
         refrawhit->SetF250Params(ref_fNSA, ref_fNSB, ref_fNPED);
@@ -490,10 +507,10 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
               }
             }
           }
-        }
+	}
       } else {                        // This is a Flash ADC
 
-        if( fPSE125 ) {
+        if( fPSE125->IsPresent(d->crate) ) {
           if( !fHaveFADCInfo ) {
             fNSA = fPSE125->GetNSA(d->crate);
             fNSB = fPSE125->GetNSB(d->crate);
@@ -503,12 +520,23 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
             if( fNPED == -1 ) fNPED = 4;
             fHaveFADCInfo = kTRUE;
           }
+	} else if( fPSE137 ) {
+          if( !fHaveFADCInfo ) {
+	    fNSA = fPSE137->GetNSA(d->crate, d->slot);
+	    fNSB = fPSE137->GetNSB(d->crate, d->slot);
+	    fNPED = fPSE137->GetNPED(d->crate, d->slot);
+            if( fNSA == -1 ) fNSA = 26;
+            if( fNSB == -1 ) fNSB = 3;
+            if( fNPED == -1 ) fNPED = 4;
+            fHaveFADCInfo = kTRUE;
+	  }
         } else if( !fHaveFADCInfo ) {
           fNSA = 26;
           fNSB = 3;
           fNPED = 4;
           fHaveFADCInfo = kTRUE;
         }
+
         rawhit->SetF250Params(fNSA, fNSB, fNPED);
 
 	// Copy the samples

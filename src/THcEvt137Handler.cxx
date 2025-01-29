@@ -178,7 +178,6 @@ Int_t THcEvt137Handler::Analyze( THaEvData* evdata )
     if( line.find_first_not_of(" \t") == string::npos ) 
       continue;
 
-    cout << line << endl;
     auto items = Podd::vsplit(line);
     if( !items.empty() ) {
       string& key = items[0];

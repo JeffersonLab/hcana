@@ -9,6 +9,7 @@
 #include "Decoder.h"
 #include "THaCrateMap.h"
 #include "Fadc250Module.h"
+#include "THcEvt137Handler.h"
 
 #include <iomanip>
 #include <map>
@@ -77,6 +78,8 @@ protected:
   Int_t fNSA;
   Int_t fNSB;
   Int_t fNPED;
+
+  THcEvt137Handler* fPSE137;
 
   Int_t fNTDCRef_miss;
   Int_t fNADCRef_miss;

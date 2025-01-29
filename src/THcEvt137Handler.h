@@ -29,7 +29,6 @@ class THcEvt137Handler : public THaEvtTypeHandler {
  private:
 
   Int_t fNDecoded; // Counter for decoded type 137 event
-  const int NTHR = 16;
 
   std::vector<UInt_t> fEvtTypes;
 
