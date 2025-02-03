@@ -21,8 +21,11 @@ using namespace std;
 //_______________________________________________________________
 THcEvt137Handler::THcEvt137Handler( const char* name,
 				    const char* description ) :
-  THaEvtTypeHandler(name, description), fNDecoded(0),
-  fConfigTree(nullptr), fMakeConfigTree(true), fMakeParms(true),
+  THaEvtTypeHandler(name, description),
+  fNDecoded(0),
+  fConfigTree(nullptr),
+  fMakeConfigTree(true),
+  fMakeParms(true),
   fCounter(0)
 {
 }
@@ -56,9 +59,8 @@ THaAnalysisObject::EStatus THcEvt137Handler::Init( const TDatime& date )
 //_______________________________________________________________
 Int_t THcEvt137Handler::End( THaRunBase* )
 {
-  cout << "THcEvt137Handler::End" << endl;
 
-  // Save the tree into the output 
+  // Save the tree, write into the output 
   if(fMakeConfigTree) { SaveConfigData(); }
 
   return 0;
@@ -92,18 +94,6 @@ void THcEvt137Handler::MakeParms()
       gHcParms->Define(Form("g_%s", keyname.data()), keyname.data(), vals); // vector type is supported
   }
 
-  /*
-  const auto* pvar = gHcParms->Find("g_FADC250_ALLCH_PED_2_9");
-  if(pvar){
-    if(pvar->IsVector()){
-      auto v1 = pvar->GetValues();
-      cout << pvar->GetLen() << endl;
-      cout << v1[0] << endl;
-      cout << v1[1] << endl;
-      cout << v1[15] << endl;
-    }
-  }
-  */
 }
 
 //_______________________________________________________________
