@@ -283,7 +283,29 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
       *fDebugFile << "Bank: " << hex << *p << dec << " len: " << *(p-1) << endl;
     }
     if((*p & 0xff00) == 0x1000) {	// Bank Containing banks
-      p++;				// Now pointing to a bank in the bank
+	 if((*p & 0xff000000) == 0xff000000){
+           if (fDebugFile) *fDebugFile << "Find the physics event header: " << hex << *p << endl;
+	   p++;
+	   continue;
+	 }
+
+         int rocid = (*p & 0xfff0000)>>16;  // ROC ID
+         if (fDebugFile) {
+             *fDebugFile << "Bank: " << hex << *p << dec << " len: " << *(p-1) << "  ROC ID: "<< rocid << endl;
+         }
+
+         if(fRocSet.find(rocid)!=fRocSet.end()) { 
+            if (fDebugFile) {
+               *fDebugFile << "Searching for Data Block Bank" << endl;
+            }
+            p++;// Now pointing to a bank in the bank
+         }	 
+         else {
+                 p = p+*(p-1); // Skip to next bank
+            if (fDebugFile) {
+               *fDebugFile << "Wrong ROC ID, skip to the next bank" << endl;
+            }
+         }
     } else if (((*p & 0xff00) == 0x100) && (*p != 0xC0000100)) {
       // Bank containing integers.  Look for scalers
       // This is either ROC bank containing integers or
