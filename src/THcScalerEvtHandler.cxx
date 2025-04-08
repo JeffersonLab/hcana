@@ -277,13 +277,45 @@ Int_t THcScalerEvtHandler::AnalyzeBuffer(UInt_t* rdata, Bool_t onlysync)
   UInt_t *plast = p+*p;		// Index to last word in the bank
 
   ifound=0;
+  int isPhysicsEvt=0;
   while(p<plast) {
     p++;			  // point to header
     if (fDebugFile) {
       *fDebugFile << "Bank: " << hex << *p << dec << " len: " << *(p-1) << endl;
     }
     if((*p & 0xff00) == 0x1000) {	// Bank Containing banks
-      p++;				// Now pointing to a bank in the bank
+	 if((*p & 0xffff0000) == 0xff500000 || (*p & 0xffff0000) == 0xff580000){ // PEB event and PEB sync event
+           if (fDebugFile) *fDebugFile << "Find the physics event header: " << hex << *p << endl;
+	   p++;
+	   isPhysicsEvt=1;
+	   continue;
+	 }
+
+	 if(isPhysicsEvt==1){
+            int rocid = (*p & 0xfff0000)>>16;  // ROC ID
+            if (fDebugFile) {
+                *fDebugFile << "Bank: " << hex << *p << dec << " len: " << *(p-1) << "  ROC ID: "<< rocid << endl;
+            }
+
+            if(fRocSet.find(rocid)!=fRocSet.end()) { 
+               if (fDebugFile) {
+                  *fDebugFile << "Searching for Data Block Bank" << endl;
+               }
+               p++;// Now pointing to a bank in the bank
+            }	 
+            else {
+                    p = p+*(p-1); // Skip to next bank
+               if (fDebugFile) {
+                  *fDebugFile << "Wrong ROC ID, skip to the next bank" << endl;
+               }
+            }
+	 }
+	 else{
+            if (fDebugFile) {
+               *fDebugFile << "Not a physics event" << endl;
+            }
+	    p++;
+	 }
     } else if (((*p & 0xff00) == 0x100) && (*p != 0xC0000100)) {
       // Bank containing integers.  Look for scalers
       // This is either ROC bank containing integers or
