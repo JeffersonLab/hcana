@@ -292,7 +292,7 @@ UInt_t THcConfigEvtHandler::DecodeTIConfig(
   const char* whereami = Here(here);
 
   if( ip+2+NPS >= len ) {
-    cerr << whereami << ": CAEN1190 config block unexpectedly too short. "
+    cerr << whereami << ": TI config block unexpectedly too short. "
                         "Call expert." << endl;
     return len;
   }
@@ -307,8 +307,8 @@ UInt_t THcConfigEvtHandler::DecodeTIConfig(
     cfg.nped = evdata->GetRawData(ip++);
     if( version >= 2 ) {
       if( ip+1+NPS >= len ) {
-        cerr << whereami << ": CAEN1190 config block unexpectedly too short. "
-                            "Call expert." << endl;
+        cerr << whereami << ": TI config block for version >= 2 "
+                            "unexpectedly too short. Call expert." << endl;
         return len;
       }
       cfg.scaler_period = evdata->GetRawData(ip++);
@@ -321,22 +321,19 @@ UInt_t THcConfigEvtHandler::DecodeTIConfig(
     for( UInt_t i = 0; i < NPS; i++ ) {
       assert(ip < len);
       auto ps = cfg.prescales[i] = static_cast<Int_t>(evdata->GetRawData(ip++));
-      if( evdata->GetDataVersion() > 2 ) {
-        // CODA3: Calculate actual factor from "exponent" format
-        auto& fact = cfg.ps_factors[i];
-        if( ps > 0 && ps <= 16 )
-          fact = (1 << (ps - 1)) + 1;
-        else if( ps == 0 )
-          fact = 1;
-        else if( ps == -1 )
-          fact = -1;
-        else {
-          cerr << whereami << ": Invalid CODA3 prescale = " << ps << ". "
-               << "Must be between -1 and 16 (inclusive)" << endl;
-          fact = -1;
-        }
-      } else
-        cfg.ps_factors = cfg.prescales;
+      // Calculate actual prescale factor from "exponent" format
+      auto& fact = cfg.ps_factors[i];
+      if( ps > 0 && ps <= 16 )
+        fact = (1 << (ps - 1)) + 1;
+      else if( ps == 0 )
+        fact = 1;
+      else if( ps == -1 )
+        fact = -1;
+      else {
+        cerr << whereami << ": Invalid prescale = " << ps << " from TI. "
+             << "Must be between -1 and 16 (inclusive)" << endl;
+        fact = -1;
+      }
     }
     assert(ip < len);
     UInt_t lastword = evdata->GetRawData(ip++);
