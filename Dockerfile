@@ -1,22 +1,24 @@
-FROM centos:centos7
+FROM almalinux:9
 
 ARG APP_VERSION
 ARG REPO_NAME
 
-RUN yum update -q -y
+ADD https://pki.jlab.org/JLabCA.crt /etc/pki/ca-trust/source/anchors/JLabCA.crt
+RUN update-ca-trust
 
-RUN yum -y install epel-release &&\
-    yum -y install git && \
-    yum -y groupinstall 'Development Tools'&& \
-    yum -y install gcc-c++ && \
-    yum -y install make && \
-    yum install -y root && \
-    localedef -i en_US -f UTF-8 en_US.UTF-8
+RUN dnf update -q -y
 
-ADD https://github.com/Kitware/CMake/releases/download/v3.22.2/cmake-3.22.2-linux-x86_64.tar.gz .
-RUN tar -xvf cmake-3.22.2-linux-x86_64.tar.gz && rm cmake-3.22.2-linux-x86_64.tar.gz
-RUN mv cmake-3.22.2-linux-x86_64 /usr/local/cmake
-ENV PATH="/usr/local/cmake/bin:$PATH"
+RUN dnf -y install 'dnf-command(config-manager)'
+
+RUN dnf -y install epel-release 
+RUN dnf config-manager --set-enabled crb
+RUN dnf -y install git && \
+    dnf -y groupinstall 'Development Tools' && \
+    dnf -y install gcc-c++ cmake make \
+        root root-mathcore root-montecarlo-eg \
+        root-mathmore root-gui root-hist root-physics root-genvector && \
+    dnf clean all
+
 ADD https://github.com/JeffersonLab/hcana/archive/refs/tags/${APP_VERSION}.tar.gz .
 RUN tar -xvf ${APP_VERSION}.tar.gz && rm ${APP_VERSION}.tar.gz
 WORKDIR "/${REPO_NAME}-${APP_VERSION}"
