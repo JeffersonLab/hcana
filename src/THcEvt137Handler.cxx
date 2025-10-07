@@ -16,6 +16,13 @@ using namespace std;
 //
 // Parse FADC250 and VTP config data (ev 137) -- regular text
 // 
+// Format: key value
+// FADC250 config is listed for all slots for the given roc
+// e.g. FADC250_SLOT 3
+// e.g. FADC250_ALLCH_PED 386.917 412.167 ... (for 16 channels)
+//
+// FADC250 parameters (NSA, NSB) are read in THcHitList
+// 
 /////////////////////////////////////////////////////////////////////
 
 //_______________________________________________________________
@@ -25,7 +32,7 @@ THcEvt137Handler::THcEvt137Handler( const char* name,
   fNDecoded(0),
   fConfigTree(nullptr),
   fMakeConfigTree(true),
-  fMakeParms(true),
+  fMakeParms(false),
   fCounter(0)
 {
 }
@@ -86,14 +93,12 @@ void THcEvt137Handler::MakeParms()
 
     int nval = vals.size();
 
-    // Define global variables
     gHcParms->RemoveName(Form("g_%s", keyname.data()));
     if(nval == 1)
       gHcParms->Define(Form("g_%s", keyname.data()), keyname.data(), vals[0]);
     else
       gHcParms->Define(Form("g_%s", keyname.data()), keyname.data(), vals); // vector type is supported
   }
-
 }
 
 //_______________________________________________________________
@@ -175,6 +180,7 @@ void THcEvt137Handler::SaveConfigData()
   UInt_t ivar = 0, iarr = 0; // counter
 
   // Init tree
+  fConfigTree->Branch("ROCNum", &fRoc);
   for( auto &cfg : fConfigDataMap ){
     string bname = cfg.first; // branch name
     auto bpars = cfg.second.pars; // 
@@ -200,32 +206,20 @@ void THcEvt137Handler::SaveConfigData()
 //_______________________________________________________________
 Int_t THcEvt137Handler::Analyze( THaEvData* evdata )
 {
-  UInt_t evtype = evdata->GetEvType();
-
   // Check event type
+  UInt_t evtype = evdata->GetEvType();
   if( std::find(fEvtTypes.begin(), fEvtTypes.end(), evtype) == fEvtTypes.end() )
     return -1;
 
-  UInt_t evlen = evdata->GetEvLength();
-  auto bankinfo = Decoder::CodaDecoder::GetBank(evdata->GetRawDataBuffer(), 0 , evlen);
-  if( bankinfo.status_ != Decoder::CodaDecoder::BankInfo::kOK ) {
-    ostringstream ostr;
-    ostr << "THcEv137Handler: CODA3 bank decoder error \""
-	 << bankinfo.Errtxt() << "\"";
-    throw Decoder::CodaDecoder::coda_format_error(ostr.str() );
-  }
-
-  UInt_t roc = bankinfo.tag_;
+  // ROC
+  UInt_t roc = gHaRun->GetDAQConfigTag(fNDecoded);
   fRoc.emplace_back(roc);
 
-  auto* ifo = DAQInfoExtra::GetFrom(evdata->GetExtra());
-  if( !ifo ) return -1;
-
+  auto cinfo = gHaRun->GetDAQConfig(fNDecoded);
+  istringstream ifstr(cinfo);
+  string line;
   string slot = "";
 
-  auto this_info = ifo->strings[fNDecoded];
-  istringstream ifstr(this_info);
-  string line;
   while( getline(ifstr, line) ) {
 
     // skip blank lines
@@ -239,7 +233,6 @@ Int_t THcEvt137Handler::Analyze( THaEvData* evdata )
       val.reserve(line.size());
 
       std::vector<Double_t> v_val;
-
       for( size_t j = 1, e = items.size(); j < e; ++j ) {
 	val.append(items[j]);
 	if( j + 1 != e )
@@ -248,19 +241,20 @@ Int_t THcEvt137Handler::Analyze( THaEvData* evdata )
 	//for simplicity make them all double vars
 	v_val.emplace_back(std::stod(items[j]));
       }
+
       // Per slot config for FADC250
       // This assumes that SLOT information is the first line for FADC250 config list
       if( key == "FADC250_SLOT" ){
 	slot.replace(0, slot.length(), val);
       }	  
 
-      // Define new key for Parm list
+      // Define new unique key for Parm list
       string new_key = key + "_" + std::to_string(roc);
       if( slot.length() > 0)
 	new_key = new_key + "_" + slot;
 
       // Remove the existing element if the key already exists
-      // and will override with new parameters
+      // and will overwrite with new parameters
       if( fConfigDataMap.find(new_key) != fConfigDataMap.end() )
 	fConfigDataMap.erase(new_key);
 
@@ -285,7 +279,7 @@ Int_t THcEvt137Handler::Analyze( THaEvData* evdata )
 
   fNDecoded++;
 
-  return 0;
+  return fNDecoded;
 }
 
 ClassImp(THcEvt137Handler)
