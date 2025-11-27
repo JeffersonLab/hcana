@@ -58,6 +58,11 @@ An instance of Podd::Textvars is created to hold the string parameters.
 #include <stdexcept>
 #include <memory>
 
+#ifdef WITH_JSON
+#include <iomanip>
+#include <nlohmann/json.hpp>
+#endif
+
 using namespace std;
 Int_t  fDebug   = 1;  // Keep this at one while we're working on the code
 
@@ -692,6 +697,178 @@ void THcParmList::PrintFull( Option_t* option ) const
   THaVarList::PrintFull(option);
   TextList->Print();
 }
+
+#ifdef WITH_JSON
+
+/**
+ * \brief Export all parameters in this THcParmList to a JSON file.
+ *
+ * This writes:
+ *  - numeric parameters stored in the underlying THaVarList
+ *    (Hall C calibration/configuration numbers), and
+ *  - optionally, text parameters stored in TextList (Podd::Textvars),
+ *    if HCANA_JSON_EXPORT_STRINGS is defined and the required Textvars
+ *    API is available.
+ *
+ * Only scalar and 1D-array parameters of types kInt and kDouble are exported.
+ * Any THaVar entries with other VarType codes are skipped and reported via
+ * Warning("ExportJSON", ...).
+ *
+ * The resulting JSON has the structure:
+ *
+ * \code{.json}
+ * {
+ *   "parameters": {
+ *     "name": {
+ *       "description": "...",
+ *       "type": "int" | "double",
+ *       "length": N,
+ *       "value": 123            // or [1,2,3,...]
+ *     },
+ *     ...
+ *   },
+ *   "strings": {                // only if HCANA_JSON_EXPORT_STRINGS is defined
+ *     "name": "value",          // scalar textvar
+ *     "other": ["v1","v2",...]  // multi-valued textvar
+ *   }
+ * }
+ * \endcode
+ *
+ * \param filename  Path of the JSON file to write.
+ * \param indent    If < 0, emit compact JSON (no extra whitespace).
+ *                  If > 0, pretty-print with the given number of spaces.
+ *
+ * \return 0 on success, -1 if the file cannot be opened.
+ */
+Int_t THcParmList::ExportJSON( const char* filename, Int_t indent ) const
+{
+  nlohmann::json jroot;
+  nlohmann::json jparams = nlohmann::json::object();
+#ifdef HCANA_JSON_EXPORT_STRINGS
+  nlohmann::json jstrings = nlohmann::json::object();
+#endif
+
+  // =======================
+  // Numeric parameters (THaVarList entries)
+  // =======================
+  TIter next( const_cast<THcParmList*>(this) );
+  TObject* obj = nullptr;
+
+  while( (obj = next()) ) {
+    THaVar* var = dynamic_cast<THaVar*>( obj );
+    if( !var )
+      continue;
+
+    VarType t = var->GetType();
+
+    // THcParmList only creates kInt and kDouble via Load/CCDB.
+    bool is_int = false;
+    bool is_double = false;
+    const char* type_str = "unknown";
+
+    switch( t ) {
+    case kInt:
+      is_int = true;
+      type_str = "int";
+      break;
+    case kDouble:
+      is_double = true;
+      type_str = "double";
+      break;
+    default:
+      Warning( "ExportJSON",
+               "Skipping variable '%s' with unsupported VarType %d",
+               var->GetName(), static_cast<int>(t) );
+      continue;
+    }
+
+    nlohmann::json entry = nlohmann::json::object();
+
+    const char* title = var->GetTitle();
+    entry["description"] = title ? std::string(title) : std::string();
+    entry["type"] = type_str;
+
+    Int_t len = var->GetLen();
+    entry["length"] = len;
+
+    (void)is_int; // Suppress unused warning
+    if( len <= 1 ) {
+      // scalar
+      if( is_double )
+        entry["value"] = var->GetValue();
+      else
+        entry["value"] = var->GetValueInt();
+    } else {
+      // 1D array
+      nlohmann::json arr = nlohmann::json::array();
+      for( Int_t i = 0; i < len; ++i ) {
+        if( is_double )
+          arr.push_back( var->GetValue(i) );
+        else
+          arr.push_back( var->GetValueInt(i) );
+      }
+      entry["value"] = arr;
+    }
+
+    jparams[ var->GetName() ] = entry;
+  }
+
+  jroot["parameters"] = jparams;
+
+#ifndef HCANA_JSON_EXPORT_STRINGS
+  Warning("ExportJSON",
+          "Compiled without HCANA_JSON_EXPORT_STRINGS: text variables "
+          "(Podd::Textvars) will NOT be included in this JSON output.");
+#endif
+
+#ifdef HCANA_JSON_EXPORT_STRINGS
+  // =======================
+  // Text parameters (Podd::Textvars)
+  // =======================
+  //
+  // This block assumes that Textvars has been extended with a method:
+  //
+  //   const Textvars_t& GetAllStringsMap() const;
+  //
+  // where Textvars_t is:
+  //   typedef std::map<std::string,std::vector<std::string>> Textvars_t;
+  //
+  if( TextList ) {
+    const auto& all_text = TextList->GetAllStringsMap();
+
+    for( const auto& kv : all_text ) {
+      const std::string& name = kv.first;
+      const std::vector<std::string>& vals = kv.second;
+
+      if( vals.empty() ) {
+        jstrings[name] = "";
+      } else if( vals.size() == 1 ) {
+        jstrings[name] = vals[0];
+      } else {
+        jstrings[name] = vals;  // JSON array of strings
+      }
+    }
+    jroot["strings"] = jstrings;
+  }
+#endif // HCANA_JSON_EXPORT_STRINGS
+
+  std::ofstream out( filename );
+  if( !out ) {
+    Error( "ExportJSON", "Cannot open %s for writing", filename );
+    return -1;
+  }
+
+  // Compact vs pretty-print controlled by indent
+  if( indent < 0 )
+    out << jroot.dump() << '\n';       // compact
+  else
+    out << jroot.dump(indent) << '\n'; // pretty
+
+  return 0;
+}
+
+#endif // WITH_JSON
+
 #ifdef WITH_CCDB
 //_____________________________________________________________________________
 Int_t THcParmList::OpenCCDB(Int_t runnum)

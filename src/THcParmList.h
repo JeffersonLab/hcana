@@ -39,6 +39,10 @@ public:
     return(TextList->Get(name, 0));
   }
 
+  #ifdef WITH_JSON
+    Int_t ExportJSON(const char* filename, Int_t indent = -1) const;
+  #endif
+
   Int_t AddString(const std::string& name, const std::string& value) {
     return(TextList->Add(name, value));
   }

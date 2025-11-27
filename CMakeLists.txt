@@ -40,3 +40,42 @@ if(HCANA_BUILTIN_PODD)
 endif()
 add_subdirectory(src)
 add_subdirectory(cmake)
+
+#----------------------------------------------------------------------------
+# Optional features: JSON export and CCDB
+
+include(CheckIncludeFileCXX)
+
+option(HCANA_WITH_JSON "Enable JSON export of THcParmList (gHcParms)" ON)
+option(HCANA_JSON_EXPORT_STRINGS
+       "Export Textvars strings in JSON (requires newer Podd Textvars API)" OFF)
+option(HCANA_WITH_CCDB "Enable CCDB support in THcParmList" OFF)
+
+# If ROOT (or your system) exposes nlohmann/json.hpp via the include path,
+# this check will succeed. ROOT 6.x vendors nlohmann::json internally, and
+# many builds install <nlohmann/json.hpp> in the standard include path.
+
+# Let the check see the same includes as normal code; ROOT_INCLUDE_DIRS is
+# set by ROOT/Podd CMake.
+if(DEFINED ROOT_INCLUDE_DIRS)
+  set(CMAKE_REQUIRED_INCLUDES "${ROOT_INCLUDE_DIRS}")
+endif()
+
+if(HCANA_WITH_JSON)
+  check_include_file_cxx("nlohmann/json.hpp" HCANA_HAVE_NLOHMANN_JSON)
+  if(NOT HCANA_HAVE_NLOHMANN_JSON)
+    message(WARNING
+      "HCANA_WITH_JSON=ON but <nlohmann/json.hpp> not found. "
+      "Disabling JSON export of THcParmList.")
+    set(HCANA_WITH_JSON OFF)
+  endif()
+endif()
+
+# These are the actual preprocessor symbols your code uses
+if(HCANA_WITH_JSON)
+  add_compile_definitions(WITH_JSON)
+endif()
+
+if(HCANA_WITH_CCDB)
+  add_compile_definitions(WITH_CCDB)
+endif()

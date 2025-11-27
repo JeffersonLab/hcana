@@ -71,6 +71,22 @@ if(WITH_DEBUG)
   target_compile_definitions(${LIBNAME} PUBLIC WITH_DEBUG)
 endif()
 
+# Enable JSON export (THcParmList::ExportJSON)
+if(HCANA_WITH_JSON)
+  message(STATUS "HCANA: Enabling JSON export (WITH_JSON)")
+  target_compile_definitions(${LIBNAME} PRIVATE WITH_JSON)
+endif()
+
+if(HCANA_JSON_EXPORT_STRINGS)
+  target_compile_definitions(${LIBNAME} PUBLIC HCANA_JSON_EXPORT_STRINGS)
+endif()
+
+# Enable CCDB support
+if(HCANA_WITH_CCDB)
+  message(STATUS "HCANA: Enabling CCDB support (WITH_CCDB)")
+  target_compile_definitions(${LIBNAME} PRIVATE WITH_CCDB)
+endif()
+
 target_link_libraries(${LIBNAME}
   PUBLIC
     Podd::Podd
