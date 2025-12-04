@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(hcana VERSION 1.1 LANGUAGES CXX)
+project(hcana VERSION 1.4 LANGUAGES CXX)
 
 option(HCANA_BUILTIN_PODD "Use built-in Podd submodule (default: YES)" ON)
 
@@ -14,9 +14,9 @@ if(HCANA_BUILTIN_PODD)
 else()
   # Find Podd and register it as a dependency
   # This will also automatically set up ROOT
-  find_package(Podd 1.6 REQUIRED)
+  find_package(Podd 1.7 REQUIRED)
   include(PoddCMakeEnv)
-  config_add_dependency(Podd 1.6)
+  config_add_dependency(Podd 1.7)
 endif()
 
 #----------------------------------------------------------------------------
