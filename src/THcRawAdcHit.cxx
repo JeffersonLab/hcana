@@ -186,6 +186,7 @@ Returns 0 if no signal pedestal is set.
 
 #include "THcRawAdcHit.h"
 #include "TString.h"
+#include "TMath.h"
 #include <iostream>
 
 using namespace std;
