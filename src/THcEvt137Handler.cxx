@@ -9,7 +9,7 @@
 #include "TROOT.h"
 #include <iostream>
 #include <sstream>
-#include <bits/stdc++.h>
+#include <algorithm>
 
 using namespace std;
 
