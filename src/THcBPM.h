@@ -38,7 +38,6 @@ class THcBPM : public THaBeamDet, public THcHitList {
  protected:
 
   Int_t fNhits;
-
   Int_t fAnalyzePedestals;
 
   // Raw signal variables
@@ -50,19 +49,22 @@ class THcBPM : public THaBeamDet, public THcHitList {
 
   TVector3 fOffset;
   TVector3 fPosition;
-  TVector3 fDirection;
-
+  TVector3 fDirection;  
   Double_t fCalibRot;   
 
   // Pedestal variables
   Int_t* fPedSum;
+  Int_t* fPed;
   Int_t* fPedLimit;
   Int_t* fPedCount;
   Int_t  fMinPed;
   Int_t  fNPedestalEvents;
 
-  TClonesArray* frAdcPulseIntRaw;
+  Int_t fADCMode;
+  enum { kDBPed=0, kDynamicPed, kCalculatePed };
 
+  TClonesArray* frAdcPulseIntRaw; // raw pulse integral
+  TClonesArray* frAdcPulseInt;    // pedestal subtracted values
 
   Int_t ReadDatabase( const TDatime& date );
   Int_t DefineVariables( EMode mode = kDefine );
