@@ -131,7 +131,7 @@ Int_t THcBPM::DefineVariables( EMode mode )
     {"y",        "reconstructed y position", "fPosition.fY"},
     {"z",        "reconstructed z position", "fPosition.fZ"},
     {"xl",       "local x position in bpm system", "GetRotPosX()"},
-    {"yl",       "local y position in bpm system", "GetRotPosX()"},
+    {"yl",       "local y position in bpm system", "GetRotPosY()"},
     { nullptr }
   };
 
