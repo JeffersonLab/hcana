@@ -321,7 +321,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
         Int_t ref_fNSA = 0;
         Int_t ref_fNSB = 0;
         Int_t ref_fNPED = 0;
-        if( fPSE125->IsPresent(theMap.crate) ) {
+        if( fPSE125 && fPSE125->IsPresent(theMap.crate) ) {
           ref_fNSA = fPSE125->GetNSA(theMap.crate);
           ref_fNSB = fPSE125->GetNSB(theMap.crate);
           ref_fNPED = fPSE125->GetNPED(theMap.crate);
@@ -510,7 +510,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
 	}
       } else {                        // This is a Flash ADC
 
-        if( fPSE125->IsPresent(d->crate) ) {
+        if( fPSE125 && fPSE125->IsPresent(d->crate) ) {
           if( !fHaveFADCInfo ) {
             fNSA = fPSE125->GetNSA(d->crate);
             fNSB = fPSE125->GetNSB(d->crate);
