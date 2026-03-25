@@ -50,13 +50,11 @@ THaAnalysisObject::EStatus THcBPM::Init( const TDatime& date )
 {
   //  cout << "THcBPM::Init" << endl;
 
-  char EngineDID[] = "xBPM";
-  EngineDID[0] = toupper(GetApparatus()->GetName()[0]);
-  
-  if( gHcDetectorMap->FillMap(fDetMap, EngineDID) < 0 ) {
+  string EngineDID = string(GetApparatus()->GetName()).substr(0,1) + GetName();
+  std::transform(EngineDID.begin(), EngineDID.end(), EngineDID.begin(), ::toupper);
+  if( gHcDetectorMap->FillMap(fDetMap, EngineDID.c_str()) < 0 ) {
     static const char* const here = "Init()";
-    Error( Here(here), "Error filling detectormap for %s.", EngineDID);
-
+    Error( Here(here), "Error filling detectormap for %s.", EngineDID.c_str());
     return kInitError;
   }
 
