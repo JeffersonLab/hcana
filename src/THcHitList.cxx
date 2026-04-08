@@ -568,7 +568,7 @@ Int_t THcHitList::DecodeToHitList( const THaEvData& evdata, Bool_t suppresswarni
           rawhit->SetDataTimePedestalPeak(signal,
               evdata.GetData(Decoder::kPulseIntegral, d->crate, d->slot, chan, ipulse),
               evdata.GetData(Decoder::kPulseTime, d->crate, d->slot, chan, ipulse) + 64 * timeshift,
-              evdata.GetData(Decoder::kPulsePedestal, d->crate, d->slot, chan, ipulse),
+	      evdata.GetData(Decoder::kPulsePedestal, d->crate, d->slot, chan, 0),
               evdata.GetData(Decoder::kPulsePeak, d->crate, d->slot, chan, ipulse));
 	}
         if( nsamples > 0 ) {
