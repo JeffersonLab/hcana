@@ -39,7 +39,7 @@
 #include "Helper.h"
 #include "Textvars.h"   // for Podd::vsplit
 #include "THaString.h"
-
+#include <iomanip>
 using namespace std;
 using namespace Decoder;
 using THaString::FindNoCase;
@@ -541,7 +541,6 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(const UInt_t *p)
 
   Int_t quartetphase = (fNTriggers-fFirstCycle)%4;
 
-
   if(fFirstCycle >= -10) {
     if(quartetphase == 0) {
       Int_t predicted = RanBit30(fRingSeed_reported);
@@ -567,7 +566,7 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(const UInt_t *p)
 	fFirstCycle = -100;
       }
       //Pre NPS/CODA 3 the H+ came 1 hel. window after qrt
-    }else if (quartetphase == 3 && fHelicityCycleOffset==-3){
+    }else if (quartetphase == 3 && fHelicityCycleOffset==3){
       if(!isquartet) {
 	cout << "THcHelicityScaler: Quartet bit expected but not set (" <<
 	  fNTriggers << ")" << endl;
@@ -590,6 +589,29 @@ Int_t THcHelicityScaler::AnalyzeHelicityScaler(const UInt_t *p)
       }
     }
   }
+  /*  
+
+ if(quartetphase==0){
+   cout<<endl;  
+  cout << std::left 
+     << std::setw(12) << "Triggers" 
+     << std::setw(10) << "Bits" 
+     << std::setw(12) << "FirstCyc" 
+     << std::setw(12) << "Quartet" 
+     << std::setw(10) << "Ispos" 
+     << std::setw(10) << "Phase" << endl;
+ }
+// Print this row for every data point
+
+   cout << std::left 
+     << std::setw(12) << fNTriggers 
+     << std::setw(10) << fNBits 
+     << std::setw(12) << fFirstCycle 
+     << std::setw(12) << isquartet 
+     << std::setw(10) << ispos 
+     << std::setw(10) << quartetphase << endl;
+
+  */
 
   if(fNBits>=30) {
     fRingSeed_actual = RanBit30(fRingSeed_reported);
