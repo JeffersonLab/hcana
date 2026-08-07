@@ -305,6 +305,15 @@ Int_t THcHallCSpectrometer::ReadDatabase( const TDatime& date )
   fUseSHMSDipoleExitWindow=kFALSE;
   if (prefix[0]=='h') fUseHMSDipoleExitWindow=kTRUE;
   if (prefix[0]=='p') fUseSHMSDipoleExitWindow=kTRUE;
+
+  if (prefix[0]=='h' && fTheta_lab > 0) {
+    fTheta_lab = -fTheta_lab;
+    cout << "HMS theta_lab should always be negative, changing the sign" << endl;
+  }
+  if (prefix[0]=='p' && fTheta_lab < 0) {
+    fTheta_lab = -fTheta_lab;
+    cout << "SHMS theta_lab should always be positive, changing the sign" << endl;
+  }
  
   //  mispointing in transport system y is horizontal and +x is vertical down
   if (fMispointing_y == 999.) {
