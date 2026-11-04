@@ -160,11 +160,11 @@ Int_t THcCoinTime::ReadDatabase( const TDatime& date )
   };
   
   //Default values if not read from param file
-  eHad_CT_Offset = 0.0;
+  //eHad_CT_Offset = 0.0;
   
   // SJDK 16/11/22 - This must be to a specific point? Where? The first hodo plane?
-  HMScentralPathLen = 22.0*100.;
-  SHMScentralPathLen = 18.1*100.;
+  //HMScentralPathLen = 22.0*100.;
+  //SHMScentralPathLen = 18.1*100.;
  
   /*
   // 31/01/23 - Again, just for testing the CT corrected RF time, commented out for now
@@ -178,8 +178,10 @@ Int_t THcCoinTime::ReadDatabase( const TDatime& date )
   SHMS_piRF_Offset = -5.1114;
   SHMS_KRF_Offset = -5.1114;
   SHMS_pRF_Offset = -5.1114;
+  */
 
   gHcParms->LoadParmValues((DBRequest*)&list, "");
+  /*
   // If the override value has been set (i.e. it is NOT the default value), set it to whatever the read in is
   if ( Bunch_Spacing_Override != 1.5556){
   Bunch_Spacing = Bunch_Spacing_Override;
