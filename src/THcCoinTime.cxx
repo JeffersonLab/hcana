@@ -178,8 +178,10 @@ Int_t THcCoinTime::ReadDatabase( const TDatime& date )
   SHMS_piRF_Offset = -5.1114;
   SHMS_KRF_Offset = -5.1114;
   SHMS_pRF_Offset = -5.1114;
+  */
 
   gHcParms->LoadParmValues((DBRequest*)&list, "");
+  /*
   // If the override value has been set (i.e. it is NOT the default value), set it to whatever the read in is
   if ( Bunch_Spacing_Override != 1.5556){
   Bunch_Spacing = Bunch_Spacing_Override;
