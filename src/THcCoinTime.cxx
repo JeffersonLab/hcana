@@ -160,11 +160,11 @@ Int_t THcCoinTime::ReadDatabase( const TDatime& date )
   };
   
   //Default values if not read from param file
-  //eHad_CT_Offset = 0.0;
+  eHad_CT_Offset = 0.0;
   
   // SJDK 16/11/22 - This must be to a specific point? Where? The first hodo plane?
-  //HMScentralPathLen = 22.0*100.;
-  //SHMScentralPathLen = 18.1*100.;
+  HMScentralPathLen = 22.0*100.;
+  SHMScentralPathLen = 18.1*100.;
  
   /*
   // 31/01/23 - Again, just for testing the CT corrected RF time, commented out for now
